@@ -180,10 +180,35 @@ made subject to such option by the copyright holder.
 
             </folder>
 
-            <folder name="x-twig-markup">
-                <attr name="displayName" bundlevalue="org.netbeans.modules.php.twig.resources.Bundle#Editors/text/x-twig-markup"/>
+            <folder name="x-twig-block">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.php.twig.resources.Bundle#Editors/text/x-twig-block"/>
                 <file name="language.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.twig.editor.lexer.TwigTokenId.language"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.twig.editor.lexer.TwigBlockTokenId.language"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
+                <folder name="CodeTemplateFilterFactories">
+                    <file name="org-netbeans-modules-php-twig-editor-codetemplate-TwigCodeTemplateFilter$Factory.instance"/>
+                </folder>
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="org-netbeans-modules-php-twig-resources-codetemplates.xml" url="code-templates.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.twig.resources.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance"/>
+                </folder>
+                <folder name="BracesMatchers">
+                    <file name="org-netbeans-modules-php-twig-editor-braces-TwigBracesMatcher$Factory.instance">
+                        <attr name="position" intvalue="0"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-twig-variable">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.php.twig.resources.Bundle#Editors/text/x-twig-variable"/>
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.twig.editor.lexer.TwigVariableTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
                 <folder name="CodeTemplateFilterFactories">

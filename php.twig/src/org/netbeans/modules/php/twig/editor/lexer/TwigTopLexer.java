@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -35,206 +35,54 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Sebastian Hörl
+ * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.php.twig.editor.lexer;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
-public final class TwigTopLexer implements Lexer<TwigTopTokenId> {
-
-    protected TwigTopLexerState state;
-    protected final TokenFactory<TwigTopTokenId> tokenFactory;
-    protected final LexerInput input;
-    static final String OPEN_BLOCK = "{%"; //NOI18N
-    static final String OPEN_VAR = "{{"; //NOI18N
+public class TwigTopLexer implements Lexer<TwigTopTokenId> {
     public static final String OPEN_COMMENT = "{#"; //NOI18N
-    static final String CLOSE_BLOCK = "%}"; //NOI18N
-    static final String CLOSE_VAR = "}}"; //NOI18N
     public static final String CLOSE_COMMENT = "#}"; //NOI18N
-    static final Pattern START_RAW = Pattern.compile("^\\{%[\\s]raw"); //NOI18N
-    static final Pattern END_RAW = Pattern.compile("\\{%[\\s]*endraw[\\s]*%\\}$"); //NOI18N
+    private final TwigTopColoringLexer scanner;
+    private final TokenFactory<TwigTopTokenId> tokenFactory;
 
-    private TwigTopLexer(LexerRestartInfo<TwigTopTokenId> info) {
+    public TwigTopLexer(LexerRestartInfo<TwigTopTokenId> info) {
+        scanner = new TwigTopColoringLexer(info);
         tokenFactory = info.tokenFactory();
-        input = info.input();
-        state = info.state() == null ? new TwigTopLexerState() : new TwigTopLexerState((TwigTopLexerState) info.state());
-    }
-
-    public static synchronized TwigTopLexer create(LexerRestartInfo<TwigTopTokenId> info) {
-        return new TwigTopLexer(info);
     }
 
     @Override
     public Token<TwigTopTokenId> nextToken() {
-        TwigTopTokenId tokenId = findNextToken();
-        return tokenId == null ? null : tokenFactory.createToken(tokenId);
+        try {
+            TwigTopTokenId tokenId = scanner.findNextToken();
+            Token<TwigTopTokenId> token = null;
+            if (tokenId != null) {
+                token = tokenFactory.createToken(tokenId);
+            }
+            return token;
+        } catch (IOException ex) {
+            Logger.getLogger(TwigTopLexer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     @Override
     public Object state() {
-        return new TwigTopLexerState(state);
+        return scanner.getState();
     }
 
     @Override
     public void release() {
     }
 
-    TwigTopLexerState.Type findTag(CharSequence text, boolean open) {
-
-        if (open && CharSequenceUtilities.endsWith(text, OPEN_BLOCK)) {
-            return TwigTopLexerState.Type.BLOCK;
-        }
-        if (!open && CharSequenceUtilities.endsWith(text, CLOSE_BLOCK)) {
-            return TwigTopLexerState.Type.BLOCK;
-        }
-
-        if (open && CharSequenceUtilities.endsWith(text, OPEN_VAR)) {
-            return TwigTopLexerState.Type.VAR;
-        }
-        if (!open && CharSequenceUtilities.endsWith(text, CLOSE_VAR)) {
-            return TwigTopLexerState.Type.VAR;
-        }
-
-        if (open && CharSequenceUtilities.endsWith(text, OPEN_COMMENT)) {
-            return TwigTopLexerState.Type.COMMENT;
-        }
-        if (!open && CharSequenceUtilities.endsWith(text, CLOSE_COMMENT)) {
-            return TwigTopLexerState.Type.COMMENT;
-        }
-
-        return TwigTopLexerState.Type.NONE;
-
-    }
-
-    public TwigTopTokenId findNextToken() {
-        int c = input.read();
-        TwigTopLexerState.Type result;
-
-        if (c == LexerInput.EOF) {
-            return null;
-        }
-
-        while (c != LexerInput.EOF) {
-
-            CharSequence text = input.readText();
-
-            switch (state.main) {
-                case RAW:
-                    if (CharSequenceUtilities.endsWith(text, "%}")) { //NOI18N
-                        Matcher matcher = END_RAW.matcher(text);
-                        if (matcher.find()) {
-                            String captured = matcher.group();
-                            state.main = TwigTopLexerState.Main.OPEN;
-                            state.type = TwigTopLexerState.Type.BLOCK;
-                            if (text.length() - captured.length() > 0) {
-                                input.backup(captured.length());
-                                return TwigTopTokenId.T_TWIG_RAW;
-                            }
-                        }
-                    }
-                    break;
-                case INIT:
-                case HTML:
-                    result = findTag(text, true);
-                    if (result != TwigTopLexerState.Type.NONE) {
-                        state.main = TwigTopLexerState.Main.OPEN;
-                        state.type = result;
-                        if (input.readLength() > 2) {
-                            input.backup(2);
-                            return TwigTopTokenId.T_HTML;
-                        }
-                    } else {
-                        break;
-                    }
-                case OPEN:
-                    if (input.readLength() == 2) {
-                        state.main = TwigTopLexerState.Main.TWIG;
-                    }
-                    break;
-                case TWIG:
-                    result = findTag(text, false);
-                    if (result != TwigTopLexerState.Type.NONE) {
-                        if (result == state.type) {
-
-                            boolean escape = false;
-                            boolean doubleQuotes = false;
-                            boolean singleQuotes = false;
-
-                            if (result != TwigTopLexerState.Type.COMMENT) {
-
-                                for (int i = 0; i < text.length() - 2; i++) {
-                                    char q = text.charAt(i);
-                                    if (q == '\\') {
-                                        escape = true;
-                                    } else if (!escape) {
-                                        if (q == '"' && !singleQuotes) {
-                                            doubleQuotes = !doubleQuotes;
-                                        } else if (q == '\'' && !doubleQuotes) {
-                                            singleQuotes = !singleQuotes;
-                                        }
-                                    } else {
-                                        escape = false;
-                                    }
-                                }
-
-                            }
-
-                            if (singleQuotes || doubleQuotes) {
-                                break;
-                            }
-
-                            if (result == TwigTopLexerState.Type.BLOCK && START_RAW.matcher(text).find()) {
-                                state.main = TwigTopLexerState.Main.CLOSE_RAW;
-                            } else {
-                                state.main = TwigTopLexerState.Main.CLOSE;
-                            }
-
-                            if (input.readLength() > 2) {
-                                input.backup(2);
-                            }
-                        }
-                        break;
-                    }
-                    break;
-                case CLOSE_RAW:
-                case CLOSE:
-                    if ((state.type == TwigTopLexerState.Type.BLOCK && CharSequenceUtilities.endsWith(text, CLOSE_BLOCK))
-                            || (state.type == TwigTopLexerState.Type.VAR && CharSequenceUtilities.endsWith(text, CLOSE_VAR))
-                            || (state.type == TwigTopLexerState.Type.COMMENT && CharSequenceUtilities.endsWith(text, CLOSE_COMMENT))) {
-                        state.main = (state.main == TwigTopLexerState.Main.CLOSE) ? TwigTopLexerState.Main.HTML : TwigTopLexerState.Main.RAW;
-                        return TwigTopTokenId.T_TWIG;
-                    }
-                    break;
-                default:
-                    // no-op
-            }
-
-            c = input.read();
-
-        }
-
-        switch (state.main) {
-            case RAW:
-                return TwigTopTokenId.T_TWIG_RAW;
-            case TWIG:
-                return TwigTopTokenId.T_TWIG;
-            case HTML:
-                return TwigTopTokenId.T_HTML;
-            default:
-                // no-op
-        }
-
-        return TwigTopTokenId.T_HTML;
-
-    }
 }
