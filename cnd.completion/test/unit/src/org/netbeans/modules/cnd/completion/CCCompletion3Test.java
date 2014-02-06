@@ -52,16 +52,16 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
  *
  * @author Vladimir Voskresensky
  */
-public class CCCompletion2Test extends CndBaseTestSuite {
+public class CCCompletion3Test extends CndBaseTestSuite {
     
-    public CCCompletion2Test() {
-        super("C/C++ Completion part 2");
+    public CCCompletion3Test() {
+        super("C/C++ Completion part 3");
         
-        this.addTestSuite(LibrariesContentTestCase.class);
+        this.addTestSuite(InheritanceTestCase.class);
     }
 
     public static Test suite() {
-        TestSuite suite = new CCCompletion2Test();
+        TestSuite suite = new CCCompletion3Test();
         return suite;
     }
 }
