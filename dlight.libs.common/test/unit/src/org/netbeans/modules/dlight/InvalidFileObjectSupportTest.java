@@ -86,4 +86,20 @@ public class InvalidFileObjectSupportTest {
         assertEquals("getName()", "foo1.bar1", invalidFo5.getName());
         assertEquals("getExt()", "cc", invalidFo5.getExt());
     }
+    
+    @Test
+    public void testInvalidFileObjectParent() throws Exception {
+        File file = File.createTempFile("qwe", "asd");
+        FileObject origFo = FileUtil.toFileObject(file); // FileUtil SIC!
+        String path = origFo.getPath();
+        FileSystem fs = origFo.getFileSystem();
+        assertNotNull(origFo);
+        file.delete();
+        FileObject invalidFo = InvalidFileObjectSupport.getInvalidFileObject(fs, path);
+        assertNotNull(invalidFo);
+        FileObject parent = invalidFo.getParent();
+        assertNotNull(parent);
+        assertTrue(parent.isValid());
+    }
+    
 }
