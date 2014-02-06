@@ -59,6 +59,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CodeCompletionHandler2;
@@ -76,9 +77,10 @@ import org.netbeans.modules.php.twig.editor.completion.TwigDocumentationFactory.
 import org.netbeans.modules.php.twig.editor.completion.TwigDocumentationFactory.TagDocumentationFactory;
 import org.netbeans.modules.php.twig.editor.completion.TwigDocumentationFactory.TestDocumentationFactory;
 import org.netbeans.modules.php.twig.editor.completion.TwigElement.Parameter;
+import org.netbeans.modules.php.twig.editor.lexer.TwigBlockTokenId;
 import org.netbeans.modules.php.twig.editor.lexer.TwigLexerUtils;
-import org.netbeans.modules.php.twig.editor.lexer.TwigTokenId;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTopTokenId;
+import org.netbeans.modules.php.twig.editor.lexer.TwigVariableTokenId;
 import org.netbeans.modules.php.twig.editor.parsing.TwigParserResult;
 
 public class TwigCompletionHandler implements CodeCompletionHandler2 {
@@ -121,6 +123,8 @@ public class TwigCompletionHandler implements CodeCompletionHandler2 {
         TAGS.add(TwigElement.Factory.create("endmacro", documentationFactory)); //NOI18N
         TAGS.add(TwigElement.Factory.create("raw", documentationFactory)); //NOI18N
         TAGS.add(TwigElement.Factory.create("endraw", documentationFactory)); //NOI18N
+        TAGS.add(TwigElement.Factory.create("verbatim", documentationFactory)); //NOI18N
+        TAGS.add(TwigElement.Factory.create("endverbatim", documentationFactory)); //NOI18N
         TAGS.add(TwigElement.Factory.create("sandbox", documentationFactory)); //NOI18N
         TAGS.add(TwigElement.Factory.create("endsandbox", documentationFactory)); //NOI18N
         TAGS.add(TwigElement.Factory.create("set", documentationFactory, "set ${variable}")); //NOI18N
@@ -346,7 +350,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler2 {
             } else {
                 Document document = component.getDocument();
                 int offset = component.getCaretPosition();
-                TokenSequence<? extends TwigTokenId> ts = TwigLexerUtils.getTwigMarkupTokenSequence(document, offset);
+                TokenSequence<? extends TokenId> ts = TwigLexerUtils.getTwigMarkupTokenSequence(document, offset);
                 if (ts == null) {
                     result = QueryType.STOP;
                 }
@@ -408,49 +412,53 @@ public class TwigCompletionHandler implements CodeCompletionHandler2 {
         private void processTopSequence(TokenSequence<TwigTopTokenId> tts) {
             tts.move(offset);
             if (tts.moveNext() || tts.movePrevious()) {
-                processSequence(tts.embedded(TwigTokenId.language()));
+                TokenSequence<? extends TokenId> ts = tts.embedded(TwigBlockTokenId.language());
+                if (ts == null) {
+                    ts = tts.embedded(TwigVariableTokenId.language());
+                }
+                processSequence(ts);
             }
         }
 
-        private void processSequence(TokenSequence<TwigTokenId> ts) {
+        private void processSequence(TokenSequence<? extends TokenId> ts) {
             if (ts != null) {
                 processValidSequence(ts);
             }
         }
 
-        private void processValidSequence(TokenSequence<TwigTokenId> ts) {
+        private void processValidSequence(TokenSequence<? extends TokenId> ts) {
             ts.move(offset);
             if (ts.moveNext() || ts.movePrevious()) {
                 processToken(ts);
             }
         }
 
-        private void processToken(TokenSequence<TwigTokenId> ts) {
+        private void processToken(TokenSequence<? extends TokenId> ts) {
             if (ts.offset() == offset) {
                 ts.movePrevious();
             }
-            Token<TwigTokenId> token = ts.token();
+            Token<?> token = ts.token();
             if (token != null) {
                 processSelectedToken(ts);
             }
         }
 
-        private void processSelectedToken(TokenSequence<TwigTokenId> ts) {
-            TwigTokenId id = ts.token().id();
+        private void processSelectedToken(TokenSequence<? extends TokenId> ts) {
+            TokenId id = ts.token().id();
             if (isValidTokenId(id)) {
                 createResult(ts);
             }
         }
 
-        private void createResult(TokenSequence<TwigTokenId> ts) {
+        private void createResult(TokenSequence<? extends TokenId> ts) {
             if (upToOffset) {
                 String text = ts.token().text().toString();
                 result = text.substring(0, offset - ts.offset());
             }
         }
 
-        private static boolean isValidTokenId(TwigTokenId id) {
-            return TwigTokenId.T_TWIG_TAG.equals(id) || TwigTokenId.T_TWIG_NAME.equals(id);
+        private static boolean isValidTokenId(TokenId id) {
+            return TwigBlockTokenId.T_TWIG_TAG.equals(id) || TwigBlockTokenId.T_TWIG_NAME.equals(id) || TwigVariableTokenId.T_TWIG_NAME.equals(id);
         }
 
     }

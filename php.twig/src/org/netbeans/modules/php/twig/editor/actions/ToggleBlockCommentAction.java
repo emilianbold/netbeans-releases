@@ -57,8 +57,8 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.csl.api.CslActions;
 import org.netbeans.modules.php.twig.editor.lexer.TwigLexerUtils;
-import org.netbeans.modules.php.twig.editor.lexer.TwigTokenId;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTopLexer;
+import org.netbeans.modules.php.twig.editor.lexer.TwigTopTokenId;
 import org.netbeans.modules.php.twig.editor.ui.options.TwigOptions;
 
 /**
@@ -123,13 +123,16 @@ public class ToggleBlockCommentAction extends BaseAction {
 
             @Override
             void comment(BaseDocument baseDocument, Positions positions, AtomicBoolean processedHere) throws BadLocationException {
-                TokenSequence<? extends TwigTokenId> ts = TwigLexerUtils.getTwigMarkupTokenSequence(baseDocument, positions.getStart());
-                Token<? extends TwigTokenId> token = null;
+                TokenSequence<? extends TwigTopTokenId> ts = TwigLexerUtils.getTwigTokenSequence(baseDocument, positions.getStart());
+                Token<? extends TwigTopTokenId> token = null;
                 if (ts != null) {
                     ts.move(positions.getStart());
                     ts.moveNext();
-                    ts.movePrevious();
                     token = ts.token();
+                    if (token != null && positions.getStart() == ts.offset() && !isInComment(token.id())) {
+                        ts.movePrevious();
+                        token = ts.token();
+                    }
                 }
                 if (token != null && isInComment(token.id())) {
                     uncommentToken(ts, baseDocument);
@@ -144,20 +147,26 @@ public class ToggleBlockCommentAction extends BaseAction {
 
             @Override
             void comment(BaseDocument baseDocument, Positions positions, AtomicBoolean processedHere) throws BadLocationException {
-                TokenSequence<? extends TwigTokenId> ts = TwigLexerUtils.getTwigMarkupTokenSequence(baseDocument, positions.getStart());
+                TokenSequence<? extends TwigTopTokenId> ts = TwigLexerUtils.getTwigTokenSequence(baseDocument, positions.getStart());
                 if (ts == null) {
                     processedHere.set(false);
                     return;
                 }
                 ts.move(positions.getStart());
                 ts.moveNext();
-                ts.movePrevious();
-                Token<? extends TwigTokenId> token = ts.token();
-                if (token != null && isInComment(token.id())) {
+                Token<? extends TwigTopTokenId> token = ts.token();
+                if (token != null && positions.getStart() == ts.offset() && token.id() == TwigTopTokenId.T_HTML) {
+                    ts.movePrevious();
+                    token = ts.token();
+                }
+                if (token != null && token.id() == TwigTopTokenId.T_HTML) {
+                    processedHere.set(false);
+                    return;
+                } else if (token != null && isInComment(token.id())) {
                     uncommentToken(ts, baseDocument);
                 } else {
-                    TokenInsertWrapper startTokenWraper = findBackward(ts, Arrays.asList(TwigTokenId.T_TWIG_BLOCK_START, TwigTokenId.T_TWIG_VAR_START));
-                    TokenInsertWrapper endTokenWrapper = findForward(ts, Arrays.asList(TwigTokenId.T_TWIG_BLOCK_END, TwigTokenId.T_TWIG_VAR_END));
+                    TokenInsertWrapper startTokenWraper = findBackward(ts, Arrays.asList(TwigTopTokenId.T_TWIG_BLOCK_START, TwigTopTokenId.T_TWIG_VAR_START));
+                    TokenInsertWrapper endTokenWrapper = findForward(ts, Arrays.asList(TwigTopTokenId.T_TWIG_BLOCK_END, TwigTopTokenId.T_TWIG_VAR_END));
                     endTokenWrapper.insertAfter(baseDocument);
                     startTokenWraper.insertBefore(baseDocument);
                 }
@@ -167,25 +176,25 @@ public class ToggleBlockCommentAction extends BaseAction {
 
         abstract void comment(BaseDocument baseDocument, Positions positions, AtomicBoolean processedHere) throws BadLocationException;
 
-        protected void uncommentToken(TokenSequence<? extends TwigTokenId> ts, BaseDocument baseDocument) throws BadLocationException {
+        protected void uncommentToken(TokenSequence<? extends TwigTopTokenId> ts, BaseDocument baseDocument) throws BadLocationException {
             int start = ts.offset();
             int end = ts.offset() + ts.token().text().length() - TwigTopLexer.OPEN_COMMENT.length() - TwigTopLexer.CLOSE_COMMENT.length();
             baseDocument.remove(start, TwigTopLexer.OPEN_COMMENT.length());
             baseDocument.remove(end, TwigTopLexer.CLOSE_COMMENT.length());
         }
 
-        private static boolean isInComment(TwigTokenId tokenId) {
-            return tokenId == TwigTokenId.T_TWIG_COMMENT;
+        private static boolean isInComment(TwigTopTokenId tokenId) {
+            return tokenId == TwigTopTokenId.T_TWIG_COMMENT;
         }
 
-        private static TokenInsertWrapper findBackward(TokenSequence<? extends TwigTokenId> ts, List<TwigTokenId> tokenIds) {
+        private static TokenInsertWrapper findBackward(TokenSequence<? extends TwigTopTokenId> ts, List<TwigTopTokenId> tokenIds) {
             assert ts != null;
             assert tokenIds != null;
             TokenInsertWrapper result = TokenInsertWrapper.NONE;
             if (ts.moveNext() || ts.movePrevious()) {
                 int originalOffset = ts.offset();
                 while (ts.movePrevious()) {
-                    Token<? extends TwigTokenId> token = ts.token();
+                    Token<? extends TwigTopTokenId> token = ts.token();
                     if (token != null && tokenIds.contains(token.id())) {
                         result = new TokenInsertWrapperImpl(token, ts.offset());
                         break;
@@ -196,21 +205,26 @@ public class ToggleBlockCommentAction extends BaseAction {
             return result;
         }
 
-        private static TokenInsertWrapper findForward(TokenSequence<? extends TwigTokenId> ts, List<TwigTokenId> tokenIds) {
+        private static TokenInsertWrapper findForward(TokenSequence<? extends TwigTopTokenId> ts, List<TwigTopTokenId> tokenIds) {
             assert ts != null;
             assert tokenIds != null;
             TokenInsertWrapper result = TokenInsertWrapper.NONE;
-            if (ts.moveNext() || ts.movePrevious()) {
-                int originalOffset = ts.offset();
+            ts.moveNext();
+            ts.movePrevious();
+            int originalOffset = ts.offset();
+            Token<? extends TwigTopTokenId> token = ts.token();
+            if (token != null && tokenIds.contains(token.id())) {
+                result = new TokenInsertWrapperImpl(token, ts.offset());
+            } else {
                 while (ts.moveNext()) {
-                    Token<? extends TwigTokenId> token = ts.token();
+                    token = ts.token();
                     if (token != null && tokenIds.contains(token.id())) {
                         result = new TokenInsertWrapperImpl(token, ts.offset());
                         break;
                     }
                 }
-                ts.move(originalOffset);
             }
+            ts.move(originalOffset);
             return result;
         }
     }
@@ -232,10 +246,10 @@ public class ToggleBlockCommentAction extends BaseAction {
     }
 
     private static final class TokenInsertWrapperImpl implements TokenInsertWrapper {
-        private final Token<? extends TwigTokenId> token;
+        private final Token<? extends TwigTopTokenId> token;
         private final int offset;
 
-        private TokenInsertWrapperImpl(Token<? extends TwigTokenId> token, int offset) {
+        private TokenInsertWrapperImpl(Token<? extends TwigTopTokenId> token, int offset) {
             this.token = token;
             this.offset = offset;
         }

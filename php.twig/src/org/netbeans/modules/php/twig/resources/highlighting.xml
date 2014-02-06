@@ -48,11 +48,11 @@ made subject to such option by the copyright holder.
 
     <fontcolor name="twig_comment" default="comment" />
 
-    <fontcolor name="twig_block" foreColor="ff966738">
+    <fontcolor name="twig_block_delimiter" foreColor="ff966738">
         <font style="bold" />
     </fontcolor>
 
-    <fontcolor name="twig_var" foreColor="ff966738">
+    <fontcolor name="twig_var_delimiter" foreColor="ff966738">
         <font style="bold" />
     </fontcolor>
 

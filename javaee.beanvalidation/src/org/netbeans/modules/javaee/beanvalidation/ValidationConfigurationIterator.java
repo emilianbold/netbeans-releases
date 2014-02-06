@@ -53,7 +53,7 @@ import org.openide.loaders.TemplateWizard;
  *
  * @author alexey butenko
  */
-public class ValidationConfigurationIterator extends AbstractIterator{
+public class ValidationConfigurationIterator extends AbstractIterator {
 
     private static final String defaultName = "validation";   //NOI18N
 

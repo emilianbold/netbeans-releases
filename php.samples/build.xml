@@ -17,5 +17,6 @@
         <zip basedir="samples_src/RentAFlat-Zend" excludes="${excludes}" destfile="${examples}/RentAFlat-Zend.zip"/>
         <zip basedir="samples_src/Calculator-PHPUnit" excludes="${excludes}" destfile="${examples}/Calculator-PHPUnit.zip"/>
         <zip basedir="samples_src/Calculator-atoum" excludes="${excludes}" destfile="${examples}/Calculator-atoum.zip"/>
+        <zip basedir="samples_src/Calculator-Nette-Tester" excludes="${excludes}" destfile="${examples}/Calculator-Nette-Tester.zip"/>
     </target>
 </project>

@@ -49,8 +49,8 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.twig.editor.lexer.TwigBlockTokenId;
 import org.netbeans.modules.php.twig.editor.lexer.TwigLexerUtils;
-import org.netbeans.modules.php.twig.editor.lexer.TwigTokenId;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTopTokenId;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
@@ -73,6 +73,7 @@ public final class TwigBracesMatcher implements BracesMatcher {
         MATCHERS.add(new StartEndBlockMatcher("sandbox")); //NOI18N
         MATCHERS.add(new StartEndBlockMatcher("set")); //NOI18N
         MATCHERS.add(new StartEndBlockMatcher("spaceless")); //NOI18N
+        MATCHERS.add(new StartEndBlockMatcher("verbatim")); //NOI18N
         MATCHERS.add(new IfMatcher());
         MATCHERS.add(new EndIfMatcher());
         MATCHERS.add(new ElseMatcher());
@@ -99,21 +100,21 @@ public final class TwigBracesMatcher implements BracesMatcher {
 
     private int[] findOriginUnderLock() {
         int[] result = null;
-        TokenSequence<? extends TwigTokenId> ts = TwigLexerUtils.getTwigMarkupTokenSequence(context.getDocument(), context.getSearchOffset());
+        TokenSequence<? extends TwigBlockTokenId> ts = TwigLexerUtils.getTwigBlockTokenSequence(context.getDocument(), context.getSearchOffset());
         if (ts != null) {
             result = findOriginInSequence(ts);
         }
         return result;
     }
 
-    private int[] findOriginInSequence(TokenSequence<? extends TwigTokenId> ts) {
+    private int[] findOriginInSequence(TokenSequence<? extends TwigBlockTokenId> ts) {
         int[] result = null;
         ts.move(context.getSearchOffset());
         if (ts.moveNext()) {
-            Token<? extends TwigTokenId> currentToken = ts.token();
+            Token<? extends TwigBlockTokenId> currentToken = ts.token();
             if (currentToken != null) {
-                TwigTokenId currentTokenId = currentToken.id();
-                if (currentTokenId == TwigTokenId.T_TWIG_TAG) {
+                TwigBlockTokenId currentTokenId = currentToken.id();
+                if (currentTokenId == TwigBlockTokenId.T_TWIG_TAG) {
                     result = new int[] {ts.offset(), ts.offset() + currentToken.length()};
                 }
             }
@@ -148,18 +149,18 @@ public final class TwigBracesMatcher implements BracesMatcher {
         int[] result = null;
         topTs.move(context.getSearchOffset());
         topTs.moveNext();
-        TokenSequence<TwigTokenId> ts = topTs.embeddedJoined(TwigTokenId.language());
+        TokenSequence<TwigBlockTokenId> ts = topTs.embeddedJoined(TwigBlockTokenId.language());
         if (ts != null) {
             result = findMatchesInEmbeddedSequence(topTs, ts);
         }
         return result;
     }
 
-    private int[] findMatchesInEmbeddedSequence(TokenSequence<? extends TwigTopTokenId> topTs, TokenSequence<TwigTokenId> embeddedTs) {
+    private int[] findMatchesInEmbeddedSequence(TokenSequence<? extends TwigTopTokenId> topTs, TokenSequence<TwigBlockTokenId> embeddedTs) {
         int[] result = null;
         embeddedTs.move(context.getSearchOffset());
         if (embeddedTs.moveNext()) {
-            Token<? extends TwigTokenId> currentToken = embeddedTs.token();
+            Token<? extends TwigBlockTokenId> currentToken = embeddedTs.token();
             if (currentToken != null) {
                 result = processMatchers(currentToken, topTs);
             }
@@ -167,7 +168,7 @@ public final class TwigBracesMatcher implements BracesMatcher {
         return result;
     }
 
-    private int[] processMatchers(Token<? extends TwigTokenId> currentToken, TokenSequence<? extends TwigTopTokenId> topTs) {
+    private int[] processMatchers(Token<? extends TwigBlockTokenId> currentToken, TokenSequence<? extends TwigTopTokenId> topTs) {
         int[] result = null;
         for (Matcher matcher : MATCHERS) {
             if (matcher.matches(currentToken)) {
@@ -193,20 +194,20 @@ public final class TwigBracesMatcher implements BracesMatcher {
 
     private interface Matcher {
 
-        boolean matches(Token<? extends TwigTokenId> token);
+        boolean matches(Token<? extends TwigBlockTokenId> token);
 
-        int[] findMatches(Token<? extends TwigTokenId> token, TokenSequence<? extends TwigTopTokenId> topTs);
+        int[] findMatches(Token<? extends TwigBlockTokenId> token, TokenSequence<? extends TwigTopTokenId> topTs);
 
     }
 
     private abstract static class IfConditionMatcher implements Matcher {
-        protected static final TwigLexerUtils.TwigTokenText IF_TOKEN = TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, "if"); //NOI18N
-        protected static final TwigLexerUtils.TwigTokenText ELSE_IF_TOKEN = TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, "elseif"); //NOI18N
-        protected static final TwigLexerUtils.TwigTokenText ELSE_TOKEN = TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, "else"); //NOI18N
-        protected static final TwigLexerUtils.TwigTokenText END_IF_TOKEN = TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, "endif"); //NOI18N
+        protected static final TwigLexerUtils.TwigTokenText IF_TOKEN = TwigLexerUtils.TwigTokenTextImpl.create(TwigBlockTokenId.T_TWIG_TAG, "if"); //NOI18N
+        protected static final TwigLexerUtils.TwigTokenText ELSE_IF_TOKEN = TwigLexerUtils.TwigTokenTextImpl.create(TwigBlockTokenId.T_TWIG_TAG, "elseif"); //NOI18N
+        protected static final TwigLexerUtils.TwigTokenText ELSE_TOKEN = TwigLexerUtils.TwigTokenTextImpl.create(TwigBlockTokenId.T_TWIG_TAG, "else"); //NOI18N
+        protected static final TwigLexerUtils.TwigTokenText END_IF_TOKEN = TwigLexerUtils.TwigTokenTextImpl.create(TwigBlockTokenId.T_TWIG_TAG, "endif"); //NOI18N
 
         @Override
-        public boolean matches(Token<? extends TwigTokenId> token) {
+        public boolean matches(Token<? extends TwigBlockTokenId> token) {
             return matchingToken().matches(token);
         }
 
@@ -222,7 +223,7 @@ public final class TwigBracesMatcher implements BracesMatcher {
         }
 
         @Override
-        public int[] findMatches(Token<? extends TwigTokenId> token, TokenSequence<? extends TwigTopTokenId> topTs) {
+        public int[] findMatches(Token<? extends TwigBlockTokenId> token, TokenSequence<? extends TwigTopTokenId> topTs) {
             assert token != null;
             assert topTs != null;
             List<OffsetRange> offsetRanges = TwigLexerUtils.findForwardMatching(
@@ -243,7 +244,7 @@ public final class TwigBracesMatcher implements BracesMatcher {
         }
 
         @Override
-        public int[] findMatches(Token<? extends TwigTokenId> token, TokenSequence<? extends TwigTopTokenId> topTs) {
+        public int[] findMatches(Token<? extends TwigBlockTokenId> token, TokenSequence<? extends TwigTopTokenId> topTs) {
             assert token != null;
             assert topTs != null;
             List<OffsetRange> offsetRanges = TwigLexerUtils.findBackwardMatching(
@@ -264,7 +265,7 @@ public final class TwigBracesMatcher implements BracesMatcher {
         }
 
         @Override
-        public int[] findMatches(Token<? extends TwigTokenId> token, TokenSequence<? extends TwigTopTokenId> topTs) {
+        public int[] findMatches(Token<? extends TwigBlockTokenId> token, TokenSequence<? extends TwigTopTokenId> topTs) {
             assert token != null;
             assert topTs != null;
             List<OffsetRange> offsetRanges = TwigLexerUtils.findBackwardMatching(
@@ -290,7 +291,7 @@ public final class TwigBracesMatcher implements BracesMatcher {
         }
 
         @Override
-        public int[] findMatches(Token<? extends TwigTokenId> token, TokenSequence<? extends TwigTopTokenId> topTs) {
+        public int[] findMatches(Token<? extends TwigBlockTokenId> token, TokenSequence<? extends TwigTopTokenId> topTs) {
             assert token != null;
             assert topTs != null;
             List<OffsetRange> offsetRanges = TwigLexerUtils.findBackwardMatching(
@@ -318,14 +319,14 @@ public final class TwigBracesMatcher implements BracesMatcher {
         }
 
         @Override
-        public boolean matches(Token<? extends TwigTokenId> token) {
+        public boolean matches(Token<? extends TwigBlockTokenId> token) {
             assert token != null;
-            return token.id() == TwigTokenId.T_TWIG_TAG
+            return token.id() == TwigBlockTokenId.T_TWIG_TAG
                     && (blockName.equals(token.text().toString()) || (END + blockName).equals(token.text().toString()));
         }
 
         @Override
-        public int[] findMatches(Token<? extends TwigTokenId> token, TokenSequence<? extends TwigTopTokenId> topTs) {
+        public int[] findMatches(Token<? extends TwigBlockTokenId> token, TokenSequence<? extends TwigTopTokenId> topTs) {
             assert token != null;
             assert topTs != null;
             int[] result = null;
@@ -333,14 +334,14 @@ public final class TwigBracesMatcher implements BracesMatcher {
             if (tagText.equals(blockName)) {
                 List<OffsetRange> offsetRanges = TwigLexerUtils.findForwardMatching(
                         topTs,
-                        TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, blockName),
-                        TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, END + blockName));
+                        TwigLexerUtils.TwigTokenTextImpl.create(TwigBlockTokenId.T_TWIG_TAG, blockName),
+                        TwigLexerUtils.TwigTokenTextImpl.create(TwigBlockTokenId.T_TWIG_TAG, END + blockName));
                 result = createMatches(offsetRanges);
             } else if (tagText.equals(END + blockName)) {
                 List<OffsetRange> offsetRanges = TwigLexerUtils.findBackwardMatching(
                         topTs,
-                        TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, END + blockName),
-                        TwigLexerUtils.TwigTokenTextImpl.create(TwigTokenId.T_TWIG_TAG, blockName));
+                        TwigLexerUtils.TwigTokenTextImpl.create(TwigBlockTokenId.T_TWIG_TAG, END + blockName),
+                        TwigLexerUtils.TwigTokenTextImpl.create(TwigBlockTokenId.T_TWIG_TAG, blockName));
                 result = createMatches(offsetRanges);
             }
             return result;
