@@ -234,7 +234,8 @@ public class ELCompletionTest extends ELTestBaseForTestProject {
     }
 
     public void testIssue241160_2() throws Exception {
-        checkCompletion("projects/testWebProject/web/completion/issue241160.xhtml", "#{cc.attrs.muj.subSequence(0, 1).^}", false);
+        List<String> toCheck = Arrays.asList("charAt", "length", "subSequence", "toString");
+        checkCompletion("projects/testWebProject/web/completion/issue241160.xhtml", "#{cc.attrs.muj.subSequence(0, 1).^}", false, toCheck);
     }
 
 }

@@ -999,6 +999,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/model/person.js", "Person.prototype.amputate = function(){ this.le^gs-- } ", true); 
     }
     
+    public void testIssue238499_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue238499.js", "return new_l^ink;", true);
+    }
+    
    private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

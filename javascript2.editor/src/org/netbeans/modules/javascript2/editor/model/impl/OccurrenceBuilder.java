@@ -136,6 +136,15 @@ public class OccurrenceBuilder {
             property = parent.getProperty(name);
         }
 
+        if (!(parent instanceof JsWith) && property == null) {
+            JsObject possibleParent = parent;
+            
+            while (property == null && possibleParent != null) {
+                property = possibleParent.getProperty(name);
+                possibleParent = possibleParent.getParent();
+            }
+        }
+        
         if (property != null) {
 
             // occurence in the doc
