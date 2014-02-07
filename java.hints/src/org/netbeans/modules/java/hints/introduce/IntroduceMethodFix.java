@@ -488,6 +488,9 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
          * Statement list enclosing the original selection, the entire block/case/etc
          */
         List<? extends StatementTree> statements;
+        
+        List<TreePath> statementPaths;
+        
         /**
          * Parameters of the extracted method
          */
@@ -509,6 +512,8 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
          * List of resolved exits
          */
         List<TreePath> resolvedExits;
+        
+        TreePath pathToClass;
 
         public TaskImpl(Set<Modifier> access, String name, TargetDescription target, boolean replaceOther) {
             this.access = access;
@@ -537,7 +542,8 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
         }
 
         private MethodTree createMethodDefinition(boolean mustStatic) {
-            List<VariableTree> formalArguments = IntroduceHint.createVariables(copy, parameters);
+            List<VariableTree> formalArguments = IntroduceHint.createVariables(copy, parameters, pathToClass, 
+                    statementPaths);
             if (formalArguments == null) {
                 return null; //XXX
             }
@@ -713,6 +719,7 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
             // initialization
             make = copy.getTreeMaker();
             returnTypeTree = make.Type(returnType);
+            statementPaths = Utilities.getStatementPaths(firstStatement);
             statements = IntroduceHint.getStatements(firstStatement);
             GeneratorUtilities.get(copy).importComments(firstStatement.getParentPath().getLeaf(), copy.getCompilationUnit());
             return true;
@@ -791,7 +798,7 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
             IntroduceHint.doReplaceInBlockCatchSingleStatement(copy, rewritten, firstStatement, nueStatements);
             addReplacement(firstStatement.getParentPath().getLeaf(), from, to);
             TypeElement targetType = target.type.resolve(copy);
-            TreePath pathToClass = targetType != null ? copy.getTrees().getPath(targetType) : null;
+            pathToClass = targetType != null ? copy.getTrees().getPath(targetType) : null;
             if (pathToClass == null) {
                 pathToClass = TreeUtils.findClass(firstStatement);
             }
