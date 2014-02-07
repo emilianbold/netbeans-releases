@@ -182,7 +182,7 @@ public class NativeProjectRelocationMapperProviderImpl implements NativeProjectR
                         CndFileUtils.getCanonicalPath(projectDir) : destName);
                 for (String key : properties.stringPropertyNames()) {
                     if (key.matches(PROJECT_TAG + "\\d*[.]" + SOURCE_ROOT)) { //NOI18N
-                        String keyValue = key.substring(0, key.indexOf("." + SOURCE_ROOT));
+                        String keyValue = key.substring(0, key.indexOf("." + SOURCE_ROOT)); //NOI18N
                         String sourceRoot = properties.getProperty(key);
                         String destRoot = properties.getProperty(keyValue + "." + DESTINATION_ROOT);
                         addMapping(CharSequences.create(sourceRoot), CharSequences.create(destRoot));
