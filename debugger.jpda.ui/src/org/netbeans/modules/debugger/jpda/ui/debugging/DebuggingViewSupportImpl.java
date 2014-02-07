@@ -43,6 +43,8 @@
 package org.netbeans.modules.debugger.jpda.ui.debugging;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -74,12 +76,16 @@ public class DebuggingViewSupportImpl extends DebuggingView.DVSupport {
     
     public DebuggingViewSupportImpl(ContextProvider lookupProvider) {
         debugger = (JPDADebuggerImpl) lookupProvider.lookupFirst(null, JPDADebugger.class);
+        ChangeListener chl = new ChangeListener();
+        debugger.addPropertyChangeListener(chl);
+        debugger.getThreadsCollector().getDeadlockDetector().addPropertyChangeListener(chl);
     }
     
     @Override
     public DebuggingView.DVThread getCurrentThread() {
         JPDAThreadImpl currentThread = (JPDAThreadImpl) debugger.getCurrentThread();
-        if (currentThread != null && !currentThread.isSuspended() &&
+        if (currentThread != null &&
+                !(currentThread.isSuspended() || currentThread.isSuspendedNoFire()) &&
                 !currentThread.isMethodInvoking()) {
             currentThread = null;
         }
@@ -170,6 +176,39 @@ public class DebuggingViewSupportImpl extends DebuggingView.DVSupport {
             preferences = DebuggingView.DVFilter.getDefault(DebuggingView.DVFilter.DefaultFilter.showThreadGroups).getPreferences();
         }
         return preferences;
+    }
+    
+    private class ChangeListener implements PropertyChangeListener {
+        
+        private STATE state = STATE.DISCONNECTED;
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            String propertyName = evt.getPropertyName();
+            if (JPDADebugger.PROP_THREAD_STARTED.equals(propertyName)) {
+                firePropertyChange(DebuggingView.DVSupport.PROP_THREAD_STARTED, evt.getOldValue(), evt.getNewValue());
+            } else
+            if (JPDADebugger.PROP_THREAD_DIED.equals(propertyName)) {
+                firePropertyChange(DebuggingView.DVSupport.PROP_THREAD_DIED, evt.getOldValue(), evt.getNewValue());
+            } else
+            if (JPDADebugger.PROP_CURRENT_THREAD.equals(propertyName)) {
+                firePropertyChange(DebuggingView.DVSupport.PROP_CURRENT_THREAD, evt.getOldValue(), evt.getNewValue());
+            } else
+            if (JPDADebugger.PROP_STATE.equals(propertyName)) {
+                int ds = debugger.getState();
+                if (ds == JPDADebugger.STATE_RUNNING && this.state != STATE.RUNNING) {
+                    this.state = STATE.RUNNING;
+                    firePropertyChange(DebuggingView.DVSupport.PROP_STATE, STATE.DISCONNECTED, STATE.RUNNING);
+                } else
+                if (ds == JPDADebugger.STATE_DISCONNECTED) {
+                    firePropertyChange(DebuggingView.DVSupport.PROP_STATE, STATE.RUNNING, STATE.DISCONNECTED);
+                }
+            } else
+            if (DeadlockDetector.PROP_DEADLOCK.equals(propertyName)) {
+                firePropertyChange(DebuggingView.DVSupport.PROP_DEADLOCK, evt.getOldValue(), evt.getNewValue());
+            }
+        }
+        
     }
     
 }

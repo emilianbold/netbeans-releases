@@ -108,18 +108,15 @@ public class BreakpointModelActiveSessionFilter extends ViewModelSupport
 
     @Override
     public String getIconBaseWithExtension(ExtendedNodeModel original, Object node) throws UnknownTypeException {
-        if (debugger.areBreakpointsActive()) {
-            return original.getIconBaseWithExtension(node);
-        } else {
-            if ( node instanceof AbstractBreakpoint ){
-                AbstractBreakpoint breakpoint = (AbstractBreakpoint) node;
-                if (!breakpoint.isEnabled()) {
-                    return DEACTIVATED_DISABLED_NONLINE_BREAKPOINT;
-                } else {
-                    return DEACTIVATED_NONLINE_BREAKPOINT;
-                }
+        if (node instanceof AbstractBreakpoint && !debugger.areBreakpointsActive()) {
+            AbstractBreakpoint breakpoint = (AbstractBreakpoint) node;
+            if (!breakpoint.isEnabled()) {
+                return DEACTIVATED_DISABLED_NONLINE_BREAKPOINT;
+            } else {
+                return DEACTIVATED_NONLINE_BREAKPOINT;
             }
-            throw new UnknownTypeException(node);
+        } else {
+            return original.getIconBaseWithExtension(node);
         }
     }
 

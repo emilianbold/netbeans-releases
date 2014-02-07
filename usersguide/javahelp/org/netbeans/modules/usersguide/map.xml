@@ -812,7 +812,7 @@
   <mapID target="f1_cvs020.htm-sthref212" url="f1_cvs020.htm#sthref212" />
   <!-- "CVS: View Revision Dialog Box"-->
   <mapID target="f1_team.htm" url="f1_team.htm" />
-  <!-- "Team Server (Kenai) "-->
+  <!-- "Team Server "-->
   <mapID target="org.netbeans.modules.kenai.ui.NameAndLicenseWizardPanel" url="f1_team001.htm#org.netbeans.modules.kenai.ui.NameAndLicenseWizardPanel" />
   <!-- "New Team Project Wizard: Name and Licenses"-->
   <mapID target="f1_team001.htm-sthref214" url="f1_team001.htm#sthref214" />
@@ -2605,7 +2605,7 @@
   <!-- "Add or Duplicate Project Configuration Dialog"-->
   <mapID target="f1_java_me004.htm-sthref703" url="f1_java_me004.htm#sthref703" />
   <!-- "Add or Duplicate Project Configuration Dialog"-->
-  <mapID target="org.netbeans.modules.mobility.project.ui.security.AddKeystorePanel" url="f1_java_me005.htm#org.netbeans.modules.mobility.project.ui.security.AddKeystorePanel" />
+  <mapID target="org.netbeans.modules.j2me.keystore.ui.AddKeystorePanel" url="f1_java_me005.htm#org.netbeans.modules.j2me.keystore.ui.AddKeystorePanel" />
   <!-- "Add Keystore"-->
   <mapID target="f1_java_me005.htm-sthref704" url="f1_java_me005.htm#sthref704" />
   <!-- "Add Keystore"-->
@@ -2625,15 +2625,15 @@
   <!-- "Save Mobility Project Configuration as Template"-->
   <mapID target="f1_java_me009.htm-sthref708" url="f1_java_me009.htm#sthref708" />
   <!-- "Save Mobility Project Configuration as Template"-->
-  <mapID target="me.dialog_createkeypair" url="f1_java_me010.htm#me.dialog_createkeypair" />
+  <mapID target="org.netbeans.modules.j2me.keystore.ui.CreateKeyAliasPanel" url="f1_java_me010.htm#org.netbeans.modules.j2me.keystore.ui.CreateKeyAliasPanel" />
   <!-- "Create Key Pair"-->
   <mapID target="f1_java_me010.htm-sthref709" url="f1_java_me010.htm#sthref709" />
   <!-- "Create Key Pair"-->
-  <mapID target="org.netbeans.modules.mobility.project.ui.security.EnterPasswordPanel" url="f1_java_me011.htm#org.netbeans.modules.mobility.project.ui.security.EnterPasswordPanel" />
+  <mapID target="org.netbeans.modules.j2me.keystore.ui.EnterPasswordPanel" url="f1_java_me011.htm#org.netbeans.modules.j2me.keystore.ui.EnterPasswordPanel" />
   <!-- "Enter Password"-->
   <mapID target="f1_java_me011.htm-sthref710" url="f1_java_me011.htm#sthref710" />
   <!-- "Enter Password"-->
-  <mapID target="org.netbeans.modules.mobility.project.ui.security.ExportPanel" url="f1_java_me012.htm#org.netbeans.modules.mobility.project.ui.security.ExportPanel" />
+  <mapID target="org.netbeans.modules.j2me.keystore.ui.ExportPanel" url="f1_java_me012.htm#org.netbeans.modules.j2me.keystore.ui.ExportPanel" />
   <!-- "Export Key"-->
   <mapID target="f1_java_me012.htm-sthref711" url="f1_java_me012.htm#sthref711" />
   <!-- "Export Key"-->
@@ -2657,7 +2657,7 @@
   <!-- "Quick Project Run"-->
   <mapID target="f1_java_me017.htm-sthref716" url="f1_java_me017.htm#sthref716" />
   <!-- "Quick Project Run"-->
-  <mapID target="org.netbeans.modules.mobility.project.ui.security.SecurityManagerPanel" url="f1_java_me018.htm#org.netbeans.modules.mobility.project.ui.security.SecurityManagerPanel" />
+  <mapID target="org.netbeans.modules.j2me.keystore.ui.SecurityManagerPanel" url="f1_java_me018.htm#org.netbeans.modules.j2me.keystore.ui.SecurityManagerPanel" />
   <!-- "Keystores Manager"-->
   <mapID target="f1_java_me018.htm-sthref717" url="f1_java_me018.htm#sthref717" />
   <!-- "Keystores Manager"-->

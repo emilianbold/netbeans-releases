@@ -116,6 +116,10 @@ class AWTGrabHandler {
         if (Boolean.FALSE.equals(doGrabCheck)) {
             return true;
         }
+        if (GraphicsEnvironment.isHeadless()) {
+            doGrabCheck = Boolean.FALSE;
+            return true;
+        }
         // Check if AWT-EventQueue thread is suspended and a window holds a grab
         List<ThreadReference> allThreads = VirtualMachineWrapper.allThreads0(vm);
         for (ThreadReference t : allThreads) {
