@@ -444,6 +444,13 @@ public final class FiltersDescriptor {
             writeValue();
         }
         
+        public void assureButtonSelected(boolean selected) {
+            JToggleButton toggleButton = toggleButtonRef.get();
+            if (toggleButton != null) {
+                toggleButton.setSelected(selected);
+            }
+        }
+        
         private void setState(boolean state) {
             JToggleButton toggleButton = toggleButtonRef.get();
             if (toggleButton != null) {
