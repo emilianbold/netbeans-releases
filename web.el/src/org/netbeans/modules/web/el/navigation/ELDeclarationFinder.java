@@ -259,8 +259,13 @@ public class ELDeclarationFinder implements DeclarationFinder {
         }
 
         private static String getComparableString(AlternativeLocation loc) {
-            return new StringBuilder().append(loc.getLocation().getOffset()) //offset
-                    .append(loc.getLocation().getFileObject().getPath()).toString(); //filename
+            DeclarationLocation location = loc.getLocation();
+            FileObject fileObject = location.getFileObject();
+            if (fileObject != null) {
+                return String.valueOf(location.getOffset()) + fileObject.getPath();
+            } else {
+                return String.valueOf(location.getOffset());
+            }
         }
     }
 
@@ -285,7 +290,7 @@ public class ELDeclarationFinder implements DeclarationFinder {
 
         @Override
         public String getName() {
-            return null;
+            return "";
         }
 
         @Override
