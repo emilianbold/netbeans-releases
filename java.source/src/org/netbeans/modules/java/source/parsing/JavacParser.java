@@ -177,9 +177,7 @@ public class JavacParser extends Parser {
     //Debug logger
     private static final Logger LOGGER = Logger.getLogger(JavacParser.class.getName());
     //Java Mime Type
-    public static final String MIME_TYPE = "text/x-java";
-    //JavaFileObjectProvider used by the JavacParser - may be overriden by unit test
-    static JavaFileObjectProvider jfoProvider = new DefaultJavaFileObjectProvider ();
+    public static final String MIME_TYPE = "text/x-java";    
     //No output writer like /dev/null
     private static final PrintWriter DEV_NULL = new PrintWriter(new NullWriter(), false);
     //Max number of dump files

@@ -72,6 +72,7 @@ import org.netbeans.modules.editor.indent.spi.CodeStylePreferences.Provider;
 import org.netbeans.modules.java.hints.introduce.IntroduceHint.InsertClassMember;
 import org.netbeans.modules.java.hints.spiimpl.TestUtilities;
 import org.netbeans.modules.java.source.parsing.JavacParser;
+import org.netbeans.modules.java.ui.FmtOptions;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.DialogDescriptor;
@@ -1882,6 +1883,94 @@ public class IntroduceHintTest extends NbTestCase {
                        1, 0);
     }
     
+    public void testMethodUnprefixedParam() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                        "    public int test() {\n" +
+                        "        int param = 1;\n" +
+                        "        |return 2 * param;|\n" +
+                        "    }\n" +
+                        "}"
+                       ,
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public int test() {\n" +
+                        "        int param = 1;\n" +
+                        "        return m(param);\n" +
+                        "    }\n" +
+                        "\n" +
+                        "    private int m(int param) {\n" +
+                        "        return 2 * param;\n" +
+                        "    }\n" +
+                        "}")
+                .replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl3("m", EnumSet
+                .of(Modifier.PRIVATE), true),
+                       1, 0);
+    }
+    
+    public void testMethodParamWithLetterPrefix() throws Exception {
+        codeStylePrefs.put(FmtOptions.parameterNamePrefix, "p");
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                        "    public int test() {\n" +
+                        "        int param = 1;\n" +
+                        "        |return 2 * param;|\n" +
+                        "    }\n" +
+                        "}"
+                       ,
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public int test() {\n" +
+                        "        int param = 1;\n" +
+                        "        return m(param);\n" +
+                        "    }\n" +
+                        "\n" +
+                        "    private int m(int pParam) {\n" +
+                        "        return 2 * pParam;\n" +
+                        "    }\n" +
+                        "}")
+                .replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl3("m", EnumSet
+                .of(Modifier.PRIVATE), true),
+                       1, 0);
+    }
+
+    /**
+     * Checks various prefixing cases.
+     * pY is a parameter and is already prefixed - prefix should not be added. z is not prefixed
+     * and should be prefixed in introduced method. pX is prefixed, but is local variable, so the
+     * potential prefix should be ignored
+     * 
+     */
+    public void testMethodPrefixedAndUnprefixed() throws Exception {
+        codeStylePrefs.put(FmtOptions.parameterNamePrefix, "p");
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                        "    public int test(int pY, int z) {\n" +
+                        "        int param = 1;\n" +
+                        "        int pX = 2;\n" +
+                        "        |return 2 * param + pX - pY * z;|\n" +
+                        "    }\n" +
+                        "}"
+                       ,
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public int test(int pY, int z) {\n" +
+                        "        int param = 1;\n" +
+                        "        int pX = 2;\n" +
+                        "        return m(param, pX, pY, z);\n" +
+                        "    }\n" +
+                        "\n" +
+                        "    private int m(int pParam, int pPX, int pY, int pZ) {\n" +
+                        "        return 2 * pParam + pPX - pY * pZ;\n" +
+                        "    }\n" +
+                        "}")
+                .replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl3("m", EnumSet
+                .of(Modifier.PRIVATE), true),
+                       1, 0);
+    }
     public void test224512() throws Exception {
         performFixTest("package test;\n" +
                        "class Test {\n" +

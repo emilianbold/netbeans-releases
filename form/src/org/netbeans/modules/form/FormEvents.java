@@ -158,10 +158,11 @@ public class FormEvents {
             if (!event.isInCEDL())
                 registerEventInCEDL(event);
 
-            if (event.addEventHandler(handlerName))
+            if (event.addEventHandler(handlerName)) {
                 handlerEventList.add(event);
-            else // handler not added (event is already attached to it)
+            } else if (handlerText == null) { // handler not added (event is already attached to it)
                 event = null;
+            }
         }
 
         formModel.fireEventHandlerAdded(event, handlerName, handlerText, annotationText, newHandler);
