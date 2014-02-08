@@ -70,7 +70,7 @@ import java.nio.BufferUnderflowException;
             sb.append(text.charAt(curr++));
         }
         skipSpaces();
-        return sb.toString();
+        return FSSUtil.unescape(sb.toString());
     }
     
     public String getRest() {

@@ -50,7 +50,7 @@ import org.netbeans.modules.remote.impl.RemoteLogger;
  *
  * @author vkvashin
  */
-public class FSSUtil  {
+/*зфслфпу*/ class FSSUtil  {
 
     private FSSUtil() {
     }
@@ -118,5 +118,19 @@ public class FSSUtil  {
         }
     }
     
+    public static String unescape(String line) {
+        if (line.indexOf('\\') == -1) {
+            return line;
+        } else {
+            return  line.replace("\\n", "\n").replace("\\\\", "\\"); // NOI18N
+        }
+    }
     
+    public static String escape(String line) {
+        if (line.indexOf('\n') == -1 && line.indexOf('\\') == -1) {
+            return line;
+        } else {
+            return  line.replace("\n", "\\n").replace("\\", "\\\\"); // NOI18N
+        }
+    }    
 }
