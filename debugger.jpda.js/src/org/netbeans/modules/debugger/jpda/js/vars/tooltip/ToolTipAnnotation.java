@@ -197,7 +197,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             if (result == null) {
                 return ; // Something went wrong...
             }
-            toolTipText = expression + " = " + DebuggerSupport.getVarValue(result);
+            toolTipText = expression + " = " + DebuggerSupport.getVarValue(d, result);
         } catch (InvalidExpressionException ex) {
             toolTipText = expression + " = >" + ex.getMessage () + "<";
         }

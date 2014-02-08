@@ -61,9 +61,18 @@ public class JSVariable {
     protected JSVariable(JPDADebugger debugger, Variable valueInfoDesc) {
         this.debugger = debugger;
         this.valueInfoDesc = valueInfoDesc;
-        value = DebuggerSupport.getDescriptionValue(valueInfoDesc);
+        value = getStringValue(debugger, valueInfoDesc);
         key = DebuggerSupport.getDescriptionKey(valueInfoDesc);
         expandable = DebuggerSupport.isDescriptionExpandable(valueInfoDesc);
+    }
+    
+    private static String getStringValue(JPDADebugger debugger, Variable valueInfoDesc) {
+        String value = DebuggerSupport.getDescriptionValue(valueInfoDesc);
+        if ("{}".equals(value)) { // an object
+            Variable valueObject = DebuggerSupport.getDescriptionValueObject(valueInfoDesc);
+            value = DebuggerSupport.getVarValue(debugger, valueObject);
+        }
+        return value;
     }
     
     public static JSVariable[] createScopeVars(JPDADebugger debugger, Variable scope) {
@@ -88,7 +97,7 @@ public class JSVariable {
         if (valueInfoDesc == null) {
             return null;
         }
-        return new JSThis(debugger, valueInfoDesc);
+        return new JSVariable(debugger, valueInfoDesc);
     }
     
     public String getKey() {

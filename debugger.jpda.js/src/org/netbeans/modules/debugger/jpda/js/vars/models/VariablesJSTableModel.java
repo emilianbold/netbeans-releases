@@ -42,7 +42,11 @@
 
 package org.netbeans.modules.debugger.jpda.js.vars.models;
 
+import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.modules.debugger.jpda.js.vars.DebuggerSupport;
 import org.netbeans.modules.debugger.jpda.js.vars.JSVariable;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import static org.netbeans.spi.debugger.ui.Constants.*;
@@ -62,6 +66,12 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
     @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/WatchesView", types = TableModelFilter.class)
 })
 public class VariablesJSTableModel implements TableModelFilter {
+    
+    private final JPDADebugger debugger;
+    
+    public VariablesJSTableModel(ContextProvider contextProvider) {
+        debugger = contextProvider.lookupFirst(null, JPDADebugger.class);
+    }
 
     @Override
     public Object getValueAt(TableModel original, Object node, String columnID) throws UnknownTypeException {
@@ -73,6 +83,17 @@ public class VariablesJSTableModel implements TableModelFilter {
                 case LOCALS_VALUE_COLUMN_ID:
                 case LOCALS_TO_STRING_COLUMN_ID:
                     return jsVar.getValue();
+            }
+        } else if (node instanceof ObjectVariable) {
+            switch (columnID) {
+                case LOCALS_TYPE_COLUMN_ID:
+                case WATCH_TYPE_COLUMN_ID:
+                    return "";
+                case LOCALS_VALUE_COLUMN_ID:
+                case WATCH_VALUE_COLUMN_ID:
+                case LOCALS_TO_STRING_COLUMN_ID:
+                case WATCH_TO_STRING_COLUMN_ID:
+                    return DebuggerSupport.getVarValue(debugger, (ObjectVariable) node);
             }
         }
         return original.getValueAt(node, columnID);
