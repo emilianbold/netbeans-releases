@@ -1016,6 +1016,10 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                 if (getMakeConfiguration().getCodeAssistanceConfiguration().includeInCA(this)) {
                     return false;
                 }
+            } else {
+                if (getMakeConfiguration().getCodeAssistanceConfiguration().excludeInCA(this)) {
+                    return true;
+                }
             }
             return value;
         }

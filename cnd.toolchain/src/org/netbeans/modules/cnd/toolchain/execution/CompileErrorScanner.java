@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -222,7 +223,7 @@ public class CompileErrorScanner extends PushTaskScanner {
                 getCallback().started();
                 getCallback().clearAllTasks();
                 LOG.log(Level.FINE, "setting {1} for {0}", new Object[]{file, tasks});
-                List<OutputListener> fileListeners = aRegestry.getFileListeners(file);
+                Set<OutputListener> fileListeners = aRegestry.getFileListeners(file);
                 if (fileListeners != null) {
                     for (OutputListener listener : fileListeners) {
                         if (listener instanceof OutputListenerImpl) {
