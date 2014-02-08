@@ -99,6 +99,9 @@ import org.openide.util.Exceptions;
  * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec.
  * 
  * Change History:
+ * 
+ * V94 - NB 8.0
+ *    Introduce exclude from code assistance pattern (CODE_ASSISTANCE_EXCLUDE_PATTERN)
  * V93 - NB 8.0
  *    Introduce included files (-include flag)
  * V92 - NB 8.0
@@ -286,7 +289,7 @@ public abstract class CommonConfigurationXMLCodec
         implements XMLEncoder {
     
     public final static int VERSION_WITH_INVERTED_SERIALIZATION = 88;
-    public final static int CURRENT_VERSION = 93;
+    public final static int CURRENT_VERSION = 94;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -361,6 +364,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String CODE_ASSISTANCE_ENVIRONMENT_ELEMENT = "envVariables"; // NOI18N
     protected final static String CODE_ASSISTANCE_TRANSIENT_MACROS_ELEMENT = "transientMacros"; // NOI18N
     protected final static String CODE_ASSISTANCE_INCLUDE_ADDITIONAL = "includeAdditional"; // NOI18N
+    protected final static String CODE_ASSISTANCE_EXCLUDE_PATTERN = "excludePattern"; // NOI18N
     // Compiler (Generic) Tool
     protected final static String INCLUDE_DIRECTORIES_ELEMENT = "includeDirectories"; // NOI18N
     protected final static String INCLUDE_DIRECTORIES_ELEMENT2 = "incDir"; // NOI18N
@@ -1486,6 +1490,9 @@ public abstract class CommonConfigurationXMLCodec
         }
         if (codeAssistanceConfiguration.getIncludeInCA().getModified()) {
             xes.element(CODE_ASSISTANCE_INCLUDE_ADDITIONAL, "" + codeAssistanceConfiguration.getIncludeInCA().getValue()); // NOI18N
+        }
+        if (codeAssistanceConfiguration.getExcludeInCA().getModified()) {
+            xes.element(CODE_ASSISTANCE_EXCLUDE_PATTERN, codeAssistanceConfiguration.getExcludeInCA().getValue()); // NOI18N
         }
         if (codeAssistanceConfiguration.getTools().getModified()) {
             xes.element(BUILD_ANALAZYER_TOOLS_ELEMENT, "" + codeAssistanceConfiguration.getTools().getValue()); // NOI18N

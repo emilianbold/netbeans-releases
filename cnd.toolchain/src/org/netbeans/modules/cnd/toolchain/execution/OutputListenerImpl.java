@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.MissingResourceException;
+import java.util.Set;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
@@ -93,7 +94,7 @@ public final class OutputListenerImpl implements OutputListener {
     public FileObject getFile() {
         return file;
     }
-
+ 
     @Override
     public void outputLineSelected(OutputEvent ev) {
         showLine(false);
@@ -102,6 +103,40 @@ public final class OutputListenerImpl implements OutputListener {
     @Override
     public void outputLineAction(OutputEvent ev) {
         showLine(true);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 83 * hash + (this.file != null ? this.file.hashCode() : 0);
+        hash = 83 * hash + this.line;
+        hash = 83 * hash + (this.isError ? 1 : 0);
+        hash = 83 * hash + (this.description != null ? this.description.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final OutputListenerImpl other = (OutputListenerImpl) obj;
+        if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
+            return false;
+        }
+        if (this.line != other.line) {
+            return false;
+        }
+        if (this.isError != other.isError) {
+            return false;
+        }
+        if ((this.description == null) ? (other.description != null) : !this.description.equals(other.description)) {
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -181,7 +216,7 @@ public final class OutputListenerImpl implements OutputListener {
     }
 
     private static void attachFile(OutputListenerRegistry registry, FileObject file, Document doc) throws MissingResourceException {
-        final List<OutputListener> fileListeners = registry.getFileListeners(file);
+        final Set<OutputListener> fileListeners = registry.getFileListeners(file);
         if (fileListeners == null) {
             return;
         }

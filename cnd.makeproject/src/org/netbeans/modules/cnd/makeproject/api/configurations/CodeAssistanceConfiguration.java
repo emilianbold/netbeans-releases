@@ -42,11 +42,14 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.List;
+import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringListNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.ui.utils.TokenizerFactory;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -62,21 +65,24 @@ public class CodeAssistanceConfiguration implements Cloneable {
     private VectorConfiguration<String> environmentVariables;
     private StringConfiguration tools;
     private BooleanConfiguration includeInCA;
+    private StringConfiguration excludeInCA;
     private static final String DEFAULT_TOOLS = "gcc:c++:g++:clang:clang++:icc:icpc:ifort:gfortran:g77:g90:g95:cc:CC:ffortran:f77:f90:f95:ar:ld"; //NOI18N
     
     // Constructors
     public CodeAssistanceConfiguration(MakeConfiguration makeConfiguration) {
         this.makeConfiguration = makeConfiguration;
         buildAnalyzer = new BooleanConfiguration(true);
-        tools = new StringConfiguration(tools, DEFAULT_TOOLS);
+        tools = new StringConfiguration(null, DEFAULT_TOOLS);
         transientMacros = new VectorConfiguration<>(null);
         environmentVariables = new VectorConfiguration<>(null);
         includeInCA = new BooleanConfiguration(false);
+        excludeInCA = new StringConfiguration(null, "");
     }
 
     public boolean getModified() {
         return getBuildAnalyzer().getModified() || getTools().getModified() || 
-                getEnvironmentVariables().getModified() || getTransientMacros().getModified() || getIncludeInCA().getModified();
+                getEnvironmentVariables().getModified() || getTransientMacros().getModified() ||
+                getIncludeInCA().getModified() || getExcludeInCA().getModified();
     }
 
     // MakeConfiguration
@@ -142,6 +148,14 @@ public class CodeAssistanceConfiguration implements Cloneable {
         this.includeInCA = includeInCA;
     }
     
+    public StringConfiguration getExcludeInCA() {
+        return excludeInCA;
+    }
+
+    public void setExcludeInCA(StringConfiguration excludeInCA) {
+        this.excludeInCA = excludeInCA;
+    }
+    
     // Clone and assign
     public void assign(CodeAssistanceConfiguration conf) {
         getBuildAnalyzer().assign(conf.getBuildAnalyzer());
@@ -149,6 +163,7 @@ public class CodeAssistanceConfiguration implements Cloneable {
         getTransientMacros().assign(conf.getTransientMacros());
         getEnvironmentVariables().assign(conf.getEnvironmentVariables());
         getIncludeInCA().assign(conf.getIncludeInCA());
+        getExcludeInCA().assign(conf.getExcludeInCA());
     }
 
     @Override
@@ -159,6 +174,7 @@ public class CodeAssistanceConfiguration implements Cloneable {
         clone.setTransientMacros(getTransientMacros().clone());
         clone.setEnvironmentVariables(getEnvironmentVariables().clone());
         clone.setIncludeInCA(getIncludeInCA().clone());
+        clone.setExcludeInCA(getExcludeInCA().clone());
         return clone;
     }
 
@@ -213,8 +229,9 @@ public class CodeAssistanceConfiguration implements Cloneable {
         set.setDisplayName(getString("IncludeInCodeAssistanceTxt")); // NOI18N
         set.setShortDescription(getString("IncludeInCodeAssistanceHint")); // NOI18N
         set.put(new BooleanNodeProp(getIncludeInCA(), true, "IncludeFlag", getString("IncludeFlagTxt"), getString("IncludeFlagHint"))); // NOI18N
+        set.put(new PatternNodeProp(getExcludeInCA(), "", "ExcludePattern", getString("ExcludePatternTxt"), getString("ExcludePatternHint"))); // NOI18N
         sheet.put(set);
-
+        
         return sheet;
     }
 
@@ -232,9 +249,58 @@ public class CodeAssistanceConfiguration implements Cloneable {
         boolean add = getIncludeInCA().getValue();
         if (add) {
             if (MIMENames.isCppOrCOrFortran(item.getMIMEType())) {
+                if (excludeInCA(item)) {
+                    return false;
+                }
                 return true;
             }
         }
         return false;
     }
+
+    private Pattern lastIgnorePattern = null;
+    boolean excludeInCA(Item item) {
+        String ignore = getExcludeInCA().getValue();
+        if (ignore.isEmpty()) {
+            return false;
+        }
+        Pattern ignorePattern;
+        synchronized (this) {
+            if (lastIgnorePattern != null) {
+                if (!lastIgnorePattern.pattern().equals(ignore)) {
+                    lastIgnorePattern = null;
+                }
+            }
+            if (lastIgnorePattern == null) {
+                try {
+                    lastIgnorePattern = Pattern.compile(ignore);
+                } catch (Throwable ex) {
+                    // do nothing
+                }
+            }
+            ignorePattern = lastIgnorePattern;
+        }
+        if (ignorePattern != null) {
+            return ignorePattern.matcher(item.getAbsolutePath()).find();
+        }
+        return false;
+    }
+    
+    private static class PatternNodeProp extends StringNodeProp {
+
+        public PatternNodeProp(StringConfiguration stringConfiguration, String def, String txt1, String txt2, String txt3) {
+            super(stringConfiguration, def, txt1, txt2, txt3);
+        }
+
+        @Override
+        public void setValue(String v) {
+            try {
+                Pattern.compile(v);
+            } catch (Throwable ex) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("InvalidPattern"), NotifyDescriptor.ERROR_MESSAGE));
+            }
+            super.setValue(v);
+        }
+    }
+
 }
