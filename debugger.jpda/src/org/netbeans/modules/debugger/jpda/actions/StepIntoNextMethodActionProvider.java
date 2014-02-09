@@ -63,7 +63,7 @@ import org.netbeans.spi.debugger.ActionsProvider;
 @ActionsProvider.Registration(path="netbeans-JPDASession", actions={"stepIntoNextMethod"})
 public class StepIntoNextMethodActionProvider extends JPDADebuggerActionProvider {
 
-    private StepIntoNextMethod stepInto;
+    private final StepIntoNextMethod stepInto;
     
     public StepIntoNextMethodActionProvider (ContextProvider contextProvider) {
         super (

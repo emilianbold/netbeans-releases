@@ -68,7 +68,7 @@ public class SmartSteppingFilterImpl implements SmartSteppingFilter {
     private final ArrayList<String> exact = new ArrayList<String>();
     private final ArrayList<String> start = new ArrayList<String>();
     private final ArrayList<String> end = new ArrayList<String>();
-    private PropertyChangeSupport pcs;
+    private final PropertyChangeSupport pcs;
     {pcs = new PropertyChangeSupport (this);}
     private final Properties options = Properties.getDefault().
             getProperties("debugger.options.JPDA");

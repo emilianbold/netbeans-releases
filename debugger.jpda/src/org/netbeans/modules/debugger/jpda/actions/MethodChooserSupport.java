@@ -101,10 +101,10 @@ import org.openide.util.Exceptions;
 
 public class MethodChooserSupport implements PropertyChangeListener {
 
-    private JPDADebuggerImpl debugger;
-    private JPDAThread currentThread;
-    private String url;
-    private ReferenceType clazzRef;
+    private final JPDADebuggerImpl debugger;
+    private final JPDAThread currentThread;
+    private final String url;
+    private final ReferenceType clazzRef;
     private MethodChooser chooser;
 
     ArrayList<Annotation> annotations;

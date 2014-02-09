@@ -63,7 +63,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -80,7 +79,6 @@ import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
-import org.netbeans.modules.debugger.jpda.ExpressionPool;
 import org.netbeans.modules.debugger.jpda.ExpressionPool.Expression;
 import org.netbeans.modules.debugger.jpda.ExpressionPool.Interval;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
@@ -125,7 +123,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
 
     private static final Logger logger = Logger.getLogger(RunIntoMethodActionProvider.class.getName());
 
-    private JPDADebuggerImpl debugger;
+    private final JPDADebuggerImpl debugger;
     private ActionsManager lastActionsManager;
     
     public RunIntoMethodActionProvider(ContextProvider lookupProvider) {

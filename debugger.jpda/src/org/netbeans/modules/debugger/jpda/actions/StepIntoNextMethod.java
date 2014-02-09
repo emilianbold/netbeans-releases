@@ -88,7 +88,6 @@ import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
-import org.openide.util.Exceptions;
 
 /**
  * Extracted from StepIntoActionProvider and StepIntoNextMethodActionProvider
@@ -103,12 +102,12 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
     private volatile StepRequest stepIntoRequest;
     private String position;
     private int depth;
-    private JPDADebuggerImpl debugger;
-    private ContextProvider contextProvider;
+    private final JPDADebuggerImpl debugger;
+    private final ContextProvider contextProvider;
     private boolean smartSteppingStepOut;
     private boolean steppingFromFilteredLocation;
     private boolean steppingFromCompoundFilteredLocation;
-    private Properties p;
+    private final Properties p;
 
     public StepIntoNextMethod(ContextProvider contextProvider) {
         this.debugger = (JPDADebuggerImpl) contextProvider.lookupFirst(null, JPDADebugger.class);
@@ -218,7 +217,7 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
 
     @Override
     public void propertyChange (PropertyChangeEvent ev) {
-        if (ev.getPropertyName () == SmartSteppingFilter.PROP_EXCLUSION_PATTERNS) {
+        if (SmartSteppingFilter.PROP_EXCLUSION_PATTERNS.equals(ev.getPropertyName())) {
             if (ev.getOldValue () != null) {
                 // remove some patterns
                 smartLogger.finer("Exclusion patterns removed. Removing step requests.");
@@ -245,7 +244,7 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
                 }
             }
         } else
-        if (ev.getPropertyName () == SourcePathProvider.PROP_SOURCE_ROOTS) {
+        if (SourcePathProvider.PROP_SOURCE_ROOTS.equals(ev.getPropertyName())) {
             smartLogger.finer("Source roots changed");
             JPDAThreadImpl jtr = (JPDAThreadImpl) getDebuggerImpl ().
                 getCurrentThread ();

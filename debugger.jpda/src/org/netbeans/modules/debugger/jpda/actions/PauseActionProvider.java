@@ -64,7 +64,7 @@ import org.netbeans.spi.debugger.ActionsProvider;
 @ActionsProvider.Registration(path="netbeans-JPDASession", actions={"pause"})
 public class PauseActionProvider extends JPDADebuggerActionProvider {
     
-    private ThreadsCollectorImpl threadsCollector;
+    private final ThreadsCollectorImpl threadsCollector;
 
     public PauseActionProvider (ContextProvider contextProvider) {
         super (
