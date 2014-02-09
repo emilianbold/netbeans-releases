@@ -142,12 +142,12 @@ final class ELResourceBundleCompletionItem extends DefaultCompletionProposal {
             StringBuilder buf = new StringBuilder();
             
             Map<String, String> entries = bundles.getEntries(bundle.getVar());
-            for(String key : entries.keySet()) {
-                String value = entries.get(key);
-                buf.append(key);
+            for (Map.Entry<String, String> entry : entries.entrySet()) {
+                String value = entries.get(entry.getValue());
+                buf.append(entry.getKey());
                 buf.append('='); //NOI18N
                 buf.append("<font color='#ce7b00'>"); //NOI18N
-                buf.append(value); 
+                buf.append(value);
                 buf.append("</font>"); //NOI18N
                 buf.append("<br>"); //NOI18N
             }
