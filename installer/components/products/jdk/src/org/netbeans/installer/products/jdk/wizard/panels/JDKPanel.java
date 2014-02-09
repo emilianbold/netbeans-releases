@@ -134,6 +134,7 @@ public class JDKPanel extends DestinationPanel {
             super.initialize();
             if (isJDK8() && SystemUtils.isWindows()) {
                 getDestinationField().setEnabled(false);
+                getDestinationButton().setVisible(false);
             }
             final String location = panel.getWizard().getProperty(Product.INSTALLATION_LOCATION_PROPERTY);
             if(location!=null) {
@@ -150,7 +151,6 @@ public class JDKPanel extends DestinationPanel {
         @Override
         protected void saveInput() {
             super.saveInput();
-            final Object objectContext = panel.getWizard().getContext().get(Product.class);
             if ((jdk = getBundledJDK(panel)) != null) {
                 SearchForJavaAction.addJavaLocation(
                         jdk.getInstallationLocation(),
