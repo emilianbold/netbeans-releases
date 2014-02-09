@@ -1115,7 +1115,15 @@ public class ModelVisitor extends PathNodeVisitor {
                             property.addAssignment(types, name.getOffsetRange().getStart());
                         }
                         if (value instanceof IdentNode) {
-                            addOccurence((IdentNode)value, false);
+                            IdentNode iNode = (IdentNode)value;
+                            if (!iNode.getPropertyName().equals(name.getName())) {
+                                addOccurence((IdentNode)value, false);
+                            } else {
+                                // handling case like property: property
+                                if (modelBuilder.getCurrentObject().getParent() != null) {
+                                    occurrenceBuilder.addOccurrence(name.getName(), new OffsetRange(iNode.getStart(), iNode.getFinish()), modelBuilder.getCurrentDeclarationScope(), modelBuilder.getCurrentObject().getParent(), modelBuilder.getCurrentWith(), false, false);
+                                }
+                            }
                         }
                     }
                 }

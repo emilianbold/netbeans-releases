@@ -799,7 +799,7 @@ public class TraceModel extends TraceModelBase {
         }
         StartEntry startEntry = new StartEntry(localFS, fo.getPath(), RepositoryUtils.UIDtoKey(getProject().getUID()));
         List<IncludeDirEntry> userIncludes = userPathStorage.get(qInc.toString(), CndFileUtils.toFSPathList(localFS, qInc));
-        return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludes, userIncludes, null);
+        return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludes, userIncludes, Collections.<String>emptyList(), null);
     }
 
     private APTMacroMap getMacroMap(FileObject fo) {

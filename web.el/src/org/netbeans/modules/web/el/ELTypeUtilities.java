@@ -944,17 +944,15 @@ public final class ELTypeUtilities {
                             enclosing = info.info().getElements().getTypeElement(STREAM_CLASS);
                         } else {
                             if (enclosing != null) {
-                                Element propertyType = getElementForProperty(info, child, enclosing);
+                                ExecutableElement propertyType = getElementForProperty(info, child, enclosing);
                                 if (target.getImage() != null && target.getImage().equals(child.getImage())) {
                                     if (propertyType != null) {
                                         result = propertyType;
                                     }
                                     return;
                                 } else {
-                                    if (propertyType instanceof ExecutableElement) {
+                                    if (propertyType != null) {
                                         enclosing = getTypeFor(info, ((ExecutableElement) propertyType).getReturnType().toString());
-                                    } else if (propertyType != null) {
-                                        result = enclosing = propertyType;
                                     }
                                 }
                             }

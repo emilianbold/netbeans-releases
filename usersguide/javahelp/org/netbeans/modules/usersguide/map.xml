@@ -1617,8 +1617,10 @@
   <!-- "Rename Dialog Box"-->
   <mapID target="f1_php019.htm-sthref444" url="f1_php019.htm#sthref444" />
   <!-- "Rename Dialog Box"-->
+  <mapID target="org.netbeans.modules.refactoring.spi.impl.RefactoringPanelContainer.refactoring-preview" url="f1_php020.htm#org.netbeans.modules.refactoring.spi.impl.RefactoringPanelContainer.refactoring-preview" />
+  <!-- "Refactoring Window"-->
   <mapID target="f1_php020.htm-sthref445" url="f1_php020.htm#sthref445" />
-  <!-- "Rename Dialog Box"-->
+  <!-- "Refactoring Window"-->
   <mapID target="org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringUI" url="f1_php021.htm#org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringUI" />
   <!-- "Delete Dialog Box"-->
   <mapID target="f1_php021.htm-sthref446" url="f1_php021.htm#sthref446" />
@@ -2597,7 +2599,7 @@
   <!-- "Add API Permissions"-->
   <mapID target="f1_java_me002.htm-sthref701" url="f1_java_me002.htm#sthref701" />
   <!-- "Add API Permissions"-->
-  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.AddAttributePanel" url="f1_java_me003.htm#org.netbeans.modules.mobility.project.ui.customizer.AddAttributePanel" />
+  <mapID target="org.netbeans.modules.j2me.project.ui.customizer.AddAttributePanel" url="f1_java_me003.htm#org.netbeans.modules.j2me.project.ui.customizer.AddAttributePanel" />
   <!-- "Add/Edit Attribute"-->
   <mapID target="f1_java_me003.htm-sthref702" url="f1_java_me003.htm#sthref702" />
   <!-- "Add/Edit Attribute"-->
@@ -2613,11 +2615,11 @@
   <!-- "Add Libraries"-->
   <mapID target="f1_java_me006.htm-sthref705" url="f1_java_me006.htm#sthref705" />
   <!-- "Add Libraries"-->
-  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.AddMIDletPanel" url="f1_java_me007.htm#org.netbeans.modules.mobility.project.ui.customizer.AddMIDletPanel" />
+  <mapID target="org.netbeans.modules.j2me.project.ui.customizer.J2MEMIDletsPanel" url="f1_java_me007.htm#org.netbeans.modules.j2me.project.ui.customizer.J2MEMIDletsPanel" />
   <!-- "Add/Edit MIDlet"-->
   <mapID target="f1_java_me007.htm-sthref706" url="f1_java_me007.htm#sthref706" />
   <!-- "Add/Edit MIDlet"-->
-  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.AddPushRegistryPanel" url="f1_java_me008.htm#org.netbeans.modules.mobility.project.ui.customizer.AddPushRegistryPanel" />
+  <mapID target="org.netbeans.modules.j2me.project.ui.customizer.AddPushRegistryPanel" url="f1_java_me008.htm#org.netbeans.modules.j2me.project.ui.customizer.AddPushRegistryPanel" />
   <!-- "Add/Edit Push Registry Entry"-->
   <mapID target="f1_java_me008.htm-sthref707" url="f1_java_me008.htm#sthref707" />
   <!-- "Add/Edit Push Registry Entry"-->
@@ -2745,11 +2747,15 @@
   <!-- "Java ME Embedded Project Properties Dialog Box: Run"-->
   <mapID target="f1_java_me039.htm-sthref738" url="f1_java_me039.htm#sthref738" />
   <!-- "Java ME Embedded Project Properties Dialog Box: Run"-->
+  <mapID target="org.netbeans.modules.j2me.project.ui.customizer.AddPermissionPanel" url="f1_java_me040.htm#org.netbeans.modules.j2me.project.ui.customizer.AddPermissionPanel" />
+  <!-- "Add/Edit Permission for API"-->
+  <mapID target="f1_java_me040.htm-sthref739" url="f1_java_me040.htm#sthref739" />
+  <!-- "Add/Edit Permission for API"-->
   <mapID target="f1_database.htm" url="f1_database.htm" />
   <!-- "Using Databases "-->
   <mapID target="org.netbeans.modules.db.explorer.dlg.AddDriverDialog" url="f1_database001.htm#org.netbeans.modules.db.explorer.dlg.AddDriverDialog" />
   <!-- "Adding a JDBC Driver: New Connection Wizard and Add Driver"-->
-  <mapID target="f1_database001.htm-sthref740" url="f1_database001.htm#sthref740" />
+  <mapID target="f1_database001.htm-sthref741" url="f1_database001.htm#sthref741" />
   <!-- "Adding a JDBC Driver: New Connection Wizard and Add Driver"-->
   <mapID target="db_save_password" url="f1_database002.htm#db_save_password" />
   <!-- "Connect to Database Dialog"-->
@@ -2757,7 +2763,7 @@
   <!-- "Connect to Database Dialog"-->
   <mapID target="org.netbeans.modules.db.explorer.dlg.ConnectionPanel" url="f1_database003.htm#org.netbeans.modules.db.explorer.dlg.ConnectionPanel" />
   <!-- "New Connection Wizard: Customize Connection Dialog"-->
-  <mapID target="f1_database003.htm-sthref741" url="f1_database003.htm#sthref741" />
+  <mapID target="f1_database003.htm-sthref742" url="f1_database003.htm#sthref742" />
   <!-- "New Connection Wizard: Customize Connection Dialog"-->
   <mapID target="org.netbeans.modules.db.explorer.action.ConnectAction" url="f1_database004.htm#org.netbeans.modules.db.explorer.action.ConnectAction" />
   <!-- "Connect to Database Dialog"-->
@@ -2765,26 +2771,26 @@
   <!-- "Connect to Database Dialog"-->
   <mapID target="org.netbeans.modules.db.explorer.dlg.ChoosingSchemaPanel" url="f1_database005.htm#org.netbeans.modules.db.explorer.dlg.ChoosingSchemaPanel" />
   <!-- "New Connection Wizard: Choose Database Schemas"-->
-  <mapID target="f1_database005.htm-sthref742" url="f1_database005.htm#sthref742" />
+  <mapID target="f1_database005.htm-sthref743" url="f1_database005.htm#sthref743" />
   <!-- "New Connection Wizard: Choose Database Schemas"-->
   <mapID target="org.netbeans.modules.db.explorer.actions.CreateTableAction" url="f1_database006.htm#org.netbeans.modules.db.explorer.actions.CreateTableAction" />
   <!-- "Create Table Dialog"-->
-  <mapID target="f1_database006.htm-sthref743" url="f1_database006.htm#sthref743" />
+  <mapID target="f1_database006.htm-sthref744" url="f1_database006.htm#sthref744" />
   <!-- "Create Table Dialog"-->
   <mapID target="org.netbeans.modules.db.sql.editor.ui.actions.SQLHistoryAction" url="f1_database007.htm#org.netbeans.modules.db.sql.editor.ui.actions.SQLHistoryAction" />
   <!-- "SQL History"-->
-  <mapID target="f1_database007.htm-sthref745" url="f1_database007.htm#sthref745" />
+  <mapID target="f1_database007.htm-sthref746" url="f1_database007.htm#sthref746" />
   <!-- "SQL History"-->
   <mapID target="org.netbeans.modules.db.mysql.ui.PropertiesDialog" url="f1_database008.htm#org.netbeans.modules.db.mysql.ui.PropertiesDialog" />
   <!-- "MySQL Server Properties Dialog"-->
-  <mapID target="f1_database008.htm-sthref746" url="f1_database008.htm#sthref746" />
+  <mapID target="f1_database008.htm-sthref747" url="f1_database008.htm#sthref747" />
   <!-- "MySQL Server Properties Dialog"-->
   <mapID target="dbschema_ctxhelp_wizard" url="f1_database009.htm#dbschema_ctxhelp_wizard" />
   <!-- "New Database Schema Wizard - Database Connection Page"-->
-  <mapID target="f1_database009.htm-sthref747" url="f1_database009.htm#sthref747" />
+  <mapID target="f1_database009.htm-sthref748" url="f1_database009.htm#sthref748" />
   <!-- "New Database Schema Wizard - Database Connection Page"-->
   <mapID target="dbschema_ctxhelp_capture_tables" url="f1_database010.htm#dbschema_ctxhelp_capture_tables" />
   <!-- "New Database Schema Wizard - Tables and Views Page"-->
-  <mapID target="f1_database010.htm-sthref748" url="f1_database010.htm#sthref748" />
+  <mapID target="f1_database010.htm-sthref749" url="f1_database010.htm#sthref749" />
   <!-- "New Database Schema Wizard - Tables and Views Page"-->
 </map>
