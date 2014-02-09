@@ -1655,6 +1655,20 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             }
         } else {
             matchingResult = VerifyResult.MATCH;
+            // defect #241261; if the current pattern is a member-select and the selector is a variable, it cannot match
+            // a static member of node:
+            if (p.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT && node.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT) {
+                Tree selector = ((MemberSelectTree)p.getLeaf()).getExpression();
+                if (getWildcardTreeName(selector) != null) {
+                    // className.this/super refer to an instance and can be matched to a variable. They resolve to a variable Element, so exclude them
+                    Element nodeSelector = info.getTrees().getElement(new TreePath(node, ((MemberSelectTree)node.getLeaf()).getExpression()));
+                    if (nodeSelector != null && (nodeSelector.getKind().isClass() || nodeSelector.getKind().isInterface())) {
+                        matchingResult = VerifyResult.NO_MATCH;
+                    }  else {
+                        matchingResult = VerifyResult.MATCH_CHECK_DEEPER;
+                    }
+                }
+            }
         }
 
         if (nodeEl == pEl) {

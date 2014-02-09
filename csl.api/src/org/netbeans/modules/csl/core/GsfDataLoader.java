@@ -52,6 +52,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.ErrorManager;
@@ -76,11 +77,6 @@ public class GsfDataLoader extends UniFileLoader {
     
     public GsfDataLoader() {
         super("org.netbeans.modules.csl.core.GsfDataObject");
-    }
-
-    @Override
-    protected void initialize() {
-        super.initialize();
         initExtensions();
     }
 

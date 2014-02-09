@@ -201,7 +201,8 @@ public class ShortcutsFinderImpl implements ShortcutsFinder {
             // read profile and put it to cache
             Map<ShortcutAction, Set<String>> profileMap = convertFromEmacs (getKeymap(profile));
             synchronized (this) {
-                if (!shortcutsCache.containsKey(profile)) {
+                res = shortcutsCache.get(profile);
+                if (res == null) {
                     Map m = new HashMap(shortcutsCache);
                     m.put(profile, profileMap);
                     shortcutsCache = m;

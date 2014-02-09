@@ -931,19 +931,25 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
             int currentpos = getActualTextComponent().getSelectionStart();
             try {
                 int[] blocks = findSupport.getBlocks(new int[]{-1, -1}, getActualTextComponent().getDocument(), 0, getActualTextComponent().getDocument().getLength());
-                for (int i : blocks) {
-                    if (i >= 0) {
+                for (int i = 0; i < blocks.length; i++) {
+                    if (blocks[i] > 0) {
                         numMatches++;
-                        if (i < currentpos) {
+                        if (blocks[i] < currentpos) {
                             pos++;
                         }
+                    } else if (blocks[i] == 0 && i + 1 < blocks.length && blocks[i+1] > 0) {
+                        numMatches++;
                     }
                 }
+          
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
             numMatches = numMatches == 0 ? 0 : (numMatches + 1) / 2;
             pos = (pos == 0 ? 0 : (pos + 1) / 2) + 1;
+            if (pos > numMatches) {
+                pos = 0;
+            }
             
         }
         if (incSearchTextField.getText().isEmpty()) {
