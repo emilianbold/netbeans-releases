@@ -106,6 +106,8 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
     private JPDADebuggerImpl debugger;
     private ContextProvider contextProvider;
     private boolean smartSteppingStepOut;
+    private boolean steppingFromFilteredLocation;
+    private boolean steppingFromCompoundFilteredLocation;
     private Properties p;
 
     public StepIntoNextMethod(ContextProvider contextProvider) {
@@ -164,6 +166,9 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
             } else {
                 stepDepth = StepRequest.STEP_INTO;
             }
+            steppingFromFilteredLocation = !getSmartSteppingFilterImpl ().stopHere(t.getClassName());
+            steppingFromCompoundFilteredLocation = !getCompoundSmartSteppingListener ().stopHere
+                               (contextProvider, t, getSmartSteppingFilterImpl ());
 
             StepRequest stepRequest = setStepRequest (stepDepth, resumeThreadPtr);
             position = t.getClassName () + '.' +
@@ -339,8 +344,13 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
             }
 
             JPDAThread t = getDebuggerImpl ().getThread (tr);
-            boolean stop = getCompoundSmartSteppingListener ().stopHere
-                               (contextProvider, t, getSmartSteppingFilterImpl ());
+            boolean stop;
+            if (steppingFromCompoundFilteredLocation) {
+                stop = true;
+            } else {
+                stop = getCompoundSmartSteppingListener ().stopHere
+                                   (contextProvider, t, getSmartSteppingFilterImpl ());
+            }
             if (stop) {
                 String stopPosition = t.getClassName () + '.' +
                                       t.getMethodName () + ':' +
@@ -496,10 +506,12 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
         }
         try {
             try {
-                addPatternsToRequest (
-                    getSmartSteppingFilterImpl ().getExclusionPatterns (),
-                    stepRequest
-                );
+                if (!steppingFromFilteredLocation) {
+                    addPatternsToRequest (
+                        getSmartSteppingFilterImpl ().getExclusionPatterns (),
+                        stepRequest
+                    );
+                }
                 EventRequestWrapper.enable (stepRequest);
             } catch (IllegalThreadStateException itsex) {
                 // the thread named in the request has died.
@@ -531,11 +543,11 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
         return stepRequest;
     }
 
-    private SmartSteppingFilter smartSteppingFilter;
+    private SmartSteppingFilterImpl smartSteppingFilter;
 
-    private SmartSteppingFilter getSmartSteppingFilterImpl () {
+    private SmartSteppingFilterImpl getSmartSteppingFilterImpl () {
         if (smartSteppingFilter == null)
-            smartSteppingFilter = contextProvider.lookupFirst(null, SmartSteppingFilter.class);
+            smartSteppingFilter = (SmartSteppingFilterImpl) contextProvider.lookupFirst(null, SmartSteppingFilter.class);
         return smartSteppingFilter;
     }
 
@@ -562,6 +574,9 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
     }
 
     private boolean isFilteredClassOnStack(ThreadReference tr, int depth) {
+        if (steppingFromFilteredLocation) {
+            return false;
+        }
         String[] patterns = getSmartSteppingFilterImpl ().getExclusionPatterns();
         if (patterns.length == 0) return false;
         try {
