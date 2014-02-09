@@ -151,8 +151,7 @@ public class JDKPanel extends DestinationPanel {
         protected void saveInput() {
             super.saveInput();
             final Object objectContext = panel.getWizard().getContext().get(Product.class);
-            if(objectContext != null && objectContext instanceof Product) {
-                jdk = (Product) objectContext;                
+            if ((jdk = getBundledJDK(panel)) != null) {
                 SearchForJavaAction.addJavaLocation(
                         jdk.getInstallationLocation(),
                         jdk.getVersion(),
@@ -170,8 +169,19 @@ public class JDKPanel extends DestinationPanel {
             return errorMessage;
         }
         
+        private static Product getBundledJDK(JDKPanel panel) {
+            final Object objectContext = panel.getWizard().getContext().get(Product.class);
+            if(objectContext != null && objectContext instanceof Product) {
+                return  (Product) objectContext;                
+            }
+            return null;
+        }
+        
         private boolean isJDK8() {
-            return jdk.getVersion().newerOrEquals(Version.getVersion("1.8.0"));
+            if (getBundledJDK(panel) != null) {
+                return getBundledJDK(panel).getVersion().newerOrEquals(Version.getVersion("1.8.0")); // NOI18N
+            }
+            return false;
         }
 
     }
