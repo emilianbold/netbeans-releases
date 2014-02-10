@@ -60,7 +60,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Reference;
  * @author Radek Matous
  */
 public final class FormalParameterInfo extends ASTNodeInfo<FormalParameter> {
-    private ParameterElement parameter;
+    private final ParameterElement parameter;
 
     private FormalParameterInfo(FormalParameter node, Map<String, List<QualifiedName>> paramDocTypes) {
         super(node);
