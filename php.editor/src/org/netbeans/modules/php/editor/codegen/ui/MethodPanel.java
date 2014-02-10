@@ -80,7 +80,9 @@ public class MethodPanel extends ConstructorPanel {
 
         Set<TypeElement> endlessLoopDetection = new HashSet<>();
         LinkedList<TreeElement<TypeElement>> queue = new LinkedList<>();
-        endlessLoopDetection.add(enclosingType.getElement());
+        if (enclosingType != null) {
+            endlessLoopDetection.add(enclosingType.getElement());
+        }
         queue.offer(enclosingType);
         while (!queue.isEmpty()) {
             TreeElement<TypeElement> type = queue.poll();
