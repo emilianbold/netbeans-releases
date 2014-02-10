@@ -78,9 +78,9 @@ public class MethodPanel extends ConstructorPanel {
         // init tree
         CheckNode root = new CheckNode.CGSClassNode(className);
 
-        Set<TypeElement> recursionDetection = new HashSet<>();
+        Set<TypeElement> endlessLoopDetection = new HashSet<>();
         LinkedList<TreeElement<TypeElement>> queue = new LinkedList<>();
-        recursionDetection.add(enclosingType.getElement());
+        endlessLoopDetection.add(enclosingType.getElement());
         queue.offer(enclosingType);
         while (!queue.isEmpty()) {
             TreeElement<TypeElement> type = queue.poll();
@@ -98,7 +98,7 @@ public class MethodPanel extends ConstructorPanel {
             }
 
             for (TreeElement<TypeElement> e : type.children()) {
-                if (recursionDetection.add(e.getElement())) {
+                if (endlessLoopDetection.add(e.getElement())) {
                     queue.offer(e);
                 }
             }
