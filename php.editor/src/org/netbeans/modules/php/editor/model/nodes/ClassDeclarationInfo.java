@@ -137,7 +137,7 @@ public class ClassDeclarationInfo extends ASTNodeInfo<ClassDeclaration> {
     }
 
     private static class UsedTraitsVisitor extends DefaultVisitor {
-        private List<UseTraitStatementPart> useParts = new LinkedList<>();
+        private final List<UseTraitStatementPart> useParts = new LinkedList<>();
 
         @Override
         public void visit(UseTraitStatementPart node) {

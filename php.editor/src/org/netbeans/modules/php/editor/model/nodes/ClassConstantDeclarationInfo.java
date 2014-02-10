@@ -59,6 +59,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation;
  */
 public class ClassConstantDeclarationInfo extends ASTNodeInfo<Identifier> {
     private final String value;
+
     ClassConstantDeclarationInfo(Identifier node, final String value) {
         super(node);
         this.value = value;
