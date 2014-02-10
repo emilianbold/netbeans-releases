@@ -354,4 +354,8 @@ public class JsWithFastTest extends JsWithBase {
     public void testIssue235227_04() throws Exception {
         checkOccurrences("testfiles/with/issue235227.js","inn^erName = 3;", true);
     }
+    
+    public void testIssue241640_01() throws Exception {
+        checkOccurrences("testfiles/with/issue241640.js","da^te.getYear();", true);
+    }
 }
