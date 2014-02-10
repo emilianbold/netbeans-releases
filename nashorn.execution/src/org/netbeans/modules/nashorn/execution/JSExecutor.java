@@ -46,6 +46,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -53,6 +55,7 @@ import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.nashorn.execution.options.Settings;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.LifecycleManager;
@@ -73,7 +76,7 @@ public class JSExecutor {
         properties.put(JavaRunner.PROP_CLASSNAME, NASHORN_SHELL);
         properties.put(JavaRunner.PROP_EXECUTE_CLASSPATH, getClassPath(js));
         properties.put(JavaRunner.PROP_WORK_DIR, js.getParent());
-        properties.put(JavaRunner.PROP_APPLICATION_ARGS, Collections.singletonList(js.getNameExt()));
+        properties.put(JavaRunner.PROP_APPLICATION_ARGS, getApplicationArgs(js)); // Collections.singletonList(js.getNameExt()));
         if (debug) {
             JavaRunner.execute(JavaRunner.QUICK_DEBUG, properties);
         } else {
@@ -87,6 +90,24 @@ public class JSExecutor {
             cp = ClassPath.EMPTY;
         }
         return cp;
+    }
+    
+    private static List<String> getApplicationArgs(FileObject js) {
+        String options = Settings.getPreferences().get(Settings.PREF_NASHORN_OPTIONS, null);
+        String arguments = Settings.getPreferences().get(Settings.PREF_NASHORN_ARGUMENTS, null);
+        if (options == null && arguments == null) {
+            return Collections.singletonList(js.getNameExt());
+        }
+        List<String> args = new LinkedList<>();
+        if (options != null && !(options = options.trim()).isEmpty()) {
+            args.add(options);
+        }
+        args.add(js.getNameExt());
+        if (arguments != null && !(arguments = arguments.trim()).isEmpty()) {
+            args.add("--");     // NOI18N
+            args.add(arguments);
+        }
+        return args;
     }
     
 }
