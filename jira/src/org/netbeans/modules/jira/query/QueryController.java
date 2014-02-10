@@ -541,7 +541,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         }
         IssueTypeFilter itf = fd.getIssueTypeFilter();
         if(itf != null) {
-            setSelected(panel.typeList, itf.getIsueTypes());
+            setSelected(panel.typeList, itf.getIssueTypes());
         }
         StatusFilter sf = fd.getStatusFilter();
         if(sf != null) {
