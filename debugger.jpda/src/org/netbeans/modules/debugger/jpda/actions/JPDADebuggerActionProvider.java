@@ -85,7 +85,7 @@ implements PropertyChangeListener {
     
     protected JPDADebuggerImpl debugger;
     
-    private static Set<JPDADebuggerActionProvider> providersToDisableOnLazyActions = new WeakSet<JPDADebuggerActionProvider>();
+    private static final Set<JPDADebuggerActionProvider> providersToDisableOnLazyActions = new WeakSet<JPDADebuggerActionProvider>();
     
     private volatile boolean disabled;
     

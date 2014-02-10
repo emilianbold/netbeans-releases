@@ -62,6 +62,7 @@ import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.POMComponentFactory;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
+import org.netbeans.modules.maven.model.pom.Project;
 import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.maven.options.MavenVersionSettings;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -88,7 +89,22 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
 
         @Override
         public void performOperation(POMModel model) {
-            ModelUtils.setSourceLevel(model, sourceLevel);
+            String s = PluginPropertyUtils.getPluginProperty(handle.getProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "source", null, null);
+            String t = PluginPropertyUtils.getPluginProperty(handle.getProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "source", null, null);
+            if (s == null && t == null) {
+                Project p = model.getProject();
+                if (p != null) {
+                    Properties prop = p.getProperties();
+                    if (prop == null) {
+                        prop = model.getFactory().createProperties();
+                        p.setProperties(prop);
+                    }
+                    prop.setProperty("maven.compiler.source", sourceLevel);
+                    prop.setProperty("maven.compiler.target", sourceLevel);
+                }
+            } else {
+                ModelUtils.setSourceLevel(model, sourceLevel);
+            }
         }
     };
     

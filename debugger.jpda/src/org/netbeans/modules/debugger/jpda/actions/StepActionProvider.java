@@ -119,20 +119,20 @@ public class StepActionProvider extends JPDADebuggerActionProvider
 implements Executor {
 
     private StepRequest             stepRequest;
-    private ContextProvider         lookupProvider;
+    private final ContextProvider   lookupProvider;
     private MethodExitBreakpointListener lastMethodExitBreakpointListener;
     private int                     syntheticStep;
     //private SingleThreadedStepWatch stepWatch;
     private boolean smartSteppingStepOut;
-    private Properties p;
+    private final Properties p;
     private String className;
     private String methodName;
     private int depth;
     private boolean steppingFromFilteredLocation = false;
     private boolean steppingFromCompoundFilteredLocation = false;
-    private static RequestProcessor operationsRP = new RequestProcessor("Debugger Operations Computation", 1);
+    private static final RequestProcessor operationsRP = new RequestProcessor("Debugger Operations Computation", 1);    // NOI18N
     
-    private static boolean ssverbose = 
+    private static final boolean ssverbose = 
         System.getProperty ("netbeans.debugger.smartstepping") != null;
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.jdievents"); // NOI18N
     private static final Logger loggerStep = Logger.getLogger("org.netbeans.modules.debugger.jpda.step"); // NOI18N

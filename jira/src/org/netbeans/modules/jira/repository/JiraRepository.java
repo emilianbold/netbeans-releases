@@ -301,7 +301,7 @@ public class JiraRepository {
     }
 
     public void removeQuery(JiraQuery query) {
-        Jira.getInstance().getStorageManager().removeQuery(this, query);
+        Jira.getInstance().getStorageManager().removeQuery(this, query.getDisplayName(), query.getStoredQueryName());
         synchronized(QUERIES_LOCK) {
             getQueriesIntern().remove(query);
         }
@@ -310,7 +310,7 @@ public class JiraRepository {
 
     public void saveQuery(JiraQuery query) {
         assert info != null;
-        Jira.getInstance().getStorageManager().putQuery(this, query);
+        Jira.getInstance().getStorageManager().putQueryData(this, query.getDisplayName(), query.getLastRefresh(), query.getFilterDefinition());
         synchronized (QUERIES_LOCK) {
             getQueriesIntern().add(query);
         }

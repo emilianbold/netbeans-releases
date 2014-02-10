@@ -666,6 +666,7 @@ public class DebuggingViewComponent extends TopComponent implements org.openide.
             model.removeTreeModelListener(this);
             treeView.getViewport().removeChangeListener(this);
             treeView.getTree().removeTreeSelectionListener(this);
+            treeView.resetSelection();
             mainPanel.remove(treeView);
             treeView = null;
         }
