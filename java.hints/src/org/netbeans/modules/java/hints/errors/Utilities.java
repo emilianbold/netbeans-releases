@@ -171,9 +171,12 @@ public class Utilities {
     public static String guessName(CompilationInfo info, TreePath tp, TreePath scope) {
         return guessName(info, tp, scope, null, null);
     }
-
+    
     public static String guessName(CompilationInfo info, TreePath tp, TreePath scope, String prefix, String suffix) {
-        String name = getName(tp.getLeaf());
+        return guessName(info, getName(tp.getLeaf()), scope, prefix, suffix, false);
+    }
+    
+    public static String guessName(CompilationInfo info, String name, TreePath scope, String prefix, String suffix, boolean acceptExistingPrefixes) {
         
         if (name == null) {
             return DEFAULT_NAME;
@@ -181,7 +184,7 @@ public class Utilities {
         
         Scope s = info.getTrees().getScope(scope);
         
-        return makeNameUnique(info, s, name, prefix, suffix);
+        return makeNameUnique(info, s, name, Collections.<String>emptySet(), prefix, suffix, acceptExistingPrefixes);
     }
     
     private static final Map<String, String> TYPICAL_KEYWORD_CONVERSIONS = new HashMap<String, String>() {{
@@ -194,8 +197,54 @@ public class Utilities {
     public static String makeNameUnique(CompilationInfo info, Scope s, String name, String prefix, String suffix) {
         return makeNameUnique(info, s, name, Collections.<String>emptySet(), prefix, suffix);
     }
-
+    
     public static String makeNameUnique(CompilationInfo info, Scope s, String name, Set<String> usedVariables, String prefix, String suffix) {
+        return makeNameUnique(info, s, name, usedVariables, prefix, suffix, false);
+    }
+    
+    /**
+     * Creates an unique name.
+     * The method takes the proposed `name' and ensures it is unique with respect to `usedVariables' and contents of the target scope `s'.
+     * The `prefix' and `suffix' are joined with the base name. If prefix ends with a letter and name starts with letter, the resulting name
+     * will be converted to CamelCase according to coding conventions. If `acceptExisting' is true, the name will not be decorated, if it
+     * already contains both prefix AND suffix. Names that are the same as keywords are avoided and changed.
+     * 
+     * @param info compilation info
+     * @param s target scope for uniqueness checks
+     * @param name proposed base name
+     * @param usedVariables other to-be-introduced names, in addition to scope contents, to be avoided
+     * @param prefix the desired prefix or {@code null}
+     * @param suffix the desired suffix or {@code null}
+     * @param acceptExisting true, if existing prefix and suffix in the `name' should be accepted
+     * @return unique name that contains the prefix and suffix if they are specified.
+     */
+    public static String makeNameUnique(CompilationInfo info, Scope s, String name, Set<String> usedVariables, String prefix, String suffix, boolean acceptExisting) {
+        boolean prefixOK = false;
+        boolean suffixOK = false;
+        
+        if (acceptExisting) {
+            if (prefix != null) {
+                if (!(prefixOK = prefix.isEmpty())) {
+                    // prefixOK is now false
+                    if (name.startsWith(prefix)) {
+                        int pl = prefix.length();
+                        if(Character.isAlphabetic(prefix.charAt(pl-1))) {
+                            if (name.length() > pl && Character.isUpperCase(name.charAt(pl))) {
+                                prefixOK = true;
+                            }
+                        } else {
+                            prefixOK = true;
+                        }
+                    }
+                }
+            }
+            if (suffix != null && (suffix.isEmpty() || name.endsWith(suffix))) {
+                suffixOK = true;
+            }
+        }
+        if (prefixOK && suffixOK) {
+            prefix = suffix = ""; // NOI18N
+        }
         if(prefix != null && prefix.length() > 0) {
             if(Character.isAlphabetic(prefix.charAt(prefix.length()-1))) {
                 StringBuilder nameSb = new StringBuilder(name);
@@ -1801,4 +1850,73 @@ public class Utilities {
         Element e = ((DeclaredType)m).asElement();
         return (e.getKind() == ElementKind.CLASS && ((TypeElement)e).getQualifiedName().contentEquals("java.lang.String")); // NOI18N
     }
+
+    /**
+     * Strips the variable name off prefixes and suffixes configured in the coding style. Handles 
+     * fields, local variables, parameters and constants.
+     * 
+     * @param style the code style
+     * @param el the variable element 
+     * @return name stripped of prefixes/suffices
+     */
+    public static String stripVariableName(CodeStyle style, VariableElement el) {
+        String n = el.getSimpleName().toString();
+        switch (el.getKind()) {
+            case PARAMETER:
+                return stripVariableName(n, style.getParameterNamePrefix(), style.getParameterNameSuffix());
+                
+            case LOCAL_VARIABLE:
+            case RESOURCE_VARIABLE:
+            case EXCEPTION_PARAMETER:
+                return stripVariableName(n, style.getLocalVarNamePrefix(), style.getLocalVarNameSuffix());
+                
+            case FIELD: {
+//                boolean c = el.getModifiers().containsAll(EnumSet.of(Modifier.FINAL, Modifier.STATIC));
+//                if (!c) {
+//                    break;
+//                }
+                // fall through to enum constant
+            }
+            case ENUM_CONSTANT:
+                return stripVariableName(n, style.getFieldNamePrefix(), style.getFieldNameSuffix());
+                
+            default:
+                return n;
+        }
+    }
+    
+    private static String stripVariableName(String n, String prefix, String suffix) {
+        if (!prefix.isEmpty() && n.startsWith(prefix) && n.length() > prefix.length()) {
+            if (Character.isLetter(prefix.charAt(prefix.length() - 1))) {
+                // decapitalize the first letter in n
+                n = Character.toLowerCase(n.charAt(prefix.length())) + n.substring(prefix.length() + 1);
+            } else {
+                n = n.substring(prefix.length());
+            }
+        }
+        if (!suffix.isEmpty() && n.endsWith(suffix) && n.length() > suffix.length()) {
+            n = n.substring(0, n.length() - suffix.length());
+        }
+        return n;
+    }
+    
+    public static List<TreePath> getStatementPaths(TreePath firstLeaf) {
+        switch (firstLeaf.getParentPath().getLeaf().getKind()) {
+            case BLOCK:
+                return getTreePaths(firstLeaf.getParentPath(), ((BlockTree) firstLeaf.getParentPath().getLeaf()).getStatements());
+            case CASE:
+                return getTreePaths(firstLeaf.getParentPath(), ((CaseTree) firstLeaf.getParentPath().getLeaf()).getStatements());
+            default:
+                return Collections.singletonList(firstLeaf);
+        }
+    }
+    
+    private static List<TreePath> getTreePaths(TreePath parent, List<? extends Tree> trees) {
+        List<TreePath> ll = new ArrayList<TreePath>(trees.size());
+        for (Tree t : trees) {
+            ll.add(new TreePath(parent, t));
+        }
+        return ll;
+    }
+    
 }

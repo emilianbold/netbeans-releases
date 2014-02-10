@@ -2032,34 +2032,6 @@ public class JavaSourceTest extends NbTestCase {
 
     }
 
-    private static class TestProvider implements JavaFileObjectProvider {
-        private Object lock;
-
-        public TestProvider (Object lock) {
-            assert lock != null;
-            this.lock = lock;
-        }
-
-        public JavaFileObject createJavaFileObject(FileObject fo, FileObject root, JavaFileFilterImplementation filter, CharSequence sequence) throws IOException {
-            return new TestJavaFileObject (fo, root, lock);
-        }
-
-        public void update(JavaFileObject jfo, CharSequence sequence) throws IOException {
-            //do nothing
-        }
-    }
-
-    private static class TestJavaFileObject extends SourceFileObject {
-
-        public TestJavaFileObject (FileObject fo, FileObject root, Object lock) throws IOException {
-            super (fo, root, null, true);
-            //Deadlock
-            synchronized (lock) {
-                lock.toString();
-            }
-        }
-    }
-
     private static class CompileControlJob implements Task<CompilationController> {
 
         private final CountDownLatch latch;
