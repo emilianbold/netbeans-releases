@@ -1760,7 +1760,7 @@ abstract public class CsmCompletionQuery {
                                 CsmClass cls = sup.getClass(getCsmFile(), item.getTokenOffset(0));
                                 if (cls != null) {
                                     derefOfThisOUT.set(true);
-                                    lastType = CsmCompletion.createType(cls, 0, 0, 0, false);
+                                    lastType = CsmCompletion.createType(cls, 1, 0, 0, false);
                                     staticOnly = false;
                                 }
                             } else { // 'something.this'
