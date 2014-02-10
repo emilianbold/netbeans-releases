@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.php.editor.codegen.ui;
 
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 import javax.swing.JTree;
 import javax.swing.tree.MutableTreeNode;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
@@ -76,7 +78,9 @@ public class MethodPanel extends ConstructorPanel {
         // init tree
         CheckNode root = new CheckNode.CGSClassNode(className);
 
+        Set<TypeElement> recursionDetection = new HashSet<>();
         LinkedList<TreeElement<TypeElement>> queue = new LinkedList<>();
+        recursionDetection.add(enclosingType.getElement());
         queue.offer(enclosingType);
         while (!queue.isEmpty()) {
             TreeElement<TypeElement> type = queue.poll();
@@ -94,7 +98,9 @@ public class MethodPanel extends ConstructorPanel {
             }
 
             for (TreeElement<TypeElement> e : type.children()) {
-                queue.offer(e);
+                if (recursionDetection.add(e.getElement())) {
+                    queue.offer(e);
+                }
             }
         }
 
