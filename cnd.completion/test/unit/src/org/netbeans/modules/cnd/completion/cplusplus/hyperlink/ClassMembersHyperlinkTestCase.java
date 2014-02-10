@@ -53,6 +53,12 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ241212() throws Exception {
+        // #241212 - Wrong follow link & call graph for C++ this pointer and overloaded functions
+        performTest("iz241212.cpp", 18, 25, "iz241212.cpp", 9, 9);
+        performTest("iz241212.cpp", 19, 25, "iz241212.cpp", 12, 9);
+    }
+    
     public void testIZ151584() throws Exception {
         // IZ#151584:
         performTest("iz151584.cpp", 2, 10, "iz151584.cpp", 2, 5);
