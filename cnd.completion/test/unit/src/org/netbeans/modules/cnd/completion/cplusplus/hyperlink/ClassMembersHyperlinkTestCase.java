@@ -1121,6 +1121,19 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug240016.cpp", 26, 19, "bug240016.cpp", 22, 9);
     }
     
+    public void testIZ241651() throws Exception {
+        // IZ 241651 - Unresolved members via typedefs
+        performTest("iz241651.cpp", 16, 35, "iz241651.cpp", 9, 9);   
+        performTest("iz241651.cpp", 17, 70, "iz241651.cpp", 5, 9);   
+        performTest("iz241651.cpp", 18, 45, "iz241651.cpp", 5, 9);   
+        performTest("iz241651.cpp", 19, 49, "iz241651.cpp", 5, 9);   
+        
+        performTest("iz241651.cpp", 17, 40, "iz241651.cpp", 2, 5);   
+        performTest("iz241651.cpp", 18, 36, "iz241651.cpp", 12, 5);   
+        performTest("iz241651.cpp", 19, 37, "iz241651.cpp", 4, 5);   
+        performTest("iz241651.cpp", 20, 36, "iz241651.cpp", 15, 9);   
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

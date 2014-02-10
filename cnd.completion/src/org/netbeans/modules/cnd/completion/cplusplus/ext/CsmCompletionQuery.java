@@ -1428,16 +1428,26 @@ abstract public class CsmCompletionQuery {
         }
         }
         return cls;
-        }*/
+        }*/       
+        
+        Pair<Boolean, Context> resolveExp(CsmCompletionExpression exp, boolean first, ContextCloneStrategy cloneStrategy) {
+            Context ctx = cloneStrategy.cloneContext(this);
+            return Pair.of(ctx.resolveExp(exp, first), ctx);
+        }        
+        
         CsmType resolveType(CsmCompletionExpression exp) {
+            return resolveType(exp, true, new ContextCloneStrategy());
+        }
+        
+        private CsmType resolveType(CsmCompletionExpression exp, boolean first, ContextCloneStrategy cloneStrategy) {
             CsmType typ = exp.getCachedType();
             if (typ == null) {
-                Context ctx = (Context) clone();
+                Context ctx = cloneStrategy.cloneContext(this);
                 ctx.setFindType(true);
                 // when resolve type use full scope of search
                 QueryScope old = ctx.compResolver.setResolveScope(QueryScope.GLOBAL_QUERY);
                 try {
-                    if (ctx.resolveExp(exp, true)) {
+                    if (ctx.resolveExp(exp, first)) {
                         typ = ctx.lastType;
                     }
                 } finally {
@@ -1448,9 +1458,13 @@ abstract public class CsmCompletionQuery {
             }
             return typ;
         }
-
+        
         List<? extends CompletionItem> resolveObj(CsmCompletionExpression exp) {
-            Context ctx = (Context) clone();
+            return resolveObj(exp, new ContextCloneStrategy());
+        }
+
+        private List<? extends CompletionItem> resolveObj(CsmCompletionExpression exp, ContextCloneStrategy cloneStrategy) {
+            Context ctx = cloneStrategy.cloneContext(this);
             ctx.setFindType(false);
             // when resolve type use full scope of search
             QueryScope old = ctx.compResolver.setResolveScope(QueryScope.GLOBAL_QUERY);
@@ -1575,7 +1589,7 @@ abstract public class CsmCompletionQuery {
             lastKind[0] = kind;
             return ok;
         }
-
+        
         @SuppressWarnings({"fallthrough", "unchecked"})
         boolean resolveExp(CsmCompletionExpression exp, boolean first) {
             boolean lastDot = false; // dot at the end of the whole expression?
@@ -1891,9 +1905,7 @@ abstract public class CsmCompletionQuery {
                                                     CsmClass clazz = (CsmClass) classifier;
                                                     List elemList = finder.findFields(contextElement, clazz, var, true, staticOnly, true, true, scopeAccessedClassifier, this.sort);
                                                     if (kind == ExprKind.ARROW || kind == ExprKind.DOT) {
-                                                        // try base classes names like in this->Base::foo()
-                                                        // or like in a.Base::foo()
-                                                        List<CsmClass> baseClasses = finder.findBaseClasses(contextElement, clazz, var, true, this.sort);
+                                                        List<CsmClass> baseClasses = getBaseClasses(var, varPos, clazz, nextKind, true);                                                        
                                                         if (elemList == null) {
                                                             elemList = baseClasses;
                                                         } else if (baseClasses != null) {
@@ -1942,6 +1954,19 @@ abstract public class CsmCompletionQuery {
                                                     CsmNamespace ns = finder.getExactNamespace(var);
                                                     if(ns != null && lastNamespace == null) {
                                                         res.add(ns);
+                                                    }
+                                                }
+                                                if (res.isEmpty() && !scopeAccessedClassifier) {
+                                                    // Typedef which is synonym of one of base classes
+                                                    CsmClassifier varCls = resolveClassifier(var, varPos);
+                                                    if (last && CsmBaseUtilities.isValid(varCls)) {
+                                                        res.add(varCls);
+                                                    } else {
+                                                        CsmType varType = CsmCompletion.createType(varCls, 0, 0, 0, false);
+                                                        baseClasses = getBaseClasses(varType, classifier, nextKind, true);
+                                                        if (baseClasses != null && !baseClasses.isEmpty()) {
+                                                            res.add(varCls);
+                                                        }
                                                     }
                                                 }
                                             }
@@ -2043,38 +2068,74 @@ abstract public class CsmCompletionQuery {
                     break;
 
                 case CsmCompletionExpression.GENERIC_TYPE: {
+                    // if last type exists and we will found type alias not in its scope
+                    // we should check that type alias is a synonym of one of base classes
+                    boolean outsiderTypeAlias = false;
                     CsmType typ = null;
+                    CsmType contextType = lastType;
                     if(first) {
                         typ = resolveType(item.getParameter(0));
                     }
                     if(typ == null) {
-                        boolean oldFindType = findType;
-                        findType = true;
-                        boolean oldStaticOnly = staticOnly;
-                        if (kind == ExprKind.SCOPE) {
-                            staticOnly = true;
+                        typ = resolveType(
+                                item.getParameter(0),
+                                first,
+                                new ContextCloneStrategy(
+                                        new ContextPropertyChanger()
+                                                .setStaticOnly(kind == ExprKind.SCOPE)
+                                                .setLastNamespace(lastNamespace)
+                                                .setLastType(lastType)
+                                )
+                        );
+                        if (typ == null) {
+                            if (kind == ExprKind.DOT || kind == ExprKind.ARROW || kind == ExprKind.SCOPE) {
+                                // This could be type alias - AAA().TypeAliasName<BBB>::foo();
+                                outsiderTypeAlias = true;
+                                typ = resolveType(
+                                        item.getParameter(0),
+                                        true,
+                                        new ContextCloneStrategy(new ContextPropertyChanger().setStaticOnly(true))
+                                );
+                            }                          
                         }
-                        resolveExp(item.getParameter(0), first);
-                        staticOnly = oldStaticOnly;
-                        typ = lastType;
-                        findType = oldFindType;
                     }
+                    lastType = (typ != null) ? contextType : null;
                     if (typ != null) {
-                        lastType = typ;
-                        CsmClassifier cls = getClassifier(lastType, contextFile, endOffset);
+                        typ = CsmUtilities.iterateTypeChain(typ, new CsmUtilities.SearchTemplatePredicate());
+                        CsmClassifier cls = typ.getClassifier();
                         if (cls != null && CsmKindUtilities.isTemplate(cls)) {
                             CsmObject obj = CompletionSupport.createInstantiation(this, (CsmTemplate)cls, item, Collections.<CsmType>emptyList());
-                            if (obj != null && CsmKindUtilities.isClass(obj)) {
-                                lastType = CsmCompletion.createType((CsmClass)obj, 0, 0, 0, false);
+                            
+                            if (CsmKindUtilities.isClassifier(obj)) {
+                                typ = CsmCompletion.createType((CsmClassifier)obj, 0, 0, 0, false);
                             }
-                            if (last) {
-                                if (CsmKindUtilities.isClass(obj)) {
-                                    CsmClass c = (CsmClass) obj;
-                                    Collection<CsmClass> classList = new LinkedHashSet<CsmClass>();
+                            
+                            if (outsiderTypeAlias && CsmKindUtilities.isTypeAlias(obj)) {
+                                if (contextType != null) {
+                                    CsmClassifier classifier = getClassifier(contextType, contextFile, endOffset);
+                                    if (CsmKindUtilities.isClass(classifier)) {
+                                        List<CsmClass> baseClasses = getBaseClasses(typ, classifier, nextKind, true);
+                                        if (baseClasses == null || baseClasses.isEmpty()) {
+                                            typ = lastType = null;
+                                            // Do not clear obj here - if it is last item,
+                                            // we should return type alias. Clearing 
+                                            // typ and lastType guarantees that in case of not last
+                                            // item, symbols will not be resolved
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            if (CsmKindUtilities.isClass(obj) || CsmKindUtilities.isTypeAlias(obj)) {
+                                if (!last || findType) {
+                                    lastType = typ;
+                                } else {
+                                    CsmClassifier c = (CsmClassifier) obj;
+                                    Collection<CsmClassifier> classList = new LinkedHashSet<CsmClassifier>();
                                     classList.add(c);
                                     result = new CsmCompletionResult(component, getBaseDocument(), classList,
                                             c.getQualifiedName().toString(),
-                                            item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes);
+                                            item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes);                                    
                                 }
                             }
                         }
@@ -2794,6 +2855,46 @@ abstract public class CsmCompletionQuery {
             return cont;
         }
         
+        private CsmClassifier resolveClassifier(String var, int varPos)  {
+            compResolver.setResolveTypes(CompletionResolver.RESOLVE_CLASSES |
+                                         CompletionResolver.RESOLVE_TEMPLATE_PARAMETERS |
+                                         CompletionResolver.RESOLVE_LIB_CLASSES |
+                                         CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS |
+                                         CompletionResolver.RESOLVE_LOCAL_CLASSES);            
+            
+            if (resolve(varPos, var, true)) {
+                List<? extends CsmObject> candidates = new ArrayList<CsmObject>();
+                compResolver.getResult().addResulItemsToCol(candidates);
+                
+                for (CsmObject obj : candidates) {
+                    if (CsmKindUtilities.isClassifier(obj)) {
+                        return (CsmClassifier) obj;
+                    }
+                }
+            }
+            
+            return null;
+        }
+
+        private List<CsmClass> getBaseClasses(String var, int varPos, CsmClassifier clazz, ExprKind nextKind, boolean exactMatch) {
+            // try base classes names like in this->Base::foo()
+            // or like in a.Base::foo()
+            CsmClassifier cls = resolveClassifier(var, varPos);            
+            CsmType varType = CsmCompletion.createType(cls, 0, 0, 0, false);            
+            return getBaseClasses(varType, clazz, nextKind, exactMatch);
+        }
+        
+        private List<CsmClass> getBaseClasses(CsmType varType, CsmClassifier clazz, ExprKind nextKind, boolean exactMatch) {
+            // try base classes names like in this->Base::foo()
+            // or like in a.Base::foo()
+            CsmClassifier varCls = extractTypeClassifier(varType, nextKind);
+            List<CsmClass> baseClasses = null;
+            if (varCls != null) {
+                baseClasses = finder.findBaseClasses(contextElement, clazz, varCls.getName().toString(), exactMatch, this.sort);
+            }
+            return baseClasses;
+        }        
+        
         private CsmType resolveTemplateParameter(CsmTemplateParameter param, List<CsmInstantiation> instantiations) {
             CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
             return ip.instantiate((CsmTemplateParameter) param, instantiations);
@@ -3053,8 +3154,79 @@ abstract public class CsmCompletionQuery {
                 }
             }
             return hint;
-        }        
-       
+        }  
+        
+        private class ContextPropertyChanger {
+            
+            private Boolean staticOnly;
+            
+            private Boolean findType;
+            
+            private boolean lastTypeGiven;
+            private CsmType lastType;
+            
+            private boolean lastNamespaceGiven;
+            private CsmNamespace lastNamespace;  
+            
+            ContextPropertyChanger setStaticOnly(boolean staticOnly) {
+                this.staticOnly = staticOnly;
+                return this;
+            }
+            
+            ContextPropertyChanger setFindType(boolean findType) {
+                this.findType = findType;
+                return this;
+            }
+            
+            ContextPropertyChanger setLastType(CsmType lastType) {
+                this.lastType = lastType;
+                lastTypeGiven = true;
+                return this;
+            }
+            
+            ContextPropertyChanger setLastNamespace(CsmNamespace lastNamespace) {
+                this.lastNamespace = lastNamespace;
+                lastNamespaceGiven = true;
+                return this;
+            }            
+            
+            void apply(Context ctx) {
+                if (this.staticOnly != null) {
+                    ctx.staticOnly = this.staticOnly;
+                }
+                if (this.findType != null) {
+                    ctx.findType = this.findType;
+                }
+                if (this.lastTypeGiven) {
+                    ctx.lastType = this.lastType;
+                }
+                if (this.lastNamespaceGiven) {
+                    ctx.lastNamespace = this.lastNamespace;
+                }
+            }
+        }
+                
+        private class ContextCloneStrategy {
+            
+            private final ContextPropertyChanger propertyChanger;
+
+            public ContextCloneStrategy() {
+                this.propertyChanger = null;
+            }
+            
+            public ContextCloneStrategy(ContextPropertyChanger propertyChanger) {
+                this.propertyChanger = propertyChanger;
+            }            
+            
+            Context cloneContext(Context context) {
+                Context ctx = (Context) context.clone();
+                if (propertyChanger != null) {
+                    propertyChanger.apply(ctx);
+                }
+                return ctx;
+            }
+            
+        }   
     }
 
     private static String formatTypeList(List<CsmType> typeList, boolean methodOpen) {
