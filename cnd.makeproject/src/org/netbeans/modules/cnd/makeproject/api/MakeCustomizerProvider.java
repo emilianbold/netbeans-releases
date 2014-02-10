@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.makeproject.MakeSharabilityQuery;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem.ProjectItem;
@@ -305,7 +306,11 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                             }
                             projectDescriptor.setVersion(currentVersion);
                         }
-
+                        ConfigurationDescriptorProvider.SnapShot delta = null;
+                        if (folder == null && item == null) {
+                            ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                            delta = (Delta) cdp.startModifications();
+                        }
                         List<String> oldSourceRoots = ((MakeConfigurationDescriptor) projectDescriptor).getSourceRoots();
                         List<String> newSourceRoots = ((MakeConfigurationDescriptor) clonedProjectdescriptor).getSourceRoots();
                         List<String> oldTestRoots = ((MakeConfigurationDescriptor) projectDescriptor).getTestRoots();
@@ -328,7 +333,12 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                         if (query != null) {
                             query.update();
                         }
-                        ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedItems(project, folder, item);
+                        if (folder == null && item == null) {
+                            ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                            cdp.endModifications(delta, true, null);
+                        } else {
+                            ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedItems(project, folder, item);
+                        }
                         ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedSourceRoots(oldSourceRoots, newSourceRoots);
                         ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedTestRoots(oldTestRoots, newTestRoots);
                         ((MakeConfigurationDescriptor) projectDescriptor).checkConfigurations(oldActive, newActive);
