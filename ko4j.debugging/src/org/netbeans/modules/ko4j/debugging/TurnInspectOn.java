@@ -82,6 +82,7 @@ public final class TurnInspectOn implements LateBoundPrerequisitesChecker {
             Set<?> s = (Set<?>)artiMethod.invoke(mp);
             final String text = s.toString();
             return text.contains("org.apidesign.html:boot-fx:") ||
+                text.contains("org.netbeans.html:net.java.html.boot.fx:") ||
                 text.contains("org.apidesign.bck2brwsr:bck2brwsr-maven-plugin");
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, "Problems obtaining list of artifacts", ex);
