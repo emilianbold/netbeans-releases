@@ -55,10 +55,9 @@ chmod -R a+x *.sh
 
 commonname=$work_dir/zip/moduleclusters/$prefix-$buildnumber 
 if [[ ( -z $build_jdk7 || 0 -eq $build_jdk7 ) && ( -z $build_jdk8 || 0 -eq $build_jdk8 ) ]]; then
-        target="build-all-dmg"
-        build_jdk7=0
-        build_jdk8=0
-    fi
+    target="build-all-dmg"
+    build_jdk7=0
+    build_jdk8=0
 else
     target="build-jdk-bundle-dmg"
 fi
