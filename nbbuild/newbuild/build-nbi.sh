@@ -51,6 +51,10 @@ if [ -z $BUILD_NBJDK7 ]; then
     BUILD_NBJDK7=0
 fi
 
+if [ -z $BUILD_NBJDK8 ]; then
+    BUILD_NBJDK8=0
+fi
+
 OUTPUT_DIR="$DIST/installers"
 export OUTPUT_DIR
 
