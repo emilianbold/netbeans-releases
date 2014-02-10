@@ -124,7 +124,7 @@ public class EmptyCancelForCancellableTask extends AbstractHint {
         
         MethodTree mt = (MethodTree) treePath.getLeaf();
         
-        if (!mt.getBody().getStatements().isEmpty()) {
+        if (mt.getBody() == null || !mt.getBody().getStatements().isEmpty()) {
             return null;
         }
         
