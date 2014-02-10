@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -45,20 +45,19 @@ import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
+import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.wizard.components.actions.SearchForJavaAction;
 import org.netbeans.installer.wizard.components.panels.DestinationPanel;
 import org.netbeans.installer.wizard.components.panels.DestinationPanel.DestinationPanelUi;
+import org.netbeans.installer.wizard.containers.SwingContainer;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
-import org.netbeans.installer.wizard.containers.SwingContainer;
 
 /**
  *
  * @author Kirill Sorokin
  */
 public class JDKPanel extends DestinationPanel {
-    
-    
     public JDKPanel() {
         setProperty(TITLE_PROPERTY,
                 DEFAULT_TITLE);
@@ -107,6 +106,7 @@ public class JDKPanel extends DestinationPanel {
             this.panel = panel;
         }
         
+        @Override
         public SwingUi getSwingUi(SwingContainer container) {
             if (swingUi == null) {
                 swingUi = new JDKDestinationPanelSwingUi(panel, container);
@@ -118,7 +118,8 @@ public class JDKPanel extends DestinationPanel {
     
     public static class JDKDestinationPanelSwingUi extends DestinationPanelSwingUi {
         protected JDKPanel panel;
-        
+        private Product jdk;
+    
         public JDKDestinationPanelSwingUi(
                 final JDKPanel panel,
                 final SwingContainer container) {
@@ -131,6 +132,10 @@ public class JDKPanel extends DestinationPanel {
         @Override
         protected void initialize() {            
             super.initialize();
+            if (isJDK8() && SystemUtils.isWindows()) {
+                getDestinationField().setEnabled(false);
+                getDestinationButton().setVisible(false);
+            }
             final String location = panel.getWizard().getProperty(Product.INSTALLATION_LOCATION_PROPERTY);
             if(location!=null) {
                 final File f = new File(location);
@@ -146,9 +151,7 @@ public class JDKPanel extends DestinationPanel {
         @Override
         protected void saveInput() {
             super.saveInput();
-            final Object objectContext = panel.getWizard().getContext().get(Product.class);
-            if(objectContext != null && objectContext instanceof Product) {
-                Product jdk = (Product) objectContext;                
+            if ((jdk = getBundledJDK(panel)) != null) {
                 SearchForJavaAction.addJavaLocation(
                         jdk.getInstallationLocation(),
                         jdk.getVersion(),
@@ -165,6 +168,22 @@ public class JDKPanel extends DestinationPanel {
             }
             return errorMessage;
         }
+        
+        private static Product getBundledJDK(JDKPanel panel) {
+            final Object objectContext = panel.getWizard().getContext().get(Product.class);
+            if(objectContext != null && objectContext instanceof Product) {
+                return  (Product) objectContext;                
+            }
+            return null;
+        }
+        
+        private boolean isJDK8() {
+            if (getBundledJDK(panel) != null) {
+                return getBundledJDK(panel).getVersion().newerOrEquals(Version.getVersion("1.8.0")); // NOI18N
+            }
+            return false;
+        }
+
     }
     
     /////////////////////////////////////////////////////////////////////////////////

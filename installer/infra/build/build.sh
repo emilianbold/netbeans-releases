@@ -62,19 +62,14 @@ if [ -z "$BUILD_NETBEANS" ] ; then
     BUILD_NETBEANS=1
 fi
 
-if [ -z "$BUILD_NBJDK5" ] ; then
-    #do not build NetBeans/JDK5 bundles by default
-    BUILD_NBJDK5=0
-fi
-
-if [ -z "$BUILD_NBJDK6" ] ; then
-    #do not build NetBeans/JDK6 bundles by default
-    BUILD_NBJDK6=0
-fi
-
 if [ -z "$BUILD_NBJDK7" ] ; then
     #do not build NetBeans/JDK7 bundles by default
     BUILD_NBJDK7=0
+fi
+
+if [ -z "$BUILD_NBJDK8" ] ; then
+    #do not build NetBeans/JDK8 bundles by default
+    BUILD_NBJDK8=0
 fi
 
 if [ -z "$BUNDLE_JDK_PLATFORM" ] ; then
@@ -201,6 +196,7 @@ run() {
             \"-Dglassfish.builds.host=${GLASSFISH_BUILDS_HOST}\" \
             \"-Djdk.builds.host=${JDK_BUILDS_HOST}\" \
             \"-Djdk7.builds.path=${JDK7_BUILDS_PATH}\" \
+            \"-Djdk8.builds.path=${JDK8_BUILDS_PATH}\" \
             \"-Dopenesb.builds.host=${OPENESB_BUILDS_HOST}\" \
             \"-Dsjsam.builds.host=${SJSAM_BUILDS_HOST}\" \
             \"-Dportalpack.builds.host=${PORTALPACK_BUILDS_HOST}\" \
@@ -210,9 +206,8 @@ run() {
             \"-Dcvs.root=${CVS_ROOT}\" \
             \"-Dcvs.timestamp=${CVS_STAMP}\" \
             \"-Dcvs.branch=${CVS_BRANCH}\" \
-            \"-Dbuild.jdk5=${BUILD_NBJDK5}\" \
-            \"-Dbuild.jdk6=${BUILD_NBJDK6}\" \
             \"-Dbuild.jdk7=${BUILD_NBJDK7}\" \
+            \"-Dbuild.jdk8=${BUILD_NBJDK8}\" \
             \"-Dbundle.jdk.platform=${BUNDLE_JDK_PLATFORM}\" \
             \"-Dbuild.jtb=${BUILD_JTB}\" \
             \"-Dbuild.mysql=${BUILD_MYSQL}\" \
