@@ -219,7 +219,7 @@ public final class ElementOpen {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     JEditorPane[] panes = ec.getOpenedPanes();
-                    if (offsetB >= 0 && panes.length > 0) {
+                    if (offsetB >= 0 && panes != null && panes.length > 0) {
                         JEditorPane pane = panes[0];
                         FoldHierarchy fh = FoldHierarchy.get(pane);
                         Fold f = FoldUtilities.findNearestFold(fh, offsetA);
@@ -281,10 +281,11 @@ public final class ElementOpen {
                     v.scan(cu, null);
                     Tree elTree = v.declTree;
 
-                    if (elTree != null)
+                    if (elTree != null) {
                         result[0] = (int)info.getTrees().getSourcePositions().getStartPosition(cu, elTree);
                         result[1] = (int)info.getTrees().getSourcePositions().getEndPosition(cu, elTree);
                     }
+                }
             };
 
             js.runUserActionTask(t, true);
