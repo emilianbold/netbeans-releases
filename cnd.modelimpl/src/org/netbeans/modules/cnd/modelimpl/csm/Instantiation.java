@@ -1271,9 +1271,14 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         if (CsmKindUtilities.isTemplateParameterType(type)) {
             LOG.log(Level.FINE, "Instantiation.resolveTemplateParameter {0}; mapping={1}\n", new Object[]{type.getText(), instantiation.getTemplateDeclaration().getName()});
             MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping = new MapHierarchy<>(instantiation.getMapping());
-            CsmType resolvedType = resolveTemplateParameterType(((CsmTemplateParameterType) type).getParameter(), mapping);
-            if (resolvedType != null) {
-                return resolvedType;
+            CsmTemplateParameter param = ((CsmTemplateParameterType) type).getParameter();
+            if (param != null) {
+                CsmType resolvedType = resolveTemplateParameterType(param, mapping);
+                if (resolvedType != null) {
+                    return resolvedType;
+                }
+            } else {
+                LOG.log(Level.INFO, "no param for " + type + " and \n" + instantiation, new IllegalStateException()); // NOI18N;
             }
         }
         return type;
