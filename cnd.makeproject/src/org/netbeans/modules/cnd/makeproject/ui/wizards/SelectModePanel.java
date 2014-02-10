@@ -52,13 +52,16 @@ import java.util.Collection;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.text.html.HTMLEditorKit;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
+import org.netbeans.modules.cnd.makeproject.MakeBasedProjectFactorySingleton;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual.DevHostsInitializer;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual.ToolCollectionItem;
@@ -467,7 +470,15 @@ public class SelectModePanel extends javax.swing.JPanel {
                     return false;
                 }
                 try {
-                    if (ProjectManager.getDefault().findProject(projectDirFO) != null) {
+                    Project prj = ProjectManager.getDefault().findProject(projectDirFO);
+                    if (prj != null) {
+                        MakeProjectHelper h = MakeBasedProjectFactorySingleton.getHelperFor(prj);
+                        if (h != null) {
+                            h.notifyDeleted();
+                            prj = ProjectManager.getDefault().findProject(projectDirFO);
+                        }
+                    }                        
+                    if (prj != null) {
                         messageKind = alreadyNbPoject;
                         return false;
                     }
