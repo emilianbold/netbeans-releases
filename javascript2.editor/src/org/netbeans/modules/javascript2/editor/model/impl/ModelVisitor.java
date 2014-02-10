@@ -1466,7 +1466,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
         Identifier name = fqn.get(0);
         if (!"this".equals(fqn.get(0).getName())) { 
-            if (!(modelBuilder.getCurrentObject() instanceof JsWith)) {
+            if (modelBuilder.getCurrentWith() == null) {
                 Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationFunction());
                 for(JsObject variable : variables) {
                     if (variable.getName().equals(name.getName()) && (variable.getModifiers().contains(Modifier.PRIVATE) || variable instanceof ParameterObject)) {
@@ -1483,7 +1483,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 } 
             } else {
-                JsObject withObject = modelBuilder.getCurrentObject();
+                JsObject withObject = modelBuilder.getCurrentWith();
                 object = (JsObjectImpl)withObject.getProperty(name.getName());
                 if (object == null) {
                     object = new JsObjectImpl(withObject, name, name.getOffsetRange(), false, parserResult.getSnapshot().getMimeType(), null);
