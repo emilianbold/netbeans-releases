@@ -65,6 +65,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
@@ -329,7 +330,8 @@ public class JavaElementFoldManager extends JavaFoldManager {
                 if (od instanceof DataObject) {
                     DataObject d = (DataObject)od;
                     EditorCookie cake = d.getCookie(EditorCookie.class);
-                    int idx = Arrays.asList(cake.getOpenedPanes()).indexOf(c);
+                    JEditorPane[] panes = cake.getOpenedPanes();
+                    int idx = panes == null ? -1 : Arrays.asList(panes).indexOf(c);
                     if (idx != -1) {
                         caretPos = c.getCaret().getDot();
                     }

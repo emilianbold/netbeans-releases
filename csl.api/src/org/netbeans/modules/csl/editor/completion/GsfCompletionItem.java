@@ -138,10 +138,10 @@ public abstract class GsfCompletionItem implements CompletionItem {
                     case CONSTRUCTOR: spCache = item.isSmart() ? 400 - SMART_TYPE : 400;
                         break;
                     case PACKAGE:
-                    case MODULE: spCache = item.isSmart() ? 900 - SMART_TYPE : 900;
+                    case MODULE: spCache = item.isSmart() ? 640 - SMART_TYPE : 640;
                         break;
                     case CLASS:
-                    case INTERFACE: spCache = item.isSmart() ? 800 - SMART_TYPE : 800;
+                    case INTERFACE: spCache = item.isSmart() ? 620 - SMART_TYPE : 620;
                         break;
                     case ATTRIBUTE:
                     case RULE: spCache = item.isSmart() ? 482 - SMART_TYPE : 482;
