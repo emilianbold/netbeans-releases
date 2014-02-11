@@ -2,33 +2,27 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>New Localization Support Class Wizard: Name and Location Page</title>
+<title>Java ME Embedded Project Properties Dialog Box: Run</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-02-07</p>
-<p><a id="org.netbeans.modules.mobility.project.ui.wizard.i18n.LocalizationSupportPanel" name="org.netbeans.modules.mobility.project.ui.wizard.i18n.LocalizationSupportPanel"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref728" name="sthref728"></a>
-<h1>New Localization Support Class Wizard: Name and Location Page</h1>
+<p>Beta Draft: 2014-02-10</p>
+<p><a id="org.netbeans.modules.j2me.project.ui.customizer.J2MERunPanel" name="org.netbeans.modules.j2me.project.ui.customizer.J2MERunPanel"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref729" name="sthref729"></a>
+<h1>Java ME Embedded Project Properties Dialog Box: Run</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to create the two key files necessary for localization:</p>
-<ul>
-<li>A Java class with the code that initializes localization</li>
-<li>
-<p>A properties file where message keys and their localized values are stored. 
+<p>Use to configure options for running your project and setting security options. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1597">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1595">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
-</li>
-</ul>
 
-<table summary="Descriptions of fields in Name and Location page of the New Localization Support Class wizard." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="33%" />
+<table summary="Descriptions of elements on the Running page of the project properties dialog box." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="32%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
@@ -39,69 +33,42 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t30" headers="r1c1-t30">
-<p>Class Name</p>
+<p>Configuration</p>
 </td>
 <td align="left" headers="r2c1-t30 r1c2-t30">
-<p>Specifies the name of the new Java class that provides the code for localization.</p>
+<p>Enables you to create a project configuration other than the default configuration.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t30" headers="r1c1-t30">
-<p>Messages Bundle Name</p>
+<p>Emulator Command Line Options</p>
 </td>
 <td align="left" headers="r3c1-t30 r1c2-t30">
-<p>Specifies the name of the file that is used to store message keys and their values for localization.</p>
+<p>Specifies command line options to run when the emulator is launched.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t30" headers="r1c1-t30">
-<p>Project</p>
+<p>Regular Execution</p>
 </td>
 <td align="left" headers="r4c1-t30 r1c2-t30">
-<p>Displays the name of the project selected in the previous step.</p>
-<p>This field is not editable.</p>
+<p>Runs the project on an emulator device.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t30" headers="r1c1-t30">
-<p>Package</p>
+<p>Execute Through OTA</p>
 </td>
 <td align="left" headers="r5c1-t30 r1c2-t30">
-<p>Specifies the location of the created Java class.</p>
-<p>You can select an existing package from the drop-down list or type in the name of a new package. The new package is created along with the class file when it is created.</p>
+<p>Runs the project using Over-The-Air provisioning, which simulates the process of deploying an application from a server to a mobile device.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t30" headers="r1c1-t30">
-<p>Created Class File</p>
+<p>Debugger timeout</p>
 </td>
 <td align="left" headers="r6c1-t30 r1c2-t30">
-<p>Displays the full path and name of the localization support class name. The name is based on the values entered in the Localization Support Class Name and Package fields.</p>
-<p>This field is not editable.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t30" headers="r1c1-t30">
-<p>Created Bundle File</p>
-</td>
-<td align="left" headers="r7c1-t30 r1c2-t30">
-<p>Displays the location of the created bundle file. The file name is based on the values entered in the Messages Bundle Name and Package fields. The filename has the default extension <code>.properties</code>.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t30" headers="r1c1-t30">
-<p>Default String Value</p>
-</td>
-<td align="left" headers="r8c1-t30 r1c2-t30">
-<p>Specifies the default text that displays in the MIDlet when localization is not successfully initialized.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r9c1-t30" headers="r1c1-t30">
-<p>Error Message</p>
-</td>
-<td align="left" headers="r9c1-t30 r1c2-t30">
-<p>Specifies a default error message that displays when the localization is not successfully initialized.</p>
+<p>Sets the length of time (in milliseconds) that a launch waits to complete the launch process before terminating.</p>
 </td>
 </tr>
 </tbody>
@@ -111,8 +78,8 @@
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1597">
-<param name="text" value="<html><u>&quot;Adding Localization Support to a MIDP Application&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1558">
+<param name="text" value="<html><u>&quot;Creating Java ME Projects&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
