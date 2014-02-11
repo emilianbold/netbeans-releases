@@ -45,6 +45,8 @@ package org.netbeans.modules.j2me.project.ui.customizer;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -97,6 +99,14 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
             }
         };
         table.getSelectionModel().addListSelectionListener(listSelectionListener);
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(final MouseEvent e) {
+                if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
+                    bEditActionPerformed(null);
+                }
+            }
+        });
         TableColumn col0 = table.getColumnModel().getColumn(0);
         TableColumn col1 = table.getColumnModel().getColumn(1);
         col0.setResizable(true);
