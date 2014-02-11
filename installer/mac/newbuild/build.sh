@@ -39,9 +39,9 @@ prefix=$2
 buildnumber=$3
 build_jdk7=$4
 build_jdk8=$5
-signing_identity=$5
-if [ -n "$6" ] ; then
-  nb_locales=",$6"
+signing_identity=$6
+if [ -n "$7" ] ; then
+  nb_locales=",$7"
 fi
 
 basename=`dirname "$0"`
