@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -64,6 +65,8 @@ import static org.netbeans.modules.cnd.remote.sync.FileState.UNCONTROLLED;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -72,6 +75,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -91,8 +95,10 @@ import org.openide.util.NbBundle;
     private boolean cancelled;
     private ProgressHandle progressHandle;
 
-    private static final boolean HARD_CODED_FILTER = Boolean.valueOf(System.getProperty("cnd.remote.hardcoded.filter", "true")); //NOI18N
+    private final RequestProcessor RP = new RequestProcessor("FtpSyncWorker", 2); // NOI18N
 
+    private static final boolean HARD_CODED_FILTER = Boolean.valueOf(System.getProperty("cnd.remote.hardcoded.filter", "true")); //NOI18N
+    
     public FtpSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, 
             FileObject privProjectStorageDir, List<FSPath> paths, List<FSPath> buildResults) {
         super(executionEnvironment, out, err, privProjectStorageDir, paths, buildResults);
@@ -196,7 +202,7 @@ import org.openide.util.NbBundle;
     }
 
     private void createDirs() throws IOException {
-        List<String> dirsToCreate = new LinkedList<String>();
+        final List<String> dirsToCreate = new LinkedList<>();
         for (FileCollector.FileInfo fileInfo : fileCollector.getFiles()) {
             if (fileInfo.file.isDirectory() && ! fileInfo.isLink()) {
                 String remoteDir = mapper.getRemotePath(fileInfo.file.getAbsolutePath(), true);
@@ -210,11 +216,75 @@ import org.openide.util.NbBundle;
             return;
         }
         if (!dirsToCreate.isEmpty()) {
-            dirsToCreate.add(0, "-p"); // NOI18N
-            ExitStatus status = ProcessUtils.execute(executionEnvironment, "mkdir", dirsToCreate.toArray(new String[dirsToCreate.size()])); // NOI18N
-            if (!status.isOK()) {
-                throw new IOException("Can not check remote directories: " + status.toString()); // NOI18N
+            NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
+            pb.setExecutable("xargs"); //NOI18N
+            pb.setArguments("mkdir", "-p");
+            final NativeProcess process;
+            try {
+                process = pb.call();
+            } catch (IOException ex) {
+                throw new IOException("Can not check remote directories: " + ex.getMessage(), ex); // NOI18N
             }
+            
+            final AtomicReference<IOException> problem = new AtomicReference<>();
+            
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    BufferedWriter requestWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
+                    try {
+                        for (String dir : dirsToCreate) {
+                            requestWriter.append(dir).append(' ');
+                        }
+                    } catch (IOException ex) {
+                        problem.set(ex);
+                    } finally {
+                        try {
+                            requestWriter.close();
+                        } catch (IOException ex) {
+                            problem.set(ex);
+                        }
+                    }
+                }
+            });
+
+            RP.post(new Runnable() {
+                private final BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+
+                @Override
+                public void run() {
+                    try {
+                        for (String errLine = errorReader.readLine(); errLine != null; errLine = errorReader.readLine()) {
+                            err.println(errLine); // local println is OK  
+                        }
+                    } catch (IOException ex) {
+                        problem.set(ex);
+                    } finally {
+                        try {
+                            errorReader.close();
+                        } catch (IOException ex) {
+                            problem.set(ex);
+                        }
+                    }
+                }
+            });
+            // output should be empty, but in case it's wrong we must read it
+            for (String line : ProcessUtils.readProcessOutput(process)) {
+                out.println(line); // local println is OK 
+            }
+
+            if (problem.get() != null) {
+                throw problem.get();
+            }
+            try {
+                int rc = process.waitFor();
+                if (rc != 0) {
+                    throw new IOException("Can not check remote directories"); // NOI18N
+                }
+            } catch (InterruptedException ex) {
+                throw new InterruptedIOException();
+            }
+            
             uploadCount += dirsToCreate.size();
             progressHandle.progress(uploadCount);
         }
