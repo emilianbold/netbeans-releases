@@ -103,7 +103,7 @@ public final class PhpSourcePath {
 
         // #221482, #165738
         // check internal files (perhaps the most common use case)
-        if (isInternalFile(file)) {
+        if (org.netbeans.modules.php.project.util.PhpProjectUtils.isInternalFile(file)) {
             return FileType.INTERNAL;
         }
         // then, check sources (typical use-case)
@@ -138,24 +138,13 @@ public final class PhpSourcePath {
                         "phpstubs/phpruntime"); // NOI18N
                 assert phpStubs.exists() && phpStubs.isDirectory() : "No stubs found";
                 phpStubsFolder = FileUtil.toFileObject(phpStubs);
-            } else {
-                // During test?
-                // HACK - TODO use mock
-                String phpDir = System.getProperty("xtest.php.home");   //NOI18N
-                if (phpDir == null) {
-                    throw new RuntimeException("xtest.php.home property has to be set when running within binary distribution");  //NOI18N
-                }
-                File phpStubs = new File(phpDir + File.separator + "phpstubs/phpruntime"); // NOI18N
-                if (phpStubs.exists()) {
-                    phpStubsFolder = FileUtil.toFileObject(phpStubs);
-                } else {
-                    // avoid null
-                    phpStubsFolder = FileUtil.toFileObject(new File(phpDir));
-                    assert phpStubsFolder != null;
-                }
+                assert phpStubsFolder != null : "FileObject for stubs " + phpStubs + " not found";
             }
         }
-
+        if (phpStubsFolder == null) {
+            // during tests
+            return Collections.emptyList();
+        }
         return Collections.singletonList(phpStubsFolder);
     }
 
@@ -213,7 +202,7 @@ public final class PhpSourcePath {
         ClassPath classPath = IncludePathClassPathProvider.findProjectIncludePath(file);
         if (classPath != null && classPath.contains(file)) {
             // internal?
-            if (isInternalFile(file)) {
+            if (org.netbeans.modules.php.project.util.PhpProjectUtils.isInternalFile(file)) {
                 return FileType.INTERNAL;
             }
             // include
@@ -222,25 +211,13 @@ public final class PhpSourcePath {
         return null;
     }
 
-    private static boolean isInternalFile(FileObject file) {
-        for (FileObject dir : CommonPhpSourcePath.getInternalPath()) {
-            if (dir.equals(file)
-                    || FileUtil.isParentOf(dir, file)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     // PhpSourcePathImplementation implementation for file which does not belong to any project
     private static class DefaultPhpSourcePath implements org.netbeans.modules.php.project.classpath.PhpSourcePathImplementation {
 
         @Override
         public FileType getFileType(FileObject file) {
-            for (FileObject dir : CommonPhpSourcePath.getInternalPath()) {
-                if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
-                    return FileType.INTERNAL;
-                }
+            if (org.netbeans.modules.php.project.util.PhpProjectUtils.isInternalFile(file)) {
+                return FileType.INTERNAL;
             }
             for (FileObject dir : getPlatformPath()) {
                 if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {

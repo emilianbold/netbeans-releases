@@ -64,6 +64,7 @@ import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpSources;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
+import org.netbeans.modules.php.project.classpath.CommonPhpSourcePath;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
@@ -387,6 +388,16 @@ public final class PhpProjectUtils {
         }
         intervals.add(Pair.of(start, end));
         return intervals;
+    }
+
+    public static boolean isInternalFile(FileObject file) {
+        for (FileObject dir : CommonPhpSourcePath.getInternalPath()) {
+            if (dir.equals(file)
+                    || FileUtil.isParentOf(dir, file)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // http://wiki.netbeans.org/UsageLoggingSpecification

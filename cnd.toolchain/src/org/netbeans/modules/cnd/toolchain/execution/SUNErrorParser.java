@@ -151,7 +151,7 @@ public final class SUNErrorParser extends ErrorParser {
                 FileObject fo = resolveRelativePath(relativeTo, file);
                 boolean important = severity.get(i).equals("error"); // NOI18N
                 if (fo != null && fo.isValid()) {
-                    return new Results(line, listenerRegistry.register(fo, lineNumber.intValue() - 1, important, description));
+                    return new Results(line, listenerRegistry.register(fo, lineNumber - 1, important, description));
                 }
             } catch (NumberFormatException e) {
             }

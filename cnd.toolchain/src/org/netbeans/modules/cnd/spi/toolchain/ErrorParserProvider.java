@@ -45,8 +45,10 @@ package org.netbeans.modules.cnd.spi.toolchain;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
@@ -82,7 +84,7 @@ public abstract class ErrorParserProvider {
     public abstract String getID();
 
     public final static class OutputListenerRegistry {
-        private final Map<FileObject,List<OutputListener>> storage = new HashMap<FileObject,List<OutputListener>>();
+        private final Map<FileObject,Set<OutputListener>> storage = new HashMap<FileObject,Set<OutputListener>>();
         private final Project project;
         
         protected OutputListenerRegistry(Project project) {
@@ -92,9 +94,9 @@ public abstract class ErrorParserProvider {
         public OutputListener register(FileObject file, int line, boolean isError, String description) {
             OutputListenerImpl res = new OutputListenerImpl(this, file, line, isError, description);
             synchronized(storage) {
-                List<OutputListener> list = storage.get(file);
+                Set<OutputListener> list = storage.get(file);
                 if (list == null) {
-                    list = new ArrayList<OutputListener>();
+                    list = new HashSet<OutputListener>();
                     storage.put(file, list);
                 }
                 list.add(res);
@@ -106,21 +108,21 @@ public abstract class ErrorParserProvider {
             return project;
         }
 
-        public List<OutputListener> getFileListeners(FileObject file){
-            List<OutputListener> res = null;
+        public Set<OutputListener> getFileListeners(FileObject file){
+            Set<OutputListener> res = null;
             if (file.isData()) {
                 synchronized(storage) {
                     res = storage.get(file);
                     if (res != null) {
-                        res = new ArrayList<OutputListener>(res);
+                        res = new HashSet<OutputListener>(res);
                     }
                 }
             } else {
                 synchronized(storage) {
-                    for(Map.Entry<FileObject,List<OutputListener>> entry : storage.entrySet()) {
+                    for(Map.Entry<FileObject,Set<OutputListener>> entry : storage.entrySet()) {
                         if (FileUtil.isParentOf(file, entry.getKey())) {
                             if (res == null) {
-                                res = new ArrayList<OutputListener>();
+                                res = new HashSet<OutputListener>();
                             }
                             res.addAll(entry.getValue());
                         }
@@ -141,7 +143,7 @@ public abstract class ErrorParserProvider {
     }
 
     public static final class Results implements Result {
-        private List<ConvertedLine> result = new ArrayList<ConvertedLine>(1);
+        private final List<ConvertedLine> result = new ArrayList<ConvertedLine>(1);
         public Results(){
         }
         public Results(String line, OutputListener listener){

@@ -275,10 +275,8 @@ abstract public class CsmCompletion {
      */
     public static CsmType getObjectType(CsmObject obj, boolean _constIfClassifier) {
         CsmType type = null;
-        if (CsmKindUtilities.isTypedef(obj)) {
-            type = ((CsmTypedef)obj).getType();
-        } else if (CsmKindUtilities.isTypeAlias(obj)) {
-            type = ((CsmTypeAlias)obj).getType();
+        if (CsmKindUtilities.isTypedefOrTypeAlias(obj)) {
+            type = CsmCompletion.createType((CsmClassifier) obj, 0, 0, 0, _constIfClassifier);
         } else if (CsmKindUtilities.isClassifier(obj)) {
             type = CsmCompletion.createType((CsmClassifier) obj, 0, 0, 0, _constIfClassifier);
         } else if (CsmKindUtilities.isFunction(obj)) {

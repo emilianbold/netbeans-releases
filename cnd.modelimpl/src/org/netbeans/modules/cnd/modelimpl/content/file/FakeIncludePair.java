@@ -101,7 +101,7 @@ public final class FakeIncludePair {
 
     public static void write(List<FakeIncludePair> coll, RepositoryDataOutput output) throws IOException {
         assert output != null;
-        Collection<FakeIncludePair> copy = new ArrayList<FakeIncludePair>(coll);
+        Collection<FakeIncludePair> copy = new ArrayList<>(coll);
         int collSize = copy.size();
         output.writeInt(collSize);
 

@@ -81,7 +81,7 @@ import org.openide.util.CharSequences;
  */
 public final class LibraryManager {
 
-    private static final Map<Integer, LibraryManager> instances = new HashMap<Integer, LibraryManager>();
+    private static final Map<Integer, LibraryManager> instances = new HashMap<>();
     
     private final int repositoryId;
     
@@ -105,7 +105,7 @@ public final class LibraryManager {
         this.repositoryId = repositoryId;
     }
     
-    private final Map<LibraryKey, LibraryEntry> librariesEntries = new ConcurrentHashMap<LibraryKey, LibraryEntry>();
+    private final Map<LibraryKey, LibraryEntry> librariesEntries = new ConcurrentHashMap<>();
     
     private static final class Lock {}
     private final Object lock = new Lock();
@@ -128,7 +128,7 @@ public final class LibraryManager {
      * Returns collection of artificial libraries used in project
      */
     public List<LibProjectImpl> getLibraries(ProjectImpl project) {
-        List<LibProjectImpl> res = new ArrayList<LibProjectImpl>();
+        List<LibProjectImpl> res = new ArrayList<>();
         CsmUID<CsmProject> projectUid = project.getUID();
         for (LibraryEntry entry : librariesEntries.values()) {
             if (entry.containsProject(projectUid)) {
@@ -150,7 +150,7 @@ public final class LibraryManager {
             return Collections.<ProjectBase>emptyList();
         } else {
             Collection<CsmUID<CsmProject>> uids = entry.getDependentProjects();
-            List<ProjectBase> projects = new ArrayList<ProjectBase>(uids.size());
+            List<ProjectBase> projects = new ArrayList<>(uids.size());
             for (CsmUID<CsmProject> uid : uids) {
                 ProjectBase project = (ProjectBase) uid.getObject();
                 if (project != null && ! project.isDisposing() && project.isValid()) {                    
@@ -165,7 +165,7 @@ public final class LibraryManager {
      * Returns collection uids of artificial libraries used in project
      */
     public Collection<CsmUID<CsmProject>> getLirariesKeys(CsmUID<CsmProject> projectUid) {
-        List<CsmUID<CsmProject>> res = new ArrayList<CsmUID<CsmProject>>();
+        List<CsmUID<CsmProject>> res = new ArrayList<>();
         for (LibraryEntry entry : librariesEntries.values()) {
             if (entry.containsProject(projectUid)) {
                 res.add(entry.getLibrary(getUnitId(projectUid)));
@@ -194,7 +194,7 @@ public final class LibraryManager {
      */
     public ProjectBase resolveFileProjectOnInclude(ProjectBase baseProject, FileImpl curFile, ResolvedPath resolvedPath) {
         CharSequence absPath = resolvedPath.getPath();
-        Set<ProjectBase> antiLoop = new HashSet<ProjectBase>();
+        Set<ProjectBase> antiLoop = new HashSet<>();
         ProjectBase res = searchInProjectFiles(baseProject, resolvedPath, antiLoop);
         if (res != null) {
             baseProject.prepareIncludeStorage(res);
@@ -263,7 +263,7 @@ public final class LibraryManager {
     }
 
     private List<CharSequence> getPathToFolder(CharSequence folder, CharSequence path) {
-        List<CharSequence> res = new ArrayList<CharSequence>(3);
+        List<CharSequence> res = new ArrayList<>(3);
         res.add(folder);
         if (CharSequenceUtils.startsWith(path, folder)) {
             while (true) {
@@ -451,7 +451,7 @@ public final class LibraryManager {
      * Close unused artificial libraries.
      */
     public void onProjectClose(CsmUID<CsmProject> project) {
-        List<LibraryEntry> toClose = new ArrayList<LibraryEntry>();
+        List<LibraryEntry> toClose = new ArrayList<>();
         for (LibraryEntry entry : librariesEntries.values()) {
             entry.removeProject(project);
             if (entry.isEmpty()) {
@@ -468,13 +468,13 @@ public final class LibraryManager {
 
     /*package*/
     static void cleanLibrariesData(Collection<LibProjectImpl> libs) {
-        Map<Integer, Collection<LibProjectImpl>> map = new HashMap<Integer, Collection<LibProjectImpl>>();
+        Map<Integer, Collection<LibProjectImpl>> map = new HashMap<>();
         for (LibProjectImpl lib : libs) {
             int unitID = ((ProjectBase)lib).getUnitId();
             int repoId = Repository.getLayeringSupport(unitID).getStorageID();
             Collection<LibProjectImpl> coll = map.get(repoId);
             if (coll == null) {
-                coll = new ArrayList<LibProjectImpl>();
+                coll = new ArrayList<>();
                 map.put(repoId, coll);
             }
             coll.add(lib);
@@ -506,7 +506,7 @@ public final class LibraryManager {
      */
     /*package-local*/ void writeProjectLibraries(CsmUID<CsmProject> project, RepositoryDataOutput aStream) throws IOException {
         assert aStream != null;
-        Set<LibraryKey> keys = new HashSet<LibraryKey>();
+        Set<LibraryKey> keys = new HashSet<>();
         for (Map.Entry<LibraryKey, LibraryEntry> entry : librariesEntries.entrySet()) {
             if (entry.getValue().containsProject(project)) {
                 keys.add(entry.getKey());
@@ -593,7 +593,7 @@ public final class LibraryManager {
 
         private LibraryEntry(LibraryKey folder) {
             this.key = folder;
-            dependentProjects = new ConcurrentHashMap<CsmUID<CsmProject>, Boolean>();
+            dependentProjects = new ConcurrentHashMap<>();
         }
 
         private CharSequence getFolder() {

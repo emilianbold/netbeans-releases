@@ -66,10 +66,10 @@ import org.openide.util.NbBundle;
 
 public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.Savable {
 
-    private SourceRootChooser sourceRootChooser;
+    private final SourceRootChooser sourceRootChooser;
 //    private TestRootChooser testRootChooser;
-    private Project project;
-    private MakeConfigurationDescriptor makeConfigurationDescriptor;
+    private final Project project;
+    private final MakeConfigurationDescriptor makeConfigurationDescriptor;
     private String originalEncoding;
 
     /** Creates new form ProjectPropPanel */

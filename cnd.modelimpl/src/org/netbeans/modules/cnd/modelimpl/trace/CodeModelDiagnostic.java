@@ -129,46 +129,58 @@ public final class CodeModelDiagnostic {
                     printOut.printf("UNKNOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N
                 }
             }
-            DataObject dob = context.lookup(DataObject.class);
-            if (dob != null) {
-                NativeFileItemSet nfis = dob.getLookup().lookup(NativeFileItemSet.class);
-                if (nfis != null) {
-                    printOut.printf("NativeFileItemSet has %d elements\n", nfis.getItems().size());// NOI18N 
-                    int ind = 0;
-                    for (NativeFileItem item : nfis.getItems()) {
-                        printOut.printf("[%d] NativeFileItem %s of class %s\n", ++ind, item.getAbsolutePath(), item.getClass().getName());// NOI18N 
-                        NativeProject nativeProject = item.getNativeProject();
-                        printOut.printf(" from project %s [%s]\n", nativeProject.getProjectDisplayName(), nativeProject.getProjectRoot());// NOI18N 
-                        printOut.printf("\tLang=%s Flavor=%s excluded=%s\n", item.getLanguage(), item.getLanguageFlavor(), item.isExcluded());// NOI18N 
-                        printOut.print("\tUser Include Paths:\n");// NOI18N 
-                        for (FSPath path : item.getUserIncludePaths()) {
-                            String msg = CndFileUtils.isLocalFileSystem(path.getFileSystem()) ? path.getPath() : path.getURL().toString();
-                            FileObject valid = path.getFileObject();
-                            if (valid != null && !valid.isValid()) {
-                                valid = null;
-                            } 
-                            printOut.printf("\t\t%s%s\n", msg, valid == null ? "[invalid]" : "");// NOI18N 
-                        }
-                        printOut.print("\tUser Macros:\n");// NOI18N 
-                        for (String macro : item.getUserMacroDefinitions()) {
-                            printOut.printf("\t\t%s\n", macro);// NOI18N 
-                        }
-                        printOut.print("\tSystem Include Paths:\n");// NOI18N 
-                        for (FSPath path : item.getSystemIncludePaths()) {
-                            String msg = CndFileUtils.isLocalFileSystem(path.getFileSystem()) ? path.getPath() : path.getURL().toString();
-                            FileObject valid = path.getFileObject();
-                            if (valid != null && !valid.isValid()) {
-                                valid = null;
+            Collection<? extends DataObject> dobs = context.lookupAll(DataObject.class);
+            if (!dobs.isEmpty()) {
+                boolean foundItem = false;
+                for(DataObject dob : dobs) {
+                    NativeFileItemSet nfis = dob.getLookup().lookup(NativeFileItemSet.class);
+                    if (nfis != null) {
+                        foundItem = true;
+                        printOut.printf("NativeFileItemSet has %d elements\n", nfis.getItems().size());// NOI18N 
+                        int ind = 0;
+                        for (NativeFileItem item : nfis.getItems()) {
+                            printOut.printf("[%d] NativeFileItem %s of class %s\n", ++ind, item.getAbsolutePath(), item.getClass().getName());// NOI18N 
+                            NativeProject nativeProject = item.getNativeProject();
+                            printOut.printf(" from project %s [%s]\n", nativeProject.getProjectDisplayName(), nativeProject.getProjectRoot());// NOI18N 
+                            printOut.printf("\tLang=%s Flavor=%s excluded=%s\n", item.getLanguage(), item.getLanguageFlavor(), item.isExcluded());// NOI18N 
+                            printOut.print("\tUser Include Paths:\n");// NOI18N 
+                            for (FSPath path : item.getUserIncludePaths()) {
+                                String msg = CndFileUtils.isLocalFileSystem(path.getFileSystem()) ? path.getPath() : path.getURL().toString();
+                                FileObject valid = path.getFileObject();
+                                if (valid != null && !valid.isValid()) {
+                                    valid = null;
+                                } 
+                                printOut.printf("\t\t%s%s\n", msg, valid == null ? "[invalid]" : "");// NOI18N 
                             }
-                            printOut.printf("\t\t%s%s\n", msg, valid == null ? "[invalid]" : "");// NOI18N 
-                        }
-                        printOut.print("\tSystem Macros:\n");// NOI18N 
-                        for (String macro : item.getSystemMacroDefinitions()) {
-                            printOut.printf("\t\t%s\n", macro);// NOI18N 
+                            if (!item.getIncludeFiles().isEmpty()) {
+                                printOut.print("\tUser Include Files:\n");// NOI18N 
+                                for (String path : item.getIncludeFiles()) {
+                                    String msg = path;
+                                    printOut.printf("\t\t%s%s\n", msg, "");// NOI18N 
+                                }
+                            }
+                            printOut.print("\tUser Macros:\n");// NOI18N 
+                            for (String macro : item.getUserMacroDefinitions()) {
+                                printOut.printf("\t\t%s\n", macro);// NOI18N 
+                            }
+                            printOut.print("\tSystem Include Paths:\n");// NOI18N 
+                            for (FSPath path : item.getSystemIncludePaths()) {
+                                String msg = CndFileUtils.isLocalFileSystem(path.getFileSystem()) ? path.getPath() : path.getURL().toString();
+                                FileObject valid = path.getFileObject();
+                                if (valid != null && !valid.isValid()) {
+                                    valid = null;
+                                }
+                                printOut.printf("\t\t%s%s\n", msg, valid == null ? "[invalid]" : "");// NOI18N 
+                            }
+                            printOut.print("\tSystem Macros:\n");// NOI18N 
+                            for (String macro : item.getSystemMacroDefinitions()) {
+                                printOut.printf("\t\t%s\n", macro);// NOI18N 
+                            }
                         }
                     }
-                } else {
-                    printOut.printf("no NativeFileItemSet in %s\n", dob);// NOI18N 
+                }
+                if(!foundItem) {
+                    printOut.printf("no NativeFileItemSet in %s\n", context);// NOI18N 
                 }
             } else {
                 printOut.printf("no file object in lookup\n");// NOI18N 
@@ -354,7 +366,7 @@ public final class CodeModelDiagnostic {
 
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) {
-            Collection<CsmProject> projects = new ArrayList<CsmProject>(context.lookupAll(CsmProject.class));
+            Collection<CsmProject> projects = new ArrayList<>(context.lookupAll(CsmProject.class));
             if (projects.isEmpty()) {
                 CsmFile file = context.lookup(CsmFile.class);
                 if (file != null) {
@@ -384,7 +396,7 @@ public final class CodeModelDiagnostic {
 
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) {
-            Collection<CsmProject> projects = new ArrayList<CsmProject>(context.lookupAll(CsmProject.class));
+            Collection<CsmProject> projects = new ArrayList<>(context.lookupAll(CsmProject.class));
             if (projects.isEmpty()) {
                 CsmFile file = context.lookup(CsmFile.class);
                 if (file != null) {
@@ -416,7 +428,7 @@ public final class CodeModelDiagnostic {
 
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) {
-            Collection<CsmProject> projects = new ArrayList<CsmProject>(context.lookupAll(CsmProject.class));
+            Collection<CsmProject> projects = new ArrayList<>(context.lookupAll(CsmProject.class));
             if (projects.isEmpty()) {
                 CsmFile file = context.lookup(CsmFile.class);
                 if (file != null) {

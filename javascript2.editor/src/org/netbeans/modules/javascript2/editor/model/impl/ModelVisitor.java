@@ -663,7 +663,12 @@ public class ModelVisitor extends PathNodeVisitor {
             // create variables that are declared in the function
             // They has to be created here for tracking occurrences
             if (canBeSingletonPattern()) {
-                parent = resolveThis(fncScope);
+                Node lastNode = getPreviousFromPath(1);
+                if (lastNode instanceof FunctionNode && !canBeSingletonPattern(1)) {
+                    parent = fncScope;
+                } else { 
+                    parent = resolveThis(fncScope);
+                }
             } else {
                 parent = fncScope;
             }
@@ -1110,7 +1115,15 @@ public class ModelVisitor extends PathNodeVisitor {
                             property.addAssignment(types, name.getOffsetRange().getStart());
                         }
                         if (value instanceof IdentNode) {
-                            addOccurence((IdentNode)value, false);
+                            IdentNode iNode = (IdentNode)value;
+                            if (!iNode.getPropertyName().equals(name.getName())) {
+                                addOccurence((IdentNode)value, false);
+                            } else {
+                                // handling case like property: property
+                                if (modelBuilder.getCurrentObject().getParent() != null) {
+                                    occurrenceBuilder.addOccurrence(name.getName(), new OffsetRange(iNode.getStart(), iNode.getFinish()), modelBuilder.getCurrentDeclarationScope(), modelBuilder.getCurrentObject().getParent(), modelBuilder.getCurrentWith(), false, false);
+                                }
+                            }
                         }
                     }
                 }
@@ -1453,7 +1466,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
         Identifier name = fqn.get(0);
         if (!"this".equals(fqn.get(0).getName())) { 
-            if (!(modelBuilder.getCurrentObject() instanceof JsWith)) {
+            if (modelBuilder.getCurrentWith() == null) {
                 Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationFunction());
                 for(JsObject variable : variables) {
                     if (variable.getName().equals(name.getName()) && (variable.getModifiers().contains(Modifier.PRIVATE) || variable instanceof ParameterObject)) {
@@ -1470,7 +1483,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 } 
             } else {
-                JsObject withObject = modelBuilder.getCurrentObject();
+                JsObject withObject = modelBuilder.getCurrentWith();
                 object = (JsObjectImpl)withObject.getProperty(name.getName());
                 if (object == null) {
                     object = new JsObjectImpl(withObject, name, name.getOffsetRange(), false, parserResult.getSnapshot().getMimeType(), null);

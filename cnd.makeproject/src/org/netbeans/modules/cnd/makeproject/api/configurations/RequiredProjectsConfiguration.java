@@ -54,7 +54,7 @@ public class RequiredProjectsConfiguration extends VectorConfiguration<LibraryIt
     @Override
     public RequiredProjectsConfiguration clone() {
         RequiredProjectsConfiguration clone = new RequiredProjectsConfiguration();
-        clone.setValue(new ArrayList<LibraryItem.ProjectItem>(getValue()));
+        clone.setValue(new ArrayList<>(getValue()));
         return clone;
     }
 

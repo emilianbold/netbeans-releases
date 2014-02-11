@@ -51,7 +51,7 @@ import java.util.Map;
  * @author Alexander Simom
  */
 public class MacroMap {
-    private Map<String, Value> storage = new HashMap<String, Value>();
+    private final Map<String, Value> storage = new HashMap<>();
     
     public MacroMap() {
     }
@@ -86,7 +86,7 @@ public class MacroMap {
     }
 
     public void retainAll(List<String> list) {
-        Map<String,String> keys = new HashMap<String,String>();
+        Map<String,String> keys = new HashMap<>();
         for(String macro : list){
             int i = macro.indexOf('=');
             String key;
@@ -100,7 +100,7 @@ public class MacroMap {
             }
             keys.put(key, value);
         }
-        for(String s : new ArrayList<String>(storage.keySet())) {
+        for(String s : new ArrayList<>(storage.keySet())) {
             if (!keys.containsKey(s)) {
                 storage.remove(s);
             } else {
@@ -112,7 +112,7 @@ public class MacroMap {
     }
     
     public List<String> convertToList() {
-        List<String> external = new ArrayList<String>();
+        List<String> external = new ArrayList<>();
         for(Map.Entry<String,Value> e : storage.entrySet()) {
             String key = e.getKey();
             String value = e.getValue().getDominante();
@@ -126,7 +126,7 @@ public class MacroMap {
     }
     
     public List<String> removeCommon(List<String> list) {
-        List<String> diff = new ArrayList<String>();
+        List<String> diff = new ArrayList<>();
         for(String macro : list){
             int i = macro.indexOf('=');
             String key;
@@ -155,8 +155,8 @@ public class MacroMap {
     }
     
     private static class Value {
-        private List<String> values = new ArrayList<String>();
-        private List<Integer> counts = new ArrayList<Integer>();
+        private final List<String> values = new ArrayList<>();
+        private final List<Integer> counts = new ArrayList<>();
         private void addValue(String value) {
             int i = values.indexOf(value);
             if (i < 0) {

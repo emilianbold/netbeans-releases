@@ -82,7 +82,7 @@ public final class IncludeHierarchyResolverImpl extends CsmIncludeHierarchyResol
     public Collection<CsmReference> getIncludes(CsmFile referencedFile) {
         CsmProject project = referencedFile.getProject();
         if (project instanceof ProjectBase) {
-            List<CsmReference> res = new ArrayList<CsmReference>();
+            List<CsmReference> res = new ArrayList<>();
             for (CsmFile file : getReferences((ProjectBase)project, referencedFile)){
                 for (CsmInclude include : file.getIncludes()){
                     if (referencedFile.equals(include.getIncludeFile())){

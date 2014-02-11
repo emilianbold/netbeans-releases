@@ -49,13 +49,13 @@ import java.util.List;
 
 public class VectorConfiguration<E> implements Cloneable {
 
-    private VectorConfiguration<E> master;
+    private final VectorConfiguration<E> master;
     private List<E> value;
     private boolean dirty = false;
 
     public VectorConfiguration(VectorConfiguration<E> master) {
         this.master = master;
-        value = new ArrayList<E>(0);
+        value = new ArrayList<>(0);
         reset();
     }
 
@@ -98,7 +98,7 @@ public class VectorConfiguration<E> implements Cloneable {
 
     public final void reset() {
         //value.removeAll(); // FIXUP
-        value = new ArrayList<E>(0);
+        value = new ArrayList<>(0);
     }
 
     // Clone and Assign
@@ -146,8 +146,8 @@ public class VectorConfiguration<E> implements Cloneable {
 
     @Override
     public VectorConfiguration<E> clone() {
-        VectorConfiguration<E> clone = new VectorConfiguration<E>(master);
-        clone.setValue(new ArrayList<E>(getValue()));
+        VectorConfiguration<E> clone = new VectorConfiguration<>(master);
+        clone.setValue(new ArrayList<>(getValue()));
         return clone;
     }
 

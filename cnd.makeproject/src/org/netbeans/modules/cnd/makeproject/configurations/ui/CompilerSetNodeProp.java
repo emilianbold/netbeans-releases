@@ -67,14 +67,14 @@ import org.openide.util.NbBundle;
 
 public class CompilerSetNodeProp extends Node.Property<String> {
 
-    private CompilerSet2Configuration configuration;
+    private final CompilerSet2Configuration configuration;
     private final DevelopmentHostConfiguration hostConfiguration;
     private volatile boolean supportDefault = true;
-    private boolean canWrite;
-    private String txt1;
-    private String txt2;
-    private String txt3;
-    private String oldname;
+    private final boolean canWrite;
+    private final String txt1;
+    private final String txt2;
+    private final String txt3;
+    private final String oldname;
 
     public CompilerSetNodeProp(CompilerSet2Configuration configuration, DevelopmentHostConfiguration hostConf, boolean canWrite, String txt1, String txt2, String txt3) {
         super(String.class);
@@ -189,7 +189,7 @@ public class CompilerSetNodeProp extends Node.Property<String> {
         @Override
         public String[] getTags() {
             supportDefault = true;
-            List<String> list = new ArrayList<String>();
+            List<String> list = new ArrayList<>();
             // TODO: this works unpredictable on switching development hosts
             // TODO: should be resolved later on
 //            if (configuration.getCompilerSetManager().getCompilerSet(getOldname()) == null) {

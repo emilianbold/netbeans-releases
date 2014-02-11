@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,51 +37,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.twig.editor.lexer;
+package org.netbeans.modules.cnd.spi.project;
 
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerRestartInfo;
-import org.netbeans.spi.lexer.TokenFactory;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 
-public class TwigLexer implements Lexer<TwigTokenId> {
-
-    private final TwigColoringLexer scanner;
-    private final TokenFactory<TwigTokenId> tokenFactory;
-
-    public TwigLexer(LexerRestartInfo<TwigTokenId> info) {
-        scanner = new TwigColoringLexer(info);
-        tokenFactory = info.tokenFactory();
-    }
-
-    @Override
-    public Token<TwigTokenId> nextToken() {
-        try {
-            TwigTokenId tokenId = scanner.findNextToken();
-            Token<TwigTokenId> token = null;
-            if (tokenId != null) {
-                token = tokenFactory.createToken(tokenId);
-            }
-            return token;
-        } catch (IOException ex) {
-            Logger.getLogger(TwigLexer.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
-
-    @Override
-    public Object state() {
-        return scanner.getState();
-    }
-
-    @Override
-    public void release() {
-    }
-
+/**
+ * If we had a project on some machine with paths to the project :
+ * /export1/tmp/MYPROJECT and than we have parsed and and got repository copied
+ * repository to the local machine (and source file also) by path
+ * /export/home/MYPROJECT than in this particlar method we will get
+ * /export/home/MYPROJECT as NativeProject, /export1/tmp/MYPROJECT/src/test.cc
+ * as source file path (this is how it was stored in the repository originally)
+ * and it should return /export/home/MYPROJECT/src/test.cc as a result
+ *
+ * @author mtishkov
+ */
+public interface NativeProjectRelocationMapperProvider {
+    /**
+     * If we had a project on some machine with paths to the project : 
+     * /export1/tmp/MYPROJECT and than we have parsed and and got repository
+     * copied repository to the local machine (and source file also) by path /export/home/MYPROJECT
+     * than in this particlar method 
+     * we will get /export/home/MYPROJECT  as NativeProject, /export1/tmp/MYPROJECT/src/test.cc as source file path
+     * (this is how it was stored in the repository originally) and it should return 
+     * /export/home/MYPROJECT/src/test.cc as a result
+     * @param project
+     * @param sourceFilePath
+     * @return 
+     */
+    public CharSequence getDestinationPath(NativeProject project, CharSequence sourceFilePath);
+    
+    public CharSequence getSourceProjectName(NativeProject project);
+    
+    public NativeProject findDestinationProject(CharSequence sourceProjectName);
+    
 }

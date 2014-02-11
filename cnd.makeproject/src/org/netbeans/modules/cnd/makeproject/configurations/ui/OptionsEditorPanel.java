@@ -53,8 +53,8 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
 public class OptionsEditorPanel extends javax.swing.JPanel implements PropertyChangeListener {
-    private BooleanConfiguration inheritValues;
-    private PropertyEditorSupport editor;
+    private final BooleanConfiguration inheritValues;
+    private final PropertyEditorSupport editor;
 
     /** Creates new form CommandLineEditorPanel */
     public OptionsEditorPanel(String[] texts, BooleanConfiguration inheritValues, PropertyEditorSupport editor, PropertyEnv env) {

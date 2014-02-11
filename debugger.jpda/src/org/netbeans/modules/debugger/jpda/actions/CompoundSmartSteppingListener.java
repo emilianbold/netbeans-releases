@@ -60,10 +60,10 @@ public final class CompoundSmartSteppingListener extends SmartSteppingCallback {
 
 
     private List smartSteppings;
-    private ContextProvider lookupProvider;
+    private final ContextProvider lookupProvider;
     
     
-    private static boolean ssverbose = 
+    private static final boolean ssverbose = 
         System.getProperty ("netbeans.debugger.smartstepping") != null;
 
     

@@ -266,7 +266,7 @@ public abstract class BreakpointImpl implements ConditionedExecutor, PropertyCha
         return VirtualMachineWrapper.eventRequestManager (vm);
     }
 
-    protected void addEventRequest (EventRequest r) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, InvalidRequestStateExceptionWrapper {
+    protected void addEventRequest (EventRequest r) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, InvalidRequestStateExceptionWrapper, RequestNotSupportedException {
         addEventRequest(r, customHitCountFilter != 0);
     }
     
@@ -274,7 +274,7 @@ public abstract class BreakpointImpl implements ConditionedExecutor, PropertyCha
         this.customHitCountFilter = customHitCountFilter;
     }
     
-    synchronized protected void addEventRequest (EventRequest r, boolean ignoreHitCount) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, InvalidRequestStateExceptionWrapper {
+    synchronized protected void addEventRequest (EventRequest r, boolean ignoreHitCount) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, InvalidRequestStateExceptionWrapper, RequestNotSupportedException {
         logger.log(Level.FINE, "BreakpointImpl addEventRequest: {0}", r);
         requests.add (r);
         getDebugger ().getOperator ().register (r, this);
@@ -320,6 +320,9 @@ public abstract class BreakpointImpl implements ConditionedExecutor, PropertyCha
         } catch (InvalidRequestStateExceptionWrapper e) {
             getDebugger ().getOperator ().unregister (r);
             throw e;
+        } catch (UnsupportedOperationException uoex) {
+            // see https://netbeans.org/bugzilla/show_bug.cgi?id=241333
+            throw new RequestNotSupportedException(r);
         }
     }
 
@@ -436,12 +439,18 @@ public abstract class BreakpointImpl implements ConditionedExecutor, PropertyCha
                     EventRequestWrapper.disable(request);
                     //event.request().addCountFilter(hitCountFilter);
                     // This submits the event with the filter again
+                    // The request was enabled before, we should not get UnsupportedOperationException
                     EventRequestWrapper.enable(request);
                 }
                 if (hitCountFilter == -1) {
                     EventRequestWrapper.disable(request);
                     removeEventRequest(request);
-                    addEventRequest(createEventRequest(request), true);
+                    try {
+                        addEventRequest(createEventRequest(request), true);
+                    } catch (RequestNotSupportedException ex) {
+                        Exceptions.printStackTrace(ex);
+                        return true; // Stop
+                    }
                 }
             }
 

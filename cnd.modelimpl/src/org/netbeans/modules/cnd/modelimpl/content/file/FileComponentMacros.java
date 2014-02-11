@@ -124,7 +124,7 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
         Collection<CsmUID<CsmMacro>> copy;
         try {
             macrosLock.writeLock().lock();
-            copy = new ArrayList<CsmUID<CsmMacro>>(macros.values());
+            copy = new ArrayList<>(macros.values());
             macros.clear();
         } finally {
             macrosLock.writeLock().unlock();
@@ -167,7 +167,7 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
     }
 
     public Collection<CsmUID<CsmMacro>> findMacroUids(CharSequence name) {
-        Collection<CsmUID<CsmMacro>> uids = new ArrayList<CsmUID<CsmMacro>>(2);
+        Collection<CsmUID<CsmMacro>> uids = new ArrayList<>(2);
         NameSortedKey from = NameSortedKey.getStartKey(name);
         NameSortedKey to = NameSortedKey.getEndKey(name);
         try {
@@ -183,9 +183,9 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
 
     private TreeMap<NameSortedKey, CsmUID<CsmMacro>> createMacros(TreeMap<NameSortedKey, CsmUID<CsmMacro>> other) {
         if (other != null) {
-            return new TreeMap<NameSortedKey, CsmUID<CsmMacro>>(other);
+            return new TreeMap<>(other);
         } else {
-            return new TreeMap<NameSortedKey, CsmUID<CsmMacro>>();
+            return new TreeMap<>();
         }
     }
 

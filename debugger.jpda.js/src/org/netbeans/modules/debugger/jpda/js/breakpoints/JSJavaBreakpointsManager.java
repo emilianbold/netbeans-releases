@@ -43,6 +43,8 @@
 package org.netbeans.modules.debugger.jpda.js.breakpoints;
 
 import com.sun.jdi.request.EventRequest;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -353,6 +355,7 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
         private final JSLineBreakpoint jslb;
         private final Source source;
         private LineBreakpoint lb;
+        private PropertyChangeListener bpPropertyListener;
         
         LineBreakpointHandler(JPDADebugger debugger, JSLineBreakpoint jslb, Source source) {
             this.debugger = debugger;
@@ -360,6 +363,8 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
             this.source = source;
             this.lb = createLineBreakpoint();
             DebuggerManager.getDebuggerManager().addBreakpoint(lb);
+            bpPropertyListener = new BPPropertyListener(lb);
+            jslb.addPropertyChangeListener(bpPropertyListener);
         }
         
         private LineBreakpoint createLineBreakpoint() {
@@ -371,11 +376,15 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
             setPreferredClassType(lb, source.getClassType());
             lb.setSuspend(JPDABreakpoint.SUSPEND_EVENT_THREAD);
             lb.setSession(debugger);
+            if (!jslb.isEnabled()) {
+                lb.disable();
+            }
             return lb;
         }
         
         void destroy() {
             DebuggerManager.getDebuggerManager().removeBreakpoint(lb);
+            jslb.removePropertyChangeListener(bpPropertyListener);
         }
         
         private void setPreferredClassType(LineBreakpoint lb, JPDAClassType classType) {
@@ -387,6 +396,30 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
                      IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                 Exceptions.printStackTrace(ex);
                 lb.setPreferredClassName(source.getClassType().getName());
+            }
+        }
+        
+        private static class BPPropertyListener implements PropertyChangeListener {
+            
+            private final LineBreakpoint lb;
+            
+            BPPropertyListener(LineBreakpoint lb) {
+                this.lb = lb;
+            }
+
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                String propertyName = evt.getPropertyName();
+                switch (propertyName) {
+                    case Breakpoint.PROP_ENABLED:
+                        if (Boolean.TRUE.equals(evt.getNewValue())) {
+                            lb.enable();
+                        }
+                        if (Boolean.FALSE.equals(evt.getNewValue())) {
+                            lb.disable();
+                        }
+                        break;
+                }
             }
         }
     }

@@ -51,6 +51,7 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -79,10 +80,13 @@ import javax.swing.border.Border;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.plaf.TreeUI;
+import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.text.ChangedCharSetException;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
+import javax.swing.tree.TreePath;
 import org.netbeans.api.annotations.common.StaticResource;
 import static org.netbeans.modules.project.ui.Bundle.*;
 import org.openide.ErrorManager;
@@ -676,6 +680,39 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             //#219709 - workaround for JDK bug http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=8003400
             tree.setLargeModel( false );
         }
+
+        @Override
+        protected void showSelection(TreePath[] treePaths) {
+            //#240260 - need to ajust path bounds to show the selected node completely.
+            //Most likely the tree model includes 'please wait' node that the path bounds are calculated.
+            //So when the wait node is removed later on the bounds are actually invalid.
+            tree.getSelectionModel().setSelectionPaths(treePaths);
+
+            if (treePaths.length == 1) {
+                showPathWithoutExpansion(treePaths[0]);
+            }
+        }
+
+        /** Make a path visible.
+        * @param path the path
+        */
+        private void showPathWithoutExpansion(TreePath path) {
+            Rectangle rect = tree.getPathBounds(path);
+            if (rect != null) { //PENDING
+                TreeUI tmp = tree.getUI();
+                int correction = 0;
+                if (tmp instanceof BasicTreeUI) {
+                    correction = ((BasicTreeUI) tmp).getLeftChildIndent();
+                    correction += ((BasicTreeUI) tmp).getRightChildIndent();
+                }
+                rect.x = Math.max(0, rect.x - correction);
+                rect.y += rect.height;
+                if (rect.y >= 0) { //#197514 - do not scroll to negative y values
+                    tree.scrollRectToVisible(rect);
+                }
+            }
+        }
+        
     }
 
     private static final class CategoriesPanel extends ExplorerProviderPanel {

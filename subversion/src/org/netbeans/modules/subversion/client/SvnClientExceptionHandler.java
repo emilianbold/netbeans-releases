@@ -754,7 +754,7 @@ public class SvnClientExceptionHandler {
     
     public static boolean isWrongURLInRevision(String msg) {        
         msg = msg.toLowerCase();
-        if (msg.indexOf("no such revision") > -1 ) {                                        // NOI18N
+        if (isNoSuchRevision(msg)) {
             return true;
         }
         int idx = msg.indexOf("unable to find repository location for");                    // NOI18N
@@ -765,6 +765,11 @@ public class SvnClientExceptionHandler {
         return idx > -1 && (msg.indexOf("non-existent in that revision", idx + 3) > -1      //NOI18N
                 || msg.indexOf("non-existent in revision", idx + 3) > -1);                  //NOI18N
     }    
+
+    public static boolean isNoSuchRevision (String msg) {
+        msg = msg.toLowerCase();
+        return msg.contains("no such revision"); //NOI18N
+    }
 
     private static boolean isHTTP405(String msg) {
         return msg.indexOf("405") > -1;                                                     // NOI18N

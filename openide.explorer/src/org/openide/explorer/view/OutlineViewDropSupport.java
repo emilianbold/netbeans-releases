@@ -147,7 +147,11 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
 
     private void checkStoredGlassPane() {
         // remember current glass pane to set back at end of dragging over this compoment
-        if (!DropGlassPane.isOriginalPaneStored()) {
+        if (!DropGlassPane.isOriginalPaneStored() || dropPane == null) {
+            if (DropGlassPane.isOriginalPaneStored()) {
+                // Original panel is stored, but dropPane == null, see #236349.
+                DropGlassPane.putBackOriginal();
+            }
             Component comp = table.getRootPane().getGlassPane();
             DropGlassPane.setOriginalPane(table, comp, comp.isVisible());
 

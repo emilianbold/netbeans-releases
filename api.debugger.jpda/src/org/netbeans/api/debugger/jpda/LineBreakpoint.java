@@ -452,6 +452,7 @@ public class LineBreakpoint extends JPDABreakpoint {
         private ChangeListener registryListener;
         private FileChangeListener fileListener;
         private JPDAClassType classType;
+        private boolean wasRegisteredWhenFileDeleted;
        
         public LineBreakpointImpl(String url) {
             super(url);
@@ -555,7 +556,15 @@ public class LineBreakpoint extends JPDABreakpoint {
 
         @Override
         public void fileDeleted(FileEvent fe) {
-            DebuggerManager.getDebuggerManager().removeBreakpoint(this);
+            Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
+            for (Breakpoint b : breakpoints) {
+                // Not nice, but the API is limiting
+                if (b == this) {
+                    wasRegisteredWhenFileDeleted = true;
+                    DebuggerManager.getDebuggerManager().removeBreakpoint(this);
+                    break;
+                }
+            }
             fo = null;
         }
 
@@ -607,7 +616,11 @@ public class LineBreakpoint extends JPDABreakpoint {
                 newFO.addFileChangeListener(fileListener);
                     this.setURL(newFO.toURL().toString());
                 fo = newFO;
-                DebuggerManager.getDebuggerManager().addBreakpoint(this);
+                if (wasRegisteredWhenFileDeleted) {
+                    // Add back
+                    DebuggerManager.getDebuggerManager().addBreakpoint(this);
+                    wasRegisteredWhenFileDeleted = false;
+                }
                 firePropertyChange(PROP_GROUP_PROPERTIES, null, null);
             } else if (DebuggerEngine.class.getName().equals(evt.getPropertyName())) {
                 enginePropertyChange(evt);

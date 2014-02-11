@@ -603,6 +603,7 @@ public abstract class Group {
             stayOpened.retainAll(oldOpen);
             assert !toClose.contains(null) : toClose;
             assert !toOpen.contains(null) : toOpen;
+            assert toClose.isEmpty() ? true : !new HashSet<Project>(toClose).removeAll(toOpen) : "close and open contained the same item, issue #236211?" + Arrays.toString(toClose.toArray()) + ":::" + Arrays.toString(toOpen.toArray());
             IndexingBridge.Lock lock = IndexingBridge.getDefault().protectedMode();
             try {
                 h.progress(Group_progress_closing(toClose.size()), 110);

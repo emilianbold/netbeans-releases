@@ -95,6 +95,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
@@ -107,7 +108,6 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.DocumentAdapter;
 import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
-import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -116,7 +116,6 @@ import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -134,7 +133,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportExecutable"); // NOI18N
     private DefaultTableModel tableModel;
     private static final String BINARY_FILE_KEY = "binaryField"; // NOI18N
-    private final List<AtomicBoolean> cancelable = new ArrayList<AtomicBoolean>();
+    private final List<AtomicBoolean> cancelable = new ArrayList<>();
     private static final class Lock {}
     private final Object lock = new Lock();
     private final AtomicBoolean searching = new AtomicBoolean(false);
@@ -227,7 +226,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             checking.incrementAndGet();
             validateController();
             final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
-            final Map<String, Object> map = new HashMap<String, Object>();
+            final Map<String, Object> map = new HashMap<>();
             map.put("DW:buildResult", controller.getWizardStorage().getBinaryPath().getPath()); // NOI18N
             if (env.isRemote()) {
                 map.put("DW:fileSystem", fileSystem); // NOI18N
@@ -391,7 +390,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     }
 
     private Map<String,String> searchingTable(List<String> dlls) {
-        Map<String,String> dllPaths = new TreeMap<String, String>();
+        Map<String,String> dllPaths = new TreeMap<>();
         if (dlls != null) {
             for(String dll : dlls) {
                dllPaths.put(dll, null);
@@ -436,7 +435,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     }
     
     private void processDlls(List<String> searchPaths, FSPath binary, Map<String, String> dllPaths, final AtomicBoolean cancel, String root) {
-        Set<String> checkedDll = new HashSet<String>();
+        Set<String> checkedDll = new HashSet<>();
         checkedDll.add(binary.getPath());
         String ldLibPath = CommonUtilities.getLdLibraryPath(env);
         ldLibPath = CommonUtilities.addSearchPaths(ldLibPath, searchPaths, binary.getPath());
@@ -452,7 +451,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             }
         }
         while(true) {
-            List<String> secondary = new ArrayList<String>();
+            List<String> secondary = new ArrayList<>();
             for(Map.Entry<String,String> entry : dllPaths.entrySet()) {
                 if (cancel.get()) {
                     break;
@@ -461,7 +460,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                     if (!checkedDll.contains(entry.getValue())) {
                         checkedDll.add(entry.getValue());
                         final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
-                        final Map<String, Object> map = new HashMap<String, Object>();
+                        final Map<String, Object> map = new HashMap<>();
                         map.put("DW:buildResult", entry.getValue()); // NOI18N
                         if (env.isRemote()) {
                             map.put("DW:fileSystem", fileSystem); // NOI18N
@@ -519,10 +518,10 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     }
 
     private void gatherSubFolders(FileObject startRoot, HashSet<String> set, Map<String, String> result, AtomicBoolean cancel) {
-        List<FileObject> down = new ArrayList<FileObject>();
+        List<FileObject> down = new ArrayList<>();
         down.add(startRoot);
         while (!down.isEmpty()) {
-            ArrayList<FileObject> next = new ArrayList<FileObject>();
+            ArrayList<FileObject> next = new ArrayList<>();
             for (FileObject folder : down) {
                 if (cancel.get()) {
                     return;
@@ -594,7 +593,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     private CompilerSet detectCompilerSet(String compiler){
         boolean isSunStudio = true;
         if (compiler != null) {
-            isSunStudio = compiler.indexOf("Sun") >= 0; // NOI18N
+            isSunStudio = compiler.contains("Sun"); // NOI18N
         }
         CompilerSetManager manager = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal());
         if (isSunStudio) {
@@ -797,8 +796,8 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
 
     private void sourcesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sourcesButtonActionPerformed
         String seed = sourcesField.getText();
-        JFileChooser fileChooser;
-        fileChooser = new FileChooser(
+        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(
+                env,
                 getString("SelectBinaryPanelVisual.Source.Browse.Title"), // NOI18N
                 getString("SelectBinaryPanelVisual.Source.Browse.Select"), // NOI18N
                 JFileChooser.DIRECTORIES_ONLY,
@@ -853,7 +852,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     }
 
     private ArrayList<String> getDlls(){
-        ArrayList<String> dlls = new ArrayList<String>();
+        ArrayList<String> dlls = new ArrayList<>();
         if (((ProjectKindItem)dependeciesComboBox.getSelectedItem()).kind == IteratorExtension.ProjectKind.Minimal) {
             return dlls;
         }
@@ -1039,7 +1038,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             if (value == null) {
                 result = emptyLabel;
             } else {
-                setSelected(((Boolean)value).booleanValue());
+                setSelected(((Boolean)value));
                 setEnabled(table.getModel().isCellEditable(row, column));
                 result = this;
             }
@@ -1116,9 +1115,9 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     }
 
     private static final class MyDefaultTableModel extends DefaultTableModel {
-        private List<Boolean> uses = new ArrayList<Boolean>();
-        private List<String> names = new ArrayList<String>();
-        private List<String> paths = new ArrayList<String>();
+        private final List<Boolean> uses = new ArrayList<>();
+        private final List<String> names = new ArrayList<>();
+        private final List<String> paths = new ArrayList<>();
         private final SelectBinaryPanelVisual parent;
         private final boolean searching;
         private MyDefaultTableModel(SelectBinaryPanelVisual parent, Map<String, String> dlls, String root, String binaryRoot, boolean searching){

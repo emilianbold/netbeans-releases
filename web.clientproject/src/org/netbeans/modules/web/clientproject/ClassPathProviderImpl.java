@@ -57,7 +57,6 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.ChangeSupport;
 
 /**
  *
@@ -66,7 +65,7 @@ public class ClassPathProviderImpl implements ClassPathProvider {
     
     public static final String SOURCE_CP = "classpath/html5"; //NOI18N
             
-    private ClientSideProject project;
+    private final ClientSideProject project;
 
     public ClassPathProviderImpl(ClientSideProject project) {
         this.project = project;
@@ -80,8 +79,12 @@ public class ClassPathProviderImpl implements ClassPathProvider {
                 // broken project
                 return null;
             }
-            if (FileUtil.isParentOf(siteRootFolder, file) ||
-                    (project.getTestsFolder() != null && FileUtil.isParentOf(project.getTestsFolder(), file))) {
+            if (FileUtil.isParentOf(siteRootFolder, file)) {
+                return project.getSourceClassPath();
+            }
+            FileObject testsFolder = project.getTestsFolder();
+            if (testsFolder != null
+                    && FileUtil.isParentOf(testsFolder, file)) {
                 return project.getSourceClassPath();
             }
         }

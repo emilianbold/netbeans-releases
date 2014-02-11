@@ -80,6 +80,7 @@ import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.ExpressionPool.Expression;
+import org.netbeans.modules.debugger.jpda.ExpressionPool.Interval;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.JPDAStepImpl;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
@@ -122,7 +123,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
 
     private static final Logger logger = Logger.getLogger(RunIntoMethodActionProvider.class.getName());
 
-    private JPDADebuggerImpl debugger;
+    private final JPDADebuggerImpl debugger;
     private ActionsManager lastActionsManager;
     
     public RunIntoMethodActionProvider(ContextProvider lookupProvider) {
@@ -319,6 +320,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         }
         Expression expr = debugger.getExpressionPool().getExpressionAt(locations.get(0), url);
         Location bpLocation = null;
+        Interval expressionLines = null;
         if (expr != null) {
             Operation[] ops = expr.getOperations();
             for (int i = 0; i < ops.length; i++) {
@@ -330,28 +332,34 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                     break;
                 }
             }
+            expressionLines = expr.getInterval();
         }
         if (bpLocation == null) {
             bpLocation = locations.get(0);
         }
-        doAction(debugger, methodName, bpLocation, false, doResume);
+        doAction(debugger, methodName, bpLocation, expressionLines, false, doResume,
+                 MethodChooserSupport.MethodEntry.SELECTED);
     }
 
     static boolean doAction(final JPDADebuggerImpl debugger,
                             final String methodName,
                             Location bpLocation,
+                            Interval expressionLines,
                             // If it's important not to run far from the expression
-                            boolean setBoundaryStep) {
+                            boolean setBoundaryStep,
+                            MethodChooserSupport.MethodEntry methodEntry) {
         
-        return doAction(debugger, methodName, bpLocation, setBoundaryStep, true);
+        return doAction(debugger, methodName, bpLocation, expressionLines, setBoundaryStep, true, methodEntry);
     }
 
     private static boolean doAction(final JPDADebuggerImpl debugger,
                                     final String methodName,
                                     Location bpLocation,
                                     // If it's important not to run far from the expression
+                                    Interval expressionLines,
                                     boolean setBoundaryStep,
-                                    boolean doResume) {
+                                    boolean doResume,
+                                    final MethodChooserSupport.MethodEntry methodEntry) {
         final VirtualMachine vm = debugger.getVirtualMachine();
         if (vm == null) return false;
         final int line = LocationWrapper.lineNumber0(bpLocation, "Java");
@@ -387,7 +395,8 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         logger.log(Level.FINE, "doAction() areWeOnTheLocation = {0}, methodName = {1}", new Object[]{areWeOnTheLocation, methodName});
         if (areWeOnTheLocation) {
             // We're on the line from which the method is called
-            traceLineForMethod(debugger, ct.getThreadReference(), methodName, line, doFinishWhenMethodNotFound);
+            traceLineForMethod(debugger, ct.getThreadReference(), methodName,
+                               line, doFinishWhenMethodNotFound, methodEntry);
         } else {
             final JPDAStep[] boundaryStepPtr = new JPDAStep[] { null };
             // Submit the breakpoint to get to the point from which the method is called
@@ -456,7 +465,8 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                         } catch (VMDisconnectedExceptionWrapper e) {
                             return false;
                         }
-                        traceLineForMethod(debugger, tr, methodName, line, doFinishWhenMethodNotFound);
+                        traceLineForMethod(debugger, tr, methodName, line,
+                                           doFinishWhenMethodNotFound, methodEntry);
                         return true;
                     }
 
@@ -479,7 +489,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                     return false;
                 }
                 if (setBoundaryStep) {
-                    boundaryStepPtr[0] = setBoundaryStepRequest(debugger, t, brReq);
+                    boundaryStepPtr[0] = setBoundaryStepRequest(debugger, t, brReq, expressionLines);
                 }
             } catch (VMDisconnectedExceptionWrapper e) {
                 return false;
@@ -494,10 +504,11 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
     }
 
     private static JPDAStep setBoundaryStepRequest(final JPDADebuggerImpl debugger,
-                                                   JPDAThread tr,
-                                                   final EventRequest request) {
+                                                   final JPDAThread tr,
+                                                   final EventRequest request,
+                                                   final Interval expressionLines) {
         // We need to also submit a step request so that we're sure that we end up at least on the next execution line
-        JPDAStep boundaryStep = debugger.createJPDAStep(JPDAStep.STEP_LINE, JPDAStep.STEP_OVER);
+        final JPDAStep boundaryStep = debugger.createJPDAStep(JPDAStep.STEP_LINE, JPDAStep.STEP_OVER);
         boundaryStep.addPropertyChangeListener(JPDAStep.PROP_STATE_EXEC, new PropertyChangeListener() {
 
             @Override
@@ -516,6 +527,19 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                 }
             }
         });
+        ((JPDAStepImpl) boundaryStep).setStopHereCheck(new JPDAStepImpl.StopHereCheck() {
+            @Override
+            public boolean stopHere(boolean willStop) {
+                if (willStop) {
+                    int line = tr.getLineNumber(debugger.getSession().getCurrentLanguage());
+                    if (expressionLines.contains(line)) {
+                        // resume
+                        willStop = false;
+                    }
+                }
+                return willStop;
+            }
+        });
         boundaryStep.addStep(tr);
         return boundaryStep;
     }
@@ -524,16 +548,19 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                                            final ThreadReference tr,
                                            final String method,
                                            final int methodLine,
-                                           final boolean finishWhenNotFound) {
+                                           final boolean finishWhenNotFound,
+                                           final MethodChooserSupport.MethodEntry methodEntry) {
         final JPDAThread jtr = debugger.getThread(tr);
         final int depth = jtr.getStackDepth();
         final JPDAStep step = debugger.createJPDAStep(JPDAStep.STEP_LINE, JPDAStep.STEP_INTO);
         step.setHidden(true);
         logger.log(Level.FINE, "Will traceLineForMethod({0}, {1}, {2})",
                    new Object[]{method, methodLine, finishWhenNotFound});
-        // The user has explicitly set the method they want to step into.
-        // Therefore, ignore any stepping filters.
-        ((JPDAStepImpl) step).setIgnoreStepFilters(true);
+        if (MethodChooserSupport.MethodEntry.SELECTED.equals(methodEntry)) {
+            // The user has explicitly set the method they want to step into.
+            // Therefore, ignore any stepping filters.
+            ((JPDAStepImpl) step).setIgnoreStepFilters(true);
+        }
         step.addPropertyChangeListener(JPDAStep.PROP_STATE_EXEC, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {

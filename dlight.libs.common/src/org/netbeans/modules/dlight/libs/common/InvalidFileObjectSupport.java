@@ -267,7 +267,8 @@ public class InvalidFileObjectSupport {
                     //CndUtils.assertTrueInConsole(false, getClass().getSimpleName() + ": should be root, but it isn't"); //NOI18N
                     return null;
                 } else {
-                    return InvalidFileObjectSupport.getInvalidFileObject(fileSystem, parentPath);
+                    FileObject parentFO = fileSystem.findResource(parentPath);
+                    return (parentFO != null) ? parentFO : InvalidFileObjectSupport.getInvalidFileObject(fileSystem, parentPath);
                 }
             } else {
                 return null;

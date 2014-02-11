@@ -1188,7 +1188,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
         notifySuspended(true, false);
     }
 
-    public void notifySuspendedNoFire() {
+    public void notifySuspendedNoFire(boolean threadDied) {
         //notifySuspended(false);
         // Keep the thread look like running until we get a firing notification
         accessLock.writeLock().lock();
@@ -1198,17 +1198,21 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
                 loggerS.fine("["+threadName+"]: notifySuspendedNoFire(): SETTING suspendRequested = "+true);
                 suspendRequested = true; // The thread was just suspended, leave it suspended afterwards.
             }
-            try {
-                suspendCount = ThreadReferenceWrapper.suspendCount(threadReference);
-                threadName = ThreadReferenceWrapper.name(threadReference);
-            } catch (IllegalThreadStateExceptionWrapper ex) {
-                // Thrown when thread has exited
-            } catch (ObjectCollectedExceptionWrapper ocex) {
-                // The thread is gone
-            } catch (VMDisconnectedExceptionWrapper ex) {
-                // The VM is gone
-            } catch (InternalExceptionWrapper ex) {
-                // Something is gone
+            if (!threadDied) {
+                try {
+                    suspendCount = ThreadReferenceWrapper.suspendCount(threadReference);
+                    threadName = ThreadReferenceWrapper.name(threadReference);
+                } catch (IllegalThreadStateExceptionWrapper ex) {
+                    // Thrown when thread has exited
+                } catch (ObjectCollectedExceptionWrapper ocex) {
+                    // The thread is gone
+                } catch (VMDisconnectedExceptionWrapper ex) {
+                    // The VM is gone
+                } catch (InternalExceptionWrapper ex) {
+                    // Something is gone
+                }
+            } else {
+                suspendCount = 1; // Suppose
             }
             suspendedNoFire = true;
             loggerS.fine("["+threadName+"]: (notifySuspendedNoFire() END) suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire+", suspendRequested = "+suspendRequested);

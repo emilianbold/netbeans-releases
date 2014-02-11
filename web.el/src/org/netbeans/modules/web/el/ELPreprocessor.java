@@ -79,7 +79,7 @@ public class ELPreprocessor {
     };
     
     //escaped chars conversion for attribute values
-    public static String[][] ESCAPED_CHARACTERS = new String[][]{
+    public static final String[][] ESCAPED_CHARACTERS = new String[][]{
         {"\\\\", "\\"}, /* \\ -> \ */
         {"\\<", "<"},   /* \< -> < */
         {"\\>", ">"},   /* \> -> > */

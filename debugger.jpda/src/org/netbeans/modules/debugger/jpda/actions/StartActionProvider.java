@@ -96,8 +96,8 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
             jdiTrace = VirtualMachine.TRACE_NONE;
     }
 
-    private JPDADebuggerImpl debuggerImpl;
-    private ContextProvider lookupProvider;
+    private final JPDADebuggerImpl debuggerImpl;
+    private final ContextProvider lookupProvider;
     private Thread startingThread;
     private final Object startingThreadLock = new Object();
     

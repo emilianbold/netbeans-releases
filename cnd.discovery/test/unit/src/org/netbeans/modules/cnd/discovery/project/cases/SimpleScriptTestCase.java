@@ -166,7 +166,7 @@ public class SimpleScriptTestCase extends MakeProjectTestBase {
                     } else if (WizardConstants.PROPERTY_SOURCE_FOLDERS_FILTER.equals(name)) {
                         return MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT;
                     } else if (WizardConstants.PROPERTY_SOURCE_FOLDERS.equals(name)) {
-                        List<SourceFolderInfo> list = new ArrayList<SourceFolderInfo>();
+                        List<SourceFolderInfo> list = new ArrayList<>();
                         list.add(new SourceFolderInfo() {
 
                             @Override

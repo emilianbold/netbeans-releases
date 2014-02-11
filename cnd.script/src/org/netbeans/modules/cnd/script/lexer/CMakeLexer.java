@@ -248,7 +248,6 @@ public class CMakeLexer implements Lexer<CMakeTokenId> {
             case '-':
             case '*':
             case '/':
-            case ':':
             case '?':
             case '^':
             case '.':
@@ -257,6 +256,7 @@ public class CMakeLexer implements Lexer<CMakeTokenId> {
             case '$':
                 state = (i == ';' || ((state == State.AFTER_SEPARATOR) && (i == '@' || i == '+' || i == '-'))) ? State.AFTER_SEPARATOR : State.OTHER;
                 return info.tokenFactory().createToken(CMakeTokenId.OPERATOR);
+            case ':':
             case '(':
             case ')':
                 state = State.AFTER_SEPARATOR;

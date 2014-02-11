@@ -560,7 +560,7 @@ public class FileStatusCache {
             boolean symlink = false;
             try {
                 File topmost = Subversion.getInstance().getTopmostManagedAncestor(file);
-                symlink = topmost != null && isSymlink(file.toPath().normalize(), topmost.toPath().normalize());
+                symlink = topmost != null && isSymlink(file, topmost);
                 if (!(symlink || SvnUtils.isPartOfSubversionMetadata(file))) {
                     SvnClient client = Subversion.getInstance().getClient(false);
                     status = SvnUtils.getSingleStatus(client, file);
@@ -914,7 +914,7 @@ public class FileStatusCache {
                 FileInformation fi = createFileInformation(localFile, null, REPOSITORY_STATUS_UNKNOWN);
                 File topmost = Subversion.getInstance().getTopmostManagedAncestor(localFile);
                 if (fi.isDirectory() || topmost == null || fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE
-                        && !isSymlink(localFile.toPath().normalize(), topmost.toPath().normalize())) {
+                        && !isSymlink(localFile, topmost)) {
                     folderFiles.put(localFile, fi);
                 }
             }
@@ -1160,6 +1160,22 @@ public class FileStatusCache {
             return size() >= 500;
         }
     };
+
+    private boolean isSymlink (File file, File root) {
+        boolean symlink = false;
+        if (EXCLUDE_SYMLINKS) {
+            Path path, checkoutRoot;
+            try {
+                path = file.toPath().normalize();
+                checkoutRoot = root.toPath().normalize();
+                symlink = isSymlink(path, checkoutRoot);
+            } catch (java.nio.file.InvalidPathException ex) {
+                LOG.log(Level.INFO, null, ex);
+            }
+        }
+        return symlink;
+    }
+
     private boolean isSymlink (Path path, Path checkoutRoot) {
         boolean symlink = false;
         if (path == null) {

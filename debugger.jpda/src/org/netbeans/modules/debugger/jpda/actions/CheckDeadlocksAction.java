@@ -82,7 +82,7 @@ import org.openide.util.NbBundle;
 public class CheckDeadlocksAction extends AbstractAction
                                   implements Runnable {
 
-    private EnableListener listener;
+    private final EnableListener listener;
     
     public CheckDeadlocksAction () {
         listener = new EnableListener (this);
@@ -182,7 +182,7 @@ public class CheckDeadlocksAction extends AbstractAction
         
     private static class EnableListener extends DebuggerManagerAdapter {
         
-        private Reference<CheckDeadlocksAction> actionRef;
+        private final Reference<CheckDeadlocksAction> actionRef;
         
         public EnableListener(CheckDeadlocksAction action) {
             actionRef = new WeakReference<CheckDeadlocksAction>(action);

@@ -63,15 +63,15 @@ import org.openide.util.Utilities;
 public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Provider{
     
     private final DocumentListener documentListener;
-    private boolean valid = false;
+    private final boolean valid = false;
     private final BuildActionsDescriptorPanel controller;
     private String makefileName = null;
     
-    private static String DEF_WORKING_DIR = ""; // NOI18N
-    private static String DEF_BUILD_COMMAND = "${MAKE}"; // NOI18N
-    private static String DEF_CLEAN_COMMAND = "${MAKE} clean"; // NOI18N
-    private static String DEF_BUILD_COMMAND_FMT = "{0} -f {1}"; // NOI18N
-    private static String DEF_CLEAN_COMMAND_FMT = "{0} -f {1} clean"; // NOI18N
+    private static final String DEF_WORKING_DIR = ""; // NOI18N
+    private static final String DEF_BUILD_COMMAND = "${MAKE}"; // NOI18N
+    private static final String DEF_CLEAN_COMMAND = "${MAKE} clean"; // NOI18N
+    private static final String DEF_BUILD_COMMAND_FMT = "{0} -f {1}"; // NOI18N
+    private static final String DEF_CLEAN_COMMAND_FMT = "{0} -f {1} clean"; // NOI18N
     
     /*package-local*/ BuildActionsPanel(BuildActionsDescriptorPanel buildActionsDescriptorPanel) {
         initComponents();

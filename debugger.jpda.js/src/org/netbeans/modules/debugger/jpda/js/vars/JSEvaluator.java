@@ -45,6 +45,7 @@ package org.netbeans.modules.debugger.jpda.js.vars;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.js.JSUtils;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -65,17 +66,24 @@ public class JSEvaluator implements Evaluator<JSExpression> {
 
     @Override
     public Result evaluate(Expression<JSExpression> expression, Context context) throws InvalidExpressionException {
+        ObjectVariable contextVariable = context.getContextVariable();
+        if (contextVariable != null) {
+            // String value of the context variable is 
+            if ("toString()".equals(expression.getExpression())) {              // NOI18N
+                return new Result(DebuggerSupport.getVarStringValueAsVar(debugger, contextVariable));
+            }
+        }
         JSExpression expr = expression.getPreprocessedObject();
         if (expr == null) {
             expr = JSExpression.parse(expression.getExpression());
             expression.setPreprocessedObject(expr);
         }
-        Variable ret = evaluateIn(expr, context.getCallStackFrame());
+        Variable ret = evaluateIn(expr, context.getCallStackFrame(), contextVariable);
         return new Result(ret);
     }
 
-    private Variable evaluateIn(JSExpression expr, CallStackFrame callStackFrame) throws InvalidExpressionException {
-        return DebuggerSupport.evaluate(debugger, callStackFrame, expr.getExpression());
+    private Variable evaluateIn(JSExpression expr, CallStackFrame callStackFrame, ObjectVariable contextVar) throws InvalidExpressionException {
+        return DebuggerSupport.evaluate(debugger, callStackFrame, expr.getExpression(), contextVar);
     }
     
 }

@@ -261,7 +261,7 @@ public class QmakeProjectWriter {
     }
 
     private List<String> getItems(Item[] items, String... mimeTypes) {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         for (Item item : items) {
             ItemConfiguration itemConf = item.getItemConfiguration(configuration);
             if (itemConf == null) {
@@ -298,7 +298,7 @@ public class QmakeProjectWriter {
     }
 
     private List<String> getConfig() {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         switch (configuration.getConfigurationType().getValue()) {
             case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
                 list.add("dll"); // NOI18N
@@ -328,7 +328,7 @@ public class QmakeProjectWriter {
     
     private List<String> getPkgConfig() {
         List<LibraryItem> libraries = configuration.getLinkerConfiguration().getLibrariesConfiguration().getValue();
-        List<String> list = new ArrayList<String>(libraries.size());
+        List<String> list = new ArrayList<>(libraries.size());
         for (LibraryItem lib : libraries) {
             if (lib.getType() == LibraryItem.OPTION_ITEM) {
                 LibraryItem.OptionItem option = (LibraryItem.OptionItem) lib;

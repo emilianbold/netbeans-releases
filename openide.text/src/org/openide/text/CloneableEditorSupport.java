@@ -1614,6 +1614,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     *
     */
     protected void notifyClosed() {
+        annotationsLoaded = false;
         closeDocument();
     }
 

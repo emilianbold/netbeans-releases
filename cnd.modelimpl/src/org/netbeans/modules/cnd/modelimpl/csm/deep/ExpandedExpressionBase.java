@@ -47,9 +47,7 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
-import org.netbeans.modules.cnd.modelimpl.csm.TypeImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -61,7 +59,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  */
 public class ExpandedExpressionBase extends ExpressionBase {
     
-    private CharSequence expandedText;
+    private final CharSequence expandedText;
     
 
     ExpandedExpressionBase(AST ast, CsmFile file, CsmScope scope) {
@@ -105,7 +103,7 @@ public class ExpandedExpressionBase extends ExpressionBase {
     
     private static class ASTTokensStringizer implements DeepUtil.ASTTokenVisitor {
     
-        private StringBuilder sb = new StringBuilder();
+        private final StringBuilder sb = new StringBuilder();
 
         @Override
         public boolean visit(AST token) {

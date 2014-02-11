@@ -110,7 +110,7 @@ public class LibrariesNodeProp extends PropertySupport<List> {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-        ArrayList<LibraryItem> clone = new ArrayList<LibraryItem>();
+        ArrayList<LibraryItem> clone = new ArrayList<>();
         clone.addAll(configuration.getValue());
         return new DirectoriesEditor(clone);
     }
@@ -126,7 +126,7 @@ public class LibrariesNodeProp extends PropertySupport<List> {
 
     private class DirectoriesEditor extends PropertyEditorSupport implements ExPropertyEditor {
 
-        private List<LibraryItem> value;
+        private final List<LibraryItem> value;
         private PropertyEnv env;
 
         public DirectoriesEditor(List<LibraryItem> value) {

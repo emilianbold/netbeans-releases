@@ -59,14 +59,14 @@ public class MysqlConnectorTestCase extends MakeProjectTestBase {
 
     @Override
     protected List<String> requiredTools() {
-        List<String> res = new ArrayList<String>(super.requiredTools());
+        List<String> res = new ArrayList<>(super.requiredTools());
         res.add("cmake");
         return res;
     }
 
     @Test
     public void testMysqlConnector() throws Exception {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         list.add("rm -f Makefile");
         performTestProject("http://download.softagency.net/MySQL/Downloads/Connector-C/mysql-connector-c-6.0.1.tar.gz", list, false, "");
     }

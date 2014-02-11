@@ -90,7 +90,7 @@ public class ParseStatistics {
             synchronized(this) {
                 this.enabled = on;
                 if (on) {
-                    projectMaps = new HashMap<CsmUID<CsmProject>, Map<CsmUID<CsmFile>, Entry> >();
+                    projectMaps = new HashMap< >();
                 } else {
                     projectMaps = null;
                 }
@@ -129,7 +129,7 @@ public class ParseStatistics {
     private Map<CsmUID<CsmFile>, Entry> getProjectMap(CsmUID<CsmProject> projectUID) {
         Map<CsmUID<CsmFile>, Entry> map = projectMaps.get(projectUID);
         if (map == null) {
-            map = new HashMap<CsmUID<CsmFile>, Entry>();
+            map = new HashMap<>();
             projectMaps.put(projectUID, map);
         }
         return map;
@@ -185,7 +185,7 @@ public class ParseStatistics {
     }
 
     private void printResults(CsmUID<CsmProject> projectUID, PrintWriter out) {
-        List<Map.Entry<CsmUID<CsmFile>, Entry>> entries = new ArrayList<Map.Entry<CsmUID<CsmFile>, Entry>>(getProjectMap(projectUID).entrySet());
+        List<Map.Entry<CsmUID<CsmFile>, Entry>> entries = new ArrayList<>(getProjectMap(projectUID).entrySet());
         if (entries.isEmpty()) {
             return;
         }

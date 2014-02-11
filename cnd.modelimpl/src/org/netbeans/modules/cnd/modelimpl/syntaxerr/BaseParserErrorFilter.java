@@ -43,13 +43,10 @@
 package org.netbeans.modules.cnd.modelimpl.syntaxerr;
 
 import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ParserErrorFilter;
-import org.netbeans.modules.cnd.antlr.RecognitionException;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.modules.cnd.antlr.NoViableAltException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
-import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.openide.util.NbBundle;
 
@@ -63,7 +60,7 @@ public abstract class BaseParserErrorFilter extends ParserErrorFilter {
     private static final char LF = '\n'; // NOI18N
 
     protected Collection<CsmErrorInfo> toErrorInfo(Collection<CsmParserProvider.ParserError> errors, CsmFile file) {
-        Collection<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
+        Collection<CsmErrorInfo> result = new ArrayList<>();
         if (!errors.isEmpty()){
             CharSequence text = file.getText();
             CsmParserProvider.ParserError prev = null;

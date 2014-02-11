@@ -57,7 +57,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
-import org.netbeans.modules.php.twig.editor.lexer.TwigTokenId;
+import org.netbeans.modules.php.twig.editor.lexer.TwigBlockTokenId;
 
 public class TwigParser extends Parser {
 
@@ -97,6 +97,9 @@ public class TwigParser extends Parser {
         PARSE_ELEMENTS.add("raw"); //NOI18N
         PARSE_ELEMENTS.add("endraw"); //NOI18N
 
+        PARSE_ELEMENTS.add("verbatim"); //NOI18N
+        PARSE_ELEMENTS.add("endverbatim"); //NOI18N
+
         PARSE_ELEMENTS.add("sandbox"); //NOI18N
         PARSE_ELEMENTS.add("endsandbox"); //NOI18N
 
@@ -110,7 +113,7 @@ public class TwigParser extends Parser {
         TokenHierarchy<?> tokenHierarchy = snapshot.getTokenHierarchy();
         LanguagePath twigPath = null;
         for (LanguagePath path : tokenHierarchy.languagePaths()) {
-            if (path.mimePath().endsWith("twig-markup")) { //NOI18N
+            if (path.mimePath().endsWith(TwigBlockTokenId.language().mimeType())) {
                 twigPath = path;
                 break;
             }
@@ -125,108 +128,101 @@ public class TwigParser extends Parser {
 
                 while (sequence.moveNext()) {
 
-                    Token<TwigTokenId> token = (Token<TwigTokenId>) sequence.token();
+                    Token<TwigBlockTokenId> token = (Token<TwigBlockTokenId>) sequence.token();
 
                     /* Parse block */
 
-                    if (token.id() == TwigTokenId.T_TWIG_BLOCK_START) {
+                    Block block = new Block();
+                    block.function = "";
+                    block.startTokenIndex = sequence.index();
+                    block.endTokenIndex = sequence.index();
+                    block.from = token.offset(tokenHierarchy);
 
-                        Block block = new Block();
-                        block.function = "";
-                        block.startTokenIndex = sequence.index();
-                        block.endTokenIndex = sequence.index();
-                        block.from = token.offset(tokenHierarchy);
+                    while (sequence.moveNext()) {
+
+                        token = (Token<TwigBlockTokenId>) sequence.token();
+                        if (token.id() == TwigBlockTokenId.T_TWIG_NAME) {
+                            block.extra = token.text();
+                        }
+
+                    }
+                    block.endTokenIndex = sequence.index();
+                    block.length = token.offset(tokenHierarchy) - block.from + token.length();
+
+                    if (block.startTokenIndex != block.endTokenIndex) { // Closed block found
+
+                        sequence.moveIndex(block.startTokenIndex);
 
                         while (sequence.moveNext()) {
 
-                            token = (Token<TwigTokenId>) sequence.token();
-                            if (token.id() == TwigTokenId.T_TWIG_NAME) {
-                                block.extra = token.text();
-                            }
-                            if (token.id() == TwigTokenId.T_TWIG_BLOCK_END) {
-                                block.endTokenIndex = sequence.index();
-                                block.length = token.offset(tokenHierarchy) - block.from + token.length();
+                            token = (Token<TwigBlockTokenId>) sequence.token();
+                            if (token.id() == TwigBlockTokenId.T_TWIG_TAG) {
+
+                                block.function = token.text();
+                                block.functionFrom = token.offset(tokenHierarchy);
+                                block.functionLength = token.length();
                                 break;
+
                             }
 
                         }
 
-                        if (block.startTokenIndex != block.endTokenIndex) { // Closed block found
+                        if (PARSE_ELEMENTS.contains(block.function.toString())) {
+                            /* Have we captured a standalone block? */
+                            if (CharSequenceUtilities.equals(block.function, "block")) { //NOI18N
 
-                            sequence.moveIndex(block.startTokenIndex);
+                                boolean standalone = false;
+                                int names = 0;
 
-                            while (sequence.moveNext()) {
+                                do {
 
-                                token = (Token<TwigTokenId>) sequence.token();
-                                if (token.id() == TwigTokenId.T_TWIG_TAG) {
+                                    sequence.moveNext();
+                                    token = (Token<TwigBlockTokenId>) sequence.token();
 
-                                    block.function = token.text();
-                                    block.functionFrom = token.offset(tokenHierarchy);
-                                    block.functionLength = token.length();
-                                    break;
+                                    if (token.id() == TwigBlockTokenId.T_TWIG_NAME || token.id() == TwigBlockTokenId.T_TWIG_STRING) {
+                                        names++;
+                                    }
 
+                                    if (names > 1) {
+                                        standalone = true;
+                                        break;
+                                    }
+
+                                } while (sequence.index() < block.endTokenIndex);
+
+                                if (!standalone) {
+                                    blockList.add(block);
+                                } else { // add a inline "block" immediately to the result set
+                                    result.addBlock("*inline-block", block.from, block.length, block.extra); //NOI18N
                                 }
 
-                            }
+                            } else if (CharSequenceUtilities.equals(block.function, "set")) { //NOI18N
 
-                            if (PARSE_ELEMENTS.contains(block.function.toString())) {
-                                /* Have we captured a standalone block? */
-                                if (CharSequenceUtilities.equals(block.function, "block")) { //NOI18N
+                                boolean standalone = false;
 
-                                    boolean standalone = false;
-                                    int names = 0;
+                                do {
 
-                                    do {
+                                    sequence.moveNext();
+                                    token = (Token<TwigBlockTokenId>) sequence.token();
 
-                                        sequence.moveNext();
-                                        token = (Token<TwigTokenId>) sequence.token();
-
-                                        if (token.id() == TwigTokenId.T_TWIG_NAME || token.id() == TwigTokenId.T_TWIG_STRING) {
-                                            names++;
-                                        }
-
-                                        if (names > 1) {
-                                            standalone = true;
-                                            break;
-                                        }
-
-                                    } while (sequence.index() < block.endTokenIndex);
-
-                                    if (!standalone) {
-                                        blockList.add(block);
-                                    } else { // add a inline "block" immediately to the result set
-                                        result.addBlock("*inline-block", block.from, block.length, block.extra); //NOI18N
+                                    if (token.id() == TwigBlockTokenId.T_TWIG_OPERATOR) {
+                                        standalone = true;
+                                        break;
                                     }
 
-                                } else if (CharSequenceUtilities.equals(block.function, "set")) { //NOI18N
+                                } while (sequence.index() < block.endTokenIndex);
 
-                                    boolean standalone = false;
-
-                                    do {
-
-                                        sequence.moveNext();
-                                        token = (Token<TwigTokenId>) sequence.token();
-
-                                        if (token.id() == TwigTokenId.T_TWIG_OPERATOR) {
-                                            standalone = true;
-                                            break;
-                                        }
-
-                                    } while (sequence.index() < block.endTokenIndex);
-
-                                    if (!standalone) {
-                                        blockList.add(block);
-                                    }
-
-                                } else {
+                                if (!standalone) {
                                     blockList.add(block);
                                 }
 
+                            } else {
+                                blockList.add(block);
                             }
 
-                            sequence.moveIndex(block.endTokenIndex);
-
                         }
+
+                        sequence.moveIndex(block.endTokenIndex);
 
                     }
 

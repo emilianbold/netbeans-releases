@@ -109,8 +109,8 @@ public class MakeActionTest {
             COMMAND_RENAME,
             COMMAND_CUSTOM_ACTION,};
         /** Map from commands to ant targets */
-        private Map<String, String[]> commands;
-        private Map<String, String[]> commandsNoBuild;
+        private final Map<String, String[]> commands;
+        private final Map<String, String[]> commandsNoBuild;
         private static final String SAVE_STEP = "save"; // NOI18N
         private static final String BUILD_STEP = "build"; // NOI18N
         private static final String BUILD_PACKAGE_STEP = "build-package"; // NOI18N
@@ -127,7 +127,7 @@ public class MakeActionTest {
         private static final String CONFIGURE_STEP = "configure"; // NOI18N
 
         private MakeActionProviderImpl() {
-            commands = new TreeMap<String, String[]>();
+            commands = new TreeMap<>();
             commands.put(COMMAND_BUILD, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, BUILD_STEP});
             commands.put(COMMAND_BUILD_PACKAGE, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, BUILD_STEP, BUILD_PACKAGE_STEP});
             commands.put(COMMAND_CLEAN, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, CLEAN_STEP});
@@ -139,7 +139,7 @@ public class MakeActionTest {
             commands.put(COMMAND_DEBUG_SINGLE, new String[]{DEBUG_SINGLE_STEP});
             commands.put(COMMAND_COMPILE_SINGLE, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, COMPILE_SINGLE_STEP});
             commands.put(COMMAND_CUSTOM_ACTION, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, BUILD_STEP, CUSTOM_ACTION_STEP});
-            commandsNoBuild = new TreeMap<String, String[]>();
+            commandsNoBuild = new TreeMap<>();
             commandsNoBuild.put(COMMAND_BUILD, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, BUILD_STEP});
             commandsNoBuild.put(COMMAND_BUILD_PACKAGE, new String[]{SAVE_STEP, BUILD_PACKAGE_STEP});
             commandsNoBuild.put(COMMAND_CLEAN, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, CLEAN_STEP});
@@ -163,7 +163,7 @@ public class MakeActionTest {
             if (TRACE) {
                 System.err.println("Root " + root); // NOI18N
             }
-            Map<String, String[]> res = new TreeMap<String, String[]>();
+            Map<String, String[]> res = new TreeMap<>();
             FileObject folder = FileUtil.getConfigFile(root);
             if (folder != null && folder.isFolder()) {
                 for (FileObject subFolder : folder.getChildren()) {
@@ -171,7 +171,7 @@ public class MakeActionTest {
                         System.err.println("\tCommand " + subFolder.getNameExt()); // NOI18N
                     }
                     if (subFolder.isFolder()) {
-                        TreeMap<Integer, String> map = new TreeMap<Integer, String>();
+                        TreeMap<Integer, String> map = new TreeMap<>();
                         for (FileObject file : subFolder.getChildren()) {
                             Integer position = (Integer) file.getAttribute("position"); // NOI18N
                             map.put(position, file.getNameExt());

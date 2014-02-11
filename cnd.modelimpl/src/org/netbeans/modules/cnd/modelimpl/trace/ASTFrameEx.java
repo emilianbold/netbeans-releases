@@ -44,14 +44,12 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
-import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
 
-import org.netbeans.modules.cnd.antlr.*;
 import org.netbeans.modules.cnd.antlr.debug.misc.*;
 import org.netbeans.modules.cnd.antlr.collections.*;
 

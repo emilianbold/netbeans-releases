@@ -96,7 +96,7 @@ public class DiscoveryUtils {
         if (bridge != null) {
             return bridge.getSystemIncludePaths(isCPP);
         }
-        return new ArrayList<String>();
+        return new ArrayList<>();
     }
     
     public static CompilerFlavor getCompilerFlavor(ProjectBridge bridge){
@@ -117,11 +117,11 @@ public class DiscoveryUtils {
         if (bridge != null) {
             return bridge.getSystemMacroDefinitions(isCPP);
         }
-        return new HashMap<String,String>();
+        return new HashMap<>();
     }
 
     public static List<String> scanCommandLine(String line, LogOrigin isScriptOutput){
-        List<String> res = new ArrayList<String>();
+        List<String> res = new ArrayList<>();
         int i = 0;
         StringBuilder current = new StringBuilder();
         boolean isSingleQuoteMode = false;
@@ -232,7 +232,7 @@ public class DiscoveryUtils {
         boolean caseSensitive = CndFileUtils.isSystemCaseSensitive();
         if (!caseSensitive) {
             if (Utilities.isWindows()) {
-                path = path.toString().replace('\\', '/');
+                path = path.replace('\\', '/');
             }
         }
         String normalized;
@@ -281,7 +281,7 @@ public class DiscoveryUtils {
             }
         }
         if (hasQuotes) {
-            List<String> newList = new ArrayList<String>();
+            List<String> newList = new ArrayList<>();
             for(int i = 0; i < list.size();) {
                 String s = list.get(i); 
                 if (s.startsWith("-D") && s.endsWith("=") && i+1 < list.size() && list.get(i+1).startsWith("\"")){ // NOI18N
@@ -317,8 +317,8 @@ public class DiscoveryUtils {
     public static List<String> gatherCompilerLine(ListIterator<String> st, LogOrigin isScriptOutput, Artifacts artifacts, ProjectBridge bridge, boolean isCpp){
         boolean TRACE = false;
         String option; 
-        List<String> what = new ArrayList<String>(1);
-        List<String> importantCandidates = new ArrayList<String>();
+        List<String> what = new ArrayList<>(1);
+        List<String> importantCandidates = new ArrayList<>();
         while(st.hasNext()){
             option = st.next();
             boolean isQuote = false;
@@ -413,7 +413,7 @@ public class DiscoveryUtils {
                     path = st.next();
                 }
                 path = removeQuotes(path);
-                artifacts.userIncludes.add(path);
+                artifacts.userFiles.add(path);
             } else if (option.startsWith("-imacros")){ // NOI18N
                 String path = option.substring(8);
                 if (path.length()==0 && st.hasNext()){
@@ -676,12 +676,13 @@ public class DiscoveryUtils {
     }
     
     public static final class Artifacts {
-        public final List<String> userIncludes = new ArrayList<String>();
-        public final Map<String, String> userMacros = new HashMap<String, String>();
-        public final List<String> undefinedMacros = new ArrayList<String>();
-        public final Set<String> libraries = new HashSet<String>();
-        public final List<String> languageArtifacts = new ArrayList<String>();
-        public final List<String> importantFlags = new ArrayList<String>();
+        public final List<String> userIncludes = new ArrayList<>();
+        public final List<String> userFiles = new ArrayList<>();
+        public final Map<String, String> userMacros = new HashMap<>();
+        public final List<String> undefinedMacros = new ArrayList<>();
+        public final Set<String> libraries = new HashSet<>();
+        public final List<String> languageArtifacts = new ArrayList<>();
+        public final List<String> importantFlags = new ArrayList<>();
         public String output;
         public Artifacts() {
         }

@@ -87,8 +87,8 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
     public LinkerConfiguration(MakeConfiguration makeConfiguration) {
         this.makeConfiguration = makeConfiguration;
         output = new StringConfiguration(null, ""); // NOI18N
-        additionalLibs = new VectorConfiguration<String>(null);
-        dynamicSearch = new VectorConfiguration<String>(null);
+        additionalLibs = new VectorConfiguration<>(null);
+        dynamicSearch = new VectorConfiguration<>(null);
         stripOption = new BooleanConfiguration(false); // NOI18N
         picOption = new BooleanConfiguration(true); // NOI18N
         norunpathOption = new BooleanConfiguration(true); // NOI18N

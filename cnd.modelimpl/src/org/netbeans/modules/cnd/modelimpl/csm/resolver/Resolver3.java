@@ -272,7 +272,7 @@ public final class Resolver3 implements Resolver {
 
     public static Collection<CsmProject> getSearchLibraries(CsmProject prj) {
         if (prj.isArtificial() && prj instanceof ProjectBase) {
-            Set<CsmProject> libs = new HashSet<CsmProject>();
+            Set<CsmProject> libs = new HashSet<>();
             for (ProjectBase projectBase : ((ProjectBase)prj).getDependentProjects()) {
                 if (!projectBase.isArtificial()) {
                     libs.addAll(projectBase.getLibraries());
@@ -1043,7 +1043,7 @@ public final class Resolver3 implements Resolver {
     }
 
     private List<CsmClass> getClassesContainers(CsmClass cls) {
-        List<CsmClass> out = new ArrayList<CsmClass>();
+        List<CsmClass> out = new ArrayList<>();
         CsmScope container = cls;
         while (CsmKindUtilities.isClass(container)) {
             out.add((CsmClass)container);

@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.discovery.wizard.api.FolderConfiguration;
  * @author Alexander Simon
  */
 public class FolderConfigurationNode extends DefaultMutableTreeNode {
-    private FolderConfigurationImpl folder;
+    private final FolderConfigurationImpl folder;
     
     public FolderConfigurationNode(FolderConfigurationImpl folder) {
         super(folder);
@@ -63,14 +63,14 @@ public class FolderConfigurationNode extends DefaultMutableTreeNode {
     }
 
     private void addChild(FolderConfiguration root){
-       TreeMap<String, FolderConfiguration> sorted = new TreeMap<String, FolderConfiguration>();
+       TreeMap<String, FolderConfiguration> sorted = new TreeMap<>();
        for(FolderConfiguration child : root.getFolders()){
            sorted.put(child.getFolderName(),child);
         }
        for(FolderConfiguration child :sorted.values()){
            add(new FolderConfigurationNode((FolderConfigurationImpl) child));
        }
-       TreeMap<String, FileConfiguration> sorted2 = new TreeMap<String, FileConfiguration>();
+       TreeMap<String, FileConfiguration> sorted2 = new TreeMap<>();
        for(FileConfiguration file : root.getFiles()){
            sorted2.put(file.getFileName(),file);
         }

@@ -126,7 +126,7 @@ public class PanelConfigureProject implements MakeSamplePanel<WizardDescriptor>,
     public boolean isValid() {
         return getComponent().valid(wizardDescriptor);
     }
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    private final Set<ChangeListener> listeners = new HashSet<>(1);
 
     @Override
     public final void addChangeListener(ChangeListener l) {
@@ -149,7 +149,7 @@ public class PanelConfigureProject implements MakeSamplePanel<WizardDescriptor>,
     protected final void fireChangeEvent(ChangeEvent ev) {
         Iterator<ChangeListener> it;
         synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
+            it = new HashSet<>(listeners).iterator();
         }
         while (it.hasNext()) {
             (it.next()).stateChanged(ev);

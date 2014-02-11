@@ -69,6 +69,7 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -153,7 +154,12 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
             this.interrupter = new InterrupterImpl();
         }
         if (event instanceof CursorMovedSchedulerEvent) {
-            runImpl((BaseDocument)result.getSnapshot().getSource().getDocument(false), (CursorMovedSchedulerEvent) event, interrupter);
+            CsmCacheManager.enter();
+            try {
+                runImpl((BaseDocument)result.getSnapshot().getSource().getDocument(false), (CursorMovedSchedulerEvent) event, interrupter);
+            } finally {
+                CsmCacheManager.leave();
+            }
         }
         
     }

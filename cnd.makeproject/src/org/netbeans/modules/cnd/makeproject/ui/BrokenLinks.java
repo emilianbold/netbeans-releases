@@ -62,7 +62,7 @@ public class BrokenLinks {
     
     public static List<BrokenLink> getBrokenLinks(Project project) throws MissingResourceException {
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        List<BrokenLink> errs = new ArrayList<BrokenLink>();
+        List<BrokenLink> errs = new ArrayList<>();
         if (pdp.gotDescriptor()) {
             MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
             MakeConfiguration activeConfiguration = makeConfigurationDescriptor.getActiveConfiguration();
@@ -146,7 +146,7 @@ public class BrokenLinks {
 
     private static final class BrokenToolCollection implements BrokenLink {
         private final String name;
-        private final List<Solution> solutions = new ArrayList<Solution>();
+        private final List<Solution> solutions = new ArrayList<>();
         
         private BrokenToolCollection(Project project, String name) {
             this.name = name;

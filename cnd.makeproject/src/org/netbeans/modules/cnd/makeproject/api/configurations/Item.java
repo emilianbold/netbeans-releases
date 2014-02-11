@@ -282,7 +282,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         } else if (evt.getPropertyName().equals("valid")) { // NOI18N
             // File has been deleted
             // Do nothing (IZ 87557, 94935)
-            if (!((Boolean) evt.getNewValue()).booleanValue()) {
+            if (!((Boolean) evt.getNewValue())) {
 //                getFolder().removeItemAction(this);
                 Folder containingFolder = getFolder();
                 if (containingFolder != null) {
@@ -683,10 +683,14 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                     }
                     p = macroConverter.expand(p);
                 }
-                String absPath = CndPathUtilities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), p);
-                result.add(new FSPath(projectFS, absPath));
+                if (CndPathUtilities.isPathAbsolute(p)) {
+                    result.add(new FSPath(compilerFS, p));
+                } else {
+                    String absPath = CndPathUtilities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), p);
+                    result.add(new FSPath(projectFS, absPath));
+                }
             }
-            List<String> vec3 = new ArrayList<String>();
+            List<String> vec3 = new ArrayList<>();
             vec3 = SPI_ACCESSOR.getItemUserIncludePaths(vec3, cccCompilerConfiguration, compiler, makeConfiguration);
             result.addAll(CndFileUtils.toFSPathList(compilerFS, vec3));
             return SPI_ACCESSOR.expandIncludePaths(result, cccCompilerConfiguration, compiler, makeConfiguration);
@@ -696,7 +700,48 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
 
     @Override
     public List<String> getIncludeFiles() {
-        return Collections.emptyList();
+        MakeConfiguration makeConfiguration = getMakeConfiguration();
+        ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration);//ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
+        if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) { // FIXUP: sometimes itemConfiguration is null (should not happen)
+            return Collections.<String>emptyList();
+        }
+        CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
+        if (compilerSet == null) {
+            return Collections.<String>emptyList();
+        }
+        AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
+        BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
+        if (compilerConfiguration instanceof CCCCompilerConfiguration) {
+            // Get include paths from project/file
+            CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration) compilerConfiguration;
+            List<List<String>> list = new ArrayList<>();
+            for(BasicCompilerConfiguration master : cccCompilerConfiguration.getMasters(true)) {
+                list.add(((CCCCompilerConfiguration)master).getIncludeFiles().getValue());
+                if (!((CCCCompilerConfiguration)master).getInheritFiles().getValue()) {
+                    break;
+                }
+            }
+            List<String> vec2 = new ArrayList<>();
+            for(int i = list.size() - 1; i >= 0; i--) {
+                vec2.addAll(list.get(i));
+            }
+            ExecutionEnvironment env = compiler.getExecutionEnvironment();            
+            MacroConverter macroConverter = null;
+            List<String> result = new ArrayList<>();            
+            for (String p : vec2) {
+                if (p.contains("$")) { // NOI18N
+                    // macro based path
+                    if (macroConverter == null) {
+                        macroConverter = new MacroConverter(env);
+                    }
+                    p = macroConverter.expand(p);
+                }
+                String absPath = CndPathUtilities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), p);
+                result.add(absPath);
+            }
+            return result;
+        }
+        return Collections.<String>emptyList();
     }
 
     @Override
@@ -971,6 +1016,10 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                 if (getMakeConfiguration().getCodeAssistanceConfiguration().includeInCA(this)) {
                     return false;
                 }
+            } else {
+                if (getMakeConfiguration().getCodeAssistanceConfiguration().excludeInCA(this)) {
+                    return true;
+                }
             }
             return value;
         }
@@ -981,6 +1030,9 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         int res = 0;
         for(FSPath aPath : getUserIncludePaths()) {
             res += 37 * aPath.getPath().hashCode();
+        }
+        for(String aPath : getIncludeFiles()) {
+            res += 37 * aPath.hashCode();
         }
         for(String macro: getUserMacroDefinitions()) {
             res += 37 * macro.hashCode();
@@ -1095,27 +1147,25 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     }
     
     private static final class MacroConverter {
-        private MacroExpander expander = null;
-        private Map<String, String> envVariables = Collections.emptyMap();
+
+        private final MacroExpander expander;
+        private final Map<String, String> envVariables;
 
         public MacroConverter(ExecutionEnvironment env) {
-            try {
-                HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
-                this.envVariables = hostInfo.getEnvironment();
-                Map<String, String> temporaryEnv = BrokenReferencesSupport.getTemporaryEnv(env);
-                if (temporaryEnv != null) {
-                    Map<String, String> res = new HashMap<>(temporaryEnv);
-                    res.putAll(envVariables);
-                    envVariables = res;
-                }
-                this.expander = MacroExpanderFactory.getExpander(env);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (CancellationException ex) {
-                Exceptions.printStackTrace(ex);
-            }            
+            envVariables = new HashMap<>();
+            if (HostInfoUtils.isHostInfoAvailable(env)) {
+                try {
+                    HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+                    envVariables.putAll(hostInfo.getEnvironment());                    
+                } catch (IOException | CancellationException ex) {
+                    // should never == null occur if isHostInfoAvailable(env) => report
+                    Exceptions.printStackTrace(ex);
+                }                    
+            }
+            BrokenReferencesSupport.addTemporaryEnv(env, envVariables);
+            this.expander = (envVariables == null) ? null : MacroExpanderFactory.getExpander(env, false);
         }
-        
+
         public String expand(String in) {
             try {
                 return expander != null ? expander.expandMacros(in, envVariables) : in;

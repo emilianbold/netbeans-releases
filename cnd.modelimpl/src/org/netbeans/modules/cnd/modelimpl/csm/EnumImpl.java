@@ -73,13 +73,13 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     private EnumImpl(AST ast, NameHolder name, CsmFile file) {
         super(name, file, ast);
         this.stronglyTyped = isStronglyTypedEnum(ast);
-        enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
+        enumerators = new ArrayList<>();
     }
 
     protected EnumImpl(CharSequence name, CharSequence qName, boolean stronglyTyped, CsmFile file, int startOffset, int endOffset) {
         super(name, qName, file, startOffset, endOffset);
         this.stronglyTyped = stronglyTyped;
-        enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
+        enumerators = new ArrayList<>();
     }
     
     public void init(CsmScope scope, AST ast, final CsmFile file, boolean register) {
@@ -261,7 +261,7 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     public static class EnumBuilder extends SimpleDeclarationBuilder implements MemberBuilder {
         
         private boolean stronglyTyped = false;
-        private List<EnumeratorBuilder> enumeratorBuilders = new ArrayList<EnumeratorBuilder>();
+        private final List<EnumeratorBuilder> enumeratorBuilders = new ArrayList<>();
         
         private EnumImpl instance;
         private CsmVisibility visibility = CsmVisibility.PUBLIC;
@@ -344,9 +344,9 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         this.stronglyTyped = input.readBoolean();
         int collSize = input.readInt();
         if (collSize < 0) {
-            enumerators = new ArrayList<CsmUID<CsmEnumerator>>(0);
+            enumerators = new ArrayList<>(0);
         } else {
-            enumerators = new ArrayList<CsmUID<CsmEnumerator>>(collSize);
+            enumerators = new ArrayList<>(collSize);
         }
         UIDObjectFactory.getDefaultFactory().readUIDCollection(this.enumerators, input, collSize);
     }

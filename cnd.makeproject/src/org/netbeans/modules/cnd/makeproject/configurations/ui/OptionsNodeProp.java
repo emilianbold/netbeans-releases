@@ -57,12 +57,12 @@ import org.openide.nodes.PropertySupport;
 
 public class OptionsNodeProp extends PropertySupport<String> {
 
-    private OptionsConfiguration commandLineConfiguration;
-    private BooleanConfiguration inheritValues;
-    private AllOptionsProvider optionsProvider;
-    private AbstractCompiler compiler;
+    private final OptionsConfiguration commandLineConfiguration;
+    private final BooleanConfiguration inheritValues;
+    private final AllOptionsProvider optionsProvider;
+    private final AbstractCompiler compiler;
     private String delimiter = ""; // NOI18N
-    private String[] texts;
+    private final String[] texts;
 
     public OptionsNodeProp(OptionsConfiguration commandLineConfiguration, BooleanConfiguration inheritValues, AllOptionsProvider optionsProvider, AbstractCompiler compiler, String delimiter, String[] texts) {
         super("ID", String.class, texts[0], texts[1], true, true); // NOI18N

@@ -89,6 +89,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfigur
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -98,6 +99,11 @@ import org.openide.util.Exceptions;
  * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec.
  * 
  * Change History:
+ * 
+ * V94 - NB 8.0
+ *    Introduce exclude from code assistance pattern (CODE_ASSISTANCE_EXCLUDE_PATTERN)
+ * V93 - NB 8.0
+ *    Introduce included files (-include flag)
  * V92 - NB 8.0
  *    Introduce important flags and dictionaries
  * V91 - NB 8.0
@@ -283,7 +289,7 @@ public abstract class CommonConfigurationXMLCodec
         implements XMLEncoder {
     
     public final static int VERSION_WITH_INVERTED_SERIALIZATION = 88;
-    public final static int CURRENT_VERSION = 92;
+    public final static int CURRENT_VERSION = 94;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -347,6 +353,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String ADDITIONAL_OPTIONS_ELEMENT = "additionalOptions"; // NOI18N
     public final static String OUTPUT_ELEMENT = "output"; // NOI18N
     protected final static String INHERIT_INC_VALUES_ELEMENT = "inheritIncValues"; // NOI18N
+    protected final static String INHERIT_FILE_VALUES_ELEMENT = "inheritFileValues"; // NOI18N
     protected final static String INHERIT_PRE_VALUES_ELEMENT = "inheritPreValues"; // NOI18N
     protected final static String INHERIT_UNDEF_VALUES_ELEMENT = "inheritUndefValues"; // NOI18N
     protected final static String USE_LINKER_PKG_CONFIG_LIBRARIES = "useLinkerLibraries"; // NOI18N
@@ -357,9 +364,11 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String CODE_ASSISTANCE_ENVIRONMENT_ELEMENT = "envVariables"; // NOI18N
     protected final static String CODE_ASSISTANCE_TRANSIENT_MACROS_ELEMENT = "transientMacros"; // NOI18N
     protected final static String CODE_ASSISTANCE_INCLUDE_ADDITIONAL = "includeAdditional"; // NOI18N
+    protected final static String CODE_ASSISTANCE_EXCLUDE_PATTERN = "excludePattern"; // NOI18N
     // Compiler (Generic) Tool
     protected final static String INCLUDE_DIRECTORIES_ELEMENT = "includeDirectories"; // NOI18N
     protected final static String INCLUDE_DIRECTORIES_ELEMENT2 = "incDir"; // NOI18N
+    protected final static String INCLUDE_FILES_ELEMENT = "incFile"; // NOI18N
     protected final static String COMPILERTOOL_ELEMENT = "compilerTool"; // OLD style. FIXUP < version 11 // NOI18N
     protected final static String DEBUGGING_SYMBOLS_ELEMENT = "debuggingSymbols"; // NOI18N
     protected final static String OPTIMIZATION_LEVEL_ELEMENT = "optimizationLevel"; // NOI18N
@@ -570,7 +579,7 @@ public abstract class CommonConfigurationXMLCodec
     }
 
     public Dictionaries writeDictionary(XMLEncoderStream xes, Configuration conf) {
-        Set<String> dictionary = new HashSet<String>();
+        Set<String> dictionary = new HashSet<>();
         ConfigurationAuxObject[] profileAuxObjects = conf.getAuxObjects();
         for (ConfigurationAuxObject auxObject : profileAuxObjects) {
             if (publicallyVisible(auxObject)) {
@@ -600,7 +609,7 @@ public abstract class CommonConfigurationXMLCodec
         Dictionaries res = null;
         if (dictionary.size() > 0) {
             xes.elementOpen(DICTIONARY_ELEMENTS);
-            final List<String> d = new ArrayList<String>(dictionary);
+            final List<String> d = new ArrayList<>(dictionary);
             Collections.sort(d);
             for(int id = 0; id < d.size(); id++) {
                 xes.element(DICTIONARY_ELEMENT, new AttrValuePair[]{
@@ -924,6 +933,13 @@ public abstract class CommonConfigurationXMLCodec
                 return true;
             }
         }
+        if (cCompilerConfiguration.getIncludeFiles().getModified()) {
+            if (write) {
+                writeDirectoriesWithConversion(xes, INCLUDE_FILES_ELEMENT, cCompilerConfiguration.getIncludeFiles().getValue(), getIncludeConverter(cCompilerConfiguration.getOwner()));
+            } else {
+                return true;
+            }
+        }
         if (cCompilerConfiguration.getStandardsEvolution().getModified()) {
             if (write) {
                 xes.element(STANDARDS_EVOLUTION_ELEMENT, "" + cCompilerConfiguration.getStandardsEvolution().getValue()); // NOI18N
@@ -941,6 +957,13 @@ public abstract class CommonConfigurationXMLCodec
         if (cCompilerConfiguration.getInheritIncludes().getModified()) {
             if (write) {
                 xes.element(INHERIT_INC_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritIncludes().getValue()); // NOI18N
+            } else {
+                return true;
+            }
+        }
+        if (cCompilerConfiguration.getInheritFiles().getModified()) {
+            if (write) {
+                xes.element(INHERIT_FILE_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritFiles().getValue()); // NOI18N
             } else {
                 return true;
             }
@@ -1090,6 +1113,13 @@ public abstract class CommonConfigurationXMLCodec
                 return true;
             }
         }
+        if (ccCompilerConfiguration.getIncludeFiles().getModified()) {
+            if (write) {
+                writeDirectoriesWithConversion(xes, INCLUDE_FILES_ELEMENT, ccCompilerConfiguration.getIncludeFiles().getValue(), getIncludeConverter(ccCompilerConfiguration.getOwner())); // NOI18N
+            } else {
+                return true;
+            }
+        }
         if (ccCompilerConfiguration.getStandardsEvolution().getModified()) {
             if (write) {
                 xes.element(STANDARDS_EVOLUTION_ELEMENT, "" + ccCompilerConfiguration.getStandardsEvolution().getValue()); // NOI18N
@@ -1107,6 +1137,13 @@ public abstract class CommonConfigurationXMLCodec
         if (ccCompilerConfiguration.getInheritIncludes().getModified()) {
             if (write) {
                 xes.element(INHERIT_INC_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritIncludes().getValue()); // NOI18N
+            } else {
+                return true;
+            }
+        }
+        if (ccCompilerConfiguration.getInheritFiles().getModified()) {
+            if (write) {
+                xes.element(INHERIT_FILE_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritFiles().getValue()); // NOI18N
             } else {
                 return true;
             }
@@ -1454,6 +1491,9 @@ public abstract class CommonConfigurationXMLCodec
         if (codeAssistanceConfiguration.getIncludeInCA().getModified()) {
             xes.element(CODE_ASSISTANCE_INCLUDE_ADDITIONAL, "" + codeAssistanceConfiguration.getIncludeInCA().getValue()); // NOI18N
         }
+        if (codeAssistanceConfiguration.getExcludeInCA().getModified()) {
+            xes.element(CODE_ASSISTANCE_EXCLUDE_PATTERN, codeAssistanceConfiguration.getExcludeInCA().getValue()); // NOI18N
+        }
         if (codeAssistanceConfiguration.getTools().getModified()) {
             xes.element(BUILD_ANALAZYER_TOOLS_ELEMENT, "" + codeAssistanceConfiguration.getTools().getValue()); // NOI18N
         }
@@ -1551,15 +1591,13 @@ public abstract class CommonConfigurationXMLCodec
         private final Map<String, String> replacements = new HashMap<>();
 
         public IncludeConverterImpl(MakeConfiguration conf, CodeAssistanceConfiguration caConf) {
-            Map<String, String> environment = Collections.emptyMap();
+            final Map<String, String> environment = new HashMap<>();
             try {
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(conf.getFileSystemHost());
-                environment = hostInfo.getEnvironment();
-                Map<String, String> temporaryEnv = BrokenReferencesSupport.getTemporaryEnv(conf.getDevelopmentHost().getExecutionEnvironment());
-                if (temporaryEnv != null) {
-                    Map<String, String> res = new HashMap<>(temporaryEnv);
-                    res.putAll(environment);
-                    environment = res;
+                environment.putAll(hostInfo.getEnvironment());
+                ExecutionEnvironment env = conf.getDevelopmentHost().getExecutionEnvironment();
+                if (BrokenReferencesSupport.hasTemporaryEnv(env)) {
+                    BrokenReferencesSupport.addTemporaryEnv(env, environment);
                 }
             } catch (    IOException | ConnectionManager.CancellationException ex) {
                 Exceptions.printStackTrace(ex);

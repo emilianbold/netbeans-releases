@@ -58,7 +58,7 @@ public class FolderNodeFactory {
     }
 
     public static  Node createRootNodeFolder(Lookup lookup) {
-        ArrayList<CustomizerNode> descriptions = new ArrayList<CustomizerNode>(); //new CustomizerNode[2];
+        ArrayList<CustomizerNode> descriptions = new ArrayList<>(); //new CustomizerNode[2];
         descriptions.add(createGeneralFolderDescription(lookup));
         descriptions.add(ItemNodeFactory.createCCompilerDescription(lookup));
         descriptions.add(ItemNodeFactory.createCCCompilerDescription(lookup));

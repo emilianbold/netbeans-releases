@@ -63,12 +63,12 @@ import org.openide.util.NbBundle;
 
 public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener {
 
-    private Project project;
-    private MakeConfiguration conf;
-    private MyListEditorPanel myListEditorPanel;
-    private FSPath baseDir;
-    private PropertyEditorSupport editor;
-    private JButton addProjectButton;
+    private final Project project;
+    private final MakeConfiguration conf;
+    private final MyListEditorPanel myListEditorPanel;
+    private final FSPath baseDir;
+    private final PropertyEditorSupport editor;
+    private final JButton addProjectButton;
     private JButton addStandardLibraryButton;
     private JButton addLibraryButton;
     private JButton addLibraryFileButton;
@@ -111,7 +111,7 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
     }
 
     private Object getPropertyValue() throws IllegalStateException {
-        return new ArrayList<LibraryItem>(getListData());
+        return new ArrayList<>(getListData());
     }
 
     @Override

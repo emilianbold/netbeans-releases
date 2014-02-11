@@ -134,7 +134,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         setIconBaseWithExtension(MakeConfigurationDescriptor.ICON);
         setName(ProjectUtils.getInformation(provider.getProject()).getDisplayName());
 
-        brokenIncludesResult = Lookup.getDefault().lookup(new Lookup.Template<BrokenIncludes>(BrokenIncludes.class));
+        brokenIncludesResult = Lookup.getDefault().lookup(new Lookup.Template<>(BrokenIncludes.class));
         brokenIncludesResult.addLookupListener(MakeLogicalViewRootNode.this);
         resultChanged(null);
 
@@ -295,7 +295,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         if (confs == null) {
             return;
         }
-        Set<FileObject> set = new LinkedHashSet<FileObject>();
+        Set<FileObject> set = new LinkedHashSet<>();
         for (Configuration conf : confs.toArray()) {
             MakeConfiguration makeConfiguration = (MakeConfiguration) conf;
             if (makeConfiguration.isMakefileConfiguration()) {
@@ -317,7 +317,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         setFiles(set);
         Folder aFolder = folder;
         if (aFolder != null) {
-            List<Folder> allFolders = new ArrayList<Folder>();
+            List<Folder> allFolders = new ArrayList<>();
             allFolders.add(aFolder);
             allFolders.addAll(aFolder.getAllFolders(true));
             Iterator<Folder> iter = allFolders.iterator();
@@ -415,7 +415,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
 
     @Override
     public Action[] getActions(boolean context) {
-        List<Action> actions = new ArrayList<Action>();
+        List<Action> actions = new ArrayList<>();
         if (!gotMakeConfigurationDescriptor()) {
             actions.add(CommonProjectActions.closeProjectAction());
             return actions.toArray(new Action[actions.size()]);        
@@ -476,7 +476,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             if (flavors[i].getSubType().equals(MakeLogicalViewProvider.SUBTYPE)) {
                 try {
                     ViewItemNode viewItemNode = (ViewItemNode) transferable.getTransferData(flavors[i]);
-                    int type = new Integer(flavors[i].getParameter(MakeLogicalViewProvider.MASK)).intValue();
+                    int type = new Integer(flavors[i].getParameter(MakeLogicalViewProvider.MASK));
                     list.add(new ViewItemPasteType(this.getFolder(), viewItemNode, type, provider));
                 } catch (Exception e) {
                 }

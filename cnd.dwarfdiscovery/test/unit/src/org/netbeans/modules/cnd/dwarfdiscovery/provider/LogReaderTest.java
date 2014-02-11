@@ -214,15 +214,6 @@ public class LogReaderTest extends TestCase {
                         "_TEMPLATES_ENABLE_\n" +
                         "linux\n"+
                     "Paths:\n" +
-                        "/usr/include/c++/4.6/cstring\n" +
-                        "/usr/include/stdio.h\n" +
-                        "/usr/include/stdlib.h\n" +
-                        "/usr/include/stdint.h\n" +
-                        "/usr/include/c++/4.6/typeinfo\n" +
-                        "/usr/include/c++/4.6/memory\n" +
-                        "/usr/include/c++/4.6/algorithm\n" +
-                        "/usr/include/c++/4.6/string\n" +
-                        "/usr/include/c++/4.6/cstddef\n" +
                         "modules/DealCapture\n" +
                         ".\n" +
                         "Libs\n" +
@@ -240,7 +231,17 @@ public class LogReaderTest extends TestCase {
                         "WSCommon/XPathValidator\n" +
                         "api/open_trade/dyn_lib/include\n" +
                         "3rdparties/x86Linux/sybase-ocs/include\n" +
-                        "3rdparties/x86Linux/tao/include/ACE_wrappers";
+                        "3rdparties/x86Linux/tao/include/ACE_wrappers\n" +
+                        "Files:\n" +
+                        "/usr/include/c++/4.6/cstring\n" +
+                        "/usr/include/stdio.h\n" +
+                        "/usr/include/stdlib.h\n" +
+                        "/usr/include/stdint.h\n" +
+                        "/usr/include/c++/4.6/typeinfo\n" +
+                        "/usr/include/c++/4.6/memory\n" +
+                        "/usr/include/c++/4.6/algorithm\n" +
+                        "/usr/include/c++/4.6/string\n" +
+                        "/usr/include/c++/4.6/cstddef";
         String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
     }
@@ -271,8 +272,9 @@ public class LogReaderTest extends TestCase {
                       "/usr/lib/gcc/x86_64-pc-linux-gnu/4.3.2/include\n"+
                       "include\n"+
                       "/export/home/av202691/NetBeansProjects/linux-2.6.28-gentoo-r5/arch/x86/include\n"+
-                      "include/linux/autoconf.h\n"+
-                      "arch/x86/include/asm/mach-default";
+                      "arch/x86/include/asm/mach-default\n"+
+                      "Files:\n" +
+                      "include/linux/autoconf.h";
         String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
     }
@@ -330,13 +332,14 @@ public class LogReaderTest extends TestCase {
                       "_IMPL_NS_COM\n"+
                       "Paths:\n"+
                       "../../../dist/include/system_wrappers\n"+
-                      "/mozilla-1.9.1/config/gcc_hidden.h\n"+
                       "/mozilla-1.9.1/xpcom/string/src\n"+
                       ".\n"+
                       "../../../dist/include/xpcom\n"+
                       "../../../dist/include\n"+
                       "../../../dist/include/string\n"+
                       "/mozilla-1.9.1/ff-dbg/dist/include/nspr\n"+
+                      "Files:\n"+
+                      "/mozilla-1.9.1/config/gcc_hidden.h\n"+
                       "../../../mozilla-config.h";
         String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
@@ -979,6 +982,13 @@ public class LogReaderTest extends TestCase {
             res.append("\n");
             res.append(path);
         }
+        if (!artifacts.userFiles.isEmpty()) {
+            res.append("\nFiles:");
+            for (String file : artifacts.userFiles) {
+                res.append("\n");
+                res.append(file);
+            }
+        }
         return res.toString();
     }
 
@@ -1033,7 +1043,7 @@ public class LogReaderTest extends TestCase {
         List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.BuildLog, artifacts, null, false);
         assertTrue(sourcesList.size() == size);
         for(String what :sourcesList) {
-            CommandLineSource cs = new CommandLineSource(li, artifacts.languageArtifacts, "/", what, artifacts.userIncludes, artifacts.userMacros,
+            CommandLineSource cs = new CommandLineSource(li, artifacts.languageArtifacts, "/", what, artifacts.userIncludes,  artifacts.userFiles, artifacts.userMacros,
                     artifacts.undefinedMacros, null, artifacts.getImportantFlags());
             assertEquals(ct, cs.getLanguageKind());
         }

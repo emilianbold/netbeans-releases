@@ -340,7 +340,7 @@ public class TabbedController extends OptionsPanelController {
                     String id = item.getId().substring(item.getId().lastIndexOf('/') + 1);  //NOI18N
                     id2tabTitle.put(id, displayName);
                 } else {
-                    assert false : "Display name not defined: " + item.toString();  //NOI18N
+                    LOGGER.log(Level.WARNING, "Display name not defined: {0}", item.toString());  //NOI18N
                 }
             }
         }

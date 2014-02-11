@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
  */
 public class Notificator {
 
-    private static ThreadLocal<Notificator> instance = new ThreadLocal<Notificator>() {
+    private static final ThreadLocal<Notificator> instance = new ThreadLocal<Notificator>() {
 
         @Override
         protected Notificator initialValue() {
@@ -268,18 +268,18 @@ public class Notificator {
     private static void processFiles(IdMaker<CsmFile, CharSequence> idMaker, Collection<CsmFile> added, Collection<CsmFile> removed, Collection<CsmFile> changed) {
 
 
-        Set<CharSequence> idsAdded = new HashSet<CharSequence>();
+        Set<CharSequence> idsAdded = new HashSet<>();
         for (Iterator<CsmFile> iter = added.iterator(); iter.hasNext();) {
             idsAdded.add(idMaker.id(iter.next()));
         }
 
-        Set<CharSequence> idsRemoved = new HashSet<CharSequence>();
+        Set<CharSequence> idsRemoved = new HashSet<>();
         for (Iterator<CsmFile> iter = removed.iterator(); iter.hasNext();) {
             idsRemoved.add(idMaker.id(iter.next()));
         }
 
-        Set<CsmFile> rightAdded = new HashSet<CsmFile>();
-        Set<CsmFile> rightRemoved = new HashSet<CsmFile>();
+        Set<CsmFile> rightAdded = new HashSet<>();
+        Set<CsmFile> rightRemoved = new HashSet<>();
 
         for (Iterator<CsmFile> iter = removed.iterator(); iter.hasNext();) {
             CsmFile o = iter.next();
@@ -309,18 +309,18 @@ public class Notificator {
     private static void processDeclarations(IdMaker<CsmOffsetableDeclaration, PersistentKey> idMaker, Collection<CsmOffsetableDeclaration> added,
             Collection<CsmOffsetableDeclaration> removed, Map<CsmOffsetableDeclaration, CsmOffsetableDeclaration> changed) {
 
-        Map<PersistentKey, CsmOffsetableDeclaration> idsAdded = new HashMap<PersistentKey, CsmOffsetableDeclaration>();
+        Map<PersistentKey, CsmOffsetableDeclaration> idsAdded = new HashMap<>();
         for (CsmOffsetableDeclaration decl : added) {
             idsAdded.put(idMaker.id(decl), decl);
         }
 
-        Map<PersistentKey, CsmOffsetableDeclaration> idsRemoved = new HashMap<PersistentKey, CsmOffsetableDeclaration>();
+        Map<PersistentKey, CsmOffsetableDeclaration> idsRemoved = new HashMap<>();
         for (CsmOffsetableDeclaration decl : removed) {
             idsRemoved.put(idMaker.id(decl), decl);
         }
 
-        Set<CsmOffsetableDeclaration> rightAdded = new HashSet<CsmOffsetableDeclaration>();
-        Set<CsmOffsetableDeclaration> rightRemoved = new HashSet<CsmOffsetableDeclaration>();
+        Set<CsmOffsetableDeclaration> rightAdded = new HashSet<>();
+        Set<CsmOffsetableDeclaration> rightRemoved = new HashSet<>();
 
         for (CsmOffsetableDeclaration decl : removed) {
             Object id = idMaker.id(decl);

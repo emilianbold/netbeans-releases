@@ -72,6 +72,8 @@ public final class DebuggerSupport {
     private static final String SIGNAT_VALUE_INFOS = "(Ljava/lang/Object;Z)[Ljdk/nashorn/internal/runtime/DebuggerSupport$DebuggerValueDesc;";  // NOI18N
     private static final String METHOD_EVAL        = "eval";            // NOI18N
     private static final String SIGNAT_EVAL        = "(Ljdk/nashorn/internal/runtime/ScriptObject;Ljava/lang/Object;Ljava/lang/String;Z)Ljava/lang/Object;";    // NOI18N
+    private static final String METHOD_VALUE_AS_STRING = "valueAsString";       // NOI18N
+    private static final String SIGNAT_VALUE_AS_STRING = "(Ljava/lang/Object;)Ljava/lang/String;";  // NOI18N
     
     private static final String FIELD_DESC_VALUE_AS_STRING = "valueAsString";   // NOI18N
     private static final String FIELD_DESC_KEY             = "key";             // NOI18N
@@ -152,6 +154,10 @@ public final class DebuggerSupport {
     }
     
     public static Variable evaluate(JPDADebugger debugger, CallStackFrame frame, String expression) throws InvalidExpressionException {
+        return evaluate(debugger, frame, expression, null);
+    }
+    
+    public static Variable evaluate(JPDADebugger debugger, CallStackFrame frame, String expression, ObjectVariable contextVar) throws InvalidExpressionException {
         List<JPDAClassType> supportClasses = debugger.getClassesByName(DEBUGGER_SUPPORT_CLASS);
         if (supportClasses.isEmpty()) {
             return null;
@@ -159,7 +165,7 @@ public final class DebuggerSupport {
         JPDAClassType supportClass = supportClasses.get(0);
         
         Variable scope = null;
-        Variable thisVar = null;
+        ObjectVariable thisVar = null;
         try {
             for (LocalVariable lv : frame.getLocalVariables()) {
                 String name = lv.getName();
@@ -168,7 +174,7 @@ public final class DebuggerSupport {
                         scope = lv;
                         break;
                     case JSUtils.VAR_THIS:
-                        thisVar = lv;
+                        thisVar = (ObjectVariable) lv;
                         break;
                 }
                 if (name.equals(expression)) {
@@ -177,7 +183,10 @@ public final class DebuggerSupport {
             }
         } catch (AbsentInformationException ex) {
         }
-        if (scope == null || thisVar == null) {
+        if (contextVar == null) {
+            contextVar = thisVar;
+        }
+        if (scope == null || contextVar == null) {
             throw new InvalidExpressionException("Missing scope");
             // Can not evaluate
         }
@@ -185,7 +194,7 @@ public final class DebuggerSupport {
         Variable[] args = new Variable[4];
         try {
             args[0] = scope;
-            args[1] = thisVar;
+            args[1] = contextVar;
             args[2] = debugger.createMirrorVar(expression);
             args[3] = debugger.createMirrorVar(false, true);
             return supportClass.invokeMethod(METHOD_EVAL, SIGNAT_EVAL, args);
@@ -198,15 +207,69 @@ public final class DebuggerSupport {
         }
     }
     
-    public static String getVarValue(Variable var) {
+    public static String getVarValue(JPDADebugger debugger, Variable var) {
         if (var instanceof ObjectVariable) {
             ObjectVariable ov = (ObjectVariable) var;
+            List<JPDAClassType> supportClasses = debugger.getClassesByName(DEBUGGER_SUPPORT_CLASS);
+            if (supportClasses.isEmpty()) {
+                try {
+                    return ov.getToStringValue();
+                } catch (InvalidExpressionException ex) {
+                }
+            }
+            JPDAClassType supportClass = supportClasses.get(0);
+            Variable[] args = new Variable[1];
             try {
-                return ov.getToStringValue();
-            } catch (InvalidExpressionException ex) {
+                args[0] = var;
+                var = supportClass.invokeMethod(METHOD_VALUE_AS_STRING, SIGNAT_VALUE_AS_STRING, args);
+            } catch (NoSuchMethodException | InvalidExpressionException ex) {
+                Exceptions.printStackTrace(ex);
+                try {
+                    return ov.getToStringValue();
+                } catch (InvalidExpressionException iex) {
+                }
             }
         }
-        return var.getValue();
+        String str = var.getValue();
+        if (str.length() > 2 && str.startsWith("\"") && str.endsWith("\"")) {
+            str = str.substring(1, str.length() - 1);
+        }
+        return str;
+    }
+    
+    public static Variable getVarStringValueAsVar(JPDADebugger debugger, ObjectVariable ov) {
+        List<JPDAClassType> supportClasses = debugger.getClassesByName(DEBUGGER_SUPPORT_CLASS);
+        if (supportClasses.isEmpty()) {
+            return ov;
+        }
+        JPDAClassType supportClass = supportClasses.get(0);
+        Variable[] args = new Variable[1];
+        try {
+            args[0] = ov;
+            Variable strVar = supportClass.invokeMethod(METHOD_VALUE_AS_STRING, SIGNAT_VALUE_AS_STRING, args);
+            // This method returns quoted value. :-(
+            if (String.class.getName().equals(strVar.getType())) {
+                return adjustQuotes(debugger, (ObjectVariable) strVar);
+            } else {
+                return strVar;
+            }
+        } catch (NoSuchMethodException | InvalidExpressionException ex) {
+            Exceptions.printStackTrace(ex);
+            return ov;
+        }
+    }
+    
+    private static Variable adjustQuotes(JPDADebugger debugger, ObjectVariable strVar) {
+        String str = strVar.getValue();
+        str = str.substring(1, str.length() - 1); // getValue() adds quotes
+        if (str.length() > 2 && str.startsWith("\"") && str.endsWith("\"")) {
+            str = str.substring(1, str.length() - 1);
+            try {
+                return debugger.createMirrorVar(str);
+            } catch (InvalidObjectException ex) {
+            }
+        }
+        return strVar;
     }
     
 }

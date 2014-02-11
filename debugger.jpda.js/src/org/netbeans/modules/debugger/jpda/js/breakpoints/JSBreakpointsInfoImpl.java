@@ -42,8 +42,14 @@
 
 package org.netbeans.modules.debugger.jpda.js.breakpoints;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.net.URL;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.js.source.Source;
 import org.netbeans.modules.javascript2.debug.JSUtils;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointsInfo;
@@ -57,6 +63,14 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = JSBreakpointsInfo.class)
 public class JSBreakpointsInfoImpl implements JSBreakpointsInfo {
+    
+    private volatile boolean active = true;
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    
+    public JSBreakpointsInfoImpl() {
+        SessionActiveListener sal = new SessionActiveListener();
+        DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_CURRENT_SESSION, sal);
+    }
 
     @Override
     public boolean isDefault() {
@@ -81,15 +95,71 @@ public class JSBreakpointsInfoImpl implements JSBreakpointsInfo {
 
     @Override
     public boolean areBreakpointsActivated() {
-        return true;
+        return active;
+    }
+    
+    private void setActive(boolean active) {
+        if (this.active != active) {
+            this.active = active;
+            pcs.firePropertyChange(PROP_BREAKPOINTS_ACTIVE, !active, active);
+        }
     }
 
     @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
     }
 
     @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
+        pcs.removePropertyChangeListener(l);
     }
     
+    private class SessionActiveListener extends DebuggerManagerAdapter {
+        
+        private JPDADebugger currentDebugger;
+        
+        public SessionActiveListener() {
+            currentDebugger = getCurrentDebugger();
+            if (currentDebugger != null) {
+                active = currentDebugger.getBreakpointsActive();
+            }
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            String propertyName = evt.getPropertyName();
+            if (DebuggerManager.PROP_CURRENT_SESSION.equals(propertyName)) {
+                JPDADebugger newDebugger = getCurrentDebugger();
+                synchronized (this) {
+                    if (currentDebugger != null) {
+                        currentDebugger.removePropertyChangeListener(JPDADebugger.PROP_BREAKPOINTS_ACTIVE, this);
+                    }
+                    currentDebugger = newDebugger;
+                }
+                if (newDebugger != null) {
+                    setActive(newDebugger.getBreakpointsActive());
+                } else {
+                    setActive(true);
+                }
+            }
+            if (JPDADebugger.PROP_BREAKPOINTS_ACTIVE.equals(propertyName)) {
+                setActive(((JPDADebugger) evt.getSource()).getBreakpointsActive());
+            }
+        }
+        
+        private JPDADebugger getCurrentDebugger() {
+            Session s = DebuggerManager.getDebuggerManager().getCurrentSession();
+            if (s != null) {
+                JPDADebugger debugger = s.lookupFirst(null, JPDADebugger.class);
+                if (debugger != null) {
+                    debugger.addPropertyChangeListener(JPDADebugger.PROP_BREAKPOINTS_ACTIVE, this);
+                }
+                return debugger;
+            } else {
+                return null;
+            }
+        }
+
+    }
 }

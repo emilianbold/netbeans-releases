@@ -146,7 +146,7 @@ public class BuiltinTypes {
         }
     }
     
-    private static final ConcurrentMap<CharSequence, CsmBuiltIn> types = new ConcurrentHashMap<CharSequence, CsmBuiltIn>();
+    private static final ConcurrentMap<CharSequence, CsmBuiltIn> types = new ConcurrentHashMap<>();
     
     public static CsmBuiltIn getBuiltIn(AST ast) {
         assert ast.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN;

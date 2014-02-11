@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.repository.spi;
 
 import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -55,4 +56,24 @@ public interface UnitDescriptorsMatcherImplementation {
      * @return 
      */
     public boolean matches(UnitDescriptor descriptor1, UnitDescriptor descriptor2);
+    
+    /**
+     * For native projects: we should find all native projects
+     * and find the project where old name is the same as <code>layerDescriptor</code>
+     * and return the new unit descriptor depending of the new project name
+     * @param targetFileSystem
+     * @param sourceUnitDescriptor
+     * @return 
+     */
+    public UnitDescriptor destinationDescriptor(FileSystem targetFileSystem, UnitDescriptor sourceUnitDescriptor);
+    
+    /**
+     * For native projects: we should find all native projects
+     * and find the project where old name is the same as <code>layerDescriptor</code>
+     * and return the new unit descriptor depending of the new project name
+     * @param targetFileSystem
+     * @param destinationDescriptor
+     * @return 
+     */
+    public UnitDescriptor sourceDescriptor(FileSystem targetFileSystem, UnitDescriptor destinationDescriptor);    
 }

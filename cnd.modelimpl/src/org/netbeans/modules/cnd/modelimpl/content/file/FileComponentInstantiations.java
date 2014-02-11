@@ -140,7 +140,7 @@ public class FileComponentInstantiations extends FileComponent implements Persis
     }
 
     private Set<CsmUID<CsmInstantiation>> createInstantiations() {
-        return new HashSet<CsmUID<CsmInstantiation>>();
+        return new HashSet<>();
     }
 
     @Override

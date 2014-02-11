@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
+import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.SftpException;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import org.openide.awt.NotificationDisplayer;
@@ -70,5 +72,18 @@ public class MiscUtils {
 
     public static void showJSCHTooLongNotification() {
         showJSCHTooLongNotification("");    //NOI18N
+    }
+    
+    /**
+     * If an sftp exception occurs, a question arises, whether we should call ChannelSftp.quit().
+     * On one hane, *not* calling quit can lead to infinite 4: errors.
+     * On the other hand, there might be quite standard situations like file not exist or permission denied,
+     * which do not require quitting the channel.
+     * This method distinguishes the former and the latter cases.
+     */
+    public static boolean mightBrokeSftpChannel(SftpException e) {
+        // Or should it be just  return e.id == ChannelSftp.SSH_FX_FAILURE ?
+        // well, let's be conservative
+        return e.id != ChannelSftp.SSH_FX_NO_SUCH_FILE && e.id != ChannelSftp.SSH_FX_PERMISSION_DENIED;
     }
 }

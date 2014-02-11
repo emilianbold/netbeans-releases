@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -198,7 +197,7 @@ public class TemplateUtils {
     
     public static List<CsmTemplateParameter> getTemplateParameters(AST ast, CsmFile file, CsmScope scope, boolean global) {
         assert (ast != null && ast.getType() == CPPTokenTypes.LITERAL_template);
-        List<CsmTemplateParameter> res = new ArrayList<CsmTemplateParameter>();
+        List<CsmTemplateParameter> res = new ArrayList<>();
         AST parameterStart = null;
         boolean variadic = false;
         
@@ -246,8 +245,8 @@ public class TemplateUtils {
                                     //  template<typename TAG = struct DDD>
                                     //  struct copy {};                                  
                                     
-                                    MutableObject<CsmNamespace> targetScope = new MutableObject<CsmNamespace>();
-                                    MutableObject<MutableDeclarationsContainer> targetDefinitionContainer = new MutableObject<MutableDeclarationsContainer>();
+                                    MutableObject<CsmNamespace> targetScope = new MutableObject<>();
+                                    MutableObject<MutableDeclarationsContainer> targetDefinitionContainer = new MutableObject<>();
                                     
                                     // TODO: need fileContent here
                                     getClosestNamespaceInfo(scope, file, null, OffsetableBase.getStartOffset(ast), targetScope, targetDefinitionContainer); 
@@ -339,7 +338,7 @@ public class TemplateUtils {
 
     public static List<CsmSpecializationParameter> getSpecializationParameters(AST ast, CsmFile file, CsmScope scope, boolean global) {
         assert (ast != null);
-        List<CsmSpecializationParameter> res = new ArrayList<CsmSpecializationParameter>();
+        List<CsmSpecializationParameter> res = new ArrayList<>();
         AST start;
         for (start = ast.getFirstChild(); start != null; start = start.getNextSibling()) {
             if (start.getType() == CPPTokenTypes.LESSTHAN) {

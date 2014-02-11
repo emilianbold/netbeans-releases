@@ -42,43 +42,47 @@
 
 package org.netbeans.modules.javascript2.debug.breakpoints.models;
 
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.modules.javascript2.debug.JSUtils;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointStatus;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointsInfoManager;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.datatransfer.PasteType;
 
 /**
  *
  * @author Martin
  */
-@DebuggerServiceRegistration(path="BreakpointsView", types=NodeModel.class)
-public class BreakpointNodeModel implements NodeModel {
+@DebuggerServiceRegistration(path="BreakpointsView", types=ExtendedNodeModel.class)
+public class BreakpointNodeModel implements ExtendedNodeModel {
     
     public static final String LINE_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint";                   // NOI18N
+        "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint.gif";                   // NOI18N
     public static final String CURRENT_LINE_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/BreakpointHit";                // NOI18N
+        "org/netbeans/modules/debugger/resources/breakpointsView/BreakpointHit.gif";                // NOI18N
     public static final String DISABLED_LINE_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledBreakpoint";           // NOI18N
+        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledBreakpoint.gif";           // NOI18N
     public static final String DISABLED_CURRENT_LINE_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledBreakpointHit";        // NOI18N
+        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledBreakpointHit.gif";        // NOI18N
     public static final String LINE_CONDITIONAL_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/ConditionalBreakpoint";        // NOI18N
+        "org/netbeans/modules/debugger/resources/breakpointsView/ConditionalBreakpoint.gif";        // NOI18N
     public static final String CURRENT_LINE_CONDITIONAL_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/ConditionalBreakpointHit";     // NOI18N
+        "org/netbeans/modules/debugger/resources/breakpointsView/ConditionalBreakpointHit.gif";     // NOI18N
     public static final String DISABLED_LINE_CONDITIONAL_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledConditionalBreakpoint";// NOI18N
+        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledConditionalBreakpoint.gif";// NOI18N
     public static final String DEACTIVATED_LINE_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/editor/Breakpoint_stroke.png";                 // NOI18N
+        "org/netbeans/modules/debugger/resources/editor/Breakpoint_stroke.png";                     // NOI18N
     public static final String DEACTIVATED_DISABLED_LINE_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/editor/DisabledBreakpoint_stroke.png";         // NOI18N
+        "org/netbeans/modules/debugger/resources/editor/DisabledBreakpoint_stroke.png";             // NOI18N
 
     public BreakpointNodeModel() {
     }
@@ -99,7 +103,7 @@ public class BreakpointNodeModel implements NodeModel {
     }
     
     @Override
-    public String getIconBase(Object node) throws UnknownTypeException {
+    public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
         if (!(node instanceof JSLineBreakpoint)) {
             throw new UnknownTypeException(node);
         }
@@ -126,9 +130,15 @@ public class BreakpointNodeModel implements NodeModel {
             }
         }
         if (invalid && !disabled) {
-            iconBase += "_broken";
+            int dot = iconBase.lastIndexOf('.');
+            iconBase = iconBase.substring(0, dot) + "_broken" + iconBase.substring(dot);
         }
         return iconBase;
+    }
+
+    @Override
+    public String getIconBase(Object node) throws UnknownTypeException {
+        throw new UnsupportedOperationException("Not to be called, replaced with getIconBaseWithExtension().");
     }
     
     @NbBundle.Messages({
@@ -165,6 +175,41 @@ public class BreakpointNodeModel implements NodeModel {
         return description;
     }
 
+    @Override
+    public boolean canCopy(Object node) throws UnknownTypeException {
+        return false;
+    }
+
+    @Override
+    public boolean canCut(Object node) throws UnknownTypeException {
+        return false;
+    }
+
+    @Override
+    public boolean canRename(Object node) throws UnknownTypeException {
+        return false;
+    }
+
+    @Override
+    public Transferable clipboardCopy(Object node) throws IOException, UnknownTypeException {
+        return null;
+    }
+
+    @Override
+    public Transferable clipboardCut(Object node) throws IOException, UnknownTypeException {
+        return null;
+    }
+
+    @Override
+    public PasteType[] getPasteTypes(Object node, Transferable t) throws UnknownTypeException {
+        return null;
+    }
+
+    @Override
+    public void setName(Object node, String name) throws UnknownTypeException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
     @Override
     public void addModelListener(ModelListener l) {
     }

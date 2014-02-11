@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.api.project.NativeProjectSupport;
 import org.netbeans.modules.cnd.apt.support.spi.APTFileSearchImplementation;
 import org.netbeans.modules.cnd.apt.support.spi.APTProjectFileSearchProvider;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.repository.spi.Key;
 
@@ -92,7 +91,7 @@ public class FileSearchProviderImpl implements APTProjectFileSearchProvider {
                 Collection<CharSequence> searchFile = provider.searchFile(project, include);
                 if (searchFile.size() > 0) {
                     include = trimUpFolder(include);
-                    List<CharSequence> candidates = new ArrayList<CharSequence>(1);
+                    List<CharSequence> candidates = new ArrayList<>(1);
                     for(CharSequence p : searchFile) {
                         String path = p.toString();
                         path = path.replace('\\', '/');

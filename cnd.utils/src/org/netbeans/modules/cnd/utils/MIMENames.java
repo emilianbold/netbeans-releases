@@ -161,6 +161,15 @@ public final class MIMENames {
         CND_TEXT_MIME_TYPES = new HashSet<String>(CND_SOURCE_MIME_TYPES);
     }
 
+    public static boolean isCndMimeType(String mime) {
+        if (mime == null || mime.length() == 0) {
+            return false;
+        }
+        return CND_SOURCE_MIME_TYPES.contains(mime)
+                || CND_SCRIPT_MIME_TYPES.contains(mime)
+                || CND_TEXT_MIME_TYPES.contains(mime);
+    }
+
     public static boolean isCppOrC(String mime) {
         if (mime == null || mime.length() == 0) {
             return false;

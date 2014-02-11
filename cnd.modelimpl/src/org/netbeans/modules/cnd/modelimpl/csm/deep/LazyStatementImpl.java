@@ -111,10 +111,10 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
                     }
                 }
                 // assign constant to prevent infinite recusion by calling this method in the same thread
-                statements = new SoftReference<List<CsmStatement>>(EMPTY);
-                list = new ArrayList<CsmStatement>();
+                statements = new SoftReference<>(EMPTY);
+                list = new ArrayList<>();
                 if (renderStatements(list)) {
-                    statements = new SoftReference<List<CsmStatement>>(list);
+                    statements = new SoftReference<>(list);
                     return list;
                 } else {
                     return Collections.emptyList();

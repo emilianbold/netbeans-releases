@@ -37,6 +37,7 @@ TAG        endsandbox                                 Tag
 TAG        endset                                     Tag
 TAG        endspaceless                               Tag
 TAG        endtrans                                   Tag
+TAG        endverbatim                                Tag
 TAG        extends                                    Tag
 TAG        filter                                     Tag
 TAG        flush                                      Tag
@@ -52,6 +53,7 @@ TAG        set                                        Tag
 TAG        spaceless                                  Tag
 TAG        trans                                      Tag
 TAG        use                                        Tag
+TAG        verbatim                                   Tag
 RULE       abs                                        Filter
 RULE       capitalize                                 Filter
 RULE       convert_encoding('to', 'from')             Filter

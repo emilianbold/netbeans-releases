@@ -54,7 +54,7 @@ import java.util.ArrayList;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 
 public final class Platforms {
-    private static final ArrayList<Platform> platforms = new ArrayList<Platform>();
+    private static final ArrayList<Platform> platforms = new ArrayList<>();
 
     static {
         platforms.add(new PlatformSolarisSparc());
@@ -80,7 +80,7 @@ public final class Platforms {
      * Returns platforms names up to but not included Generic.
      */
     public static String[] getPlatformDisplayNames() {
-        ArrayList<String> ret = new ArrayList<String>();
+        ArrayList<String> ret = new ArrayList<>();
         for (Platform pl : getPlatforms()) {
             if (pl.getId() == PlatformTypes.PLATFORM_GENERIC || pl.getId() == PlatformTypes.PLATFORM_NONE) {
                 continue;

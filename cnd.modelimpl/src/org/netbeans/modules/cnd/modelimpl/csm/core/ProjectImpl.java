@@ -65,11 +65,8 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.netbeans.modules.cnd.utils.ui.NamedOption;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Project implementation
@@ -187,7 +184,7 @@ public final class ProjectImpl extends ProjectBase {
         try {
             synchronized (editedFiles) {
                 if (!editedFiles.isEmpty()) {
-                    Set<FileImpl> files = new HashSet<FileImpl>(physicallyRemoved);
+                    Set<FileImpl> files = new HashSet<>(physicallyRemoved);
                     files.addAll(excluded);
                     for (FileImpl impl : files) {
                         ProjectImpl.EditingTask task = editedFiles.remove(impl);
@@ -204,7 +201,7 @@ public final class ProjectImpl extends ProjectBase {
 
     @Override
     protected void ensureChangedFilesEnqueued() {
-        List<FileImpl> addToParse = new ArrayList<FileImpl>();
+        List<FileImpl> addToParse = new ArrayList<>();
         synchronized (editedFiles) {
             super.ensureChangedFilesEnqueued();
             for (Iterator<CsmFile> iter = editedFiles.keySet().iterator(); iter.hasNext();) {
@@ -302,7 +299,7 @@ public final class ProjectImpl extends ProjectBase {
         }
     }
     
-    private final Map<CsmFile, EditingTask> editedFiles = new HashMap<CsmFile, EditingTask>();
+    private final Map<CsmFile, EditingTask> editedFiles = new HashMap<>();
 
     public 
     @Override

@@ -79,7 +79,7 @@ public class DebuggerChooserConfiguration implements Cloneable {
             if (nodes.size() >= 1) {
                 int priority = PrioritizedCustomizerNode.DEFAULT_PRIORITY;
                 int idx = 0;
-                List<String> n = new ArrayList<String>();
+                List<String> n = new ArrayList<>();
                 for (CustomizerNode node : nodes) {
                     if (node instanceof PrioritizedCustomizerNode) {
                         if (((PrioritizedCustomizerNode) node).getPriority() > priority) {

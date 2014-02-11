@@ -48,7 +48,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -224,7 +223,7 @@ public class RecoveryTestCaseBase extends ProjectBasedTestCase {
             System.err.println(sb.toString());
             if (target instanceof FileImpl) {
                 FileImpl impl = (FileImpl) target;
-                List<CsmParserProvider.ParserError> result = new ArrayList<CsmParserProvider.ParserError>();
+                List<CsmParserProvider.ParserError> result = new ArrayList<>();
                 impl.getErrors(result);
                 for(CsmParserProvider.ParserError error : result) {
                     if (error.message != null) {
@@ -241,7 +240,7 @@ public class RecoveryTestCaseBase extends ProjectBasedTestCase {
     private void applyChanges(Diff diff) throws FileNotFoundException, IOException {
         File dataFile = getDataFile(diff.file());
         BufferedReader in = new BufferedReader(new FileReader(dataFile));
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         while (true) {
             String s = in.readLine();
             if (s == null) {

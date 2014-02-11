@@ -86,7 +86,7 @@ public final class FileContentSignature {
     }
 
     private static List<KindAndSignature> createFileSignature(CsmFile csmFile) {
-        Collection<FileElement> fileElements = new TreeSet<FileElement>(PAIR_COMPARATOR);
+        Collection<FileElement> fileElements = new TreeSet<>(PAIR_COMPARATOR);
         for (CsmInclude element : csmFile.getIncludes()) {
             // TODO: what about system vs user, shouldn't it be part of Utils.getCsmIncludeKindKey?
             CharAndCharSequence cs = new CharAndCharSequence(element.getIncludeName(), Utils.getCsmIncludeKindKey());
@@ -102,7 +102,7 @@ public final class FileContentSignature {
         for (CsmOffsetableDeclaration element : csmFile.getDeclarations()) {
             addDeclarationAndNested(fileElements, element);
         }
-        ArrayList<KindAndSignature> out = new ArrayList<KindAndSignature>(fileElements.size());
+        ArrayList<KindAndSignature> out = new ArrayList<>(fileElements.size());
         for (FileElement fe : fileElements) {
             out.add(fe.signature);
         }

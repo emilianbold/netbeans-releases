@@ -361,7 +361,7 @@ public class MakeProjectGeneratorImpl {
         final DataObject mt = DataObject.find(mainTemplate);
         final DataFolder pDf = DataFolder.findFolder(srcFolder);
 
-        final Map<String, Object> params = new HashMap<String, Object>();
+        final Map<String, Object> params = new HashMap<>();
         params.put(CreateFromTemplateHandler.FREE_FILE_EXTENSION, true);
         params.putAll(templateParams);
 

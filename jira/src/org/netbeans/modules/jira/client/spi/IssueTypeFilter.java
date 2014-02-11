@@ -48,6 +48,6 @@ package org.netbeans.modules.jira.client.spi;
  */
 public interface IssueTypeFilter {
 
-    public IssueType[] getIsueTypes();
+    public IssueType[] getIssueTypes();
     
 }

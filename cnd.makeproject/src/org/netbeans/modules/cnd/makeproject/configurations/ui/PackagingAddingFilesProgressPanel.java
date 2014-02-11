@@ -52,7 +52,7 @@ import javax.swing.SwingUtilities;
  * @author  thp
  */
 public class PackagingAddingFilesProgressPanel extends javax.swing.JPanel {
-    private JButton stopButton;
+    private final JButton stopButton;
     private String filename;
 
     /** Creates new form PackagingAddingFilesProgressPanel */

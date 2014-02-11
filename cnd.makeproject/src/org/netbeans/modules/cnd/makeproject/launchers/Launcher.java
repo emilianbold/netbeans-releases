@@ -56,7 +56,7 @@ public final class Launcher {
     private final String command;
     private String buildCommand;
     private String runDir;
-    private Map<String, String> env = new HashMap<String, String>();
+    private final Map<String, String> env = new HashMap<>();
     private String symbolFiles;
     //can not be set after the creation
     private final Launcher common;
@@ -105,7 +105,7 @@ public final class Launcher {
         if (common != null) {
             ret = common.getEnv();
         } else {
-            ret = new HashMap<String, String>();
+            ret = new HashMap<>();
         }
         ret.putAll(env);
         return ret;

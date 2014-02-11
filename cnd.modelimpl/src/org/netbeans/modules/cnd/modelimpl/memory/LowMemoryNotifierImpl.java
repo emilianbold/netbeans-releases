@@ -63,7 +63,7 @@ import javax.management.NotificationListener;
 // package-local
 class LowMemoryNotifierImpl extends LowMemoryNotifier implements NotificationListener {
 
-    private Logger logger;
+    private final Logger logger;
 
     public LowMemoryNotifierImpl() {
 
@@ -154,6 +154,6 @@ class LowMemoryNotifierImpl extends LowMemoryNotifier implements NotificationLis
             return result;
         }
     }
-    private final Collection<LowMemoryListener> listeners = new LinkedList<LowMemoryListener>();
+    private final Collection<LowMemoryListener> listeners = new LinkedList<>();
     private static final MemoryPoolMXBean pool = findHeapPool();
 }

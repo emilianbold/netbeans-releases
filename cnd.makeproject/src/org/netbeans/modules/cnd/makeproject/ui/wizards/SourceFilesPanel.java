@@ -71,10 +71,10 @@ import org.openide.util.NbBundle;
 public class SourceFilesPanel extends javax.swing.JPanel {
 
     private final Color defaultTextFieldFg;
-    private List<FolderEntry> sourceData = new ArrayList<FolderEntry>();
-    private List<FolderEntry> testData = new ArrayList<FolderEntry>();
+    private final List<FolderEntry> sourceData = new ArrayList<>();
+    private final List<FolderEntry> testData = new ArrayList<>();
     private SourceFileTable sourceFileTable = null;
-    private SourceFileTable testFileTable = null;
+    private final SourceFileTable testFileTable = null;
     private String baseDir;
     private String wd;
     private final SourceFoldersDescriptorPanel controller;
@@ -254,8 +254,8 @@ public class SourceFilesPanel extends javax.swing.JPanel {
     }
 
     private final class MyTableModel extends DefaultTableModel {
-        private List<FolderEntry> data;
-        private String columnTitle;
+        private final List<FolderEntry> data;
+        private final String columnTitle;
 
         public MyTableModel(List<FolderEntry> data, String columnTitle) {
             this.data = data;

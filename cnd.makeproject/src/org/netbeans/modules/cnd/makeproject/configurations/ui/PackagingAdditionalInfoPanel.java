@@ -53,7 +53,7 @@ import org.openide.util.NbBundle;
 
 public class PackagingAdditionalInfoPanel extends ListEditorPanel<String> {
 
-    private PackagingConfiguration packagingConfiguration;
+    private final PackagingConfiguration packagingConfiguration;
 
     public PackagingAdditionalInfoPanel(List<String> infoList, PackagingConfiguration packagingConfiguration) {
         super(infoList);

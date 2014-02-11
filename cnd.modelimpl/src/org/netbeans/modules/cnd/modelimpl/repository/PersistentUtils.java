@@ -165,7 +165,7 @@ public class PersistentUtils {
                 paramList = null;
                 break;
             case PARAM_LIST_IMPL:
-                paramList = new ParameterListImpl<CsmParameterList<CsmNamedElement>, CsmNamedElement>(input);
+                paramList = new ParameterListImpl<>(input);
                 break;
             case FUN_PARAM_LIST_IMPL:
                 paramList = new FunctionParameterListImpl(input);
@@ -199,7 +199,7 @@ public class PersistentUtils {
         if (size == 0) {
             return null;
         }
-        ArrayList<CsmParameter> list = new ArrayList<CsmParameter>(size);
+        ArrayList<CsmParameter> list = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             list.add(readParameter(input));
         }
@@ -307,7 +307,7 @@ public class PersistentUtils {
         List<CharSequence> arr = null;
         int len = input.readInt();
         if (len != AbstractObjectFactory.NULL_POINTER) {
-            arr = new ArrayList<CharSequence>(len);
+            arr = new ArrayList<>(len);
             for (int i = 0; i < len; i++) {
                 arr.add(PersistentUtils.readUTF(input, manager));
             }
@@ -613,7 +613,7 @@ public class PersistentUtils {
             return null;
         }
         assert handler == SPECIALIZATION_PARAMETERS_LIST;
-        List<CsmSpecializationParameter> params = new ArrayList<CsmSpecializationParameter>();
+        List<CsmSpecializationParameter> params = new ArrayList<>();
         readSpecializationParametersList(params, input);
         return params;
     }

@@ -7,7 +7,13 @@
         classname="JFlex.anttask.JFlexTask"
         classpath="/usr/share/ant/lib/jflex.jar" />-->
 
-    <target name="gen-lexer" >
-        <jflex file="tools/TwigColoringLexer.flex" destdir="src" skel="tools/skeleton.netbeans" />
+    <target name="gen-toplexer" >
+        <jflex file="tools/TwigTopColoringLexer.flex" destdir="src" skel="tools/skeleton.netbeans" />
+    </target>
+    <target name="gen-blocklexer" >
+        <jflex file="tools/TwigBlockColoringLexer.flex" destdir="src" skel="tools/skeleton.netbeans" />
+    </target>
+    <target name="gen-variablelexer" >
+        <jflex file="tools/TwigVariableColoringLexer.flex" destdir="src" skel="tools/skeleton.netbeans" />
     </target>
 </project>

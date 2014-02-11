@@ -62,7 +62,7 @@ public class SimpleConfigurationWizard implements WizardDescriptor.Panel<WizardD
     
     private DiscoveryDescriptor wizardDescriptor;
     private SimpleConfigurationPanel component;
-    private String name;
+    private final String name;
     private boolean inited = false;
     
     public SimpleConfigurationWizard(){
@@ -96,7 +96,7 @@ public class SimpleConfigurationWizard implements WizardDescriptor.Panel<WizardD
         return valid;
     }
     
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    private final Set<ChangeListener> listeners = new HashSet<>(1);
     @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
@@ -112,7 +112,7 @@ public class SimpleConfigurationWizard implements WizardDescriptor.Panel<WizardD
     protected final void fireChangeEvent() {
         Iterator<ChangeListener> it;
         synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
+            it = new HashSet<>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {

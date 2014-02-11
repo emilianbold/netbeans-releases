@@ -106,7 +106,7 @@ public final class BuildTraceSupport {
     }
 
     public static Set<String> getCompilerNames(Project project, PredefinedToolKind kind) {
-        Set<String> res = new HashSet<String>();
+        Set<String> res = new HashSet<>();
         switch(kind) {
             case CCompiler:
             {

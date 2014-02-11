@@ -86,12 +86,12 @@ public final class NativeProjectProvider {
 
     public static NativeProject createProject(String projectRoot, List<File> files,
             List<String> libProjectsPaths,
-	    List<String> sysIncludes, List<String> usrIncludes,
+	    List<String> sysIncludes, List<String> usrIncludes, List<String> usrFiles,
 	    List<String> sysMacros, List<String> usrMacros, List<String> undefinedMacros, boolean pathsRelCurFile) throws IOException {
 
         InstanceContent ic = new InstanceContent();
         NativeProjectImpl project = new NativeProjectImpl(projectRoot, libProjectsPaths,
-		sysIncludes, usrIncludes, sysMacros, usrMacros, undefinedMacros, pathsRelCurFile, ic);
+		sysIncludes, usrIncludes, usrFiles, sysMacros, usrMacros, undefinedMacros, pathsRelCurFile, ic);
 
         TraceProjectLookupProvider lkp = Lookup.getDefault().lookup(TraceProjectLookupProvider.class);
         if (lkp != null) {
@@ -173,15 +173,16 @@ public final class NativeProjectProvider {
 	
 	private final List<String> sysIncludes;
 	private final List<String> usrIncludes;
+	private final List<String> usrFiles;
 	private final List<String> sysMacros;
 	private final List<String> usrMacros;
 	    
-        private final List<NativeFileItem> files  = new ArrayList<NativeFileItem>();
+        private final List<NativeFileItem> files  = new ArrayList<>();
 	
         private final String projectRoot;
 	private final boolean pathsRelCurFile;
 	private final String name;
-	private List<NativeProjectItemsListener> listeners = new ArrayList<NativeProjectItemsListener>();
+	private final List<NativeProjectItemsListener> listeners = new ArrayList<>();
         private final List<NativeProject> libProjects;
 
         private static final class Lock {}
@@ -191,12 +192,12 @@ public final class NativeProjectProvider {
 
 	private NativeProjectImpl(String projectRoot,
                 List<String> libProjectsPaths,
-		List<String> sysIncludes, List<String> usrIncludes, 
+		List<String> sysIncludes, List<String> usrIncludes,  List<String> usrFiles,
 		List<String> sysMacros, List<String> usrMacros, List<String> undefinedMacros,
 		boolean pathsRelCurFile, InstanceContent ic) {
 
 	    this.projectRoot = projectRoot;
-            List<NativeProject> libs = new ArrayList<NativeProject>();
+            List<NativeProject> libs = new ArrayList<>();
             Collection<CsmProject> projects = CsmModelAccessor.getModel().projects();
             for (String libPath : libProjectsPaths) {
                 boolean found = false;
@@ -218,8 +219,9 @@ public final class NativeProjectProvider {
 	    
 	    this.sysIncludes = createIncludes(sysIncludes);
 	    this.usrIncludes = createIncludes(usrIncludes);
-	    this.sysMacros = new ArrayList<String>(sysMacros);
-	    this.usrMacros = new ArrayList<String>(usrMacros);
+	    this.usrFiles = createIncludes(usrFiles);
+	    this.sysMacros = new ArrayList<>(sysMacros);
+	    this.usrMacros = new ArrayList<>(usrMacros);
             this.name = initName(projectRoot);
             this.lookup = (ic == null) ? Lookups.fixed() : new AbstractLookup(ic);
         }
@@ -241,10 +243,10 @@ public final class NativeProjectProvider {
 
         private List<String> createIncludes(List<String> src) {
 	    if( pathsRelCurFile ) {
-		return new ArrayList<String>(src);
+		return new ArrayList<>(src);
 	    }
 	    else {
-		List<String> result = new ArrayList<String>(src.size());
+		List<String> result = new ArrayList<>(src.size());
 		for( String path : src ) {
 		    File file = new File(path);
 		    result.add(file.getAbsolutePath());
@@ -317,7 +319,7 @@ public final class NativeProjectProvider {
             NativeFileItem item = findFileItem(fo);
 	    List<NativeProjectItemsListener> listenersCopy;
 	    synchronized( listenersLock ) {
-		listenersCopy = new ArrayList<NativeProjectItemsListener>(listeners);
+		listenersCopy = new ArrayList<>(listeners);
 	    }
             List<NativeFileItem> list = Collections.singletonList(item);            
 	    for( NativeProjectItemsListener listener : listenersCopy ) {
@@ -332,7 +334,7 @@ public final class NativeProjectProvider {
             }
 	    List<NativeProjectItemsListener> listenersCopy;
 	    synchronized( listenersLock ) {
-		listenersCopy = new ArrayList<NativeProjectItemsListener>(listeners);
+		listenersCopy = new ArrayList<>(listeners);
 	    }
             List<NativeFileItem> list = Collections.singletonList(item);
 	    for( NativeProjectItemsListener listener : listenersCopy ) {
@@ -343,7 +345,7 @@ public final class NativeProjectProvider {
 	private void fireAllFilesChanged() {
 	    List<NativeProjectItemsListener> listenersCopy;
 	    synchronized( listenersLock ) {
-		listenersCopy = new ArrayList<NativeProjectItemsListener>(listeners);
+		listenersCopy = new ArrayList<>(listeners);
 	    }
 	    List<NativeFileItem> items = Collections.unmodifiableList(files);
 	    for( NativeProjectItemsListener listener : listenersCopy ) {
@@ -377,7 +379,7 @@ public final class NativeProjectProvider {
 
         @Override
         public List<String> getIncludeFiles() {
-            return Collections.emptyList();
+            return this.usrFiles;
         }
 
         @Override
@@ -481,7 +483,7 @@ public final class NativeProjectProvider {
 	
 	private List<FSPath> toAbsolute(List<FSPath> orig) {
 	    File base = file.getParentFile();
-	    List<FSPath> result = new ArrayList<FSPath>(orig.size());
+	    List<FSPath> result = new ArrayList<>(orig.size());
 	    for( FSPath path : orig ) {
 		File pathFile = new File(path.getPath());
 		if( pathFile.isAbsolute() ) {

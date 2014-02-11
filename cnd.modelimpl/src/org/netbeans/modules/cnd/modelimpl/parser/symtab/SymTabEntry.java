@@ -50,7 +50,7 @@ import java.util.TreeMap;
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public final class SymTabEntry {
-    private final Map<SymTabEntryKey, Object> attributes = new TreeMap<SymTabEntryKey, Object>();
+    private final Map<SymTabEntryKey, Object> attributes = new TreeMap<>();
     private final CharSequence name;
     private final SymTab container;
 

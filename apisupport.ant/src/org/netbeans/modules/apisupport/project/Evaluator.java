@@ -50,6 +50,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -70,6 +71,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.queries.ClassPathProviderImpl;
@@ -119,7 +121,9 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
     /** See issue #69440 for more details. */
     private boolean runInAtomicAction;
     private boolean pendingReset = false;   // issue #173792
-
+    
+    private static final Map<Project,Map<String, SoftReference<ModuleEntry>>> cachedProjectModuleEntries = new HashMap<Project,Map<String, SoftReference<ModuleEntry>>>();
+    
     private static class TestClasspath {
         
         private final String compile;
@@ -233,7 +237,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
         }
         ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
             public @Override Void run() {
-                ModuleList moduleList;
+                final ModuleList moduleList;
                 try {
                     moduleList = project.getModuleList();
                 } catch (IOException e) {
@@ -650,12 +654,23 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
         unprocessed.add(project.getCodeNameBase());
         Set<String> processed = new HashSet<String>();
         StringBuilder cp = new StringBuilder();
+        if(cachedProjectModuleEntries.get(project) == null) {
+            cachedProjectModuleEntries.put(project, new HashMap<String, SoftReference<ModuleEntry>>());
+        }
+        Map<String, SoftReference<ModuleEntry>> cachedModuleEntries = cachedProjectModuleEntries.get(project);
         while (!unprocessed.isEmpty()) { // crude breadth-first search
             Iterator<String> it = unprocessed.iterator();
             String cnb = it.next();
             it.remove();
             if (processed.add(cnb)) {
-                ModuleEntry module = ml.getEntry(cnb);
+                ModuleEntry module = null;
+                if(cachedModuleEntries.get(cnb) != null && cachedModuleEntries.get(cnb).get() != null) {
+                    module = cachedModuleEntries.get(cnb).get();
+                }
+                else {
+                    module = ml.getEntry(cnb);
+                    cachedProjectModuleEntries.get(project).put(cnb, new SoftReference<ModuleEntry>(module));
+                }
                 if (module == null) {
                     Util.err.log(ErrorManager.WARNING, "Warning - could not find dependent module " + cnb + " for " + FileUtil.getFileDisplayName(project.getProjectDirectory()));
                     continue;

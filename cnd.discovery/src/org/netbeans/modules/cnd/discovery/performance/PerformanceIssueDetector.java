@@ -83,14 +83,14 @@ import org.openide.util.RequestProcessor;
  * @author Alexander Simon
  */
 public class PerformanceIssueDetector implements PerformanceLogger.PerformanceListener, CsmProgressListener {
-    private final Set<Project> projects = new HashSet<Project>();
-    private final Map<String,ReadEntry> readPerformance = new HashMap<String,ReadEntry>();
-    private final Map<String,CreateEntry> createPerformance = new HashMap<String,CreateEntry>();
-    private final Map<FileObject,PerformanceLogger.PerformanceEvent> createFOTimeOut = new HashMap<FileObject,PerformanceLogger.PerformanceEvent>();
-    private final Map<File,PerformanceLogger.PerformanceEvent> createFileTimeOut = new HashMap<File,PerformanceLogger.PerformanceEvent>();
-    private final Map<String,PerformanceLogger.PerformanceEvent> createItemTimeOut = new HashMap<String,PerformanceLogger.PerformanceEvent>();
-    private final Map<String,ParseEntry> parsePerformance = new HashMap<String,ParseEntry>();
-    private final Map<FileObject,PerformanceLogger.PerformanceEvent> parseTimeOut = new HashMap<FileObject,PerformanceLogger.PerformanceEvent>();
+    private final Set<Project> projects = new HashSet<>();
+    private final Map<String,ReadEntry> readPerformance = new HashMap<>();
+    private final Map<String,CreateEntry> createPerformance = new HashMap<>();
+    private final Map<FileObject,PerformanceLogger.PerformanceEvent> createFOTimeOut = new HashMap<>();
+    private final Map<File,PerformanceLogger.PerformanceEvent> createFileTimeOut = new HashMap<>();
+    private final Map<String,PerformanceLogger.PerformanceEvent> createItemTimeOut = new HashMap<>();
+    private final Map<String,ParseEntry> parsePerformance = new HashMap<>();
+    private final Map<FileObject,PerformanceLogger.PerformanceEvent> parseTimeOut = new HashMap<>();
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final ScheduledFuture<?> periodicTask;
     private static final int SCHEDULE = 15; // period in seconds
@@ -450,7 +450,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     }
     
     private boolean canNotify() {
-        List<Project> list = new ArrayList<Project>();
+        List<Project> list = new ArrayList<>();
         synchronized(projects) {
             list.addAll(projects);
         }
@@ -556,7 +556,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     Map<FileObject,PerformanceLogger.PerformanceEvent> getParseTimeout() {
         lock.readLock().lock();
         try {
-             return new HashMap<FileObject,PerformanceLogger.PerformanceEvent>(parseTimeOut);
+             return new HashMap<>(parseTimeOut);
         } catch (Throwable ex) {
             ex.printStackTrace(System.err);
             return null;
@@ -566,7 +566,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     }
     
     private TreeMap<String, AgregatedStat> gatherStat() {
-        TreeMap<String, AgregatedStat> map = new TreeMap<String, AgregatedStat>();
+        TreeMap<String, AgregatedStat> map = new TreeMap<>();
         for(Map.Entry<String,CreateEntry> entry : createPerformance.entrySet()) {
             AgregatedStat state = map.get(entry.getKey());
             if (state == null) {

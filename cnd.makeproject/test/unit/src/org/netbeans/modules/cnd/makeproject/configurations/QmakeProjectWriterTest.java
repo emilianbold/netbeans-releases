@@ -78,7 +78,7 @@ public class QmakeProjectWriterTest extends CndBaseTestCase {
 
     @Override
     protected List<Class<?>> getServices() {
-        List<Class<?>> list = new ArrayList<Class<?>>();
+        List<Class<?>> list = new ArrayList<>();
         list.add(MakeProjectTypeImpl.class);
         list.addAll(super.getServices());
         return list;

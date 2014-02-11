@@ -222,7 +222,7 @@ public final class MakePathMatcher  {
         if (includes == null) {
             return Collections.singleton(base);
         }
-        Set<File> roots = new HashSet<File>();
+        Set<File> roots = new HashSet<>();
         if (base != null) {
             for (String incl : knownIncludes) {
                 roots.add(new File(base, incl.replace('/', File.separatorChar)));
@@ -235,7 +235,7 @@ public final class MakePathMatcher  {
         if (includes == null) {
             return Collections.emptySet();
         }
-        SortedSet<String> roots = new TreeSet<String>();
+        SortedSet<String> roots = new TreeSet<>();
         StringTokenizer patternstok = new StringTokenizer(includes, ", "); // NOI18N
         boolean search = false;
         while (patternstok.hasMoreTokens()) {

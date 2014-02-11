@@ -392,7 +392,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     
     final void initInstantiationParams() {
         if (instantiationParams == null) {
-            instantiationParams = new ArrayList<CsmSpecializationParameter>();
+            instantiationParams = new ArrayList<>();
         }
     }
     
@@ -401,14 +401,14 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             return;
         }
         if (instantiationParams == null) {
-            instantiationParams = new ArrayList<CsmSpecializationParameter>(params.size());
+            instantiationParams = new ArrayList<>(params.size());
         }
         instantiationParams.addAll(params);
     }
     
     final void addInstantiationParam(CsmSpecializationParameter param) {
         if (instantiationParams == null) {
-            instantiationParams = new ArrayList<CsmSpecializationParameter>();
+            instantiationParams = new ArrayList<>();
         }
         instantiationParams.add(param);
     }
@@ -749,7 +749,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                         obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) classifier, this, specialize);
                         if(CsmKindUtilities.isInstantiation(obj)) {
                             if (instantiations == null) {
-                                instantiations = new ArrayList<CsmInstantiation>();
+                                instantiations = new ArrayList<>();
                             }
                             instantiations.add((CsmInstantiation)obj);
                         }
@@ -773,7 +773,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     public CsmObject specialize(CsmClassifier classifier, List<CsmInstantiation> instantiations) {
         CsmObject obj = classifier;
         if(instantiations != null && !instantiations.isEmpty()) {
-            List<CsmInstantiation> originalInstantiations = new ArrayList<CsmInstantiation>();
+            List<CsmInstantiation> originalInstantiations = new ArrayList<>();
             while (CsmKindUtilities.isInstantiation(obj)) {
                 originalInstantiations.add((CsmInstantiation)obj);
                 obj = ((CsmInstantiation)obj).getTemplateDeclaration();
@@ -899,7 +899,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                 // for example, for std::vector new CharSequence[] { "std", "vector" }
 
                 //TODO: we have AstRenderer.getNameTokens, it is better to use it here
-                List<CharSequence> l = new ArrayList<CharSequence>();
+                List<CharSequence> l = new ArrayList<>();
                 int templateDepth = 0;
                 for (AST namePart = tokFirstId; namePart != null; namePart = namePart.getNextSibling()) {
                     if (templateDepth == 0 && namePart.getType() == CPPTokenTypes.IDENT) {
@@ -1074,7 +1074,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         @Override
         public boolean add(CsmSpecializationParameter e) {
             if (instantiationParams == null) {
-                instantiationParams = new ArrayList<CsmSpecializationParameter>();
+                instantiationParams = new ArrayList<>();
             }
             return instantiationParams.add(e);
         }

@@ -101,7 +101,7 @@ public abstract class QtInfoProvider {
         private final Map<String, Pair<String, String>> cache;
 
         private Default() {
-            cache = new HashMap<String, Pair<String, String>>();
+            cache = new HashMap<>();
         }
 
         @Override
@@ -165,7 +165,7 @@ public abstract class QtInfoProvider {
             Pair<String, String> baseDir = getBaseQtIncludeDir(conf);
             List<String> result;
             if (baseDir != null && (baseDir.first() != null || baseDir.second() != null)) {
-                result = new ArrayList<String>();
+                result = new ArrayList<>();
                 if (baseDir.first() != null) {
                     result.add(baseDir.first());
                 }

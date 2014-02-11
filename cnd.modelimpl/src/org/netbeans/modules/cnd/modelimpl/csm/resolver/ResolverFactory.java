@@ -67,7 +67,7 @@ public class ResolverFactory {
 
         @Override
         protected LinkedList<Resolver> initialValue() {
-            return new LinkedList<Resolver>();
+            return new LinkedList<>();
         }
     };
 

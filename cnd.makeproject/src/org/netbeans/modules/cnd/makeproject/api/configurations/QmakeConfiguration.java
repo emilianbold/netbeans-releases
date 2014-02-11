@@ -127,7 +127,7 @@ public class QmakeConfiguration implements Cloneable {
         mocDir = new StringConfiguration(null, ""); // NOI18N
         rccDir = new StringConfiguration(null, ""); // NOI18N
         uiDir = new StringConfiguration(null, ""); // NOI18N
-        customDefs = new VectorConfiguration<String>(null);
+        customDefs = new VectorConfiguration<>(null);
         qmakespec = new StringConfiguration(null, ""); // NOI18N
     }
 

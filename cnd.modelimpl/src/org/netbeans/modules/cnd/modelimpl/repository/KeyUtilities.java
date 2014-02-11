@@ -82,7 +82,24 @@ public class KeyUtilities {
     public static Key createNamespaceKey(CsmNamespace ns) {
         return new NamespaceKey(ns);
     }
+    
+    /**
+     *
+     * @param fs
+     * @param projectNativeRoot /export/homeProjectName
+     * @return 
+     */
+    public static UnitDescriptor createUnitDescriptor(FileSystem fs, CharSequence projectNativeRoot) {
+        CharSequence uniqueName = ProjectBase.getRepositoryUnitName(fs, projectNativeRoot);
+        return new UnitDescriptor(uniqueName, fs);
+    }
 
+    /**
+     *
+     * @param projectQualifiedName /export/homeProjectName/N
+     * @param fs
+     * @return 
+     */
     public static UnitDescriptor createUnitDescriptor(CharSequence projectQualifiedName, FileSystem fs) {
         return new UnitDescriptor(projectQualifiedName, fs);
     }

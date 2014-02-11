@@ -60,7 +60,7 @@ final class BuildActionsDescriptorPanel implements WizardDescriptor.Panel<Wizard
 
     private WizardDescriptor wizardDescriptor;
     private BuildActionsPanel component;
-    private String name;
+    private final String name;
 
     /** Create the wizard panel descriptor. */
     public BuildActionsDescriptorPanel() {
@@ -98,7 +98,7 @@ final class BuildActionsDescriptorPanel implements WizardDescriptor.Panel<Wizard
         }
         return valid;
     }
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    private final Set<ChangeListener> listeners = new HashSet<>(1);
 
     @Override
     public final void addChangeListener(ChangeListener l) {
@@ -117,7 +117,7 @@ final class BuildActionsDescriptorPanel implements WizardDescriptor.Panel<Wizard
     protected final void fireChangeEvent() {
         Iterator<ChangeListener> it;
         synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
+            it = new HashSet<>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {

@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.makeproject.MakeSharabilityQuery;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem.ProjectItem;
@@ -93,11 +94,11 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     public static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
     public static final String COMMAND_APPLY = "APPLY";  // NOI18N
     private DialogDescriptor dialogDescriptor;
-    private Map<Project, Dialog> customizerPerProject = new WeakHashMap<Project, Dialog>(); // Is is weak needed here?
+    private final Map<Project, Dialog> customizerPerProject = new WeakHashMap<>(); // Is is weak needed here?
     private final ConfigurationDescriptorProvider projectDescriptorProvider;
     private String currentCommand;
-    private final Map<MakeContext.Kind, String> lastCurrentNodeName = new EnumMap<MakeContext.Kind, String>(MakeContext.Kind.class);
-    private final Set<ActionListener> actionListenerList = new HashSet<ActionListener>();
+    private final Map<MakeContext.Kind, String> lastCurrentNodeName = new EnumMap<>(MakeContext.Kind.class);
+    private final Set<ActionListener> actionListenerList = new HashSet<>();
     private static final RequestProcessor RP = new RequestProcessor("MakeCustomizerProvider", 1); //NOI18N
     private static final RequestProcessor RP_SAVE = new RequestProcessor("MakeCustomizerProviderSave", 1); //NOI18N
 
@@ -185,7 +186,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 
         // RegisterListener
         ConfigurationDescriptor clonedProjectdescriptor = projectDescriptorProvider.getConfigurationDescriptor().cloneProjectDescriptor();
-        ArrayList<JComponent> controls = new ArrayList<JComponent>();
+        ArrayList<JComponent> controls = new ArrayList<>();
         controls.add(options[OPTION_OK]);
         MakeCustomizer innerPane = new MakeCustomizer(project, preselectedNodeName, clonedProjectdescriptor, item, folder, Collections.unmodifiableCollection(controls));
         ActionListener optionsListener = new OptionListener(project, projectDescriptorProvider.getConfigurationDescriptor(), clonedProjectdescriptor, innerPane, folder, item);
@@ -245,12 +246,12 @@ public class MakeCustomizerProvider implements CustomizerProvider {
      */
     private final class OptionListener implements ActionListener {
 
-        private Project project;
-        private ConfigurationDescriptor projectDescriptor;
-        private ConfigurationDescriptor clonedProjectdescriptor;
-        private MakeCustomizer makeCustomizer;
-        private Folder folder;
-        private Item item;
+        private final Project project;
+        private final ConfigurationDescriptor projectDescriptor;
+        private final ConfigurationDescriptor clonedProjectdescriptor;
+        private final MakeCustomizer makeCustomizer;
+        private final Folder folder;
+        private final Item item;
 
         OptionListener(Project project, ConfigurationDescriptor projectDescriptor, ConfigurationDescriptor clonedProjectdescriptor, MakeCustomizer makeCustomizer, Folder folder, Item item) {
             this.project = project;
@@ -305,7 +306,11 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                             }
                             projectDescriptor.setVersion(currentVersion);
                         }
-
+                        ConfigurationDescriptorProvider.SnapShot delta = null;
+                        if (folder == null && item == null) {
+                            ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                            delta = (Delta) cdp.startModifications();
+                        }
                         List<String> oldSourceRoots = ((MakeConfigurationDescriptor) projectDescriptor).getSourceRoots();
                         List<String> newSourceRoots = ((MakeConfigurationDescriptor) clonedProjectdescriptor).getSourceRoots();
                         List<String> oldTestRoots = ((MakeConfigurationDescriptor) projectDescriptor).getTestRoots();
@@ -328,7 +333,12 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                         if (query != null) {
                             query.update();
                         }
-                        ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedItems(project, folder, item);
+                        if (folder == null && item == null) {
+                            ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                            cdp.endModifications(delta, true, null);
+                        } else {
+                            ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedItems(project, folder, item);
+                        }
                         ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedSourceRoots(oldSourceRoots, newSourceRoots);
                         ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedTestRoots(oldTestRoots, newTestRoots);
                         ((MakeConfigurationDescriptor) projectDescriptor).checkConfigurations(oldActive, newActive);
@@ -363,7 +373,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         Iterator<ActionListener> it;
 
         synchronized (actionListenerList) {
-            it = new HashSet<ActionListener>(actionListenerList).iterator();
+            it = new HashSet<>(actionListenerList).iterator();
         }
         while (it.hasNext()) {
             it.next().actionPerformed(e);

@@ -158,7 +158,7 @@ public final class UIDCsmConverter {
         if (uids.isEmpty()) {
             return Collections.<T>emptyList().iterator();
         }
-        return new LazyCsmCollection<T, T>(new ArrayList<CsmUID<T>>(uids), true).iterator(filter);
+        return new LazyCsmCollection<>(new ArrayList<>(uids), true).iterator(filter);
     }
 
     public static <T> Collection<T> UIDsToDeclarationsUnsafe(Collection<CsmUID<T>> uids) {
@@ -175,7 +175,7 @@ public final class UIDCsmConverter {
         if (uids.isEmpty()) {
             return Collections.<T>emptyList().iterator();
         }        
-        return new LazyCsmCollection<T, T>(new ArrayList<CsmUID<T>>(uids), true).iterator(filter);
+        return new LazyCsmCollection<>(new ArrayList<>(uids), true).iterator(filter);
     }
 
     public static <T> Collection<T> UIDsToIncludes(Collection<CsmUID<T>> uids) {
@@ -187,7 +187,7 @@ public final class UIDCsmConverter {
         if (uids.isEmpty()) {
             return Collections.<T>emptyList().iterator();
         }
-        return new LazyCsmCollection<T, T>(new ArrayList<CsmUID<T>>(uids), true).iterator(filter);
+        return new LazyCsmCollection<>(new ArrayList<>(uids), true).iterator(filter);
     }
 
     public static <T> Collection<T> UIDsToInstantiations(Collection<CsmUID<T>> uids) {
@@ -199,7 +199,7 @@ public final class UIDCsmConverter {
         if (uids.isEmpty()) {
             return Collections.<T>emptyList().iterator();
         }
-        return new LazyCsmCollection<T, T>(new ArrayList<CsmUID<T>>(uids), true).iterator(filter);
+        return new LazyCsmCollection<>(new ArrayList<>(uids), true).iterator(filter);
     }
     
     public static <T> Collection<T> UIDsToCsmObjects(Collection<CsmUID<T>> uids) {
@@ -212,14 +212,14 @@ public final class UIDCsmConverter {
             return Collections.emptyList();
         }
         allowNullsAndSkip |= TraceFlags.SAFE_UID_ACCESS;
-        return new LazyCsmCollection<T, T>(new ArrayList<CsmUID<T>>(uids), allowNullsAndSkip);
+        return new LazyCsmCollection<>(new ArrayList<>(uids), allowNullsAndSkip);
     }
 
     public static <T> Iterator<T> UIDsToDeclarations(Collection<CsmUID<T>> uids, CsmFilter filter) {
         if (uids.isEmpty()) {
             return Collections.<T>emptyList().iterator();
         }
-        return new LazyCsmCollection<T, T>(uids, true).iterator(filter);
+        return new LazyCsmCollection<>(uids, true).iterator(filter);
     }
 
     public static <T> T UIDtoIdentifiable(CsmUID<T> uid) {
@@ -272,9 +272,9 @@ public final class UIDCsmConverter {
             return null;
         }
         if (objs.isEmpty()) {
-            return new ArrayList<CsmUID<T>>(0);
+            return new ArrayList<>(0);
         }
-        Collection<CsmUID<T>> out = new ArrayList<CsmUID<T>>(objs.size());
+        Collection<CsmUID<T>> out = new ArrayList<>(objs.size());
         for (T csmObj : objs) {
             CsmUID<T> uid = UIDs.get(csmObj);
             out.add(uid);

@@ -53,6 +53,7 @@ import com.sun.jdi.event.ThreadStartEvent;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.ThreadDeathRequest;
 import com.sun.jdi.request.ThreadStartRequest;
+import org.netbeans.api.debugger.Breakpoint;
 
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
@@ -68,6 +69,7 @@ import org.netbeans.modules.debugger.jpda.jdi.event.ThreadStartEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -122,6 +124,8 @@ public class ThreadBreakpointImpl extends BreakpointImpl implements Executor {
         } catch (VMDisconnectedExceptionWrapper e) {
         } catch (InvalidRequestStateExceptionWrapper irse) {
             Exceptions.printStackTrace(irse);
+        } catch (RequestNotSupportedException rnsex) {
+            setValidity(Breakpoint.VALIDITY.INVALID, NbBundle.getMessage(ClassBasedBreakpoint.class, "MSG_RequestNotSupported"));
         }
     }
     

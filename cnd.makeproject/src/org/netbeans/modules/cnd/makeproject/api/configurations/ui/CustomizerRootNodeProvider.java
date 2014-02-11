@@ -63,7 +63,7 @@ public final class CustomizerRootNodeProvider {
     }
 
     public List<CustomizerNode> getCustomizerNodes(Lookup lookup) {
-        ArrayList<CustomizerNode> list = new ArrayList<CustomizerNode>();
+        ArrayList<CustomizerNode> list = new ArrayList<>();
 
         // Add nodes from providers register via services
         for (CustomizerNodeProvider provider : getCustomizerNodeProviders()) {
@@ -76,7 +76,7 @@ public final class CustomizerRootNodeProvider {
     }
 
     public List<CustomizerNode> getCustomizerNodes(String id, Lookup lookup) {
-        ArrayList<CustomizerNode> list = new ArrayList<CustomizerNode>();
+        ArrayList<CustomizerNode> list = new ArrayList<>();
         List<CustomizerNode> nodes = getCustomizerNodes(lookup);
         for (CustomizerNode n : nodes) {
             if (n != null && n.getName().equals(id)) {
@@ -90,8 +90,8 @@ public final class CustomizerRootNodeProvider {
      * Get list (dynamic) registered via services
      */
     private static Set<CustomizerNodeProvider> getCustomizerNodeProviders() {
-        HashSet<CustomizerNodeProvider> providers = new HashSet<CustomizerNodeProvider>();
-        Lookup.Template<CustomizerNodeProvider> template = new Lookup.Template<CustomizerNodeProvider>(CustomizerNodeProvider.class);
+        HashSet<CustomizerNodeProvider> providers = new HashSet<>();
+        Lookup.Template<CustomizerNodeProvider> template = new Lookup.Template<>(CustomizerNodeProvider.class);
         Lookup.Result<CustomizerNodeProvider> result = Lookup.getDefault().lookup(template);
         Iterator<? extends CustomizerNodeProvider> iterator = result.allInstances().iterator();
         while (iterator.hasNext()) {

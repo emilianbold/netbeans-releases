@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.discovery.wizard.api.support;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -273,7 +274,6 @@ public class ProjectBridge {
     
     public void convertIncludePaths(Set<String> set, List<String> paths, String compilePath, String filePath){
         List<String> ordinary = new ArrayList<>();
-        List<Integer> incuded = new ArrayList<>();
         for (String path : paths){
             if ( path.startsWith("/") || (path.length()>1 && path.charAt(1)==':') ) {  // NOI18N
                 String aPath = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, path);
@@ -285,13 +285,6 @@ public class ProjectBridge {
                 } else {
                     String aPath = compilePath + CndFileUtils.getFileSeparatorChar(baseFolderFileSystem) + path;
                     aPath = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, aPath);
-                    if (!CndFileUtils.isExistingDirectory(baseFolderFileSystem, aPath)) {
-                        if (path.endsWith(".h") || path.endsWith(".hpp") || path.endsWith(".hxx") || path.endsWith(".def") || path.endsWith(".inc")) { // NOI18N
-                            // it looks like -include <relative path>
-                            // try to resolve include directive later
-                            incuded.add(ordinary.size());
-                        }
-                    }
                     ordinary.add(getRelativepath(aPath));
                 }
             }
@@ -300,17 +293,37 @@ public class ProjectBridge {
         if (isDifferentCompilePath(filePath, compilePath)){
             ordinary.add(getRelativepath(compilePath));
         }
-        for(int i : incuded) {
-            String inc = paths.get(i);
-            for(String p : ordinary) {
-                if ( !(p.startsWith("/") || (p.length()>1 && p.charAt(1)==':') ) ) {  // NOI18N
-                    p = CndPathUtilities.toAbsolutePath(makeConfigurationDescriptor.getBaseDirFileObject(), p);
-                }
-                String aPath = p + CndFileUtils.getFileSeparatorChar(baseFolderFileSystem) + inc;
+        set.addAll(ordinary);
+    }
+
+    public void convertIncludeFiles(Set<String> set, List<String> files, String compilePath, Collection<String> paths) {
+        List<String> ordinary = new ArrayList<>();
+        for (String path : files){
+            if ( path.startsWith("/") || (path.length()>1 && path.charAt(1)==':') ) {  // NOI18N
+                String aPath = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, path);
+                ordinary.add(getRelativepath(aPath));
+            } else {
+                String aPath = compilePath + CndFileUtils.getFileSeparatorChar(baseFolderFileSystem) + path;
                 aPath = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, aPath);
                 if (CndFileUtils.isExistingFile(baseFolderFileSystem, aPath)) {
-                    ordinary.set(i, getRelativepath(aPath));
-                    break;
+                    ordinary.add(getRelativepath(aPath));
+                } else {
+                    boolean found = false;
+                    for(String p : paths) {
+                        if ( !(p.startsWith("/") || (p.length()>1 && p.charAt(1)==':') ) ) {  // NOI18N
+                            p = CndPathUtilities.toAbsolutePath(makeConfigurationDescriptor.getBaseDirFileObject(), p);
+                        }
+                        aPath = p + CndFileUtils.getFileSeparatorChar(baseFolderFileSystem) + path;
+                        aPath = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, aPath);
+                        if (CndFileUtils.isExistingFile(baseFolderFileSystem, aPath)) {
+                            ordinary.add(getRelativepath(aPath));
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        ordinary.add(getRelativepath(aPath));
+                    }
                 }
             }
         }
@@ -422,7 +435,7 @@ public class ProjectBridge {
             if (Utilities.isWindows()) {
                 path = path.replace('\\', '/');
             }
-            if (path.indexOf("/../")>=0 || path.indexOf("/./")>=0) { // NOI18N
+            if (path.contains("/../") || path.contains("/./")) { // NOI18N
                 path = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, path);
                 if (Utilities.isWindows()) {
                     path = path.replace('\\', '/');
@@ -526,7 +539,7 @@ public class ProjectBridge {
     }
     
 
-    public void setupProject(List<String> includes, List<String> macros, List<String> undefs, ItemProperties.LanguageKind lang){
+    public void setupProject(List<String> includes, List<String> files, List<String> macros, List<String> undefs, ItemProperties.LanguageKind lang){
         MakeConfiguration extConf = makeConfigurationDescriptor.getActiveConfiguration();
         if (extConf != null) {
             for(int i = 0; i < includes.size(); i++) {
@@ -537,16 +550,20 @@ public class ProjectBridge {
             }
             if (lang == ItemProperties.LanguageKind.CPP) {
                 extConf.getCCCompilerConfiguration().getIncludeDirectories().setValue(includes);
+                extConf.getCCCompilerConfiguration().getIncludeFiles().setValue(files);
                 extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().setValue(macros);
                 extConf.getCCCompilerConfiguration().getUndefinedPreprocessorConfiguration().setValue(undefs);
                 extConf.getCCCompilerConfiguration().getIncludeDirectories().setDirty(true);
+                extConf.getCCCompilerConfiguration().getIncludeFiles().setDirty(true);
                 extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().setDirty(true);
                 extConf.getCCCompilerConfiguration().getUndefinedPreprocessorConfiguration().setDirty(true);
             } else if (lang == ItemProperties.LanguageKind.C) {
                 extConf.getCCompilerConfiguration().getIncludeDirectories().setValue(includes);
+                extConf.getCCompilerConfiguration().getIncludeFiles().setValue(files);
                 extConf.getCCompilerConfiguration().getPreprocessorConfiguration().setValue(macros);
                 extConf.getCCompilerConfiguration().getUndefinedPreprocessorConfiguration().setValue(undefs);
                 extConf.getCCompilerConfiguration().getIncludeDirectories().setDirty(true);
+                extConf.getCCompilerConfiguration().getIncludeFiles().setDirty(true);
                 extConf.getCCompilerConfiguration().getPreprocessorConfiguration().setDirty(true);
                 extConf.getCCompilerConfiguration().getUndefinedPreprocessorConfiguration().setDirty(true);
             } else if (lang == ItemProperties.LanguageKind.Fortran) {
@@ -574,7 +591,8 @@ public class ProjectBridge {
         return null;
     }
 
-    public void setupFolder(List<String> includes, boolean inheriteIncludes, List<String> macros, boolean inheriteMacros, List<String> undefs, boolean inheriteUndefs, ItemProperties.LanguageKind lang, Folder folder) {
+    public void setupFolder(List<String> includes, boolean inheriteIncludes, List<String> files, boolean inheriteFiles,
+            List<String> macros, boolean inheriteMacros, List<String> undefs, boolean inheriteUndefs, ItemProperties.LanguageKind lang, Folder folder) {
         CCCCompilerConfiguration cccc = getFolderConfiguration(lang, folder);
         if (cccc == null) {
             return;
@@ -587,6 +605,8 @@ public class ProjectBridge {
         }
         cccc.getIncludeDirectories().setValue(includes);
         cccc.getInheritIncludes().setValue(inheriteIncludes);
+        cccc.getIncludeFiles().setValue(files);
+        cccc.getInheritFiles().setValue(inheriteFiles);
         cccc.getPreprocessorConfiguration().setValue(macros);
         cccc.getInheritPreprocessor().setValue(inheriteMacros);
         cccc.getUndefinedPreprocessorConfiguration().setValue(undefs);
@@ -801,7 +821,8 @@ public class ProjectBridge {
         return null;
     }
 
-    public void setupFile(String compilepath, List<String> includes, boolean inheriteIncludes, List<String> macros, boolean inheriteMacros, List<String> undefs, boolean inheriteUndefs, Item item, String importantFlags) {
+    public void setupFile(String compilepath, List<String> includes, boolean inheriteIncludes, List<String> files, boolean inheriteFiles,
+            List<String> macros, boolean inheriteMacros, List<String> undefs, boolean inheriteUndefs, Item item, String importantFlags) {
         ItemConfiguration itemConfiguration = getOrCreateItemConfiguration(item);
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) {
             return;
@@ -821,6 +842,8 @@ public class ProjectBridge {
             CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration)compilerConfiguration;
             cccCompilerConfiguration.getIncludeDirectories().setValue(includes);
             cccCompilerConfiguration.getInheritIncludes().setValue(inheriteIncludes);
+            cccCompilerConfiguration.getIncludeFiles().setValue(files);
+            cccCompilerConfiguration.getInheritFiles().setValue(inheriteFiles);
             cccCompilerConfiguration.getPreprocessorConfiguration().setValue(macros);
             cccCompilerConfiguration.getInheritPreprocessor().setValue(inheriteMacros);
             cccCompilerConfiguration.getUndefinedPreprocessorConfiguration().setValue(undefs);
@@ -837,9 +860,9 @@ public class ProjectBridge {
         boolean isChanged = false;
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
-            Set<String> set = new HashSet<String>(item.getUserMacroDefinitions());
+            Set<String> set = new HashSet<>(item.getUserMacroDefinitions());
             CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration)compilerConfiguration;
-            List<String> list = new ArrayList<String>(cccCompilerConfiguration.getPreprocessorConfiguration().getValue());
+            List<String> list = new ArrayList<>(cccCompilerConfiguration.getPreprocessorConfiguration().getValue());
             for(Map.Entry<String,String> entry : macros.entrySet()) {
                 String s;
                 if (entry.getValue() != null) {
@@ -869,7 +892,7 @@ public class ProjectBridge {
         return isChanged;
     }
 
-    private Map<String, String> cache = new HashMap<>();
+    private final Map<String, String> cache = new HashMap<>();
     private String getString(String s) {
         String res = cache.get(s);
         if (res == null) {

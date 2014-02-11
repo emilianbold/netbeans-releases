@@ -77,7 +77,6 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Offsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
@@ -94,7 +93,7 @@ import org.openide.filesystems.FileSystem;
  * @author Vladimir Voskresensky
  */
 public final class APTFindMacrosWalker extends APTSelfWalker {
-    private final List<CsmReference> references = new ArrayList<CsmReference>();
+    private final List<CsmReference> references = new ArrayList<>();
     private final CsmFile csmFile;
     public APTFindMacrosWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
         super(apt, preprocHandler, cacheEntry);

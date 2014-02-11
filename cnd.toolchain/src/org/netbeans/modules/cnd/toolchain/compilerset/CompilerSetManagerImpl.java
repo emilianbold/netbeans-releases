@@ -722,7 +722,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         completeCompilerSet(executionEnvironment, impl, sets);
     }
 
-    private boolean initCompilerSet(String path, CompilerSetImpl cs, boolean known) {
+    public boolean initCompilerSet(String path, CompilerSetImpl cs, boolean known) {
         CompilerFlavor flavor = cs.getCompilerFlavor();
         ToolchainDescriptor d = flavor.getToolchainDescriptor();
         if (d != null && ToolUtils.isMyFolder(path, d, getPlatform(), known)) {

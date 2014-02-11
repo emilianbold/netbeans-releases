@@ -66,7 +66,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener, Clonea
     private CompilerSetNodeProp compilerSetNodeProp;
     private String flavor;
     private boolean dirty = false;
-    private Map<String, String> oldNameMap = new HashMap<String, String>();
+    private final Map<String, String> oldNameMap = new HashMap<>();
     
     private static final RequestProcessor RP = new RequestProcessor("CompilerSet2Configuration", 1); // NOI18N
 

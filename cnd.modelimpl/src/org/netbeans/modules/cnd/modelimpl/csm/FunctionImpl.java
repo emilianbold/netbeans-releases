@@ -163,7 +163,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
 
-        FunctionImpl<T> functionImpl = new FunctionImpl<T>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
+        FunctionImpl<T> functionImpl = new FunctionImpl<>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
         temporaryRepositoryRegistration(global, functionImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
@@ -267,7 +267,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     public List<CsmTemplateParameter> getInheritedTemplateParameters() {
         List<CsmTemplateParameter> allTemplateParams = getTemplateParameters();
-        List<CsmTemplateParameter> params = new ArrayList<CsmTemplateParameter>();
+        List<CsmTemplateParameter> params = new ArrayList<>();
         if(allTemplateParams != null) {
             int inheritedTemplateParametersNumber = (templateDescriptor != null) ? templateDescriptor.getInheritedTemplateParametersNumber() : 0;
             if(allTemplateParams.size() > inheritedTemplateParametersNumber) {
@@ -282,7 +282,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     public List<CsmTemplateParameter> getOwnTemplateParameters() {
         List<CsmTemplateParameter> allTemplateParams = getTemplateParameters();
-        List<CsmTemplateParameter> params = new ArrayList<CsmTemplateParameter>();
+        List<CsmTemplateParameter> params = new ArrayList<>();
         if(allTemplateParams != null) {
             int inheritedTemplateParametersNumber = (templateDescriptor != null) ? templateDescriptor.getInheritedTemplateParametersNumber() : 0;
             if(allTemplateParams.size() > inheritedTemplateParametersNumber) {
@@ -704,7 +704,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     @Override
     public Collection<CsmScopeElement> getScopeElements() {
-        Collection<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
+        Collection<CsmScopeElement> l = new ArrayList<>();
         l.addAll(getParameters());
         return l;
     }

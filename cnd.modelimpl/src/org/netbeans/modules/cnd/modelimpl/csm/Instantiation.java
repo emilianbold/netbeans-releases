@@ -354,8 +354,8 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.writeUID(UIDCsmConverter.declarationToUID(declaration), output);
 
-        List<CsmUID<CsmTemplateParameter>> keys = new ArrayList<CsmUID<CsmTemplateParameter>>();
-        List<CsmSpecializationParameter> vals = new ArrayList<CsmSpecializationParameter>();
+        List<CsmUID<CsmTemplateParameter>> keys = new ArrayList<>();
+        List<CsmSpecializationParameter> vals = new ArrayList<>();
         for (CsmTemplateParameter key : mapping.keySet()) {
             keys.add(UIDCsmConverter.declarationToUID(key));
             vals.add(mapping.get(key));
@@ -372,13 +372,13 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         CsmUID<T> declUID = factory.readUID(input);
         declaration = declUID.getObject();
         
-        List<CsmUID<CsmTemplateParameter>> keys = new ArrayList<CsmUID<CsmTemplateParameter>>();
-        List<CsmSpecializationParameter> vals = new ArrayList<CsmSpecializationParameter>();
+        List<CsmUID<CsmTemplateParameter>> keys = new ArrayList<>();
+        List<CsmSpecializationParameter> vals = new ArrayList<>();
         
         factory.readUIDCollection(keys, input);
         PersistentUtils.readSpecializationParameters(vals, input);
         
-        mapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
+        mapping = new HashMap<>();
         for (int i = 0; i < keys.size() && i < vals.size(); i++) {
             mapping.put(keys.get(i).getObject(), vals.get(i));
         }
@@ -469,7 +469,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
 
         @Override
         public Collection<CsmMember> getMembers() {
-            Collection<CsmMember> res = new ArrayList<CsmMember>();
+            Collection<CsmMember> res = new ArrayList<>();
             for (CsmMember member : declaration.getMembers()) {
                 res.add(createMember(member));
             }
@@ -478,7 +478,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
 
         @Override
         public Iterator<CsmMember> getMembers(CsmFilter filter) {
-            Collection<CsmMember> res = new ArrayList<CsmMember>();
+            Collection<CsmMember> res = new ArrayList<>();
             Iterator<CsmMember> it = CsmSelect.getClassMembers(declaration, filter);
             while(it.hasNext()){
                 res.add(createMember(it.next()));
@@ -685,7 +685,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
 
         @Override
         public CsmFunctionParameterList getParameterList() {
-            ArrayList<CsmParameter> res = new ArrayList<CsmParameter>();
+            ArrayList<CsmParameter> res = new ArrayList<>();
             Collection<CsmParameter> parameters = declaration.getParameterList().getParameters();
             for (CsmParameter param : parameters) {
                 res.add(new Parameter(param, this));
@@ -696,7 +696,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
 
         @Override
         public Collection<CsmParameter> getParameters() {
-            Collection<CsmParameter> res = new ArrayList<CsmParameter>();
+            Collection<CsmParameter> res = new ArrayList<>();
             Collection<CsmParameter> parameters = declaration.getParameters();
             for (CsmParameter param : parameters) {
                 res.add(new Parameter(param, this));
@@ -750,7 +750,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         }
         @Override
         public Collection<CsmParameter> getParameters() {
-            Collection<CsmParameter> res = new ArrayList<CsmParameter>();
+            Collection<CsmParameter> res = new ArrayList<>();
             Collection<CsmParameter> parameters = declaration.getParameters();
             for (CsmParameter param : parameters) {
                 res.add(new Parameter(param, this));
@@ -1093,7 +1093,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
 
         @Override
         public CsmFunctionParameterList getParameterList() {
-            Collection<CsmParameter> res = new ArrayList<CsmParameter>();
+            Collection<CsmParameter> res = new ArrayList<>();
             Collection<CsmParameter> parameters = ((CsmFunction) declaration).getParameterList().getParameters();
             for (CsmParameter param : parameters) {
                 res.add(new Parameter(param, this));
@@ -1103,7 +1103,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
 
         @Override
         public Collection<CsmParameter> getParameters() {
-            Collection<CsmParameter> res = new ArrayList<CsmParameter>();
+            Collection<CsmParameter> res = new ArrayList<>();
             Collection<CsmParameter> parameters = declaration.getParameters();
             for (CsmParameter param : parameters) {
                 res.add(new Parameter(param, instantiation));
@@ -1271,9 +1271,14 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         if (CsmKindUtilities.isTemplateParameterType(type)) {
             LOG.log(Level.FINE, "Instantiation.resolveTemplateParameter {0}; mapping={1}\n", new Object[]{type.getText(), instantiation.getTemplateDeclaration().getName()});
             MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping = new MapHierarchy<>(instantiation.getMapping());
-            CsmType resolvedType = resolveTemplateParameterType(((CsmTemplateParameterType) type).getParameter(), mapping);
-            if (resolvedType != null) {
-                return resolvedType;
+            CsmTemplateParameter param = ((CsmTemplateParameterType) type).getParameter();
+            if (param != null) {
+                CsmType resolvedType = resolveTemplateParameterType(param, mapping);
+                if (resolvedType != null) {
+                    return resolvedType;
+                }
+            } else {
+                LOG.log(Level.INFO, "no param for " + type + " and \n" + instantiation, new IllegalStateException()); // NOI18N;
             }
         }
         return type;
@@ -1364,7 +1369,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                         if (paramTemplateType != null) {
                             List<CsmSpecializationParameter> paramInstParams = paramTemplateType.getInstantiationParams();
                             if (!paramInstParams.isEmpty()) {
-                                List<CsmSpecializationParameter> newInstParams = new ArrayList<CsmSpecializationParameter>(newType.getInstantiationParams());
+                                List<CsmSpecializationParameter> newInstParams = new ArrayList<>(newType.getInstantiationParams());
                                 boolean updateInstParams = false;
                                 for (CsmSpecializationParameter param : paramInstParams) {
                                     if (!newInstParams.contains(param)) {
@@ -1571,7 +1576,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             if (!originalType.isInstantiation()) {
                 return Collections.emptyList();
             }
-            List<CsmSpecializationParameter> res = new ArrayList<CsmSpecializationParameter>();
+            List<CsmSpecializationParameter> res = new ArrayList<>();
             for (CsmSpecializationParameter instParam : originalType.getInstantiationParams()) {
                 if (CsmKindUtilities.isTypeBasedSpecalizationParameter(instParam) &&
                         CsmKindUtilities.isTemplateParameterType(((CsmTypeBasedSpecializationParameter) instParam).getType())) {

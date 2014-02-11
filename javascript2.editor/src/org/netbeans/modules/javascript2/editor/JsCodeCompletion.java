@@ -373,7 +373,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             }
             if (id == JsTokenId.DOC_COMMENT) {
                 TokenSequence<? extends JsDocumentationTokenId> docTokenSeq =
-                        LexUtilities.getJsDocumentationTokenSequence(info.getSnapshot(), caretOffset);
+                        LexUtilities.getJsDocumentationTokenSequence(info.getSnapshot(), offset);
                 if (docTokenSeq == null) {
                     return null;
                 }

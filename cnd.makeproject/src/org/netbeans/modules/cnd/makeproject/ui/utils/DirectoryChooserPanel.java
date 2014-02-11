@@ -123,7 +123,7 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
     }
 
     private Object getPropertyValue() throws IllegalStateException {
-        return new ArrayList<String>(getListData());
+        return new ArrayList<>(getListData());
     }
 
     @Override
