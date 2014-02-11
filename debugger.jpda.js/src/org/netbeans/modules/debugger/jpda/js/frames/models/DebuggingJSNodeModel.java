@@ -62,7 +62,7 @@ import org.openide.util.datatransfer.PasteType;
  *
  * @author Martin
  */
-@DebuggerServiceRegistration(path="netbeans-JPDASession/JS/DebuggingView",
+@DebuggerServiceRegistration(path="netbeans-JPDASession/DebuggingView",
                              types=ExtendedNodeModelFilter.class)
 public class DebuggingJSNodeModel implements ExtendedNodeModelFilter {
     

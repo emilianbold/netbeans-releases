@@ -57,7 +57,7 @@ import org.openide.util.Exceptions;
  *
  * @author Martin
  */
-@DebuggerServiceRegistration(path="netbeans-JPDASession/JS/DebuggingView",
+@DebuggerServiceRegistration(path="netbeans-JPDASession/DebuggingView",
                              types=NodeActionsProviderFilter.class)
 public class DebuggingJSActionsProvider implements NodeActionsProviderFilter {
 
