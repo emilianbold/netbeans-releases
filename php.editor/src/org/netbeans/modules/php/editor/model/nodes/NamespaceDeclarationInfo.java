@@ -87,7 +87,7 @@ public class NamespaceDeclarationInfo extends ASTNodeInfo<NamespaceDeclaration> 
                 sb.append(identifier.getName());
             }
         } else {
-            sb.append(DEFAULT_NAMESPACE_NAME); //NOI18N
+            sb.append(DEFAULT_NAMESPACE_NAME);
         }
         return sb.toString();
     }
