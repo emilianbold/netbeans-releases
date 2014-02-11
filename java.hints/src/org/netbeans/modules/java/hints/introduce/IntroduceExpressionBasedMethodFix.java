@@ -226,7 +226,14 @@ final class IntroduceExpressionBasedMethodFix extends IntroduceFixBase implement
                 List<VariableElement> parameters = IntroduceHint.resolveVariables(copy, IntroduceExpressionBasedMethodFix.this.parameters);
                 List<ExpressionTree> realArguments = IntroduceHint.realArguments(make, parameters);
                 ExpressionTree invocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(name), realArguments);
-                List<VariableTree> formalArguments = IntroduceHint.createVariables(copy, parameters);
+                TypeElement targetType = target.type.resolve(copy);
+                TreePath pathToClass = targetType != null ? copy.getTrees().getPath(targetType) : null;
+                if (pathToClass == null) {
+                    pathToClass = TreeUtils.findClass(expression);
+                }
+                assert pathToClass != null;
+                List<VariableTree> formalArguments = IntroduceHint.createVariables(copy, parameters, pathToClass, 
+                        Collections.singletonList(expression));
                 if (formalArguments == null) {
                     return; //XXX
                 }
@@ -240,12 +247,6 @@ final class IntroduceExpressionBasedMethodFix extends IntroduceFixBase implement
                 for (TreePathHandle tph : IntroduceExpressionBasedMethodFix.this.typeVars) {
                     typeVars.add((TypeParameterTree) tph.resolve(copy).getLeaf());
                 }
-                TypeElement targetType = target.type.resolve(copy);
-                TreePath pathToClass = targetType != null ? copy.getTrees().getPath(targetType) : null;
-                if (pathToClass == null) {
-                    pathToClass = TreeUtils.findClass(expression);
-                }
-                assert pathToClass != null;
                 boolean isStatic = !referencesInstances || IntroduceHint.needsStaticRelativeTo(copy, pathToClass, expression);
                 Tree parentTree = expression.getParentPath().getLeaf();
                 Tree nueParent = copy.getTreeUtilities().translate(parentTree, Collections.singletonMap(expression.getLeaf(), invocation));
