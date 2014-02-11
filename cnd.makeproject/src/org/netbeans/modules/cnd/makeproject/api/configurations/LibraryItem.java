@@ -347,7 +347,9 @@ public abstract class LibraryItem implements Cloneable {
 	public String getOption(MakeConfiguration conf) {
             CompilerSet cs = conf.getCompilerSet().getCompilerSet();
             if (cs != null) {
-                return cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag() + getLibName();
+                String lib = getLibName();
+                lib = CndPathUtilities.quoteIfNecessary(CppUtils.normalizeDriveLetter(cs, lib));
+                return cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag() + lib;
             }
 	    return ""; // NOI18N
 	}
@@ -411,7 +413,7 @@ public abstract class LibraryItem implements Cloneable {
             String lpath = getPath();
             if (conf != null) {
                 CompilerSet cs = conf.getCompilerSet().getCompilerSet();
-                lpath = CppUtils.normalizeDriveLetter(cs, lpath);
+                lpath = CndPathUtilities.quoteIfNecessary(CppUtils.normalizeDriveLetter(cs, lpath));
             }
 	    return lpath;
 	}

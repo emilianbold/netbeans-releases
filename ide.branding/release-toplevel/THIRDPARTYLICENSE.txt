@@ -144,10 +144,10 @@ ide/modules/org-eclipse-mylyn-tasks-core.jar                          EPL-v10
 ide/modules/org-eclipse-mylyn-wikitext-confluence-core.jar            EPL-v10
 ide/modules/org-eclipse-mylyn-wikitext-core.jar                       EPL-v10 (see also about.html inside this JAR file)
 ide/modules/org-eclipse-mylyn-wikitext-textile-core.jar               EPL-v10
-ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalog/resources/schema-for-xslt20.xsd  W3C (the original at http://www.w3.org/2007/schema-for-xslt20.xsd)
+ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalog/resources/Transform.xsd  W3C (the original at http://www.w3.org/TR/xslt20/)
+ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalog/resources/XMLNamespace.xsd  W3C (the original at http://www.w3.org/2001/xml.xsd)
 ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalog/resources/XMLSchema-instance.xsd  W3C (the original at http://www.w3.org/2001/XMLSchema-instance)
 ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalog/resources/XMLSchema.xsd  W3C (the original at http://www.w3.org/2001/XMLSchema.xsd)
-ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalog/resources/xml.xsd  W3C (the original at http://www.w3.org/2001/xml.xsd)
 javacard/JCDK3.0.2_ConnectedEdition/lib/ant-contrib-1.0b3.jar         Apache-2.0
 javacard/JCDK3.0.2_ConnectedEdition/lib/commons-codec-1.3.jar         Apache-2.0
 javacard/JCDK3.0.2_ConnectedEdition/lib/commons-httpclient-3.0.jar    Apache-2.0

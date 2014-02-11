@@ -61,9 +61,9 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
  * @author Radek Matous
  */
 public final class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
-    private PHPDocTypeTag typeTag;
-    private Kind kind;
-    private String typeName;
+    private final PHPDocTypeTag typeTag;
+    private final Kind kind;
+    private final String typeName;
 
     private PhpDocTypeTagInfo(PHPDocTypeTag typeTag, PHPDocNode node, String typeName, Kind kind) {
         super(node);

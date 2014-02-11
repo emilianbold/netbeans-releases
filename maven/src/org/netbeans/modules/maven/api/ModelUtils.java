@@ -236,6 +236,9 @@ public final class ModelUtils {
      * Use {@link PluginPropertyUtils#getPluginProperty(Project,String,String,String,String)} first
      * ({@link Constants#GROUP_APACHE_PLUGINS}, {@link Constants#PLUGIN_COMPILER}, {@link Constants#SOURCE_PARAM}, {@code "compile"})
      * to make sure that the current level is actually not what you want.
+     * 
+     * Please Note: THis method will not take existing configuration into account, especially the use of property (maven.compiler.source, maven.compiler.target)
+     * instead of plugin configuration is ignored.
      * @param mdl a POM model
      * @param sourceLevel the desired source level
      * @since 2.19

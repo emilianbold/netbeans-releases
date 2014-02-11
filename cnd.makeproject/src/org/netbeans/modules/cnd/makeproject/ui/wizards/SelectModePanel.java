@@ -49,17 +49,19 @@ import java.awt.event.ItemEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.text.html.HTMLEditorKit;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
+import org.netbeans.modules.cnd.makeproject.MakeBasedProjectFactorySingleton;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual.DevHostsInitializer;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual.ToolCollectionItem;
@@ -70,6 +72,8 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -250,6 +254,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         add(toolchainLabel, gridBagConstraints);
 
         hostComboBox.addItemListener(new java.awt.event.ItemListener() {
+            @Override
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 hostComboBoxItemStateChanged(evt);
             }
@@ -282,6 +287,7 @@ public class SelectModePanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(sourceBrowseButton, org.openide.util.NbBundle.getMessage(SelectModePanel.class, "SELECT_MODE_BROWSE_PROJECT_FOLDER")); // NOI18N
         sourceBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sourceBrowseButtonActionPerformed(evt);
             }
@@ -314,7 +320,14 @@ public class SelectModePanel extends javax.swing.JPanel {
 }                                             
 
     private void sourceBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {                                                   
-        String seed = ((EditableComboBox)sourceFolder).getText();
+        String path = ((EditableComboBox)sourceFolder).getText();
+        if (path.isEmpty() && HostInfoUtils.isHostInfoAvailable(env)) { 
+            try {  
+                path = HostInfoUtils.getHostInfo(env).getUserDir();
+            } catch (IOException | ConnectionManager.CancellationException ex) {
+                // reporting doesn't has much sense here
+            }
+        }
         String approveButtonText = NbBundle.getMessage(SelectModePanel.class, "SOURCES_DIR_BUTTON_TXT"); // NOI18N
         String title = NbBundle.getMessage(SelectModePanel.class, "SOURCES_DIR_CHOOSER_TITLE_TXT"); //NOI18N
         JFileChooser fileChooser = NewProjectWizardUtils.createFileChooser(
@@ -323,7 +336,7 @@ public class SelectModePanel extends javax.swing.JPanel {
                 approveButtonText,
                 JFileChooser.DIRECTORIES_ONLY,
                 null,
-                seed,
+                path,
                 false);
         int ret = fileChooser.showOpenDialog(this);
         if (ret == JFileChooser.CANCEL_OPTION) {
@@ -331,7 +344,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         }
         File selectedFile = fileChooser.getSelectedFile();
         if (selectedFile != null) { // seems paranoidal, but once I've seen NPE otherwise 8-()
-            String path = selectedFile.getPath();
+            path = selectedFile.getPath();
             ((EditableComboBox)sourceFolder).setText(path);
         }
     }                                                  
@@ -457,7 +470,15 @@ public class SelectModePanel extends javax.swing.JPanel {
                     return false;
                 }
                 try {
-                    if (ProjectManager.getDefault().findProject(projectDirFO) != null) {
+                    Project prj = ProjectManager.getDefault().findProject(projectDirFO);
+                    if (prj != null) {
+                        MakeProjectHelper h = MakeBasedProjectFactorySingleton.getHelperFor(prj);
+                        if (h != null) {
+                            h.notifyDeleted();
+                            prj = ProjectManager.getDefault().findProject(projectDirFO);
+                        }
+                    }                        
+                    if (prj != null) {
                         messageKind = alreadyNbPoject;
                         return false;
                     }

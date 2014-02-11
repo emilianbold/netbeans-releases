@@ -3,23 +3,23 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "db7b17a93ec23099cdd9f99d8d207f23",
+    "hash": "0a3d04323287ce4d10fee1a3f2b18222",
     "packages": [
 
     ],
     "packages-dev": [
         {
             "name": "nette/tester",
-            "version": "v0.9.5",
+            "version": "v1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nette/tester.git",
-                "reference": "812b5ab2f59b0d742dd30035865467ec0b2f6ee7"
+                "reference": "710ea7b1b7e1a05c112438e808daa15314fbfe8f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nette/tester/zipball/812b5ab2f59b0d742dd30035865467ec0b2f6ee7",
-                "reference": "812b5ab2f59b0d742dd30035865467ec0b2f6ee7",
+                "url": "https://api.github.com/repos/nette/tester/zipball/710ea7b1b7e1a05c112438e808daa15314fbfe8f",
+                "reference": "710ea7b1b7e1a05c112438e808daa15314fbfe8f",
                 "shasum": ""
             },
             "require": {
@@ -58,7 +58,7 @@
                 "testing",
                 "unit"
             ],
-            "time": "2013-12-30 23:49:37"
+            "time": "2014-02-08 12:54:09"
         }
     ],
     "aliases": [

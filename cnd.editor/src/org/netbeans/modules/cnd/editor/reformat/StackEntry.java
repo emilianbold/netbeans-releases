@@ -236,10 +236,23 @@ class StackEntry {
                         break;
                     }
                     case NAMESPACE: //("namespace", "keyword"), //C++
-                    case CLASS: //("class", "keyword"), //C++
                     {
                         if (paren == 0 && triangle == 0) {
                             importantKind = current.id();
+                            likeToFunction = false;
+                            return;
+                        }
+                        break;
+                    }
+                    case CLASS: //("class", "keyword"), //C++
+                    {
+                        if (paren == 0 && triangle == 0) {
+                            Token<CppTokenId> isEnum = ts.lookPreviousImportant();
+                            if (isEnum != null && isEnum.id() == ENUM) {
+                                importantKind = isEnum.id();
+                            } else {
+                                importantKind = current.id();
+                            }
                             likeToFunction = false;
                             return;
                         }

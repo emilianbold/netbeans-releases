@@ -60,6 +60,7 @@ import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
 import org.netbeans.modules.jira.client.spi.Priority;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
+import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.repository.JiraStorageManager;
 import org.netbeans.modules.mylyn.util.MylynSupport;
@@ -213,10 +214,13 @@ public class Jira {
                 @Override
                 public IssuePriorityInfo[] getPriorityInfos() {
                     if(infos == null) {
-                        Priority[] priorities = repository.getConfiguration().getPriorities();
-                        infos = new IssuePriorityInfo[priorities.length];
-                        for (int i = 0; i < priorities.length; i++) {
-                            infos[i] = new IssuePriorityInfo(priorities[i].getId(), priorities[i].getName());
+                        JiraConfiguration configuration = repository.getConfiguration();
+                        if(configuration != null) {
+                            Priority[] priorities = configuration.getPriorities();
+                            infos = new IssuePriorityInfo[priorities.length];
+                            for (int i = 0; i < priorities.length; i++) {
+                                infos[i] = new IssuePriorityInfo(priorities[i].getId(), priorities[i].getName());
+                            }
                         }
                     }
                     return infos;

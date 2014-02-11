@@ -211,7 +211,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler2 {
                             proposeAssignements(context, prefixMatcher, assignments, proposals);
                         }
                         if (ELStreamCompletionItem.STREAM_METHOD.equals(node.getImage())) {
-                            proposeOperators(ccontext, context, resolved, prefixMatcher, element, proposals, rootToNode, isBracketProperty(target, rootToNode));
+                            proposeOperators(ccontext, context, prefixMatcher, element, proposals, rootToNode, isBracketProperty(target, rootToNode));
                         }
                         ELJavaCompletion.propose(ccontext, context, element, target, proposals);
                     } else {
@@ -372,12 +372,12 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler2 {
         return context.getParserResult().getSnapshot().getSource().getFileObject();
     }
 
-    private void proposeOperators(CompilationContext ccontext, CodeCompletionContext context, Element resolved,
+    private void proposeOperators(CompilationContext ccontext, CodeCompletionContext context,
             PrefixMatcher prefixMatcher, ELElement element, List<CompletionProposal> proposals, List<Node> rootToNode,
             boolean isBracketProperty) {
         TypeElement streamElement = ccontext.info().getElements().getTypeElement("com.sun.el.stream.Stream"); //NOI18N
         if (streamElement != null) {
-            proposeJavaMethodsForElements(ccontext, context, resolved, prefixMatcher, element,
+            proposeJavaMethodsForElements(ccontext, context, prefixMatcher, element,
                     Arrays.<Element>asList(streamElement), isBracketProperty, proposals);
         }
     }
@@ -386,10 +386,10 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler2 {
             PrefixMatcher prefix, ELElement elElement,List<CompletionProposal> proposals, List<Node> rootToNode,
             boolean isBracketProperty) {
         List<Element> allTypes = ELTypeUtilities.getSuperTypesFor(info, resolved, elElement, rootToNode);
-        proposeJavaMethodsForElements(info, context, resolved, prefix, elElement, allTypes, isBracketProperty, proposals);
+        proposeJavaMethodsForElements(info, context, prefix, elElement, allTypes, isBracketProperty, proposals);
     }
 
-    private void proposeJavaMethodsForElements(CompilationContext info, CodeCompletionContext context, Element resolved,
+    private void proposeJavaMethodsForElements(CompilationContext info, CodeCompletionContext context,
             PrefixMatcher prefix, ELElement elElement, List<Element> elements, boolean isBracketCall,
             List<CompletionProposal> proposals) {
         for(Element element : elements) {

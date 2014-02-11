@@ -58,6 +58,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class TraitDeclarationInfo extends ASTNodeInfo<TraitDeclaration>  {
+
     TraitDeclarationInfo(TraitDeclaration node) {
         super(node);
     }

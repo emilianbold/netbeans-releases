@@ -63,9 +63,9 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
  * @author Radek Matous
  */
 public class MethodDeclarationInfo extends ASTNodeInfo<MethodDeclaration> {
-
     Map<String, List<QualifiedName>> paramDocTypes = Collections.emptyMap();
     private final boolean isFromInterface;
+
     MethodDeclarationInfo(Program program, MethodDeclaration methodDeclaration, final boolean isFromInterface) {
         super(methodDeclaration);
         this.isFromInterface = isFromInterface;

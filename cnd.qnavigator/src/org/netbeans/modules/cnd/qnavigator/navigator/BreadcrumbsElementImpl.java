@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsElement;
 import org.openide.cookies.OpenCookie;
 import org.openide.loaders.DataObject;
@@ -96,6 +97,7 @@ class BreadcrumbsElementImpl implements BreadcrumbsElement {
                 }
             }
         }
+        name = CsmDisplayUtilities.htmlize(name);
         return name;
     }
 

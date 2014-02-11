@@ -42,14 +42,11 @@
 
 package org.netbeans.modules.jira.query;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.*;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider.Status;
@@ -58,14 +55,11 @@ import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.client.spi.FilterDefinition;
-import static org.netbeans.modules.jira.client.spi.JiraConnectorProvider.Type.XMLRPC;
 import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
 import org.netbeans.modules.jira.client.spi.JiraFilter;
 import org.netbeans.modules.jira.client.spi.NamedFilter;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
-import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraRepository;
-import org.netbeans.modules.jira.repository.JiraRepository.Cache;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
