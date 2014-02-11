@@ -58,6 +58,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.repository.api.FilePath;
+import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryException;
 import org.netbeans.modules.cnd.repository.api.RepositoryExceptions;
 import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
@@ -71,6 +72,7 @@ import org.netbeans.modules.cnd.repository.impl.spi.ReadLayerCapability;
 import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
 import org.netbeans.modules.cnd.repository.impl.spi.WriteLayerCapability;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.storage.data.RepositoryDataInputStream;
 import org.netbeans.modules.cnd.repository.storage.data.RepositoryDataOutputStream;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
@@ -287,7 +289,7 @@ import org.openide.util.lookup.Lookups;
         return needMoreTime;        
     }
     
-
+    
     public RepositoryDataInputStream getInputStream(Key key) {
         int unitId = key.getUnitId();
         openUnit(unitId);
@@ -414,7 +416,9 @@ import org.openide.util.lookup.Lookups;
             //file tables is not listed in one of them?
             layer.openUnit(unitIDInLayer);
             //read files from the layers where file tables exists
-            if (layer_to_read_files_from == null || !layer.getFileNameTable(unitIDInLayer).isEmpty()) {
+            //read using storage
+            FilePathsDictionary files = getFilesDictionary(clientUnitID, layer);
+            if (layer_to_read_files_from == null || (files != null && files.size() > 0)) {
                 layer_to_read_files_from = layer;
                 unit_id_layer_to_read_files_from = unitIDInLayer;                
             }
@@ -439,7 +443,8 @@ import org.openide.util.lookup.Lookups;
             if (fsDict == null) {
                 List<CharSequence> convertedTable;
                 if (layer_to_read_files_from != null) {
-                    List<CharSequence> fileNameTable = layer_to_read_files_from.getFileNameTable(unit_id_layer_to_read_files_from);
+                    FilePathsDictionary dict = getFilesDictionary(clientUnitID, layer_to_read_files_from);
+                    List<CharSequence> fileNameTable = dict == null ? Collections.<CharSequence>emptyList() : dict.toList();
                     convertedTable = new ArrayList<CharSequence>(fileNameTable.size());
                     for (CharSequence fname : fileNameTable) {
                         FilePath sourceFSPath = new FilePath(layer_to_read_files_from.getUnitsTable().get(unit_id_layer_to_read_files_from).getFileSystem(), fname.toString());
@@ -457,6 +462,41 @@ import org.openide.util.lookup.Lookups;
         }
     }
 
+    private FilePathsDictionary getFilesDictionary(int clientUnitID, Layer layer) {
+        try {
+
+            final FilePathsDictionaryKey key = new FilePathsDictionaryKey(clientUnitID);
+            //read using storage
+            final LayerDescriptor ld = layer.getLayerDescriptor();
+            LayerKey layerKey = getReadLayerKey(key, layer);
+            if (layerKey == null) {
+                // Not in this layer.
+                return null;
+            }
+            if (layer.removedTableKeySet().contains(layerKey)) {
+                return null;
+            }
+            log.log(Level.FINE, "will get ByteBuffer from the read capability for the key "
+                    + "with unit id:{0} and behaviour: {1}", new Object[]{key.getUnitId(), key.getBehavior()});//NOI18N
+            ByteBuffer rawData = layer.getReadCapability().read(layerKey);
+            if (rawData == null) {
+                return null;
+            }
+            RepositoryDataInputStream inputStream = new RepositoryDataInputStream(
+                    new ByteArrayInputStream(rawData.array()),
+                    new UnitIDReadConverterImpl(layer),
+                    new FSReadConverterImpl(ld));
+            Persistent obj = key.getPersistentFactory().read(inputStream);
+            assert (obj instanceof FilePathsDictionary);
+            return (FilePathsDictionary) obj;
+
+        } catch (Throwable ex) {
+
+            RepositoryExceptions.throwException(this, ex);
+        }
+        return null;
+    }
+
     private void closeUnit(int shortClientUnitID) {
         Integer clientUnitID = storageMask.layerToClient(shortClientUnitID);
         closeUnit(clientUnitID, false, Collections.<Integer>emptySet());
@@ -464,23 +504,24 @@ import org.openide.util.lookup.Lookups;
 
     void closeUnit(int clientUnitID, boolean cleanRepository, Set<Integer> requiredUnits) {
         Integer clientShortUnitID = storageMask.clientToLayer(clientUnitID);
-        FilePathsDictionary files;
-        synchronized (filePathDictionaries) {
-            files = filePathDictionaries.get(clientShortUnitID);
-        }
-        List<CharSequence> flist = files == null
-                ? Collections.<CharSequence>emptyList() : files.toList();
+//        FilePathsDictionary files;
+//        synchronized (filePathDictionaries) {
+//            files = filePathDictionaries.get(clientShortUnitID);
+//        }
+//        List<CharSequence> flist = files == null
+//                ? Collections.<CharSequence>emptyList() : files.toList();
         for (Layer layer : layers) {
             Map<Integer, Integer> map = unitsTranslationMap.get(layer.getLayerDescriptor());
             final Integer unitIDInLayer = map.get(clientShortUnitID);
             // map: clientShortUnitID => unitIDInLayer
             layer.closeUnit(unitIDInLayer, cleanRepository, requiredUnits);
-            WriteLayerCapability writeCapability = layer.getWriteCapability();
-            if (writeCapability != null) {
-                if (!cleanRepository) {
-                    writeCapability.storeFilesTable(unitIDInLayer, flist);
-                }
-            }
+            //no need to store file tables, we will add it to the writer queue
+//            WriteLayerCapability writeCapability = layer.getWriteCapability();
+//            if (writeCapability != null) {
+//                if (!cleanRepository) {
+//                    writeCapability.storeFilesTable(unitIDInLayer, flist);
+//                }
+//            }
         }
     }
 
@@ -515,8 +556,13 @@ import org.openide.util.lookup.Lookups;
                 fsDict = filePathDictionaries.get(clientShortUnitID);
             }
         }
-
-        return fsDict.getFileID(fileName);
+        int size = fsDict.size();
+        int result = fsDict.getFileID(fileName);
+        //each time add to the quue to write
+        if (fsDict.size() > size) {
+            Repository.put(new FilePathsDictionaryKey(clientUnitID), fsDict);
+        }
+        return result;
     }
 
     CharSequence getUnitName(int unitID) {

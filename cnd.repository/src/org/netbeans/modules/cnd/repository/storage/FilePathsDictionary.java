@@ -41,11 +41,16 @@
  */
 package org.netbeans.modules.cnd.repository.storage;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.repository.util.IntToValueList;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
@@ -55,7 +60,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  *
  * @author akrasny
  */
-/* package */ final class FilePathsDictionary {
+/* package */ final class FilePathsDictionary implements Persistent, SelfPersistent{
     private static final boolean PRINT_STACK = CndUtils.getBoolean("cnd.repository.print.stack.wrong.file", true);// NOI18N
 
     private static final String WRONG_PATH = "<WRONG FILE>"; // NOI18N
@@ -87,6 +92,12 @@ import org.netbeans.modules.cnd.utils.CndUtils;
             }
         }
     }    
+    
+    int size() {
+        synchronized (lock) {
+            return paths.size();
+        }
+    }
 
     int getFileID(final CharSequence filePath) {
         synchronized (lock) {
@@ -101,6 +112,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
             }
         }
     }
+        
 
     List<CharSequence> toList() {
         synchronized (lock) {
@@ -116,5 +128,15 @@ import org.netbeans.modules.cnd.utils.CndUtils;
             sb.append(idx++).append(" => ").append(path.toString()).append("\n"); // NOI18N
         }
         return sb.toString();
+    }
+
+    @Override
+    public void write(RepositoryDataOutput output) throws IOException {
+        IntToValueList<CharSequence> list = IntToValueList.<CharSequence>createEmpty("traceName");//NOI18N
+        int i = 0;
+        for (CharSequence file : toList()) {
+            list.set(i++, file);
+        }
+        list.write(output);
     }
 }
