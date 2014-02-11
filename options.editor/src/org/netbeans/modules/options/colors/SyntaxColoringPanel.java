@@ -70,6 +70,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -122,6 +124,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
                                 toBeSaved = new HashMap<String, Set<String>>();
     private boolean             listen = false;
     private boolean changed = false;
+    private static Logger log = Logger.getLogger(SyntaxColoringPanel.class.getName ());
 
 
     /** Creates new form SyntaxColoringPanel1 */
@@ -866,19 +869,20 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
             Map<String, Vector<AttributeSet>> schemeMap = profiles.get(profile);
             for(String languageName : toBeSavedLanguages) {
                 String[] mimePath = getMimePath(languageName);
-                FontColorSettingsFactory fcs = EditorSettings.getDefault().getFontColorSettings(mimePath);
-                Collection<AttributeSet> allFontColors = fcs.getAllFontColors(profile);
-                Map<String, AttributeSet> savedSyntax = toMap(allFontColors);
-                Vector<AttributeSet> attributeSet = schemeMap.get(languageName);
-                Map<String, AttributeSet> currentSyntax = toMap(attributeSet);
-                if (savedSyntax != null && currentSyntax != null) {
-                    if (savedSyntax.size() >= currentSyntax.size()) {
-                        isChanged |= checkMaps(languageName, savedSyntax, currentSyntax);
-                    } else {
-                        isChanged |= checkMaps(languageName, currentSyntax, savedSyntax);
+                if (mimePath != null) { // this is a valid language
+                    FontColorSettingsFactory fcs = EditorSettings.getDefault().getFontColorSettings(mimePath);
+                    Collection<AttributeSet> allFontColors = fcs.getAllFontColors(profile);
+                    Map<String, AttributeSet> savedSyntax = toMap(allFontColors);
+                    Vector<AttributeSet> attributeSet = schemeMap.get(languageName);
+                    Map<String, AttributeSet> currentSyntax = toMap(attributeSet);
+                    if (savedSyntax != null && currentSyntax != null) {
+                        if (savedSyntax.size() >= currentSyntax.size()) {
+                            isChanged |= checkMaps(languageName, savedSyntax, currentSyntax);
+                        } else {
+                            isChanged |= checkMaps(languageName, currentSyntax, savedSyntax);
+                        }
                     }
                 }
-                
             }
         }
         changed = isChanged;
@@ -896,7 +900,9 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
                         || (Color) currentAS.getAttribute(StyleConstants.Underline) != (Color) savedAS.getAttribute(StyleConstants.Underline)
                         || (Color) currentAS.getAttribute(StyleConstants.StrikeThrough) != (Color) savedAS.getAttribute(StyleConstants.StrikeThrough)
                         || (Color) currentAS.getAttribute(EditorStyleConstants.WaveUnderlineColor) != (Color) savedAS.getAttribute(EditorStyleConstants.WaveUnderlineColor);
-
+                if(isChanged) { // no need to iterate further
+                    return true;
+                }
             }
         }
         return isChanged;
@@ -947,7 +953,10 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
             return new String[0];
         } else {
             String mimeType = getLanguageToMimeTypeMap().get(language);
-            assert mimeType != null : "Invalid language '" + language + "'"; //NOI18N
+            if(mimeType == null) {
+                log.log(Level.WARNING, "Invalid language ''{0}''", language); //NOI18N
+                return null;
+            }
             return new String [] { mimeType };
         }
     }
