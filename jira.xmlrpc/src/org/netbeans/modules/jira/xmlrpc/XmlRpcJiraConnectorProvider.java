@@ -116,7 +116,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
 
     public XmlRpcJiraConnectorProvider() { }
     
-    @Override
+        @Override
     public AbstractRepositoryConnector getRepositoryConnector() {
         if(jrc == null) {
             jrc = new JiraRepositoryConnector();
@@ -295,6 +295,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
         return new RestJiraWorkLog(new WorkLogConverter().createFrom(workLogTA));
     }
 
+    // <editor-fold desc="JiraClientImpl" defaultstate="collapsed">
     private class JiraClientImpl implements JiraClient {
         private final com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient delegate;
         
@@ -469,7 +470,9 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             }
         }
     }
-
+    // </editor-fold>
+    
+    // <editor-fold desc="RestJiraWorkLog" defaultstate="collapsed">
     private class RestJiraWorkLog implements JiraWorkLog {
         private final com.atlassian.connector.eclipse.internal.jira.core.model.JiraWorkLog delegate;
 
@@ -557,7 +560,9 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             }
         }
     }
+    // </editor-fold>
     
+    // <editor-fold desc="JiraConstantsImpl" defaultstate="collapsed">
     private class JiraConstantsImpl implements JiraConstants {
 
         @Override
@@ -741,52 +746,65 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
         }
     }
 
+    // </editor-fold>
+    
+    // <editor-fold desc="FilterDefinitionImpl" defaultstate="collapsed">
     private static class FilterDefinitionImpl extends JiraFilterImpl<com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition> implements FilterDefinition {
 
         public FilterDefinitionImpl(com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition delegate) {
             super(delegate);
         }
 
+        @Override
         public void setProjectFilter(ProjectFilter projectFilter) {
             getDelegate().setProjectFilter(projectFilter != null ? ((ProjectFilterImpl)projectFilter).getDelegate() : null);
         }
 
+        @Override
         public ProjectFilter getProjectFilter() {
             final com.atlassian.connector.eclipse.internal.jira.core.model.filter.ProjectFilter d = getDelegate().getProjectFilter();
             return d != null ? new ProjectFilterImpl(d) : null;
         }
 
+        @Override
         public void setComponentFilter(ComponentFilter componentFilter) {
             getDelegate().setComponentFilter(componentFilter != null ? ((ComponentFilterImpl)componentFilter).getDelegate() : null);
         }
 
+        @Override
         public ComponentFilter getComponentFilter() {
             com.atlassian.connector.eclipse.internal.jira.core.model.filter.ComponentFilter d = getDelegate().getComponentFilter();
             return d != null ? new ComponentFilterImpl(d) : null;
         }
 
+        @Override
         public void setContentFilter(ContentFilter contentFilter) {
             getDelegate().setContentFilter(contentFilter != null ? ((ContentFilterImpl)contentFilter).getDelegate() : null);
         }
 
+        @Override
         public ContentFilter getContentFilter() {
             final com.atlassian.connector.eclipse.internal.jira.core.model.filter.ContentFilter d = getDelegate().getContentFilter();
             return d != null ? new ContentFilterImpl(d) : null;
         }
 
+        @Override
         public void setIssueTypeFilter(IssueTypeFilter issueTypeFilter) {
             getDelegate().setIssueTypeFilter(issueTypeFilter != null ? ((IssueTypeFilterImpl)issueTypeFilter).getDelegate() : null);
         }
 
+        @Override
         public IssueTypeFilter getIssueTypeFilter() {
             final com.atlassian.connector.eclipse.internal.jira.core.model.filter.IssueTypeFilter d = getDelegate().getIssueTypeFilter();
             return d != null ? new IssueTypeFilterImpl(d) : null;
         }
 
+        @Override
         public void setAssignedToFilter(UserFilter assignedToFilter) {
             getDelegate().setAssignedToFilter(getUserFilter(assignedToFilter));
         }
 
+        @Override
         public void setReportedByFilter(UserFilter reportedByFilter) {
             getDelegate().setReportedByFilter(getUserFilter(reportedByFilter));
         }
@@ -797,10 +815,12 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
                     : null;
         }
         
+        @Override
         public UserFilter getAssignedToFilter() {
             return getUserFilter(getDelegate().getAssignedToFilter());
         }
 
+        @Override
         public UserFilter getReportedByFilter() {
             return getUserFilter(getDelegate().getReportedByFilter());
         }
@@ -820,83 +840,101 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             return null;
         }
         
+        @Override
         public void setPriorityFilter(PriorityFilter priorityFilter) {
             getDelegate().setPriorityFilter(priorityFilter != null ? ((PriorityFilterImpl)priorityFilter).getDelegate() : null);
         }
 
+        @Override
         public PriorityFilter getPriorityFilter() {
             final com.atlassian.connector.eclipse.internal.jira.core.model.filter.PriorityFilter d = getDelegate().getPriorityFilter();
             return d != null ? new PriorityFilterImpl(d) : null;
         }
 
+        @Override
         public void setStatusFilter(StatusFilter statusFilter) {
             getDelegate().setStatusFilter(statusFilter != null ? ((StatusFilterImpl)statusFilter).getDelegate() : null);
         }
 
+        @Override
         public StatusFilter getStatusFilter() {
             final com.atlassian.connector.eclipse.internal.jira.core.model.filter.StatusFilter d = getDelegate().getStatusFilter();
             return d != null ? new StatusFilterImpl(d) : null;
         }
 
+        @Override
         public void setResolutionFilter(ResolutionFilter resolutionFilter) {
             getDelegate().setResolutionFilter(resolutionFilter != null ? ((ResolutionFilterImpl)resolutionFilter).getDelegate() : null);
         }
 
+        @Override
         public ResolutionFilter getResolutionFilter() {
             final com.atlassian.connector.eclipse.internal.jira.core.model.filter.ResolutionFilter d = getDelegate().getResolutionFilter();
             return d != null ? new ResolutionFilterImpl(d) : null;
         }
 
+        @Override
         public void setReportedInVersionFilter(VersionFilter reportedInVersionFilter) {
             getDelegate().setReportedInVersionFilter(reportedInVersionFilter != null ? ((VersionFilterImpl)reportedInVersionFilter).getDelegate() : null);
         }
 
+        @Override
         public VersionFilter getReportedInVersionFilter() {
             final com.atlassian.connector.eclipse.internal.jira.core.model.filter.VersionFilter d = getDelegate().getReportedInVersionFilter();
             return d != null ? new VersionFilterImpl(d) : null;
         }
 
+        @Override
         public void setFixForVersionFilter(VersionFilter fixForVersionFilter) {
             getDelegate().setFixForVersionFilter(fixForVersionFilter != null ? ((VersionFilterImpl)fixForVersionFilter).getDelegate() : null);
         }
 
+        @Override
         public VersionFilter getFixForVersionFilter() {
             final com.atlassian.connector.eclipse.internal.jira.core.model.filter.VersionFilter d = getDelegate().getFixForVersionFilter();
             return d != null ? new VersionFilterImpl(d) : null;
         }
 
+        @Override
         public EstimateVsActualFilter getEstimateVsActualFilter() {
             final com.atlassian.connector.eclipse.internal.jira.core.model.filter.EstimateVsActualFilter d = getDelegate().getEstimateVsActualFilter();
             return d != null ? new EstimateVsActualFilterImpl(d) : null;
         }
 
+        @Override
         public void setEstimateVsActualFilter(EstimateVsActualFilter estimateVsActualFilter) {
             getDelegate().setEstimateVsActualFilter(estimateVsActualFilter != null ? ((EstimateVsActualFilterImpl)estimateVsActualFilter).getDelegate() : null);
         }
 
+        @Override
         public DateFilter getCreatedDateFilter() {
             final com.atlassian.connector.eclipse.internal.jira.core.model.filter.DateFilter d = getDelegate().getCreatedDateFilter();
             return d != null ? new DateRangeFilterImpl((com.atlassian.connector.eclipse.internal.jira.core.model.filter.DateRangeFilter)d) : null;
         }
 
+        @Override
         public void setCreatedDateFilter(DateFilter createdDateFilter) {
             getDelegate().setCreatedDateFilter(createdDateFilter != null ? ((DateRangeFilterImpl)createdDateFilter).getDelegate() : null);
         }
 
+        @Override
         public DateFilter getDueDateFilter() {
             final com.atlassian.connector.eclipse.internal.jira.core.model.filter.DateFilter d = getDelegate().getDueDateFilter();
             return d != null ? new DateRangeFilterImpl((com.atlassian.connector.eclipse.internal.jira.core.model.filter.DateRangeFilter)d) : null;
         }
 
+        @Override
         public void setDueDateFilter(DateFilter dueDateFilter) {
             getDelegate().setDueDateFilter(dueDateFilter != null ? ((DateRangeFilterImpl)dueDateFilter).getDelegate() : null);
         }
 
+        @Override
         public DateFilter getUpdatedDateFilter() {
             final com.atlassian.connector.eclipse.internal.jira.core.model.filter.DateFilter d = getDelegate().getUpdatedDateFilter();
             return d != null ? new DateRangeFilterImpl((com.atlassian.connector.eclipse.internal.jira.core.model.filter.DateRangeFilter)d) : null;
         }
 
+        @Override
         public void setUpdatedDateFilter(DateFilter updatedDateFilter) {
             getDelegate().setUpdatedDateFilter(((DateRangeFilterImpl)updatedDateFilter).getDelegate());
         }
@@ -909,7 +947,9 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
 //            getDelegate().setOrdering(ordering);
 //        }
     }
+    // </editor-fold>
     
+    // <editor-fold desc="ProjectImpl" defaultstate="collapsed">
     private static class ProjectImpl extends Impl<com.atlassian.connector.eclipse.internal.jira.core.model.Project> implements Project {
 
         public ProjectImpl(com.atlassian.connector.eclipse.internal.jira.core.model.Project delegate) {
@@ -924,6 +964,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setDescription(description);
         }
 
+        @Override
         public String getId() {
             return getDelegate().getId();
         }
@@ -932,6 +973,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setId(id);
         }
 
+        @Override
         public String getName() {
             return getDelegate().getName();
         }
@@ -940,6 +982,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setName(name);
         }
 
+        @Override
         public String getKey() {
             return getDelegate().getKey();
         }
@@ -976,6 +1019,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             return new ComponentImpl(getDelegate().getComponent(name));
         }
 
+        @Override
         public Component[] getComponents() {
             return convert(
                     ComponentImpl.class, 
@@ -983,6 +1027,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
                     getDelegate().getComponents());
         }
 
+        @Override
         public void setComponents(Component[] components) {
             getDelegate().setComponents(convert(
                 com.atlassian.connector.eclipse.internal.jira.core.model.Component.class, 
@@ -1007,6 +1052,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
                     getDelegate().getArchivedVersions());
         }
 
+        @Override
         public Version[] getVersions() {
             return convert(
                     VersionImpl.class, 
@@ -1014,6 +1060,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
                     getDelegate().getVersions());
         }
 
+        @Override
         public boolean equals(Object obj) {
             if(obj instanceof ProjectImpl) {
                 return getDelegate().equals(((ProjectImpl)obj).getDelegate());
@@ -1021,14 +1068,25 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             return false;
         }
 
+        @Override
         public int hashCode() {
-            return getDelegate().hashCode();
+            com.atlassian.connector.eclipse.internal.jira.core.model.Project d = getDelegate();
+            if (d != null) {
+                return getDelegate().hashCode();
+            }
+            return super.hashCode();
         }
 
+        @Override
         public String toString() {
-            return getDelegate().toString();
+            com.atlassian.connector.eclipse.internal.jira.core.model.Project d = getDelegate();
+            if (d != null) {
+                return getDelegate().toString();
+            }
+            return super.toString();
         }
 
+        @Override
         public IssueType[] getIssueTypes() {
             return convert(
                     IssueTypeImpl.class, 
@@ -1054,6 +1112,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setDetails(details);
         }
 
+        @Override
         public boolean hasDetails() {
             return getDelegate().hasDetails();
         }
@@ -1062,13 +1121,16 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             return new IssueTypeImpl(getDelegate().getIssueTypeById(typeId));
         }
     }
+    // </editor-fold>
     
+    // <editor-fold desc="ComponentImpl" defaultstate="collapsed">
     private static class ComponentImpl extends Impl<com.atlassian.connector.eclipse.internal.jira.core.model.Component> implements Component {
 
         public ComponentImpl(com.atlassian.connector.eclipse.internal.jira.core.model.Component delegate) {
             super(delegate);
         }
 
+        @Override
         public String getId() {
             return getDelegate().getId();
         }
@@ -1077,6 +1139,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setId(id);
         }
 
+        @Override
         public String getName() {
             return getDelegate().getName();
         }
@@ -1085,6 +1148,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setName(name);
         }
 
+        @Override
         public String toString() {
             return getDelegate().toString();
         }
@@ -1096,9 +1160,19 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             }
             return false;
         }
-        
+
+        @Override
+        public int hashCode() {
+            com.atlassian.connector.eclipse.internal.jira.core.model.Component d = getDelegate();
+            if(d != null) {
+                return d.hashCode();
+            }
+            return super.hashCode();
+        }
     }
+    // </editor-fold>
     
+    // <editor-fold desc="VersionImpl" defaultstate="collapsed">
     private static class VersionImpl extends Impl<com.atlassian.connector.eclipse.internal.jira.core.model.Version> implements Version {
 
         public VersionImpl(com.atlassian.connector.eclipse.internal.jira.core.model.Version delegate) {
@@ -1113,6 +1187,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setArchived(archived);
         }
 
+        @Override
         public String getId() {
             return getDelegate().getId();
         }
@@ -1121,6 +1196,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setId(id);
         }
 
+        @Override
         public String getName() {
             return getDelegate().getName();
         }
@@ -1152,7 +1228,8 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
         public void setSequence(long sequence) {
             getDelegate().setSequence(sequence);
         }
-
+        
+        @Override
         public boolean equals(Object obj) {
             if(obj instanceof VersionImpl) {
                 return getDelegate().equals(((VersionImpl)obj).getDelegate());
@@ -1160,15 +1237,27 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             return false;
         }
 
+        @Override
         public int hashCode() {
-            return getDelegate().hashCode();
+            final com.atlassian.connector.eclipse.internal.jira.core.model.Version d = getDelegate();
+            if (d != null) {
+                return d.hashCode();
+            }
+            return super.hashCode();
         }
 
+        @Override
         public String toString() {
-            return getDelegate().toString();
+            final com.atlassian.connector.eclipse.internal.jira.core.model.Version d = getDelegate();
+            if (d != null) {
+                return getDelegate().toString();
+            }
+            return super.toString();
         }
     }
+    // </editor-fold>
     
+    // <editor-fold desc="IssueTypeImpl" defaultstate="collapsed">
     private static class IssueTypeImpl extends Impl<com.atlassian.connector.eclipse.internal.jira.core.model.IssueType> implements IssueType {
 
         public IssueTypeImpl(com.atlassian.connector.eclipse.internal.jira.core.model.IssueType delegate) {
@@ -1191,6 +1280,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setIcon(icon);
         }
 
+        @Override
         public String getId() {
             return getDelegate().getId();
         }
@@ -1199,6 +1289,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setId(id);
         }
 
+        @Override
         public String getName() {
             return getDelegate().getName();
         }
@@ -1207,6 +1298,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setName(name);
         }
 
+        @Override
         public boolean isSubTaskType() {
             return getDelegate().isSubTaskType();
         }
@@ -1215,6 +1307,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setSubTaskType(subTaskType);
         }
 
+        @Override
         public boolean equals(Object obj) {
             if(obj instanceof IssueTypeImpl) {
                 return getDelegate().equals(((IssueTypeImpl)obj).getDelegate());
@@ -1222,15 +1315,27 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             return false;
         }
 
+        @Override
         public int hashCode() {
-            return getDelegate().hashCode();
+            com.atlassian.connector.eclipse.internal.jira.core.model.IssueType d = getDelegate();
+            if(d != null) {
+                return d.hashCode();
+            }
+            return super.hashCode();
         }
 
+        @Override
         public String toString() {
-            return getDelegate().toString();
+            com.atlassian.connector.eclipse.internal.jira.core.model.IssueType d = getDelegate();
+            if(d != null) {
+                return d.toString();
+            }
+            return super.toString();
         }
     }
+    // </editor-fold>
     
+    // <editor-fold desc="JiraStatusImpl" defaultstate="collapsed">
     private static class JiraStatusImpl extends Impl<com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus> implements JiraStatus {
 
         public JiraStatusImpl(com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus delegate) {
@@ -1238,7 +1343,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
         }
         
         public String getDescription() {
-            return getDescription();
+            return getDelegate().getDescription();
         }
 
         public void setDescription(String description) {
@@ -1253,6 +1358,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setIcon(icon);
         }
 
+        @Override
         public String getId() {
             return getDelegate().getId();
         }
@@ -1261,6 +1367,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setId(id);
         }
 
+        @Override
         public String getName() {
             return getDelegate().getName();
         }
@@ -1269,6 +1376,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setName(name);
         }
 
+        @Override
         public boolean equals(Object obj) {
             if(obj instanceof JiraStatusImpl) {
                 return getDelegate().equals(((JiraStatusImpl)obj).getDelegate());
@@ -1276,15 +1384,27 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             return false;
         }
 
+        @Override
         public int hashCode() {
-            return getDelegate().hashCode();
+            com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus d = getDelegate();
+            if (d != null) {
+                return d.hashCode();
+            }
+            return super.hashCode();
         }
 
+        @Override
         public String toString() {
-            return getDelegate().toString();
+            com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus d = getDelegate();
+            if (d != null) {
+                return getDelegate().toString();
+            }
+            return super.toString();
         }
     }
+    // </editor-fold>
     
+    // <editor-fold desc="JiraVersionImpl" defaultstate="collapsed">
     private static class JiraVersionImpl extends Impl<com.atlassian.connector.eclipse.internal.jira.core.model.JiraVersion> implements JiraVersion {
 
         public JiraVersionImpl(com.atlassian.connector.eclipse.internal.jira.core.model.JiraVersion delegate) {
@@ -1295,12 +1415,18 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
 //            return getDelegate().isSmallerOrEquals(((JiraVersionImpl)v).getDelegate());
 //        }
 
+        @Override
         public int compareTo(JiraVersion v) {
             return getDelegate().compareTo(((JiraVersionImpl)v).getDelegate());
         }
         
+        @Override
         public String toString() {
-            return getDelegate().toString();
+            com.atlassian.connector.eclipse.internal.jira.core.model.JiraVersion d = getDelegate();
+            if(d != null) {
+                return d.toString();
+            } 
+            return super.toString();            
         }
 
         @Override
@@ -1310,9 +1436,19 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             } 
             return false;
         }
-        
+
+        @Override
+        public int hashCode() {
+            com.atlassian.connector.eclipse.internal.jira.core.model.JiraVersion d = getDelegate();
+            if(d != null) {
+                return d.hashCode();
+            } 
+            return super.hashCode();
+        }
     }
+    // </editor-fold>
     
+    // <editor-fold desc="PriorityImpl" defaultstate="collapsed">
     private static class PriorityImpl extends Impl<com.atlassian.connector.eclipse.internal.jira.core.model.Priority> implements Priority {
 
         public PriorityImpl(com.atlassian.connector.eclipse.internal.jira.core.model.Priority delegate) {
@@ -1335,6 +1471,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setIcon(icon);
         }
 
+        @Override
         public String getId() {
             return getDelegate().getId();
         }
@@ -1343,6 +1480,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setId(id);
         }
 
+        @Override
         public String getName() {
             return getDelegate().getName();
         }
@@ -1351,6 +1489,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setName(name);
         }
 
+        @Override
         public boolean equals(Object obj) {
             if(obj instanceof PriorityImpl) {
                 return getDelegate().equals(((PriorityImpl)obj).getDelegate());
@@ -1358,16 +1497,27 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             return false;
         }
 
+        @Override
         public int hashCode() {
-            return getDelegate().hashCode();
+            com.atlassian.connector.eclipse.internal.jira.core.model.Priority d = getDelegate();
+            if (d != null) {
+                return d.hashCode();
+            }
+            return super.hashCode();
         }
 
+        @Override
         public String toString() {
-            return getDelegate().toString();
+            com.atlassian.connector.eclipse.internal.jira.core.model.Priority d = getDelegate();
+            if (d != null) {            
+                return d.toString();
+            }
+            return super.toString();
         }
-        
     }
+    // </editor-fold>
 
+    // <editor-fold desc="ResolutionImpl" defaultstate="collapsed">
     private static class ResolutionImpl extends Impl<com.atlassian.connector.eclipse.internal.jira.core.model.Resolution> implements Resolution {
 
         public ResolutionImpl(com.atlassian.connector.eclipse.internal.jira.core.model.Resolution delegate) {
@@ -1390,6 +1540,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setIcon(icon);
         }
 
+        @Override
         public String getId() {
             return getDelegate().getId();
         }
@@ -1398,6 +1549,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setId(id);
         }
 
+        @Override
         public String getName() {
             return getDelegate().getName();
         }
@@ -1406,6 +1558,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setName(name);
         }
 
+        @Override
         public boolean equals(Object obj) {
             if(obj instanceof ResolutionImpl) {
                 return getDelegate().equals(((ResolutionImpl)obj).getDelegate());
@@ -1413,22 +1566,34 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             return false;
         }
 
+        @Override
         public int hashCode() {
-            return getDelegate().hashCode();
+            com.atlassian.connector.eclipse.internal.jira.core.model.Resolution d = getDelegate();
+            if (d != null) {
+                return d.hashCode();
+            }
+            return super.hashCode();
         }
 
+        @Override
         public String toString() {
-            return getDelegate().toString();
+            com.atlassian.connector.eclipse.internal.jira.core.model.Resolution d = getDelegate();
+            if (d != null) {
+                return getDelegate().toString();
+            }
+            return super.toString();
         }
-        
     }
+    // </editor-fold>
 
+    // <editor-fold desc="UserImpl" defaultstate="collapsed">
     private static class UserImpl extends Impl<com.atlassian.connector.eclipse.internal.jira.core.model.User> implements User {
 
         public UserImpl(com.atlassian.connector.eclipse.internal.jira.core.model.User delegate) {
             super(delegate);
         }
 
+        @Override
         public String getEmail() {
             return getDelegate().getEmail();
         }
@@ -1437,6 +1602,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setEmail(email);
         }
 
+        @Override
         public String getFullName() {
             return getDelegate().getFullName();
         }
@@ -1445,6 +1611,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setFullName(fullName);
         }
 
+        @Override
         public String getName() {
             return getDelegate().getName();
         }
@@ -1453,8 +1620,13 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setName(name);
         }
 
+        @Override
         public String toString() {
-            return getDelegate().toString();
+            com.atlassian.connector.eclipse.internal.jira.core.model.User d = getDelegate();
+            if (d != null) {
+                return getDelegate().toString();
+            }
+            return super.toString();
         }
 
         @Override
@@ -1464,9 +1636,18 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             }
             return false;
         }
-        
+        @Override
+        public int hashCode() {
+            com.atlassian.connector.eclipse.internal.jira.core.model.User d = getDelegate();
+            if (d != null) {
+                return d.hashCode();
+            }
+            return super.hashCode();
+        }
     }
+    // </editor-fold>
     
+    // <editor-fold desc="NamedFilterImpl" defaultstate="collapsed">
     private static class NamedFilterImpl extends JiraFilterImpl<com.atlassian.connector.eclipse.internal.jira.core.model.NamedFilter> implements NamedFilter {
 
         public NamedFilterImpl(com.atlassian.connector.eclipse.internal.jira.core.model.NamedFilter delegate) {
@@ -1489,6 +1670,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setId(id);
         }
 
+        @Override
         public String getName() {
             return getDelegate().getName();
         }
@@ -1505,32 +1687,38 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             getDelegate().setAuthor(author);
         }
 
+        @Override
         public String toString() {
             return getDelegate().toString();
         }
-        
     }
+    // </editor-fold>
 
+    // <editor-fold desc="EstimateVsActualFilterImpl" defaultstate="collapsed">
     private static class EstimateVsActualFilterImpl extends Impl<com.atlassian.connector.eclipse.internal.jira.core.model.filter.EstimateVsActualFilter> implements EstimateVsActualFilter {
 
         public EstimateVsActualFilterImpl(com.atlassian.connector.eclipse.internal.jira.core.model.filter.EstimateVsActualFilter delegate) {
             super(delegate);
         }
         
+        @Override
         public long getMaxVariation() {
             return getDelegate().getMaxVariation();
         }
 
+        @Override
         public long getMinVariation() {
             return getDelegate().getMinVariation();
         }
-        
     }
+    // </editor-fold>
 
+    // <editor-fold desc="PriorityFilterImpl" defaultstate="collapsed">
     private static class PriorityFilterImpl extends Impl<com.atlassian.connector.eclipse.internal.jira.core.model.filter.PriorityFilter> implements PriorityFilter {
         public PriorityFilterImpl(com.atlassian.connector.eclipse.internal.jira.core.model.filter.PriorityFilter delegate) {
             super(delegate);
         }
+        @Override
         public Priority[] getPriorities() {
             return convert(
                     PriorityImpl.class,
@@ -1538,11 +1726,15 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
                     getDelegate().getPriorities());
         }
     }
+    // </editor-fold>
     
+    // <editor-fold desc="ResolutionFilterImpl" defaultstate="collapsed">
     private static class ResolutionFilterImpl extends Impl<com.atlassian.connector.eclipse.internal.jira.core.model.filter.ResolutionFilter> implements ResolutionFilter {
         public ResolutionFilterImpl(com.atlassian.connector.eclipse.internal.jira.core.model.filter.ResolutionFilter delegate) {
             super(delegate);
         }
+        
+        @Override
         public Resolution[] getResolutions() {
             return convert(
                     ResolutionImpl.class,
@@ -1550,11 +1742,14 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
                     getDelegate().getResolutions());
         }
     }
+    // </editor-fold>
     
+    // <editor-fold desc="StatusFilterImpl" defaultstate="collapsed">
     private static class StatusFilterImpl extends Impl<com.atlassian.connector.eclipse.internal.jira.core.model.filter.StatusFilter> implements StatusFilter {
         public StatusFilterImpl(com.atlassian.connector.eclipse.internal.jira.core.model.filter.StatusFilter delegate) {
             super(delegate);
         }
+        @Override
         public JiraStatus[] getStatuses() {
             return convert(
                     JiraStatusImpl.class,
@@ -1562,11 +1757,14 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
                     getDelegate().getStatuses());
         }
     }
+    // </editor-fold>
     
+    // <editor-fold desc="VersionFilterImpl" defaultstate="collapsed">
     private static class VersionFilterImpl extends Impl<com.atlassian.connector.eclipse.internal.jira.core.model.filter.VersionFilter> implements VersionFilter {
         public VersionFilterImpl(com.atlassian.connector.eclipse.internal.jira.core.model.filter.VersionFilter delegate) {
             super(delegate);
         }
+        @Override
         public Version[] getVersions() {
             return convert(
                     VersionImpl.class,
@@ -1574,10 +1772,14 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
                     getDelegate().getVersions());
         }
     }
+    // </editor-fold>
+    
+    // <editor-fold desc="ProjectFilterImpl" defaultstate="collapsed">
     private static class ProjectFilterImpl extends Impl<com.atlassian.connector.eclipse.internal.jira.core.model.filter.ProjectFilter> implements ProjectFilter {
         public ProjectFilterImpl(com.atlassian.connector.eclipse.internal.jira.core.model.filter.ProjectFilter delegate) {
             super(delegate);
         }
+        @Override
         public Project[] getProjects() {
             return convert(
                     ProjectImpl.class,
@@ -1585,10 +1787,14 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
                     getDelegate().getProjects());
         }
     }
+    // </editor-fold>
+    
+    // <editor-fold desc="ComponentFilterImpl" defaultstate="collapsed">
     private static class ComponentFilterImpl extends Impl<com.atlassian.connector.eclipse.internal.jira.core.model.filter.ComponentFilter> implements ComponentFilter {
         public ComponentFilterImpl(com.atlassian.connector.eclipse.internal.jira.core.model.filter.ComponentFilter delegate) {
             super(delegate);
         }
+        @Override
         public Component[] getComponents() {
             return convert(
                     ComponentImpl.class,
@@ -1596,6 +1802,9 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
                     getDelegate().getComponents());
         }
     }
+    // </editor-fold>
+    
+    // <editor-fold desc="IssueTypeFilterImpl" defaultstate="collapsed">
     private static class IssueTypeFilterImpl extends Impl<com.atlassian.connector.eclipse.internal.jira.core.model.filter.IssueTypeFilter> implements IssueTypeFilter {
         public IssueTypeFilterImpl(com.atlassian.connector.eclipse.internal.jira.core.model.filter.IssueTypeFilter delegate) {
             super(delegate);
@@ -1609,11 +1818,17 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
                     getDelegate().getIsueTypes());
         }
     }
+    // </editor-fold>
+    
+    // <editor-fold desc="DateFilterImpl" defaultstate="collapsed">
     private static class DateFilterImpl<D> extends Impl<D> implements DateFilter {
         public DateFilterImpl(D delegate) {
             super(delegate);
         }
     }
+    // </editor-fold>
+    
+    // <editor-fold desc="IssueTypeImpl" defaultstate="collapsed">
     private static class DateRangeFilterImpl extends DateFilterImpl<com.atlassian.connector.eclipse.internal.jira.core.model.filter.DateRangeFilter> implements DateRangeFilter {
         public DateRangeFilterImpl(com.atlassian.connector.eclipse.internal.jira.core.model.filter.DateRangeFilter delegate) {
             super(delegate);
@@ -1629,11 +1844,17 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             return getDelegate().getToDate();
         }
     }
+    // </editor-fold>
+    
+    // <editor-fold desc="UserFilterImpl" defaultstate="collapsed">
     private static class UserFilterImpl<D> extends Impl<D> implements UserFilter {
         public UserFilterImpl(D delegate) {
             super(delegate);
         }
     }
+    // </editor-fold>
+    
+    // <editor-fold desc="UserInGroupFilterImpl" defaultstate="collapsed">
     private static class UserInGroupFilterImpl extends UserFilterImpl<com.atlassian.connector.eclipse.internal.jira.core.model.filter.UserInGroupFilter> implements UserInGroupFilter {
         public UserInGroupFilterImpl(com.atlassian.connector.eclipse.internal.jira.core.model.filter.UserInGroupFilter delegate) {
             super(delegate);
@@ -1643,8 +1864,10 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
         public String getGroup() {
             return getDelegate().getGroup();
         }
-
     }
+    // </editor-fold>
+    
+    // <editor-fold desc="SpecificUserFilterImpl" defaultstate="collapsed">
     private static class SpecificUserFilterImpl extends UserFilterImpl<com.atlassian.connector.eclipse.internal.jira.core.model.filter.SpecificUserFilter> implements SpecificUserFilter {
         public SpecificUserFilterImpl(com.atlassian.connector.eclipse.internal.jira.core.model.filter.SpecificUserFilter delegate) {
             super(delegate);
@@ -1655,16 +1878,25 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             return getDelegate().getUser();
         }
     }
+    // </editor-fold>
+    
+    // <editor-fold desc="CurrentUserFilterImpl" defaultstate="collapsed">
     private static class CurrentUserFilterImpl extends UserFilterImpl<com.atlassian.connector.eclipse.internal.jira.core.model.filter.CurrentUserFilter> implements CurrentUserFilter {
         public CurrentUserFilterImpl(com.atlassian.connector.eclipse.internal.jira.core.model.filter.CurrentUserFilter delegate) {
             super(delegate);
         }
     }
+    // </editor-fold>
+    
+    // <editor-fold desc="NobodyFilterImpl" defaultstate="collapsed">
     private static class NobodyFilterImpl extends UserFilterImpl<com.atlassian.connector.eclipse.internal.jira.core.model.filter.NobodyFilter> implements NobodyFilter {
         public NobodyFilterImpl(com.atlassian.connector.eclipse.internal.jira.core.model.filter.NobodyFilter delegate) {
             super(delegate);
         }
     }
+    // </editor-fold>
+    
+    // <editor-fold desc="ContentFilterImpl" defaultstate="collapsed">
     private static class ContentFilterImpl extends Impl<com.atlassian.connector.eclipse.internal.jira.core.model.filter.ContentFilter> implements ContentFilter {
         
         public ContentFilterImpl(com.atlassian.connector.eclipse.internal.jira.core.model.filter.ContentFilter delegate) {
@@ -1696,12 +1928,15 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
             return getDelegate().isSearchingEnvironment();
         }
     }
+    // </editor-fold>
     
+    // <editor-fold desc="JiraFilterImpl<D>" defaultstate="collapsed">
     private static class JiraFilterImpl<D> extends Impl<D> implements JiraFilter {
         public JiraFilterImpl(D delegate) {
             super(delegate);
         }
     }
+    // </editor-fold>
     
     private static <C> C[] convert(Class<C> toClass, Object[] d) {
         if(d == null) {

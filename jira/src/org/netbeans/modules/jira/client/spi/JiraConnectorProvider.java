@@ -43,24 +43,13 @@
 package org.netbeans.modules.jira.client.spi;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.Locale;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
-import org.netbeans.modules.mylyn.util.RepositoryConnectorProvider;
-import org.openide.util.Lookup;
 
 /**
  *
