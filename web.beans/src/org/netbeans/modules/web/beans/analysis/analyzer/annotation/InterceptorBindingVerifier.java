@@ -68,18 +68,17 @@ public class InterceptorBindingVerifier implements TargetVerifier {
     public boolean hasReqiredTarget( AnnotationMirror target , Set<ElementType>
         targetTypes ) 
     {
-        boolean hasRequiredTarget = false;
-        if ( targetTypes.contains( ElementType.METHOD) &&
-                targetTypes.contains( ElementType.TYPE)
-                        && targetTypes.size() == 2)
-        {
-            hasRequiredTarget = true;
+        int sz = targetTypes.size();
+        if(targetTypes.contains( ElementType.TYPE)){
+            sz--;
         }
-        else if ( targetTypes.size() == 1 && 
-                targetTypes.contains( ElementType.TYPE) )
-        {
-            hasRequiredTarget = true;
+        if ( targetTypes.contains( ElementType.METHOD)) {
+            sz--;
         }
-        return hasRequiredTarget;
+        if (targetTypes.contains( ElementType.CONSTRUCTOR) )
+        {
+            sz--;
+        }
+        return sz==0;
     }
 }
