@@ -83,14 +83,16 @@ made subject to such option by the copyright holder.
 <![CDATA[for (int ${IDX newVarName default="i"} = 0; ${IDX} < ${SIZE int default="size"}; ${IDX}++) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${ARR array default="array"}[${IDX}];
    ${selection}${cursor}
-}]]>
+}
+]]>
         </code>
     </codetemplate>   
     <codetemplate abbreviation="iff" contexts="BLOCK,CASE" descriptionId="CT_iff">
         <code>
 <![CDATA[if (${EXP default="exp"}) {
    ${selection}${cursor}
-}]]>
+}
+]]>
         </code>
     </codetemplate>
     <codetemplate abbreviation="ife" contexts="BLOCK,CASE" descriptionId="CT_ife">
@@ -98,14 +100,16 @@ made subject to such option by the copyright holder.
 <![CDATA[if (${EXP default="exp"}) {
    ${selection}${cursor}
 } else {
-}]]>
+}
+]]>
         </code>
     </codetemplate>   
     <codetemplate abbreviation="wh" contexts="BLOCK,CASE">
         <code>
 <![CDATA[while (${EXP default="exp"}) { 
    ${selection}${cursor} 
-}]]>
+}
+]]>
         </code>
     </codetemplate>   
     

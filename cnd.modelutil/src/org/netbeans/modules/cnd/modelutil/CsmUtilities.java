@@ -1189,6 +1189,16 @@ public class CsmUtilities {
         return lastNestedType;
     }    
     
+    public static class SearchTemplatePredicate implements Predicate<CsmType> {
+
+        @Override
+        public boolean check(CsmType value) {
+            CsmClassifier cls = value.getClassifier();
+            return CsmKindUtilities.isTemplate(cls);
+        }
+        
+    }
+    
     //-----------------------------------------------------------------
 
     private static final class FileTarget implements CsmOffsetable {

@@ -73,7 +73,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
  * @author Radek Matous
  */
 public class ASTNodeInfo<T extends ASTNode> {
-    private T node;
+    private final T node;
     private Kind kind;
 
     public enum Kind {

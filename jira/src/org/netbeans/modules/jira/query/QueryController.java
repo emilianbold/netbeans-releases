@@ -156,6 +156,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     private boolean populated = false;
     private QueryProvider.IssueContainer<NbJiraIssue> delegatingIssueContainer;
     private boolean isChanged;
+    private FilterDefinition filterDefinition;
     
     public QueryController(JiraRepository repository, JiraQuery query, FilterDefinition fd) {
         this(repository, query, fd, true);
@@ -237,7 +238,8 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             if(jiraFilter != null) {
                  assert jiraFilter instanceof FilterDefinition;
             }
-            postPopulate((FilterDefinition) jiraFilter, false);
+            filterDefinition = (FilterDefinition) jiraFilter;
+            postPopulate(filterDefinition, false);
         } else {
             panel.cloneQueryButton.setEnabled(false);
         }
@@ -527,21 +529,12 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         if(pf != null) {
             setSelected(panel.projectList, pf.getProjects());
         }
-        ComponentFilter compf = fd.getComponentFilter();
-        if(compf != null) {
-            setSelected(panel.componentsList, compf.getComponents());
-        }
-        VersionFilter vf = fd.getFixForVersionFilter();
-        if(vf != null) {
-            setSelected(panel.fixForList, vf.getVersions());
-        }
-        vf = fd.getReportedInVersionFilter();
-        if(vf != null) {
-            setSelected(panel.affectsVersionList, vf.getVersions());
-        }
+        
+        setProjectSpecificFilterDefinition(fd);
+        
         IssueTypeFilter itf = fd.getIssueTypeFilter();
         if(itf != null) {
-            setSelected(panel.typeList, itf.getIsueTypes());
+            setSelected(panel.typeList, itf.getIssueTypes());
         }
         StatusFilter sf = fd.getStatusFilter();
         if(sf != null) {
@@ -584,6 +577,26 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         setDateRangeFilter((DateRangeFilter) fd.getUpdatedDateFilter(), panel.updatedFromTextField, panel.updatedToTextField);
         setDateRangeFilter((DateRangeFilter) fd.getDueDateFilter(),     panel.dueFromTextField,     panel.dueToTextField);
 
+    }
+
+    public void setProjectSpecificFilterDefinition(final FilterDefinition fd) {
+        UIUtils.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                ComponentFilter compf = fd.getComponentFilter();
+                if(compf != null) {
+                    setSelected(panel.componentsList, compf.getComponents());
+                }
+                VersionFilter vf = fd.getFixForVersionFilter();
+                if(vf != null) {
+                    setSelected(panel.fixForList, vf.getVersions());
+                }
+                vf = fd.getReportedInVersionFilter();
+                if(vf != null) {
+                    setSelected(panel.affectsVersionList, vf.getVersions());
+                }
+            }
+        });
     }
 
     private void setDateRangeFilter(DateRangeFilter dateRangeFilter, JTextField fromTxt, JTextField toTxt) {
@@ -1271,6 +1284,9 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                     Version[] versionsArray = versions.toArray(new Version[versions.size()]);
                     Component[] componentsArray = components.toArray(new Component[components.size()]);
                     setProjectLists(versionsArray, componentsArray);
+                    if(filterDefinition != null) {
+                        setProjectSpecificFilterDefinition(filterDefinition);
+                    }
                     populateProjectTask = null;
                 }
             }

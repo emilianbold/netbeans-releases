@@ -244,27 +244,42 @@ public class RemoteJavaExecution {
     public String getSourceRoot(List<SourceFile> compileLines) {
         TreeMap<String,AtomicInteger> realRoots = new TreeMap<String,AtomicInteger>();
         for(SourceFile file : compileLines) {
-            Artifacts artifacts = new Artifacts();
-            List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(file.getCompileLine(), DiscoveryUtils.LogOrigin.DwarfCompileLine, artifacts, null, true);
-            for(String what : sourcesList) {
-                if (what == null){
-                    continue;
-                }
-                String path;
-                String dir = file.getCompileDir();
-                if (dir != null) {
-                    if (what.startsWith("/")) { //NOI18N
-                        path = what;
-                    } else {
-                        if (dir.endsWith("/")) { // NOI18N
-                            path = dir+what;
-                        } else {
-                            path = dir+ '/' + what;
-                        }
+            if (file.getCompileLine().length() > 0) {
+                Artifacts artifacts = new Artifacts();
+                List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(file.getCompileLine(), DiscoveryUtils.LogOrigin.DwarfCompileLine, artifacts, null, true);
+                for(String what : sourcesList) {
+                    if (what == null){
+                        continue;
                     }
-                } else {
-                    path = what;
+                    String path;
+                    String dir = file.getCompileDir();
+                    if (dir != null) {
+                        if (what.startsWith("/")) { //NOI18N
+                            path = what;
+                        } else {
+                            if (dir.endsWith("/")) { // NOI18N
+                                path = dir+what;
+                            } else {
+                                path = dir+ '/' + what;
+                            }
+                        }
+                    } else {
+                        path = what;
+                    }
+                    path = PathUtilities.normalizeUnixPath(path);
+                    int i = path.lastIndexOf('/');
+                    if (i >= 0) {
+                        String folder = path.substring(0, i);
+                        AtomicInteger val = realRoots.get(folder);
+                        if (val == null) {
+                            val = new AtomicInteger();
+                            realRoots.put(folder, val);
+                        }
+                        val.incrementAndGet();
+                    }
                 }
+            } else {
+                String path = file.getSourceFileAbsolutePath();
                 path = PathUtilities.normalizeUnixPath(path);
                 int i = path.lastIndexOf('/');
                 if (i >= 0) {

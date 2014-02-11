@@ -140,7 +140,13 @@ public class ManageGroupsPanel extends javax.swing.JPanel implements PropertyCha
     }
     
     private boolean isNoneGroupSelected() {
-        return isExactlyOneGroupSelected() && getSelectedGroups()[0] == null;
+        final Group [] selectedGroups = getSelectedGroups();
+        for(Group groupIter:selectedGroups) {
+            if(groupIter == null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isAtLeastOneGroupSelected() {
@@ -170,13 +176,13 @@ public class ManageGroupsPanel extends javax.swing.JPanel implements PropertyCha
         DefaultListModel model = (DefaultListModel) groupList.getModel();
         for (final Group groupIter : groups) {
             if(groupIter != null) {
+                model.removeElement(groupIter.getName());
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
                         groupIter.destroy();
                     }
                 });
-                model.removeElement(groupIter.getName());
             }
         }
     }

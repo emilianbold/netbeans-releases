@@ -45,10 +45,13 @@ package org.netbeans.modules.db.dataview.table;
  *
  * @author ahimanikya
  */
+import java.sql.Blob;
+import java.sql.Clob;
 import java.util.regex.Pattern;
 import javax.swing.RowFilter;
 import javax.swing.table.TableModel;
 import static org.netbeans.modules.db.dataview.table.SuperPatternFilter.MODE.LITERAL_FIND;
+import org.netbeans.modules.db.dataview.util.LobHelper;
 
 public class SuperPatternFilter extends RowFilter<TableModel, Integer> {
 
@@ -97,28 +100,35 @@ public class SuperPatternFilter extends RowFilter<TableModel, Integer> {
         }
     }
 
-    public boolean include(RowFilter.Entry<? extends TableModel,? extends Integer> entry) {
-        return testValue(entry.getValue(col));
-        }
+    public boolean include(RowFilter.Entry<? extends TableModel, ? extends Integer> entry) {
+        return testValue(entry.getStringValue(col));
+    }
 
     protected boolean testValue(final Object value) {
         if (value == null) {
             return false;
         }
-        final String valueStr = value.toString();
+        final String valueStr;
+        if (value instanceof Blob) {
+            valueStr = LobHelper.blobToString((Blob) value);
+        } else if (value instanceof Clob) {
+            valueStr = LobHelper.clobToString((Clob) value);
+        } else {
+            valueStr = value.toString();
+        }
         switch (mode) {
             case LITERAL_FIND:
                 if (filterStr == null || filterStr.length() == 0) {
-                    return true;
-                } else {
-                    return valueStr.toUpperCase().contains(filterStr.toUpperCase());
-                }
+                return true;
+            } else {
+                return valueStr.toUpperCase().contains(filterStr.toUpperCase());
+            }
             case LITERAL_MATCH:
                 if (filterStr == null || filterStr.length() == 0) {
-                    return true;
-                } else {
-                    return filterStr.equals(valueStr);
-                }
+                return true;
+            } else {
+                return filterStr.equals(valueStr);
+            }
             case REGEX_FIND:
                 return pattern.matcher(valueStr).find();
             case REGEX_MATCH:
@@ -127,4 +137,4 @@ public class SuperPatternFilter extends RowFilter<TableModel, Integer> {
                 throw new RuntimeException(UNKOWN_MODE);
         }
     }
-    }
+}

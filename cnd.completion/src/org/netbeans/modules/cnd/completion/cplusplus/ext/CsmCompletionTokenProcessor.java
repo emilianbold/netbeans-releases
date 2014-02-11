@@ -2632,7 +2632,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
             CsmCompletionExpression top2 = peekExp2();
             int top2ID = getValidExpID(top2);
             if (top != null) {
-                switch (getValidExpID(top)) {
+                switch (getValidExpID(top)) {    
                     case VARIABLE:
                         switch (top2ID) {
                             case DOT_OPEN:
@@ -2667,6 +2667,25 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                 break;
                         }
                         break;
+                        
+                    case GENERIC_TYPE:
+                        switch (top2ID) {
+                            case DOT_OPEN:
+                            case ARROW_OPEN:
+                            case SCOPE_OPEN:
+                                popExp();
+                                top2.addParameter(top);
+                                top2.setExpID(openExpID2ExpID(top2ID)); // *_OPEN => *, use value of case
+                                reScan = true;
+                                break;
+                            case NEW:
+                                popExp();
+                                top2.addParameter(top);
+                                top2.setExpID(CONSTRUCTOR);
+                                reScan = true;
+                                break;
+                        }
+                        break;                        
 
                     case METHOD_OPEN:
                     // let it flow to METHOD

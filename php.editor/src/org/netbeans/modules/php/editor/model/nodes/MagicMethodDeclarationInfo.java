@@ -66,25 +66,25 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
  * @author Radek Matous
  */
 public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocMethodTag> {
+    private final List<ParameterElement> parameters = new LinkedList<>();
     private String returnType;
     private String methodName;
     private int offset;
     private int typeOffset;
-    private List<ParameterElement> parameters = new LinkedList<>();
 
     MagicMethodDeclarationInfo(PHPDocMethodTag node) {
         super(node);
         String[] parts = node.getValue().trim().split("\\s+", 3); //NOI18N
-        if (parts.length == 1 || (parts.length > 0 && parts[0].trim().indexOf("(") > 0)) {
+        if (parts.length == 1 || (parts.length > 0 && parts[0].trim().indexOf("(") > 0)) { //NOI18N
             // expect that the type is void
             returnType = Type.VOID;
-            String[] methodNames = parts[0].split("[(, ]", 2);
+            String[] methodNames = parts[0].split("[(, ]", 2); //NOI18N
             if (methodNames.length > 0) {
                 methodName = methodNames[0];
                 offset = getOriginalNode().getStartOffset() + PHPDocTag.Type.METHOD.toString().length() + 1 + node.getValue().indexOf(methodName);
             }
         } else if (parts.length >= 2) {
-            String[] methodNames = parts[1].split("[(, ]", 2);
+            String[] methodNames = parts[1].split("[(, ]", 2); //NOI18N
             if (parts[0].length() > 0 && methodNames.length > 0) {
                 returnType = parts[0];
                 methodName = methodNames[0];
@@ -106,7 +106,7 @@ public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocMethodTag> {
             if (split.length > 1) {
                 defaultValue = split[1].trim();
             }
-            boolean isMandatory = defaultValue == null ? true : false;
+            boolean isMandatory = defaultValue == null;
             boolean isReference = name.startsWith("&"); // NOI18N
             parameters.add(new ParameterElementImpl(name, defaultValue, 0, types, isMandatory, true, isReference));
         }

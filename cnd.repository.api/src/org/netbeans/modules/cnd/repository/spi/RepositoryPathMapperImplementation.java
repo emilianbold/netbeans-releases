@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.repository.spi;
 
 import org.netbeans.modules.cnd.repository.api.FilePath;
-import org.openide.filesystems.FileSystem;
+import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
 
 /**
  *
@@ -50,5 +50,5 @@ import org.openide.filesystems.FileSystem;
  */
 public interface RepositoryPathMapperImplementation {
 
-    public CharSequence map(FileSystem targetFileSystem, FilePath sourceFilePath);
+    public CharSequence map(UnitDescriptor clientUnitDescriptor, FilePath sourceFilePath);
 }

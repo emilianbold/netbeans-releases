@@ -41,9 +41,12 @@
  */
 package org.netbeans.modules.db.dataview.table;
 
+import java.sql.Blob;
+import java.sql.Clob;
 import java.util.Comparator;
 import javax.swing.table.TableModel;
 import org.jdesktop.swingx.sort.TableSortController;
+import org.netbeans.modules.db.dataview.util.LobHelper;
 
 /**
  * RowSorter that falls back to comparing values by their string representation
@@ -54,17 +57,30 @@ import org.jdesktop.swingx.sort.TableSortController;
  * string and date)
  */
 public class StringFallbackRowSorter extends TableSortController<TableModel> {
-
-    public StringFallbackRowSorter() {
-    }
-
     public StringFallbackRowSorter(TableModel model) {
         super(model);
     }
 
     @Override
     public Comparator<?> getComparator(int column) {
-        return new StringFallBackComparator(super.getComparator(column));
+        Comparator superComparator = super.getComparator(0);
+        Class klass = getModel().getColumnClass(column);
+        if (Blob.class.isAssignableFrom(klass)) {
+            superComparator = LobHelper.getBlobComparator();
+        } else if (Clob.class.isAssignableFrom(klass)) {
+            superComparator = LobHelper.getClobComparator();
+        }
+        return new StringFallBackComparator(superComparator);
+}
+
+    @Override
+    protected boolean useToString(int column) {
+        Class klass = getModel().getColumnClass(column);
+        if (Blob.class.isAssignableFrom(klass)
+                || Clob.class.isAssignableFrom(klass)) {
+            return false;
+        }
+        return super.useToString(column);
     }
 }
 

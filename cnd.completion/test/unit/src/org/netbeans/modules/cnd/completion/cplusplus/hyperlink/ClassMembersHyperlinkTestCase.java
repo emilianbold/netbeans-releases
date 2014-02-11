@@ -53,6 +53,12 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ241212() throws Exception {
+        // #241212 - Wrong follow link & call graph for C++ this pointer and overloaded functions
+        performTest("iz241212.cpp", 18, 25, "iz241212.cpp", 9, 9);
+        performTest("iz241212.cpp", 19, 25, "iz241212.cpp", 12, 9);
+    }
+    
     public void testIZ151584() throws Exception {
         // IZ#151584:
         performTest("iz151584.cpp", 2, 10, "iz151584.cpp", 2, 5);
@@ -1113,6 +1119,19 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug240016.cpp", 25, 14, "bug240016.cpp", 17, 9);
         performTest("bug240016.cpp", 26, 14, "bug240016.cpp", 18, 9);
         performTest("bug240016.cpp", 26, 19, "bug240016.cpp", 22, 9);
+    }
+    
+    public void testIZ241651() throws Exception {
+        // IZ 241651 - Unresolved members via typedefs
+        performTest("iz241651.cpp", 16, 35, "iz241651.cpp", 9, 9);   
+        performTest("iz241651.cpp", 17, 70, "iz241651.cpp", 5, 9);   
+        performTest("iz241651.cpp", 18, 45, "iz241651.cpp", 5, 9);   
+        performTest("iz241651.cpp", 19, 49, "iz241651.cpp", 5, 9);   
+        
+        performTest("iz241651.cpp", 17, 40, "iz241651.cpp", 2, 5);   
+        performTest("iz241651.cpp", 18, 36, "iz241651.cpp", 12, 5);   
+        performTest("iz241651.cpp", 19, 37, "iz241651.cpp", 4, 5);   
+        performTest("iz241651.cpp", 20, 36, "iz241651.cpp", 15, 9);   
     }
     
     public static class Failed extends HyperlinkBaseTestCase {

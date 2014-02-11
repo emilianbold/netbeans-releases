@@ -51,13 +51,18 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import javax.swing.JFileChooser;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 
 class OptionDirectoriesEditor extends PropertyEditorSupport
@@ -65,12 +70,19 @@ class OptionDirectoriesEditor extends PropertyEditorSupport
 
     private OptionPropertySupport ops;
     private final String baseDir;
+    private final FileSystem fileSystem;
     private PropertyEnv env;
 
     public OptionDirectoriesEditor(OptionPropertySupport ops,
 				 String baseDir) {
+        this(ops, baseDir, FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal()));        
+    }
+
+    public OptionDirectoriesEditor(OptionPropertySupport ops,
+				 String baseDir, FileSystem fileSystem) {
 	this.ops = ops;
 	this.baseDir = baseDir;
+	this.fileSystem = fileSystem;
     }
 
     // interface PropertyEditor
@@ -117,7 +129,7 @@ class OptionDirectoriesEditor extends PropertyEditorSupport
     // interface PropertyEditor
     @Override
     public java.awt.Component getCustomEditor() {
-        return new DirectoriesChooser(this, env, baseDir, (String) ops.getValue());
+        return new DirectoriesChooser(this, env, baseDir, (String) ops.getValue(), fileSystem);
     }
 
     // interface ExPropertyEditor
@@ -132,8 +144,10 @@ class OptionDirectoriesEditor extends PropertyEditorSupport
         private final PropertyEditorSupport editor;
         private final String baseDir;
         private final String path;
-        
-        private DirectoriesChooser(PropertyEditorSupport editor, PropertyEnv env, String baseDir, String path){
+        private final FileSystem fileSystem;
+
+        private DirectoriesChooser(PropertyEditorSupport editor, PropertyEnv env, 
+                String baseDir, String path, FileSystem fileSystem){
             super(getPathsFromString(path));
             
             getDefaultButton().setVisible(false);
@@ -141,6 +155,7 @@ class OptionDirectoriesEditor extends PropertyEditorSupport
             this.editor = editor;
             this.baseDir = baseDir;
             this.path = path;
+            this.fileSystem = fileSystem;
             
             env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
 	    env.addPropertyChangeListener(this);
@@ -168,13 +183,27 @@ class OptionDirectoriesEditor extends PropertyEditorSupport
 
         @Override
         public String addAction() {
-            FileChooser fileChooser = new FileChooser(
-                    getString("ADD_DIRECTORY_DIALOG_TITLE"),  // NOI18N
-                    getString("ADD_DIRECTORY_BUTTON_TXT"),  // NOI18N
-                    FileChooser.DIRECTORIES_ONLY,
-                    null,
-                    fullPath(baseDir, path),
-                    true);
+            JFileChooser fileChooser;
+            if (RemoteFileUtil.isRemote(fileSystem)) {
+                fileChooser = RemoteFileUtil.createFileChooser(fileSystem,
+                        getString("ADD_DIRECTORY_DIALOG_TITLE"), // NOI18N
+                        getString("ADD_DIRECTORY_BUTTON_TXT"), // NOI18N
+                        FileChooser.DIRECTORIES_ONLY,
+                        null,
+                        fullPath(baseDir, path),
+                        true);
+            } else {
+                // TODO: remove if and leave RemoteFileUtil.createFileChooser
+                // I'm just not sure there won't be side effects, 
+                // so I leave FileChooser for local  
+                fileChooser = new FileChooser(
+                        getString("ADD_DIRECTORY_DIALOG_TITLE"),  // NOI18N
+                        getString("ADD_DIRECTORY_BUTTON_TXT"),  // NOI18N
+                        FileChooser.DIRECTORIES_ONLY,
+                        null,
+                        fullPath(baseDir, path),
+                        true);                
+            }
 
             int ret = fileChooser.showOpenDialog(this);
             if (ret == FileChooser.CANCEL_OPTION) {
