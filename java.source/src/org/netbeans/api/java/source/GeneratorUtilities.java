@@ -133,8 +133,8 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
+import org.netbeans.modules.java.source.parsing.AbstractSourceFileObject;
 import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.query.CommentSet.RelativePosition;
 import org.netbeans.modules.java.source.save.DiffContext;
 import org.openide.cookies.EditorCookie;
@@ -184,7 +184,7 @@ public final class GeneratorUtilities {
         JavaFileObject sourceFile = FileObjects.templateFileObject(sourceRoot, nameComponent[0], nameComponent[1]);
         FileObject template = FileUtil.getConfigFile(copy.template(kind));
         FileObject targetFile = copy.doCreateFromTemplate(template, sourceFile);
-        CompilationUnitTree templateCUT = copy.impl.getJavacTask().parse(FileObjects.nbFileObject(targetFile, targetFile.getParent())).iterator().next();
+        CompilationUnitTree templateCUT = copy.impl.getJavacTask().parse(FileObjects.sourceFileObject(targetFile, targetFile.getParent())).iterator().next();
         CompilationUnitTree importComments = GeneratorUtilities.get(copy).importComments(templateCUT, templateCUT);
         CompilationUnitTree result = copy.getTreeMaker().CompilationUnit(importComments.getPackageAnnotations(),
                 sourceRoot,
@@ -924,8 +924,8 @@ public final class GeneratorUtilities {
             }
             
             JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;
-            TokenHierarchy<?> tokens =   unit.getSourceFile() instanceof SourceFileObject
-                                       ? ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy()
+            TokenHierarchy<?> tokens =   unit.getSourceFile() instanceof AbstractSourceFileObject
+                                       ? ((AbstractSourceFileObject) unit.getSourceFile()).getTokenHierarchy()
                                        : TokenHierarchy.create(unit.getSourceFile().getCharContent(true), JavaTokenId.language());
             TokenSequence<JavaTokenId> seq = tokens.tokenSequence(JavaTokenId.language());
             TreePath tp = TreePath.getPath(cut, original);

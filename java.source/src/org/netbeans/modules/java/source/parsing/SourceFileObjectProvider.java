@@ -43,23 +43,46 @@
 package org.netbeans.modules.java.source.parsing;
 
 import java.io.IOException;
+import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
-import org.openide.filesystems.FileObject;
 
 /**
- * Default implementation of {@link JavaFileObjectProvider} used by {@link JavacParser}
+ * Factory for creating {@link JavaFileObject}s used by the {@link JavacParser}.
+ * The unit tests may implement this interface to force the {@link JavacParser} to
+ * use different implementation of the {@link JavaFileObject}.
+ * @see JavacParser
+ * @see JavaFileObject
+ * @see JavaFileManager
  * @author Tomas Zezula
  */
-final class DefaultJavaFileObjectProvider implements JavaFileObjectProvider {
-    
-    public JavaFileObject createJavaFileObject (final FileObject fo, final FileObject root,
-            final JavaFileFilterImplementation filter, final CharSequence content) throws IOException {
-        return FileObjects.nbFileObject(fo, root, filter, content);
-    }
+public interface SourceFileObjectProvider {
         
-    public void update (final JavaFileObject jfo, final CharSequence content) throws IOException {
-        assert jfo instanceof SourceFileObject;
-        ((SourceFileObject)jfo).update(content);
-    }        
+    /**
+     * Creates {@link JavaFileObject} for given file under given root.
+     * @param handle for which the {@link JavaFileObject} should be created
+     * @param filter used to read the content
+     * @param content of the file object if null, the snapshot from fo is taken
+     * @param renderNow should be the file content rendered immediately
+     * @return the {@link JavaFileObject}
+     * @throws java.io.IOException on io failure.
+     */
+    @NonNull
+    public abstract AbstractSourceFileObject createJavaFileObject (
+            @NonNull AbstractSourceFileObject.Handle handle,
+            @NullAllowed JavaFileFilterImplementation filter,
+            @NullAllowed CharSequence content,
+            boolean renderNow) throws IOException;
+       
+    /**
+     * Forces the provider to refresh the content of the given file,
+     * @param javaFileObject to be refreshed
+     * @param content of the file object if null, the snapshot from fo is taken
+     * @throws java.io.IOException on io failure.
+     */
+    public abstract void update (
+            @NonNull AbstractSourceFileObject javaFileObject,
+            @NonNull CharSequence content) throws IOException;
 }

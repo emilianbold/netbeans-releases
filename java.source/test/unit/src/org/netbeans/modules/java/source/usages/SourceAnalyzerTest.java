@@ -138,7 +138,7 @@ public class SourceAnalyzerTest extends NbTestCase {
                 null,
                 null,
                 null);
-            final JavaFileObject jfo = FileObjects.nbFileObject(javaFile, src);
+            final JavaFileObject jfo = FileObjects.sourceFileObject(javaFile, src);
             final Iterable<? extends CompilationUnitTree> trees = jt.parse(jfo);
             jt.enter();
             jt.analyze();
@@ -194,7 +194,7 @@ public class SourceAnalyzerTest extends NbTestCase {
                 null,
                 null,
                 null);
-            final JavaFileObject jfo = FileObjects.nbFileObject(javaFile, src);
+            final JavaFileObject jfo = FileObjects.sourceFileObject(javaFile, src);
             final Iterable<? extends CompilationUnitTree> trees = jt.parse(jfo);
             jt.enter();
             jt.analyze();
@@ -246,7 +246,7 @@ public class SourceAnalyzerTest extends NbTestCase {
                 null,
                 null,
                 null);
-            final JavaFileObject jfo = FileObjects.nbFileObject(javaFile, src);
+            final JavaFileObject jfo = FileObjects.sourceFileObject(javaFile, src);
             final Iterable<? extends CompilationUnitTree> trees = jt.parse(jfo);
             jt.enter();
             jt.analyze();

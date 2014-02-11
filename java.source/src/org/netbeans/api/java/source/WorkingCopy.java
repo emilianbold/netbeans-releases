@@ -808,7 +808,7 @@ public class WorkingCopy extends CompilationController {
         for (CompilationUnitTree t : externalChanges.values()) {
             try {
                 FileObject targetFile = doCreateFromTemplate(t);
-                CompilationUnitTree templateCUT = impl.getJavacTask().parse(FileObjects.nbFileObject(targetFile, targetFile.getParent())).iterator().next();
+                CompilationUnitTree templateCUT = impl.getJavacTask().parse(FileObjects.sourceFileObject(targetFile, targetFile.getParent())).iterator().next();
                 CompilationUnitTree importComments = GeneratorUtilities.get(this).importComments(templateCUT, templateCUT);
 
                 changes.put(importComments, t);

@@ -180,7 +180,7 @@ public class TreeLoader extends LazyTreeLoader {
                         final Log log = Log.instance(context);
                         log.nerrors = 0;
                         final JavaFileManager jfm = context.get(JavaFileManager.class);
-                        JavaFileObject jfo = FileObjects.nbFileObject(fo, null);
+                        JavaFileObject jfo = FileObjects.sourceFileObject(fo, null);
                         Map<ClassSymbol, StringBuilder> oldCouplingErrors = couplingErrors;
                         boolean oldSkipAPT = jc.skipAnnotationProcessing;
                         try {

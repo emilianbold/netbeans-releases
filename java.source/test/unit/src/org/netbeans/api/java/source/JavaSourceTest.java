@@ -105,7 +105,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.parsing.DocPositionRegion;
-import org.netbeans.modules.java.source.parsing.JavaFileObjectProvider;
+import org.netbeans.modules.java.source.parsing.SourceFileObjectProvider;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.parsing.lucene.IndexFactory;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
