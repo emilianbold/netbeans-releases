@@ -183,7 +183,7 @@ import org.openide.util.RequestProcessor;
         RemoteLogger.fine("Creating links at {0} took {1} ms", executionEnvironment, (System.currentTimeMillis()-time2));
         
         if (!fileCollector.initNewFilesDiscovery()) {
-            throw new IOException();
+            throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Msg_Err_NewFilesDiscovery"));
         }
         time2 = System.currentTimeMillis();
         uploadPlainFiles();
@@ -223,7 +223,8 @@ import org.openide.util.RequestProcessor;
             try {
                 process = pb.call();
             } catch (IOException ex) {
-                throw new IOException("Can not check remote directories: " + ex.getMessage(), ex); // NOI18N
+                throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, 
+                        "FTP_Msg_Err_CheckDirs", ex.getMessage()), ex);
             }
             
             final AtomicReference<IOException> problem = new AtomicReference<>();
@@ -279,7 +280,8 @@ import org.openide.util.RequestProcessor;
             try {
                 int rc = process.waitFor();
                 if (rc != 0) {
-                    throw new IOException("Can not check remote directories"); // NOI18N
+                    throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, 
+                            "FTP_Msg_Err_CheckDirs", ""));
                 }
             } catch (InterruptedException ex) {
                 throw new InterruptedIOException();
@@ -307,7 +309,8 @@ import org.openide.util.RequestProcessor;
                 ExitStatus status = ProcessUtils.executeInDir(remoteBaseDir, executionEnvironment, 
                         "ln", "-s", fileInfo.getLinkTarget(), fileInfo.file.getName()); // NOI18N
                 if (!status.isOK()) {
-                    throw new IOException("Can not check remote directories: " + status.toString()); // NOI18N
+                    throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, 
+                            "FTP_Msg_Err_CheckLinks", status.toString()));
                 }
                 progressHandle.progress(uploadCount++);
             }
@@ -334,8 +337,9 @@ import org.openide.util.RequestProcessor;
                         if (err != null) {
                             err.println(uploadStatus.getError());
                         }
-                        throw new IOException("uploading " + srcFile + " to " + executionEnvironment + ':' + remotePath + // NOI18N
-                                " finished with error code " + uploadStatus.getExitCode()); // NOI18N
+                        throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, 
+                                "FTP_Msg_Err_UploadFile", srcFile, executionEnvironment, 
+                                remotePath, uploadStatus.getExitCode()));
                     }
                 }
                 progressHandle.progress(uploadCount++);
