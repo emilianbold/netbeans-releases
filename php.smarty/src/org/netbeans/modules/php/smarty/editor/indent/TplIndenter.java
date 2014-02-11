@@ -208,7 +208,7 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
         String lastTplCommand = "";
         // iterate over tokens on the line and push to stack any changes
         while (!context.isBlankLine() && ts.moveNext()
-                 && ((ts.isCurrentTokenSequenceVirtual() && ts.offset() < context.getLineEndOffset())
+                && ((ts.isCurrentTokenSequenceVirtual() && ts.offset() < context.getLineEndOffset())
                 || ts.offset() <= context.getLineEndOffset())) {
             Token<TplTopTokenId> token = ts.token();
             if (token == null) {
@@ -262,7 +262,7 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
                                     blockStack.pop();
                                 }
                                 if (!nonControlCommand) {
-                                    iis.add(new IndentCommand(IndentCommand.Type.RETURN, preservedLineIndentation));
+                                    iis.add(new IndentCommand(IndentCommand.Type.RETURN, context.getLineStartOffset()));
                                 }
                                 nonControlCommand = false;
                             } else {
