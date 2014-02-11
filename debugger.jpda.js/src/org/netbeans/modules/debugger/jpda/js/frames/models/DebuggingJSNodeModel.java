@@ -63,7 +63,8 @@ import org.openide.util.datatransfer.PasteType;
  * @author Martin
  */
 @DebuggerServiceRegistration(path="netbeans-JPDASession/DebuggingView",
-                             types=ExtendedNodeModelFilter.class)
+                             types=ExtendedNodeModelFilter.class,
+                             position=22000)
 public class DebuggingJSNodeModel implements ExtendedNodeModelFilter {
     
     private static final String SCRIPT_CLASS_PREFIX = "Script$";
