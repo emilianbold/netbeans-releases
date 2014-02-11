@@ -59,6 +59,7 @@ import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.masterfs.filebasedfs.FileUtilTest.EventType;
 import org.netbeans.modules.masterfs.filebasedfs.FileUtilTest.TestFileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -73,6 +74,11 @@ public class FileObjTest extends NbTestCase {
 
     public FileObjTest(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        clearWorkDir();
     }
 
     @Override
@@ -271,5 +277,38 @@ public class FileObjTest extends NbTestCase {
             String val2 = Charset.defaultCharset().decode(buffer).toString();
             assertEquals(attValue, val2);
         }
+    }
+
+    /**
+     * Test for bug 240180 - AssertionError: Need to normalize - different file
+     * name case.
+     *
+     * @throws IOException
+     */
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
+    public void testNormalizedAfterCaseChange() throws IOException {
+
+        File wd = getWorkDir();
+        FileObject wdFo = FileUtil.toFileObject(wd);
+        File inner = new File(wd, "test.txt");
+        inner.createNewFile();
+        if (!new File(wd, "Test.txt").exists()) {
+            System.out.println("Skipping test " + getName()
+                    + " on a case-sensitive filesystem");
+            return;
+        }
+        wdFo.refresh();
+        FileObject innerFo = FileUtil.toFileObject(inner);
+        assertEquals("test.txt", FileUtil.toFile(innerFo).getName());
+        inner.delete(); // delete...
+        File inner2 = new File(wd, "Test.txt"); //...and create with uppercase T
+        inner2.createNewFile();
+        assertTrue(Files.exists(inner.toPath()));
+        assertEquals("Test.txt", inner.getCanonicalFile().getName());
+        wdFo.refresh();
+        new FileEvent(innerFo); // clear cache for normalized files
+
+        File toFile = FileUtil.toFile(innerFo); // AssertionError here.
+        assertNotNull(toFile);
     }
 }

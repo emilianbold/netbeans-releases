@@ -48,6 +48,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
+import org.openide.filesystems.FileSystem;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.Exceptions;
 
@@ -433,6 +434,10 @@ public abstract class Option {
 
     public PropertySupport createNodeProp(OptionSetOwner optionSetOwner) {
 	return new OptionPropertySupport(optionSetOwner, this, null);
+    }
+
+    public PropertySupport createNodeProp(OptionSetOwner optionSetOwner, String base, FileSystem fs) {
+	return new OptionPropertySupport(optionSetOwner, this, base, fs);
     }
 
     public PropertySupport createBasedNodeProp(OptionSetOwner optionSetOwner,
