@@ -142,7 +142,7 @@
         </condition>
         
         <condition property="clusters" value="${jdk-bundle.clusters}" else="${all.clusters}"> 
-            <equals arg1="${do.build.jdk}" arg2="1"/>
+            <istrue value="${do.build.jdk}"/>
         </condition>
         
     </target>
@@ -229,7 +229,7 @@
             <equals arg1="${javafx.build}" arg2="1"/>
         </condition>
         <condition property="modules" value="${jdk-bundle.modules}" else="${all.modules}"> 
-            <equals arg1="${do.build.jdk}" arg2="1"/>
+            <istrue value="${do.build.jdk}"/>
         </condition>
     </target>    
 
@@ -335,7 +335,7 @@
             <equals arg1="${javafx.build}" arg2="1"/>
         </condition>
         <condition property="bundles" value="${jdk-bundle.bundles}" else="${all.bundles}"> 
-            <equals arg1="${do.build.jdk}" arg2="1"/>
+            <istrue value="${do.build.jdk}"/>
         </condition>
         
     </target>
