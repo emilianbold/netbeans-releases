@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -255,8 +256,8 @@ final class OutputUtils {
 		    try {
 			TypeElement enclosingTypeElement = compilationController.getElementUtilities().enclosingTypeElement(method);
 			String originalPath = FileUtil.toFile(fo2open[0]).getCanonicalPath();
-			String elementFQP = element.toString().replaceAll("\\.", "/"); //NOI18N
-			String newPath = originalPath.substring(0, originalPath.indexOf(elementFQP)) + enclosingTypeElement.getQualifiedName().toString().replaceAll("\\.", "/") + ".java"; //NOI18N
+			String elementFQP = element.toString().replaceAll("\\.", Matcher.quoteReplacement(File.separator)); //NOI18N
+			String newPath = originalPath.substring(0, originalPath.indexOf(elementFQP)) + enclosingTypeElement.getQualifiedName().toString().replaceAll("\\.", Matcher.quoteReplacement(File.separator)) + ".java"; //NOI18N
 			fo2open[0] = FileUtil.toFileObject(new File(newPath));
 
 			JavaSource javaSource = JavaSource.forFileObject(fo2open[0]);

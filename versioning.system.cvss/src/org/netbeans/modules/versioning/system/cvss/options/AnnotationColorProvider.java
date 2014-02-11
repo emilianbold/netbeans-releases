@@ -76,6 +76,7 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
     private static final Color CONFLICTED_COLOR;
     private static final Color IGNORED_COLOR;
     private static final Color REMOTE_MODIFICATION_COLOR;
+    private static final Color TEXT_ANNOTATION_COLOR;
     static {
         Color c = UIManager.getColor("nb.versioning.added.color");
         ADDED_COLOR = c == null ? new Color(0, 0x80, 0) : c;
@@ -89,6 +90,8 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
         IGNORED_COLOR = c == null ? new Color(0x99, 0x99, 0x99) : c;
         c = UIManager.getColor("nb.versioning.remotemodification.color"); //NOI18N
         REMOTE_MODIFICATION_COLOR = c == null ? new Color(0, 0, 0) : c;
+        c = UIManager.getColor("nb.versioning.textannotation.color"); //NOI18N
+        TEXT_ANNOTATION_COLOR = c == null ? new Color(0x99, 0x99, 0x99) : c;
     }
 
     public final AnnotationFormat UP_TO_DATE_FILE = createAnnotationFormat("uptodate", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_UpToDate"), null, false); //NOI18N
@@ -114,6 +117,7 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
     public final AnnotationFormat EXCLUDED_FILE_TOOLTIP = createAnnotationFormat("excludedTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Excluded"), IGNORED_COLOR, true); //NOI18N
     public final AnnotationFormat CONFLICT_FILE = createAnnotationFormat("conflict", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Conflict"), CONFLICTED_COLOR, false); //NOI18N
     public final AnnotationFormat CONFLICT_FILE_TOOLTIP = createAnnotationFormat("conflictTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Conflict"), CONFLICTED_COLOR, true); //NOI18N
+    public final AnnotationFormat TEXT_ANNOTATION = createAnnotationFormat("textAnnotation", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_TextAnnotation"), TEXT_ANNOTATION_COLOR, true); //NOI18N
 
     public AnnotationColorProvider () {
         initColors();
@@ -182,5 +186,6 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
         putColor(NEW_IN_REPOSITORY_FILE);
         putColor(REMOVED_IN_REPOSITORY_FILE);
         putColor(MERGEABLE_FILE);
+        putColor(TEXT_ANNOTATION);
     }
 }

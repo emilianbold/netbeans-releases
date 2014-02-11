@@ -2,27 +2,27 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Add or Duplicate Project Configuration Dialog</title>
+<title>Add/Edit MIDlet</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-02-06</p>
-<p><a id="org.netbeans.modules.mobility.project.ui.customizer.NewConfigurationPanel" name="org.netbeans.modules.mobility.project.ui.customizer.NewConfigurationPanel"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref703" name="sthref703"></a>
-<h1>Add or Duplicate Project Configuration Dialog</h1>
+<p>Beta Draft: 2014-02-10</p>
+<p><a id="org.netbeans.modules.j2me.project.ui.customizer.J2MEMIDletsPanel" name="org.netbeans.modules.j2me.project.ui.customizer.J2MEMIDletsPanel"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref704" name="sthref704"></a>
+<h1>Add/Edit MIDlet</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to add new project configurations to the active selected project. 
+<p>Use to add or edit an existing MIDlet to a project configuration. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1611">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1572">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 
-<table summary="Description of Add Project Configuration dialog box field." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="32%" />
+<table summary="Descriptions of fields in Add and Edit MIDlet dialog boxes." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="34%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
@@ -33,31 +33,40 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t5" headers="r1c1-t5">
-<p>New Configuration Name</p>
+<p>MIDlet Name.</p>
 </td>
 <td align="left" headers="r2c1-t5 r1c2-t5">
-<p>Specifies the name of the new configuration.</p>
-<p>Alternatively, you can choose a project template from the <b>Use Configuration Template</b> drop-down menu. The new configuration contains all the properties of the configuration template.</p>
+<p>Specifies the displayable name of the MIDlet that the user sees when the MIDlet is run on a mobile device.</p>
+<p>The combo box lists all available MIDlets.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t5" headers="r1c1-t5">
+<p>MIDlet Class</p>
+</td>
+<td align="left" headers="r3c1-t5 r1c2-t5">
+<p>Specifies the Java class for the MIDlet.</p>
+<p>The combo box lists all available MIDlet classes of the project and its libraries.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t5" headers="r1c1-t5">
+<p>MIDlet Icon</p>
+</td>
+<td align="left" headers="r4c1-t5 r1c2-t5">
+<p>Specifies an icon (a <code>.png</code> file), representing the MIDlet, that the user sees when the MIDlet is run on a mobile device.</p>
+<p>The combo box lists all available PNG images of the project and its libraries.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>You can customize the properties for the new configuration by choosing property categories in the right pane of the Properties dialog.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1610">
-<param name="text" value="<html><u>&quot;Working with Java ME Project Configurations&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1615">
-<param name="text" value="<html><u>&quot;Customizing Project Configurations&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1582">
+<param name="text" value="<html><u>&quot;Customizing Midlet Properties&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

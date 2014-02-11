@@ -454,7 +454,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         }
 
         if (textAnnotation.length() > 0) {
-            textAnnotation = NbBundle.getMessage(MercurialAnnotator.class, "textAnnotation", textAnnotation); // NOI18N
+            textAnnotation = getAnnotationProvider().TEXT_ANNOTATION.getFormat().format(new Object[] { textAnnotation });
         }
 
         if (0 != (status & FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) {
@@ -589,7 +589,9 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
             folderAnotation = label.toString();
         }
 
-        return uptodateFormat.format(new Object [] { nameHtml, folderAnotation.isEmpty() ? "" : " [" + folderAnotation + "]" }); //NOI18N
+        return uptodateFormat.format(new Object [] { nameHtml, folderAnotation.isEmpty() ? "" //NOI18N
+                : getAnnotationProvider().TEXT_ANNOTATION.getFormat().format(new Object[] { " [" + folderAnotation + "]" } ) //NOI18N
+        });
     }
     
     private boolean isMoreImportant(FileInformation a, FileInformation b) {

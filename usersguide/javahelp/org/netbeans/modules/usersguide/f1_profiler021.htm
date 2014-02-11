@@ -2,17 +2,17 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>New Profiling Point Wizard: Reset Results</title>
+<title>New Profiling Point Wizard: Stopwatch</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-02-06</p>
-<p><a id="ResetResultsCustomizer.HelpCtx" name="ResetResultsCustomizer.HelpCtx"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref391" name="sthref391"></a>
-<h1>New Profiling Point Wizard: Reset Results</h1>
+<p>Beta Draft: 2014-02-10</p>
+<p><a id="StopwatchCustomizer.HelpCtx" name="StopwatchCustomizer.HelpCtx"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref393" name="sthref393"></a>
+<h1>New Profiling Point Wizard: Stopwatch</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to reset the collected profiling results each time that a thread in the application hits the profiling point. 
+<p>Use to obtain a timestamp each time that the profiling point is hit. You can obtain the length of time between two locations by selecting Timestamp and Duration and setting a start and a stop profiling point. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG745">
 <param name="text" value="<html><u>How?</u></html>">
@@ -21,7 +21,7 @@
 </object>
 </p>
 
-<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<table summary="Descriptions of Stopwatch dialog box elements." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="32%" />
 <col width="*" />
 <thead>
@@ -42,17 +42,44 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t23" headers="r1c1-t23">
-<p>Location</p>
+<p>Settings</p>
 </td>
 <td align="left" headers="r3c1-t23 r1c2-t23">
-<p>Specifies the name of the file and the line in the source code where you want to place the profiling point. Click <b>Browse</b> to locate the file in your project.</p>
-<p>Select <b>Begin</b> or <b>End</b> to specify if the profiling point is hit when a thread hits the beginning of the specified line or reaches the end of the line.</p>
+<p>Snapshot setting</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t23" headers="r1c1-t23">
+<p>Timestamp</p>
+</td>
+<td align="left" headers="r4c1-t23 r1c2-t23">
+<p>Retrieves a timestamp when the profiling point is hit.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t23" headers="r1c1-t23">
+<p>Timestamp and Duration</p>
+</td>
+<td align="left" headers="r5c1-t23 r1c2-t23">
+<p>Finds the length of time between two paired timestamps.</p>
+<p>If you select this option, you must specify the location for a starting point for the stopwatch and the location for the stopping point.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t23" headers="r1c1-t23">
+<p>Location</p>
+</td>
+<td align="left" headers="r6c1-t23 r1c2-t23">
+<p>Specifies the name of the file and the line in the source code where you want to place the profiling point.</p>
+<p>Click <b>Browse</b> to locate the file in your project.</p>
+<p>Select <b>Begin</b> or <b>End</b> to specify if the profiling point is hit when a thread hits the beginning of the line or reaches the end of the line.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
+<p>If you opened the New Profiling Point wizard by clicking in a line in a source file, the file and line are automatically set for you but you can modify the settings as needed.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">

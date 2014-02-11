@@ -1,0 +1,6 @@
+var |>GLOBAL:SomeClass<| = new function()
+{
+	var new_link = callingSomeFucntion();
+	var |>UNUSED:content<| = new_link+1;
+	return new_link;
+};

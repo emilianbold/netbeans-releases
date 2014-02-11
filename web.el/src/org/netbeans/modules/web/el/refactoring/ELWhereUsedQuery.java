@@ -99,6 +99,9 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         final FileObject file = handle.getFileObject();
         final AtomicReference<Problem> problemRef = new AtomicReference<>();
         JavaSource jsource = JavaSource.create(ELTypeUtilities.getElimplExtendedCPI(file));
+        if (jsource == null) {
+            return null;
+        }
         try {
             jsource.runUserActionTask(new Task<CompilationController>() {
 
@@ -352,7 +355,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
 
     }
     
-    protected class RefactoringSessionContext {
+    protected static class RefactoringSessionContext {
         
         private CompilationContext info;
         private boolean active;

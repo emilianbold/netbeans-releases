@@ -43,6 +43,7 @@
 package org.netbeans.modules.jira.repository;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -275,6 +276,46 @@ public class JiraConfiguration {
             // to use project specific issue types. Forcing reload.
             ensureProjectLoaded(project, true);
         }
+    }
+
+    Component[] getComponents(String[] ids) {
+        ArrayList<Component> ret = new ArrayList<>(ids.length);
+        Project[] ps = client.getProjects();
+        if(ps != null) {
+            for (String id : ids) {
+                for(Project p : ps) {
+                    Component[] cmps = p.getComponents();
+                    if(cmps != null) {
+                        for(Component c : cmps) {
+                            if(c.getId().equals(id)) {
+                                ret.add(c);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return ret.toArray(new Component[ret.size()]);
+    }
+    
+    Version[] getVersions(String[] ids) {
+        ArrayList<Version> ret = new ArrayList<>(ids.length);
+        Project[] ps = client.getProjects();
+        if(ps != null) {
+            for (String id : ids) {
+                for(Project p : ps) {
+                    Version[] vs = p.getVersions();
+                    if(vs != null) {
+                        for(Version v : vs) {
+                            if(v.getId().equals(id)) {
+                                ret.add(v);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return ret.toArray(new Version[ret.size()]);
     }
 
 }

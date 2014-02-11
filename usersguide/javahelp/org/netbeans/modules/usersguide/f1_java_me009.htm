@@ -2,27 +2,26 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Save Mobility Project Configuration as Template</title>
+<title>Keystores Manager</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-02-06</p>
-<p><a id="org.netbeans.modules.mobility.project.ui.customizer.SaveConfigurationPanel" name="org.netbeans.modules.mobility.project.ui.customizer.SaveConfigurationPanel"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref708" name="sthref708"></a>
-<h1>Save Mobility Project Configuration as Template</h1>
+<p>Beta Draft: 2014-02-10</p>
+<p><a id="org.netbeans.modules.j2me.keystore.ui.SecurityManagerPanel" name="org.netbeans.modules.j2me.keystore.ui.SecurityManagerPanel"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref709" name="sthref709"></a>
+<h1>Keystores Manager</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to save a project configuration as a template, which enables you to use the same configuration settings for multiple projects. For example, a configuration that supports a mobile device with a specific screen size can be saved as a template and used for other devices with the same screen size. 
+<p>Use to manage the security keystores for your MIDP project. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2398">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1592">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
-<p>Right-click a project and click <b>Properties</b>. Click <b>Manage Configurations</b> in the Project Properties dialog box and select a configuration. Click <b>Save As Template</b> to open the Save Project Configuration As Template dialog box.</p>
 
-<table summary="Description of field in Save Project Configuration as Template dialog box." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<table summary="Descriptions of elements in Keystores Manager dialog box." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="34%" />
 <col width="*" />
 <thead>
@@ -34,25 +33,99 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t10" headers="r1c1-t10">
-<p>Configuration Template Name</p>
+<p>Keystores</p>
 </td>
 <td align="left" headers="r2c1-t10 r1c2-t10">
-<p>Specifies a name for the configuration template. The name can be any valid Java identifier.</p>
+<p>Displays the existing keystores for the current project. From this window, you can select a keystore to edit.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t10" headers="r1c1-t10">
+<p>Keystore File</p>
+</td>
+<td align="left" headers="r3c1-t10 r1c2-t10">
+<p>Displays the file location of the selected keystore..</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t10" headers="r1c1-t10">
+<p>Keys</p>
+</td>
+<td align="left" headers="r4c1-t10 r1c2-t10">
+<p>Displays the keys within the keystore file.</p>
+<p>Check the <b>Show Details</b> checkbox to see the details of key pairs within the keystore.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t10" headers="r1c1-t10">
+<p>Add Keystore</p>
+</td>
+<td align="left" headers="r5c1-t10 r1c2-t10">
+<p>Enables you to import existing keystores or add new keystores to the project.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t10" headers="r1c1-t10">
+<p>Remove</p>
+</td>
+<td align="left" headers="r6c1-t10 r1c2-t10">
+<p>Deletes keystores from the project.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t10" headers="r1c1-t10">
+<p>Unlock</p>
+</td>
+<td align="left" headers="r7c1-t10 r1c2-t10">
+<p>Enables you to enter a password to unlock a key pair for use.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t10" headers="r1c1-t10">
+<p>Export</p>
+</td>
+<td align="left" headers="r8c1-t10 r1c2-t10">
+<p>Enables you to export a key pair to an emulator platform.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t10" headers="r1c1-t10">
+<p>New</p>
+</td>
+<td align="left" headers="r9c1-t10 r1c2-t10">
+<p>Creates a new key pair.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t10" headers="r1c1-t10">
+<p>Delete</p>
+</td>
+<td align="left" headers="r10c1-t10 r1c2-t10">
+<p>Deletes a key pair.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<hr><p><b>Related Topics</b></p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
+<p>For more information about key pairs and keystores, see <code>
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1610">
-<param name="text" value="<html><u>&quot;Working with Java ME Project Configurations</u></html>">
+<param name="content" value="http://docs.oracle.com/javase/1.4.2/docs/tooldocs/windows/keytool.html">
+<param name="text" value="<html><u>http://docs.oracle.com/javase/1.4.2/docs/tooldocs/windows/keytool.html</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-"</p>
+</code>
+.</p>
+<hr><p><b>Related Topics</b></p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1591">
+<param name="text" value="<html><u>&quot;Working with Security through MIDlet Signing&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 
 <!-- -->
 <!-- Start Footer -->

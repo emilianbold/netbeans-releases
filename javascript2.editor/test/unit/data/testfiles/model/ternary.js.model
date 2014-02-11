@@ -2,9 +2,6 @@ FUNCTION ternary [ANONYMOUS: false, DECLARED: true - ternary, MODIFIERS: PUBLIC,
 # RETURN TYPES
 undefined, RESOLVED: true
 # PROPERTIES
-a : FUNCTION a [ANONYMOUS: false, DECLARED: false - a, MODIFIERS: PUBLIC, FUNCTION]
-  # PROPERTIES
-  arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
 x : FUNCTION x [ANONYMOUS: false, DECLARED: true - x, MODIFIERS: PUBLIC, FUNCTION]
   # RETURN TYPES
   x.Anonym$0, RESOLVED: true

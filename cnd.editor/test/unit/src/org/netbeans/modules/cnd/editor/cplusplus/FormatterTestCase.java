@@ -5738,4 +5738,25 @@ public class FormatterTestCase extends EditorBase {
                 "};\n"
                 );
     }
+    
+    public void test241497() {
+        setLoadDocumentText(
+                "enum class test : char\n" +
+                "{\n" +
+                "    valueA = 'a',\n" +
+                "    valueB = 'b',\n" +
+                "    valueC\n" +
+                "};\n"
+                );
+        setDefaultsOptions();
+        reformat();
+        assertDocumentText("C++ enum class with values are not formatted properly",
+                "enum class test : char\n" +
+                "{\n" +
+                "    valueA = 'a',\n" +
+                "    valueB = 'b',\n" +
+                "    valueC\n" +
+                "};\n"
+                );
+    }
 }

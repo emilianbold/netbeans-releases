@@ -118,13 +118,24 @@ public class RepositoryRelocationTest extends TraceModelTestBase {
         }
 
         @Override
-        public CharSequence map(FileSystem targetFileSystem, FilePath sourceFilePath) {
+        public CharSequence map(UnitDescriptor descriptor1, FilePath sourceFilePath) {
             if (active.get()) {
                 String path = sourceFilePath.getPath();
                 return path.replaceAll("quote_nosyshdr_1", "quote_nosyshdr_2");
             } else {
                 return null;
             }
+        }
+
+
+        @Override
+        public UnitDescriptor destinationDescriptor(FileSystem targetFileSystem, UnitDescriptor sourceUnitDescriptor) {
+            return new UnitDescriptor(sourceUnitDescriptor.getName().toString().replaceAll("quote_nosyshdr_1", "quote_nosyshdr_2"), targetFileSystem);
+        }
+
+        @Override
+        public UnitDescriptor sourceDescriptor(FileSystem targetFileSystem, UnitDescriptor destinationDescriptor) {
+            return new UnitDescriptor(destinationDescriptor.getName().toString().replaceAll("quote_nosyshdr_1", "quote_nosyshdr_2"), targetFileSystem);
         }
     }
 

@@ -2,27 +2,27 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Add Keystore</title>
+<title>Add/Edit Push Registry Entry</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-02-06</p>
-<p><a id="org.netbeans.modules.j2me.keystore.ui.AddKeystorePanel" name="org.netbeans.modules.j2me.keystore.ui.AddKeystorePanel"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref704" name="sthref704"></a>
-<h1>Add Keystore</h1>
+<p>Beta Draft: 2014-02-10</p>
+<p><a id="org.netbeans.modules.j2me.project.ui.customizer.AddPushRegistryPanel" name="org.netbeans.modules.j2me.project.ui.customizer.AddPushRegistryPanel"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref705" name="sthref705"></a>
+<h1>Add/Edit Push Registry Entry</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to add or create new keystores, or import an existing keystore into your project. Keystore (<code>.ks</code>) files are used to store key pairs for signing MIDlet suites. 
+<p>Use to add or edit a push registry entry for a project configuration. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1593">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1574">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 
-<table summary="Descriptions of Add Keystore dialog box elements." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="34%" />
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="33%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
@@ -33,53 +33,28 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t6" headers="r1c1-t6">
-<p>Create a New Keystore.</p>
+<p>Class Name</p>
 </td>
 <td align="left" headers="r2c1-t6 r1c2-t6">
-<p>Enables you to create a new keystore file. You can fill in the following fields to define the new keystore: <b>Keystore Nam</b>e, <b>Keystore Folder</b>, <b>Password</b>, and <b>Confirm Password</b>.</p>
+<p>Specifies the MIDlet's class name.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t6" headers="r1c1-t6">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Keystore Name</p>
+<p>Sender IP</p>
 </td>
 <td align="left" headers="r3c1-t6 r1c2-t6">
-<p>Specifies a name for the keystore file, which can be any legal file name with the extension <code>.ks</code>.</p>
+<p>Specifies a valid sender that can launch the associated MIDlet.</p>
+<p>If the value is the wildcard (<code>*</code>), connections from any source are accepted.</p>
+<p>If datagram or socket connections are used, the value of Allowed Sender can be a numeric IP address.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t6" headers="r1c1-t6">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Keystore Folder</p>
+<p>Connection String</p>
 </td>
 <td align="left" headers="r4c1-t6 r1c2-t6">
-<p>Specifies the directory where the keystore file is stored on your system.</p>
-<p>Click <b>Browse</b> to select a directory other than the default.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t6" headers="r1c1-t6">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Password</p>
-</td>
-<td align="left" headers="r5c1-t6 r1c2-t6">
-<p>Sets a password that unlocks the keystore file so it can be used.</p>
-<p>The password must be at least 6 characters long.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t6" headers="r1c1-t6">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Confirm Password</p>
-</td>
-<td align="left" headers="r6c1-t6 r1c2-t6">
-<p>Confirms the password.</p>
-<p>Re-type the password to ensure that it is the password you want.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t6" headers="r1c1-t6">
-<p>Add Existing Keystore</p>
-</td>
-<td align="left" headers="r7c1-t6 r1c2-t6">
-<p>Enables you to add a keystore file that already exists on your system. Click <b>Browse</b> to navigate to the keystore file.</p>
+<p>Specifies connection string that identifies the connection protocol and port number.</p>
 </td>
 </tr>
 </tbody>
@@ -89,12 +64,12 @@
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1591">
-<param name="text" value="<html><u>&quot;Working with Security and MIDP Signing&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1558">
+<param name="text" value="<html><u>&quot;Creating Java ME Projects</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-</p>
+"</p>
 
 <!-- -->
 <!-- Start Footer -->

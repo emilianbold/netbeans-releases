@@ -720,6 +720,11 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 boolean ba = currentText.equals(TRUE_VALUE);
                 currentCodeAssistanceConfiguration.getIncludeInCA().setValue(ba);
             }
+        } else if (element.equals(CODE_ASSISTANCE_EXCLUDE_PATTERN)) {
+            if (currentCodeAssistanceConfiguration != null) {
+                boolean ba = currentText.equals(TRUE_VALUE);
+                currentCodeAssistanceConfiguration.getExcludeInCA().setValue(currentText);
+            }
         } else if (element.equals(BUILD_ANALAZYER_TOOLS_ELEMENT)) {
             if (currentCodeAssistanceConfiguration != null) {
                 currentCodeAssistanceConfiguration.getTools().setValue(getString(currentText));
@@ -758,6 +763,17 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             }
             currentArchiverConfiguration = null;
         } else if (element.equals(INCLUDE_DIRECTORIES_ELEMENT2) || element.equals(INCLUDE_DIRECTORIES_ELEMENT)) {
+            if (descriptorVersion < 93 && currentList != null && !currentList.isEmpty() && currentCCCCompilerConfiguration != null) {
+                List<String> files = currentCCCCompilerConfiguration.getIncludeFiles().getValue();
+                for(String path : currentList) {
+                   if (path.endsWith(".h") || path.endsWith(".hpp") || path.endsWith(".hxx") || path.endsWith(".def") || path.endsWith(".inc")) { // NOI18N
+                       files.add(path);
+                   }
+                }
+                for(String path : files) {
+                    currentList.remove(path);
+                }
+            }
             currentList = null;
         } else if (element.equals(LINKER_ADD_LIB_ELEMENT)) {
             currentList = null;
@@ -887,6 +903,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             boolean ds = currentText.equals(TRUE_VALUE);
             if (currentCCCCompilerConfiguration != null) {
                 currentCCCCompilerConfiguration.getInheritIncludes().setValue(ds);
+                if (descriptorVersion < 93) {
+                    currentCCCCompilerConfiguration.getInheritFiles().setValue(ds);
+                }
             }
         } else if (element.equals(INHERIT_FILE_VALUES_ELEMENT)) {
             boolean ds = currentText.equals(TRUE_VALUE);

@@ -311,10 +311,14 @@ public final class AsyncRepositoryWriterImpl implements AsyncRepositoryWriter {
         }
 
         private void doWrite(Key key, Persistent value) {
-            if (REMOVED_OBJECT.equals(value)) {
-                //it is time to remove from cache
-                removeKeySupport.removeKey(key);
-                return;
+            try {
+                if (REMOVED_OBJECT.equals(value)) {
+                    //it is time to remove from cache
+                    removeKeySupport.removeKey(key);
+                    return;
+                }
+            } catch (Throwable ex) {
+                RepositoryExceptions.throwException(this, key, ex);
             }
             RepositoryDataOutput out = null;
             try {

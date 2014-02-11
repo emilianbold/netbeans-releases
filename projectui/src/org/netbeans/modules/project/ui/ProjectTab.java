@@ -907,11 +907,9 @@ public class ProjectTab extends TopComponent
 
         @Override public void actionPerformed(ActionEvent e) {
             RP.post(new Runnable() {
-
                 @Override
                 public void run() {
                     SwingUtilities.invokeLater(new Runnable() {
-
                         @Override
                         public void run() {
                             final ProjectTab tab = findDefault(type);
@@ -924,33 +922,34 @@ public class ProjectTab extends TopComponent
                             }
                             Mutex.EVENT.writeAccess(new Runnable() {
                                 public @Override void run() {
-                                    try {
-
-                                        FileObject activeFile = null;
-                                        Iterator<TopComponent> iterator = TopComponent.getRegistry().getOpened().iterator();
-                                        while(iterator.hasNext()) {
-                                            TopComponent componentIter = iterator.next();
-                                            if(componentIter.isVisible() && componentIter.getLookup().lookup(FileObject.class) != null) {
-                                                activeFile = componentIter.getLookup().lookup(FileObject.class);
-                                                break;
-                                            }
+                                    FileObject activeFile = null;
+                                    Iterator<TopComponent> iterator = TopComponent.getRegistry().getOpened().iterator();
+                                    while(iterator.hasNext()) {
+                                        TopComponent componentIter = iterator.next();
+                                        if(componentIter.isVisible() && componentIter.getLookup().lookup(FileObject.class) != null) {
+                                            activeFile = componentIter.getLookup().lookup(FileObject.class);
+                                            break;
                                         }
-                                        if ( activeFile != null ) {
-                                            Project projectOwner = FileOwnerQuery.getOwner(activeFile);
-                                            if (projectOwner != null) {
-                                                Node projectNode = null;
-                                                for (Node node : children.getNodes(true)) {
-                                                    if(projectOwner.equals(node.getLookup().lookup(Project.class))) {
-                                                        projectNode = node;
-                                                        break;
-                                                    }
+                                    }
+                                    if ( activeFile != null ) {
+                                        Project projectOwner = FileOwnerQuery.getOwner(activeFile);
+                                        if (projectOwner != null) {
+                                            Node projectNode = null;
+                                            for (Node node : children.getNodes(true)) {
+                                                if(projectOwner.equals(node.getLookup().lookup(Project.class))) {
+                                                    projectNode = node;
+                                                    break;
                                                 }
-                                                tab.manager.setSelectedNodes(new Node[] {projectNode});
-                                                tab.btv.scrollToNode(projectNode);
+                                            }
+                                            if (projectNode != null) {
+                                                try {
+                                                    tab.manager.setSelectedNodes(new Node[] {projectNode});
+                                                    tab.btv.scrollToNode(projectNode);
+                                                } catch (PropertyVetoException pve) {
+                                                    Logger.getLogger(ProjectTab.class.getName()).log(Level.WARNING, null, pve);
+                                                }
                                             }
                                         }
-                                    } catch (PropertyVetoException e) {
-                                        // Node found but can't be selected
                                     }
                                 }
                             });

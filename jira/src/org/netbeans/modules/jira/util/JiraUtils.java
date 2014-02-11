@@ -58,9 +58,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.api.RepositoryManager;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider.Status;
 import org.netbeans.modules.jira.Jira;
-import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.client.spi.Component;
 import org.netbeans.modules.jira.client.spi.IssueType;
 import org.netbeans.modules.jira.client.spi.JiraStatus;
@@ -245,6 +244,83 @@ public class JiraUtils {
         String[] ret = new String[resolutions.length];
         for (int i = 0; i < resolutions.length; i++) {
             ret[i] = resolutions[i].getName();
+        }
+        return ret;
+    }
+
+    public static String[] toIds(Component[] components) {
+        if(components == null) {
+            return new String[0];
+        }
+        String[] ret = new String[components.length];
+        for (int i = 0; i < components.length; i++) {
+            ret[i] = components[i].getId();
+        }
+        return ret;
+    }
+    
+    public static String[] toIds(Version[] versions) {
+        if(versions == null) {
+            return new String[0];
+        }
+        String[] ret = new String[versions.length];
+        for (int i = 0; i < versions.length; i++) {
+            ret[i] = versions[i].getId();
+        }
+        return ret;
+    }
+    
+    public static String[] toIds(IssueType[] issueTypes) {
+        if(issueTypes == null) {
+            return new String[0];
+        }
+        String[] ret = new String[issueTypes.length];
+        for (int i = 0; i < issueTypes.length; i++) {
+            ret[i] = issueTypes[i].getId();
+        }
+        return ret;
+    }
+    
+    public static String[] toIds(Priority[] priorities) {
+        if(priorities == null) {
+            return new String[0];
+        }
+        String[] ret = new String[priorities.length];
+        for (int i = 0; i < priorities.length; i++) {
+            ret[i] = priorities[i].getId();
+        }
+        return ret;
+    }
+    
+    public static String[] toIds(Resolution[] resolutions) {
+        if(resolutions == null) {
+            return new String[0];
+        }
+        String[] ret = new String[resolutions.length];
+        for (int i = 0; i < resolutions.length; i++) {
+            ret[i] = resolutions[i].getId();
+        }
+        return ret;
+    }
+
+    public static String[] toIds(JiraStatus[] statuses) {
+        if(statuses == null) {
+            return new String[0];
+        }
+        String[] ret = new String[statuses.length];
+        for (int i = 0; i < statuses.length; i++) {
+            ret[i] = statuses[i].getId();
+        }
+        return ret;
+    }
+    
+    public static String[] toIds(Project[] projects) {
+        if(projects == null) {
+            return new String[0];
+        }
+        String[] ret = new String[projects.length];
+        for (int i = 0; i < projects.length; i++) {
+            ret[i] = projects[i].getId();
         }
         return ret;
     }

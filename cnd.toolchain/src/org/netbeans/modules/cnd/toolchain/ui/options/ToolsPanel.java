@@ -257,7 +257,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
             }
         }
         
-        if (!savedCSM.getDefaultCompilerSet().getDisplayName().equals(csm.getDefaultCompilerSet().getName())) {
+        if (!savedCSM.getDefaultCompilerSet().getDisplayName().equals(csm.getDefaultCompilerSet().getDisplayName())) {
             return true;
         }
         List<CompilerSet> currentCS = csm.getCompilerSets();

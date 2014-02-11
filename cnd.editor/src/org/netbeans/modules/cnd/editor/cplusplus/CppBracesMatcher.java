@@ -46,16 +46,21 @@ package org.netbeans.modules.cnd.editor.cplusplus;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppStringTokenId;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import static org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_START;
+import static org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_START_ALT;
+import static org.netbeans.cnd.api.lexer.CppTokenId.WHITESPACE;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
@@ -108,6 +113,7 @@ public class CppBracesMatcher implements BracesMatcher, BracesMatcherFactory {
         this.context = context;
     }
 
+    @Override
     public int[] findOrigin() throws BadLocationException, InterruptedException {
         ((AbstractDocument) context.getDocument()).readLock();
         try {
@@ -163,6 +169,7 @@ public class CppBracesMatcher implements BracesMatcher, BracesMatcherFactory {
         return seq;
     }
     
+    @Override
     public int[] findMatches() throws InterruptedException, BadLocationException {
         ((AbstractDocument) context.getDocument()).readLock();
         try {
@@ -189,29 +196,33 @@ public class CppBracesMatcher implements BracesMatcher, BracesMatcherFactory {
             CppTokenId originId = getTokenId(originChar);
             CppTokenId lookingForId = getTokenId(matchingChar);
             seq.move(originOffset);
-            int counter = 0;
+            LinkedList<StackEntry> stack = new LinkedList<StackEntry>();
+            stack.push(new StackEntry(0));
+            //int counter = 0;
             if (backward) {
                 while(seq.movePrevious()) {
+                    processPreprocessor(seq, stack);
                     if (originId == seq.token().id()) {
-                        counter++;
+                        stack.peek().dep++;
                     } else if (lookingForId == seq.token().id()) {
-                        if (counter == 0) {
+                        if (stack.peek().dep == 0) {
                             return new int [] { seq.offset(), seq.offset() + seq.token().length() };
                         } else {
-                            counter--;
+                            stack.peek().dep--;
                         }
                     }
                 }
             } else {
                 seq.moveNext();
                 while(seq.moveNext()) {
+                    processPreprocessor(seq, stack);
                     if (originId == seq.token().id()) {
-                        counter++;
+                        stack.peek().dep++;
                     } else if (lookingForId == seq.token().id()) {
-                        if (counter == 0) {
+                        if (stack.peek().dep == 0) {
                             return new int [] { seq.offset(), seq.offset() + seq.token().length() };
                         } else {
-                            counter--;
+                            stack.peek().dep--;
                         }
                     }
                 }
@@ -222,6 +233,104 @@ public class CppBracesMatcher implements BracesMatcher, BracesMatcherFactory {
         }
     }
 
+    private void processPreprocessor(TokenSequence<?> ts,LinkedList<StackEntry> stack) {
+        TokenSequence<CppTokenId> prep = ts.embedded(CppTokenId.languagePreproc());
+        if (prep == null){
+            return;
+        }
+        prep.moveStart();
+        while (prep.moveNext()) {
+            if (!(prep.token().id() == WHITESPACE ||
+                    prep.token().id() == PREPROCESSOR_START ||
+                    prep.token().id() == PREPROCESSOR_START_ALT)) {
+                break;
+            }
+        }
+        Token<CppTokenId> directive = null;
+        if (prep.token() != null) {
+            directive = prep.token();
+        }
+        if (directive == null) {
+            return;
+        } 
+        if (backward) {
+            switch (directive.id()) {
+                case PREPROCESSOR_IF:
+                case PREPROCESSOR_IFDEF:
+                case PREPROCESSOR_IFNDEF:
+                {
+                    if (stack.size() > 1) {
+                        int current = stack.peek().dep;
+                        if (stack.peek().matched) {
+                            stack.poll();
+                            stack.peek().dep = current;
+                        } else {
+                            stack.poll();
+                        }
+                    }
+                    break;
+                }
+                case PREPROCESSOR_ELSE:
+                case PREPROCESSOR_ELIF:
+                {
+                    boolean matched = false;
+                    if (stack.size() > 1) {
+                        stack.poll();
+                        matched = true;
+                    }
+                    int current = stack.peek().dep;
+                    stack.push(new StackEntry(current));
+                    stack.peek().matched = matched;
+                    break;
+                }
+                case PREPROCESSOR_ENDIF:
+                    int current = stack.peek().dep;
+                    stack.push(new StackEntry(current));
+                    break;
+            }
+        } else {
+            switch (directive.id()) {
+                case PREPROCESSOR_IF:
+                case PREPROCESSOR_IFDEF:
+                case PREPROCESSOR_IFNDEF:
+                {
+                    int current = stack.peek().dep;
+                    stack.push(new StackEntry(current));
+                    break;
+                }
+                case PREPROCESSOR_ELSE:
+                case PREPROCESSOR_ELIF:
+                {
+                    boolean matched = false;
+                    if (stack.size() > 1) {
+                        if (stack.peek().matched) {
+                            stack.poll();
+                            matched = true;
+                        } else {
+                            stack.poll();
+                        }
+                    }
+                    int current = stack.peek().dep;
+                    stack.push(new StackEntry(current));
+                    stack.peek().matched = matched;
+                    break;
+                }
+                case PREPROCESSOR_ENDIF:
+                    if (stack.size() > 1) {
+                        int current = stack.peek().dep;
+                        if (stack.peek().matched) {
+                            stack.poll();
+                            stack.peek().dep = current;
+                        } else {
+                            stack.poll();
+                        }
+                    }
+                    break;
+            }
+        }
+    }
+
+    
     private CppTokenId getTokenId(char ch) {
         for(int i = 0; i < PAIRS.length; i++) {
             if (PAIRS[i] == ch) {
@@ -231,7 +340,16 @@ public class CppBracesMatcher implements BracesMatcher, BracesMatcherFactory {
         return null;
     }
 
+    @Override
     public BracesMatcher createMatcher(MatcherContext context) {
         return new CppBracesMatcher(context);
+    }
+    
+    private static final class StackEntry {
+        int dep;
+        boolean matched = true;
+        private StackEntry(int dep) {
+            this.dep = dep;
+        }
     }
 }

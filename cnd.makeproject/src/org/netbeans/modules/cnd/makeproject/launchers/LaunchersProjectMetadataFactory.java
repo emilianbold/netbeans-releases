@@ -29,9 +29,16 @@ public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
 
     @Override
     public void read(FileObject projectDir) {
+        if (projectDir == null || !projectDir.isValid()) {
+            //there could be the situation when nbproject is invalid, for example when
+            //project is remote and it was opened, no cache exists and opening IDE no connection is established
+            return;
+        }
         FileObject nbproject = projectDir.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
         FileChangeListenerImpl fileChangeListener = new FileChangeListenerImpl(projectDir);
-        nbproject.addFileChangeListener(fileChangeListener);
+        if (nbproject != null && nbproject.isValid()) {
+            nbproject.addFileChangeListener(fileChangeListener);
+        }
         initListeners(fileChangeListener, projectDir);
         reload(projectDir);
 
@@ -65,7 +72,7 @@ public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
         LaunchersRegistry launchersRegistry = LaunchersRegistryFactory.getInstance(projectDir);
         Properties properties = new Properties();
         final FileObject nbProjectFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
-        if (nbProjectFolder == null) {  // LaunchersRegistry shouldn't be updated in case the project has been deleted.
+        if (nbProjectFolder == null || !nbProjectFolder.isValid()) {  // LaunchersRegistry shouldn't be updated in case the project has been deleted.
             return;
         }
         FileObject publicLaunchers = nbProjectFolder.getFileObject(NAME);

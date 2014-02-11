@@ -11,6 +11,6 @@
 
     },
     "require-dev": {
-        "nette/tester": "v0.9.5"
+        "nette/tester": "v1.0.0"
     }
 }

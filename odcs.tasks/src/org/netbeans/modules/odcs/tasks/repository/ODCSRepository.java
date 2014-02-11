@@ -672,13 +672,9 @@ public class ODCSRepository implements PropertyChangeListener {
     }
 
     public boolean needsAndHasNoLogin(ODCSQuery q) {
-        try {
         return (q != getPredefinedQuery(PredefinedTaskQuery.ALL)
                || q != getPredefinedQuery(PredefinedTaskQuery.RECENT))
             && !TeamAccessorUtils.isLoggedIn(project.getWebLocation());
-        } catch(NullPointerException npe) {
-            throw npe;
-        }
     }
     
     public class Cache {

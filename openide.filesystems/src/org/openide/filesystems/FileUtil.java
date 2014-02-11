@@ -146,10 +146,22 @@ public final class FileUtil extends Object {
     }
     
     static boolean assertNormalized(File path) {
+        return assertNormalized(path, false);
+    }
+
+    /**
+     * @param path Path to compare with its normalized path.
+     * @param forceIgnoreCase Force case insensitive comparison with normalized
+     * path.
+     *
+     * return True if the path is equal to its normalized path, false otherwise.
+     */
+    static boolean assertNormalized(File path, boolean forceIgnoreCase) {
         if (path != null) {
-            File np;
+            File np = null;
             assert path.getClass().getName().startsWith("sun.awt.shell") ||
-                path.equals(np = FileUtil.normalizeFileCached(path)) : 
+                (!forceIgnoreCase && path.equals(np = FileUtil.normalizeFileCached(path))) ||
+                (forceIgnoreCase && path.getPath().equalsIgnoreCase((np = FileUtil.normalizeFileCached(path)).getPath())):
                 "Need to normalize " + toDebugString(path) + " was " + toDebugString(np);  //NOI18N
         }
         return true;
@@ -826,7 +838,7 @@ public final class FileUtil extends Object {
                 retVal = Utilities.toFile(URI.create(fileURL.toExternalForm()));
             }
         }
-        assert assertNormalized(retVal);
+        assert assertNormalized(retVal, Utilities.isMac()); // #240180
         return retVal;
     }
 
