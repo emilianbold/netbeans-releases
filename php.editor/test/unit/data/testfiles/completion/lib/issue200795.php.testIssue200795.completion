@@ -115,6 +115,7 @@ CLASS      AliasedClassName                [PUBLIC]   Foo\Bar
 CLASS      AnonymousObject                 [PUBLIC]   anonymousObjectVariables.php
 CLASS      Another                         [PUBLIC]   test224549.php
 CLASS      ArraysCc                        [PUBLIC]   arrays.php
+CLASS      Article                         [PUBLIC]   issue225687.php
 CLASS      Author                          [PUBLIC]   mixedtypes.php
 CLASS      Author_1                        [PUBLIC]   mixedtypes_1.php
 CLASS      B                               [PUBLIC]   Test197084.php
