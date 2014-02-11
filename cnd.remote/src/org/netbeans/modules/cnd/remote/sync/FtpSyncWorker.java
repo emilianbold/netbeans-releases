@@ -54,6 +54,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
+import org.netbeans.modules.cnd.remote.support.RemoteLogger;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import static org.netbeans.modules.cnd.remote.sync.FileState.COPIED;
 import static org.netbeans.modules.cnd.remote.sync.FileState.ERROR;
@@ -70,7 +71,6 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -158,31 +158,38 @@ import org.openide.util.NbBundle;
 
         uploadCount = 0;
         uploadSize = 0;
-        long time = 0;
         
-        if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {
-            System.out.printf("Uploading %s to %s ...\n", getLocalFilesString(), executionEnvironment); // NOI18N
-            time = System.currentTimeMillis();
-        }
+        RemoteLogger.fine("Uploading {0} to {1} ...\n", getLocalFilesString(), executionEnvironment); // NOI18N
+        long time = System.currentTimeMillis();
 
         fileCollector.gatherFiles();
 
         progressHandle.switchToDeterminate(fileCollector.getFiles().size());
 
+        long time2;
+
+        time2 = System.currentTimeMillis();
         createDirs();
+        RemoteLogger.fine("Creating directories at {0} took {1} ms", executionEnvironment, (System.currentTimeMillis()-time2));
+        
+        time2 = System.currentTimeMillis();
         createLinks();
+        RemoteLogger.fine("Creating links at {0} took {1} ms", executionEnvironment, (System.currentTimeMillis()-time2));
+        
         if (!fileCollector.initNewFilesDiscovery()) {
             throw new IOException();
         }
+        time2 = System.currentTimeMillis();
         uploadPlainFiles();
+        RemoteLogger.fine("Uploading plain files to {0} took {1} ms", executionEnvironment, (System.currentTimeMillis()-time2));
 
-        if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {
+        if (RemoteLogger.getInstance().isLoggable(Level.FINE)) {
             time = System.currentTimeMillis() - time;
             long bps = uploadSize * 1000L / time;
             String speed = (bps < 1024*8) ? (bps + " b/s") : ((bps/1024) + " Kb/s"); // NOI18N
 
             String strUploadSize = (uploadSize < 1024 ? (uploadSize + " bytes") : ((uploadSize/1024) + " K")); // NOI18N
-            System.out.printf("\n\nCopied to %s:%s: %s in %d files. Time: %d ms. Avg. speed: %s\n\n", // NOI18N
+            RemoteLogger.fine("\nCopied to {0}:{1}: {2} in {3} files. Time: {4} ms. Avg. speed: {5}\n", // NOI18N
                     executionEnvironment, remoteRoot,
                     strUploadSize, uploadCount, time, speed); // NOI18N
         }
