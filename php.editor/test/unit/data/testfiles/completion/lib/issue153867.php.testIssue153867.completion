@@ -105,6 +105,7 @@ CLASS      A                               [PUBLIC,   a
 CLASS      A                               [PUBLIC]   classConstructorOptionalParam.php
 CLASS      A                               [PUBLIC]   issue195232.php
 CLASS      A                               [PUBLIC]   issue226071.php
+CLASS      A                               [PUBLIC]   issue241695.php
 CLASS      A                               [PUBLIC]   test.php
 CLASS      A135618                         [PUBLIC]   issue135618.php
 CLASS      AA                              [PUBLIC]   Test197084.php
@@ -116,6 +117,7 @@ CLASS      AliasedClassName                [PUBLIC]   Foo\Bar
 CLASS      AnonymousObject                 [PUBLIC]   anonymousObjectVariables.php
 CLASS      Another                         [PUBLIC]   test224549.php
 CLASS      ArraysCc                        [PUBLIC]   arrays.php
+CLASS      Article                         [PUBLIC]   issue225687.php
 CLASS      Author                          [PUBLIC]   mixedtypes.php
 CLASS      Author_1                        [PUBLIC]   mixedtypes_1.php
 CLASS      B                               [PUBLIC]   Test197084.php
@@ -147,6 +149,7 @@ CLASS      Book_Abstract                   [PUBLIC,   test203332_01.php
 CLASS      Brejla                          [PUBLIC]   test211230.php
 CLASS      Buuu                            [PUBLIC]   ShowMe
 CLASS      C                               [PUBLIC]   c
+CLASS      C                               [PUBLIC]   issue241695.php
 CLASS      C                               [PUBLIC]   test.php
 CLASS      CIface1                         [PUBLIC]   First
 CLASS      CIface2                         [PUBLIC]   Second
@@ -466,6 +469,8 @@ METHOD     getBookMagazine()               [PUBLIC]   mixedtypes_1.php
 METHOD     issue157534(&$var)              [PUBLIC]   issue157534.php
 METHOD     mytest()                        [PUBLIC]   varAssignment.php
 METHOD     paramsfnc($a, $b, $c, $d)       [PUBLIC]   paramdecltypes.php
+METHOD     parseArticles_01($articles)     [PUBLIC]   issue225687.php
+METHOD     parseArticles_02(Article $arti  [PUBLIC]   issue225687.php
 METHOD     printMyName()                   [PUBLIC]   varTypeComment.php
 METHOD     test()                          [PUBLIC]   issue195232.php
 METHOD     test()                          [PUBLIC]   typeInPHPDoc01.php

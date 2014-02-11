@@ -414,15 +414,6 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
         return layerIndex.registerFileSystem(fileSystem);
     }
 
-    @Override
-    public void storeFilesTable(Integer unitIDInLayer, List<CharSequence> filesList) {
-        try {
-            layerIndex.storeFilesTable(unitIDInLayer, filesList);
-        } catch (IOException ex) {
-            RepositoryExceptions.throwException(this, ex);
-        }
-    }
-
     Collection<LayerKey> removedTableKeySet() {
         return removedKeysFile.keySet();
     }

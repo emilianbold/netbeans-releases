@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.repository.impl.spi;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.List;
-import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
-import org.openide.filesystems.FileSystem;
+package org.netbeans.modules.php.editor.completion;
+
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author vkvashin
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public interface WriteLayerCapability extends LayerCapability {
+public class PHPCodeCompletion241695Test extends PHPCodeCompletionTestBase {
 
-    public void write(LayerKey key, ByteBuffer byteBuffer);
+    public PHPCodeCompletion241695Test(String testName) {
+        super(testName);
+    }
 
-    public void remove(LayerKey key, boolean keepRemovedTable);
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests241695/issue241695.php", "->^a    // Auto-completion is fine at this point", false);
+    }
 
-    public void removeUnit(int unitIDInLayer);
-    
-    public void closeUnit(int unitIDInLayer, boolean cleanRespository);
+    public void testUseCase2() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests241695/issue241695.php", "->^fn() // No auto-completion at all", false);
+    }
 
-    public int registerNewUnit(UnitDescriptor unitDescriptor);
+    public void testUseCase3() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests241695/issue241695.php", "->^prop // No auto-completion at all", false);
+    }
 
-    public int registerClientFileSystem(FileSystem clientFileSystem);
-    
-/** 
-     * Determines the necessity of maintenance.
-     * When a maintenancy is to be done, repository
-     * sorts all units in accordance with the returned value.
-     * So greater is the value, more need in maintenance unit has.
-     */
-    public int getMaintenanceWeight() throws IOException;
-    
-/**
-     * Performes necessary maintenance (such as defragmentation) during the given timeout
-     * @return true if maintenance was finished by timeout and needs more time to be completed
-     */
-    public boolean maintenance(long timeout)  throws IOException;    
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests241695/"))
+            })
+        );
+    }
+
 }

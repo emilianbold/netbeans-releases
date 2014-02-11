@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.repository.impl.spi;
+package org.netbeans.modules.cnd.repository.storage;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.List;
-import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
-import org.openide.filesystems.FileSystem;
+import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.repository.util.IntToValueList;
 
 /**
- *
- * @author vkvashin
+ * The factory to write/read FilePathsDictionary object
+ * @author mtishkov
  */
-public interface WriteLayerCapability extends LayerCapability {
+public class FilePathsDictionaryPersistentFactory implements PersistentFactory {
 
-    public void write(LayerKey key, ByteBuffer byteBuffer);
+    private static final FilePathsDictionaryPersistentFactory instance = new FilePathsDictionaryPersistentFactory();
 
-    public void remove(LayerKey key, boolean keepRemovedTable);
+    private FilePathsDictionaryPersistentFactory() {
 
-    public void removeUnit(int unitIDInLayer);
-    
-    public void closeUnit(int unitIDInLayer, boolean cleanRespository);
+    }
 
-    public int registerNewUnit(UnitDescriptor unitDescriptor);
+    /*package*/ static FilePathsDictionaryPersistentFactory instance() {
+        return instance;
+    }
 
-    public int registerClientFileSystem(FileSystem clientFileSystem);
-    
-/** 
-     * Determines the necessity of maintenance.
-     * When a maintenancy is to be done, repository
-     * sorts all units in accordance with the returned value.
-     * So greater is the value, more need in maintenance unit has.
-     */
-    public int getMaintenanceWeight() throws IOException;
-    
-/**
-     * Performes necessary maintenance (such as defragmentation) during the given timeout
-     * @return true if maintenance was finished by timeout and needs more time to be completed
-     */
-    public boolean maintenance(long timeout)  throws IOException;    
+    @Override
+    public void write(RepositoryDataOutput out, Persistent obj) throws IOException {
+        SelfPersistent persistentObj = (SelfPersistent) obj;
+        persistentObj.write(out);
+    }
+
+    @Override
+    public Persistent read(RepositoryDataInput in) throws IOException {
+        //read FilePathsDictionary
+        IntToValueList<CharSequence> list = IntToValueList.<CharSequence>createFromStream(in, "trace", IntToValueList.CHAR_SEQUENCE_FACTORY); //NOI18N
+        FilePathsDictionary obj = new FilePathsDictionary(list.getTable());
+        return obj;
+    }
+
 }
