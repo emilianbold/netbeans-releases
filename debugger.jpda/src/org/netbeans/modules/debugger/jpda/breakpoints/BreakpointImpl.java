@@ -266,7 +266,7 @@ public abstract class BreakpointImpl implements ConditionedExecutor, PropertyCha
         return VirtualMachineWrapper.eventRequestManager (vm);
     }
 
-    protected void addEventRequest (EventRequest r) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, InvalidRequestStateExceptionWrapper, RequestNotSupportedException {
+    void addEventRequest (EventRequest r) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, InvalidRequestStateExceptionWrapper, RequestNotSupportedException {
         addEventRequest(r, customHitCountFilter != 0);
     }
     
@@ -274,7 +274,7 @@ public abstract class BreakpointImpl implements ConditionedExecutor, PropertyCha
         this.customHitCountFilter = customHitCountFilter;
     }
     
-    synchronized protected void addEventRequest (EventRequest r, boolean ignoreHitCount) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, InvalidRequestStateExceptionWrapper, RequestNotSupportedException {
+    synchronized void addEventRequest (EventRequest r, boolean ignoreHitCount) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, InvalidRequestStateExceptionWrapper, RequestNotSupportedException {
         logger.log(Level.FINE, "BreakpointImpl addEventRequest: {0}", r);
         requests.add (r);
         getDebugger ().getOperator ().register (r, this);
