@@ -52,6 +52,9 @@ import org.openide.ErrorManager;
 import org.openide.nodes.PropertySupport;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileSystem;
 
 /**
  * Bridge to NB property sheet style properties.
@@ -61,7 +64,15 @@ public class OptionPropertySupport extends PropertySupport {
     private final Option option;
     private final OptionSetOwner optionSetOwner;
     private final String base;
+    private final FileSystem fileSystem;
 
+    public OptionPropertySupport(OptionSetOwner optionSetOwner,
+				 Option option,
+				 String base) {
+        this(optionSetOwner, option, base, 
+                FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal()));
+    }
+    
     // By rights we should extend PropertySupport<T> and subclass
     // OptionPropertySupport into Boolean and Object versions instead of
     // the dynamic ?: based on option.getType().
@@ -70,7 +81,8 @@ public class OptionPropertySupport extends PropertySupport {
     @SuppressWarnings("unchecked")
     public OptionPropertySupport(OptionSetOwner optionSetOwner,
 				 Option option,
-				 String base) {
+				 String base,
+                                 FileSystem fileSystem) {
 	super(option.getName(),
 	      (option.getType() == Option.Type.CHECK_BOX)? Boolean.class:
 						      Object.class,
@@ -81,6 +93,7 @@ public class OptionPropertySupport extends PropertySupport {
 	this.option = option;
 	this.optionSetOwner = optionSetOwner;
 	this.base = base;
+	this.fileSystem = fileSystem;
     }
 
     // interface PropertySupport
@@ -147,10 +160,10 @@ public class OptionPropertySupport extends PropertySupport {
 		propertyEditor = super.getPropertyEditor();
 		break;
 	    case DIRECTORY:
-		propertyEditor = new OptionDirectoryEditor(this, base, JFileChooser.DIRECTORIES_ONLY);
+		propertyEditor = new OptionDirectoryEditor(this, base, JFileChooser.DIRECTORIES_ONLY, fileSystem);
 		break;
             case DIRECTORIES:
-		propertyEditor = new OptionDirectoriesEditor(this, base);
+		propertyEditor = new OptionDirectoriesEditor(this, base, fileSystem);
 		break;
 	    case FILE:
 		propertyEditor = new OptionDirectoryEditor(this, base, JFileChooser.FILES_ONLY);

@@ -59,6 +59,7 @@ import org.openide.nodes.Sheet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.api.xml.*;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 
 public class GdbProfile extends DbgProfile implements 
@@ -173,10 +174,14 @@ public class GdbProfile extends DbgProfile implements
 	set.setShortDescription(NbBundle.getMessage(GdbProfile.class, "GeneralHint")); // NOI18N
         
         set.put(DebuggerOption.DEBUG_COMMAND.createNodeProp(this));
-        set.put(DebuggerOption.DEBUG_DIR.createNodeProp(this));
         
-	set.put(DebuggerOption.GDB_INIT_FILE.createNodeProp(this));
-        set.put(DebuggerOption.GDB_SOURCE_DIRS.createNodeProp(this));
+        final String baseDir = getConfiguration().getBaseDir();
+        final FileSystem fileSystem = getConfiguration().getFileSystem();
+        
+        set.put(DebuggerOption.DEBUG_DIR.createNodeProp(this, baseDir, fileSystem));
+        
+	set.put(DebuggerOption.GDB_INIT_FILE.createNodeProp(this, baseDir, fileSystem));
+        set.put(DebuggerOption.GDB_SOURCE_DIRS.createNodeProp(this, baseDir, fileSystem));
         
         set.put(DebuggerOption.GDB_FOLLOW_FORK_MODE.createNodeProp(this));
         set.put(DebuggerOption.GDB_DETACH_ON_FORK.createNodeProp(this));

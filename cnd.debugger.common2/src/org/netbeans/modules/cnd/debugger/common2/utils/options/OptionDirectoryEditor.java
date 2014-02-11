@@ -44,28 +44,43 @@
 
 package org.netbeans.modules.cnd.debugger.common2.utils.options;
 
+import java.awt.BorderLayout;
 import java.beans.PropertyEditorSupport;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import javax.swing.JFileChooser;
+import javax.swing.JPanel;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.filesystems.FileSystem;
 
 class OptionDirectoryEditor extends PropertyEditorSupport
 			    implements ExPropertyEditor {
 
     private OptionPropertySupport ops;
     private final String baseDir;
+    private final FileSystem fileSystem;
     private PropertyEnv env;
     private int dirOrFile;
 
     public OptionDirectoryEditor(OptionPropertySupport ops,
 				 String baseDir, int dirOrFile) {
+        this(ops, baseDir, dirOrFile, 
+                FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal()));
+    }
+
+    public OptionDirectoryEditor(OptionPropertySupport ops,
+				 String baseDir, int dirOrFile, FileSystem fileSystem) {
 	this.ops = ops;
 	this.baseDir = baseDir;
 	this.dirOrFile = dirOrFile;
+	this.fileSystem = fileSystem;
     }
 
     // interface PropertyEditor
@@ -96,7 +111,8 @@ class OptionDirectoryEditor extends PropertyEditorSupport
 
     // interface PropertyEditor
     public java.awt.Component getCustomEditor() {
-	return new DirectoryChooser(this, env, dirOrFile, baseDir, (String) ops.getValue());
+	return new DirectoryChooser(this, env, dirOrFile, baseDir, 
+                (String) ops.getValue(), fileSystem);
     }
 
     // interface ExPropertyEditor
@@ -104,37 +120,62 @@ class OptionDirectoryEditor extends PropertyEditorSupport
 	this.env = env;
     }
 
-    static class DirectoryChooser extends FileChooser
+    private static class DirectoryChooser extends JPanel
 				  implements PropertyChangeListener {
 
 	private final PropertyEditorSupport editor;
 	private final String baseDir;
+	private final JFileChooser fileChooser;
 
 
 	private static String fullPath(String baseDir, String path) {
-	    String seed = path;
-	    if (seed.length() == 0)
-		seed = ".";	// NOI18N
-	    if (!CndPathUtilities.isPathAbsolute(seed))
-		seed = baseDir + File.separatorChar + seed;
-	    return seed;
+            if (baseDir == null) {
+                return CndPathUtilities.isPathAbsolute(path) ? path : null;
+            } else {
+                String seed = path;
+                if (seed.length() == 0) {
+                    seed = ".";	// NOI18N
+                }
+                if (!CndPathUtilities.isPathAbsolute(seed)) {
+                    seed = baseDir + File.separatorChar + seed;
+                }
+                return seed;
+            }
 	}
 
 	public DirectoryChooser(PropertyEditorSupport editor,
 				PropertyEnv env, int dirOrFile,
-				String baseDir, String path) {
-	    super("Experiment Directory", // NOI18N
+				String baseDir, String path,
+                                FileSystem fileSystem) {
+            if (RemoteFileUtil.isRemote(fileSystem)) {
+                fileChooser = RemoteFileUtil.createFileChooser(fileSystem,
+                        "Experiment Directory", // NOI18N
+                        "Select", // NOI18N
+                        dirOrFile,
+                        // FileChooser.DIRECTORIES_ONLY,
+                        null,
+                        fullPath(baseDir, path),
+                        true);
+            } else {
+                // TODO: remove if and leave RemoteFileUtil.createFileChooser
+                // I'm just not sure there won't be side effects, 
+                // so I leave FileChooser for local  
+                fileChooser = new FileChooser("Experiment Directory", // NOI18N
 		  "Select", // NOI18N
 		  dirOrFile, 
 		  // FileChooser.DIRECTORIES_ONLY,
 		  null,
 		  fullPath(baseDir, path),
 		  true);
+            }
+            
 	    this.editor = editor;
 	    this.baseDir = baseDir;
 
-	    setControlButtonsAreShown(false);
-
+	    fileChooser.setControlButtonsAreShown(false);
+            setLayout(new BorderLayout());
+            add(fileChooser, BorderLayout.CENTER);
+            
 	    env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
 	    env.addPropertyChangeListener(this);
 	}
@@ -143,7 +184,7 @@ class OptionDirectoryEditor extends PropertyEditorSupport
 	    if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) &&
 		evt.getNewValue() == PropertyEnv.STATE_VALID) {
 
-		File file = getSelectedFile();
+		File file = fileChooser.getSelectedFile();
 		if (file != null) {
 		    String path = file.getAbsolutePath();
 		    editor.setValue(path);
