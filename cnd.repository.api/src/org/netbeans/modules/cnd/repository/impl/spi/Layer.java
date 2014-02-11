@@ -64,8 +64,6 @@ public interface Layer {
             Set<Integer> requiredUnits);
 
 
-    //TODO: should be FSPath table
-    public List<CharSequence> getFileNameTable(int unitIdInLayer);
 
     // Index in the returned list IS an ID of the unit in this layer
     public List<UnitDescriptor> getUnitsTable();
