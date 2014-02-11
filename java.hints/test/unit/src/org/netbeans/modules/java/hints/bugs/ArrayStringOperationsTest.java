@@ -96,8 +96,6 @@ public class ArrayStringOperationsTest extends NbTestCase {
                 "13:20-13:37:verifier:toString() called on array instance",
                 "16:40-16:46:verifier:Array instance passed as parameter to a formatter function", 
                 "17:48-17:54:verifier:Array instance passed as parameter to a formatter function", 
-                //?????
-                "17:48-17:54:verifier:Array instance passed as parameter to a formatter function", 
                 "18:28-18:34:verifier:Array instance passed as parameter to a formatter function", 
                 "20:28-20:34:verifier:Array instance passed as parameter to a formatter function", 
                 "21:53-21:59:verifier:Array instance passed as parameter to a formatter function", 

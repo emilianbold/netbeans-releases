@@ -138,7 +138,9 @@ public class Move {
                     boolean synthetic = wc.getTreeUtilities().isSynthetic(new TreePath(parentPath, tree));
                     boolean isStatic = var.getModifiers().getFlags().contains(Modifier.STATIC);
                     BlockTree body = method.getBody();
-                    
+                    if (body == null) {
+                        continue;
+                    }
                     List<StatementTree> statements = new LinkedList<StatementTree>(body.getStatements());
                     statements.add(1, make.ExpressionStatement(make.Assignment(
                             make.Identifier((isStatic? parent.getSimpleName().toString() : "this") + "." + var.getName()),

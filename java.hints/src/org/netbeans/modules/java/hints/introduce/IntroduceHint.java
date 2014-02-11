@@ -879,6 +879,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         switch (toReplace.getKind()) {
             case METHOD:
                 toReplace = ((MethodTree) toReplace).getBody();
+                if (toReplace == null) {
+                    return;
+                }
                 //intentional fall-through
             case BLOCK:
                 nueTree = make.Block(newStatements, ((BlockTree) toReplace).isStatic());
@@ -893,7 +896,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 nueTree = newStatements.get(0);
                 break;
         }
-
+        
         copy.rewrite(toReplace, nueTree);
         rewritten.put(toReplace, nueTree);
     }
