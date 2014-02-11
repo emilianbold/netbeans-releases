@@ -71,7 +71,6 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
@@ -168,6 +167,7 @@ import org.openide.util.RequestProcessor;
         RemoteLogger.fine("Uploading {0} to {1} ...\n", getLocalFilesString(), executionEnvironment); // NOI18N
         long time = System.currentTimeMillis();
 
+        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_GatherFiles"));
         fileCollector.gatherFiles();
 
         progressHandle.switchToDeterminate(fileCollector.getFiles().size());
@@ -175,10 +175,12 @@ import org.openide.util.RequestProcessor;
         long time2;
 
         time2 = System.currentTimeMillis();
+        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_CheckDirs"));
         createDirs();
         RemoteLogger.fine("Creating directories at {0} took {1} ms", executionEnvironment, (System.currentTimeMillis()-time2));
         
         time2 = System.currentTimeMillis();
+        progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_CheckLinks"));
         createLinks();
         RemoteLogger.fine("Creating links at {0} took {1} ms", executionEnvironment, (System.currentTimeMillis()-time2));
         
@@ -186,9 +188,14 @@ import org.openide.util.RequestProcessor;
             throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Msg_Err_NewFilesDiscovery"));
         }
         time2 = System.currentTimeMillis();
+        
+        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_UploadFiles"));        
         uploadPlainFiles();
         RemoteLogger.fine("Uploading plain files to {0} took {1} ms", executionEnvironment, (System.currentTimeMillis()-time2));
 
+        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_Done"));
+        out.println();
+        
         if (RemoteLogger.getInstance().isLoggable(Level.FINE)) {
             time = System.currentTimeMillis() - time;
             long bps = uploadSize * 1000L / time;
@@ -201,7 +208,80 @@ import org.openide.util.RequestProcessor;
         }
     }
 
+    private interface XArgsFeeder {
+        public void feed(BufferedWriter requestWriter) throws IOException;
+    }
+    
+    private void xargs(final XArgsFeeder feeder, String command, String... args) throws IOException {
+        if (cancelled) {
+            return;
+        }
+        NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
+        pb.setExecutable(command);
+        pb.setArguments(args);
+        final NativeProcess process;
+        process = pb.call();
+ 
+        final AtomicReference<IOException> problem = new AtomicReference<>();
+
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                BufferedWriter requestWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
+                try {
+                    feeder.feed(requestWriter);
+                } catch (IOException ex) {
+                    problem.set(ex);
+                } finally {
+                    try {
+                        requestWriter.close();
+                    } catch (IOException ex) {
+                        problem.set(ex);
+                    }
+                }
+            }
+        });
+
+        RP.post(new Runnable() {
+            private final BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+
+            @Override
+            public void run() {
+                try {
+                    for (String errLine = errorReader.readLine(); errLine != null; errLine = errorReader.readLine()) {
+                        err.println(errLine); // local println is OK  
+                    }
+                } catch (IOException ex) {
+                    problem.set(ex);
+                } finally {
+                    try {
+                        errorReader.close();
+                    } catch (IOException ex) {
+                        problem.set(ex);
+                    }
+                }
+            }
+        });
+        // output supposed to be empty, but in case it's wrong we must read it
+        for (String line : ProcessUtils.readProcessOutput(process)) {
+            out.println(line); // local println is OK 
+        }
+
+        if (problem.get() != null) {
+            throw problem.get();
+        }
+        try {
+            int rc = process.waitFor();
+            if (rc != 0) {
+                throw new IOException();
+            }
+        } catch (InterruptedException ex) {
+            throw new InterruptedIOException();
+        }
+    }
+    
     private void createDirs() throws IOException {
+        progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_CheckDirs"));
         final List<String> dirsToCreate = new LinkedList<>();
         for (FileCollector.FileInfo fileInfo : fileCollector.getFiles()) {
             if (fileInfo.file.isDirectory() && ! fileInfo.isLink()) {
@@ -216,105 +296,70 @@ import org.openide.util.RequestProcessor;
             return;
         }
         if (!dirsToCreate.isEmpty()) {
-            NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
-            pb.setExecutable("xargs"); //NOI18N
-            pb.setArguments("mkdir", "-p");
-            final NativeProcess process;
+            XArgsFeeder feeder = new XArgsFeeder() {
+                @Override
+                public void feed(BufferedWriter requestWriter) throws IOException {
+                    for (String dir : dirsToCreate) {
+                        if (cancelled) {
+                            throw new InterruptedIOException();
+                        }
+                        requestWriter.append(dir).append(' ');
+                    }
+                }
+            };
             try {
-                process = pb.call();
+                xargs(feeder, "xargs", "mkdir", "-p");
+            } catch (InterruptedIOException ex) {
+                throw new IOException(NbBundle.getMessage(FtpSyncWorker.class,
+                        "FTP_Msg_Err_Canceled"));
             } catch (IOException ex) {
-                throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, 
-                        "FTP_Msg_Err_CheckDirs", ex.getMessage()), ex);
+                throw new IOException(NbBundle.getMessage(FtpSyncWorker.class,
+                        "FTP_Msg_Err_CheckDirs", ex.getMessage() == null ? "" : ex.getMessage()), ex);
             }
-            
-            final AtomicReference<IOException> problem = new AtomicReference<>();
-            
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    BufferedWriter requestWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
-                    try {
-                        for (String dir : dirsToCreate) {
-                            requestWriter.append(dir).append(' ');
-                        }
-                    } catch (IOException ex) {
-                        problem.set(ex);
-                    } finally {
-                        try {
-                            requestWriter.close();
-                        } catch (IOException ex) {
-                            problem.set(ex);
-                        }
-                    }
-                }
-            });
-
-            RP.post(new Runnable() {
-                private final BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-
-                @Override
-                public void run() {
-                    try {
-                        for (String errLine = errorReader.readLine(); errLine != null; errLine = errorReader.readLine()) {
-                            err.println(errLine); // local println is OK  
-                        }
-                    } catch (IOException ex) {
-                        problem.set(ex);
-                    } finally {
-                        try {
-                            errorReader.close();
-                        } catch (IOException ex) {
-                            problem.set(ex);
-                        }
-                    }
-                }
-            });
-            // output should be empty, but in case it's wrong we must read it
-            for (String line : ProcessUtils.readProcessOutput(process)) {
-                out.println(line); // local println is OK 
-            }
-
-            if (problem.get() != null) {
-                throw problem.get();
-            }
-            try {
-                int rc = process.waitFor();
-                if (rc != 0) {
-                    throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, 
-                            "FTP_Msg_Err_CheckDirs", ""));
-                }
-            } catch (InterruptedException ex) {
-                throw new InterruptedIOException();
-            }
-            
             uploadCount += dirsToCreate.size();
             progressHandle.progress(uploadCount);
         }
     }
 
     private void createLinks() throws IOException {
-        for (FileCollector.FileInfo fileInfo : fileCollector.getFiles()) {
-            if (cancelled) {
-                return;
-            }
-            if (fileInfo.isLink()) {
-                progressHandle.progress(fileInfo.file.getAbsolutePath());
-                String localBaseDir = fileInfo.file.getParentFile().getAbsolutePath();
-                String remoteBaseDir = mapper.getRemotePath(localBaseDir, true);
-                CndUtils.assertNotNull(remoteBaseDir, "null remote dir for " + localBaseDir); //NOI18N
-                if (remoteBaseDir == null) {
-                    continue;
-                }
-                // TODO: We now call "ln -s" per file. Optimize this: write and run a script.
-                ExitStatus status = ProcessUtils.executeInDir(remoteBaseDir, executionEnvironment, 
-                        "ln", "-s", fileInfo.getLinkTarget(), fileInfo.file.getName()); // NOI18N
-                if (!status.isOK()) {
-                    throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, 
-                            "FTP_Msg_Err_CheckLinks", status.toString()));
-                }
-                progressHandle.progress(uploadCount++);
-            }
+        if (cancelled) {
+            return;
         }
+        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_CheckLinks"));
+        XArgsFeeder feeder = new XArgsFeeder() {
+            @Override
+            public void feed(BufferedWriter requestWriter) throws IOException {
+                for (FileCollector.FileInfo fileInfo : fileCollector.getFiles()) {
+                    if (cancelled) {
+                        throw new InterruptedIOException();
+                    }
+                    if (fileInfo.isLink()) {
+                        progressHandle.progress(fileInfo.file.getAbsolutePath());
+                        String localBaseDir = fileInfo.file.getParentFile().getAbsolutePath();
+                        String remoteBaseDir = mapper.getRemotePath(localBaseDir, true);
+                        CndUtils.assertNotNull(remoteBaseDir, "null remote dir for " + localBaseDir); //NOI18N
+                        if (remoteBaseDir != null) {
+                            requestWriter.append("cd ").append(remoteBaseDir).append('\n');
+                            requestWriter.append("rm -rf ").append(fileInfo.file.getName()).append('\n');
+                            requestWriter.append("ln -s ")
+                                    .append(fileInfo.getLinkTarget()).append(' ')
+                                    .append(fileInfo.file.getName()).append('\n');
+                        }
+                        progressHandle.progress(uploadCount++);
+                    }
+                }
+            }
+        };
+        try {
+            xargs(feeder, "sh", "-s");
+        } catch (InterruptedIOException ex) {
+            throw new IOException(NbBundle.getMessage(FtpSyncWorker.class,
+                    "FTP_Msg_Err_Canceled"));
+        } catch (IOException ex) {
+            throw new IOException(NbBundle.getMessage(FtpSyncWorker.class,
+                    "FTP_Msg_Err_CheckLinks", ex.getMessage() == null ? "" : ex.getMessage()), ex);
+        }
+        progressHandle.progress(uploadCount++);
     }
 
     private void uploadPlainFiles() throws InterruptedException, ExecutionException, IOException {
