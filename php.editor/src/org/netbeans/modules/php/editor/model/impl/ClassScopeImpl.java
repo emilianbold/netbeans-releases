@@ -286,12 +286,18 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         Set<FieldElement> allFields = new HashSet<>();
         IndexScope indexScope = ModelUtils.getIndexScope(this);
         ElementQuery.Index index = indexScope.getIndex();
+        org.netbeans.modules.php.editor.api.elements.ElementFilter filterForPrivate = org.netbeans.modules.php.editor.api.elements.ElementFilter.forPrivateModifiers(false);
         Set<ClassScope> superClasses = new HashSet<>(getSuperClasses());
         for (ClassScope classScope : superClasses) {
-            Set<org.netbeans.modules.php.editor.api.elements.FieldElement> indexedFields =
-                                        org.netbeans.modules.php.editor.api.elements.ElementFilter.forPrivateModifiers(false).filter(index.getAlllFields(classScope));
+            Set<org.netbeans.modules.php.editor.api.elements.FieldElement> indexedFields = filterForPrivate.filter(index.getAlllFields(classScope));
             for (org.netbeans.modules.php.editor.api.elements.FieldElement field : indexedFields) {
                 allFields.add(new FieldElementImpl(classScope, field));
+            }
+        }
+        for (TraitScope traitScope : new HashSet<>(getTraits())) {
+            Set<org.netbeans.modules.php.editor.api.elements.FieldElement> indexedFields = filterForPrivate.filter(index.getAlllFields(traitScope));
+            for (org.netbeans.modules.php.editor.api.elements.FieldElement field : indexedFields) {
+                allFields.add(new FieldElementImpl(traitScope, field));
             }
         }
         return allFields;
