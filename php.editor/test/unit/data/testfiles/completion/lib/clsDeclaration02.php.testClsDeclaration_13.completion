@@ -108,6 +108,7 @@ CLASS      A                               [PUBLIC,   a
 CLASS      A                               [PUBLIC]   classConstructorOptionalParam.php
 CLASS      A                               [PUBLIC]   issue195232.php
 CLASS      A                               [PUBLIC]   issue226071.php
+CLASS      A                               [PUBLIC]   issue241695.php
 CLASS      A                               [PUBLIC]   test.php
 CLASS      A135618                         [PUBLIC]   issue135618.php
 CLASS      AA                              [PUBLIC]   Test197084.php
@@ -151,6 +152,7 @@ CLASS      Book_Abstract                   [PUBLIC,   test203332_01.php
 CLASS      Brejla                          [PUBLIC]   test211230.php
 CLASS      Buuu                            [PUBLIC]   ShowMe
 CLASS      C                               [PUBLIC]   c
+CLASS      C                               [PUBLIC]   issue241695.php
 CLASS      C                               [PUBLIC]   test.php
 CLASS      CallableClass                   [PUBLIC]   callableTypeHint.php
 CLASS      Child                           [PUBLIC]   useCase2.php
