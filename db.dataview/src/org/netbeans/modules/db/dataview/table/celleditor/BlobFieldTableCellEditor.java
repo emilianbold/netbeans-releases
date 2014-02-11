@@ -60,6 +60,7 @@ import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.db.dataview.util.FileBackedBlob;
+import org.netbeans.modules.db.dataview.util.LobHelper;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.OpenCookie;
@@ -165,22 +166,7 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
         if (currentValue != null) {
             saveContentMenuItem.setEnabled(true);
             miOpenImageMenuItem.setEnabled(true);
-            try {
-                long size = currentValue.length();
-                StringBuilder stringValue = new StringBuilder();
-                stringValue.append("<BLOB ");
-                if (size < 1000) {
-                    stringValue.append(String.format("%1$d bytes", size));
-                } else if (size < 1000000) {
-                    stringValue.append(String.format("%1$d kB", size / 1000));
-                } else {
-                    stringValue.append(String.format("%1$d MB", size / 1000000));
-                }
-                stringValue.append(">");
-                button.setText(stringValue.toString());
-            } catch (SQLException ex) {
-                button.setText("<BLOB of unknown size>");
-            }
+            button.setText(LobHelper.blobToString(currentValue));
         } else {
             saveContentMenuItem.setEnabled(false);
             miOpenImageMenuItem.setEnabled(false);

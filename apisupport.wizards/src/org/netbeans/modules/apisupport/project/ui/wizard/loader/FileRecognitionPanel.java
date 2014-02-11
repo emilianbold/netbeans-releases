@@ -46,6 +46,9 @@ package org.netbeans.modules.apisupport.project.ui.wizard.loader;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import javax.swing.ButtonGroup;
@@ -66,7 +69,18 @@ final class FileRecognitionPanel extends BasicWizardIterator.Panel {
     
     private static final Pattern EXTENSION_PATTERN = Pattern.compile("([.]?[a-zA-Z0-9_]+){1}([ ,]+[.]?[a-zA-Z0-9_]+)*[ ]*"); // NOI18N
     private static final Pattern ELEMENT_PATTERN = Pattern.compile("(application/([a-zA-Z0-9_.-])*\\+xml|text/([a-zA-Z0-9_.-])*\\+xml)"); // NOI18N
-    private static final Pattern MIME_TYPE_PATTERN = Pattern.compile("[\\w.]+(?:[+-][\\w.]+)?/[\\w.]+(?:[+-][\\w.]+)*"); // NOI18N
+    private static final Pattern REG_NAME_PATTERN = Pattern.compile("^[[\\p{Alnum}][!#$&.+\\-^_]]{1,127}$"); //NOI18N
+    private static final Set<String> WELL_KNOWN_TYPES = new HashSet<String>(Arrays.asList(
+        "application", //NOI18N
+        "audio", //NOI18N
+        "content", //NOI18N   for content/unknown mime type
+        "image", //NOI18N
+        "message", //NOI18N
+        "model", //NOI18N
+        "multipart", //NOI18N
+        "text", //NOI18N
+        "video" //NOI18N
+    ));
     
     private NewLoaderIterator.DataModel data;
     private ButtonGroup group;
@@ -103,13 +117,57 @@ final class FileRecognitionPanel extends BasicWizardIterator.Panel {
         putClientProperty("NewFileWizard_Title", getMessage("LBL_LoaderWizardTitle"));
     }
 
+    @NbBundle.Messages({"# {0} - mime type", "MSG_Mime_Not_Contain_Slash=MimeType \"{0}\" does not contain '/'.",
+                        "# {0} - mime type", "MSG_More_Successive_Slashes=More successive slashes in \"{0}\"",
+                        "# {0} - mime type", "MSG_More_Slashes=More slashes in \"{0}\"",
+                        "# {0} - mime type", "MSG_Empty_String_After_Slash=Empty string after '/' in \"{0}\"",
+                        "# {0} - mime type", "MSG_Invalid_MimeType=Invalid mimeType=\"{0}\""})
     static String checkValidity(AtomicBoolean error, String mimeType, String namespace, String extension, boolean byElement) {
         if (mimeType.isEmpty()) {
             return getMessage("MSG_EmptyMIMEType");
-        } else if (!MIME_TYPE_PATTERN.matcher(mimeType).matches()) {
-            error.set(true);
-            return getMessage("MSG_NotValidMimeType");
         } else {
+            int pathLen = mimeType.length();
+            int startIndex = 0;
+            int index = startIndex;
+            int slashIndex = -1;
+            // Search for first slash
+            while (index < pathLen) {
+                if (mimeType.charAt(index) == '/') { //NOI18N
+                    slashIndex = index;
+                    break; // first slash found
+                }
+                index++;
+            }
+            if (slashIndex == -1) { // no slash found
+                if (index != startIndex) {
+                    error.set(true);
+                    return Bundle.MSG_Mime_Not_Contain_Slash(mimeType.subSequence(startIndex, mimeType.length()));
+                }
+            }
+            index++; // move after slash
+            while (index < pathLen) {
+                if (mimeType.charAt(index) == '/') { //NOI18N
+                    if (index == slashIndex + 1) { // empty second part of mimeType
+                        error.set(true);
+                        return Bundle.MSG_More_Successive_Slashes(mimeType.subSequence(startIndex, mimeType.length()));
+                    }
+                    error.set(true);
+                    return Bundle.MSG_More_Slashes(mimeType.subSequence(startIndex, mimeType.length()));
+                }
+                index++;
+            }
+            if (index == slashIndex + 1) { // nothing after first slash
+                error.set(true);
+                return Bundle.MSG_Empty_String_After_Slash(mimeType.subSequence(startIndex, mimeType.length()));
+            }
+
+            // Mime type found, validate
+            if (!validate(mimeType.subSequence(startIndex, slashIndex), 
+                mimeType.subSequence(slashIndex + 1, index))) {
+                error.set(true);
+                return Bundle.MSG_Invalid_MimeType(mimeType.subSequence(startIndex, mimeType.length()));
+            }
+            
             if (byElement) {
                 if (namespace.isEmpty()) {
                     return getMessage("MSG_NoNamespace");
@@ -131,6 +189,20 @@ final class FileRecognitionPanel extends BasicWizardIterator.Panel {
             }
         }
         return null;
+    }
+    
+    private static boolean validate(CharSequence type, CharSequence subtype) {
+        if (type != null) {
+            if (!WELL_KNOWN_TYPES.contains(type.toString())) {
+                return false;
+            }
+        }
+        if (subtype != null) {
+            if (!REG_NAME_PATTERN.matcher(subtype).matches()) {
+                return false;
+            }
+        }
+        return true;
     }
     
     private void checkValidity() {

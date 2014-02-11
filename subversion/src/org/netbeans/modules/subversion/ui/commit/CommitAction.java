@@ -119,6 +119,7 @@ public class CommitAction extends ContextAction {
     public static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage";
     private static final String PANEL_PREFIX = "commit"; //NOI18N
     private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/commit.png"; //NOI18N
+    private static final long COMMIT_PAUSE = Long.getLong("versioning.subversion.commit.pause", 5000); //NOI18N
     private static final String ERROR_COLOR;
     private static final String INFO_COLOR;
     static {
@@ -907,6 +908,8 @@ public class CommitAction extends ContextAction {
 
         private ISVNLogMessage getLogMessage (File[] files, long revision) throws SVNClientException {
             ISVNLogMessage revisionLog = null;
+            long maxPause = COMMIT_PAUSE;
+            long nextPause = 500;
             for (int i = 0; i < files.length && revisionLog == null; ++i) {
                 try {
                     File f = files[i];
@@ -916,6 +919,22 @@ public class CommitAction extends ContextAction {
                     }
                     revisionLog = CommitAction.getLogMessage(client, f, revision);
                 } catch (SVNClientException ex) {
+                    if (SvnClientExceptionHandler.isNoSuchRevision(ex.getMessage())) {
+                        Logger.getLogger(CommitAction.class.getName()).log(Level.INFO,
+                                "After commit pause for {0} ms. No such revision {1}", //NOI18N
+                                new Object[] { nextPause, revision });
+                        if (maxPause > 0) {
+                            try {
+                                Thread.sleep(nextPause);
+                            } catch (InterruptedException ex1) {
+                                // not interested
+                            }
+                            maxPause -= nextPause;
+                            nextPause = nextPause * 2;
+                            i--;
+                            continue;
+                        }
+                    }
                     if (!SvnClientExceptionHandler.isFileNotFoundInRevision(ex.getMessage())) {
                         throw ex;
                     }

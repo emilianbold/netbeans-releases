@@ -61,20 +61,12 @@ import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
-import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.api.debugger.DebuggerManagerListener;
-import org.netbeans.api.debugger.LazyDebuggerManagerListener;
-import org.netbeans.api.debugger.Session;
-import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
-import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 
 import org.openide.cookies.LineCookie;
@@ -98,20 +90,24 @@ import org.openide.util.WeakSet;
  * @author Jan Jancura, Martin Entlicher
  */
 @org.openide.util.lookup.ServiceProvider(service=org.openide.text.AnnotationProvider.class)
-@DebuggerServiceRegistration(types=LazyDebuggerManagerListener.class)
-public class BreakpointAnnotationProvider extends DebuggerManagerAdapter
-                                          implements AnnotationProvider/*,
-                                                     DebuggerManagerListener*/ {
+public class BreakpointAnnotationProvider implements AnnotationProvider {
 
     private final Map<JPDABreakpoint, Set<Annotation>> breakpointToAnnotations =
             new IdentityHashMap<JPDABreakpoint, Set<Annotation>>();
     private final Set<FileObject> annotatedFiles = new WeakSet<FileObject>();
     private Set<PropertyChangeListener> dataObjectListeners;
-    private boolean attachManagerListener = true;
-    private volatile JPDADebugger currentDebugger = null;
     private volatile boolean breakpointsActive = true;
     private RequestProcessor annotationProcessor = new RequestProcessor("Annotation Refresh", 1);
     private RequestProcessor contextWaitingProcessor = new RequestProcessor("Annotation Refresh Context Waiting", 1);
+    
+    static BreakpointAnnotationProvider getInstance() {
+        for (AnnotationProvider act : Lookup.getDefault().lookupAll(AnnotationProvider.class)) {
+            if (act instanceof BreakpointAnnotationProvider) {
+                return (BreakpointAnnotationProvider) act;
+            }
+        }
+        throw new IllegalStateException("BreakpointAnnotationProvider is not registered in Lookup!");
+    }
 
     @Override
     public void annotate (Line.Set set, Lookup lookup) {
@@ -148,25 +144,19 @@ public class BreakpointAnnotationProvider extends DebuggerManagerAdapter
         }
     }
     
-    public void annotate (final FileObject fo) {
+    private void annotate (final FileObject fo) {
         synchronized (breakpointToAnnotations) {
-            if (annotatedFiles.contains(fo)) {
-                // Already annotated
-                return ;
-            }
-            Set<JPDABreakpoint> annotatedBreakpoints = breakpointToAnnotations.keySet();
             for (Breakpoint breakpoint : DebuggerManager.getDebuggerManager().getBreakpoints()) {
                 if (isAnnotatable(breakpoint)) {
                     JPDABreakpoint b = (JPDABreakpoint) breakpoint;
                     int[] lines = getAnnotationLines(b, fo);
                     if (lines != null && lines.length > 0) {
-                        if (!annotatedBreakpoints.contains(b)) {
-                            b.addPropertyChangeListener (this);
-                            breakpointToAnnotations.put(b, new WeakSet<Annotation>());
-                            if (b instanceof LineBreakpoint) {
-                                LineBreakpoint lb = (LineBreakpoint) b;
-                                LineTranslations.getTranslations().registerForLineUpdates(lb);
-                            }
+                        removeAnnotations(b);   // Remove any staled breakpoint annotations
+                        breakpointToAnnotations.put(b, new WeakSet<Annotation>());
+                        if (b instanceof LineBreakpoint) {
+                            LineBreakpoint lb = (LineBreakpoint) b;
+                            LineTranslations.getTranslations().unregisterFromLineUpdates(lb); // To be sure
+                            LineTranslations.getTranslations().registerForLineUpdates(lb);
                         }
                         addAnnotationTo(b, fo, lines);
                     }
@@ -174,117 +164,18 @@ public class BreakpointAnnotationProvider extends DebuggerManagerAdapter
             }
             annotatedFiles.add(fo);
         }
-        if (attachManagerListener) {
-            attachManagerListener = false;
-            setCurrentDebugger(DebuggerManager.getDebuggerManager().getCurrentEngine());
-            DebuggerManager.getDebuggerManager().addDebuggerListener(
-                    WeakListeners.create(DebuggerManagerListener.class,
-                                         this,
-                                         DebuggerManager.getDebuggerManager()));
-        }
     }
 
-    @Override
-    public String[] getProperties() {
-        return new String[] { DebuggerManager.PROP_BREAKPOINTS, DebuggerManager.PROP_DEBUGGER_ENGINES }; 
-    }
-
-    @Override
-    public void breakpointAdded(Breakpoint breakpoint) {
-        if (isAnnotatable(breakpoint)) {
-            JPDABreakpoint b = (JPDABreakpoint) breakpoint;
-            b.addPropertyChangeListener (this);
-            annotationProcessor.post(new AnnotationRefresh(b, false, true));
-            if (b instanceof LineBreakpoint) {
-                LineBreakpoint lb = (LineBreakpoint) b;
-                LineTranslations.getTranslations().registerForLineUpdates(lb);
-            }
-        }
-    }
-
-    @Override
-    public void breakpointRemoved(Breakpoint breakpoint) {
-        if (isAnnotatable(breakpoint)) {
-            JPDABreakpoint b = (JPDABreakpoint) breakpoint;
-            b.removePropertyChangeListener (this);
-            annotationProcessor.post(new AnnotationRefresh(b, true, false));
-            if (b instanceof LineBreakpoint) {
-                LineBreakpoint lb = (LineBreakpoint) b;
-                LineTranslations.getTranslations().unregisterFromLineUpdates(lb);
-            }
-        }
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        String propertyName = evt.getPropertyName ();
-        if (propertyName == null) {
-            return;
-        }
-        if (DebuggerManager.PROP_CURRENT_ENGINE.equals(propertyName)) {
-            setCurrentDebugger(DebuggerManager.getDebuggerManager().getCurrentEngine());
-        }
-        if (JPDADebugger.PROP_BREAKPOINTS_ACTIVE.equals(propertyName)) {
-            JPDADebugger debugger = currentDebugger;
-            if (debugger != null) {
-                setBreakpointsActive(debugger.getBreakpointsActive());
-            }
-        }
-        if ( (!JPDABreakpoint.PROP_ENABLED.equals (propertyName)) &&
-             (!JPDABreakpoint.PROP_VALIDITY.equals (propertyName)) &&
-             (!LineBreakpoint.PROP_CONDITION.equals (propertyName)) &&
-             (!LineBreakpoint.PROP_URL.equals (propertyName)) &&
-             (!LineBreakpoint.PROP_LINE_NUMBER.equals (propertyName)) &&
-             (!FieldBreakpoint.PROP_CLASS_NAME.equals (propertyName)) &&
-             (!FieldBreakpoint.PROP_FIELD_NAME.equals (propertyName)) &&
-             (!MethodBreakpoint.PROP_CLASS_FILTERS.equals (propertyName)) &&
-             (!MethodBreakpoint.PROP_CLASS_EXCLUSION_FILTERS.equals (propertyName)) &&
-             (!MethodBreakpoint.PROP_METHOD_NAME.equals (propertyName)) &&
-             (!MethodBreakpoint.PROP_METHOD_SIGNATURE.equals (propertyName))
-        ) {
-            return;
-        }
-        JPDABreakpoint b = (JPDABreakpoint) evt.getSource ();
-        DebuggerManager manager = DebuggerManager.getDebuggerManager();
-        Breakpoint[] bkpts = manager.getBreakpoints();
-        boolean found = false;
-        for (int x = 0; x < bkpts.length; x++) {
-            if (b == bkpts[x]) {
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
-            // breakpoint has been removed
-            return;
-        }
-        annotationProcessor.post(new AnnotationRefresh(b, true, true));
-    }
-    
-    private void setCurrentDebugger(DebuggerEngine engine) {
-        JPDADebugger oldDebugger = currentDebugger;
-        if (oldDebugger != null) {
-            oldDebugger.removePropertyChangeListener(JPDADebugger.PROP_BREAKPOINTS_ACTIVE, this);
-        }
-        boolean active = true;
-        JPDADebugger debugger = null;
-        if (engine != null) {
-            debugger = engine.lookupFirst(null, JPDADebugger.class);
-            if (debugger != null) {
-                debugger.addPropertyChangeListener(JPDADebugger.PROP_BREAKPOINTS_ACTIVE, this);
-                active = debugger.getBreakpointsActive();
-            }
-        }
-        currentDebugger = debugger;
-        setBreakpointsActive(active);
-    }
-    
-    private void setBreakpointsActive(boolean active) {
+    void setBreakpointsActive(boolean active) {
         if (breakpointsActive == active) {
             return ;
         }
         breakpointsActive = active;
         annotationProcessor.post(new AnnotationRefresh(null, true, true));
+    }
+    
+    void postAnnotationRefresh(JPDABreakpoint b, boolean remove, boolean add) {
+        annotationProcessor.post(new AnnotationRefresh(b, remove, add));
     }
     
     private final class AnnotationRefresh implements Runnable {
@@ -329,7 +220,7 @@ public class BreakpointAnnotationProvider extends DebuggerManagerAdapter
         
     }
     
-    private static boolean isAnnotatable(Breakpoint b) {
+    static boolean isAnnotatable(Breakpoint b) {
         return (b instanceof LineBreakpoint ||
                 b instanceof FieldBreakpoint ||
                 b instanceof MethodBreakpoint ||

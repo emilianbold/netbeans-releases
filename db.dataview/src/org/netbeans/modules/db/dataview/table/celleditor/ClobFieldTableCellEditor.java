@@ -57,6 +57,7 @@ import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.db.dataview.util.FileBackedClob;
+import org.netbeans.modules.db.dataview.util.LobHelper;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
@@ -190,22 +191,7 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
         boolean editable = table.getModel().isCellEditable(currentModelRow, currentModelColumn);
         if (currentValue != null) {
             saveContentMenuItem.setEnabled(true);
-            try {
-                long size = currentValue.length();
-                StringBuilder stringValue = new StringBuilder();
-                stringValue.append("<CLOB ");
-                if (size < 1000) {
-                    stringValue.append(String.format("%1$d Chars", size));
-                } else if (size < 1000000) {
-                    stringValue.append(String.format("%1$d kChars", size / 1000));
-                } else {
-                    stringValue.append(String.format("%1$d MChars", size / 1000000));
-                }
-                stringValue.append(">");
-                button.setText(stringValue.toString());
-            } catch (SQLException ex) {
-                button.setText("<CLOB of unknown size>");
-            }
+            button.setText(LobHelper.clobToDescription(currentValue));
         } else {
             saveContentMenuItem.setEnabled(false);
             button.setText("<NULL>");

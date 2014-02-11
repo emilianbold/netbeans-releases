@@ -62,7 +62,6 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
@@ -89,7 +88,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
     public static final String SS_STEP_OUT = "SS_ACTION_STEPOUT";
     public static final String ACTION_SMART_STEP_INTO = "smartStepInto";
 
-    private StepIntoNextMethod stepInto;
+    private final StepIntoNextMethod stepInto;
     private MethodChooser currentMethodChooser;
 
     static final Map<ContextProvider, Reference<StepIntoActionProvider>> instanceByContext

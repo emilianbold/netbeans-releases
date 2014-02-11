@@ -681,6 +681,10 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
      * @return Variable containing the result
      */
     public Variable evaluate(String expression) throws InvalidExpressionException {
+        if ("toString()".equals(expression) && String.class.getName().equals(getType())) {  // NOI18N
+            // String.toString() = this
+            return this;
+        }
         return getDebugger().evaluate(expression, this);
     }
 

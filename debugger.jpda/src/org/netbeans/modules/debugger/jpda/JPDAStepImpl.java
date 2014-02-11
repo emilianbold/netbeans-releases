@@ -81,10 +81,12 @@ import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
+import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.actions.CompoundSmartSteppingListener;
+import org.netbeans.modules.debugger.jpda.actions.SmartSteppingFilterImpl;
 
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
@@ -136,6 +138,8 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     private Set<EventRequest> requestsToCancel = new HashSet<EventRequest>();
     private volatile StepPatternDepth stepPatternDepth;
     private boolean ignoreStepFilters = false;
+    private boolean steppingFromFilteredLocation;
+    private boolean steppingFromCompoundFilteredLocation;
     private StopHereCheck stopHereCheck;
     private Properties p;
     
@@ -184,6 +188,9 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 //SingleThreadedStepWatch.stepRequestDeleted(stepRequest);
                 debuggerImpl.getOperator().unregister(stepRequest);
             }
+            steppingFromFilteredLocation = !getSmartSteppingFilterImpl ().stopHere(tr.getClassName());
+            steppingFromCompoundFilteredLocation = !getCompoundSmartSteppingListener ().stopHere
+                               (session, tr, getSmartSteppingFilterImpl ());
             int size = getSize();
             boolean stepAdded = false;
             if (logger.isLoggable(Level.FINE)) {
@@ -210,7 +217,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 );
                 //stepRequest.addCountFilter(1); - works bad with exclusion filters!
                 String[] exclusionPatterns;
-                if (ignoreStepFilters) {
+                if (ignoreStepFilters || steppingFromFilteredLocation) {
                     exclusionPatterns = null;
                 } else {
                     exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
@@ -599,18 +606,20 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                         // There are some (possibly filtered) stack frames in between.
                         // StepThroughFilters is false, therefore we should step out if we can not stop here:
                         boolean haveFilteredClassOnStack = false;
-                        CallStackFrame[] callStack = tr.getCallStack();
-                        int c1 = 1;
-                        int c2 = callStack.length - stepPatternDepth.stackDepth;
-                        for (int i = c1; i < c2; i++) {
-                            // TODO: use debuggerImpl.stopHere(callStack[i])
-                            String className = callStack[i].getClassName();
-                            if (stepPatternDepth.isFiltered(className)) {
-                                haveFilteredClassOnStack = true;
-                                break;
+                        if (!steppingFromFilteredLocation) {
+                            CallStackFrame[] callStack = tr.getCallStack();
+                            int c1 = 1;
+                            int c2 = callStack.length - stepPatternDepth.stackDepth;
+                            for (int i = c1; i < c2; i++) {
+                                // TODO: use debuggerImpl.stopHere(callStack[i])
+                                String className = callStack[i].getClassName();
+                                if (stepPatternDepth.isFiltered(className)) {
+                                    haveFilteredClassOnStack = true;
+                                    break;
+                                }
                             }
+                            logger.fine("haveFilteredClassOnStack = "+haveFilteredClassOnStack);
                         }
-                        logger.fine("haveFilteredClassOnStack = "+haveFilteredClassOnStack);
                         if (haveFilteredClassOnStack) {
                             StepRequest stepRequest = EventRequestManagerWrapper.createStepRequest(
                                 VirtualMachineWrapper.eventRequestManager(vm),
@@ -872,9 +881,14 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                         }
                     }
                     if (useStepFilters && !ignoreStepFilters && !doStepAgain) {
-                        boolean stop = getCompoundSmartSteppingListener ().stopHere
-                               (session, t, debuggerImpl.getSmartSteppingFilter());
-                        if (stop) {
+                        boolean stop;
+                        if (steppingFromCompoundFilteredLocation) {
+                            stop = true;
+                        } else {
+                            stop = getCompoundSmartSteppingListener ().stopHere
+                                   (session, t, debuggerImpl.getSmartSteppingFilter());
+                        }
+                        if (stop && !steppingFromFilteredLocation) {
                             String[] exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
                             String className = ReferenceTypeWrapper.name(LocationWrapper.declaringType(loc));
                             for (String pattern : exclusionPatterns) {
@@ -912,7 +926,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                         );
                         //EventRequestWrapper.addCountFilter(stepRequest, 1);
                         String[] exclusionPatterns;
-                        if (ignoreStepFilters) {
+                        if (ignoreStepFilters || steppingFromFilteredLocation) {
                             exclusionPatterns = null;
                         } else {
                             exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
@@ -996,10 +1010,15 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                         logger.throwing(getClass().getName(), "shouldNotStopHere", ex);
                     }
                 }
-                String[] exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
-                for (int i = 0; i < exclusionPatterns.length; i++) {
-                    StepRequestWrapper.addClassExclusionFilter(stepRequest, exclusionPatterns [i]);
-                    logger.finer("   add pattern: "+exclusionPatterns[i]);
+                String[] exclusionPatterns;
+                if (steppingFromFilteredLocation) {
+                    exclusionPatterns = null;
+                } else {
+                    exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
+                    for (int i = 0; i < exclusionPatterns.length; i++) {
+                        StepRequestWrapper.addClassExclusionFilter(stepRequest, exclusionPatterns [i]);
+                        logger.finer("   add pattern: "+exclusionPatterns[i]);
+                    }
                 }
                 if (!stepThrough && exclusionPatterns != null && exclusionPatterns.length > 0) {
                     StepPatternDepth spd = new StepPatternDepth();
@@ -1097,6 +1116,15 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         return TypeComponentWrapper.isSynthetic(m) ? -1 : 0;
     }
     
+    private SmartSteppingFilterImpl smartSteppingFilter;
+
+    private SmartSteppingFilterImpl getSmartSteppingFilterImpl () {
+        if (smartSteppingFilter == null) {
+            smartSteppingFilter = (SmartSteppingFilterImpl) session.lookupFirst(null, SmartSteppingFilter.class);
+        }
+        return smartSteppingFilter;
+    }
+
     private CompoundSmartSteppingListener compoundSmartSteppingListener;
 
     private CompoundSmartSteppingListener getCompoundSmartSteppingListener () {

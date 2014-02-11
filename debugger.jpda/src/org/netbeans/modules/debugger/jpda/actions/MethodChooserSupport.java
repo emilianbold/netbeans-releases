@@ -101,10 +101,10 @@ import org.openide.util.Exceptions;
 
 public class MethodChooserSupport implements PropertyChangeListener {
 
-    private JPDADebuggerImpl debugger;
-    private JPDAThread currentThread;
-    private String url;
-    private ReferenceType clazzRef;
+    private final JPDADebuggerImpl debugger;
+    private final JPDAThread currentThread;
+    private final String url;
+    private final ReferenceType clazzRef;
     private MethodChooser chooser;
 
     ArrayList<Annotation> annotations;
@@ -115,6 +115,11 @@ public class MethodChooserSupport implements PropertyChangeListener {
     private Location[] locations;
     private ExpressionPool.Interval expressionLines;
     private boolean[] isCertainlyReachable;
+    
+    static enum MethodEntry {
+        SELECTED,
+        DIRECT
+    }
 
     MethodChooserSupport(JPDADebuggerImpl debugger, String url, ReferenceType clazz, int methodLine) {
         this.debugger = debugger;
@@ -193,7 +198,8 @@ public class MethodChooserSupport implements PropertyChangeListener {
         debugger.getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                RunIntoMethodActionProvider.doAction(debugger, name, locations[index], expressionLines, true);
+                RunIntoMethodActionProvider.doAction(debugger, name, locations[index],
+                                                     expressionLines, true, MethodEntry.SELECTED);
             }
         });
     }
@@ -374,7 +380,8 @@ public class MethodChooserSupport implements PropertyChangeListener {
             if ("<init>".equals(name)) {
                 name = operations[selectedIndex].getMethodClassType();
             }
-            RunIntoMethodActionProvider.doAction(debugger, name, locations[selectedIndex], expr.getInterval(), true);
+            RunIntoMethodActionProvider.doAction(debugger, name, locations[selectedIndex],
+                                                 expr.getInterval(), true, MethodEntry.DIRECT);
             return true;
         }
         return false;
