@@ -100,32 +100,47 @@
     </condition>
     
     <property name="jdk.builds.path" value="${jdk_builds_host}/${jdk_builds_path}/latest/bundles/macosx-x64"/>
+    <!-- e.g. 1.7.0_55 - jdk-7u55-fcs-bin-b07-macosx-x64-04_feb_2014.dmg -->
+    <!-- e.g. 1.8.0 - jdk-8-fcs-bin-b129-macosx-x64-06_feb_2014.dmg -->
     <loadresource property="jdk.version.number">
           <url url="${jdk.builds.path}"/>
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>
-              <replaceregex pattern="(.*)jdk-([0-9]+)u([0-9]+)-([a-z]+)-bin-b(([0-9]+)+)-(.*)" replace="\2" flags="g"/>
+              <replaceregex pattern="(.*)jdk-([0-9]+)([u]?)([0-9]*)(-[a-z]+)-bin-b(([0-9]+)+)-(.*)" replace="\2" flags="g"/>
             </tokenfilter>
           </filterchain>
     </loadresource>
     
-    <loadresource property="jdk.update.number">
+    <loadresource property="is.update">
           <url url="${jdk.builds.path}"/>
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>
-              <replaceregex pattern="(.*)jdk-([0-9]+)u([0-9]+)-([a-z]+)-bin-b(([0-9]+)+)-(.*)" replace="\3" flags="g"/>
+              <replaceregex pattern="(.*)jdk-([0-9]+)([u]?)([0-9]*)(-[a-z]+)-bin-b(([0-9]+)+)-(.*)" replace="\3" flags="g"/>
             </tokenfilter>
           </filterchain>
     </loadresource>
+    
+    <loadresource property="jdk.update.number.opt">
+          <url url="${jdk.builds.path}"/>
+          <filterchain>
+	    <striplinebreaks/>
+            <tokenfilter>
+              <replaceregex pattern="(.*)jdk-([0-9]+)([u]?)([0-9]*)(-[a-z]+)-bin-b(([0-9]+)+)-(.*)" replace="\4" flags="g"/>
+            </tokenfilter>
+          </filterchain>
+    </loadresource>
+    <condition property="jdk.update.number" value="${jdk.update.number.opt}" else="0">
+        <equals arg1="${is.update}" arg2="u"/>
+    </condition>
     
     <loadresource property="jdk.build.type">
           <url url="${jdk.builds.path}"/>
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>
-              <replaceregex pattern="(.*)jdk-([0-9]+)u([0-9]+)-([a-z]+)-bin-b(([0-9]+)+)-(.*)" replace="\4" flags="g"/>
+              <replaceregex pattern="(.*)jdk-([0-9]+)([u]?)([0-9]*)(-[a-z]+)-bin-b(([0-9]+)+)-(.*)" replace="\5" flags="g"/>
             </tokenfilter>
           </filterchain>
     </loadresource>
@@ -139,10 +154,12 @@
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>
-              <replaceregex pattern="(.*)jdk-([0-9]+)u([0-9]+)-([a-z]+)-bin-b(([0-9]+)+)-(.*)" replace="\5" flags="g"/>
+              <replaceregex pattern="(.*)jdk-([0-9]+)([u]?)([0-9]*)(-[a-z]+)-bin-b(([0-9]+)+)-(.*)" replace="\6" flags="g"/>
             </tokenfilter>
           </filterchain>
     </loadresource>
+    
+    <echo message="JDK Metadata: Version: ${jdk.version.number} Update: ${jdk.update.number} Build: ${jdk.build.number} Build type: ${jdk.build.type}" />
     
     <property name="mpkg.prefix_nb_jdk" value=" with JDK"/> 
     <property name="jdk.bundle.files.suffix" value="nb-dev"/>
