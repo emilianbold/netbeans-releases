@@ -122,6 +122,7 @@ CLASS      AliasedClassName                [PUBLIC]   Foo\Bar
 CLASS      AnonymousObject                 [PUBLIC]   anonymousObjectVariables.php
 CLASS      Another                         [PUBLIC]   test224549.php
 CLASS      ArraysCc                        [PUBLIC]   arrays.php
+CLASS      Article                         [PUBLIC]   issue225687.php
 CLASS      Author                          [PUBLIC]   mixedtypes.php
 CLASS      Author_1                        [PUBLIC]   mixedtypes_1.php
 CLASS      B                               [PUBLIC]   Test197084.php
@@ -471,6 +472,8 @@ METHOD     getBookMagazine()               [PUBLIC]   mixedtypes_1.php
 METHOD     issue157534(&$var)              [PUBLIC]   issue157534.php
 METHOD     mytest()                        [PUBLIC]   varAssignment.php
 METHOD     paramsfnc($a, $b, $c, $d)       [PUBLIC]   paramdecltypes.php
+METHOD     parseArticles_01($articles)     [PUBLIC]   issue225687.php
+METHOD     parseArticles_02(Article $arti  [PUBLIC]   issue225687.php
 METHOD     printMyName()                   [PUBLIC]   varTypeComment.php
 METHOD     test()                          [PUBLIC]   issue195232.php
 METHOD     test()                          [PUBLIC]   typeInPHPDoc01.php
