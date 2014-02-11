@@ -55,11 +55,11 @@ import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
  * @author Radek Matous
  */
 public final class SingleFieldDeclarationInfo extends ASTNodeInfo<SingleFieldDeclaration> {
-    private FieldsDeclaration fd;
+    private final FieldsDeclaration fieldsDeclaration;
 
-    private SingleFieldDeclarationInfo(FieldsDeclaration fd, SingleFieldDeclaration node) {
+    private SingleFieldDeclarationInfo(FieldsDeclaration fieldsDeclaration, SingleFieldDeclaration node) {
         super(node);
-        this.fd = fd;
+        this.fieldsDeclaration = fieldsDeclaration;
     }
 
     public static List<? extends SingleFieldDeclarationInfo> create(FieldsDeclaration fd) {
@@ -87,7 +87,7 @@ public final class SingleFieldDeclarationInfo extends ASTNodeInfo<SingleFieldDec
     }
 
     public PhpModifiers getAccessModifiers() {
-        return PhpModifiers.fromBitMask(fd.getModifier());
+        return PhpModifiers.fromBitMask(fieldsDeclaration.getModifier());
     }
 
     @Override

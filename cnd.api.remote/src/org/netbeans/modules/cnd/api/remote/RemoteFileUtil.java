@@ -219,6 +219,14 @@ public class RemoteFileUtil {
         }
     }
 
+    public static boolean isRemote(FileSystem fs) {
+        if (fs != null) {
+            ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(fs);
+            return (env == null) ? false : env.isRemote();
+        }
+        return false;
+    }
+    
     public static JFileChooser createFileChooser(FileSystem fs,
             String titleText, String buttonText, int mode, FileFilter[] filters,
             String initialPath, boolean useParent) {

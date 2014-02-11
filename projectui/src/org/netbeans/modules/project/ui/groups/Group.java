@@ -474,8 +474,8 @@ public abstract class Group {
      * Change the current display name.
      */
     public void setName(String n) {
-        notifyListeners(this, "groupRename", getNameOrNull(), n);
         prefs().put(KEY_NAME, n);
+        notifyListeners(this, "groupRename", getNameOrNull(), n);
         if (this.equals(getActiveGroup())) {
             EventQueue.invokeLater(new Runnable() {
                 @Override public void run() {

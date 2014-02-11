@@ -51,14 +51,43 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.client.spi.Component;
+import org.netbeans.modules.jira.client.spi.ComponentFilter;
+import org.netbeans.modules.jira.client.spi.ContentFilter;
+import org.netbeans.modules.jira.client.spi.CurrentUserFilter;
+import org.netbeans.modules.jira.client.spi.DateFilter;
+import org.netbeans.modules.jira.client.spi.DateRangeFilter;
+import org.netbeans.modules.jira.client.spi.EstimateVsActualFilter;
 import org.netbeans.modules.jira.client.spi.FilterDefinition;
+import org.netbeans.modules.jira.client.spi.IssueType;
+import org.netbeans.modules.jira.client.spi.IssueTypeFilter;
+import org.netbeans.modules.jira.client.spi.JiraConnectorProvider;
+import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
+import org.netbeans.modules.jira.client.spi.JiraStatus;
+import org.netbeans.modules.jira.client.spi.NobodyFilter;
+import org.netbeans.modules.jira.client.spi.Priority;
+import org.netbeans.modules.jira.client.spi.PriorityFilter;
+import org.netbeans.modules.jira.client.spi.Project;
+import org.netbeans.modules.jira.client.spi.ProjectFilter;
+import org.netbeans.modules.jira.client.spi.Resolution;
+import org.netbeans.modules.jira.client.spi.ResolutionFilter;
+import org.netbeans.modules.jira.client.spi.SpecificUserFilter;
+import org.netbeans.modules.jira.client.spi.StatusFilter;
+import org.netbeans.modules.jira.client.spi.UserFilter;
+import org.netbeans.modules.jira.client.spi.UserInGroupFilter;
+import org.netbeans.modules.jira.client.spi.Version;
+import org.netbeans.modules.jira.client.spi.VersionFilter;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.util.FileUtils;
 import org.netbeans.modules.jira.util.JiraUtils;
@@ -73,12 +102,12 @@ public class JiraStorageManager {
     private static JiraStorageManager instance;
 
     private final Object QUERY_LOCK = new Object();
-    private HashMap<String, JiraQueryData> queriesData;
+    private Map<String, JiraQueryData2> queriesData;
     private static final String QUERY_DELIMITER           = "<=>";      //NOI18N
     private static final String QUERIES_STORAGE_FILE = "queries.data";  //NOI18N
     private static final Level LOG_LEVEL = JiraUtils.isAssertEnabled() ? Level.SEVERE : Level.INFO;
 
-    private JiraStorageManager () {
+    public JiraStorageManager () {
 
     }
     
@@ -94,16 +123,17 @@ public class JiraStorageManager {
      * @param repository
      * @param query
      */
-    void putQuery(JiraRepository repository, JiraQuery query) {
-        getCachedQueries().put(getQueryKey(repository.getID(), query.getDisplayName()), new JiraQueryData(query));
+    public void putQueryData(JiraRepository repository, String queryName, long lastRefresh, FilterDefinition fd) {
+        JiraQueryData2 qd = new JiraQueryData2(queryName, lastRefresh, fd);
+        getCachedQueries().put(getQueryKey(repository.getID(), queryName), qd);
     }
 
-    private JiraQuery createQuery(JiraRepository repository, JiraQueryData data) {
+    private JiraQuery createQuery(JiraRepository repository, JiraQueryData2 data) {
         assert data != null;
-        return repository.createPersistentQuery(data.getQueryName(), data.getFilterDefinition());
+        return repository.createPersistentQuery(data.queryName, getFilterDefinition(repository, data));
     }
 
-    private HashMap<String, JiraQueryData> getCachedQueries () {
+    private Map<String, JiraQueryData2> getCachedQueries () {
         synchronized (QUERY_LOCK) {
             if (queriesData == null) {
                 loadQueries();
@@ -118,10 +148,9 @@ public class JiraStorageManager {
      * @param repository
      * @param queryName
      */
-    void removeQuery(JiraRepository repository, JiraQuery query) {
-        getCachedQueries().remove(getQueryKey(repository.getID(), query.getDisplayName()));
+    public void removeQuery(JiraRepository repository, String queryName, String storedName) {
+        getCachedQueries().remove(getQueryKey(repository.getID(), queryName));
         try {
-            String storedName = query.getStoredQueryName();
             IRepositoryQuery iquery = storedName == null ? null 
                     : MylynSupport.getInstance().getRepositoryQuery(repository.getTaskRepository(), storedName);
             if (iquery != null) {
@@ -137,14 +166,25 @@ public class JiraStorageManager {
      * MAY access IO (on the first access)
      * @param repository a repository which's queries will be returned
      */
-    HashSet<JiraQuery> getQueries (JiraRepository repository) {
+    public HashSet<JiraQuery> getQueries (JiraRepository repository) {
         HashSet<JiraQuery> queries = new HashSet<>(10);
-        for (Entry<String, JiraQueryData> e : getCachedQueries().entrySet()) {
+        for (Entry<String, JiraQueryData2> e : getCachedQueries().entrySet()) {
             if (e.getKey().startsWith(repository.getID() + QUERY_DELIMITER)) {
                 queries.add(createQuery(repository, e.getValue()));
             }
         }
         return queries;
+    }
+
+    /** Testing purposes only **/
+    public Map<String, FilterDefinition> getFDs (JiraRepository repository) {
+        HashMap<String, FilterDefinition> fds = new HashMap<>(10);
+        for (Entry<String, JiraQueryData2> e : getCachedQueries().entrySet()) {
+            if (e.getKey().startsWith(repository.getID() + QUERY_DELIMITER)) {
+                fds.put(e.getValue().queryName, getFilterDefinition(repository, e.getValue()));
+            }
+        }
+        return fds;
     }
 
     private void loadQueries () {
@@ -161,7 +201,7 @@ public class JiraStorageManager {
             try {
                 ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
                 String version = ois.readUTF();
-                if (!JiraQueryData.VERSION.equals(version)) {
+                if (!JiraQueryData2.VERSION.equals(version)) {
                     Jira.LOG.log(Level.INFO, "loadQueries: old data format: {0}", version); //NOI18N
                     return;
                 }
@@ -171,7 +211,7 @@ public class JiraStorageManager {
                 while (size-- > 0) {
                     String queryIdent = ois.readUTF();
                     Jira.LOG.log(Level.FINE, "loadQueries: loading data for {0}", queryIdent); //NOI18N
-                    JiraQueryData data = (JiraQueryData) ois.readObject();
+                    JiraQueryData2 data = (JiraQueryData2) ois.readObject();
                     queriesData.put(queryIdent, data);
                 }
             } catch (IOException | ClassNotFoundException ex) {
@@ -213,9 +253,9 @@ public class JiraStorageManager {
         try {
             // saving to a temp file
             out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
-            out.writeUTF(JiraQueryData.VERSION);
+            out.writeUTF(JiraQueryData2.VERSION);
             out.writeInt(queriesData.size());
-            for (Entry<String, JiraQueryData> entry : queriesData.entrySet()) {
+            for (Entry<String, JiraQueryData2> entry : queriesData.entrySet()) {
                 out.writeUTF(entry.getKey());
                 out.writeObject(entry.getValue());
             }
@@ -289,5 +329,267 @@ public class JiraStorageManager {
         public String getQueryName () {
             return queryName;
         }
+    }
+    
+    private static class JiraQueryData2 implements Serializable  {
+        private static final String VERSION = "0.2";                    //NOI18N
+        
+        private final String queryName;
+        private final long lastRefresh;
+        
+        private static class ContentFilterData implements Serializable  {
+            private String queryString;
+            private boolean isSearchingComments;
+            private boolean isSearchingDescription;
+            private boolean isSearchingEnvironment;
+            private boolean isSearchingSummary;
+            
+        }
+        private final ContentFilterData contentFilterData;
+                
+        private final String[] projectFilterData;
+        private final String[] issueTypeFilterData;
+        private final String[] componentsData;
+        private final String[] fixForVersionsData;
+        private final String[] reportedInVersionFilterData;
+        private final String[] statusFilterData;
+        private final String[] resolutionFilterData;
+        private final String[] priorityFilterData;
+
+        private static class UserFilterData implements Serializable  {
+            private String group;
+            private String user;
+            private boolean current;
+            private boolean nobody;
+        }
+        private final UserFilterData reportedByFilterData;
+        private final UserFilterData assignedToFilterData;
+
+        private static class EstimateVsActualFilterData implements Serializable  {
+            private long minVariation;
+            private long maxVariation;
+        }
+        private final EstimateVsActualFilterData estimateVsActualFilterData;
+
+        private static class DateRangeFilterData implements Serializable {
+            private Date fromDate;
+            private Date toDate;
+        }
+        private final DateRangeFilterData dueDateFilterData;
+        private final DateRangeFilterData createdDateFilterData;
+        private final DateRangeFilterData updatedDateFilterData;
+        
+        public JiraQueryData2(String queryName, long lastRefresh, FilterDefinition fd) {
+            this.queryName = queryName;
+            this.lastRefresh = lastRefresh;
+            
+            assignedToFilterData = createUserData(fd.getAssignedToFilter());
+            
+            ComponentFilter cmpf = fd.getComponentFilter();
+            componentsData = cmpf != null? JiraUtils.toIds(cmpf.getComponents()): null;
+            
+            ContentFilter cntf = fd.getContentFilter();
+            if(cntf != null) {
+                contentFilterData = new ContentFilterData();
+                contentFilterData.queryString = cntf.getQueryString();
+                contentFilterData.isSearchingComments = cntf.isSearchingComments();
+                contentFilterData.isSearchingDescription = cntf.isSearchingDescription();
+                contentFilterData.isSearchingEnvironment = cntf.isSearchingEnvironment();
+                contentFilterData.isSearchingSummary = cntf.isSearchingSummary();
+            } else {
+                contentFilterData = null;
+            }
+            
+            createdDateFilterData = createDateRangeData(fd.getCreatedDateFilter());
+            dueDateFilterData = createDateRangeData(fd.getDueDateFilter());
+            updatedDateFilterData = createDateRangeData(fd.getUpdatedDateFilter());
+            
+            EstimateVsActualFilter evaf = fd.getEstimateVsActualFilter();
+            if(evaf != null) {
+                estimateVsActualFilterData = new EstimateVsActualFilterData();
+                estimateVsActualFilterData.maxVariation = evaf.getMaxVariation();
+                estimateVsActualFilterData.minVariation = evaf.getMinVariation();
+            } else {
+                estimateVsActualFilterData = null;
+            }
+            
+            VersionFilter f4vf = fd.getFixForVersionFilter();
+            fixForVersionsData = f4vf != null ? JiraUtils.toIds(f4vf.getVersions()) : null;
+            
+            IssueTypeFilter itf = fd.getIssueTypeFilter();
+            issueTypeFilterData = itf != null ? JiraUtils.toIds(itf.getIssueTypes()) : null;
+            
+            PriorityFilter prif = fd.getPriorityFilter();
+            priorityFilterData = prif != null ? JiraUtils.toIds(prif.getPriorities()) : null;
+            
+            ProjectFilter prof = fd.getProjectFilter();
+            projectFilterData = prof != null ? JiraUtils.toIds(prof.getProjects()) : null;
+            
+            reportedByFilterData = createUserData(fd.getReportedByFilter());
+            
+            VersionFilter rivf = fd.getReportedInVersionFilter();
+            reportedInVersionFilterData = rivf != null ? JiraUtils.toIds(rivf.getVersions()) : null;
+            
+            ResolutionFilter rf = fd.getResolutionFilter();
+            resolutionFilterData = rf != null ? JiraUtils.toIds(rf.getResolutions()) : null;
+            
+            StatusFilter sf = fd.getStatusFilter();
+            statusFilterData = sf != null ? JiraUtils.toIds(sf.getStatuses()) : null;
+        }        
+    }
+    
+    private static JiraQueryData2.DateRangeFilterData createDateRangeData(DateFilter df) {
+        if(df != null && df instanceof DateRangeFilter) {
+            DateRangeFilter drf = (DateRangeFilter) df;
+            JiraQueryData2.DateRangeFilterData drd = new JiraQueryData2.DateRangeFilterData();
+            drd.fromDate = drf.getFromDate();
+            drd.toDate = drf.getToDate();
+            return drd;
+        } 
+        return null;
+    }
+    
+    private static JiraQueryData2.UserFilterData createUserData(UserFilter uf) {
+        if(uf != null) {
+            JiraQueryData2.UserFilterData ufd = new JiraQueryData2.UserFilterData();
+            if(uf instanceof UserInGroupFilter) {
+                ufd.group = ((UserInGroupFilter)uf).getGroup();
+                return ufd;
+            } else if(uf instanceof SpecificUserFilter) {
+                ufd.user = ((SpecificUserFilter)uf).getUser();
+                return ufd;
+            } else if(uf instanceof CurrentUserFilter) {
+                ufd.current = true;
+            } else if(uf instanceof NobodyFilter) { 
+                ufd.nobody = true;
+            }
+            return ufd;
+        }
+        return null;
+    }
+    
+    private FilterDefinition getFilterDefinition(JiraRepository repository, JiraQueryData2 jqd) {
+        JiraConnectorProvider connectorProvider = JiraConnectorSupport.getInstance().getConnector();
+        FilterDefinition fd =  connectorProvider.createFilterDefinition();
+        
+        JiraConfiguration conf = repository.getConfiguration();
+        
+        if(jqd.assignedToFilterData != null) {
+            fd.setAssignedToFilter(createUserFilter(jqd.assignedToFilterData, connectorProvider));
+        }
+        
+        if(jqd.componentsData != null) {
+            Component[] cmps = conf.getComponents(jqd.componentsData);
+            fd.setComponentFilter(connectorProvider.createComponentFilter(cmps,cmps.length == 0));
+        }
+        
+        if(jqd.projectFilterData != null) {
+            List<Project> projects = new ArrayList(jqd.projectFilterData.length);
+            for (String id : jqd.projectFilterData) {
+                Project p = conf.getProjectById(id);
+                if(p != null) {
+                    projects.add(p);
+                }
+            }
+            fd.setProjectFilter(connectorProvider.createProjectFilter(projects.toArray(new Project[projects.size()])));
+        }
+        
+        if(jqd.contentFilterData != null) {
+            fd.setContentFilter(connectorProvider.createContentFilter(
+                jqd.contentFilterData.queryString,
+                jqd.contentFilterData.isSearchingSummary,
+                jqd.contentFilterData.isSearchingDescription,
+                jqd.contentFilterData.isSearchingEnvironment,
+                jqd.contentFilterData.isSearchingComments));
+        }
+        
+        if(jqd.createdDateFilterData != null) {
+            fd.setCreatedDateFilter(connectorProvider.createDateRangeFilter(jqd.createdDateFilterData.fromDate, jqd.createdDateFilterData.toDate));
+        }
+        
+        if(jqd.dueDateFilterData != null) {
+            fd.setDueDateFilter(connectorProvider.createDateRangeFilter(jqd.dueDateFilterData.fromDate, jqd.dueDateFilterData.toDate));
+        }
+        
+        if(jqd.estimateVsActualFilterData != null) {
+            fd.setEstimateVsActualFilter(connectorProvider.createEstimateVsActualFilter(jqd.estimateVsActualFilterData.minVariation, jqd.estimateVsActualFilterData.maxVariation));
+        }
+        
+        if(jqd.fixForVersionsData != null) {
+            Version[] versions = conf.getVersions(jqd.fixForVersionsData);
+            fd.setFixForVersionFilter(connectorProvider.createVersionFilter(versions, versions.length == 0, true, false));
+        }
+        
+        if(jqd.issueTypeFilterData != null) {
+            List<IssueType> issueTypes = new ArrayList(jqd.issueTypeFilterData.length);
+            for (String id : jqd.issueTypeFilterData) {
+                IssueType it = conf.getIssueTypeById(id);
+                if(it != null) {
+                    issueTypes.add(it);
+                }
+            }
+            fd.setIssueTypeFilter(connectorProvider.createIssueTypeFilter(issueTypes.toArray(new IssueType[issueTypes.size()])));
+        }
+        
+        if(jqd.priorityFilterData != null) {
+            List<Priority> priorities = new ArrayList(jqd.priorityFilterData.length);
+            for (String id : jqd.priorityFilterData) {
+                Priority p = conf.getPriorityById(id);
+                if(p != null) {
+                    priorities.add(p);
+                }
+            }
+            fd.setPriorityFilter(connectorProvider.createPriorityFilter(priorities.toArray(new Priority[priorities.size()])));
+        }
+        
+        if(jqd.reportedByFilterData != null) {
+            fd.setReportedByFilter(createUserFilter(jqd.reportedByFilterData, connectorProvider));
+        }        
+        
+        if(jqd.reportedInVersionFilterData != null) {
+            Version[] versions = conf.getVersions(jqd.reportedInVersionFilterData);
+            fd.setReportedInVersionFilter(connectorProvider.createVersionFilter(versions, versions.length == 0, true, false));
+        }
+        
+        if(jqd.resolutionFilterData != null) {
+            List<Resolution> resolutions = new ArrayList(jqd.resolutionFilterData.length);
+            for (String id : jqd.resolutionFilterData) {
+                Resolution r = conf.getResolutionById(id);
+                if(r != null) {
+                    resolutions.add(r);
+                }
+            }
+            fd.setResolutionFilter(connectorProvider.createResolutionFilter(resolutions.toArray(new Resolution[resolutions.size()])));
+        }
+        
+        if(jqd.statusFilterData != null) {
+            List<JiraStatus> statuses = new ArrayList(jqd.statusFilterData.length);
+            for (String id : jqd.statusFilterData) {
+                JiraStatus r = conf.getStatusById(id);
+                if(r != null) {
+                    statuses.add(r);
+                }
+            }
+            fd.setStatusFilter(connectorProvider.createStatusFilter(statuses.toArray(new JiraStatus[statuses.size()])));
+        }
+        
+        if(jqd.updatedDateFilterData != null) {
+            fd.setUpdatedDateFilter(connectorProvider.createDateRangeFilter(jqd.updatedDateFilterData.fromDate, jqd.updatedDateFilterData.toDate));
+        }
+        
+        return fd;
+    }
+
+    private UserFilter createUserFilter(JiraQueryData2.UserFilterData ufd, JiraConnectorProvider connectorProvider) {
+        if(ufd.current) {
+            return connectorProvider.createCurrentUserFilter();
+        } else if(ufd.nobody) {
+            return connectorProvider.createNobodyFilter();
+        } else if(ufd.group != null) {
+            return connectorProvider.createUserInGroupFilter(ufd.group);
+        } else if(ufd.user != null) {
+            return connectorProvider.createSpecificUserFilter(ufd.user);
+        }
+        return null;
     }
 }

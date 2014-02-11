@@ -226,7 +226,6 @@ import org.openide.util.RequestProcessor;
                         RemoteLogger.info("error: empty line for " + traceName);
                         continue;
                     }
-                    line = unescape(line);
                     Buffer buf = new Buffer(line);
                     char respKind = buf.getChar();
                     int respId = buf.getInt();
@@ -363,7 +362,7 @@ import org.openide.util.RequestProcessor;
     }
     
     /*package*/ static void sendRequest(PrintWriter writer, FSSRequest request) {
-        String escapedPath = escape(request.getPath());
+        String escapedPath = FSSUtil.escape(request.getPath());
         String buffer = String.format("%c %d %d %s\n", request.getKind().getChar(), // NOI18N
                 request.getId(), escapedPath.length(), escapedPath);
         RemoteLogger.finest("### sending request {0}", buffer);
@@ -477,22 +476,6 @@ import org.openide.util.RequestProcessor;
         return remotePath;
     }
     
-    private static String unescape(String line) {
-        if (line.indexOf('\\') == -1) {
-            return line;
-        } else {
-            return  line.replace("\\n", "\n").replace("\\\\", "\\"); // NOI18N
-        }
-    }
-    
-    private static String escape(String line) {
-        if (line.indexOf('\n') == -1 && line.indexOf('\\') == -1) {
-            return line;
-        } else {
-            return  line.replace("\n", "\\n").replace("\\", "\\\\"); // NOI18N
-        }
-    }
-
     private FsServer getOrCreateServer() throws IOException, ConnectException, 
             ConnectionManager.CancellationException, InterruptedException, 
             ExecutionException, InitializationException {

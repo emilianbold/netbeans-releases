@@ -200,20 +200,12 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
                 StringBuilder result = new StringBuilder();
                 String key = each.second().getImage();
                 String value = resourceBundles.getValue(each.first().getImage(), each.second().getImage());
-                String bundle = each.first().getImage();
                 result.append("<html><body>")
-                        /* displaying the bundle in the tooltip looks a bit strange,
-                          so commented out for now - maybe using a smaller font would
-                          help
-                         append("<i>")
-                        .append(NbBundle.getMessage(ELHyperlinkProvider.class, "ResourceBundle", bundle))
-                        .append("</i><br>")
-                         */
                         .append(key)
                         .append("=<font color='#ce7b00'>") // NOI18N
                         .append(value)
                         .append("</font>"); // NOI18N
-                
+
                 return result.toString();
             }
         }

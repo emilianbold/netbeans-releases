@@ -88,7 +88,7 @@ public final class RecentViewListAction extends AbstractAction
     private RecentViewListAction( boolean documentsOnly ) {
         this.documentsOnly = documentsOnly;
         putValue(NAME, NbBundle.getMessage(RecentViewListAction.class,
-                documentsOnly ? "CTL_RecentViewListAction" : "CTL_RecentDocumentListAction"));
+                documentsOnly ? "CTL_RecentDocumentListAction" : "CTL_RecentViewListAction"));
         TopComponent.getRegistry().addPropertyChangeListener(
                 WeakListeners.propertyChange(this, TopComponent.getRegistry()));
         updateEnabled();

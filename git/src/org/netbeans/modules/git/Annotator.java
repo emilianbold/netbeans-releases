@@ -422,8 +422,9 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
         }
 
         MessageFormat uptodateFormat = getAnnotationProvider().UP_TO_DATE_FILE.getFormat();
-        return uptodateFormat.format(new Object [] { nameHtml, !folderAnnotation.isEmpty()
-                ? " " + folderAnnotation : "" }); // NOI18N
+        return uptodateFormat.format(new Object [] { nameHtml, folderAnnotation.isEmpty() ? "" //NOI18N
+                : getAnnotationProvider().TEXT_ANNOTATION.getFormat().format(new Object[] { " " + folderAnnotation + "" } ) //NOI18N
+        });
     }
 
     private void addFileWithRepositoryAnnotation (RepositoryInfo info, File file) {
@@ -468,6 +469,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
             String statusText = mostImportantInfo.getShortStatusText();
             if(!statusText.isEmpty()) {
                 textAnnotation = " [" + mostImportantInfo.getShortStatusText() + "]"; // NOI18N
+                textAnnotation = getAnnotationProvider().TEXT_ANNOTATION.getFormat().format(new Object[] { textAnnotation });
             } else {
                 textAnnotation = ""; // NOI18N
             }

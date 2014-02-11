@@ -196,7 +196,7 @@ public class Annotator {
             textAnnotation = ""; // NOI18N
         }
         if (textAnnotation.length() > 0) {
-            textAnnotation = NbBundle.getMessage(Annotator.class, "textAnnotation", textAnnotation);
+            textAnnotation = getAnnotationProvider().TEXT_ANNOTATION.getFormat().format(new Object[] { textAnnotation });
         }
 
         // aligned with SvnUtils.getComparableStatus
@@ -308,7 +308,7 @@ public class Annotator {
             textAnnotation = ""; // NOI18N
         }
         if (textAnnotation.length() > 0) {
-            textAnnotation = NbBundle.getMessage(Annotator.class, "textAnnotation", textAnnotation); // NOI18N
+            textAnnotation = getAnnotationProvider().TEXT_ANNOTATION.getFormat().format(new Object[] { textAnnotation });
         }
 
         if (status == FileInformation.STATUS_UNKNOWN) {

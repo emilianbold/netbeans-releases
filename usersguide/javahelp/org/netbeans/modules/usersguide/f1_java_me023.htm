@@ -2,27 +2,20 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Add Java Platform Wizard: Bootstrap Libraries Page</title>
+<title>Java ME Embedded Project Properties Dialog Box: Libraries</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-02-06</p>
-<p><a id="org.netbeans.modules.mobility.cldcplatform.customwizard.ClasspathPanel" name="org.netbeans.modules.mobility.cldcplatform.customwizard.ClasspathPanel"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref722" name="sthref722"></a>
-<h1>Add Java Platform Wizard: Bootstrap Libraries Page</h1>
+<p>Beta Draft: 2014-02-10</p>
+<p><a id="org.netbeans.modules.j2me.project.ui.customizer.J2MELibrariesPanel" name="org.netbeans.modules.j2me.project.ui.customizer.J2MELibrariesPanel"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref723" name="sthref723"></a>
+<h1>Java ME Embedded Project Properties Dialog Box: Libraries</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to specify the classpaths of libraries used by a custom (non-UEI compliant) emulator platform. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1641">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
+<p>Use to configure the project's classpath and the way project dependencies are handled.</p>
 
-<table summary="Descriptions of elements on Bootstrap Libraries page of the Add Java Platform wizard." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="31%" />
+<table summary="Descriptions of library configurations for a standard project." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="39%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
@@ -33,30 +26,82 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t24" headers="r1c1-t24">
-<p>Bootstrap Libraries</p>
+<p>Libraries Folder</p>
 </td>
 <td align="left" headers="r2c1-t24 r1c2-t24">
-<p>Displays the libraries and APIs used by the platform that the IDE detects.</p>
-<p>Click <b>Add</b> and navigate to the library file to add another library. Select a library and click <b>Remove</b> to remove it from the platform.</p>
+<p>Sets a folder to hold shared libraries (or references to those libraries) making it easier to share libraries among different users and projects.</p>
+<p>You can create a new folder or specify an existing folder that already contains copies of the libraries on which your project depends.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t24" headers="r1c1-t24">
-<p>Detected APIs</p>
+<p>Browse</p>
 </td>
 <td align="left" headers="r3c1-t24 r1c2-t24">
-<p>Displays the device profiles, device profiles, and any optional APIs supported by the platform.</p>
+<p>Opens a file chooser in which you can select a libraries folder, if at least one library folder exists.</p>
+<p>You can also configure whether each library is referenced with a relative path or an absolute path.</p>
+<p>If no library folder exists, opens the <b>New Libraries Folder</b> wizard that you use to set a libraries folder and to specify how to reference each library.</p>
+<p>The simplest case is to have the libraries copied to that folder. You can also refer to the libraries in their existing location (with a relative path or an absolute path). If you have specified an existing folder, you also have the option of using copies of libraries that are already in that folder instead of the copies that are contained in the IDE's Ant Library Manager.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t24" headers="r1c1-t24">
+<p>Compile and Processor tabs</p>
+</td>
+<td align="left" headers="r4c1-t24 r1c2-t24">
+<p>Enables you to configure the classpath individually for compilation and runtime respectively.</p>
+<p>Use the buttons on the right side of the panel to add, remove, and change the order of classpath elements. You can perform any of the following:</p>
+<ul>
+<li><b>Add Project</b></li>
+<li><b>Add Library</b></li>
+<li><b>Add JAR/Folder</b></li>
+</ul>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t24" headers="r1c1-t24">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Add Project</p>
+</td>
+<td align="left" headers="r5c1-t24 r1c2-t24">
+<p>Adds the build output, source files, and Javadoc files of another IDE project.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t24" headers="r1c1-t24">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Add Library</p>
+</td>
+<td align="left" headers="r6c1-t24 r1c2-t24">
+<p>Adds a collection of binary files, source files, and Javadoc files.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t24" headers="r1c1-t24">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Add JAR/Folder.</p>
+</td>
+<td align="left" headers="r7c1-t24 r1c2-t24">
+<p>Adds a Java archive file somewhere on your system.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t24" headers="r1c1-t24">
+<p>Build Projects on Classpath</p>
+</td>
+<td align="left" headers="r8c1-t24 r1c2-t24">
+<p>When you use the <b>Build</b> command, builds all projects on which that project depends.</p>
+<p>You can temporarily clear this checkbox to make builds of the project faster.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
+<p><b>Note:</b></p>
+<p>You can select an item in the list and use the Edit button to associate sources and Javadoc documentation with an item for that project. However, if you plan to use the classpath element in many projects, it is better to create a library for that classpath element in the Ant Library Manager (<b>Tools</b> &gt; <b>Libraries</b>).</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1640">
-<param name="text" value="<html><u>&quot;Using Java ME Emulator Platforms&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1558">
+<param name="text" value="<html><u>&quot;Creating Java ME Projects&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

@@ -57,6 +57,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.MissingResourceException;
@@ -107,7 +108,7 @@ import org.openide.windows.TopComponent;
  */
 public final class IssueTopComponent extends TopComponent implements PropertyChangeListener {
     /** Set of opened {@code IssueTopComponent}s. */
-    private static final Set<IssueTopComponent> openIssues = new HashSet<IssueTopComponent>();
+    private static final Set<IssueTopComponent> openIssues = Collections.synchronizedSet(new HashSet<IssueTopComponent>());
     /** Issue displayed by this top-component. */
     private IssueImpl issue;
     private RequestProcessor rp = new RequestProcessor("Bugtracking issue", 1, true); // NOI18N

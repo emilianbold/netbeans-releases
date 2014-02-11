@@ -85,18 +85,21 @@ public class APTHandlersSupportImpl {
         ((APTPreprocHandlerImpl)preprocHandler).setValid(false);
     }
 
-    public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths, APTFileSearch fileSearch) {
-        // user paths could contain "-include file" elements
+    public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths, List<String> includeFileEntries, APTFileSearch fileSearch) {
+        // for now prepare IncludeDirEntry for "-include file" elements
         List<IncludeDirEntry> fileEntries = new ArrayList<IncludeDirEntry>(0);
-        SupportAPIAccessor accessor = SupportAPIAccessor.get();
-        for (IncludeDirEntry includeDirEntry : userIncludePaths) {
-            if (!accessor.isExistingDirectory(includeDirEntry)) {
-                // check if this is file
-                if (CndFileUtils.isExistingFile(includeDirEntry.getFileSystem(), includeDirEntry.getAsSharedCharSequence().toString())) {
-                    fileEntries.add(includeDirEntry);
-                }
-            }
+        for (String file : includeFileEntries) {
+            fileEntries.add(IncludeDirEntry.get(startFile.getFileSystem(), file));
         }
+//        SupportAPIAccessor accessor = SupportAPIAccessor.get();
+//        for (IncludeDirEntry includeDirEntry : userIncludePaths) {
+//            if (!accessor.isExistingDirectory(includeDirEntry)) {
+//                // check if this is file
+//                if (CndFileUtils.isExistingFile(includeDirEntry.getFileSystem(), includeDirEntry.getAsSharedCharSequence().toString())) {
+//                    fileEntries.add(includeDirEntry);
+//                }
+//            }
+//        }
         return new APTIncludeHandlerImpl(startFile, sysIncludePaths, userIncludePaths, fileEntries, fileSearch);
     }
     

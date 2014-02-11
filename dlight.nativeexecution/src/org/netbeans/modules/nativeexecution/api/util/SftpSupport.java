@@ -387,7 +387,9 @@ class SftpSupport {
                 }
                 statInfo = createStatInfo(dirName, baseName, attrs, cftp);
             } catch (SftpException e) {
-                cftp.quit();
+                if (MiscUtils.mightBrokeSftpChannel(e)) {
+                    cftp.quit();
+                }
                 throw decorateSftpException(e, dstFileName);
             } finally {
                 releaseChannel(cftp);
@@ -506,7 +508,9 @@ class SftpSupport {
             try {
                 cftp.get(srcFileName, dstFileName);
             } catch (SftpException e) {
-                cftp.quit();
+                if (MiscUtils.mightBrokeSftpChannel(e)) {
+                    cftp.quit();
+                }
                 throw decorateSftpException(e, srcFileName);
             } finally {
                 releaseChannel(cftp);
@@ -603,7 +607,9 @@ class SftpSupport {
                             if (LOG.isLoggable(Level.FINE)) {
                                 LOG.log(Level.FINE, "{0} - exception while attempt {1}", new Object[]{getTraceName(), attempt});
                             }
-                            cftp.quit();
+                            if (MiscUtils.mightBrokeSftpChannel(e)) {
+                                cftp.quit();
+                            }
                         } else {
                             // re-try in case of failure only
                             // otherwise consider this exception as unrecoverable
@@ -687,7 +693,9 @@ class SftpSupport {
                             if (LOG.isLoggable(Level.FINE)) {
                                 LOG.log(Level.FINE, "{0} - exception while attempt {1}", new Object[]{getTraceName(), attempt});
                             }
-                            cftp.quit();
+                            if (MiscUtils.mightBrokeSftpChannel(e)) {
+                                cftp.quit();
+                            }
                         } else {
                             // re-try in case of failure only
                             // otherwise consider this exception as unrecoverable

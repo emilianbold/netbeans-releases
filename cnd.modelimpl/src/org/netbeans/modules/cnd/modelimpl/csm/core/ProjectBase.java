@@ -465,6 +465,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
+    public static CharSequence getRepositoryUnitName(FileSystem fs, CharSequence projectSourceRoot) {
+        Parameters.notNull("FileSystem", fs); //NOI18N
+        String result = projectSourceRoot.toString() + "/N/"; // NOI18N
+        return ProjectNameCache.getManager().getString(result);
+    }
+
     public static CharSequence getRepositoryUnitName(FileSystem fs, NativeProject nativeProject) {
         Parameters.notNull("FileSystem", fs); //NOI18N
         String result = ((NativeProject) nativeProject).getProjectRoot() + "/N/"; // NOI18N
@@ -1399,6 +1405,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         List<FSPath> origSysIncludePaths = nativeFile.getSystemIncludePaths();
         List<IncludeDirEntry> userIncludePaths = userPathStorage.get(origUserIncludePaths.toString(), origUserIncludePaths);
         List<IncludeDirEntry> sysIncludePaths = sysAPTData.getIncludes(origSysIncludePaths.toString(), origSysIncludePaths);
+        List<String> includeFileEntries = nativeFile.getIncludeFiles();
         String entryKey = FileContainer.getFileKey(nativeFile.getAbsolutePath(), true).toString();
         if (CndUtils.isDebugMode()) {
             FileSystem curPrjFS = getFileSystem();
@@ -1412,7 +1419,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (unitDescriptor != null) {
             searcher = APTFileSearch.get(KeyUtilities.createProjectKey(unitDescriptor, -1));
         }
-        return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludePaths, userIncludePaths, searcher);
+        return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludePaths, userIncludePaths, includeFileEntries, searcher);
     }
 
     private APTMacroMap getMacroMap(NativeFileItem nativeFile) {
