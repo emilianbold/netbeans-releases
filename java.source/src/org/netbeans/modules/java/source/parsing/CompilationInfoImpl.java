@@ -181,7 +181,7 @@ public final class CompilationInfoImpl {
 
     void update (final Snapshot snapshot) throws IOException {
         assert snapshot != null;
-        AbstractSourceFileObject.getFactory().update(this.jfo, snapshot.getText());
+        this.jfo.update(snapshot.getText());
         this.snapshot = snapshot;
     }
     

@@ -448,23 +448,23 @@ public abstract class AbstractSourceFileObject implements PrefetchableJavaFileOb
             this.root = root;
         }
 
-        protected FileObject resolveFileObject (boolean write) {
+        public FileObject resolveFileObject (boolean write) {
             return file;
         }
 
-        protected URL getURL() throws IOException {
+        public URL getURL() throws IOException {
             return file == null ? null : file.toURL();
         }
 
-        protected String getExt() {
+        public String getExt() {
             return file == null ? null : file.getExt();
         }
 
-        protected String getName(boolean includeExtension) {
+        public String getName(boolean includeExtension) {
             return file == null ? null : includeExtension ? file.getNameExt() : file.getName();
         }
 
-        protected String getRelativePath() {
+        public String getRelativePath() {
             if (file == null) {
                 return null;
             }

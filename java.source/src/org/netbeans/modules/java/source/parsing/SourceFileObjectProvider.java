@@ -75,14 +75,4 @@ public interface SourceFileObjectProvider {
             @NullAllowed JavaFileFilterImplementation filter,
             @NullAllowed CharSequence content,
             boolean renderNow) throws IOException;
-       
-    /**
-     * Forces the provider to refresh the content of the given file,
-     * @param javaFileObject to be refreshed
-     * @param content of the file object if null, the snapshot from fo is taken
-     * @throws java.io.IOException on io failure.
-     */
-    public abstract void update (
-            @NonNull AbstractSourceFileObject javaFileObject,
-            @NonNull CharSequence content) throws IOException;
 }

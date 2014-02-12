@@ -387,7 +387,7 @@ public class FileObjects {
         final SourceFileObject.Handle handle = new SourceFileObject.Handle(root){
 
             @Override
-            protected FileObject resolveFileObject(boolean write) {
+            public FileObject resolveFileObject(boolean write) {
                 FileObject res = super.resolveFileObject(write);
                 if (res == null) {
                     try {
@@ -407,12 +407,12 @@ public class FileObjects {
             }
 
             @Override
-            protected URL getURL() throws IOException {
+            public URL getURL() throws IOException {
                 return path;
             }
 
             @Override
-            protected String getExt() {
+            public String getExt() {
                 String ext = super.getExt();
                 if (ext == null) {
                     ext = FileObjects.getExtension(path.getPath());
@@ -421,7 +421,7 @@ public class FileObjects {
             }
 
             @Override
-            protected String getName(boolean includeExtension) {
+            public String getName(boolean includeExtension) {
                 String name = super.getName(includeExtension);
                 if (name == null) {
                     name = FileObjects.getBaseName(path.getPath(),NBFS_SEPARATOR_CHAR);
@@ -433,13 +433,11 @@ public class FileObjects {
             }
 
             @Override
-            protected String getRelativePath() {
+            public String getRelativePath() {
                 String relativePath = super.getRelativePath();
                 if (relativePath == null) {
                     try {
-                        relativePath = FileObjects.getRelativePath(root.getURL(), path);
-                    } catch (FileStateInvalidException ex) {
-                        Exceptions.printStackTrace(ex);
+                        relativePath = FileObjects.getRelativePath(root.toURL(), path);
                     } catch (URISyntaxException ex) {
                         Exceptions.printStackTrace(ex);
                     }
