@@ -262,17 +262,33 @@ public class CallStackNodeModel implements NodeModel {
     ) {
         String language = s.getCurrentLanguage();//sf.getDefaultStratum ();
         int ln = sf.getLineNumber (language);
-        String fileName = l ? 
-            sf.getClassName () :
-            BreakpointsNodeModel.getShort (sf.getClassName ());
-        if ("Java".equals (language) || !sf.getAvailableStrata().contains(language))
-            fileName += "." + sf.getMethodName ();
-        else
+        String fileName = null;
+        boolean isJava = "Java".equals (language) || !sf.getAvailableStrata().contains(language);
+        if (!isJava) {
             try {
-                fileName = sf.getSourcePath (language);
+                if (l) {
+                    fileName = sf.getSourcePath(language);
+                    if ("JS".equals(language) && (fileName.startsWith("jdk/nashorn/internal/scripts/") ||
+                                                  fileName.startsWith("jdk\\nashorn\\internal\\scripts\\"))) {
+                        fileName = sf.getSourceName(language);
+                    }
+                } else {
+                    fileName = sf.getSourceName(language);
+                }
+                int dot = fileName.lastIndexOf('.');
+                if (dot > 0) {
+                    fileName = fileName.substring(0, dot + 1);
+                }
+                fileName += sf.getMethodName();
             } catch (AbsentInformationException e) {
-                fileName += "." + sf.getMethodName ();
+                isJava = true;
             }
+        }
+        if (isJava) {
+            fileName = l ? sf.getClassName () :
+                           BreakpointsNodeModel.getShort (sf.getClassName ());
+            fileName += "." + sf.getMethodName ();
+        }
         if (ln < 0)
             return fileName;
         return fileName + ":" + ln;
