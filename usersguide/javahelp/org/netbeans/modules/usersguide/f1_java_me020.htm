@@ -2,27 +2,28 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>New Java ME Embedded Application Wizard: Name and Location</title>
+<title>New MIDP File Wizard: Name and Location Page</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-02-10</p>
-<p><a id="org.netbeans.modules.j2me.project.wizard.PanelConfigureProject_APPLICATION" name="org.netbeans.modules.j2me.project.wizard.PanelConfigureProject_APPLICATION"></a></p>
+<p>Beta Draft: 2014-02-12</p>
+<p><a id="org.netbeans.modules.mobility.project.ui.wizard.MIDPTargetChooserPanel" name="org.netbeans.modules.mobility.project.ui.wizard.MIDPTargetChooserPanel"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref720" name="sthref720"></a>
-<h1>New Java ME Embedded Application Wizard: Name and Location</h1>
+<h1>New MIDP File Wizard: Name and Location Page</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to create a new standard Java ME Embedded project with a MIDlet. 
+<p>Use to specify the name of the MIDP class and its location within a project. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1558">
-<param name="text" value="<html><u>More</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1618">
+<param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
+<p>Select a Java ME project, then choose <b>File</b> &gt; <b>New File</b>, select a MIDP file from the CLDC category to access this page.</p>
 
-<table summary="Descriptions of standard Java project name and location properties." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="40%" />
+<table summary="Descriptions of fields in Name and Location page of the New MIDP File wizard." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="31%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
@@ -33,104 +34,75 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t21" headers="r1c1-t21">
-<p>Project Name</p>
+<p>MIDP Class Name</p>
 </td>
 <td align="left" headers="r2c1-t21 r1c2-t21">
-<p>Specifies the display name of the project. This name is also used to create the project folder.</p>
+<p>Specifies the name of the new MIDP class.</p>
+<p>Note that there cannot be two classes with identical names within the same project.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t21" headers="r1c1-t21">
-<p>Project Location</p>
+<p>Project</p>
 </td>
 <td align="left" headers="r3c1-t21 r1c2-t21">
-<p>Specifies the folder where you want to store the project metadata and source code.</p>
+<p>Displays the name of the project selected in the previous step.</p>
+<p>This field is not editable.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t21" headers="r1c1-t21">
-<p>Project Folder</p>
+<p>Package</p>
 </td>
 <td align="left" headers="r4c1-t21 r1c2-t21">
-<p>Specifies the folder where you want to store the project metadata and source code.</p>
-<p>The resulting <b>Project Folder</b> field shows the root project directory that contains folders for your sources, build and properties files, compiled classes, and so on.</p>
-<p>The Project Folder is a concatenation of the project location and the project name.</p>
+<p>Specifies the location of the MIDlet class.</p>
+<p>You can select an existing package from the drop-down list or type in the name of a new package. The new package is created along with the class.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t21" headers="r1c1-t21">
-<p>JDK Path</p>
+<p>Created File</p>
 </td>
 <td align="left" headers="r5c1-t21 r1c2-t21">
-<p>Specifies the target JDK.</p>
+<p>Shows the name and location of the file when it is created.</p>
+<p>This field is not editable.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t21" headers="r1c1-t21">
-<p>Java ME Platform</p>
+<p>MIDlet Class Name</p>
 </td>
 <td align="left" headers="r6c1-t21 r1c2-t21">
-<p>Specifies the location of the folder containing Java ME platform.</p>
-<p>Click <b>Manage Platforms</b> to add new platforms. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1557">
-<param name="text" value="<html><u>More</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
+<p>Specifies the displayable name that users see when the application is run on a mobile device.</p>
+<p>This field only available if you are creating a new MIDlet.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r7c1-t21" headers="r1c1-t21">
-<p>Device</p>
+<p>MIDlet Icon</p>
 </td>
 <td align="left" headers="r7c1-t21 r1c2-t21">
-<p>Specifies the device (an emulator or an external device) which is used for the execution of the built application.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t21" headers="r1c1-t21">
-<p>Configuration</p>
-</td>
-<td align="left" headers="r8c1-t21 r1c2-t21">
-<p>Determines the device configuration, affects the project's classpath.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r9c1-t21" headers="r1c1-t21">
-<p>Profile</p>
-</td>
-<td align="left" headers="r9c1-t21 r1c2-t21">
-<p>Determines the device profile, affects the project's classpath.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r10c1-t21" headers="r1c1-t21">
-<p>Use Dedicated Folder for Storing Libraries</p>
-</td>
-<td align="left" headers="r10c1-t21 r1c2-t21">
-<p>When selected, you can specify a Libraries Folder where required compilation libraries are stored.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r11c1-t21" headers="r1c1-t21">
-<p>Create Midlet</p>
-</td>
-<td align="left" headers="r11c1-t21 r1c2-t21">
-<p>Specifies the package and name of the MIDlet.</p>
+<p>Specifies an n icon that is associated with the MIDlet. Users see this icon when the MIDlet is run on a mobile device.</p>
+<p>This field only available if you are creating a new MIDlet.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>When you click Finish, the project is created on your computer and opened in both the <b>Projects</b> window and the <b>Files</b> window.</p>
 <hr><p><b>Related Topics</b></p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
+<p>Developing Applications with NetBeans IDE, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1561">
-<param name="text" value="<html><u>&quot;How to Create a Java ME Embedded Application from a Template&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG370">
+<param name="text" value="<html><u>&quot;Using Java ME ProjectTemplates&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>Developing Applications with NetBeans IDE, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1610">
+<param name="text" value="<html><u>&quot;Working with Java ME Project Configurations&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
