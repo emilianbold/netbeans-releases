@@ -78,7 +78,8 @@ public class AngularDoc {
     private boolean loadingStarted;
     
     private static final String CACHE_FOLDER_NAME = "ajs-doc"; //NOI18N
-
+    public static final String DOC_VERSION = "1.2.12";
+    
     public static synchronized AngularDoc getDefault() {
         if (INSTANCE == null) {
             INSTANCE = new AngularDoc();
@@ -107,7 +108,7 @@ public class AngularDoc {
     }
 
     private File getCacheFile(Directive directive) {
-        return Places.getCacheSubfile(new StringBuilder().append(CACHE_FOLDER_NAME).append('/').append(directive.name()).toString());
+        return Places.getCacheSubfile(new StringBuilder().append(CACHE_FOLDER_NAME).append('/').append(DOC_VERSION).append('/').append(directive.name()).toString());
     }
 
     private String getDoc(Directive directive) {
