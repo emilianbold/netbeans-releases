@@ -21,6 +21,8 @@
 **/*.jar:**/filtersets-default.xml:
 **/*.jar:**/filters-default.xml:
 **/*.jar:**/heapwalk/oqlqueries-default.xml:
+**/*.jar:**/java/hints/resources/default.properties
+**/*.jar:**/java/hints/resources/jdk*.properties
 exclude **/*.jar:**/Bundle_noi18n.properties
 exclude **/batik-mod.jar:
 exclude **/json-*.jar:

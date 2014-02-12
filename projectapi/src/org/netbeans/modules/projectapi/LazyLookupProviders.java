@@ -101,25 +101,36 @@ public class LazyLookupProviders {
                             return;
                         }
                         insideBeforeLookup.set(true);
+                        boolean doSet = false;
                         try {
-                            Object instance = loadPSPInstance((String) attrs.get("class"), (String) attrs.get("method"), lkp); // NOI18N
-                            if (!service.isInstance(instance)) {
-                                // JRE #6456938: Class.cast currently throws an exception without details.
-                                throw new ClassCastException("Instance of " + instance.getClass() + " unassignable to " + service);
-                            }
                             synchronized (LOCK) {
                                 if (serviceNames == null) {
+                                    //somehow we got here even though the first serviceNames == null passed.
+                                    // the problem with concurrent execution is that this thread might return before the other one (with doSet == true) manages to finish.
+                                    //theoretically this should not be a problem given the lookup fires a change event, BUT.
+                                    // however is waiting here for completion a viable option? what about deadlocks and reentrance?
                                     return;
                                 }
-                            }
-                            // #205533: unsolvable (?) race condition - another thread could store an alternate instance of same service
-                            setLookups(Lookups.singleton(instance));
-                            synchronized (LOCK) {
+                                doSet = true;
                                 serviceNames = null;
+                            }
+                            if (doSet) {
+                                Object instance = loadPSPInstance((String) attrs.get("class"), (String) attrs.get("method"), lkp); // NOI18N
+                                if (!service.isInstance(instance)) {
+                                    // JRE #6456938: Class.cast currently throws an exception without details.
+                                    throw new ClassCastException("Instance of " + instance.getClass() + " unassignable to " + service);
+                                }
+                            setLookups(Lookups.singleton(instance));
                             }
                         } catch (Exception x) {
                             Exceptions.attachMessage(x, "while loading from " + attrs);
                             Exceptions.printStackTrace(x);
+                            if (doSet) {
+                                synchronized (LOCK) {
+                                    //go back and try again later? we failed in loadPSPInstance somehow
+                                    serviceNames = Arrays.asList(((String) attrs.get("service")).split(",")); // NOI18N
+                                }
+                            }
                         } finally {
                             insideBeforeLookup.set(false);
                         }
