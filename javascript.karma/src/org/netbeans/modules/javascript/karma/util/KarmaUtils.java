@@ -88,7 +88,10 @@ public final class KarmaUtils {
 
     public static List<File> findJsFiles(File dir) {
         assert dir != null;
-        assert dir.isDirectory() : dir;
+        // #241556
+        if (!dir.isDirectory()) {
+            return Collections.emptyList();
+        }
         File[] jsFiles = dir.listFiles(JS_FILES_FILTER);
         if (jsFiles == null) {
             return Collections.emptyList();
