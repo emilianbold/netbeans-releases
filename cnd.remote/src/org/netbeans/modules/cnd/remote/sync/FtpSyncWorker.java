@@ -314,10 +314,9 @@ import org.openide.util.RequestProcessor;
                 }
             };
             try {
-                xargs(feeder, "xargs", "mkdir", "-p");
+                xargs(feeder, "xargs", "mkdir", "-p"); // NOI18N
             } catch (InterruptedIOException ex) {
-                throw new IOException(NbBundle.getMessage(FtpSyncWorker.class,
-                        "FTP_Msg_Err_Canceled"));
+                throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Msg_Err_Canceled"));
             } catch (IOException ex) {
                 throw new IOException(NbBundle.getMessage(FtpSyncWorker.class,
                         "FTP_Msg_Err_CheckDirs", ex.getMessage() == null ? "" : ex.getMessage()), ex);
@@ -345,9 +344,9 @@ import org.openide.util.RequestProcessor;
                         String remoteBaseDir = mapper.getRemotePath(localBaseDir, true);
                         CndUtils.assertNotNull(remoteBaseDir, "null remote dir for " + localBaseDir); //NOI18N
                         if (remoteBaseDir != null) {
-                            requestWriter.append("cd ").append(remoteBaseDir).append('\n');
-                            requestWriter.append("rm -rf ").append(fileInfo.file.getName()).append('\n');
-                            requestWriter.append("ln -s ")
+                            requestWriter.append("cd ").append(remoteBaseDir).append('\n'); // NOI18N
+                            requestWriter.append("rm -rf ").append(fileInfo.file.getName()).append('\n'); // NOI18N
+                            requestWriter.append("ln -s ") // NOI18N
                                     .append(fileInfo.getLinkTarget()).append(' ')
                                     .append(fileInfo.file.getName()).append('\n');
                         }
@@ -357,10 +356,9 @@ import org.openide.util.RequestProcessor;
             }
         };
         try {
-            xargs(feeder, "sh", "-s");
+            xargs(feeder, "sh", "-s"); // NOI18N
         } catch (InterruptedIOException ex) {
-            throw new IOException(NbBundle.getMessage(FtpSyncWorker.class,
-                    "FTP_Msg_Err_Canceled"));
+            throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Msg_Err_Canceled"));
         } catch (IOException ex) {
             throw new IOException(NbBundle.getMessage(FtpSyncWorker.class,
                     "FTP_Msg_Err_CheckLinks", ex.getMessage() == null ? "" : ex.getMessage()), ex);
@@ -388,9 +386,10 @@ import org.openide.util.RequestProcessor;
                         if (err != null) {
                             err.println(uploadStatus.getError());
                         }
-                        throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, 
-                                "FTP_Msg_Err_UploadFile", srcFile, executionEnvironment, 
-                                remotePath, uploadStatus.getExitCode()));
+                        throw new IOException(
+                                NbBundle.getMessage(FtpSyncWorker.class, "FTP_Msg_Err_UploadFile", 
+                                        srcFile, executionEnvironment, remotePath, 
+                                        uploadStatus.getExitCode()));
                     }
                 }
                 progressHandle.progress(uploadCount++);
