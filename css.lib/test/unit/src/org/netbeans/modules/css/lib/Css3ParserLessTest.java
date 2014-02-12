@@ -701,4 +701,8 @@ public class Css3ParserLessTest extends CssTestBase {
     public void issue237975_02() {
         assertParses("@import (css) \"theme\";");
     }
+
+    public void testIssue240701() {
+        assertParses(".linear-gradient-multi(...) {}");
+    }
 }

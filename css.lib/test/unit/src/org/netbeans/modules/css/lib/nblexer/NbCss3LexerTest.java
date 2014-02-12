@@ -217,4 +217,9 @@ public class NbCss3LexerTest extends NbTestCase {
         LexerTestUtilities.checkTokenDump(this, "testfiles/less/testIssue240757.less.txt",
                 CssTokenId.language());
     }
+
+    public void testIssue240701() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/less/testIssue240701.less.txt",
+                CssTokenId.language());
+    }
 }
