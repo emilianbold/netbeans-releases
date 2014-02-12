@@ -86,6 +86,7 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -146,6 +147,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder.JFileChooserEx;
+import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.awt.HtmlRenderer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -2290,9 +2292,14 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                     lookingForIcon = f;
                 }
                 
-                iconTask = executor.schedule(this,
-                        LOADING_DELAY, TimeUnit.MILLISECONDS);
-            }                        
+                try {
+                    iconTask = executor.schedule(this, LOADING_DELAY, TimeUnit.MILLISECONDS);
+                } catch (RejectedExecutionException ex) {
+                    if (RemoteLogger.getInstance().isLoggable(Level.FINEST)) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
             return icon;
 //            
 //            if (f != null) {
@@ -2970,8 +2977,14 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                 if (updateTask != null) {
                     updateTask.cancel(true);
                 }
-                updateTask = executor.schedule(this,
-                        VALIDATION_DELAY, TimeUnit.MILLISECONDS);
+                try {
+                    updateTask = executor.schedule(this,
+                            VALIDATION_DELAY, TimeUnit.MILLISECONDS);
+                } catch (RejectedExecutionException ex) {
+                    if (RemoteLogger.getInstance().isLoggable(Level.FINEST)) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
             }            
         }
         public void updateTree(final File file) {
