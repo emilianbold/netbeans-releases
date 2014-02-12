@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
 import java.awt.Image;
 import java.beans.BeanInfo;
 import org.netbeans.modules.javaee.wildfly.customizer.Customizer;
-import org.netbeans.modules.javaee.wildfly.ide.JBJ2eePlatformFactory;
+import org.netbeans.modules.javaee.wildfly.ide.WildflyJ2eePlatformFactory;
 import java.awt.Component;
 import javax.swing.Action;
 import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
@@ -99,7 +99,7 @@ public class WildflyManagerNode extends AbstractNode implements Node.Cookie {
     @Override
     public Component getCustomizer() {
         CustomizerDataSupport dataSup = new CustomizerDataSupport(getDeploymentManager().getProperties());
-        return new Customizer(dataSup, new JBJ2eePlatformFactory().getJ2eePlatformImpl(getDeploymentManager()));
+        return new Customizer(dataSup, new WildflyJ2eePlatformFactory().getJ2eePlatformImpl(getDeploymentManager()));
     }
     
     public String  getAdminURL() {
