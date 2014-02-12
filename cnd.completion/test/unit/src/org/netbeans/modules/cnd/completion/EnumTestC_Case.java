@@ -44,33 +44,21 @@
 
 package org.netbeans.modules.cnd.completion;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public class CCCompletionTest extends CndBaseTestSuite {
+public class EnumTestC_Case extends CompletionBaseTestCase {
     
-    public CCCompletionTest() {
-        super("C/C++ Completion part 1");
+    public EnumTestC_Case(String testName) {
+        super(testName, true);
+    }
+    
         
-        this.addTestSuite(CheckModelTestCase.class);
-        this.addTestSuite(CCBasicCompletionTestCase.class);
-        this.addTestSuite(ClassContentTestCase.class);
-        this.addTestSuite(TemplateSpecializationTestCase.class);
-        this.addTestSuite(NamespacesTestCase.class);
-        this.addTestSuite(NamespaceUsingTestCase.class);
-        this.addTestSuite(StaticMembersTestCase.class);
-        this.addTestSuite(FriendTestCase.class);
-        this.addTestSuite(EnumTestCase.class);
-        this.addTestSuite(EnumTestC_Case.class);
+    public void testBug216764() throws Exception {
+        super.performTest("bug216764.c", 8, 19);
     }
-
-    public static Test suite() {
-        TestSuite suite = new CCCompletionTest();
-        return suite;
-    }
+        
 }
