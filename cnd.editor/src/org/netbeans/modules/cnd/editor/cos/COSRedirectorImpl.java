@@ -141,7 +141,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
             CloneableOpenSupport aCes = storage.getCloneableOpenSupport(dobj, cos);
             if (aCes != null) {
                 if (cos != aCes && LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "Use {0}\n for {1}", new Object[]{aCes, dobj.getPrimaryFile().getPath()});
+                    LOG.log(Level.FINE, "Use {0}:\n\t{1}\n for {2}", new Object[]{storage.cosPath, aCes, dobj.getPrimaryFile().getPath()});
                 }
                 return aCes;
             }
@@ -166,7 +166,11 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         if (storage.addDataObject(inode, dobj, cos)) {
             return null;
         }
-        return storage.getCloneableOpenSupport(dobj, cos);
+        CloneableOpenSupport aCes = storage.getCloneableOpenSupport(dobj, cos);
+        if (cos != aCes && LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Use {0}:\n\t{1}\n for {2}", new Object[]{storage.cosPath, aCes, dobj.getPrimaryFile().getPath()});
+        }
+        return aCes;
     }
 
     private Storage findOrCreateINodeList(long inode) {
@@ -283,6 +287,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
 
         private final List<COSRedirectorImpl.StorageItem> list = new LinkedList<COSRedirectorImpl.StorageItem>();
         private WeakReference<CloneableOpenSupport> cosRef;
+        private String cosPath = ""; // NOI18N
 
         private Storage() {
         }
@@ -308,8 +313,9 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
             }
             if (cosRef == null || cosRef.get() == null) {
                 cosRef = new WeakReference<CloneableOpenSupport>(cos);
+                cosPath = dao.getPrimaryFile().getPath();
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "Store SES for {0}", dao.getPrimaryFile().getPath());
+                    LOG.log(Level.FINE, "Store SES for {0}", cosPath);
                 }
                 return true;
             }
@@ -342,6 +348,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
                 if (aCos == null) {
                     list.clear();
                     cosRef = null;
+                    cosPath = "";
                 } else {
                     return aCos;
                 }
@@ -354,9 +361,10 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
                     iterator.remove();
                 } else if (aDao.equals(dao)) {
                     cosRef = new WeakReference<CloneableOpenSupport>(cos);
+                    cosPath = dao.getPrimaryFile().getPath();
                     aCos = cos;
                     if (LOG.isLoggable(Level.FINE)) {
-                        LOG.log(Level.FINE, "Store SES for {0}", dao.getPrimaryFile().getPath());
+                        LOG.log(Level.FINE, "Store SES for {0}", cosPath);
                     }
                     break;
                 }
@@ -366,7 +374,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
 
         @Override
         public String toString() {
-            return list + "->" + cosRef;  // NOI18N
+            return cosPath + ":" + list + "->" + cosRef;  // NOI18N
         }
     }
 
