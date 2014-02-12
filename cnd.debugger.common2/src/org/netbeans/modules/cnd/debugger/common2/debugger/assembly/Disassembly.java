@@ -200,9 +200,13 @@ public abstract class Disassembly implements StateModel.Listener {
                     }
                 });
             }
-            getDataObject().getCookie(OpenCookie.class).open();
-            opening = true;
-            opened = true;
+            OpenCookie oc = getDataObject().getLookup().lookup(OpenCookie.class);
+            final boolean hasOpenCookie = oc != null;
+            if (hasOpenCookie) {
+                oc.open();
+            }
+            opening = hasOpenCookie;
+            opened = hasOpenCookie;
             Disassembly dis = getCurrent();
             if (dis != null) {
                 dis.debugger.registerDisassembly(dis);
