@@ -47,7 +47,11 @@ package org.netbeans.modules.options;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -229,7 +233,7 @@ public class OptionsDisplayerImpl {
                 "; descriptor.message = " + descriptor.getMessage());
         optionsPanel.initCurrentCategory(categoryID, subpath);        
         tmpDialog.addWindowListener (new MyWindowListener (optionsPanel, tmpDialog));
-        Point userLocation = getUserLocation();
+        Point userLocation = getUserLocation(optionsPanel);
         if (userLocation != null) {
             tmpDialog.setLocation(userLocation);
             log.fine("userLocation is set to " + userLocation);
@@ -376,11 +380,26 @@ public class OptionsDisplayerImpl {
         return false;
     }
 
-    private Point getUserLocation() {
-        final Rectangle screenBounds = Utilities.getUsableScreenBounds();
+    private Point getUserLocation(OptionsPanel optionsPanel) {
+        Point userLocation;
+        GraphicsDevice[] screenDevices = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
+        for(GraphicsDevice device : screenDevices) { // iterate through all available displays
+            userLocation = getUserLocation(device.getDefaultConfiguration(), optionsPanel);
+            if(userLocation != null) { // found display that accommodated the options window last time
+                return userLocation;
+            }
+        }
+        return null;
+    }
+    
+    private Point getUserLocation(GraphicsConfiguration gconf, OptionsPanel optionsPanel) {
+        final Rectangle screenBounds = Utilities.getUsableScreenBounds(gconf);
         int x = NbPreferences.forModule(OptionsDisplayerImpl.class).getInt("OptionsX", Integer.MAX_VALUE);//NOI18N
         int y = NbPreferences.forModule(OptionsDisplayerImpl.class).getInt("OptionsY", Integer.MAX_VALUE);//NOI18N
-        if (x > screenBounds.getWidth() || y > screenBounds.getHeight()
+        Dimension userSize = optionsPanel.getUserSize();
+        if (x > screenBounds.x + screenBounds.getWidth() || y > screenBounds.y + screenBounds.getHeight()
+                || x + userSize.width > screenBounds.x + screenBounds.getWidth() 
+                || y + userSize.height > screenBounds.y + screenBounds.getHeight()
                 || (x < screenBounds.x && screenBounds.x >= 0)
 		|| (x > screenBounds.x && screenBounds.x < 0)
 		|| (y < screenBounds.y && screenBounds.y >= 0)
