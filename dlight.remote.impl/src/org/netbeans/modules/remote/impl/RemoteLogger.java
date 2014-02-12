@@ -218,7 +218,7 @@ public class RemoteLogger {
         logException(Level.WARNING, msg, params);
     }
 
-    public static void innfoException(String msg, Object... params) {
+    public static void infoException(String msg, Object... params) {
         logException(Level.INFO, msg, params);
     }
 

@@ -88,7 +88,10 @@ public final class KarmaUtils {
 
     public static List<File> findJsFiles(File dir) {
         assert dir != null;
-        assert dir.isDirectory() : dir;
+        // #241556
+        if (!dir.isDirectory()) {
+            return Collections.emptyList();
+        }
         File[] jsFiles = dir.listFiles(JS_FILES_FILTER);
         if (jsFiles == null) {
             return Collections.emptyList();
@@ -98,7 +101,10 @@ public final class KarmaUtils {
 
     public static List<File> findKarmaConfigs(File configDir) {
         assert configDir != null;
-        assert configDir.isDirectory() : configDir;
+        // #241556
+        if (!configDir.isDirectory()) {
+            return Collections.emptyList();
+        }
         File[] configs = configDir.listFiles(KARMA_CONFIG_FILTER);
         if (configs == null) {
             return Collections.emptyList();
