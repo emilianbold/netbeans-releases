@@ -140,7 +140,8 @@ public class UseSpecificCatch implements CustomizerProvider {
             CatchTree kec = (CatchTree)p.getLeaf();
             TypeMirror t = ctx.getInfo().getTrees().getTypeMirror(
                 new TreePath(p, kec.getParameter().getType()));
-            if (exceptions.contains(t)) {
+            // remove the found catch from exceptions to avoid including it in a multicatch later
+            if (exceptions.remove(t)) {
                 continue;
             }
             if (generics.contains(t)) {

@@ -45,8 +45,9 @@ package org.netbeans.modules.java.source.parsing;
 import java.io.IOException;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
-import org.openide.filesystems.FileObject;
 
 /**
  * Factory for creating {@link JavaFileObject}s used by the {@link JavacParser}.
@@ -57,18 +58,23 @@ import org.openide.filesystems.FileObject;
  * @see JavaFileManager
  * @author Tomas Zezula
  */
-public interface JavaFileObjectProvider {
-    
+public interface SourceFileObjectProvider {
+        
     /**
      * Creates {@link JavaFileObject} for given file under given root.
-     * @param fo for which the {@link JavaFileObject} should be created
-     * @param root the owner root of the file
+     * @param handle for which the {@link JavaFileObject} should be created
      * @param filter used to read the content
      * @param content of the file object if null, the snapshot from fo is taken
+     * @param renderNow should be the file content rendered immediately
      * @return the {@link JavaFileObject}
      * @throws java.io.IOException on io failure.
      */
-    public JavaFileObject createJavaFileObject (FileObject fo, FileObject root, JavaFileFilterImplementation filter, CharSequence content) throws IOException;
+    @NonNull
+    public abstract AbstractSourceFileObject createJavaFileObject (
+            @NonNull AbstractSourceFileObject.Handle handle,
+            @NullAllowed JavaFileFilterImplementation filter,
+            @NullAllowed CharSequence content,
+            boolean renderNow) throws IOException;
        
     /**
      * Forces the provider to refresh the content of the given file,
@@ -76,5 +82,7 @@ public interface JavaFileObjectProvider {
      * @param content of the file object if null, the snapshot from fo is taken
      * @throws java.io.IOException on io failure.
      */
-    public void update (JavaFileObject javaFileObject, CharSequence content) throws IOException;
+    public abstract void update (
+            @NonNull AbstractSourceFileObject javaFileObject,
+            @NonNull CharSequence content) throws IOException;
 }

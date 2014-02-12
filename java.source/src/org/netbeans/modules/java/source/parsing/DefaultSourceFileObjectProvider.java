@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,28 +34,44 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.source.parsing;
 
-import org.openide.util.Parameters;
+import java.io.IOException;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.openide.filesystems.FileObject;
 
 /**
- *
+ * Default implementation of {@link SourceFileObjectProvider} used by {@link JavacParser}
  * @author Tomas Zezula
  */
-public class JavacParserTestUtil {
+final class DefaultSourceFileObjectProvider implements SourceFileObjectProvider {
 
-    public static void setJavacFileObjectProvider (final JavaFileObjectProvider provider) {
-        Parameters.notNull("provider", provider);   //NOI18N
-        JavacParser.jfoProvider = provider;
+    @NonNull
+    @Override
+    public AbstractSourceFileObject createJavaFileObject (
+            @NonNull final AbstractSourceFileObject.Handle handle,
+            @NullAllowed final JavaFileFilterImplementation filter,
+            @NullAllowed final CharSequence content,
+            final boolean renderNow) throws IOException {
+        return new SourceFileObject (
+            handle,
+            filter,
+            content,
+            renderNow);
     }
 
-    public static JavaFileObjectProvider defaultJavaFileObjectProvider () {
-        return new DefaultJavaFileObjectProvider();
+    @Override
+    public void update (
+            @NonNull final AbstractSourceFileObject jfo,
+            @NonNull final CharSequence content) throws IOException {
+        jfo.update(content);
     }
 }

@@ -1152,10 +1152,13 @@ public abstract class PositionEstimator {
             }
             seq.move(sectionEnd);
             seq.movePrevious();
+            boolean moreWhitespaces = false;
             while (seq.moveNext() && nonRelevant.contains((token = seq.token()).id())) {
                 if (JavaTokenId.LINE_COMMENT == token.id()) {
                     sectionEnd = seq.offset();
-                    if (seq.moveNext()) {
+                    // only remove 1st line of line comment if there's a whitespace between the removed
+                    // content and the comment
+                    if (!moreWhitespaces && seq.moveNext()) {
                         sectionEnd = seq.offset();
                     }
                     break;
@@ -1165,6 +1168,7 @@ public abstract class PositionEstimator {
                     int indexOf = token.text().toString().lastIndexOf('\n');
                     if (indexOf > -1) {
                         sectionEnd = seq.offset() + indexOf + 1;
+                        moreWhitespaces |= token.text().toString().indexOf('\n') != indexOf;
                     } else {
                         sectionEnd = seq.offset() + token.text().length();
                     }

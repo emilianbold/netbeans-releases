@@ -216,7 +216,10 @@ public class BroadCatchBlock {
             return catchPath;
         }
         
+        private final Set<TypeMirror> otherCatchedExceptions = new HashSet<TypeMirror>();
+        
         public void process(Collection<? extends TreePath> catches) {
+            // first pass; collect the exceptions that SHOULD be passed unnoticed
             for (TreePath tp : catches) {
                 if (tp.getLeaf().getKind() != Tree.Kind.CATCH) {
                     continue;
@@ -228,11 +231,42 @@ public class BroadCatchBlock {
                 if (ex != null) {
                     switch (ex.getKind()) {
                         case DECLARED:
-                            addErrorDescription(processCaughtException(ex, null));
+                            if (!shouldReportException(ex)) {
+                                otherCatchedExceptions.add(ex);
+                            }
                             break;
                         case UNION:
                             for (TypeMirror t : ((UnionType)ex).getAlternatives()) {
-                                addErrorDescription(processCaughtException(t, ((UnionType)ex).getAlternatives()));
+                                if (!shouldReportException(t)) {
+                                    otherCatchedExceptions.add(t);
+                                }
+                            }
+                            break;
+                    }
+                }
+            }
+
+            // second pass, actually report fixes but exclude the otherCatchedExceptions collected previously
+            for (TreePath tp : catches) {
+                if (tp.getLeaf().getKind() != Tree.Kind.CATCH) {
+                    continue;
+                }
+                this.catchPath = tp;
+                CatchTree node = (CatchTree)tp.getLeaf();
+                
+                TypeMirror ex = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), node.getParameter().getType()));
+                if (ex != null) {
+                    switch (ex.getKind()) {
+                        case DECLARED:
+                            if (shouldReportException(ex)) { 
+                                addErrorDescription(processCaughtException(ex, null));
+                            }
+                            break;
+                        case UNION:
+                            for (TypeMirror t : ((UnionType)ex).getAlternatives()) {
+                                if (shouldReportException(ex)) {
+                                    addErrorDescription(processCaughtException(t, ((UnionType)ex).getAlternatives()));
+                                }
                             }
                             break;
                     }
@@ -240,14 +274,14 @@ public class BroadCatchBlock {
             }
         }
         
-        private ErrorDescription processCaughtException(TypeMirror excType, List<? extends TypeMirror> alternatives) {
+        private boolean shouldReportException(TypeMirror excType) {
             // if the exception is really thrown, do not report it, even though it is a generic abomination.
             if (exceptionList.contains(excType)) {
-                return null;
+                return false;
             }
             TypeElement excElement = (TypeElement)info.getTypes().asElement(excType);
             if (excElement == null) {
-                return null;
+                return false;
             }
             String fqn = excElement.getQualifiedName().toString();
             
@@ -260,16 +294,16 @@ public class BroadCatchBlock {
             
             if (masked.isEmpty()) {
                 // either exception not thrown at all, or a RuntimeException subclass, which is not declared anywhere.
-                return null;
+                return false;
             }
             
             if (masked.size() > 1) {
                 if (umbrellas.contains(fqn)) {
-                    return null;
+                    return false;
                 }
                 // 
                 if (excludeCommons && !genericQNames.contains(fqn)) {
-                   return null;
+                   return false;
                 }
             } else {
                 // 1 exception is masked, the caught exception is among the umbrellas. In the case that fqn is a 
@@ -277,14 +311,35 @@ public class BroadCatchBlock {
                 Element e = info.getElements().getTypeElement("java.lang.RuntimeException"); // NOI18N
                 if (e == null) {
                     // bad JDK ?
-                    return null;
+                    return false;
                 }
                 TypeMirror rtt = e.asType();
                 if (info.getTypes().isSubtype(excElement.asType(), rtt) && !info.getTypes().isSameType(excElement.asType(), rtt)) {
-                    return null;
+                    return false;
                 }
             }
-            
+            if (masked.size() == 1) {
+                TypeMirror one = masked.iterator().next();
+                TypeElement oneElement = (TypeElement)info.getTypes().asElement(one);
+                if (oneElement == null) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+        private ErrorDescription processCaughtException(TypeMirror excType, List<? extends TypeMirror> alternatives) {
+            TypeElement excElement = (TypeElement)info.getTypes().asElement(excType);
+            if (excElement == null) {
+                return null;
+            }
+            String fqn = excElement.getQualifiedName().toString();
+            List<TypeMirror> masked = new ArrayList<TypeMirror>(3);
+            for (TypeMirror t : exceptionList) {
+                if (!otherCatchedExceptions.contains(t) && info.getTypes().isSubtype(t, excType)) {
+                    masked.add(t);
+                }
+            }
             CatchTree catchTree = (CatchTree)getCurrentPath().getLeaf();
             TreePath varPath = new TreePath(getCurrentPath(), catchTree.getParameter());
             if (masked.size() == 1) {

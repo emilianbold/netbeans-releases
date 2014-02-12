@@ -730,7 +730,7 @@ public class BindingCustomizer extends JPanel {
         bindingPanelLayout.setHorizontalGroup(
             bindingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(bindingPanelLayout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(10, 10, 10)
                 .addGroup(bindingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(infoLabel)
                     .addGroup(bindingPanelLayout.createSequentialGroup()
@@ -747,7 +747,7 @@ public class BindingCustomizer extends JPanel {
                             .addComponent(treeCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(treeCombo2, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addComponent(detailPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+                .addGap(10, 10, 10))
         );
         bindingPanelLayout.setVerticalGroup(
             bindingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

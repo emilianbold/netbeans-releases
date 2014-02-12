@@ -319,13 +319,62 @@ public class FileObjects {
      * @param {@link FileObject} for which the {@link JavaFileObject} should be created
      * @param {@link FileObject} root owning the file
      * @return {@link JavaFileObject}, never returns null
-     * @exception {@link IOException} may be thrown
      */
-    public static SourceFileObject nbFileObject (final FileObject file, final FileObject root) throws IOException {
-        return nbFileObject (file, root, null, false);
+    public static AbstractSourceFileObject sourceFileObject (final FileObject file, final FileObject root) {
+        try {
+            return sourceFileObject (file, root, null, false);
+        } catch (IOException ioe) {
+            //Never thrown for renderNow == false
+            throw new IllegalArgumentException(ioe);
+        }
     }
 
-        /**
+    /**
+     * Creates {@link JavaFileObject} for a NetBeans {@link FileObject}
+     * Any client which needs to create {@link JavaFileObject} for java
+     * source file should use this factory method.
+     * @param {@link FileObject} for which the {@link JavaFileObject} should be created
+     * @param {@link FileObject} root owning the file
+     * @param renderNow if true the snap shot of the file is taken immediately
+     * @return {@link JavaFileObject}, never returns null
+     * @exception {@link IOException} may be thrown
+     */
+    public static AbstractSourceFileObject sourceFileObject (final FileObject file, final FileObject root, JavaFileFilterImplementation filter, boolean renderNow) throws IOException {
+        assert file != null;
+        if (!file.isValid() || file.isVirtual()) {
+            throw new InvalidFileException (file);
+        }
+        return AbstractSourceFileObject.getFactory().createJavaFileObject(
+            new AbstractSourceFileObject.Handle(file, root),
+            filter,
+            null,
+            renderNow);
+    }
+
+    /**
+     * Creates {@link JavaFileObject} for a NetBeans {@link FileObject}
+     * Any client which needs to create {@link JavaFileObject} for java
+     * source file should use this factory method.
+     * @param {@link FileObject} for which the {@link JavaFileObject} should be created
+     * @param {@link FileObject} root owning the file
+     * @param renderNow if true the snap shot of the file is taken immediately
+     * @return {@link JavaFileObject}, never returns null
+     * @exception {@link IOException} may be thrown
+     */
+    public static AbstractSourceFileObject sourceFileObject (final FileObject file, final FileObject root,
+            final JavaFileFilterImplementation filter, final CharSequence content) throws IOException {
+        assert file != null;
+        if (!file.isValid() || file.isVirtual()) {
+            throw new InvalidFileException (file);
+        }
+        return AbstractSourceFileObject.getFactory().createJavaFileObject(
+            new AbstractSourceFileObject.Handle(file, root),
+            filter,
+            content,
+            true);
+    }
+
+    /**
      * Creates {@link JavaFileObject} for a NetBeans {@link FileObject} which may not exist (the FileObject is resolved on demand)
      * Any client which needs to create {@link JavaFileObject} for java
      * source file should use this factory method.
@@ -334,7 +383,7 @@ public class FileObjects {
      * @return {@link JavaFileObject}, never returns null
      * @exception {@link IOException} may be thrown
      */
-    public static SourceFileObject nbFileObject (final URL path, final FileObject root) throws IOException {
+    public static AbstractSourceFileObject sourceFileObject (final URL path, final FileObject root) throws IOException {
         final SourceFileObject.Handle handle = new SourceFileObject.Handle(root){
 
             @Override
@@ -418,44 +467,7 @@ public class FileObjects {
             }
 
         };
-        return new SourceFileObject(handle, null);
-    }
-
-    /**
-     * Creates {@link JavaFileObject} for a NetBeans {@link FileObject}
-     * Any client which needs to create {@link JavaFileObject} for java
-     * source file should use this factory method.
-     * @param {@link FileObject} for which the {@link JavaFileObject} should be created
-     * @param {@link FileObject} root owning the file
-     * @param renderNow if true the snap shot of the file is taken immediately
-     * @return {@link JavaFileObject}, never returns null
-     * @exception {@link IOException} may be thrown
-     */
-    public static SourceFileObject nbFileObject (final FileObject file, final FileObject root, JavaFileFilterImplementation filter, boolean renderNow) throws IOException {
-        assert file != null;
-        if (!file.isValid() || file.isVirtual()) {
-            throw new InvalidFileException (file);
-        }
-        return new SourceFileObject (file, root, filter, renderNow);
-    }
-    
-    /**
-     * Creates {@link JavaFileObject} for a NetBeans {@link FileObject}
-     * Any client which needs to create {@link JavaFileObject} for java
-     * source file should use this factory method.
-     * @param {@link FileObject} for which the {@link JavaFileObject} should be created
-     * @param {@link FileObject} root owning the file
-     * @param renderNow if true the snap shot of the file is taken immediately
-     * @return {@link JavaFileObject}, never returns null
-     * @exception {@link IOException} may be thrown
-     */
-    public static SourceFileObject nbFileObject (final FileObject file, final FileObject root,
-            final JavaFileFilterImplementation filter, final CharSequence content) throws IOException {
-        assert file != null;
-        if (!file.isValid() || file.isVirtual()) {
-            throw new InvalidFileException (file);
-        }
-        return new SourceFileObject (file, root, filter, content);
+        return AbstractSourceFileObject.getFactory().createJavaFileObject(handle, null, null, false);
     }
     
     /**

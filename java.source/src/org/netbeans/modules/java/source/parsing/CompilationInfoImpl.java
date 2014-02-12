@@ -88,6 +88,7 @@ import org.openide.util.Pair;
  */
 public final class CompilationInfoImpl {
 
+
     private JavaSource.Phase phase = JavaSource.Phase.MODIFIED;
     private CompilationUnitTree compilationUnit;
 
@@ -97,7 +98,7 @@ public final class CompilationInfoImpl {
     private Pair<DocPositionRegion,MethodTree> changedMethod;
     private final FileObject file;
     private final FileObject root;
-    final JavaFileObject jfo;
+    final AbstractSourceFileObject jfo;
     //@NotThreadSafe    //accessed under parser lock
     private Snapshot snapshot;
     private final JavacParser parser;
@@ -131,7 +132,9 @@ public final class CompilationInfoImpl {
         this.root = root;
         this.snapshot = snapshot;
         assert file == null || snapshot != null;
-        this.jfo = file != null ? JavacParser.jfoProvider.createJavaFileObject(file, root, JavaFileFilterQuery.getFilter(file), snapshot.getText()) : null;
+        this.jfo = file != null ?
+            FileObjects.sourceFileObject(file, root, JavaFileFilterQuery.getFilter(file), snapshot.getText()) :
+            null;
         this.javacTask = javacTask;
         this.diagnosticListener = diagnosticListener;
         this.isClassFile = false;
@@ -169,7 +172,7 @@ public final class CompilationInfoImpl {
         this.parser = null;
         this.file = file;
         this.root = root;
-        this.jfo = FileObjects.nbFileObject(file, root);
+        this.jfo = FileObjects.sourceFileObject(file, root);
         this.snapshot = null;
         this.cpInfo = cpInfo;
         this.isClassFile = true;
@@ -178,7 +181,7 @@ public final class CompilationInfoImpl {
 
     void update (final Snapshot snapshot) throws IOException {
         assert snapshot != null;
-        JavacParser.jfoProvider.update(this.jfo, snapshot.getText());
+        AbstractSourceFileObject.getFactory().update(this.jfo, snapshot.getText());
         this.snapshot = snapshot;
     }
     
@@ -239,7 +242,7 @@ public final class CompilationInfoImpl {
             throw new IllegalStateException ();
         }
         try {
-            return ((SourceFileObject) this.jfo).getTokenHierarchy();
+            return this.jfo.getTokenHierarchy();
         } catch (IOException ioe) {
             //Should never happen
             Exceptions.printStackTrace(ioe);
@@ -706,5 +709,5 @@ public final class CompilationInfoImpl {
                 return d;
             }
         }
-    }
+    }    
 }

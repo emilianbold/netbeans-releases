@@ -162,11 +162,11 @@ public abstract class CompileWorkerTestBase extends NbTestCase {
     
     private CompileTuple virtualCompileTuple(String relativePath, String content) throws Exception {
         FileObject file = createSrcFile(relativePath, "");
-        return new CompileTuple(FileObjects.nbFileObject(file, src, null, content), SPIAccessor.getInstance().create(new FileObjectIndexable(src, relativePath)), true, true);
+        return new CompileTuple(FileObjects.sourceFileObject(file, src, null, content), SPIAccessor.getInstance().create(new FileObjectIndexable(src, relativePath)), true, true);
     }
     
     private CompileTuple compileTuple(String relativePath, String content) throws Exception {
         FileObject file = createSrcFile(relativePath, content);
-        return new CompileTuple(FileObjects.nbFileObject(file, src), SPIAccessor.getInstance().create(new FileObjectIndexable(src, relativePath)), false, true);
+        return new CompileTuple(FileObjects.sourceFileObject(file, src), SPIAccessor.getInstance().create(new FileObjectIndexable(src, relativePath)), false, true);
     }
 }

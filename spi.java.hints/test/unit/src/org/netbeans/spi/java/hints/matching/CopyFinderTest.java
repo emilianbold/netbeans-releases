@@ -181,6 +181,18 @@ public class CopyFinderTest extends NbTestCase {
                              new Pair[] {new Pair<String, int[]>("$1", new int[] {134 - 31, 137 - 31})},
                              new Pair[0]);
     }
+    
+    /**
+     * Checks that static method call on constrained variable does not match className.staticMethod(), but only
+     * instance.staticMethod(). Ensures the instance's type is bound to the variable.
+     * @throws Exception 
+     */
+    public void testStaticRefDoesNotMatchVariable241261() throws Exception {
+        performVariablesTest("package test; public class Test {public void test1() {Thread t = new Thread(); t.dumpStack(); Thread.dumpStack();} }",
+                             "$1{java.lang.Thread}.dumpStack()",
+                             new Pair[] { new Pair<String, int[]>("$1", new int[] { 79, 80}) },
+                             new Pair[0]);
+    }
 
     public void testAssert1() throws Exception {
         performTest("package test; public class Test {public void test() {int i = 0; |assert i == 1;| |assert i == 1;|}}");
@@ -230,21 +242,21 @@ public class CopyFinderTest extends NbTestCase {
     public void testLocalVariable() throws Exception {
         performVariablesTest("package test; public class Test {public void test1() { { int y; y = 1; } int z; { int y; z = 1; } } }",
                              "{ int $1; $1 = 1; }",
-                             new Pair[0],
+                             null,
                              new Pair[] {new Pair<String, String>("$1", "y")});
     }
 
     public void testStatementAndSingleBlockStatementAreSame1() throws Exception {
         performVariablesTest("package test; public class Test {public void test1() { { int x; { x = 1; } } } }",
                              "{ int $1; $1 = 1; }",
-                             new Pair[0],
+                             null,
                              new Pair[] {new Pair<String, String>("$1", "x")});
     }
 
     public void testStatementAndSingleBlockStatementAreSame2() throws Exception {
         performVariablesTest("package test; public class Test {public void test1() { { int x; x = 1; } } }",
                              "{ int $1; { $1 = 1; } }",
-                             new Pair[0],
+                             null,
                              new Pair[] {new Pair<String, String>("$1", "x")});
     }
 
@@ -269,7 +281,7 @@ public class CopyFinderTest extends NbTestCase {
     public void testMultiStatementVariables1() throws Exception {
         performVariablesTest("package test; public class Test { public int test1() { System.err.println(); System.err.println(); int i = 3; System.err.println(i); System.err.println(i); return i; } }",
                              "{ $s1$; int $i = 3; $s2$; return $i; }",
-                             new Pair[0],
+                             null,
                              new Pair[] {
                                   new Pair<String, int[]>("$s1$", new int[] {55, 76, 77, 98}),
                                   new Pair<String, int[]>("$s2$", new int[] {110, 132, 133, 155})
@@ -280,7 +292,7 @@ public class CopyFinderTest extends NbTestCase {
     public void testMultiStatementVariables2() throws Exception {
         performVariablesTest("package test; public class Test { public int test1() { int i = 3; return i; } }",
                              "{ $s1$; int $i = 3; $s2$; return $i; }",
-                             new Pair[0],
+                             null,
                              new Pair[] {
                                   new Pair<String, int[]>("$s1$", new int[] {}),
                                   new Pair<String, int[]>("$s2$", new int[] {}),
@@ -344,6 +356,8 @@ public class CopyFinderTest extends NbTestCase {
                              new Pair[] {
                                   new Pair<String, int[]>("$array", new int[] {117 - 31, 118 - 31}),
                                   new Pair<String, int[]>("$T", new int[] {134 - 31, 140 - 31}),
+                                  new Pair<String, int[]>("$var", new int[] {103, 119}),
+                                  new Pair<String, int[]>("$i", new int[] {71, 80}),
                              },
                              new Pair[] {
                                   new Pair<String, int[]>("$stmts$", new int[] {151 - 31, 173 - 31}),
@@ -360,6 +374,7 @@ public class CopyFinderTest extends NbTestCase {
                              new Pair[] {
                                   new Pair<String, int[]>("$array", new int[] {113 - 31, 114 - 31}),
                                   new Pair<String, int[]>("$T", new int[] {102 - 31, 108 - 31}),
+                                  new Pair<String, int[]>("$var", new int[] {71, 79}),
                              },
                              new Pair[] {
                                   new Pair<String, int[]>("$stmts$", new int[] {118 - 31, 140 - 31}),
@@ -376,6 +391,7 @@ public class CopyFinderTest extends NbTestCase {
                                   new Pair<String, int[]>("$array", new int[] {120 - 31, 121 - 31}),
                                   new Pair<String, int[]>("$T", new int[] {132 - 31, 138 - 31}),
                                   new Pair<String, int[]>("$i", new int[] {116 - 31, 117 - 31}),
+                                  new Pair<String, int[]>("$var", new int[] {101, 117}),
                              },
                              new Pair[] {
                                   new Pair<String, int[]>("$stmts$", new int[] {149 - 31, 171 - 31}),
@@ -392,6 +408,7 @@ public class CopyFinderTest extends NbTestCase {
                                   new Pair<String, int[]>("$array", new int[] {124 - 31, 125 - 31}),
                                   new Pair<String, int[]>("$T", new int[] {113 - 31, 119 - 31}),
                                   new Pair<String, int[]>("$i", new int[] {126 - 31, 127 - 31}),
+                                  new Pair<String, int[]>("$var", new int[] {82, 98}),
                              },
                              new Pair[] {
                                   new Pair<String, int[]>("$stmts$", new int[] {130 - 31, 152 - 31}),
@@ -487,6 +504,7 @@ public class CopyFinderTest extends NbTestCase {
                                    new Pair<String, int[]>("$1", new int[] {85 - 31, 91 - 31}),
                              },
                              new Pair[] {
+                                   new Pair<String, int[]>("$1$", new int[] {68, 71, 73, 76 }),
                              },
                              new Pair[] {
                              });
@@ -729,7 +747,7 @@ public class CopyFinderTest extends NbTestCase {
     public void testVariableMemberSelect() throws Exception {
         performVariablesTest("package test; public class Test {public void test(String str) { str.length(); str.length(); } public void test1(String str) { str.length(); str.isEmpty(); } }",
                              "{ $str.$method(); $str.$method(); }",
-                             new Pair[0],
+                             null,
                              new Pair[] {new Pair<String, String>("$method", "length")});
     }
 
@@ -871,8 +889,11 @@ public class CopyFinderTest extends NbTestCase {
     public void testLambdaInput1() throws Exception {
         performVariablesTest("package test; public class Test {public void test() { new java.io.FilenameFilter() { public boolean accept(File dir, String name) { } }; } }",
                              "new $type() {public $retType $name($params$) { $body$; } }",
-                             new Pair[0],
-                             new Pair[] {new Pair<String, int[]>("$params$", new int[] { 107, 115, 117, 128 })},
+                             null,
+                             new Pair[] {
+                                 new Pair<String, int[]>("$params$", new int[] { 107, 115, 117, 128 }),
+                                 new Pair<String, int[]>("$body$", new int[] { })
+                             },
                              new Pair[] {new Pair<String, String>("$name", "accept")},
                              false,
                              false);
@@ -881,8 +902,11 @@ public class CopyFinderTest extends NbTestCase {
     public void testLambdaInput2() throws Exception {
         performVariablesTest("package test; public class Test {public void test() { new java.io.FilenameFilter() { public boolean accept(File dir, String name) { } }; } }",
                              "new $type() { $mods$ $retType $name($params$) { $body$; } }",
-                             new Pair[0],
-                             new Pair[] {new Pair<String, int[]>("$params$", new int[] { 107, 115, 117, 128 })},
+                             null,
+                             new Pair[] {
+                                 new Pair<String, int[]>("$params$", new int[] { 107, 115, 117, 128 }),
+                                 new Pair<String, int[]>("$body$", new int[] { })
+                             },
                              new Pair[] {new Pair<String, String>("$name", "accept")},
                              false,
                              true);
@@ -1044,6 +1068,7 @@ public class CopyFinderTest extends NbTestCase {
                              new Pair[] {
                                 new Pair<String, int[]>("$ret", new int[] {42, 46}),
                                 new Pair<String, int[]>("$mods$", new int[] {34, 41}),
+                                new Pair<String, int[]>("$name", new int[] {34, 54}),
                              },
                              new Pair[] {
                                 new Pair<String, int[]>("$tp$", new int[] {}),
@@ -1063,6 +1088,7 @@ public class CopyFinderTest extends NbTestCase {
                              new Pair[] {
                                 new Pair<String, int[]>("$ret", new int[] {49, 55}),
                                 new Pair<String, int[]>("$mods$", new int[] {34, 41}),
+                                new Pair<String, int[]>("$name", new int[] {34, 89}),
                              },
                              new Pair[] {
                                 new Pair<String, int[]>("$tp$", new int[] {43, 44, 46, 47}),
@@ -1083,6 +1109,7 @@ public class CopyFinderTest extends NbTestCase {
                                 new Pair<String, int[]>("$ret", new int[] {46, 52}),
                                 new Pair<String, int[]>("$mods$", new int[] {34, 41}),
                                 new Pair<String, int[]>("$tp", new int[] {43, 44}),
+                                new Pair<String, int[]>("$name", new int[] {34, 86}),
                              },
                              new Pair[] {
                                 new Pair<String, int[]>("$args$", new int[] {56, 61, 63, 68}),
@@ -1103,9 +1130,12 @@ public class CopyFinderTest extends NbTestCase {
                                 new Pair<String, int[]>("$mods$", new int[] {34, 41}),
                                 new Pair<String, int[]>("$tp", new int[] {43, 59}),
                                 new Pair<String, int[]>("$bound", new int[] {53, 59}),
+                                new Pair<String, int[]>("$name", new int[] {34, 74}),
                              },
                              new Pair[] {
                                 new Pair<String, int[]>("$obounds$", new int[] {}),
+                                new Pair<String, int[]>("$body$", new int[] {}),
+                                new Pair<String, int[]>("$args$", new int[] {}),
                              },
                              new Pair[] {
                                  new Pair<String, String>("$name", "aa"),
@@ -1121,8 +1151,10 @@ public class CopyFinderTest extends NbTestCase {
                              new Pair[] {
                                 new Pair<String, int[]>("$ret", new int[] {64, 68}),
                                 new Pair<String, int[]>("$mods$", new int[] {34, 63}),
+                                new Pair<String, int[]>("$name", new int[] {34, 77}),
                              },
                              new Pair[] {
+                                new Pair<String, int[]>("$body$", new int[] {}),
                              },
                              new Pair[] {
                                  new Pair<String, String>("$name", "aa"),
@@ -1432,15 +1464,25 @@ public class CopyFinderTest extends NbTestCase {
             actual.put(e.getKey(), span);
         }
 
-        for (Pair<String, int[]> dup : duplicatesPos) {
-            int[] span = actual.remove(dup.getA());
+        if (duplicatesPos != null) {
+            for (Pair<String, int[]> dup : duplicatesPos) {
+                int[] span = actual.remove(dup.getA());
 
-            if (span == null) {
-                fail(dup.getA());
+                if (span == null) {
+                    fail(dup.getA());
+                }
+                assertTrue(dup.getA() + ":" + Arrays.toString(span), Arrays.equals(span, dup.getB()));
             }
-            assertTrue(dup.getA() + ":" + Arrays.toString(span), Arrays.equals(span, dup.getB()));
+            if (!actual.isEmpty()) {
+                Map<String, String> print = new HashMap<String, String>(actual.size());
+                for (String s : actual.keySet()) {
+                    int[] arr = actual.get(s);
+                    print.put(s, Arrays.toString(arr));
+                }
+                assertTrue("Extra duplicates found: " + print, actual.isEmpty());
+            }
         }
-
+        
         Map<String, int[]> actualMulti = new HashMap<String, int[]>();
 
         for (Entry<String, Collection<? extends TreePath>> e : result.values().iterator().next().multiVariables.entrySet()) {
@@ -1455,13 +1497,23 @@ public class CopyFinderTest extends NbTestCase {
             actualMulti.put(e.getKey(), span);
         }
 
-        for (Pair<String, int[]> dup : multiStatementPos) {
-            int[] span = actualMulti.remove(dup.getA());
+        if (multiStatementPos != null) {
+            for (Pair<String, int[]> dup : multiStatementPos) {
+                int[] span = actualMulti.remove(dup.getA());
 
-            if (span == null) {
-                fail(dup.getA());
+                if (span == null) {
+                    fail(dup.getA());
+                }
+                assertTrue(dup.getA() + ":" + Arrays.toString(span), Arrays.equals(span, dup.getB()));
             }
-            assertTrue(dup.getA() + ":" + Arrays.toString(span), Arrays.equals(span, dup.getB()));
+            if (!actualMulti.isEmpty()) {
+                Map<String, String> print = new HashMap<String, String>(actualMulti.size());
+                for (String s : actualMulti.keySet()) {
+                    int[] arr = actualMulti.get(s);
+                    print.put(s, Arrays.toString(arr));
+                }
+                assertTrue("Extra multi duplicates found: " + print, actualMulti.isEmpty());
+            }
         }
 
         Map<String, String> golden = new HashMap<String, String>();
