@@ -58,6 +58,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
@@ -83,7 +84,6 @@ import org.netbeans.modules.cnd.modelutil.spi.FileObjectRedirector;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
-import org.netbeans.modules.cnd.utils.MutableObject;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
@@ -857,9 +857,12 @@ public class CsmUtilities {
                             //editor already opened, so just select
                             selectElementInPane(pane, element, false);
                         } else {
+                            PropertyChangeListenerImpl l = new PropertyChangeListenerImpl(ec, element);
                             // editor not yet opened, attach listener and open from there
-                            ec.addPropertyChangeListener(new PropertyChangeListenerImpl(ec, element));
+                            ec.addPropertyChangeListener(l);
                             ec.open();
+                            // run anyway, ec might be redirected into already opened pane for symlinked file
+                            l.run();
                         }
                     }
 
@@ -868,6 +871,7 @@ public class CsmUtilities {
                         private final Observable ec;
                         private final PointOrOffsetable element;
                         private boolean detach = false;
+                        private final AtomicBoolean processed = new AtomicBoolean(false);
 
                         public PropertyChangeListenerImpl(Observable ec, PointOrOffsetable element) {
                             this.ec = ec;
@@ -902,7 +906,8 @@ public class CsmUtilities {
                             // prevents to show UserQuestionException based dialogs
                             // use non-blocking findRecentEditorPane instead
                             JEditorPane pane = findRecentEditorPaneInEQ(ec);
-                            if (pane != null) {
+                            if (pane != null && processed.compareAndSet(false, true)) {
+                                ec.removePropertyChangeListener(this);
                                 selectElementInPane(pane, element, false);
                             }
                         }

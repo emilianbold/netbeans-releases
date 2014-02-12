@@ -44,6 +44,7 @@ package org.netbeans.modules.html.angular.model;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.html.angular.AngularDoc;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import static org.netbeans.modules.html.angular.model.DirectiveType.*;
 
@@ -130,8 +131,7 @@ public enum Directive {
     
     //ngdoc parser is here: https://github.com/angular/angular.js/blob/master/docs/src/ngdoc.js
     //the directives documentation in .ngdoc format is here: https://github.com/angular/angular.js/blob/master/src/ng/directive/ngController.js
-    
-    private static final String PARTIAL_DOC_URL_BASE = "http://code.angularjs.org/1.0.7/docs/partials/api/ng.directive:"; //NOI18N
+    private static final String PARTIAL_DOC_URL_BASE = "http://code.angularjs.org/" + AngularDoc.DOC_VERSION + "/docs/partials/api/ng.directive:"; //NOI18N
     private static final String PARTIAL_SUFFIX = ".html"; //NOI18N
     
     private static final String DOC_URL_BASE = "http://docs.angularjs.org/api/ng.directive:"; //NOI18N

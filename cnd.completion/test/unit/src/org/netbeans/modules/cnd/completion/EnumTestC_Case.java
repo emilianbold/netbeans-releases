@@ -41,68 +41,24 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.modelimpl;
 
-import org.netbeans.api.progress.ProgressUtils;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
-import org.netbeans.modules.cnd.utils.CndUtils;
-import org.openide.modules.OnStart;
-import org.openide.modules.OnStop;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.cnd.completion;
+
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
 
 /**
- * start/stop csm model support.
  *
  * @author Vladimir Voskresensky
  */
-public final class Installer {
-
-    @OnStart
-    public static final class Start implements Runnable {
-
-        @Override
-        public void run() {
-            CndUtils.assertNonUiThread();
-            if (TraceFlags.TRACE_MODEL_STATE) {
-                System.err.println("=== Installer.Start");
-            }
-            ModelSupport.instance().startup();
-        }
+public class EnumTestC_Case extends CompletionBaseTestCase {
+    
+    public EnumTestC_Case(String testName) {
+        super(testName, true);
     }
-
-    @OnStop
-    public static final class Stop implements Runnable {
-
-        @Override
-        public void run() {
-            CndUtils.assertNonUiThread();
-            final Runnable runnable = new RunnableImpl();
-            if (CndUtils.isStandalone() || CndUtils.isUnitTestMode() || !ModelSupport.instance().hasOpenedProjects()) {
-                runnable.run();
-            } else {
-                ProgressUtils.showProgressDialogAndRun(runnable, NbBundle.getMessage(Installer.class, "CLOSE_PROJECT_DIALOG_MESSAGE")); //NOI18N
-            }
-        }
-
-        private static final class RunnableImpl implements Runnable, org.openide.util.Cancellable {
-
-            public RunnableImpl() {
-            }
-
-            @Override
-            public void run() {
-                if (TraceFlags.TRACE_MODEL_STATE) {
-                    System.err.println("=== Installer.Stop");
-                }
-                ModelSupport.instance().shutdown();
-                
-            }
-
-            @Override
-            public boolean cancel() {
-                return true;
-            }            
-        }
+    
+        
+    public void testBug216764() throws Exception {
+        super.performTest("bug216764.c", 8, 19);
     }
+        
 }

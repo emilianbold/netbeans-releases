@@ -377,13 +377,13 @@ public class CsmContextUtilities {
                     }
                     if (CsmKindUtilities.isEnum(decl)) {
                         CsmEnum en = (CsmEnum)decl;
-                        if (!en.isStronglyTyped() && en.getName().length()==0){
+                        if (!context.isCpp() || !en.isStronglyTyped() && en.getName().length()==0){
                             addEnumerators(res, en, strPrefix, match, caseSensitive);
                         }
                     } else if (CsmKindUtilities.isNamespaceDefinition(decl) && decl.getName().length()==0){
                         CsmNamespaceDefinition ns = (CsmNamespaceDefinition)decl;
                         CsmFilter filter = createFilter(new CsmDeclaration.Kind[] {CsmDeclaration.Kind.ENUM},
-                                strPrefix, match, caseSensitive, true);
+                                null, match, caseSensitive, true);
                         for(Iterator i = CsmSelect.getDeclarations(ns, filter); i.hasNext();){
                             CsmDeclaration nsDecl = (CsmDeclaration) i.next();
                             if (canBreak(offsetInScope, nsDecl, context)) {
@@ -396,7 +396,8 @@ public class CsmContextUtilities {
                                 }
                             }
                         }
-                    } else if (CsmKindUtilities.isClass(decl) && decl.getName().length()==0){
+                    } else if (CsmKindUtilities.isClass(decl) && 
+                               (!context.isCpp() || decl.getName().length()==0)){
                         CsmClass cls = (CsmClass) decl;
                         for (CsmMember member : cls.getMembers()) {
                             if (canBreak(offsetInScope, member, context)) {
@@ -404,7 +405,7 @@ public class CsmContextUtilities {
                             }                            
                             if (CsmKindUtilities.isEnum(member)) {
                                 CsmEnum en = (CsmEnum)member;
-                                if (!en.isStronglyTyped() && en.getName().length()==0){
+                                if (!context.isCpp() || !en.isStronglyTyped() && en.getName().length()==0){
                                     addEnumerators(res, en, strPrefix, match, caseSensitive);
                                 }
                             }
