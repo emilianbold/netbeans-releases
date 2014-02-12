@@ -44,14 +44,14 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.installer.utils.LogManager;
-import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
 import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
-import static org.netbeans.installer.utils.StringUtils.QUOTE;
 import static org.netbeans.installer.utils.StringUtils.BACK_SLASH;
 import static org.netbeans.installer.utils.StringUtils.EMPTY_STRING;
+import static org.netbeans.installer.utils.StringUtils.QUOTE;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
@@ -283,16 +283,30 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             if (locationPath.contains(" ")) {
                 locationPath = convertPathNamesToShort(locationPath);
             }
-            commands = new String [] {
-                installer.getAbsolutePath(),
-                "/s",
-                "/qn",
-                "/norestart",
-                logFile != null ? "/lv" : EMPTY_STRING,
-                logFile != null ? logPath : EMPTY_STRING,
-                "INSTALLDIR=" + locationPath,
-                "REBOOT=ReallySuppress"            
-            };
+            if (isJDK8()) {                
+                // JDK 1.8
+                commands = new String [] {
+                    installer.getAbsolutePath(),
+                    "/s",
+                    "/qn",
+                    logFile != null ? "/lv" : EMPTY_STRING,
+                    logFile != null ? logPath : EMPTY_STRING,
+                    "INSTALLDIR=" + locationPath,
+                    "REBOOT=ReallySuppress"            
+                };
+            } else {
+                // JDK 1.7
+                commands = new String [] {
+                    installer.getAbsolutePath(),
+                    "/s",
+                    "/qn",
+                    "/norestart",
+                    logFile != null ? "/lv" : EMPTY_STRING,
+                    logFile != null ? logPath : EMPTY_STRING,
+                    "INSTALLDIR=" + locationPath,
+                    "REBOOT=ReallySuppress"            
+                };
+            }
         } else {
              ////////////////////////////for msi////////////////////////////
             LogManager.log("Installing JDK with MSI installer");
@@ -474,6 +488,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
     private boolean isJDK7() {
         return getProduct().getVersion().newerOrEquals(Version.getVersion("1.7.0"));
+    }
+    private boolean isJDK8() {
+        return getProduct().getVersion().newerOrEquals(Version.getVersion("1.8.0"));
     }
 
     private void configureJREProductWindows(ExecutionResults results) {

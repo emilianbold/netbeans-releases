@@ -218,6 +218,7 @@ public class LessExecutable {
         // debug
         boolean debug = CssPrepOptions.getInstance().getLessDebug();
         if (debug) {
+            /* #241628
             Version installedVersion = getVersion();
             if (installedVersion != null
                     && installedVersion.isAboveOrEqual(MINIMAL_VERSION_WITH_SOURCEMAP)) {
@@ -225,7 +226,8 @@ public class LessExecutable {
             } else {
                 // older versions
                 params.add(DEBUG_PARAM);
-            }
+            }*/
+            params.add(DEBUG_PARAM);
         }
         // compiler options
         params.addAll(compilerOptions);

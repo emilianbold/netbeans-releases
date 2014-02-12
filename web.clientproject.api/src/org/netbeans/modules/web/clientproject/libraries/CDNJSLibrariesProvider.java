@@ -305,6 +305,12 @@ public class CDNJSLibrariesProvider implements EnhancedLibraryProvider<LibraryIm
             NetworkSupport.download(CDNJS_ZIP_URL, tmpZip);
         }
         assert tmpZip.isFile();
+        // #240689 - check size, perhaps some github error?
+        long tmpZipSize = tmpZip.length();
+        if (tmpZipSize < 1024) {
+            tmpZip.delete();
+            throw new IOException("Downloaded only " + tmpZipSize + " bytes, ignoring");
+        }
         // rename
         File cachedZip = getCachedZip(false);
         if (cachedZip.isFile()) {

@@ -89,7 +89,8 @@ public class JsFunctionDocumentationRule extends JsAstRule {
             }
         }
         JsFunctionDocumentationVisitor conventionVisitor = new JsFunctionDocumentationVisitor(
-                undocumentedParameterRule, incorrectDocumentationRule);
+                undocumentedParameterRule,
+                incorrectDocumentationRule);
         conventionVisitor.process(context, hints);
     }
 
@@ -181,7 +182,7 @@ public class JsFunctionDocumentationRule extends JsAstRule {
 
             // undocumented parameter related
             String missingParameters = missingParameters(funcParameters, docParameters);
-            if (!missingParameters.isEmpty()) {
+            if (!missingParameters.isEmpty() && undocumentedParameterRule != null) {
                 hints.add(new Hint(
                         undocumentedParameterRule,
                         Bundle.UndocumentedParameterRuleDisplayDescription(missingParameters),
@@ -193,7 +194,7 @@ public class JsFunctionDocumentationRule extends JsAstRule {
 
             // incorect documentation related
             String superfluousParameters = superfluousParameters(funcParameters, docParameters);
-            if (!superfluousParameters.isEmpty()) {
+            if (!superfluousParameters.isEmpty() && incorrectDocumentationRule != null) {
                 hints.add(new Hint(
                         incorrectDocumentationRule,
                         Bundle.IncorrectDocumentationRuleDisplayDescription(superfluousParameters),

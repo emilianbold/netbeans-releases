@@ -2,17 +2,17 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Add Java Platform Wizard: Bootstrap Libraries Page</title>
+<title>Add Java Platform Wizard: General Information Page</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-02-10</p>
-<p><a id="org.netbeans.modules.mobility.cldcplatform.customwizard.ClasspathPanel" name="org.netbeans.modules.mobility.cldcplatform.customwizard.ClasspathPanel"></a></p>
+<p>Beta Draft: 2014-02-12</p>
+<p><a id="org.netbeans.modules.mobility.cldcplatform.customwizard.CommandLinesPanel" name="org.netbeans.modules.mobility.cldcplatform.customwizard.CommandLinesPanel"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref714" name="sthref714"></a>
-<h1>Add Java Platform Wizard: Bootstrap Libraries Page</h1>
+<h1>Add Java Platform Wizard: General Information Page</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to specify the classpaths of libraries used by a custom (non-UEI compliant) emulator platform. 
+<p>Use to define the general parameters for an emulator that is not UEI-compliant. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1641">
 <param name="text" value="<html><u>How?</u></html>">
@@ -21,7 +21,7 @@
 </object>
 </p>
 
-<table summary="Descriptions of elements on Bootstrap Libraries page of the Add Java Platform wizard." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<table summary="Descriptions of elements on General Information page of Add Java Platform Wizard." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="31%" />
 <col width="*" />
 <thead>
@@ -33,25 +33,57 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t15" headers="r1c1-t15">
-<p>Bootstrap Libraries</p>
+<p>Platform Home</p>
 </td>
 <td align="left" headers="r2c1-t15 r1c2-t15">
-<p>Displays the libraries and APIs used by the platform that the IDE detects.</p>
-<p>Click <b>Add</b> and navigate to the library file to add another library. Select a library and click <b>Remove</b> to remove it from the platform.</p>
+<p>Specifies the path to the directory where the emulator platform is installed. You can enter a path, or use the Browse button to navigate to the directory.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t15" headers="r1c1-t15">
-<p>Detected APIs</p>
+<p>Platform Name</p>
 </td>
 <td align="left" headers="r3c1-t15 r1c2-t15">
-<p>Displays the device profiles, device profiles, and any optional APIs supported by the platform.</p>
+<p>Specifies a name for the emulator platform.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t15" headers="r1c1-t15">
+<p>Device Name</p>
+</td>
+<td align="left" headers="r4c1-t15 r1c2-t15">
+<p>Specifies a name for the emulator platform.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t15" headers="r1c1-t15">
+<p>Preverify Command</p>
+</td>
+<td align="left" headers="r5c1-t15 r1c2-t15">
+<p>Specifies the command line syntax that invokes the emulator to preverify a MIDlet.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t15" headers="r1c1-t15">
+<p>Execution Command</p>
+</td>
+<td align="left" headers="r6c1-t15 r1c2-t15">
+<p>Specifies the command line syntax that invokes the emulator to execute a MIDlet.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t15" headers="r1c1-t15">
+<p>Debugger Command</p>
+</td>
+<td align="left" headers="r7c1-t15 r1c2-t15">
+<p>Specifies the command line syntax that invokes the emulator to debug a MIDlet.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
+<p>To see descriptions of the command line syntax parameters, click in the appropriate field.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
