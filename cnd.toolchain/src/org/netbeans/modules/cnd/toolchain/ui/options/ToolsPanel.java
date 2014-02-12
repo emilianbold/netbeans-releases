@@ -128,7 +128,6 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     private CompilerSetManagerImpl savedCSM;
     private CompilerSet currentCompilerSet;
     private final ToolsCacheManagerImpl tcm = (ToolsCacheManagerImpl) ToolsPanelSupport.getToolsCacheManager();
-    private final ToolsCacheManagerImpl savedTCM = (ToolsCacheManagerImpl) ToolsPanelSupport.getToolsCacheManager();
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(ToolsPanel.class.getName(), 1);
     //See Bug #215447
@@ -241,10 +240,10 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     }
     
     private boolean areToolsOptionsChanged() {
-        if(!savedTCM.getDefaultHostRecord().getExecutionEnvironment().equals(tcm.getDefaultHostRecord().getExecutionEnvironment())) {
+        if(!ServerList.getDefaultRecord().getExecutionEnvironment().equals(tcm.getDefaultHostRecord().getExecutionEnvironment())) {
             return true;
         }
-        Collection<? extends ServerRecord> savedHosts = savedTCM.getHosts();
+        Collection<? extends ServerRecord> savedHosts = ServerList.getRecords();
         Collection<? extends ServerRecord> currentHosts = tcm.getHosts();
         if (savedHosts.size() != currentHosts.size()) {
             return true;
