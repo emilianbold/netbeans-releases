@@ -134,7 +134,7 @@ public class JDKPanel extends DestinationPanel {
             super.initialize();
             if (isJDK8() && SystemUtils.isWindows()) {
                 getDestinationField().setEnabled(false);
-                getDestinationButton().setVisible(false);
+                getDestinationButton().setEnabled(false);
             }
             final String location = panel.getWizard().getProperty(Product.INSTALLATION_LOCATION_PROPERTY);
             if(location!=null) {
