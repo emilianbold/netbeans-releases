@@ -729,7 +729,6 @@ cssClass
     : DOT
         (
             IDENT
-            | LESS_IMPORT_TYPE
             | GEN
             | {isLessSource()}? less_selector_interpolation // .@{var} { ... }
         )
@@ -1129,7 +1128,7 @@ cp_arg
 //.mixin (@a) "when (@a > 10), (@a < -10)" { ... }
 less_mixin_guarded
     :
-    LESS_WHEN ws? less_condition ( (COMMA | AND) ws? less_condition)*
+    LESS_WHEN ws? less_condition (ws? (COMMA | AND) ws? less_condition)*
     ;
 
 //.truth (@a) when (@a) { ... }
