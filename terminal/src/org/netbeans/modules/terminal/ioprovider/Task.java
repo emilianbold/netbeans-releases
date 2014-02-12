@@ -48,6 +48,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -66,6 +67,7 @@ import org.openide.xml.XMLUtil;
 
 import org.netbeans.lib.terminalemulator.Coord;
 import org.netbeans.lib.terminalemulator.LineDiscipline;
+import sun.io.Converters;
 
 /**
  * Perform a Task on the EDT.
@@ -417,7 +419,7 @@ import org.netbeans.lib.terminalemulator.LineDiscipline;
 
 	@Override
 	protected void perform() {
-	    terminal().term().connect(pin, pout, perr);
+	    terminal().term().connect(pin, pout, perr, "UTF-8"); // NOI18N
 	    terminal().setExtConnected(true);
 	}
     }
