@@ -98,7 +98,10 @@ public final class KarmaUtils {
 
     public static List<File> findKarmaConfigs(File configDir) {
         assert configDir != null;
-        assert configDir.isDirectory() : configDir;
+        // #241556
+        if (!configDir.isDirectory()) {
+            return Collections.emptyList();
+        }
         File[] configs = configDir.listFiles(KARMA_CONFIG_FILTER);
         if (configs == null) {
             return Collections.emptyList();
