@@ -95,6 +95,7 @@ public class PrerequisitesCheckerImpl implements PrerequisitesChecker, LateBound
             alwaysBuild = Boolean.FALSE;
         }
 
+        // When profiling, do not skip build --> See issue #241464
         if (DeploymentHelper.isProfileMode(config)) {
             alwaysBuild = Boolean.TRUE;
         }
