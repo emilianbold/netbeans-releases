@@ -66,7 +66,7 @@ public class Version {
     private Version(
             final String string) {
         String[] split = string.split("[\\._\\-]+"); //NOI18N
-        
+
         if (split.length > 0) {
             major = new Long(split[0]);
         }
@@ -90,7 +90,7 @@ public class Version {
                 (minor == version.minor) &&
                 (micro == version.micro) &&
                 (update == version.update) &&
-                (build == version.build)) ? true : false;
+                (build == version.build));
     }
     
     public boolean newerThan(
@@ -120,29 +120,17 @@ public class Version {
     
     public boolean newerOrEquals(
             final Version version) {
-        if (newerThan(version) || equals(version)) {
-            return true;
-        }
-        
-        return false;
+        return newerThan(version) || equals(version);
     }
     
     public boolean olderThan(
             final Version version) {
-        if (!newerOrEquals(version)) {
-            return true;
-        }
-        
-        return false;
+        return !newerOrEquals(version);
     }
     
     public boolean olderOrEquals(
             final Version version) {
-        if (!newerThan(version)) {
-            return true;
-        }
-        
-        return false;
+        return !newerThan(version);
     }
     
     public VersionDistance getDistance(
@@ -197,11 +185,11 @@ public class Version {
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
     public static class VersionDistance {
-        private long majorDistance;
-        private long minorDistance;
-        private long microDistance;
-        private long updateDistance;
-        private long buildDistance;
+        private final long majorDistance;
+        private final long minorDistance;
+        private final long microDistance;
+        private final long updateDistance;
+        private final long buildDistance;
         
         private VersionDistance(
                 final Version version1,
@@ -219,7 +207,7 @@ public class Version {
                     (minorDistance == distance.minorDistance) &&
                     (microDistance == distance.microDistance) &&
                     (updateDistance == distance.updateDistance) &&
-                    (buildDistance == distance.buildDistance)) ? true : false;
+                    (buildDistance == distance.buildDistance));
         }
         
         public boolean greaterThan(
@@ -249,29 +237,17 @@ public class Version {
         
         public boolean greaterOrEquals(
                 final VersionDistance version) {
-            if (greaterThan(version) || equals(version)) {
-                return true;
-            }
-            
-            return false;
+            return greaterThan(version) || equals(version);
         }
         
         public boolean lessThan(
                 final VersionDistance version) {
-            if (!greaterOrEquals(version)) {
-                return true;
-            }
-            
-            return false;
+            return !greaterOrEquals(version);
         }
         
         public boolean lessOrEquals(
                 final VersionDistance distance) {
-            if (!greaterThan(distance)) {
-                return true;
-            }
-            
-            return false;
+            return !greaterThan(distance);
         }
     }
 }

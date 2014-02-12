@@ -289,15 +289,15 @@
 
         <condition property="do.build.jdk">
              <or>
-                 <equals arg1="${build.jdk6}" arg2="1"/>
                  <equals arg1="${build.jdk7}" arg2="1"/>
+                 <equals arg1="${build.jdk8}" arg2="1"/>
              </or>
-        </condition>
-        <condition property="do.build.jdk6">
-	     <equals arg1="${build.jdk6}" arg2="1"/>
         </condition>
         <condition property="do.build.jdk7">
 	     <equals arg1="${build.jdk7}" arg2="1"/>
+        </condition>
+        <condition property="do.build.jdk8">
+	     <equals arg1="${build.jdk8}" arg2="1"/>
         </condition>
         <condition property="do.build.netbeans">
 	     <equals arg1="${build.netbeans.bundles}" arg2="1"/>
@@ -369,9 +369,21 @@
             prefix="openesb"/>
         -->
         
-        <if property="do.build.jdk">
+        <if property="do.build.jdk7">
             <get
                 src="${jdk.builds.host}/${jdk7.builds.path}/latest/bundles/linux-x64/"
+                dest="${temp.file}"/>
+            <jdk-buildnumber file="${temp.file}"/>
+
+            <echo message="Property jdk.version.number: ${jdk.version.number}"/>
+            <echo message="Property jdk.update.number: ${jdk.update.number}"/>
+            <echo message="Property jdk.build.number: ${jdk.build.number}"/>
+            <echo message="Property jdk.ea.text: ${jdk.ea.text}"/>
+        </if>
+        
+        <if property="do.build.jdk8">
+            <get
+                src="${jdk.builds.host}/${jdk8.builds.path}/latest/bundles/linux-x64/"
                 dest="${temp.file}"/>
             <jdk-buildnumber file="${temp.file}"/>
 
@@ -466,6 +478,7 @@ nb.builds.host=${nb.builds.host}
 glassfish.builds.host=${glassfish.builds.host}
 jdk.builds.host=${jdk.builds.host}
 jdk7.builds.path=${jdk.builds.path}
+jdk8.builds.path=${jdk.builds.path}
 openesb.builds.host=${openesb.builds.host}
 remote.work.dir=~/.${nb.bundle.files.prefix}
 	</echo>
@@ -673,7 +686,7 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-nbjdk-components" if="do.build.jdk">
 	<set property="netbeans.group.uid" value=""/>
         <antcall target="build-list">
-	     <param name="build.list" value="nb-base nb-extide nb-javase jdk6 jdk7"/>
+	     <param name="build.list" value="nb-base nb-extide nb-javase jdk7 jdk8"/>
         </antcall>
     </target>
 
@@ -692,8 +705,9 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
 
     <target name="generate-jdk-bundles" depends="init-jdk-bundles,init-bundled-jvms" if="do.build.jdk">	
-        <antcall target="generate-jdk6-bundles"/>
+        <!-- JDK8BUILD antcall target="generate-jdk6-bundles"/ -->
         <antcall target="generate-jdk7-bundles"/>
+        <antcall target="generate-jdk8-bundles"/>
     </target>
 
     <target name="build-core-engine">
@@ -1043,15 +1057,15 @@ jarsigner.storepass=${jarsigner.storepass}
         </antcall>
     </target>
 
-     <target name="build-jdk6" if="do.build.jdk6">
-	<antcall target="build-jdk-product">
-	    <param name="jdk.build.file" value="build_jdk6.xml"/>
-	</antcall>
-     </target>
-
      <target name="build-jdk7" if="do.build.jdk7">
 	<antcall target="build-jdk-product">
 	    <param name="jdk.build.file" value="build_jdk7.xml"/>
+	</antcall>
+     </target>
+     
+     <target name="build-jdk8" if="do.build.jdk8">
+	<antcall target="build-jdk-product">
+	    <param name="jdk.build.file" value="build_jdk8.xml"/>
 	</antcall>
      </target>
 
@@ -1782,21 +1796,21 @@ jarsigner.storepass=${jarsigner.storepass}
 	</antcall>
     </target>
 
-    <target name="generate-jdk6-bundles" if="do.build.jdk6">
-        <!-- JavaSE + JDK6 bundles -->
-	<antcall target="generate-jdk-bundle-single">
-	    <param name="jdk.bundle.files.prefix"     value="jdk-6u51"/>
-	    <param name="jdk.full.version"            value="1.6.0.51.10"/>
-            <param name="bundled.jvm.file.prefix"     value="jre-6u32"/>
-	    <param name="license.resource"            value="$S{nbi.overall.license.jdk6.resource}"/>
-	</antcall>
-    </target>
-
     <target name="generate-jdk7-bundles" if="do.build.jdk7">
         <!-- JavaSE + JDK7 bundles -->
 	<antcall target="generate-jdk-bundle-single">
 	    <param name="jdk.bundle.files.prefix"     value="jdk-${jdk.version.number}u${jdk.update.number}"/>
 	    <param name="jdk.full.version"            value="1.${jdk.version.number}.0.${jdk.update.number}.${jdk.build.number}"/>
+            <param name="bundled.jvm.file.prefix"     value="jre-7u4"/>
+	    <param name="license.resource"            value="$S{nbi.overall.license.jdk7.resource}"/>
+	</antcall>
+    </target>
+    
+    <target name="generate-jdk8-bundles" if="do.build.jdk8">
+        <!-- JavaSE + JDK8 bundles -->
+	<antcall target="generate-jdk-bundle-single">
+	    <param name="jdk.full.version"            value="1.${jdk.version.number}.0.${jdk.update.number}.${jdk.build.number}"/>
+            <param name="jdk.bundle.files.prefix"     value="jdk-${jdk.version.number}"/>
             <param name="bundled.jvm.file.prefix"     value="jre-7u4"/>
 	    <param name="license.resource"            value="$S{nbi.overall.license.jdk7.resource}"/>
 	</antcall>
