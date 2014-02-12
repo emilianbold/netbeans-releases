@@ -237,12 +237,13 @@ public class AsmObjectUtilities {
     }
 
     public static boolean openFileInEditor(DataObject ob) {
-        EditCookie ck = ob.getCookie(EditCookie.class);
+        
+        EditCookie ck = ob.getLookup().lookup(EditCookie.class);
         if (ck != null) {
             ck.edit();
             return true;
         }
-        OpenCookie oc = ob.getCookie(OpenCookie.class);
+        OpenCookie oc = ob.getLookup().lookup(OpenCookie.class);
         if (oc != null) {
             oc.open();
             return true;

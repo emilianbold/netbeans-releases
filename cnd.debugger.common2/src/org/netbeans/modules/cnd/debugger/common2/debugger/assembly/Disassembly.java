@@ -69,7 +69,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.DataEditorSupport;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -200,9 +200,13 @@ public abstract class Disassembly implements StateModel.Listener {
                     }
                 });
             }
-            getDataObject().getCookie(OpenCookie.class).open();
-            opening = true;
-            opened = true;
+            OpenCookie oc = getDataObject().getLookup().lookup(OpenCookie.class);
+            final boolean hasOpenCookie = oc != null;
+            if (hasOpenCookie) {
+                oc.open();
+            }
+            opening = hasOpenCookie;
+            opened = hasOpenCookie;
             Disassembly dis = getCurrent();
             if (dis != null) {
                 dis.debugger.registerDisassembly(dis);
@@ -355,7 +359,11 @@ public abstract class Disassembly implements StateModel.Listener {
     
     protected void attachUpdateListener() {
         DataObject dobj = getDataObject();
-        Document doc = ((DataEditorSupport)dobj.getCookie(OpenCookie.class)).getDocument();
+        final CloneableEditorSupport cEditorSupport = dobj.getLookup().lookup(CloneableEditorSupport.class);
+        if (cEditorSupport == null) {
+            return;
+        }
+        Document doc = cEditorSupport.getDocument();
         if (doc != null) {
             doc.removeDocumentListener(updateListener);
             doc.addDocumentListener(updateListener);
