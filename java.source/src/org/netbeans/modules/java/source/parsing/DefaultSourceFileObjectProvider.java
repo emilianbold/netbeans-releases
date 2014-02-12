@@ -67,11 +67,4 @@ final class DefaultSourceFileObjectProvider implements SourceFileObjectProvider 
             content,
             renderNow);
     }
-
-    @Override
-    public void update (
-            @NonNull final AbstractSourceFileObject jfo,
-            @NonNull final CharSequence content) throws IOException {
-        jfo.update(content);
-    }
 }
