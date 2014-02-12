@@ -105,7 +105,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.parsing.DocPositionRegion;
-import org.netbeans.modules.java.source.parsing.JavaFileObjectProvider;
+import org.netbeans.modules.java.source.parsing.SourceFileObjectProvider;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.parsing.lucene.IndexFactory;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
@@ -2030,34 +2030,6 @@ public class JavaSourceTest extends NbTestCase {
             return null;
         }
 
-    }
-
-    private static class TestProvider implements JavaFileObjectProvider {
-        private Object lock;
-
-        public TestProvider (Object lock) {
-            assert lock != null;
-            this.lock = lock;
-        }
-
-        public JavaFileObject createJavaFileObject(FileObject fo, FileObject root, JavaFileFilterImplementation filter, CharSequence sequence) throws IOException {
-            return new TestJavaFileObject (fo, root, lock);
-        }
-
-        public void update(JavaFileObject jfo, CharSequence sequence) throws IOException {
-            //do nothing
-        }
-    }
-
-    private static class TestJavaFileObject extends SourceFileObject {
-
-        public TestJavaFileObject (FileObject fo, FileObject root, Object lock) throws IOException {
-            super (fo, root, null, true);
-            //Deadlock
-            synchronized (lock) {
-                lock.toString();
-            }
-        }
     }
 
     private static class CompileControlJob implements Task<CompilationController> {

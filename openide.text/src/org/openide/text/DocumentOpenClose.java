@@ -215,36 +215,26 @@ final class DocumentOpenClose {
                     }
                     closeImplLA(null, false);
                     if (activeOpen == null) {
-                        initLoadTaskLA(false);
+                        initLoadTaskLA();
                     }
                     load = activeOpen;
                     task = activeOpenTask;
                     break;
                 case CLOSED:
-                    boolean synchronousOpenTaskRun = firingCloseDocument && RP.isRequestProcessorThread();
                     if (LOG.isLoggable(Level.FINER)) {
-                        LOG.finer("open(): status CLOSED. Possibly schedule open task\n"); // NOI18N
+                        LOG.finer("open(): status CLOSED. Schedule a synchronous open task\n"); // NOI18N
                     }
-                    try {
-                        if (activeOpen == null) {
-                            initLoadTaskLA(synchronousOpenTaskRun);
-                        }
-                        load = activeOpen;
-                        task = activeOpenTask;
-                    } finally {
-                        if (synchronousOpenTaskRun) { // Clear the fields manually now
-                            docOpenedWhenFiringCloseDocument = activeOpen.loadDoc;
-                            activeOpen = null;
-                            activeOpenTask = null;
-                        }
+                    if (activeOpen == null) {
+                        initLoadTaskLA();
                     }
+                    load = activeOpen;
+                    task = activeOpenTask;
                     break;
                 case RELOADING:
                     load = activeReload;
                     task = activeReloadTask;
                     break;
                 case LOADING:
-                    assert (activeOpen != null);
                     load = activeOpen;
                     task = activeOpenTask;
                     break;
@@ -252,12 +242,13 @@ final class DocumentOpenClose {
                     throw invalidStatus();
             }
         }
-        // Thread may be RP thread in case CES.openDocument() is called synchronously
-        // from fireDocumentChange() upon document close. In that case the task is run synchronously
-        // and it's null here.
-        if (task != null) {
-            task.waitFinished();
+        if (load == null || task == null) {
+            LOG.info("load=" + load + ", task=" + task + ", this: " + this); // Will throw NPE so dump state
         }
+        // Thread may be RP thread in case CES.openDocument() is called synchronously
+        // from fireDocumentChange() upon document close in which case
+        // task.waitFinished() will run the task synchronously.
+        task.waitFinished();
         if (load.loadIOException != null) {
             throw load.loadIOException;
         }
@@ -288,10 +279,10 @@ final class DocumentOpenClose {
                     // due to docRef GC might already be scheduled or not yet.
                     // Anyway ensure closing task gets scheduled before opening task (by passing false).
                     closeImplLA(null, false);
-                    initLoadTaskLA(false);
+                    initLoadTaskLA();
                     break;
                 case CLOSED:
-                    initLoadTaskLA(false);
+                    initLoadTaskLA();
                     break;
                 case RELOADING:
                     return activeReloadTask;
@@ -424,14 +415,14 @@ final class DocumentOpenClose {
         return null;
     }
     
-    private void initLoadTaskLA(boolean synchronousTaskRun) { // Lock acquired mandatory
+    private void initLoadTaskLA() { // Lock acquired mandatory
         if (activeOpen != null) {
             throw new IllegalStateException("Open task already inited. State:\n" + this); // NOI18N
         }
         if (LOG.isLoggable(Level.FINER)) {
             LOG.finer("initLoadTaskLA(): Schedule open task followed by change firing task.\n"); // NOI18N
         }
-        activeOpen = new DocumentLoad(!synchronousTaskRun);
+        activeOpen = new DocumentLoad();
         activeOpenTask = RP.create(activeOpen);
         // Btw RP task runs synchronously when waitFinished() is called from RP thread
         // so openDocument() done from closeDocument() processing (in RP thread)
@@ -556,8 +547,6 @@ final class DocumentOpenClose {
          */
         final boolean reload;
 
-        private boolean clearTaskVariables;
-        
         /**
          * Document to be opened.
          */
@@ -600,15 +589,13 @@ final class DocumentOpenClose {
          */
         private boolean preReloadInEDT;
         
-        DocumentLoad(boolean clearTaskVariables) { // Constructor for a new document load
+        DocumentLoad() { // Constructor for a new document load
             this.reload = false;
-            this.clearTaskVariables = clearTaskVariables;
         }
 
         DocumentLoad(StyledDocument loadDoc, JEditorPane[] reloadOpenPanes) {
             assert (loadDoc != null) : "loadDoc cannot be null for reload";
             this.reload = true;
-            this.clearTaskVariables = true;
             this.preReloadInEDT = true;
             this.loadDoc = loadDoc;
             this.reloadOpenPanes = reloadOpenPanes;
@@ -714,15 +701,13 @@ final class DocumentOpenClose {
                         }
 
                         ces.setPreventModification(false);
-                        if (clearTaskVariables) {
-                            // Clear the tasks (before change firing)
-                            if (reload) {
-                                activeReloadTask = null;
-                                activeReload = null;
-                            } else {
-                                activeOpenTask = null;
-                                activeOpen = null;
-                            }
+                        // Clear the tasks (before change firing)
+                        if (reload) {
+                            activeReloadTask = null;
+                            activeReload = null;
+                        } else {
+                            activeOpenTask = null;
+                            activeOpen = null;
                         }
                         if (LOG.isLoggable(Level.FINER)) {
                             LOG.finer("documentLoad(): reload=" + reload + // NOI18N

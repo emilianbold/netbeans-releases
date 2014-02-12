@@ -301,7 +301,9 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
         if(methodBody != null) {
             TreePath bodyPath = new TreePath(path, methodBody);
             scope = info.getTrees().getScope(bodyPath);
-        }
+        } else {
+            scope = info.getTrees().getScope(path);
+        } 
         int i = 0;
         for (ExpressionTree argument : arguments) {
             if (cancel) {
