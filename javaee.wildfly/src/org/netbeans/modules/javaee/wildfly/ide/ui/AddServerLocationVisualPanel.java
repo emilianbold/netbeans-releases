@@ -308,8 +308,13 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
 
         if (WildflyPluginProperties.getInstance().getInstallLocation() != null) {
             locationTextField.setText(WildflyPluginProperties.getInstance().getInstallLocation());
+            if (WildflyPluginProperties.getInstance().getConfigLocation() != null) {
+                configurationTextField.setText(WildflyPluginProperties.getInstance().getConfigLocation());
+            } else {
+                configurationTextField.setText(WildflyPluginProperties.getInstance().getInstallLocation() + File.separatorChar
+                        + "standalone" + File.separatorChar + "configuration" + File.separatorChar + "standalone-full.xml");
+            }            
         }
-
     }
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
@@ -319,7 +324,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
             if (configurationTextField.getText() == null || configurationTextField.getText().isEmpty()) {
                 configurationTextField.setText(newLoc + File.separatorChar
                         + "standalone" + File.separatorChar + "configuration"
-                        + File.separatorChar + "standalone.xml");
+                        + File.separatorChar + "standalone-full.xml");
             }
         }
     }
