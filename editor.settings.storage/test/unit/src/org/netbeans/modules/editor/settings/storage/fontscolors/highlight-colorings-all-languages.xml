@@ -3,4 +3,5 @@
 
 <fontscolors>
     <fontcolor name="test-text-limit-line" foreColor="010101" />
+    <fontcolor name="test-text-limit-line2" foreColor="88010101" />
 </fontscolors>
