@@ -384,9 +384,10 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
         return arguments;
     }
     
-    private List<VariableTree> getNewParameters(List<? extends VariableTree> currentParameters) {
+    private List<VariableTree> getNewParameters(List<? extends VariableTree> currentParameters, TreePath path) {
         List<VariableTree> arguments = new ArrayList<>();
-        boolean skipType = currentParameters.size() > 0 && currentParameters.get(0).getType() == null;
+        boolean skipType = currentParameters.size() > 0 && (currentParameters.get(0).getType() == null
+                || workingCopy.getTreeUtilities().isSynthetic(new TreePath(path, currentParameters.get(0).getType())));
         ParameterInfo[] pi = paramInfos;
         for (int i = 0; i < pi.length; i++) {
             int originalIndex = pi[i].getOriginalIndex();
@@ -484,14 +485,15 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
 
     @Override
     public Tree visitLambdaExpression(LambdaExpressionTree tree, Element p) {
-        if (!compatible && !workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+        TreePath path = getCurrentPath();
+        if (!compatible && !workingCopy.getTreeUtilities().isSynthetic(path)) {
             ExecutableElement method = (ExecutableElement) p;
-            TypeMirror tm = workingCopy.getTrees().getTypeMirror(getCurrentPath());
+            TypeMirror tm = workingCopy.getTrees().getTypeMirror(path);
             if (tm != null && workingCopy.getTypes().isSameType(tm, method.getEnclosingElement().asType())) {
                 if(newModifiers != null) {
-                    checkNewModifier(getCurrentPath(), method);
+                    checkNewModifier(path, method);
                 }
-                List<VariableTree> params = getNewParameters(tree.getParameters());
+                List<VariableTree> params = getNewParameters(tree.getParameters(), path);
                 LambdaExpressionTree nju = make.LambdaExpression(params, tree.getBody());
                 rewrite(tree, nju);
             }
