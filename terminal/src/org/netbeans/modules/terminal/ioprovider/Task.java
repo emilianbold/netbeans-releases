@@ -417,7 +417,7 @@ import org.netbeans.lib.terminalemulator.LineDiscipline;
 
 	@Override
 	protected void perform() {
-	    terminal().term().connect(pin, pout, perr);
+	    terminal().term().connect(pin, pout, perr, "UTF-8"); // NOI18N
 	    terminal().setExtConnected(true);
 	}
     }

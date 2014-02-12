@@ -971,13 +971,23 @@ public class ProviderUtil {
 
         boolean requiredTag = isProviderTagRequired(project);
 
-        if((persistenceUnit.getProperties() == null || persistenceUnit.getProperties().sizeProperty2() == 0) && !requiredTag){
+        int notPortablePropSize = persistenceUnit.getProperties() == null ? 0 : persistenceUnit.getProperties().sizeProperty2();
+        
+        if(persistenceUnit.getProperties() != null) {
+            for(Property prop:persistenceUnit.getProperties().getProperty2()) {
+                if(prop.getName().startsWith("javax.persistence.")) {//not vendor specific
+                    notPortablePropSize--;
+                }
+            }
+        }
+        
+        if((notPortablePropSize == 0) && !requiredTag){
             if (defaultProvider.getProviderClass()!=null && defaultProvider.getProviderClass().equals(persistenceUnit.getProvider())) {
 
                 persistenceUnit.setProvider(null);
                 return true;
             }
-        } else if (persistenceUnit.getProvider() == null && (persistenceUnit.getProperties().sizeProperty2() > 0 || requiredTag) && !donotrestore){
+        } else if (persistenceUnit.getProvider() == null && (notPortablePropSize > 0 || requiredTag) && !donotrestore){
             persistenceUnit.setProvider(defaultProvider.getProviderClass());
         }
 

@@ -131,7 +131,7 @@ public class WebProjectWebRootProvider implements ProjectWebRootProvider {
         }
 
         // Try to find resources root using absolute path --> See issue #241205
-        return FileUtil.toFileObject(new File(webSourceDir));
+        return FileUtil.toFileObject(FileUtil.normalizeFile(new File(webSourceDir)));
     }
 
     /**
