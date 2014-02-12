@@ -136,22 +136,15 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
             return null;
         }
         CloneableOpenSupport cos = env.findCloneableOpenSupport();
-        lock.readLock().lock();
-        try {
-            for (Long n : cache) {
-                COSRedirectorImpl.Storage storage = imap.get(n);
-                if (storage != null) {
-                    if (storage.hasDataObject(dobj)) {
-                        CloneableOpenSupport aCes = storage.getCloneableOpenSupport(dobj, cos);
-                        if (aCes != null) {
-                            return aCes;
-                        }
-                        break;
-                    }
+        COSRedirectorImpl.Storage storage = getCachedStorage(dobj);
+        if (storage != null) {
+            CloneableOpenSupport aCes = storage.getCloneableOpenSupport(dobj, cos);
+            if (aCes != null) {
+                if (cos != aCes && LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Use {0}\n for {1}", new Object[]{aCes, dobj.getPrimaryFile().getPath()});
                 }
+                return aCes;
             }
-        } finally {
-            lock.readLock().unlock();
         }
         long inode = getINode(dobj);
         if (inode == INVALID_INODE) {
@@ -169,11 +162,11 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
                 lock.writeLock().unlock();
             }
         }
-        Storage list = findOrCreateINodeList(inode);
-        if (list.addDataObject(inode, dobj, cos)) {
+        storage = findOrCreateINodeList(inode);
+        if (storage.addDataObject(inode, dobj, cos)) {
             return null;
         }
-        return list.getCloneableOpenSupport(dobj, cos);
+        return storage.getCloneableOpenSupport(dobj, cos);
     }
 
     private Storage findOrCreateINodeList(long inode) {
@@ -203,24 +196,43 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         if (dobj == null) {
             return;
         }
+        COSRedirectorImpl.Storage storage = getCachedStorage(dobj);
+        // calculate out of lock if needed
+        long inode = INVALID_INODE;
+        if (storage == null) {
+            inode = getINode(dobj);
+        }
+        lock.writeLock().lock();
+        try {
+            if (storage == null) {
+                storage = imap.get(inode);
+                if (storage == null) {
+                    return;
+                }
+            }
+            storage.clear();
+            cache.remove((Long) inode);
+        } finally {
+            lock.writeLock().unlock();
+        }        
+    }
+
+    private COSRedirectorImpl.Storage getCachedStorage(DataObject dobj) {
         lock.writeLock().lock();
         try {
             for (long n : cache) {
                 COSRedirectorImpl.Storage storage = imap.get(n);
                 if (storage != null) {
                     if (storage.hasDataObject(dobj)) {
-                        CloneableOpenSupport aCes = storage.getCloneableOpenSupport(dobj, env.findCloneableOpenSupport());
-                        if (aCes != null) {
-                            storage.removeDataObject(dobj);
-                            cache.remove((Long) n);
-                        }
-                        break;
+                        // found
+                        return storage;
                     }
                 }
             }
+            return null;
         } finally {
             lock.writeLock().unlock();
-        }
+        }        
     }
 
     private DataObject getDataObjectIfApplicable(CloneableOpenSupport.Env env) {
@@ -287,6 +299,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
                     found = true;
                 }
             }
+            // clean up if removed all due to invalid data objects
             if (list.isEmpty()) {
                 cosRef = null;
             }
@@ -303,16 +316,9 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
             return false;
         }
 
-        private synchronized void removeDataObject(DataObject dao) {
-            Iterator<COSRedirectorImpl.StorageItem> iterator = list.iterator();
-            while (iterator.hasNext()) {
-                COSRedirectorImpl.StorageItem next = iterator.next();
-                DataObject aDao = next.getValidDataObject();
-                if (aDao.equals(dao)) {
-                    iterator.remove();
-                    return;
-                }
-            }
+        private synchronized void clear() {
+            list.clear();
+            cosRef = null;
         }
 
         private synchronized boolean hasDataObject(DataObject dao) {
@@ -356,6 +362,11 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
                 }
             }
             return aCos;
+        }
+
+        @Override
+        public String toString() {
+            return list + "->" + cosRef;  // NOI18N
         }
     }
 
@@ -479,6 +490,11 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
                     }
                 }
             }
+        }
+
+        @Override
+        public String toString() {
+            return origINode + "[" + removed + "]" + dao + "->" + origCOS; // NOI18N
         }
     }
 }

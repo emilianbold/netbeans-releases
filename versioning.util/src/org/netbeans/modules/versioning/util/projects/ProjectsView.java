@@ -53,6 +53,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.Icon;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
@@ -81,6 +84,9 @@ class ProjectsView extends JPanel implements ExplorerManager.Provider, VetoableC
     private final ExplorerManager em;
     private final ProjectOutlineView view;
     private Node[] selectedNodes;
+    private static final String ICON_KEY_UIMANAGER = "Tree.closedIcon"; //NOI18N
+    private static final String ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.icon"; //NOI18N
+    private static Image FOLDER_ICON;
 
     /**
      *
@@ -204,6 +210,23 @@ class ProjectsView extends JPanel implements ExplorerManager.Provider, VetoableC
             return null;
         }
     }
+    
+    private static Image getFolderIcon () {
+        if (FOLDER_ICON == null) {
+            Icon baseIcon = UIManager.getIcon(ICON_KEY_UIMANAGER);
+            Image base;
+            if (baseIcon != null) {
+                base = ImageUtilities.icon2Image(baseIcon);
+            } else {
+                base = (Image) UIManager.get(ICON_KEY_UIMANAGER_NB);
+                if (base == null) { // fallback to our owns
+                    base = ImageUtilities.loadImage("org/openide/loaders/defaultFolder.gif"); //NOI18N
+                }
+            }
+            FOLDER_ICON = base;
+        }
+        return FOLDER_ICON;
+    }
 
     /**
      * Children.Keys extension with ProjectNode' children, contains another ProjectNodes
@@ -248,7 +271,6 @@ class ProjectsView extends JPanel implements ExplorerManager.Provider, VetoableC
      * Project node
      */
     private final class ProjectNode extends AbstractNode {
-
         static final String PROPERTY_NAME_PATH = "path";    // NOI18N
         final private ProjectInformation info;
 
@@ -269,7 +291,14 @@ class ProjectsView extends JPanel implements ExplorerManager.Provider, VetoableC
 
         @Override
         public Image getIcon(int type) {
-            return ImageUtilities.icon2Image(info.getIcon());
+            Icon icon = info.getIcon();
+            if (icon == null) {
+                Logger.getLogger(ProjectsView.class.getName()).log(Level.WARNING, "Null project icon for {0}:{1}", //NOI18N
+                        new Object[] { info.getDisplayName(), info.getProject() });
+                return getFolderIcon();
+            } else {
+                return ImageUtilities.icon2Image(icon);
+            }
         }
 
         @Override

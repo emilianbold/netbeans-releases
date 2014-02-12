@@ -305,6 +305,7 @@
                 <friend>org.netbeans.modules.maven.apisupport</friend>
                 <friend>org.netbeans.modules.maven.groovy</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
+                <friend>org.netbeans.modules.nashorn.execution</friend>
                 <friend>org.netbeans.modules.projectimport</friend>
                 <friend>org.netbeans.modules.projectimport.eclipse.core</friend>
                 <friend>org.netbeans.modules.projectimport.eclipse.j2se</friend>

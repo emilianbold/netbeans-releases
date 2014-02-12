@@ -48,10 +48,14 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.modules.java.api.common.ui.PlatformFilter;
+import org.netbeans.modules.nashorn.execution.options.Settings;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.WeakListeners;
 
@@ -62,17 +66,20 @@ import org.openide.util.WeakListeners;
 public class NashornPlatform {
     
     private static final String NASHORN_PLATFORM_VERSION = "1.8";   // NOI18N
+    private static final SpecificationVersion SMALLEST_VERSION = new SpecificationVersion(NASHORN_PLATFORM_VERSION);
     
     private static NashornPlatform INSTANCE;
     
     private volatile JavaPlatform nashornPlatform;
-    private final PropertyChangeListener platformListener;
+    private final PlatformManagerListener platformListener;
     private final Set<ChangeListener> listeners = new HashSet<>();
     
     private NashornPlatform() {
         JavaPlatformManager jpm = JavaPlatformManager.getDefault();
         platformListener = new PlatformManagerListener();
         jpm.addPropertyChangeListener(WeakListeners.propertyChange(platformListener, jpm));
+        Settings.getPreferences().addPreferenceChangeListener(
+                WeakListeners.create(PreferenceChangeListener.class, platformListener, Settings.getPreferences()));
         nashornPlatform = getNashornPlatform(jpm);
     }
     
@@ -114,10 +121,34 @@ public class NashornPlatform {
     }
     
     private static JavaPlatform getNashornPlatform(JavaPlatformManager platformManager) {
+        String nashornPlatformDisplayName = Settings.getPreferences().get(Settings.PREF_NASHORN_PLATFORM_DISPLAY_NAME, null);
         SpecificationVersion smallestVersion = new SpecificationVersion(NASHORN_PLATFORM_VERSION);
         JavaPlatform defaultPlatform = platformManager.getDefaultPlatform();
         SpecificationVersion version = defaultPlatform.getSpecification().getVersion();
-        if (version.compareTo(smallestVersion) < 0) {
+        if (version.compareTo(smallestVersion) >= 0) {
+            if (nashornPlatformDisplayName == null ||
+                nashornPlatformDisplayName.equals(defaultPlatform.getDisplayName())) {
+                return defaultPlatform;
+            }
+        }
+        // Check the rest:
+        for (JavaPlatform jp : platformManager.getInstalledPlatforms()) {
+            if (jp.getSpecification().getVersion().compareTo(smallestVersion) >= 0) {
+                if (nashornPlatformDisplayName == null ||
+                    nashornPlatformDisplayName.equals(jp.getDisplayName())) {
+
+                    if (!jp.getInstallFolders().isEmpty()) { // Check for broken platforms
+                        return jp;
+                    }
+                }
+            }
+        }
+        if (nashornPlatformDisplayName != null) {
+            // Did not find the platform that we have in settings,
+            // choose some suitable one instead:
+            if (version.compareTo(smallestVersion) >= 0) {
+                return defaultPlatform;
+            }
             // The default is insufficient, check the rest:
             for (JavaPlatform jp : platformManager.getInstalledPlatforms()) {
                 if (jp.getSpecification().getVersion().compareTo(smallestVersion) >= 0) {
@@ -126,18 +157,51 @@ public class NashornPlatform {
                     }
                 }
             }
-            return null;
-        } else {
-            return defaultPlatform;
         }
+        return null;
     }
     
-    private class PlatformManagerListener implements PropertyChangeListener {
+    public void setPlatform(JavaPlatform selectedPlatform) {
+        if (selectedPlatform == null) {
+            Settings.getPreferences().remove(Settings.PREF_NASHORN_PLATFORM_DISPLAY_NAME);
+        } else {
+            if (!isNashornPlatform(selectedPlatform)) {
+                throw new IllegalArgumentException(selectedPlatform.getDisplayName());
+            }
+            Settings.getPreferences().put(Settings.PREF_NASHORN_PLATFORM_DISPLAY_NAME,
+                                          selectedPlatform.getDisplayName());
+        }
+        nashornPlatform = selectedPlatform;
+    }
+
+    public static boolean isNashornPlatform(JavaPlatform platform) {
+        return platform.getSpecification().getVersion().compareTo(SMALLEST_VERSION) >= 0;
+    }
+    
+    public static PlatformFilter getFilter() {
+        return new PlatformFilter() {
+            @Override
+            public boolean accept(JavaPlatform platform) {
+                return isNashornPlatform(platform);
+            }
+        };
+    }
+
+    private class PlatformManagerListener implements PropertyChangeListener,
+                                                     PreferenceChangeListener {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             nashornPlatform = getNashornPlatform(JavaPlatformManager.getDefault());
             fireChangeEvent();
+        }
+
+        @Override
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            if (Settings.PREF_NASHORN_PLATFORM_DISPLAY_NAME.equals(evt.getKey())) {
+                nashornPlatform = getNashornPlatform(JavaPlatformManager.getDefault());
+                fireChangeEvent();
+            }
         }
         
     }

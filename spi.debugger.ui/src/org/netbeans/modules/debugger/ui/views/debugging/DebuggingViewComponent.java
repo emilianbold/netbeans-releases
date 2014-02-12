@@ -928,7 +928,9 @@ public class DebuggingViewComponent extends TopComponent implements org.openide.
                         if (dvThread != null) {
                             isCurrent = dvThread == currentThread;/* && (dvThread.isSuspended() ||
                                     DebuggingTreeModel.isMethodInvoking(dvThread));*/
-                            isAtBreakpoint = threadsListener.isBreakpointHit(dvThread);
+                            if (threadsListener != null) {
+                                isAtBreakpoint = threadsListener.isBreakpointHit(dvThread);
+                            }
                             isInDeadlock = deadlockedThreads.contains(dvThread);
                         } else {
                             isCurrent = false;

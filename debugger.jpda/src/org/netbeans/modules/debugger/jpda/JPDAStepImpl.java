@@ -135,15 +135,15 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     private Set<BreakpointRequest> operationBreakpoints;
     private StepRequest boundaryStepRequest;
     //private SingleThreadedStepWatch stepWatch;
-    private Set<EventRequest> requestsToCancel = new HashSet<EventRequest>();
+    private final Set<EventRequest> requestsToCancel = new HashSet<EventRequest>();
     private volatile StepPatternDepth stepPatternDepth;
     private boolean ignoreStepFilters = false;
     private boolean steppingFromFilteredLocation;
     private boolean steppingFromCompoundFilteredLocation;
     private StopHereCheck stopHereCheck;
-    private Properties p;
+    private final Properties p;
     
-    private Session session;
+    private final Session session;
     
     public JPDAStepImpl(JPDADebugger debugger, Session session, int size, int depth) {
         super(debugger, size, depth);
@@ -1056,13 +1056,13 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     }
     
     private static boolean match(String name, String pattern) {
-        if (pattern.startsWith ("*"))
+        if (pattern.startsWith ("*")) {
             return name.endsWith (pattern.substring (1));
-        else
-        if (pattern.endsWith ("*"))
+        } else if (pattern.endsWith ("*")) {
             return name.startsWith (
                 pattern.substring (0, pattern.length () - 1)
             );
+        }
         return name.equals (pattern);
     }
 
@@ -1148,7 +1148,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
 
     public static final class MethodExitBreakpointListener implements JPDABreakpointListener {
         
-        private MethodBreakpoint mb;
+        private final MethodBreakpoint mb;
         private Variable returnValue;
         
         public MethodExitBreakpointListener(MethodBreakpoint mb) {

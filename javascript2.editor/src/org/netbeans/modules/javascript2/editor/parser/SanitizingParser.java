@@ -165,8 +165,7 @@ public abstract class SanitizingParser extends Parser {
                         countChars += (ts.offset() - offset);
                         countedLines++;
                     }
-                    countedLines = 0;
-                    if ((countChars / countedLines) > 200) {
+                    if (countedLines > 0 && (countChars / countedLines) > 200) {
                         if (LOGGER.isLoggable(Level.FINE)) {
                             LOGGER.log(Level.FINE, "The file {0} was not parsed because the is minimize and size is big.", scriptName);
                         }
