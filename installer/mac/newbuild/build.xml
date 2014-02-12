@@ -406,8 +406,14 @@
         <echo message="Building ${locale.dir}.lproj dir..."/>        
         <!-- create lproj dir -->
         <mkdir dir="${mpkg.file}/Contents/Resources/${locale.dir}.lproj"/>
-        <!-- copy Welcome.html and Localizable.strings -->                 
-        <copy file="${resources.full.dir}/Welcome${bundle.type}${locale.suffix}.html"
+        <!-- copy Welcome.html and Localizable.strings -->
+        <condition property="bundle.type.suffix" value="_noupdate" else="">
+            <and>
+                <istrue value="${do.build.jdk}"/>
+                <equals arg1="${jdk.update.number}" arg2="0"/>
+            </and>
+        </condition>
+        <copy file="${resources.full.dir}/Welcome${bundle.type}${bundle.type.suffix}${locale.suffix}.html"
               tofile="${mpkg.file}/Contents/Resources/${locale.dir}.lproj/Welcome.html" failonerror="false">
             <filterset>
                 <filter token="JDK_VERSION_NUMBER" value="${jdk.version.number}"/>
@@ -455,7 +461,13 @@
 
               <ant target="prepare-lproj-dirs"/>
         
-        <copy file="dmg/distribution${bundle.type}.dist" tofile="${mpkg.file}/Contents/distribution.dist">                                    
+        <condition property="bundle.type.suffix" value="_noupdate" else="">
+            <and>
+                <istrue value="${do.build.jdk}"/>
+                <equals arg1="${jdk.update.number}" arg2="0"/>
+            </and>
+        </condition>
+        <copy file="dmg/distribution${bundle.type}${bundle.type.suffix}.dist" tofile="${mpkg.file}/Contents/distribution.dist">                                    
             <filterset>
                 <filter token="NB_ID" value="${nb.id}"/>
                 <filter token="GLASSFISH_ID" value="${glassfish.id}"/>

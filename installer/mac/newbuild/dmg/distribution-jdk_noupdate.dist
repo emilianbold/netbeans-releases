@@ -153,7 +153,7 @@ function pm_choice1_enabled() {
     </choices-outline>
     <choice id="netbeans" title="netbeans-title" description="netbeans-description" start_selected="true" start_enabled="true" start_visible="true"></choice>
     <choice id="choice0" title="JDK_VERSION">
-        <pkg-ref id="com.oracle.jdk@JDK_VERSION_NUMBER@u@JDK_UPDATE_NUMBER@"/>
+        <pkg-ref id="com.oracle.jdk@JDK_VERSION_NUMBER@"/>
     </choice>
     <choice id="choice1" title="plugin" selected="pm_choice1_selected()" enabled="pm_choice1_enabled()">
         <pkg-ref id="com.oracle.jre"/>
@@ -167,13 +167,13 @@ function pm_choice1_enabled() {
     <choice id="extide" title="extide-title" description="extide-description" start_selected="true" start_enabled="true" start_visible="false" selected="choices.extide.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.extide"/>
     </choice>
-    <pkg-ref id="com.oracle.jdk@JDK_VERSION_NUMBER@u@JDK_UPDATE_NUMBER@" installKBytes="285784" version="1.1" auth="Root">file:./Contents/Packages/JDK%20@JDK_VERSION_NUMBER@%20Update%20@JDK_UPDATE_NUMBER@.pkg#jdk1@JDK_VERSION_NUMBER@0@JDK_UPDATE_NUMBER@.pkg</pkg-ref>
-    <pkg-ref id="com.oracle.jdk@JDK_VERSION_NUMBER@u@JDK_UPDATE_NUMBER@">
+    <pkg-ref id="com.oracle.jdk@JDK_VERSION_NUMBER@" installKBytes="317316" version="1.1" auth="Root">file:./Contents/Packages/JDK%20@JDK_VERSION_NUMBER@.pkg#jdk1@JDK_VERSION_NUMBER@0.pkg</pkg-ref>
+    <pkg-ref id="com.oracle.jdk@JDK_VERSION_NUMBER@">
         <relocate search-id="pkmktoken6">
             <bundle id="com.oracle.jmc"/>
         </relocate>
     </pkg-ref>
-    <pkg-ref id="com.oracle.jre" installKBytes="145064" version="1.1" auth="Root">file:./Contents/Packages/JDK%20@JDK_VERSION_NUMBER@%20Update%20@JDK_UPDATE_NUMBER@.pkg#javaappletplugin.pkg</pkg-ref>
+    <pkg-ref id="com.oracle.jre" installKBytes="162092" version="1.1" auth="Root">file:./Contents/Packages/JDK%20@JDK_VERSION_NUMBER@.pkg#javaappletplugin.pkg</pkg-ref>
     <pkg-ref id="com.oracle.jre">
         <relocate search-id="pkmktoken18">
             <bundle id="org.andymatuschak.sparkle.finish-installation"/>
@@ -193,7 +193,7 @@ function pm_choice1_enabled() {
     <pkg-ref id="ident.pkg.extide" version="0.0.0.0.1" installKBytes="@SIZE_EXTIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/extide-@NB_ID@.pkg</pkg-ref>
     <locator>
         <search id="pkmktoken6-1" type="component">
-            <bundle CFBundleIdentifier="com.oracle.jmc" path="/Library/Java/JavaVirtualMachines/jdk1.@JDK_VERSION_NUMBER@.0_@JDK_UPDATE_NUMBER@.jdk/Contents/Home/lib/missioncontrol/Java Mission Control.app"/>
+            <bundle CFBundleIdentifier="com.oracle.jmc" path="/Library/Java/JavaVirtualMachines/jdk1.@JDK_VERSION_NUMBER@.0.jdk/Contents/Home/lib/missioncontrol/Java Mission Control.app"/>
         </search>
         <search id="pkmktoken6-0" type="script" script="pkmktoken6_combined()">
             <script>
