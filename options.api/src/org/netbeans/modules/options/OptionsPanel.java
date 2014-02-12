@@ -852,21 +852,10 @@ public class OptionsPanel extends JPanel {
         buttons = new LinkedHashMap<String, CategoryButton>();
         
         // add new buttons
-        Dimension maxSize = new Dimension(0,0);        
         String[] names = categoryModel.getCategoryIDs();
         for (int i = 0; i < names.length; i++) {
             CategoryModel.Category category = categoryModel.getCategory(names[i]);
-            CategoryButton button = addButton (category);            
-            Dimension d = button.getPreferredSize();
-            maxSize.width = Math.max(maxSize.width, d.width);
-            // #141121 - ignore big height which can appear for uknown reason
-            if(d.height < d.width*10) {
-                maxSize.height = Math.max(maxSize.height, d.height);
-            }
-        }        
-        it = buttons.values().iterator ();
-        while (it.hasNext ()) {
-            it.next().setPreferredSize(maxSize);
+            addButton (category);
         }
         
         addFakeButton ();

@@ -45,7 +45,7 @@ public class HighlightsLayerFactoryImpl implements HighlightsLayerFactory {
     public HighlightsLayer[] createLayers(Context context) {
         return new HighlightsLayer[] {
             HighlightsLayer.create(DebuggerAnnotation.class.getName(),
-                    ZOrder.SHOW_OFF_RACK, true, DebuggerAnnotation.getHighlightsBag(context.getDocument()))
+                    ZOrder.TOP_RACK, true, DebuggerAnnotation.getHighlightsBag(context.getDocument()))
         };
     }
 

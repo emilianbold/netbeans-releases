@@ -76,30 +76,39 @@ public class DebuggingJSTreeModel implements TreeModelFilter {
     public Object[] getChildren(TreeModel original, Object parent, int from, int to) throws UnknownTypeException {
         Object[] children = original.getChildren(parent, from, to);
         if (parent instanceof JPDAThread) {
-            boolean isJSStack = false;
-            for (int i = 0; i < children.length; i++) {
-                Object ch = children[i];
-                if (ch instanceof CallStackFrame) {
-                    CallStackFrame csf = (CallStackFrame) ch;
-                    if (csf.getClassName().startsWith(JSUtils.NASHORN_SCRIPT)) {
-                        if (!isJSStack) {
-                            Object[] children2 = new Object[children.length];
-                            System.arraycopy(children, 0, children2, 0, children.length);
-                            children = children2;
-                        }
-                        children[i] = JSStackFrame.get(csf);
-                        isJSStack = true;
-                    }
-                }
-            }
-            if (isJSStack) {
-                children = filterChildren(children);
+            Object[] jsChildren = createChildrenWithJSStack(children);
+            if (jsChildren != null) {
+                children = filterChildren(jsChildren);
             }
         }
         return children;
     }
     
-    private static Object[] filterChildren(Object[] children) {
+    static Object[] createChildrenWithJSStack(Object[] children) {
+        boolean isJSStack = false;
+        for (int i = 0; i < children.length; i++) {
+            Object ch = children[i];
+            if (ch instanceof CallStackFrame) {
+                CallStackFrame csf = (CallStackFrame) ch;
+                if (csf.getClassName().startsWith(JSUtils.NASHORN_SCRIPT)) {
+                    if (!isJSStack) {
+                        Object[] children2 = new Object[children.length];
+                        System.arraycopy(children, 0, children2, 0, children.length);
+                        children = children2;
+                    }
+                    children[i] = JSStackFrame.get(csf);
+                    isJSStack = true;
+                }
+            }
+        }
+        if (isJSStack) {
+            return children;
+        } else {
+            return null;
+        }
+    }
+    
+    static Object[] filterChildren(Object[] children) {
         List<Object> newChildren = new ArrayList<>(children.length);
         newChildren.addAll(Arrays.asList(children));
         for (int i = 0; i < newChildren.size(); i++) {

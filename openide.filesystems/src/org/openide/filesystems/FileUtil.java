@@ -161,7 +161,7 @@ public final class FileUtil extends Object {
             File np = null;
             assert path.getClass().getName().startsWith("sun.awt.shell") ||
                 (!forceIgnoreCase && path.equals(np = FileUtil.normalizeFileCached(path))) ||
-                (forceIgnoreCase && path.toString().equalsIgnoreCase((np = FileUtil.normalizeFileCached(path)).toString())):
+                (forceIgnoreCase && path.getPath().equalsIgnoreCase((np = FileUtil.normalizeFileCached(path)).getPath())):
                 "Need to normalize " + toDebugString(path) + " was " + toDebugString(np);  //NOI18N
         }
         return true;

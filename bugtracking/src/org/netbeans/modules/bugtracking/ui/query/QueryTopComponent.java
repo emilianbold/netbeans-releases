@@ -58,6 +58,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.MissingResourceException;
 import java.util.Set;
@@ -112,7 +113,7 @@ public final class QueryTopComponent extends TopComponent
     private static QueryTopComponent instance;
 
     /** Set of opened {@code QueryTopComponent}s. */
-    private static final Set<QueryTopComponent> openQueries = new HashSet<QueryTopComponent>();
+    private static final Set<QueryTopComponent> openQueries = Collections.synchronizedSet(new HashSet<QueryTopComponent>());
 
     private final RepoSelectorPanel repoPanel;
     private final LinkButton newButton;
