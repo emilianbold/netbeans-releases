@@ -95,6 +95,10 @@ public class PrerequisitesCheckerImpl implements PrerequisitesChecker, LateBound
             alwaysBuild = Boolean.FALSE;
         }
 
+        if (DeploymentHelper.isProfileMode(config)) {
+            alwaysBuild = Boolean.TRUE;
+        }
+
         config.setInternalProperty(ExecutionConstants.SKIP_BUILD, !alwaysBuild); //NOI18N
 
         String actionName = config.getActionName();
