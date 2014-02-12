@@ -151,6 +151,15 @@ public class CsmContext {
         return this.offset;
     }
     
+    public boolean isCpp() {
+        switch (file.getFileType()) {
+            case SOURCE_C_FILE:
+            case SOURCE_FORTRAN_FILE:
+                return false;
+        }
+        return true;
+    }
+    
     CsmFile getFile() {
         return this.file;
     }
