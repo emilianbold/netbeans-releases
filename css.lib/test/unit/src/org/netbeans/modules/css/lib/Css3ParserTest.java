@@ -112,7 +112,7 @@ public class Css3ParserTest extends CssTestBase {
 
         CssParserResult res = TestUtil.parse(code);
 
-        //one error: 
+        //one error:
         //DefaultError[Unexpected token IDENT found, Unexpected token IDENT found, ERROR] (file:null, from:8, to:11)
         assertResult(res, 1);
 //        TestUtil.dumpResult(res);
@@ -345,7 +345,7 @@ public class Css3ParserTest extends CssTestBase {
         CssParserResult res = TestUtil.parse(code);
 
         //syncToIdent bug - it cannot sync to ident since there isn't one - but the case is valid
-        //=> reconsider putting syncToIdent back to the declarations rule, but then I need 
+        //=> reconsider putting syncToIdent back to the declarations rule, but then I need
         //to resolve why it is not called even in proper cases!!!
 //        NodeUtil.dumpTree(res.getParseTree());
         AtomicBoolean recoveryNodeFound = new AtomicBoolean(false);
@@ -417,7 +417,7 @@ public class Css3ParserTest extends CssTestBase {
 //        TestUtil.dumpResult(result);
 
         //commented out since it currently fails
-        //assertResult(result, 0); 
+        //assertResult(result, 0);
     }
 
     public void testErrorCase5() throws ParseException, BadLocationException {
@@ -895,7 +895,7 @@ public class Css3ParserTest extends CssTestBase {
         assertNotNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/at_rule/vendorAtRule/moz_document"));
     }
 
-    //Bug 204128 - CC stops work after # in a color attribute 
+    //Bug 204128 - CC stops work after # in a color attribute
     public void testErrorRecoveryAfterHash() throws BadLocationException, ParseException {
         CssParserResult result = TestUtil.parse(
                 "#test {\n"
@@ -1030,7 +1030,7 @@ public class Css3ParserTest extends CssTestBase {
 
 //        TestUtil.dumpResult(result);
         //the unexpected colon error is in fact a bug as normally the sass/less constructs as nested rules
-        //should not be allowed in plain css. But so far I haven't found any way how to combine semantic and syntactic predicates 
+        //should not be allowed in plain css. But so far I haven't found any way how to combine semantic and syntactic predicates
         //(see the (rule)=>rule { declarationType = DeclarationType.BLOCK; } rule in the css3.g
         //it's ought to be {isCPSource()?} (rule)=>rule { declarationType = DeclarationType.BLOCK; } which doesn't seem to work
         assertResult(result, 1);
@@ -1074,17 +1074,17 @@ public class Css3ParserTest extends CssTestBase {
 //    public void testRecoveryInBodySet() {
 //        String code = "div { } ;@ a { } h1 { }";
 //        CssParserResult result = TestUtil.parse(code);
-//        
+//
 //        assertResultOK(result);
-//        
+//
 //        TestUtil.dumpResult(result);
-//        
+//
 //        Node node = NodeUtil.query(result.getParseTree(),
 //                "styleSheet/bodylist/bodyset/generic_at_rule");
-//                
+//
 //        assertNotNull(node);
-//        
-//        
+//
+//
 //    }
     public void testWebkitKeyFrames() {
         String code = "@-webkit-keyframes spin { 40% {  left: 150px;  } from { left: 2px } }";
@@ -1129,7 +1129,7 @@ public class Css3ParserTest extends CssTestBase {
     }
 
     //http://en.wikipedia.org/wiki/CSS_filter#Star_hack
-    //Bug 215168 - Netbeans doesn't know about CSS star hack 
+    //Bug 215168 - Netbeans doesn't know about CSS star hack
     public void testIEPropertyStarHack() throws ParseException, BadLocationException {
         //case #1 error appears before declarations grammar rule
         String source = ".aclass { *color: red; }";
@@ -1186,7 +1186,7 @@ public class Css3ParserTest extends CssTestBase {
 
     }
 
-    //Bug 223809 - Incorrect CSS syntax error highlighting when @-ms-viewport rule is added 
+    //Bug 223809 - Incorrect CSS syntax error highlighting when @-ms-viewport rule is added
     public void testVendorAtRuleInMedia() throws ParseException, BadLocationException {
         String source = "@media screen and (max-width: 400px) {"
                 + "  @-ms-viewport { width: 320px; }"
@@ -1230,14 +1230,14 @@ public class Css3ParserTest extends CssTestBase {
         assertParses(".test { background: -moz-linear-gradient(center top);\n }");
         assertParses(".test { background: -moz-linear-gradient(center, top);\n }");
         assertParses(".test { background: -moz-linear-gradient(center top, #f3f3f3, #dddddd);\n }");
-//        
+//
 //        assertParses(".test { background-image: linear-gradient(top left);\n }");
-//        
+//
 //        assertParses(".test { background-image: linear-gradient(top left, rgba(79,99,31,1) );\n }");
-//        
+//
 //        assertParses(".test { background-image: linear-gradient(top left, rgba(79,99,31,1) 0%);\n }");
-//        
-//        assertParses(".test { background-image: linear-gradient(top left, rgba(79,99,31,1) 0%,rgba(47,67,33,1)\n" 
+//
+//        assertParses(".test { background-image: linear-gradient(top left, rgba(79,99,31,1) 0%,rgba(47,67,33,1)\n"
 //                + "44%,rgba(20,45,19,1) 100%);\n }");
     }
 
@@ -1314,6 +1314,14 @@ public class Css3ParserTest extends CssTestBase {
         assertParses(".clz { @@@; @@@; @@@; }");
         assertParses(".clz { @@@; color: red; @@@ }");
         assertParses(".clz { color: red; @@@ @@@ }");
+    }
+
+    public void testIssue240881_01() throws ParseException, BadLocationException {
+        assertParses(".css {}");
+    }
+
+    public void testIssue240881_02() throws ParseException, BadLocationException {
+        assertParses(".less {}");
     }
 
 //    public void testTemplatingMarksInBody() throws ParseException, BadLocationException {
