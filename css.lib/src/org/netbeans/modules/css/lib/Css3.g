@@ -729,6 +729,7 @@ cssClass
     : DOT
         (
             IDENT
+            | LESS_IMPORT_TYPE
             | GEN
             | {isLessSource()}? less_selector_interpolation // .@{var} { ... }
         )
