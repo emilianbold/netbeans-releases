@@ -89,7 +89,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Kirill Sorokin <Kirill.Sorokin@Sun.COM>
  */
-public class JBJ2eePlatformFactory extends J2eePlatformFactory {
+public class WildflyJ2eePlatformFactory extends J2eePlatformFactory {
 
     static final String HIBERNATE_JPA_PROVIDER = "org.hibernate.ejb.HibernatePersistence";
 
@@ -187,11 +187,13 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
         }
         
         private static class FF implements FilenameFilter {
+            @Override
             public boolean accept(File dir, String name) {
                 return name.endsWith(".jar") || new File(dir, name).isDirectory(); //NOI18N
             }
         }
 
+        @Override
         public LibraryImplementation[] getLibraries() {
             if (libraries == null) {
                 initLibraries();
@@ -204,15 +206,18 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
             firePropertyChange(PROP_LIBRARIES, null, libraries.clone());
         }
         
+        @Override
         public java.awt.Image getIcon() {
             return null;
         }
 
+        @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(JBJ2eePlatformFactory.class, "TITLE_JBOSS_FACTORY");
+            return NbBundle.getMessage(WildflyJ2eePlatformFactory.class, "TITLE_JBOSS_FACTORY");
 
         }
 
+        @Override
         public boolean isToolSupported(String toolName) {
             
             if (J2eePlatform.TOOL_JSR109.equals(toolName)) {
@@ -337,16 +342,13 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
                 }
             } 
             catch (Exception ex) {
-                try {
-                    Exceptions.attachLocalizedMessage(ex, serviceFO.getURL().toString());
-                } catch (FileStateInvalidException fsie) { 
-                    //noop
-                }
+                Exceptions.attachLocalizedMessage(ex, serviceFO.toURL().toString());
                 Logger.getLogger("global").log(Level.INFO, null, ex);
             }
             return false;
         }
         
+        @Override
         public File[] getToolClasspathEntries(String toolName) {
             if (J2eePlatform.TOOL_WSIMPORT.equals(toolName)) {
                 return getJaxWsLibraries();
@@ -432,9 +434,7 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
                     return "${jar.name}"; // NOI18N
                 }
                 if (J2eePlatform.TOOL_PROP_JVM_OPTS.equals(propertyName)) {
-                    return "-Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory" // NOI18N
-                            + " -Djava.naming.provider.url=jnp://localhost:1099" // NOI18N
-                            + " -Djava.naming.factory.url.pkgs=org.jboss.naming.client"; // NOI18N
+                    return " -Djava.naming.factory.url.pkgs=org.jboss.ejb.client.naming"; // NOI18N
                 }
             }
             return null;
@@ -446,7 +446,7 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
         private void initLibraries() {
             // create library
             LibraryImplementation lib = new J2eeLibraryTypeProvider().createLibrary();
-            lib.setName(NbBundle.getMessage(JBJ2eePlatformFactory.class, "TITLE_JBOSS_LIBRARY"));
+            lib.setName(NbBundle.getMessage(WildflyJ2eePlatformFactory.class, "TITLE_JBOSS_LIBRARY"));
             lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, properties.getClasses());
             lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, properties.getJavadocs());
             lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_SRC, properties.getSources());
@@ -476,23 +476,12 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
             
             @Override
             public boolean addJsr311Api(Project project) {
-                // return true (behaves like added) when JAX-RS is on classpath 
-                if (isBundled(JAX_RS_APPLICATION_CLASS)) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return isBundled(JAX_RS_APPLICATION_CLASS);
             }
 
             @Override
             public boolean extendsJerseyProjectClasspath(Project project) {
-                // declared as extended when JAX-RS is on classpath 
-                // suppose that JBoss has its own implementation of JAX-RS
-                if (isBundled(JAX_RS_APPLICATION_CLASS)) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return isBundled(JAX_RS_APPLICATION_CLASS);
             }
 
             @Override
