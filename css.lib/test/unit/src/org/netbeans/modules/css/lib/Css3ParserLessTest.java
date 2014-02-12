@@ -694,11 +694,19 @@ public class Css3ParserLessTest extends CssTestBase {
                 "}");
     }
 
-    public void issue237975_01() {
+    public void testIssue237975_01() {
         assertParses("@import (less) \"theme\";");
     }
 
-    public void issue237975_02() {
+    public void testIssue237975_02() {
         assertParses("@import (css) \"theme\";");
+    }
+
+    public void testIssue240757() {
+        assertParses(".mixin (@a) when (isnumber(@a)) and (@a > 0) { }");
+    }
+
+    public void testIssue240701() {
+        assertParses(".linear-gradient-multi(...) {}");
     }
 }

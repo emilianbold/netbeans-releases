@@ -1,0 +1,14 @@
+<Unnamed test>
+DOT             "."
+LESS_IMPORT_TYPE  "css"
+WS              " "
+LBRACE          "{"
+RBRACE          "}"
+NL              "\n"
+DOT             "."
+LESS_IMPORT_TYPE  "less"
+WS              " "
+LBRACE          "{"
+RBRACE          "}"
+----- EOF -----
+
