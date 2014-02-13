@@ -503,24 +503,76 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
     }
 
     // used by ExpressionBasedMethodFix, MethodFix
-    static List<VariableTree> createVariables(WorkingCopy copy, List<VariableElement> parameters) {
+    /**
+     * Crates method formal parameters, following code style conventions.
+     * The trees in 'statements' will be rewritten to use the new identifiers.
+     * 
+     * @param copy working copy
+     * @param parameters variables to turn into parameters
+     * @param statements trees that should refer to parameters
+     * @return 
+     */
+    static List<VariableTree> createVariables(WorkingCopy copy, List<VariableElement> parameters, 
+            TreePath targetParent,
+            List<TreePath> statements) {
         final TreeMaker make = copy.getTreeMaker();
         List<VariableTree> formalArguments = new LinkedList<VariableTree>();
-
+        CodeStyle cs = CodeStyle.getDefault(copy.getFileObject());
+        
+        String prefix = cs.getParameterNamePrefix();
+        String suffix = cs.getParameterNameSuffix(); 
+        Map<VariableElement, CharSequence> renamedVariables = new HashMap<VariableElement, CharSequence>();
+        Set<Name> changedNames = new HashSet<Name>();
         for (VariableElement p : parameters) {
             TypeMirror tm = p.asType();
             Tree type = make.Type(tm);
             Name formalArgName = p.getSimpleName();
             Set<Modifier> formalArgMods = EnumSet.noneOf(Modifier.class);
-
+            
             if (p.getModifiers().contains(Modifier.FINAL)) {
                 formalArgMods.add(Modifier.FINAL);
             }
+            String strippedName = Utilities.stripVariableName(cs, p);
+            CharSequence codeStyleName = Utilities.guessName(copy, strippedName, targetParent, prefix, suffix, p.getKind() == ElementKind.PARAMETER);
+            if (!formalArgName.contentEquals(codeStyleName)) {
+                renamedVariables.put(p, codeStyleName);
+                changedNames.add(formalArgName);
+            } else {
+                codeStyleName = formalArgName;
+            }
+            formalArguments.add(make.Variable(make.Modifiers(formalArgMods), codeStyleName, type, null));
+        }
+        if (!changedNames.isEmpty()) {
+            VariableRenamer renamer = new VariableRenamer(copy, renamedVariables, changedNames);
+            for (TreePath stPath : statements) {
+                renamer.scan(stPath, null);
+            }
+        }
+        return formalArguments;
+    }
+    
+    static class VariableRenamer extends TreePathScanner {
+        private final Map<VariableElement, CharSequence> renamedVars;
+        private final Set<Name> changedNames;
+        private final WorkingCopy info;
 
-            formalArguments.add(make.Variable(make.Modifiers(formalArgMods), formalArgName, type, null));
+        public VariableRenamer(WorkingCopy info, Map<VariableElement, CharSequence> renamedVars, Set<Name> changedNames) {
+            this.renamedVars = renamedVars;
+            this.changedNames = changedNames;
+            this.info = info;
         }
 
-        return formalArguments;
+        @Override
+        public Object visitIdentifier(IdentifierTree node, Object p) {
+            if (changedNames.contains(node.getName())) {
+                Element e = info.getTrees().getElement(getCurrentPath());
+                CharSequence nn = renamedVars.get(e);
+                if (nn != null) {
+                    info.rewrite(node, info.getTreeMaker().Identifier(nn));
+                }
+            }
+            return super.visitIdentifier(node, p);
+        }
     }
 
     // MethodFix, ExpressionMethodFix
@@ -628,7 +680,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
         parameter.rewrite(parentTree, newParent);
     }
-
+    
     //XXX: duplicate from CopyFinder:
     public static List<? extends StatementTree> getStatements(TreePath firstLeaf) {
         switch (firstLeaf.getParentPath().getLeaf().getKind()) {
@@ -827,6 +879,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         switch (toReplace.getKind()) {
             case METHOD:
                 toReplace = ((MethodTree) toReplace).getBody();
+                if (toReplace == null) {
+                    return;
+                }
                 //intentional fall-through
             case BLOCK:
                 nueTree = make.Block(newStatements, ((BlockTree) toReplace).isStatic());
@@ -841,7 +896,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 nueTree = newStatements.get(0);
                 break;
         }
-
+        
         copy.rewrite(toReplace, nueTree);
         rewritten.put(toReplace, nueTree);
     }

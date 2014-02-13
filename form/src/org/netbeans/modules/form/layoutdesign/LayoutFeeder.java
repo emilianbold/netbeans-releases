@@ -1790,16 +1790,25 @@ class LayoutFeeder implements LayoutConstants {
         }
     }
 
-    private static Logger LOGGER = Logger.getLogger(LayoutFeeder.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(LayoutFeeder.class.getName());
 
     private static void checkRoot(LayoutInterval interval, LayoutInterval expectedRoot, LayoutInterval originalParent, int dim) {
-        if (interval != null && LayoutInterval.getRoot(interval) != expectedRoot) {
-            LOGGER.log(Level.WARNING, LayoutPersistenceManager.dumpInterval(null, interval, dim, 2));
-            LOGGER.log(Level.WARNING, LayoutPersistenceManager.dumpInterval(null, expectedRoot, dim, 2));
-            if (originalParent != null) {
-                LOGGER.log(Level.WARNING, LayoutPersistenceManager.dumpInterval(null, originalParent, dim, 2));
+        if (interval != null) {
+            LayoutInterval root = LayoutInterval.getRoot(interval);
+            if (root != expectedRoot) {
+                LOGGER.log(Level.WARNING, LayoutPersistenceManager.dumpInterval(null, interval, dim, 2));
+                LOGGER.log(Level.WARNING, LayoutPersistenceManager.dumpInterval(null, expectedRoot, dim, 2));
+                if (originalParent != null) {
+                    LOGGER.log(Level.WARNING, LayoutPersistenceManager.dumpInterval(null, originalParent, dim, 2));
+                }
+                String removeStackTrace = LayoutInterval.getRemoveStacktrace(root);
+                if (removeStackTrace != null) {
+                    LOGGER.log(Level.WARNING, removeStackTrace);
+                } else {
+                    LOGGER.log(Level.WARNING, "no remove stacktrace"); // NOI18N
+                }
+                throw new IllegalStateException("Interval lost from root, please report this exception. Related to bug 222703."); // NOI18N
             }
-            throw new IllegalStateException("Interval lost from root, please report this exception. Related to bug 222703."); // NOI18N
         }
     }
 

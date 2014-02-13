@@ -92,8 +92,10 @@ public class BindingProperty extends PropertySupport.ReadWrite<MetaBinding> {
             incompleteValueProperty = new Property(prop, "incompletePathValue", desc.getValueType(), name, name, false); // NOI18N
             name = FormUtils.getBundleString("MSG_Binding_Validator"); // NOI18N
             validatorProperty = new Property(prop, "validator", bindingSupport.getValidatorClass(), name, name, true); // NOI18N
+            validatorProperty.setValue("canAutoComplete", Boolean.FALSE); // NOI18N
             name = FormUtils.getBundleString("MSG_Binding_Converter"); // NOI18N
             converterProperty = new Property(prop, "converter", bindingSupport.getConverterClass(), name, name, true); // NOI18N
+            converterProperty.setValue("canAutoComplete", Boolean.FALSE); // NOI18N
             name = FormUtils.getBundleString("MSG_Binding_Name"); // NOI18N
             nameProperty = new Property(prop, "name", String.class, name, name, true); // NOI18N
         }

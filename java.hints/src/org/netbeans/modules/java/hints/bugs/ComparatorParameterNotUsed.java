@@ -122,6 +122,9 @@ public class ComparatorParameterNotUsed extends TreePathScanner {
 
         ComparatorParameterNotUsed v = new ComparatorParameterNotUsed(ci, vars);
         MethodTree mt = (MethodTree)ctx.getPath().getLeaf();
+        if (mt.getBody() == null) {
+            return null;
+        }
         try {
             v.scan(new TreePath(ctx.getPath(), mt.getBody()), v);
         } catch (StopProcessing ex) {

@@ -884,8 +884,13 @@ public final class LayoutDesigner implements LayoutConstants {
             }
         }
 
-        // add the components' intervals
-        layoutFeeder.add(addingInts);
+        LayoutInterval.prepareDiagnostics(); // bug 240634/222703
+        try {
+            // add the components' intervals
+            layoutFeeder.add(addingInts);
+        } finally {
+            LayoutInterval.cleanDiagnostics();
+        }
 
         if (dragger.isResizing()) {
             for (LayoutComponent comp : components) {

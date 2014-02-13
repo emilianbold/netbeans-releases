@@ -46,9 +46,11 @@ package org.netbeans.modules.form.layoutdesign;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Tomas Pavek
@@ -452,6 +454,9 @@ public final class LayoutInterval implements LayoutConstants {
         if (index >= 0) {
             subIntervals.remove(index);
             interval.parentInterval = null;
+            if (interval.isGroup()) {
+                addRemovedIntervalStacktrace(interval);
+            }
         }
         return index;
     }
@@ -460,6 +465,9 @@ public final class LayoutInterval implements LayoutConstants {
         LayoutInterval interval = subIntervals.get(index);
         subIntervals.remove(index);
         interval.parentInterval = null;
+        if (interval.isGroup()) {
+            addRemovedIntervalStacktrace(interval);
+        }
         return interval;
     }
 
@@ -1260,5 +1268,45 @@ public final class LayoutInterval implements LayoutConstants {
             clone.setPaddingType(interval.getPaddingType());
         }
         return clone;
+    }
+
+    // -----
+    // special error diagnostics for localizing bug 240634/222703, to be removed once fixed
+
+    private static Map<LayoutInterval, Throwable> removedIntervalsMap;
+
+    private static void addRemovedIntervalStacktrace(LayoutInterval li) {
+        if (removedIntervalsMap != null) {
+            removedIntervalsMap.put(li, new Throwable());
+        }
+    }
+
+    static String getRemoveStacktrace(LayoutInterval li) {
+        Throwable t = removedIntervalsMap != null ? removedIntervalsMap.get(li) : null;
+        if (t != null) {
+            StackTraceElement[] ste = t.getStackTrace();
+            StringBuilder sb = new StringBuilder();
+            for (int i=1; i < ste.length; i++) {
+                sb.append("      at "); // NOI18N
+                sb.append(ste[i].toString());
+                sb.append("\n"); // NOI18N
+            }
+            if (sb.length() > 0) {
+                return "remove stacktrace:\n" + sb.toString(); // NOI18N
+            }
+        }
+        return null;
+    }
+
+    static void prepareDiagnostics() {
+        cleanDiagnostics();
+        removedIntervalsMap = new HashMap();
+    }
+
+    static void cleanDiagnostics() {
+        if (removedIntervalsMap != null) {
+            removedIntervalsMap.clear();
+            removedIntervalsMap = null;
+        }
     }
 }

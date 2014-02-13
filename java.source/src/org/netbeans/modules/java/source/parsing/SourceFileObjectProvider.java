@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,28 +34,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.source.parsing;
 
-import org.openide.util.Parameters;
+import java.io.IOException;
+import javax.tools.JavaFileManager;
+import javax.tools.JavaFileObject;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 
 /**
- *
+ * Factory for creating {@link JavaFileObject}s used by the {@link JavacParser}.
+ * The unit tests may implement this interface to force the {@link JavacParser} to
+ * use different implementation of the {@link JavaFileObject}.
+ * @see JavacParser
+ * @see JavaFileObject
+ * @see JavaFileManager
  * @author Tomas Zezula
  */
-public class JavacParserTestUtil {
-
-    public static void setJavacFileObjectProvider (final JavaFileObjectProvider provider) {
-        Parameters.notNull("provider", provider);   //NOI18N
-        JavacParser.jfoProvider = provider;
-    }
-
-    public static JavaFileObjectProvider defaultJavaFileObjectProvider () {
-        return new DefaultJavaFileObjectProvider();
-    }
+public interface SourceFileObjectProvider {
+        
+    /**
+     * Creates {@link JavaFileObject} for given file under given root.
+     * @param handle for which the {@link JavaFileObject} should be created
+     * @param filter used to read the content
+     * @param content of the file object if null, the snapshot from fo is taken
+     * @param renderNow should be the file content rendered immediately
+     * @return the {@link JavaFileObject}
+     * @throws java.io.IOException on io failure.
+     */
+    @NonNull
+    public abstract AbstractSourceFileObject createJavaFileObject (
+            @NonNull AbstractSourceFileObject.Handle handle,
+            @NullAllowed JavaFileFilterImplementation filter,
+            @NullAllowed CharSequence content,
+            boolean renderNow) throws IOException;
 }

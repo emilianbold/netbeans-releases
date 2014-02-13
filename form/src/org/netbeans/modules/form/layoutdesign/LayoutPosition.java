@@ -447,8 +447,10 @@ public class LayoutPosition implements LayoutConstants {
                             list.removeAll(allSeqNeighbors);
                             if (!list.isEmpty()) { // going up we'd get in sequence with something that should stay in parallel
                                 parent = p;
-                                incl.neighbor = neighborInSeq;
-                                incl.index = (neighborDirection == TRAILING) ? 0 : 1;
+                                if (neighborInSeq.getParent() == p) {
+                                    incl.neighbor = neighborInSeq;
+                                    incl.index = (neighborDirection == TRAILING) ? 0 : 1;
+                                }
                                 break;
                             }
                         }

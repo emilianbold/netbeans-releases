@@ -83,7 +83,11 @@ public class SourceFileObjectTest extends NbTestCase {
         FileObject work = FileUtil.toFileObject(getWorkDir());
         FileObject data = FileUtil.createData(work, "test.java");
         Document doc = DataObject.find(data).getLookup().lookup(EditorCookie.class).openDocument();
-        SourceFileObject sfo = new SourceFileObject(data, work, new FilterImplementation(doc), true);
+        SourceFileObject sfo = new SourceFileObject(
+            new AbstractSourceFileObject.Handle(data, work),
+            new FilterImplementation(doc),
+            null,
+            true);
     }
     
     private static final class FilterImplementation implements JavaFileFilterImplementation {
