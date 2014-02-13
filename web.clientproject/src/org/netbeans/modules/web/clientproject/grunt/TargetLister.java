@@ -135,7 +135,13 @@ public class TargetLister {
             }
 
             String l = line.trim();
-            l = l.substring(0,l.indexOf(" "));
+            int right = l.indexOf(" ");
+            
+            if (right < 0) {
+                //#241819
+                continue;
+            }
+            l = l.substring(0, right);
             col.add(new Target(l, gruntFile));
         }
         cache.put(gruntFile.getPath(), Pair.of(gruntFile.lastModified().getTime(), col));
