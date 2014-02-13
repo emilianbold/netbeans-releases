@@ -54,6 +54,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Rectangle2D;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -131,7 +133,7 @@ class SummaryCellRenderer implements ListCellRenderer {
     private static final String PREFIX_PATH_FROM = NbBundle.getMessage(SummaryCellRenderer.class, "MSG_SummaryCellRenderer.pathPrefixFrom"); //NOI18N
     private Collection<VCSHyperlinkProvider> hpInstances;
     
-    Map<Object, ListCellRenderer> renderers = new WeakHashMap<Object, ListCellRenderer>();
+    Map<Object, Reference<ListCellRenderer>> renderers = new WeakHashMap<Object, Reference<ListCellRenderer>>();
 
     public SummaryCellRenderer(AbstractSummaryView summaryView, final VCSHyperlinkSupport linkerSupport, Map<String, VCSKenaiAccessor.KenaiUser> kenaiUsersMap) {
         this.summaryView = summaryView;
@@ -179,17 +181,17 @@ class SummaryCellRenderer implements ListCellRenderer {
     @Override
     public Component getListCellRendererComponent (JList list, Object value, int index, boolean selected, boolean hasFocus) {
         if (value instanceof AbstractSummaryView.RevisionItem) {
-            ListCellRenderer ren = renderers.get(value);
+            ListCellRenderer ren = getRenderer(value);
             if (ren == null) {
                 ren = new RevisionRenderer();
-                renderers.put(value, ren);
+                renderers.put(value, new SoftReference<ListCellRenderer>(ren));
             }
             return ren.getListCellRendererComponent(list, value, index, selected, hasFocus);
         } else if (value instanceof AbstractSummaryView.EventItem) {
-            ListCellRenderer ren = renderers.get(value);
+            ListCellRenderer ren = getRenderer(value);
             if (ren == null) {
                 ren = new EventRenderer();
-                renderers.put(value, ren);
+                renderers.put(value, new SoftReference<ListCellRenderer>(ren));
             }
             return ren.getListCellRendererComponent(list, value, index, selected, hasFocus);
         } else if (value instanceof AbstractSummaryView.LoadingEventsItem) {
@@ -253,6 +255,11 @@ class SummaryCellRenderer implements ListCellRenderer {
             kenaiUser = kenaiUsersMap.get(author);
         }
         return kenaiUser;
+    }
+
+    private ListCellRenderer getRenderer (Object value) {
+        Reference<ListCellRenderer> ref = renderers.get(value);
+        return ref == null ? null : ref.get();
     }
 
     private class RevisionRenderer extends JPanel implements ListCellRenderer {
