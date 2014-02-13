@@ -381,6 +381,28 @@ public final class MultiViewPeer implements PropertyChangeListener {
     void peerComponentOpened() {
         showCurrentElement(true);
         tabs.setToolbarBarVisible(isToolbarVisible());
+        addPropertyChangeListeners();
+    }
+    
+    private void addPropertyChangeListeners() {
+        if( null != model ) {
+            for (MultiViewDescription mvd : model.getDescriptions()) {
+                if( mvd instanceof ContextAwareDescription && ((ContextAwareDescription)mvd).isSplitDescription() )
+                    continue; //#240371 - don't update name from spit elements
+                
+                MultiViewElement el = model.getElementForDescription( mvd, false );
+                if (el == null) {
+                    continue;
+                }
+                if (el.getVisualRepresentation() instanceof Pane) {
+                    Pane pane = (Pane)el.getVisualRepresentation();
+                    final CloneableTopComponent tc = pane.getComponent();
+                    if (!Arrays.asList(tc.getPropertyChangeListeners()).contains(propListener)) {
+                        tc.addPropertyChangeListener(propListener);
+                    }
+                }
+            }
+        }
     }
 
     void peerSplitComponent(int orientation, int splitPosition) {
@@ -841,6 +863,9 @@ public final class MultiViewPeer implements PropertyChangeListener {
         // is called before setMultiViewDescriptions() need to check for null.
         if (model != null) {
             for (MultiViewDescription mvd : model.getDescriptions()) {
+                if( mvd instanceof ContextAwareDescription && ((ContextAwareDescription)mvd).isSplitDescription() )
+                    continue; //#240371 - don't update name from spit elements
+                
                 MultiViewElement el = model.getElementForDescription(
                     mvd, MultiViewCloneableTopComponent.isSourceView(mvd)
                 );
