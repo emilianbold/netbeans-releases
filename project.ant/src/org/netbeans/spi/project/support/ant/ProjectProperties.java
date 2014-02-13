@@ -53,7 +53,10 @@ import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -177,8 +180,8 @@ final class ProjectProperties {
         private final AtomicBoolean fileListenerSet = new AtomicBoolean(false);
         
         //#239999 - preventing properties file from saving, when no changes are done
-        private final Map<String,AtomicBoolean> filePropertiesChangedMap = new HashMap<String, AtomicBoolean>();
-        private final Map<String,EditableProperties> cachedPropertiesFromFile = new HashMap<String, EditableProperties>();
+        private boolean filePropertiesChanged;
+        private EditableProperties cachedPropertiesFromFile;
         
         public PP(String path, AntProjectHelper helper) {
             this.path = path;
@@ -195,15 +198,17 @@ final class ProjectProperties {
         private FileObject dir() {
             return helper.getProjectDirectory();
         }
-        
+
+        /**
+         * Returns EditableProperties.
+         * @return {@link EditableProperties} or null
+         * Threading: called under shared lock
+         */
         public EditableProperties getEditablePropertiesOrNull() {
             lazyAttachListener();
             if (!loaded) {
                 properties = null;
                 FileObject fo = dir().getFileObject(path);
-                if(!filePropertiesChangedMap.containsKey(path)) {
-                    filePropertiesChangedMap.put(path, new AtomicBoolean(false));
-                }
                 if (fo != null) {
                     try {
                         EditableProperties p;
@@ -215,7 +220,7 @@ final class ProjectProperties {
                             is.close();
                         }
                         properties = p;
-                        cachedPropertiesFromFile.put(path, p);
+                        cachedPropertiesFromFile = p;
                     } catch (IOException e) {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                     }
@@ -225,18 +230,19 @@ final class ProjectProperties {
             }
             return properties;
         }
-        
+
+        /**
+         * Sets EditableProperties.
+         * @param nue the new {@link EditableProperties}
+         * @return true if changed
+         * Threading: called under exclusive lock
+         */
         public boolean put(EditableProperties nue) {
             loaded = true;
             reloadedStackTrace = null;
-            if(!filePropertiesChangedMap.containsKey(path)) {
-                filePropertiesChangedMap.put(path, new AtomicBoolean(false));
-            }
-            if (!Utilities.compareObjects(nue, cachedPropertiesFromFile.get(path))) {
-                filePropertiesChangedMap.get(path).set(true);
-            } else {
-                filePropertiesChangedMap.get(path).set(false);
-            }
+            filePropertiesChanged = filePropertiesChanged ||
+                !Objects.equals(nue, cachedPropertiesFromFile);
+            
             boolean modifying = !Utilities.compareObjects(nue, properties);
             if (modifying) {
                 if (nue != null) {
@@ -255,6 +261,13 @@ final class ProjectProperties {
             }
             dir().getFileSystem().runAtomicAction(action);
         }
+
+        /**
+         * Stores properties.
+         * @return the taken lock
+         * @throws IOException
+         * Threading: called under exclusive lock
+         */
         public FileLock write() throws IOException {
             lazyAttachListener();            
             if (!loaded) {
@@ -267,7 +280,8 @@ final class ProjectProperties {
             final FileObject f = dir().getFileObject(path);
             final FileLock[] _lock = new FileLock[1];
             try {
-                if (properties != null && filePropertiesChangedMap.get(path).compareAndSet(true, false)) {
+                if (properties != null && filePropertiesChanged) {
+                    filePropertiesChanged = false;
                     // Supposed to create/modify the file.
                     // Need to use an atomic action - otherwise listeners will first
                     // receive an event that the file has been written to zero length
