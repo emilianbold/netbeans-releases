@@ -106,6 +106,7 @@ PACKAGE    f                               [PUBLIC]   Test204925_07_C\d\e
 PACKAGE    f                               [PUBLIC]   Test204925_08_C\d\e
 PACKAGE    lib                             [PUBLIC]   foo
 PACKAGE    url                             [PUBLIC]   foo\lib
+CLASS      A                               [PUBLIC]   A.php
 CLASS      A                               [PUBLIC]   Test197084.php
 CLASS      A                               [PUBLIC,   a
 CLASS      A                               [PUBLIC]   classConstructorOptionalParam.php
@@ -126,6 +127,7 @@ CLASS      ArraysCc                        [PUBLIC]   arrays.php
 CLASS      Article                         [PUBLIC]   issue225687.php
 CLASS      Author                          [PUBLIC]   mixedtypes.php
 CLASS      Author_1                        [PUBLIC]   mixedtypes_1.php
+CLASS      B                               [PUBLIC]   B.php
 CLASS      B                               [PUBLIC]   Test197084.php
 CLASS      B                               [PUBLIC]   b
 CLASS      B                               [PUBLIC]   issue195232.php
@@ -206,6 +208,7 @@ CLASS      ExMyException                   [PUBLIC]   issue201310.php
 CLASS      ExMyException1                  [PUBLIC]   issue204958.php
 CLASS      ExMyExceptionFromNs             [PUBLIC]   Extra
 CLASS      ExMyExceptionFromNs             [PUBLIC]   ExtraThrow
+CLASS      Exception                       [PUBLIC]   Exception.php
 CLASS      Exception                       [PUBLIC]   MySpace
 CLASS      Exception                       [PUBLIC]   MySpaceThrow
 CLASS      Exception                       [PUBLIC]   Nette\Application
@@ -237,6 +240,7 @@ CLASS      If2                             [PUBLIC]   tests166339.php
 CLASS      Image                           [PUBLIC]   Bar
 CLASS      Image                           [PUBLIC]   Foo
 CLASS      Index                           [PUBLIC]   issue208193.php
+CLASS      Index                           [PUBLIC]   test215371.php
 CLASS      IndexController                 [PUBLIC]   App\Test
 CLASS      InsideClass                     [PUBLIC]   insideClass.php
 CLASS      InstanceOfBar                   [PUBLIC]   issue204958.php

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,28 +37,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.j2ee.execution;
+package org.netbeans.modules.php.editor.completion;
+
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * Constants related to the execution.
  *
- * @author Martin Janicek <mjanicek@netbeans.org>
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public final class ExecutionConstants {
+public class PHPCodeCompletion215371Test extends PHPCodeCompletionTestBase {
 
-    private ExecutionConstants() {
+    public PHPCodeCompletion215371Test(String testName) {
+        super(testName);
     }
 
-    /**
-     * Used to skip the build before deployment.
-     */
-    public static final String SKIP_BUILD = "skip.build"; // NOI18N
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test215371/test215371.php", "$this->myException->^", false);
+    }
 
-    /**
-     * Used to perform standard execution (without application server startup etc.).
-     */
-    public static final String STANDARD_EXECUTION = "standard.execution"; // NOI18N
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test215371/"))
+            })
+        );
+    }
+
 }
