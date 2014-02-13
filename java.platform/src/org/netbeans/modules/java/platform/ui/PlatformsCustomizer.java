@@ -350,7 +350,18 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         }
         try {
             WizardDescriptor wiz = new WizardDescriptor (PlatformInstallIterator.create());
-            DataObject template = DataObject.find (FileUtil.getConfigFile(TEMPLATE));
+            final FileObject templateFo = FileUtil.getConfigFile(TEMPLATE);
+            if (templateFo == null) {
+                final StringBuilder sb = new StringBuilder("Broken system filesystem: ");   //NOI18N
+                final String[] parts = TEMPLATE.split("/");   //NOI18N
+                FileObject f = FileUtil.getConfigRoot();
+                for (int i = 0; f != null && i < parts.length; i++) {
+                    sb.append(f.getName()).append('/'); //NOI18N;
+                    f = f.getFileObject(parts[i]);
+                }
+                throw new IllegalStateException(sb.toString());
+            }
+            DataObject template = DataObject.find (templateFo);
             wiz.putProperty("targetTemplate", template);    //NOI18N
             DataFolder folder = DataFolder.findFolder(FileUtil.getConfigFile(STORAGE));
             wiz.putProperty("targetFolder",folder); //NOI18N
