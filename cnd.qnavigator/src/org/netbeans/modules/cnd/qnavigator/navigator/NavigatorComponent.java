@@ -77,6 +77,10 @@ public final class NavigatorComponent implements NavigatorPanel, LookupListener 
     private final Lock lock = new Lock();
     private final Lock uiLock = new Lock();
     
+    public NavigatorComponent() {
+        INSTANCE = this;
+    }
+    
     @Override
     public String getDisplayName() {
         return NbBundle.getMessage(NavigatorComponent.class, "LBL_members"); //NOI18N
@@ -106,7 +110,7 @@ public final class NavigatorComponent implements NavigatorPanel, LookupListener 
     @Override
     public void panelActivated(Lookup context) {
         synchronized(lock) {
-            INSTANCE = this;
+            //INSTANCE = this;
             doContext = context.lookupResult(DataObject.class);
             doContext.addLookupListener(this);
             resultChanged(null);
@@ -120,7 +124,7 @@ public final class NavigatorComponent implements NavigatorPanel, LookupListener 
     @Override
     public void panelDeactivated() {
         synchronized(lock) {
-            INSTANCE = null;
+            //INSTANCE = null;
             doContext.removeLookupListener(this);
             doContext = null;
             curData = null;
@@ -156,16 +160,22 @@ public final class NavigatorComponent implements NavigatorPanel, LookupListener 
     
     private void setNewContent(final DataObject cdo) {
         final NavigatorPanelUI ui = getPanelUI();
-        ui.setDataObject(cdo);
-        ui.showWaitNode();
+        DataObject old = ui.getDataObject();
+        if (old == null || !old.equals(cdo)) {
+            ui.showWaitNode();
+        }
     }
     
     NavigatorPanelUI getPanelUI() {
         synchronized(uiLock) {
             if (panelUI == null) {
-                panelUI = new NavigatorPanelUI();
+                panelUI = new NavigatorPanelUI(getContent());
             }
             return panelUI;
         }
+    }
+    private static final NavigatorContent content = new NavigatorContent();
+    static NavigatorContent getContent() {
+        return content;
     }
 }
