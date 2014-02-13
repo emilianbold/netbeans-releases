@@ -683,8 +683,16 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                 ProgressTransferListener.cancellable(), null);
         synchronized (HANDLE_LOCK) {
            handle = hndl;
-        }        
-        arch.resolveArtifacts(hndl);
+        }
+        try {
+            arch.resolveArtifacts(hndl);
+        } finally {
+            synchronized (HANDLE_LOCK) {//prevent store()/read() methods to call finish - issue 236251
+                if (hndl == handle) {
+                    handle = null;
+                }
+            }
+        }
         //#154913
         RepositoryIndexer.updateIndexWithArtifacts(RepositoryPreferences.getInstance().getLocalRepository(), Collections.singletonList(arch.getArtifact()));
         return arch.getArtifact();

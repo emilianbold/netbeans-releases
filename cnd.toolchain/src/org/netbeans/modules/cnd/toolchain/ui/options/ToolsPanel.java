@@ -251,7 +251,13 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         Iterator<? extends ServerRecord> savedHostsIter = savedHosts.iterator();
         Iterator<? extends ServerRecord> currentHostsIter = currentHosts.iterator();
         while(savedHostsIter.hasNext()) {
-            if (!savedHostsIter.next().getExecutionEnvironment().equals(currentHostsIter.next().getExecutionEnvironment())) {
+            ServerRecord savedRecord = savedHostsIter.next();
+            ServerRecord currentRecord = currentHostsIter.next();
+            if (!savedRecord.getExecutionEnvironment().equals(currentRecord.getExecutionEnvironment())
+                    || !savedRecord.getSyncFactory().getID().equals(currentRecord.getSyncFactory().getID())
+                    || savedRecord.getX11Forwarding() != currentRecord.getX11Forwarding()
+                    || savedRecord.isRememberPassword() != currentRecord.isRememberPassword()
+                    || !savedRecord.getDisplayName().equals(currentRecord.getDisplayName())) {
                 return true;
             }
         }
