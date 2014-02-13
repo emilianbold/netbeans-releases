@@ -52,6 +52,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.progress.spi.RunOffEDTProvider;
 import org.netbeans.modules.progress.spi.RunOffEDTProvider.Progress;
 import org.netbeans.modules.progress.spi.RunOffEDTProvider.Progress2;
+import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -282,7 +283,13 @@ public final class ProgressUtils {
      * @since 1.19
      */
     public static void showProgressDialogAndRun(Runnable operation, String displayName) {
-        showProgressDialogAndRun(new RunnableWrapper(operation), displayName, false);
+        RunnableWrapper wrapper;
+        if (operation instanceof Cancellable) {
+            wrapper = new CancellableRunnableWrapper(operation);
+        } else {
+            wrapper = new RunnableWrapper(operation);
+        }
+        showProgressDialogAndRun(wrapper, displayName, false);
     }
 
     /**
@@ -316,7 +323,7 @@ public final class ProgressUtils {
         }
     }
 
-    private static final class RunnableWrapper implements ProgressRunnable<Void> {
+    private static class RunnableWrapper implements ProgressRunnable<Void> {
         private final Runnable toRun;
         RunnableWrapper(Runnable toRun) {
             this.toRun = toRun;
@@ -329,6 +336,19 @@ public final class ProgressUtils {
         }
     }
 
+    private static final class CancellableRunnableWrapper extends RunnableWrapper implements Cancellable {
+        private final Cancellable cancelable;
+        CancellableRunnableWrapper(Runnable toRun) {
+            super(toRun);
+            this.cancelable = (Cancellable)toRun;
+        }
+
+        @Override
+        public boolean cancel() {
+            return cancelable.cancel();
+        }
+    }
+        
     private static class Trivial implements RunOffEDTProvider {
         private static final RequestProcessor WORKER = new RequestProcessor(ProgressUtils.class.getName());
 
