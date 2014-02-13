@@ -100,7 +100,14 @@ public class PrerequisitesCheckerImpl implements PrerequisitesChecker, LateBound
             alwaysBuild = Boolean.TRUE;
         }
 
+        Boolean standardExecution = Boolean.FALSE;
+        // Perform standard execution when running single main file --> See issue #241703
+        if (config.getActionName().equals("run.single.main")) { // NOI18N
+            standardExecution = Boolean.TRUE;
+        }
+
         config.setInternalProperty(ExecutionConstants.SKIP_BUILD, !alwaysBuild); //NOI18N
+        config.setInternalProperty(ExecutionConstants.STANDARD_EXECUTION, standardExecution);
 
         String actionName = config.getActionName();
         if (!applicableActions.contains(actionName)) {
