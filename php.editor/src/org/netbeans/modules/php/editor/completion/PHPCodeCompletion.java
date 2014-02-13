@@ -860,7 +860,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
 
             if (types != null) {
                 TypeElement enclosingType = getEnclosingType(request, types);
-
+                Set<PhpElement> duplicateElementCheck = new HashSet<>();
                 for (TypeScope typeScope : types) {
                     final StaticOrInstanceMembersFilter staticFlagFilter =
                             new StaticOrInstanceMembersFilter(staticContext, instanceContext, selfContext, staticLateBindingContext);
@@ -881,20 +881,22 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                             ElementFilter.forName(NameKind.caseInsensitivePrefix(request.prefix)),
                             ElementFilter.forInstanceOf(TypeConstantElement.class));
                     for (final PhpElement phpElement : request.index.getAccessibleTypeMembers(typeScope, enclosingType)) {
-                        if (methodsFilter.isAccepted(phpElement)) {
-                            MethodElement method = (MethodElement) phpElement;
-                            List<MethodElementItem> items = PHPCompletionItem.MethodElementItem.getItems(method, request);
-                            for (MethodElementItem methodItem : items) {
-                                completionResult.add(methodItem);
+                        if (duplicateElementCheck.add(phpElement)) {
+                            if (methodsFilter.isAccepted(phpElement)) {
+                                MethodElement method = (MethodElement) phpElement;
+                                List<MethodElementItem> items = PHPCompletionItem.MethodElementItem.getItems(method, request);
+                                for (MethodElementItem methodItem : items) {
+                                    completionResult.add(methodItem);
+                                }
+                            } else if (fieldsFilter.isAccepted(phpElement)) {
+                                FieldElement field = (FieldElement) phpElement;
+                                FieldItem fieldItem = PHPCompletionItem.FieldItem.getItem(field, request);
+                                completionResult.add(fieldItem);
+                            } else if (staticContext && constantsFilter.isAccepted(phpElement)) {
+                                TypeConstantElement constant = (TypeConstantElement) phpElement;
+                                TypeConstantItem constantItem = PHPCompletionItem.TypeConstantItem.getItem(constant, request);
+                                completionResult.add(constantItem);
                             }
-                        } else if (fieldsFilter.isAccepted(phpElement)) {
-                            FieldElement field = (FieldElement) phpElement;
-                            FieldItem fieldItem = PHPCompletionItem.FieldItem.getItem(field, request);
-                            completionResult.add(fieldItem);
-                        } else if (staticContext && constantsFilter.isAccepted(phpElement)) {
-                            TypeConstantElement constant = (TypeConstantElement) phpElement;
-                            TypeConstantItem constantItem = PHPCompletionItem.TypeConstantItem.getItem(constant, request);
-                            completionResult.add(constantItem);
                         }
                     }
                     if (staticContext) {

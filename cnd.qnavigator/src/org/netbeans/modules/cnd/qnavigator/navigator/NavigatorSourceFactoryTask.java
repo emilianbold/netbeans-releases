@@ -80,17 +80,13 @@ public class NavigatorSourceFactoryTask extends IndexingAwareParserResultTask<Cn
         if (!(event instanceof CursorMovedSchedulerEvent)) {
             return;
         }
-        final NavigatorComponent navigator = NavigatorComponent.getInstance();
-        if (navigator != null) {
-            final NavigatorPanelUI panelUI = navigator.getPanelUI();
-            final NavigatorContent content = panelUI.getContent();
-            NavigatorModel model = content.getModel();
-            if (model != null) {
-                CursorMovedSchedulerEvent cursorEvent = (CursorMovedSchedulerEvent) event;
-                JTextComponent comp = EditorRegistry.lastFocusedComponent();
-                if (comp instanceof JEditorPane) {
-                    model.setSelection(cursorEvent.getCaretOffset(), (JEditorPane) comp, canceled, result.getSnapshot().getText());
-                }
+        final NavigatorContent content = NavigatorComponent.getContent();
+        NavigatorModel model = content.getModel();
+        if (model != null) {
+            CursorMovedSchedulerEvent cursorEvent = (CursorMovedSchedulerEvent) event;
+            JTextComponent comp = EditorRegistry.lastFocusedComponent();
+            if (comp instanceof JEditorPane) {
+                model.setSelection(cursorEvent.getCaretOffset(), (JEditorPane) comp, canceled, result.getSnapshot().getText());
             }
         }
     }

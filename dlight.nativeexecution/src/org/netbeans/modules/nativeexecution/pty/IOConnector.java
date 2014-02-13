@@ -45,6 +45,7 @@ import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import org.netbeans.modules.nativeexecution.NativeProcessInfo;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
@@ -94,9 +95,9 @@ public final class IOConnector {
                 }
             }
         }
+        
 
-
-        IOTerm.connect(io, process.getOutputStream(), process.getInputStream(), process.getErrorStream());
+        IOTerm.connect(io, process.getOutputStream(), process.getInputStream(), process.getErrorStream(), NativeProcessInfo.getCharset(process));
 
         return true;
     }
@@ -110,7 +111,7 @@ public final class IOConnector {
             return false;
         }
 
-        IOTerm.connect(io, pty.getOutputStream(), pty.getInputStream(), pty.getErrorStream());
+        IOTerm.connect(io, pty.getOutputStream(), pty.getInputStream(), pty.getErrorStream(), null);
 
         if (IOResizable.isSupported(io)) {
             try {

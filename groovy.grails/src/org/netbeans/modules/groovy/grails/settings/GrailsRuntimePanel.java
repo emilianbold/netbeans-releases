@@ -87,6 +87,12 @@ public final class GrailsRuntimePanel extends javax.swing.JPanel implements Groo
         jLabel2 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
 
+        grailsHomeLocation.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                grailsHomeLocationActionPerformed(evt);
+            }
+        });
+
         org.openide.awt.Mnemonics.setLocalizedText(chooseDir, org.openide.util.NbBundle.getMessage(GrailsRuntimePanel.class, "SupportPanel.chooseDir.text")); // NOI18N
         chooseDir.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -174,6 +180,12 @@ public final class GrailsRuntimePanel extends javax.swing.JPanel implements Groo
         }
     }//GEN-LAST:event_jLabel2MousePressed
 
+    private void grailsHomeLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_grailsHomeLocationActionPerformed
+        if (!valid()) {
+            displayGrailsHomeWarning();
+        }
+    }//GEN-LAST:event_grailsHomeLocationActionPerformed
+
     @Override
     public Component getComponent() {
         return this;
@@ -186,21 +198,18 @@ public final class GrailsRuntimePanel extends javax.swing.JPanel implements Groo
 
     @Override
     public void store() {
-        String location = grailsHomeLocation.getText();
-        if ("".equals(location.trim())) { // NOI18N
-            return;
-        }
-        if (!RuntimeHelper.isValidRuntime(new File(location))) {
-            displayGrailsHomeWarning();
-            return;
-        } else {
-            settings.setGrailsBase(location);
-        }
+        settings.setGrailsBase(grailsHomeLocation.getText());
     }
 
     @Override
     public boolean valid() {
-        // TODO check whether form is consistent and complete
+        String location = grailsHomeLocation.getText();
+        if ("".equals(location.trim())) { // NOI18N
+            return false;
+        }
+        if (!RuntimeHelper.isValidRuntime(new File(location))) {
+            return false;
+        }
         return true;
     }
 
