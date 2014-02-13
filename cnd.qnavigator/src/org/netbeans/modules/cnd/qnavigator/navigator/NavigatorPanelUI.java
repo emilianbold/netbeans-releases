@@ -63,15 +63,16 @@ import org.openide.util.lookup.InstanceContent;
  * @author Alexander Simon
  */
 public class NavigatorPanelUI extends JPanel implements ExplorerManager.Provider, PropertyChangeListener {
-    private final NavigatorContent content = new NavigatorContent();
+    private final NavigatorContent content;
     private final BeanTreeView navigatorPane;
     private final ExplorerManager explorerManager = new ExplorerManager();
     private final InstanceContent selectedNodes = new InstanceContent();
     private final Lookup lookup = new AbstractLookup(selectedNodes);
     
     /** Creates new form NavigatorPanel */
-    public NavigatorPanelUI() {
+    public NavigatorPanelUI(NavigatorContent content) {
         initComponents();
+        this.content = content;
         explorerManager.addPropertyChangeListener(this);
         
         navigatorPane = new BeanTreeView();
@@ -103,8 +104,8 @@ public class NavigatorPanelUI extends JPanel implements ExplorerManager.Provider
         setLayout(new java.awt.BorderLayout());
     }// </editor-fold>//GEN-END:initComponents
     
-    void setDataObject(DataObject cdo) {
-        content.setDataObject(cdo);
+    DataObject getDataObject() {
+        return content.getDataObject();
     }
     
     void showWaitNode() {

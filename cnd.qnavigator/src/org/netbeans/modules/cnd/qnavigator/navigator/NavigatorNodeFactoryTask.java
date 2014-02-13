@@ -58,6 +58,7 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
@@ -76,19 +77,27 @@ public class NavigatorNodeFactoryTask extends IndexingAwareParserResultTask<CndP
             canceled.set(true);
             canceled = new AtomicBoolean(false);
         }
-        final NavigatorComponent navigator = NavigatorComponent.getInstance();
-        if (navigator == null) {
-            return;
-        }
-        final NavigatorPanelUI panelUI = navigator.getPanelUI();
-        final NavigatorContent content = panelUI.getContent();
-        final DataObject cdo = content.getDataObject();
-        if (cdo == null) {
-            return;
-        }
         FileObject fo = result.getSnapshot().getSource().getFileObject();
         if (fo == null) {
             return;
+        }
+        DataObject cdo = null;
+        try {
+            cdo = DataObject.find(fo);
+        } catch (DataObjectNotFoundException ex) {
+        }
+        if (cdo == null) {
+            return;
+        }
+        NavigatorComponent navigator = NavigatorComponent.getInstance();
+        final NavigatorPanelUI panelUI;
+        final NavigatorContent content;
+        if (navigator == null) {
+            panelUI = null;
+            content = NavigatorComponent.getContent();
+        } else {
+            panelUI = navigator.getPanelUI();
+            content = panelUI.getContent();
         }
         String mimeType = result.getSnapshot().getMimePath().getPath();
         CsmFile csmFile = result.getCsmFile();
@@ -104,19 +113,13 @@ public class NavigatorNodeFactoryTask extends IndexingAwareParserResultTask<CndP
                     }
                 }
             }
-            final NavigatorModel model = new NavigatorModel(cdo, fo, panelUI, navigator, mimeType, csmFile);
-            if (!canceled.get()) {
-                content.setModel(model);
-                model.update(canceled, true);
-            }
-        } else {
-            final NavigatorModel model = new NavigatorModel(cdo, fo, panelUI, navigator, mimeType, csmFile);
-            content.setModel(model);
-            model.update(canceled, true);
         }
+        final NavigatorModel model = new NavigatorModel(cdo, fo, panelUI, mimeType, csmFile);
+        content.setModel(model);
+        model.update(canceled, true);
     }
 
-    static final int PRIORITY = 200;
+    static final int PRIORITY = 90;
 
     @Override
     public int getPriority() {
