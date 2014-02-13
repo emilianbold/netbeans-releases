@@ -54,7 +54,6 @@ import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
-import org.netbeans.modules.maven.j2ee.execution.DeploymentLogger;
 import static org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunWeb.PROP_ALWAYS_BUILD_BEFORE_RUNNING;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -70,13 +69,13 @@ import org.openide.util.Exceptions;
 })
 public class PrerequisitesCheckerImpl implements PrerequisitesChecker, LateBoundPrerequisitesChecker {
 
-    private List<String> SINGLE_ACTIONS = Arrays.asList(new String[] {
+    private final List<String> SINGLE_ACTIONS = Arrays.asList(new String[] {
         ActionProvider.COMMAND_RUN_SINGLE + ".deploy",
         ActionProvider.COMMAND_DEBUG_SINGLE + ".deploy",
         ActionProvider.COMMAND_PROFILE + ".deploy"
     });
 
-    private List applicableActions = Arrays.asList(new String[] {
+    private final List applicableActions = Arrays.asList(new String[] {
         ActionProvider.COMMAND_RUN,
         ActionProvider.COMMAND_RUN_SINGLE + ".deploy",
         ActionProvider.COMMAND_DEBUG,
@@ -100,7 +99,14 @@ public class PrerequisitesCheckerImpl implements PrerequisitesChecker, LateBound
             alwaysBuild = Boolean.TRUE;
         }
 
+        Boolean standardExecution = Boolean.FALSE;
+        // Perform standard execution when running single main file --> See issue #241703
+        if (config.getActionName().equals("run.single.main")) { // NOI18N
+            standardExecution = Boolean.TRUE;
+        }
+
         config.setInternalProperty(ExecutionConstants.SKIP_BUILD, !alwaysBuild); //NOI18N
+        config.setInternalProperty(ExecutionConstants.STANDARD_EXECUTION, standardExecution);
 
         String actionName = config.getActionName();
         if (!applicableActions.contains(actionName)) {

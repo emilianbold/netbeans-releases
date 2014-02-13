@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.pty.Pty;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
@@ -469,4 +470,11 @@ public final class NativeProcessInfo {
     boolean isRedirectError() {
         return redirectError;
     }
+    
+    public static String getCharset(NativeProcess process) {
+        if (process instanceof AbstractNativeProcess) {
+            return ((AbstractNativeProcess) process).getCharset();
+        }
+        return null;
+    }    
 }

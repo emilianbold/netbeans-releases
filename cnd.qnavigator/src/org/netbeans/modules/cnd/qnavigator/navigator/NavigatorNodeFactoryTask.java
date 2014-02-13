@@ -44,12 +44,15 @@ package org.netbeans.modules.cnd.qnavigator.navigator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -58,6 +61,7 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
@@ -76,19 +80,36 @@ public class NavigatorNodeFactoryTask extends IndexingAwareParserResultTask<CndP
             canceled.set(true);
             canceled = new AtomicBoolean(false);
         }
-        final NavigatorComponent navigator = NavigatorComponent.getInstance();
-        if (navigator == null) {
+        boolean navigatorEnabled = NavigatorComponent.getInstance().isNavigatorEnabled();
+        Source source = result.getSnapshot().getSource();
+        if (!navigatorEnabled) {
+            // check if need any activity at all
+            Document doc = source.getDocument(false);
+            if (doc != null && !BreadcrumbsController.areBreadCrumsEnabled(doc)) {
+                // no navigator and no document or breadcrumbs is disabled
+                return;
+            }
+        }
+        FileObject fo = source.getFileObject();
+        if (fo == null) {
             return;
         }
-        final NavigatorPanelUI panelUI = navigator.getPanelUI();
-        final NavigatorContent content = panelUI.getContent();
-        final DataObject cdo = content.getDataObject();
+        DataObject cdo = null;
+        try {
+            cdo = DataObject.find(fo);
+        } catch (DataObjectNotFoundException ex) {
+        }
         if (cdo == null) {
             return;
         }
-        FileObject fo = result.getSnapshot().getSource().getFileObject();
-        if (fo == null) {
-            return;
+        final NavigatorPanelUI panelUI;
+        final NavigatorContent content;
+        if (!navigatorEnabled) {
+            panelUI = null;
+            content = NavigatorComponent.getContent();
+        } else {
+            panelUI = NavigatorComponent.getInstance().getPanelUI();
+            content = panelUI.getContent();
         }
         String mimeType = result.getSnapshot().getMimePath().getPath();
         CsmFile csmFile = result.getCsmFile();
@@ -104,19 +125,13 @@ public class NavigatorNodeFactoryTask extends IndexingAwareParserResultTask<CndP
                     }
                 }
             }
-            final NavigatorModel model = new NavigatorModel(cdo, fo, panelUI, navigator, mimeType, csmFile);
-            if (!canceled.get()) {
-                content.setModel(model);
-                model.update(canceled, true);
-            }
-        } else {
-            final NavigatorModel model = new NavigatorModel(cdo, fo, panelUI, navigator, mimeType, csmFile);
-            content.setModel(model);
-            model.update(canceled, true);
         }
+        final NavigatorModel model = new NavigatorModel(cdo, fo, panelUI, mimeType, csmFile);
+        content.setModel(model);
+        model.update(canceled, true);
     }
 
-    static final int PRIORITY = 200;
+    static final int PRIORITY = 90;
 
     @Override
     public int getPriority() {

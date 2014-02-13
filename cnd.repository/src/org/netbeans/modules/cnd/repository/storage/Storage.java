@@ -504,10 +504,18 @@ import org.openide.util.lookup.Lookups;
 
     void closeUnit(int clientUnitID, boolean cleanRepository, Set<Integer> requiredUnits) {
         Integer clientShortUnitID = storageMask.clientToLayer(clientUnitID);
-//        FilePathsDictionary files;
-//        synchronized (filePathDictionaries) {
-//            files = filePathDictionaries.get(clientShortUnitID);
-//        }
+        if (cleanRepository) {
+            //remove from cache when clean repository, fixing the problem with Reparse Project
+            //Reparse project cleans cache but as we use new scheme to
+            //write project-index and didn't clean the cache
+            //when re-parse is invoked, folder with unit is removed
+            //but after that filePathsDictionary will never be changed (all files are already in cache)
+            //and therefore will never be put into the repository writer queue -> no project-index file on disk
+            synchronized (filePathDictionaries) {
+                filePathDictionaries.remove(clientShortUnitID);
+            }
+        }
+        //delete cache
 //        List<CharSequence> flist = files == null
 //                ? Collections.<CharSequence>emptyList() : files.toList();
         for (Layer layer : layers) {

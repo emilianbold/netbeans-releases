@@ -406,18 +406,20 @@ import org.netbeans.lib.terminalemulator.LineDiscipline;
 	private final OutputStream pin;
 	private final InputStream pout;
 	private final InputStream perr;
+	private final String charset;
 
 	public Connect(Terminal terminal,
-		       OutputStream pin, InputStream pout, InputStream perr) {
+		       OutputStream pin, InputStream pout, InputStream perr, String charset) {
 	    super(terminal);
 	    this.pin = pin;
 	    this.pout = pout;
 	    this.perr = perr;
+	    this.charset = charset;
 	}
 
 	@Override
 	protected void perform() {
-	    terminal().term().connect(pin, pout, perr, "UTF-8"); // NOI18N
+	    terminal().term().connect(pin, pout, perr, charset); // NOI18N
 	    terminal().setExtConnected(true);
 	}
     }
