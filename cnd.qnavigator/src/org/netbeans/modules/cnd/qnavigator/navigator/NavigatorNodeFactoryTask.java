@@ -44,12 +44,15 @@ package org.netbeans.modules.cnd.qnavigator.navigator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -77,7 +80,17 @@ public class NavigatorNodeFactoryTask extends IndexingAwareParserResultTask<CndP
             canceled.set(true);
             canceled = new AtomicBoolean(false);
         }
-        FileObject fo = result.getSnapshot().getSource().getFileObject();
+        boolean navigatorEnabled = NavigatorComponent.getInstance().isNavigatorEnabled();
+        Source source = result.getSnapshot().getSource();
+        if (!navigatorEnabled) {
+            // check if need any activity at all
+            Document doc = source.getDocument(false);
+            if (doc != null && !BreadcrumbsController.areBreadCrumsEnabled(doc)) {
+                // no navigator and no document or breadcrumbs is disabled
+                return;
+            }
+        }
+        FileObject fo = source.getFileObject();
         if (fo == null) {
             return;
         }
@@ -89,14 +102,13 @@ public class NavigatorNodeFactoryTask extends IndexingAwareParserResultTask<CndP
         if (cdo == null) {
             return;
         }
-        NavigatorComponent navigator = NavigatorComponent.getInstance();
         final NavigatorPanelUI panelUI;
         final NavigatorContent content;
-        if (navigator == null) {
+        if (!navigatorEnabled) {
             panelUI = null;
             content = NavigatorComponent.getContent();
         } else {
-            panelUI = navigator.getPanelUI();
+            panelUI = NavigatorComponent.getInstance().getPanelUI();
             content = panelUI.getContent();
         }
         String mimeType = result.getSnapshot().getMimePath().getPath();

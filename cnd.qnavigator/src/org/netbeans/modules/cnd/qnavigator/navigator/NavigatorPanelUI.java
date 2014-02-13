@@ -109,29 +109,24 @@ public class NavigatorPanelUI extends JPanel implements ExplorerManager.Provider
     }
     
     void showWaitNode() {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                navigatorPane.setRootVisible(true);
-                explorerManager.setRootContext(new LoadingNode());
-            }
-        });
+        assert SwingUtilities.isEventDispatchThread();
+        navigatorPane.setRootVisible(true);
+        explorerManager.setRootContext(new LoadingNode());
     }
     
     void newContentReady(){
-        navigatorPane.setRootVisible(false);
-        navigatorPane.setAutoWaitCursor(false);
-        explorerManager.setRootContext(content.getRoot());
+        Runnable update = new Runnable() {
+            public void run() {
+                navigatorPane.setRootVisible(false);
+                navigatorPane.setAutoWaitCursor(false);
+                explorerManager.setRootContext(content.getRoot());
+                expandAll();
+            }
+        };
         if (SwingUtilities.isEventDispatchThread()){
-            expandAll();
+            update.run();
         } else {
-            SwingUtilities.invokeLater(new Runnable(){
-                @Override
-                public void run() {
-                    expandAll();
-                }
-            });
+            SwingUtilities.invokeLater(update);
         }
     }
     
