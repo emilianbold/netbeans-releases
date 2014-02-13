@@ -1014,7 +1014,7 @@ cp_expression_atom
         (NOT ws?)?
         (
             (cp_math_expression)=>cp_math_expression
-            | LPAREN ws? cp_expression_list ws? RPAREN
+            | LPAREN ws? (cp_expression_list ws?)? RPAREN
         )
     ;
 
