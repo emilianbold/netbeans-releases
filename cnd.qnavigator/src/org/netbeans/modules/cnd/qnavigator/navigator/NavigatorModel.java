@@ -632,4 +632,9 @@ public class NavigatorModel {
             return new EnableCodeAssistanceAction(project);
         }
     }
+
+    @Override
+    public String toString() {
+        return "" + cdo;
+    }
 }
