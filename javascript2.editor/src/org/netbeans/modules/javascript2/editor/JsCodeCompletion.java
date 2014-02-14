@@ -193,6 +193,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 case EXPRESSION:
                     completeKeywords(request, resultList);
                     completeExpression(request, added);
+                    completeObjectProperty(request, added);
                     completeInWith(request, added);
                     break;
                 case OBJECT_PROPERTY:
@@ -497,8 +498,10 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
 
     private void completeObjectProperty(CompletionRequest request, Map<String, List<JsElement>> addedItems) {
         List<String> expChain = ModelUtils.resolveExpressionChain(request.result.getSnapshot(), request.anchor, false);
-        Map<String, List<JsElement>> toAdd = getCompletionFromExpressionChain(request, expChain);
-        addedItems.putAll(toAdd);
+        if (!expChain.isEmpty()) {
+            Map<String, List<JsElement>> toAdd = getCompletionFromExpressionChain(request, expChain);
+            addedItems.putAll(toAdd);
+        }
     }
 
     private Map<String, List<JsElement>> getCompletionFromExpressionChain(CompletionRequest request, List<String> expChain) {

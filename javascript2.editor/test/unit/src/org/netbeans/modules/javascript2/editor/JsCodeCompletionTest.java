@@ -263,4 +263,20 @@ public class JsCodeCompletionTest extends JsCodeCompletionBase {
     public void testIssue238310_03() throws Exception {
         checkCompletion("testfiles/completion/issue238310_03.js", "x.^", false);
     }
+    
+    public void testIssue240914_01() throws Exception {
+        checkCompletion("testfiles/completion/issue240914.js", "        ^name);", false);
+    }
+    
+    public void testIssue240914_02() throws Exception {
+        checkCompletion("testfiles/completion/issue240914.js", "        .^name);", false);
+    }
+    
+    public void testIssue240914_03() throws Exception {
+        checkCompletion("testfiles/completion/issue240914.js", "        .^prop1);", false);
+    }
+    
+    public void testIssue240914_04() throws Exception {
+        checkCompletion("testfiles/completion/issue240914.js", "        ^prop1);", false);
+    }
 }
