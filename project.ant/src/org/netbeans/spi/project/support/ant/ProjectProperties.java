@@ -180,6 +180,7 @@ final class ProjectProperties {
         private final AtomicBoolean fileListenerSet = new AtomicBoolean(false);
         
         //#239999 - preventing properties file from saving, when no changes are done
+
         private boolean filePropertiesChanged;
         private EditableProperties cachedPropertiesFromFile;
         
@@ -242,7 +243,6 @@ final class ProjectProperties {
             reloadedStackTrace = null;
             filePropertiesChanged = filePropertiesChanged ||
                 !Objects.equals(nue, cachedPropertiesFromFile);
-            
             boolean modifying = !Utilities.compareObjects(nue, properties);
             if (modifying) {
                 if (nue != null) {

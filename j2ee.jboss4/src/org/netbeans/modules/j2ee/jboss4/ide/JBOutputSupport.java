@@ -249,8 +249,12 @@ public final class JBOutputSupport {
                 fileTask.cancel();
             }
 
-            assert !started : "Instance " + props.getProperty(InstanceProperties.DISPLAY_NAME_ATTR)
-                    + " started again without proper stop";
+            if (started) {
+                // XXX perhaps this may happen when profiler terminated ?
+                LOGGER.log(Level.INFO, "Instance {0} started again without proper stop",
+                        props.getProperty(InstanceProperties.DISPLAY_NAME_ATTR));
+            }
+
             started = false;
             failed = false;
             processTask = null;
