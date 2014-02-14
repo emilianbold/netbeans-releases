@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.storage.data.RepositoryDataInputStream;
 import org.netbeans.modules.cnd.repository.storage.data.RepositoryDataOutputStream;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -447,7 +448,15 @@ import org.openide.util.lookup.Lookups;
                     List<CharSequence> fileNameTable = dict == null ? Collections.<CharSequence>emptyList() : dict.toList();
                     convertedTable = new ArrayList<CharSequence>(fileNameTable.size());
                     for (CharSequence fname : fileNameTable) {
-                        FilePath sourceFSPath = new FilePath(layer_to_read_files_from.getUnitsTable().get(unit_id_layer_to_read_files_from).getFileSystem(), fname.toString());
+                        final UnitDescriptor unitDescriptor = layer_to_read_files_from.getUnitsTable().get(unit_id_layer_to_read_files_from);
+                        if (unitDescriptor == null) {
+                            //is it legal that we do not have unit descriptor here?
+                            //do not think so, 
+                            log.log(Level.FINE, "UnitDesctipor not found  for {0} and layer {1}", new Object[]{unit_id_layer_to_read_files_from, layer_to_read_files_from.getLayerDescriptor()});
+                            CndUtils.threadsDump();
+                            continue;
+                        }
+                        FilePath sourceFSPath = new FilePath(unitDescriptor.getFileSystem(), fname.toString());
                         CharSequence pathInClient = RepositoryMapper.map(clientUnitDescriptor, sourceFSPath);
                         convertedTable.add(pathInClient);
                     }
