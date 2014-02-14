@@ -160,8 +160,8 @@ public class JdbRetriever implements JdbcChildrenFactory.Retriever {
                     ObjectName applications[] = (ObjectName[]) con
                         .getAttribute(config, "AppDeployments"); // NOI18N
                     for (ObjectName application : applications) {
-                        String type = con.getAttribute( application, "ModuleType").toString(); // NOI18N
-                        if (type.equals(JDBC)){
+                        Object objType = con.getAttribute( application, "ModuleType"); // NOI18N
+                        if (objType != null && JDBC.equals(objType.toString())) {
                             boolean foundAdminServer = false;
                             ObjectName[] targets = (ObjectName[]) con
                                 .getAttribute(application, "Targets"); // NOI18N
