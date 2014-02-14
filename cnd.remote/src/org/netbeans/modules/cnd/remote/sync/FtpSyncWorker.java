@@ -488,7 +488,8 @@ import org.openide.util.RequestProcessor;
             {
                 long unzipTime = System.currentTimeMillis();
                 NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
-                pb.setCommandLine("unzip -oqq " + remoteFile + " < /dev/null"); // NOI18N
+                pb.setExecutable("sh"); // NOI18N
+                pb.setArguments("-c" , "unzip -oqq " + remoteFile + " < /dev/null; rm " + remoteFile); // NOI18N
                 pb.setWorkingDirectory(remoteRoot);
                 pb.redirectError(); // TODO: read it instead!
                 Process proc = pb.call();
