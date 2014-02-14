@@ -570,7 +570,22 @@ public class ProxyLookup extends Lookup {
             collectFires(null);
         }
         
+        ThreadLocal<Boolean> IN = new ThreadLocal<Boolean>();
         protected void collectFires(Collection<Object> evAndListeners) {
+            Boolean prev = IN.get();
+            if (Boolean.TRUE.equals(prev)) {
+//                Thread.dumpStack();
+                return;
+            }
+            try {
+                IN.set(true);
+                collImpl(evAndListeners);
+            } finally {
+                IN.set(prev);
+            }
+        }
+        
+        private void collImpl(Collection<Object> evAndListeners) {
             boolean modified = true;
 
             final Object[] ll;
