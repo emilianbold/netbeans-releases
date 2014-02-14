@@ -1419,14 +1419,28 @@ public class ModelUtils {
             int offsetFirstRightParen = -1;
             List<String> exp = new ArrayList();
 
-            while (token.id() != JsTokenId.WHITESPACE && token.id() != JsTokenId.OPERATOR_SEMICOLON
+            while (token.id() != JsTokenId.OPERATOR_SEMICOLON
                     && token.id() != JsTokenId.BRACKET_RIGHT_CURLY && token.id() != JsTokenId.BRACKET_LEFT_CURLY
                     && token.id() != JsTokenId.BRACKET_LEFT_PAREN
                     && token.id() != JsTokenId.BLOCK_COMMENT
                     && token.id() != JsTokenId.LINE_COMMENT
                     && token.id() != JsTokenId.OPERATOR_ASSIGNMENT
                     && token.id() != JsTokenId.OPERATOR_PLUS) {
-
+                
+                if (token.id() == JsTokenId.WHITESPACE) {
+                    // we need to find out, whether this is a continual expression on the new line
+                    int helpOffset = ts.offset();
+                    if (ts.movePrevious()) {
+                        token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT, JsTokenId.EOL));
+                        if (token.id() != JsTokenId.BRACKET_RIGHT_PAREN && token.id() != JsTokenId.IDENTIFIER
+                                && token.id() != JsTokenId.OPERATOR_DOT) {
+                            ts.move(helpOffset);
+                            ts.moveNext();
+                            token = ts.token();
+                            break;
+                        }
+                    }
+                }
                 if (token.id() != JsTokenId.EOL) {
                     if (token.id() != JsTokenId.OPERATOR_DOT) {
                         if (token.id() == JsTokenId.BRACKET_RIGHT_PAREN) {
