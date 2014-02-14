@@ -3572,7 +3572,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     }
 
     public void assignRegisterValue(String register, String value) {
-        dbx.sendCommand(0, 0, "assign $" + register + " = " + value);
+        dbx.sendCommand(0, 0, "assign $" + register + " = " + value); // NOI18N
     }
 
     void setRegs(String regs) {
