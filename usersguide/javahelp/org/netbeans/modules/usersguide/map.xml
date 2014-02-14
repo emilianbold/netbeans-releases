@@ -2467,263 +2467,267 @@
   <!-- "Web Service Attributes Editor: Quality of Service: Output Message"-->
   <mapID target="f1_java_ee095.htm-sthref667" url="f1_java_ee095.htm#sthref667" />
   <!-- "Web Service Attributes Editor: Quality of Service: Output Message"-->
-  <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.TransportClientNode" url="f1_java_ee096.htm#org.netbeans.modules.websvc.wsitconf.ui.client.nodes.TransportClientNode" />
-  <!-- "Web Service Attributes Editor: Quality of Service: Transport"-->
+  <mapID target="org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.TargetsPanel" url="f1_java_ee096.htm#org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.TargetsPanel" />
+  <!-- "Web Service Attributes Editor: Quality of Service: Add Header"-->
   <mapID target="f1_java_ee096.htm-sthref668" url="f1_java_ee096.htm#sthref668" />
+  <!-- "Web Service Attributes Editor: Quality of Service: Add Header"-->
+  <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.TransportClientNode" url="f1_java_ee097.htm#org.netbeans.modules.websvc.wsitconf.ui.client.nodes.TransportClientNode" />
   <!-- "Web Service Attributes Editor: Quality of Service: Transport"-->
-  <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.CallbackClientNode" url="f1_java_ee097.htm#org.netbeans.modules.websvc.wsitconf.ui.client.nodes.CallbackClientNode" />
-  <!-- "Web Service Attributes Editor: Quality of Service: Security"-->
   <mapID target="f1_java_ee097.htm-sthref669" url="f1_java_ee097.htm#sthref669" />
+  <!-- "Web Service Attributes Editor: Quality of Service: Transport"-->
+  <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.CallbackClientNode" url="f1_java_ee098.htm#org.netbeans.modules.websvc.wsitconf.ui.client.nodes.CallbackClientNode" />
   <!-- "Web Service Attributes Editor: Quality of Service: Security"-->
-  <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.AdvancedConfigurationClientNode" url="f1_java_ee098.htm#org.netbeans.modules.websvc.wsitconf.ui.client.nodes.AdvancedConfigurationClientNode" />
-  <!-- "Web Service Attributes Editor: Quality of Service: Advanced Configuration"-->
   <mapID target="f1_java_ee098.htm-sthref670" url="f1_java_ee098.htm#sthref670" />
+  <!-- "Web Service Attributes Editor: Quality of Service: Security"-->
+  <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.AdvancedConfigurationClientNode" url="f1_java_ee099.htm#org.netbeans.modules.websvc.wsitconf.ui.client.nodes.AdvancedConfigurationClientNode" />
   <!-- "Web Service Attributes Editor: Quality of Service: Advanced Configuration"-->
-  <mapID target="ID_GLOBAL" url="f1_java_ee099.htm#ID_GLOBAL" />
-  <!-- "Web Service Attributes Editor: WSDL Customization: Global Customization"-->
   <mapID target="f1_java_ee099.htm-sthref671" url="f1_java_ee099.htm#sthref671" />
+  <!-- "Web Service Attributes Editor: Quality of Service: Advanced Configuration"-->
+  <mapID target="ID_GLOBAL" url="f1_java_ee100.htm#ID_GLOBAL" />
   <!-- "Web Service Attributes Editor: WSDL Customization: Global Customization"-->
-  <mapID target="ID_PORT_TYPE" url="f1_java_ee100.htm#ID_PORT_TYPE" />
-  <!-- "Web Service Attributes Editor: WSDL Customization: Port Types"-->
   <mapID target="f1_java_ee100.htm-sthref672" url="f1_java_ee100.htm#sthref672" />
+  <!-- "Web Service Attributes Editor: WSDL Customization: Global Customization"-->
+  <mapID target="ID_PORT_TYPE" url="f1_java_ee101.htm#ID_PORT_TYPE" />
   <!-- "Web Service Attributes Editor: WSDL Customization: Port Types"-->
-  <mapID target="ID_PORT_TYPE_OPERATION_FAULT" url="f1_java_ee101.htm#ID_PORT_TYPE_OPERATION_FAULT" />
-  <!-- "Web Service Attributes Editor: WSDL Customization: Port Type Faults"-->
   <mapID target="f1_java_ee101.htm-sthref673" url="f1_java_ee101.htm#sthref673" />
+  <!-- "Web Service Attributes Editor: WSDL Customization: Port Types"-->
+  <mapID target="ID_PORT_TYPE_OPERATION_FAULT" url="f1_java_ee102.htm#ID_PORT_TYPE_OPERATION_FAULT" />
   <!-- "Web Service Attributes Editor: WSDL Customization: Port Type Faults"-->
-  <mapID target="ID_BINDING" url="f1_java_ee102.htm#ID_BINDING" />
-  <!-- "Web Service Attributes Editor: WSDL Customization: Bindings"-->
   <mapID target="f1_java_ee102.htm-sthref674" url="f1_java_ee102.htm#sthref674" />
+  <!-- "Web Service Attributes Editor: WSDL Customization: Port Type Faults"-->
+  <mapID target="ID_BINDING" url="f1_java_ee103.htm#ID_BINDING" />
   <!-- "Web Service Attributes Editor: WSDL Customization: Bindings"-->
-  <mapID target="ID_BINDING_OPERATION" url="f1_java_ee103.htm#ID_BINDING_OPERATION" />
-  <!-- "Web Service Attributes Editor: WSDL Customization: Binding Operations"-->
   <mapID target="f1_java_ee103.htm-sthref675" url="f1_java_ee103.htm#sthref675" />
+  <!-- "Web Service Attributes Editor: WSDL Customization: Bindings"-->
+  <mapID target="ID_BINDING_OPERATION" url="f1_java_ee104.htm#ID_BINDING_OPERATION" />
   <!-- "Web Service Attributes Editor: WSDL Customization: Binding Operations"-->
-  <mapID target="ID_SERVICE" url="f1_java_ee104.htm#ID_SERVICE" />
-  <!-- "Web Service Attributes Editor: WSDL Customization: Services"-->
   <mapID target="f1_java_ee104.htm-sthref676" url="f1_java_ee104.htm#sthref676" />
+  <!-- "Web Service Attributes Editor: WSDL Customization: Binding Operations"-->
+  <mapID target="ID_SERVICE" url="f1_java_ee105.htm#ID_SERVICE" />
   <!-- "Web Service Attributes Editor: WSDL Customization: Services"-->
-  <mapID target="ID_PORT" url="f1_java_ee105.htm#ID_PORT" />
-  <!-- "Web Service Attributes Editor: WSDL Customization: Ports"-->
   <mapID target="f1_java_ee105.htm-sthref677" url="f1_java_ee105.htm#sthref677" />
+  <!-- "Web Service Attributes Editor: WSDL Customization: Services"-->
+  <mapID target="ID_PORT" url="f1_java_ee106.htm#ID_PORT" />
   <!-- "Web Service Attributes Editor: WSDL Customization: Ports"-->
-  <mapID target="ID_EXTERNAL_BINDING" url="f1_java_ee106.htm#ID_EXTERNAL_BINDING" />
-  <!-- "Web Service Attributes Editor: WSDL Customization: External Binding Files"-->
   <mapID target="f1_java_ee106.htm-sthref678" url="f1_java_ee106.htm#sthref678" />
+  <!-- "Web Service Attributes Editor: WSDL Customization: Ports"-->
+  <mapID target="ID_EXTERNAL_BINDING" url="f1_java_ee107.htm#ID_EXTERNAL_BINDING" />
   <!-- "Web Service Attributes Editor: WSDL Customization: External Binding Files"-->
-  <mapID target="org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.STANDALONE" url="f1_java_ee107.htm#org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.STANDALONE" />
-  <!-- "RESTful Web Services from Patterns Wizard: Specify Resource Classes (Simple Root)"-->
   <mapID target="f1_java_ee107.htm-sthref679" url="f1_java_ee107.htm#sthref679" />
+  <!-- "Web Service Attributes Editor: WSDL Customization: External Binding Files"-->
+  <mapID target="org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.STANDALONE" url="f1_java_ee108.htm#org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.STANDALONE" />
   <!-- "RESTful Web Services from Patterns Wizard: Specify Resource Classes (Simple Root)"-->
-  <mapID target="org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.CONTAINER" url="f1_java_ee108.htm#org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.CONTAINER" />
-  <!-- "RESTful Web Services from Patterns Wizard: Specify Resource Classes (Container Item)"-->
   <mapID target="f1_java_ee108.htm-sthref680" url="f1_java_ee108.htm#sthref680" />
+  <!-- "RESTful Web Services from Patterns Wizard: Specify Resource Classes (Simple Root)"-->
+  <mapID target="org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.CONTAINER" url="f1_java_ee109.htm#org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.CONTAINER" />
   <!-- "RESTful Web Services from Patterns Wizard: Specify Resource Classes (Container Item)"-->
-  <mapID target="org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.CLIENTCONTROLLED" url="f1_java_ee109.htm#org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.CLIENTCONTROLLED" />
-  <!-- "RESTful Web Services from Patterns Wizard: Specify Resource Classes (Client Controlled Container Item)"-->
   <mapID target="f1_java_ee109.htm-sthref681" url="f1_java_ee109.htm#sthref681" />
+  <!-- "RESTful Web Services from Patterns Wizard: Specify Resource Classes (Container Item)"-->
+  <mapID target="org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.CLIENTCONTROLLED" url="f1_java_ee110.htm#org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.CLIENTCONTROLLED" />
   <!-- "RESTful Web Services from Patterns Wizard: Specify Resource Classes (Client Controlled Container Item)"-->
-  <mapID target="js.client.rest" url="f1_java_ee110.htm#js.client.rest" />
-  <!-- "New RESTful JavaScript Client Wizard: Configure JavaScript REST Client"-->
   <mapID target="f1_java_ee110.htm-sthref682" url="f1_java_ee110.htm#sthref682" />
+  <!-- "RESTful Web Services from Patterns Wizard: Specify Resource Classes (Client Controlled Container Item)"-->
+  <mapID target="js.client.rest" url="f1_java_ee111.htm#js.client.rest" />
   <!-- "New RESTful JavaScript Client Wizard: Configure JavaScript REST Client"-->
-  <mapID target="j2eeplugins_registering_app_server_jboss_properties" url="f1_java_ee111.htm#j2eeplugins_registering_app_server_jboss_properties" />
-  <!-- "Add Server Instance Wizard: JBoss Server Instance Properties"-->
   <mapID target="f1_java_ee111.htm-sthref683" url="f1_java_ee111.htm#sthref683" />
+  <!-- "New RESTful JavaScript Client Wizard: Configure JavaScript REST Client"-->
+  <mapID target="j2eeplugins_registering_app_server_jboss_properties" url="f1_java_ee112.htm#j2eeplugins_registering_app_server_jboss_properties" />
   <!-- "Add Server Instance Wizard: JBoss Server Instance Properties"-->
-  <mapID target="j2eeplugins_registering_app_server_jboss_location" url="f1_java_ee112.htm#j2eeplugins_registering_app_server_jboss_location" />
-  <!-- "Add Server Instance Wizard: JBoss Server Instance Location"-->
   <mapID target="f1_java_ee112.htm-sthref684" url="f1_java_ee112.htm#sthref684" />
+  <!-- "Add Server Instance Wizard: JBoss Server Instance Properties"-->
+  <mapID target="j2eeplugins_registering_app_server_jboss_location" url="f1_java_ee113.htm#j2eeplugins_registering_app_server_jboss_location" />
+  <!-- "Add Server Instance Wizard: JBoss Server Instance Location"-->
+  <mapID target="f1_java_ee113.htm-sthref685" url="f1_java_ee113.htm#sthref685" />
   <!-- "Add Server Instance Wizard: JBoss Server Instance Location"-->
   <mapID target="f1_jpa.htm" url="f1_jpa.htm" />
   <!-- "Using JPA "-->
   <mapID target="text.x-jpql" url="f1_jpa001.htm#text.x-jpql" />
   <!-- "JPQL Query Editor"-->
-  <mapID target="f1_jpa001.htm-sthref686" url="f1_jpa001.htm#sthref686" />
+  <mapID target="f1_jpa001.htm-sthref687" url="f1_jpa001.htm#sthref687" />
   <!-- "JPQL Query Editor"-->
   <mapID target="org.netbeans.modules.j2ee.persistence.wizard.entity.EntityWizardDescripto" url="f1_jpa002.htm#org.netbeans.modules.j2ee.persistence.wizard.entity.EntityWizardDescripto" />
   <!-- "New Entity Class Wizard"-->
-  <mapID target="f1_jpa002.htm-sthref687" url="f1_jpa002.htm#sthref687" />
+  <mapID target="f1_jpa002.htm-sthref688" url="f1_jpa002.htm#sthref688" />
   <!-- "New Entity Class Wizard"-->
   <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.DatabaseTablesPanel" url="f1_jpa003.htm#org.netbeans.modules.j2ee.persistence.wizard.fromdb.DatabaseTablesPanel" />
   <!-- "New Entity Classes from Database Wizard: Database Tables"-->
-  <mapID target="f1_jpa003.htm-sthref688" url="f1_jpa003.htm#sthref688" />
+  <mapID target="f1_jpa003.htm-sthref689" url="f1_jpa003.htm#sthref689" />
   <!-- "New Entity Classes from Database Wizard: Database Tables"-->
   <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel" url="f1_jpa004.htm#org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel" />
   <!-- "New Entity Classes from Database Wizard: Entity Classes"-->
-  <mapID target="f1_jpa004.htm-sthref689" url="f1_jpa004.htm#sthref689" />
+  <mapID target="f1_jpa004.htm-sthref690" url="f1_jpa004.htm#sthref690" />
   <!-- "New Entity Classes from Database Wizard: Entity Classes"-->
   <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.MappingOptionsPanel" url="f1_jpa005.htm#org.netbeans.modules.j2ee.persistence.wizard.fromdb.MappingOptionsPanel" />
   <!-- "New Entity Classes from Database Wizard: Mapping Options"-->
-  <mapID target="f1_jpa005.htm-sthref690" url="f1_jpa005.htm#sthref690" />
+  <mapID target="f1_jpa005.htm-sthref691" url="f1_jpa005.htm#sthref691" />
   <!-- "New Entity Classes from Database Wizard: Mapping Options"-->
   <mapID target="org.netbeans.modules.j2ee.persistence.unit.AddEntityPanel" url="f1_jpa006.htm#org.netbeans.modules.j2ee.persistence.unit.AddEntityPanel" />
   <!-- "Add Entity Dialog Box"-->
-  <mapID target="f1_jpa006.htm-sthref691" url="f1_jpa006.htm#sthref691" />
+  <mapID target="f1_jpa006.htm-sthref692" url="f1_jpa006.htm#sthref692" />
   <!-- "Add Entity Dialog Box"-->
   <mapID target="org.netbeans.modules.j2ee.persistence.wizard.jpacontroller$PersistenceClientEntitySelection" url="f1_jpa007.htm#org.netbeans.modules.j2ee.persistence.wizard.jpacontroller$PersistenceClientEntitySelection" />
   <!-- "New JPA Controller Classes from Entity Class Wizard: Entity Classes"-->
-  <mapID target="f1_jpa007.htm-sthref692" url="f1_jpa007.htm#sthref692" />
+  <mapID target="f1_jpa007.htm-sthref693" url="f1_jpa007.htm#sthref693" />
   <!-- "New JPA Controller Classes from Entity Class Wizard: Entity Classes"-->
   <mapID target="org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerSetupPanel" url="f1_jpa008.htm#org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerSetupPanel" />
   <!-- "New JPA Controller Classes from Entity Class Wizard: Generate JPA Controller Classes"-->
-  <mapID target="f1_jpa008.htm-sthref693" url="f1_jpa008.htm#sthref693" />
+  <mapID target="f1_jpa008.htm-sthref694" url="f1_jpa008.htm#sthref694" />
   <!-- "New JPA Controller Classes from Entity Class Wizard: Generate JPA Controller Classes"-->
   <mapID target="persistence_multiview_design_persistenceUnitNode" url="f1_jpa009.htm#persistence_multiview_design_persistenceUnitNode" />
   <!-- "persistence.xml Visual Editor"-->
-  <mapID target="f1_jpa009.htm-sthref694" url="f1_jpa009.htm#sthref694" />
+  <mapID target="f1_jpa009.htm-sthref695" url="f1_jpa009.htm#sthref695" />
   <!-- "persistence.xml Visual Editor"-->
   <mapID target="org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardDescriptor" url="f1_jpa010.htm#org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardDescriptor" />
   <!-- "New Persistence Unit Wizard: Provider and Database"-->
-  <mapID target="f1_jpa010.htm-sthref695" url="f1_jpa010.htm#sthref695" />
+  <mapID target="f1_jpa010.htm-sthref696" url="f1_jpa010.htm#sthref696" />
   <!-- "New Persistence Unit Wizard: Provider and Database"-->
   <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengDbTablesWizardDescriptor" url="f1_jpa011.htm#org.netbeans.modules.hibernate.wizards.HibernateRevengDbTablesWizardDescriptor" />
   <!-- "Hibernate Reverse Engineering Wizard: Database Tables"-->
-  <mapID target="f1_jpa011.htm-sthref696" url="f1_jpa011.htm#sthref696" />
+  <mapID target="f1_jpa011.htm-sthref697" url="f1_jpa011.htm#sthref697" />
   <!-- "Hibernate Reverse Engineering Wizard: Database Tables"-->
   <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengCodeGenWizardDescriptor" url="f1_jpa012.htm#org.netbeans.modules.hibernate.wizards.HibernateRevengCodeGenWizardDescriptor" />
   <!-- "Hibernate Mapping Files and POJOs Wizard: Generation of Code"-->
-  <mapID target="f1_jpa012.htm-sthref697" url="f1_jpa012.htm#sthref697" />
+  <mapID target="f1_jpa012.htm-sthref698" url="f1_jpa012.htm#sthref698" />
   <!-- "Hibernate Mapping Files and POJOs Wizard: Generation of Code"-->
   <mapID target="org.netbeans.modules.hibernate.wizards.HibernateMappingWizardDescriptor" url="f1_jpa013.htm#org.netbeans.modules.hibernate.wizards.HibernateMappingWizardDescriptor" />
   <!-- "Hibernate Mapping Wizard: Select Mapping Class"-->
-  <mapID target="f1_jpa013.htm-sthref698" url="f1_jpa013.htm#sthref698" />
+  <mapID target="f1_jpa013.htm-sthref699" url="f1_jpa013.htm#sthref699" />
   <!-- "Hibernate Mapping Wizard: Select Mapping Class"-->
   <mapID target="org.netbeans.modules.hibernate.wizards.HibernateConfigurationWizardDescriptor" url="f1_jpa014.htm#org.netbeans.modules.hibernate.wizards.HibernateConfigurationWizardDescriptor" />
   <!-- "Hibernate Configuration Wizard: Select Data Source"-->
-  <mapID target="f1_jpa014.htm-sthref699" url="f1_jpa014.htm#sthref699" />
+  <mapID target="f1_jpa014.htm-sthref700" url="f1_jpa014.htm#sthref700" />
   <!-- "Hibernate Configuration Wizard: Select Data Source"-->
   <mapID target="f1_java_me.htm" url="f1_java_me.htm" />
   <!-- "Using Java ME "-->
   <mapID target="org.netbeans.modules.j2me.project.ui.customizer.AddAttributePanel" url="f1_java_me001.htm#org.netbeans.modules.j2me.project.ui.customizer.AddAttributePanel" />
   <!-- "Add/Edit Attribute"-->
-  <mapID target="f1_java_me001.htm-sthref701" url="f1_java_me001.htm#sthref701" />
+  <mapID target="f1_java_me001.htm-sthref702" url="f1_java_me001.htm#sthref702" />
   <!-- "Add/Edit Attribute"-->
   <mapID target="org.netbeans.modules.j2me.keystore.ui.AddKeystorePanel" url="f1_java_me002.htm#org.netbeans.modules.j2me.keystore.ui.AddKeystorePanel" />
   <!-- "Add Keystore"-->
-  <mapID target="f1_java_me002.htm-sthref702" url="f1_java_me002.htm#sthref702" />
+  <mapID target="f1_java_me002.htm-sthref703" url="f1_java_me002.htm#sthref703" />
   <!-- "Add Keystore"-->
   <mapID target="org.netbeans.modules.project.support.customizer.LibrariesChooser" url="f1_java_me003.htm#org.netbeans.modules.project.support.customizer.LibrariesChooser" />
   <!-- "Add Libraries"-->
-  <mapID target="f1_java_me003.htm-sthref703" url="f1_java_me003.htm#sthref703" />
+  <mapID target="f1_java_me003.htm-sthref704" url="f1_java_me003.htm#sthref704" />
   <!-- "Add Libraries"-->
   <mapID target="org.netbeans.modules.j2me.project.ui.customizer.J2MEMIDletsPanel" url="f1_java_me004.htm#org.netbeans.modules.j2me.project.ui.customizer.J2MEMIDletsPanel" />
   <!-- "Add/Edit MIDlet"-->
-  <mapID target="f1_java_me004.htm-sthref704" url="f1_java_me004.htm#sthref704" />
+  <mapID target="f1_java_me004.htm-sthref705" url="f1_java_me004.htm#sthref705" />
   <!-- "Add/Edit MIDlet"-->
   <mapID target="org.netbeans.modules.j2me.project.ui.customizer.AddPushRegistryPanel" url="f1_java_me005.htm#org.netbeans.modules.j2me.project.ui.customizer.AddPushRegistryPanel" />
   <!-- "Add/Edit Push Registry Entry"-->
-  <mapID target="f1_java_me005.htm-sthref705" url="f1_java_me005.htm#sthref705" />
+  <mapID target="f1_java_me005.htm-sthref706" url="f1_java_me005.htm#sthref706" />
   <!-- "Add/Edit Push Registry Entry"-->
   <mapID target="org.netbeans.modules.j2me.keystore.ui.CreateKeyAliasPanel" url="f1_java_me006.htm#org.netbeans.modules.j2me.keystore.ui.CreateKeyAliasPanel" />
   <!-- "Create Key Pair"-->
-  <mapID target="f1_java_me006.htm-sthref706" url="f1_java_me006.htm#sthref706" />
+  <mapID target="f1_java_me006.htm-sthref707" url="f1_java_me006.htm#sthref707" />
   <!-- "Create Key Pair"-->
   <mapID target="org.netbeans.modules.j2me.keystore.ui.EnterPasswordPanel" url="f1_java_me007.htm#org.netbeans.modules.j2me.keystore.ui.EnterPasswordPanel" />
   <!-- "Enter Password"-->
-  <mapID target="f1_java_me007.htm-sthref707" url="f1_java_me007.htm#sthref707" />
+  <mapID target="f1_java_me007.htm-sthref708" url="f1_java_me007.htm#sthref708" />
   <!-- "Enter Password"-->
   <mapID target="org.netbeans.modules.j2me.keystore.ui.ExportPanel" url="f1_java_me008.htm#org.netbeans.modules.j2me.keystore.ui.ExportPanel" />
   <!-- "Export Key"-->
-  <mapID target="f1_java_me008.htm-sthref708" url="f1_java_me008.htm#sthref708" />
+  <mapID target="f1_java_me008.htm-sthref709" url="f1_java_me008.htm#sthref709" />
   <!-- "Export Key"-->
   <mapID target="org.netbeans.modules.j2me.keystore.ui.SecurityManagerPanel" url="f1_java_me009.htm#org.netbeans.modules.j2me.keystore.ui.SecurityManagerPanel" />
   <!-- "Keystores Manager"-->
-  <mapID target="f1_java_me009.htm-sthref709" url="f1_java_me009.htm#sthref709" />
+  <mapID target="f1_java_me009.htm-sthref710" url="f1_java_me009.htm#sthref710" />
   <!-- "Keystores Manager"-->
   <mapID target="org.netbeans.modules.mobility.project.ui.J2MEPhysicalViewProvider$J2MEProjectRootNode" url="f1_java_me010.htm#org.netbeans.modules.mobility.project.ui.J2MEPhysicalViewProvider$J2MEProjectRootNode" />
   <!-- "Java ME Project Node"-->
-  <mapID target="f1_java_me010.htm-sthref710" url="f1_java_me010.htm#sthref710" />
+  <mapID target="f1_java_me010.htm-sthref711" url="f1_java_me010.htm#sthref711" />
   <!-- "Java ME Project Node"-->
   <mapID target="org.netbeans.modules.java.platform.wizard.SelectorPanel" url="f1_java_me011.htm#org.netbeans.modules.java.platform.wizard.SelectorPanel" />
   <!-- "Add Java Platform Wizard: Select Platform Type"-->
-  <mapID target="f1_java_me011.htm-sthref711" url="f1_java_me011.htm#sthref711" />
+  <mapID target="f1_java_me011.htm-sthref712" url="f1_java_me011.htm#sthref712" />
   <!-- "Add Java Platform Wizard: Select Platform Type"-->
   <mapID target="org.netbeans.modules.mobility.cldcplatform.wizard.FindWizardPanel" url="f1_java_me012.htm#org.netbeans.modules.mobility.cldcplatform.wizard.FindWizardPanel" />
   <!-- "Add Java Platform Wizard: Platform Folders Page"-->
-  <mapID target="f1_java_me012.htm-sthref712" url="f1_java_me012.htm#sthref712" />
+  <mapID target="f1_java_me012.htm-sthref713" url="f1_java_me012.htm#sthref713" />
   <!-- "Add Java Platform Wizard: Platform Folders Page"-->
   <mapID target="org.netbeans.modules.mobility.cldcplatform.wizard.DetectWizardPanel" url="f1_java_me013.htm#org.netbeans.modules.mobility.cldcplatform.wizard.DetectWizardPanel" />
   <!-- "Add Java Platform Wizard: Detected Platforms Page"-->
-  <mapID target="f1_java_me013.htm-sthref713" url="f1_java_me013.htm#sthref713" />
+  <mapID target="f1_java_me013.htm-sthref714" url="f1_java_me013.htm#sthref714" />
   <!-- "Add Java Platform Wizard: Detected Platforms Page"-->
   <mapID target="org.netbeans.modules.mobility.cldcplatform.customwizard.CommandLinesPanel" url="f1_java_me014.htm#org.netbeans.modules.mobility.cldcplatform.customwizard.CommandLinesPanel" />
   <!-- "Add Java Platform Wizard: General Information Page"-->
-  <mapID target="f1_java_me014.htm-sthref714" url="f1_java_me014.htm#sthref714" />
+  <mapID target="f1_java_me014.htm-sthref715" url="f1_java_me014.htm#sthref715" />
   <!-- "Add Java Platform Wizard: General Information Page"-->
   <mapID target="org.netbeans.modules.mobility.cldcplatform.customwizard.ClasspathPanel" url="f1_java_me015.htm#org.netbeans.modules.mobility.cldcplatform.customwizard.ClasspathPanel" />
   <!-- "Add Java Platform Wizard: Bootstrap Libraries Page"-->
-  <mapID target="f1_java_me015.htm-sthref715" url="f1_java_me015.htm#sthref715" />
+  <mapID target="f1_java_me015.htm-sthref716" url="f1_java_me015.htm#sthref716" />
   <!-- "Add Java Platform Wizard: Bootstrap Libraries Page"-->
   <mapID target="org.netbeans.modules.mobility.cldcplatform.SrcDocPathsPanel" url="f1_java_me016.htm#org.netbeans.modules.mobility.cldcplatform.SrcDocPathsPanel" />
   <!-- "Add Java Platform wizard: Sources and Javadoc Page"-->
-  <mapID target="f1_java_me016.htm-sthref716" url="f1_java_me016.htm#sthref716" />
+  <mapID target="f1_java_me016.htm-sthref717" url="f1_java_me016.htm#sthref717" />
   <!-- "Add Java Platform wizard: Sources and Javadoc Page"-->
   <mapID target="org.netbeans.modules.mobility.project.ui.wizard.ProjectPanelEmbedded" url="f1_java_me017.htm#org.netbeans.modules.mobility.project.ui.wizard.ProjectPanelEmbedded" />
   <!-- "New Embedded Application Wizard: Project Name and Location Page"-->
-  <mapID target="f1_java_me017.htm-sthref717" url="f1_java_me017.htm#sthref717" />
+  <mapID target="f1_java_me017.htm-sthref718" url="f1_java_me017.htm#sthref718" />
   <!-- "New Embedded Application Wizard: Project Name and Location Page"-->
   <mapID target="org.netbeans.modules.mobility.project.ui.wizard.PlatformSelectionPanelEmbedded" url="f1_java_me018.htm#org.netbeans.modules.mobility.project.ui.wizard.PlatformSelectionPanelEmbedded" />
   <!-- "New Embedded Application Wizard: Default Platform Selection Page"-->
-  <mapID target="f1_java_me018.htm-sthref718" url="f1_java_me018.htm#sthref718" />
+  <mapID target="f1_java_me018.htm-sthref719" url="f1_java_me018.htm#sthref719" />
   <!-- "New Embedded Application Wizard: Default Platform Selection Page"-->
   <mapID target="org.netbeans.modules.mobility.project.ui.wizard.ConfigurationsSelectionPanelEmbedded" url="f1_java_me019.htm#org.netbeans.modules.mobility.project.ui.wizard.ConfigurationsSelectionPanelEmbedded" />
   <!-- "New Embedded Application Wizard: More Configurations Selection Page"-->
-  <mapID target="f1_java_me019.htm-sthref719" url="f1_java_me019.htm#sthref719" />
+  <mapID target="f1_java_me019.htm-sthref720" url="f1_java_me019.htm#sthref720" />
   <!-- "New Embedded Application Wizard: More Configurations Selection Page"-->
   <mapID target="org.netbeans.modules.mobility.project.ui.wizard.MIDPTargetChooserPanel" url="f1_java_me020.htm#org.netbeans.modules.mobility.project.ui.wizard.MIDPTargetChooserPanel" />
   <!-- "New MIDP File Wizard: Name and Location Page"-->
-  <mapID target="f1_java_me020.htm-sthref720" url="f1_java_me020.htm#sthref720" />
+  <mapID target="f1_java_me020.htm-sthref721" url="f1_java_me020.htm#sthref721" />
   <!-- "New MIDP File Wizard: Name and Location Page"-->
   <mapID target="org.netbeans.modules.j2me.project.wizard.PanelConfigureProject_APPLICATION" url="f1_java_me021.htm#org.netbeans.modules.j2me.project.wizard.PanelConfigureProject_APPLICATION" />
   <!-- "New Java ME Embedded Application Wizard: Name and Location"-->
-  <mapID target="f1_java_me021.htm-sthref721" url="f1_java_me021.htm#sthref721" />
+  <mapID target="f1_java_me021.htm-sthref722" url="f1_java_me021.htm#sthref722" />
   <!-- "New Java ME Embedded Application Wizard: Name and Location"-->
   <mapID target="org.netbeans.modules.j2me.project.ui.customizer.J2MESourcesPanel" url="f1_java_me022.htm#org.netbeans.modules.j2me.project.ui.customizer.J2MESourcesPanel" />
   <!-- "Java ME Embedded Project Properties Dialog Box: Sources"-->
-  <mapID target="f1_java_me022.htm-sthref722" url="f1_java_me022.htm#sthref722" />
+  <mapID target="f1_java_me022.htm-sthref723" url="f1_java_me022.htm#sthref723" />
   <!-- "Java ME Embedded Project Properties Dialog Box: Sources"-->
   <mapID target="org.netbeans.modules.j2me.project.ui.customizer.J2MEPlatformPanel" url="f1_java_me023.htm#org.netbeans.modules.j2me.project.ui.customizer.J2MEPlatformPanel" />
   <!-- "Java ME Embedded Project Properties Dialog Box: Platform"-->
-  <mapID target="f1_java_me023.htm-sthref723" url="f1_java_me023.htm#sthref723" />
+  <mapID target="f1_java_me023.htm-sthref724" url="f1_java_me023.htm#sthref724" />
   <!-- "Java ME Embedded Project Properties Dialog Box: Platform"-->
   <mapID target="org.netbeans.modules.j2me.project.ui.customizer.J2MELibrariesPanel" url="f1_java_me024.htm#org.netbeans.modules.j2me.project.ui.customizer.J2MELibrariesPanel" />
   <!-- "Java ME Embedded Project Properties Dialog Box: Libraries"-->
-  <mapID target="f1_java_me024.htm-sthref724" url="f1_java_me024.htm#sthref724" />
+  <mapID target="f1_java_me024.htm-sthref725" url="f1_java_me024.htm#sthref725" />
   <!-- "Java ME Embedded Project Properties Dialog Box: Libraries"-->
   <mapID target="org.netbeans.modules.j2me.project.ui.customizer.J2MEApplicationDescriptorPanel" url="f1_java_me025.htm#org.netbeans.modules.j2me.project.ui.customizer.J2MEApplicationDescriptorPanel" />
   <!-- "Java ME Embedded Project Properties Dialog Box: Application Descriptor"-->
-  <mapID target="f1_java_me025.htm-sthref725" url="f1_java_me025.htm#sthref725" />
+  <mapID target="f1_java_me025.htm-sthref726" url="f1_java_me025.htm#sthref726" />
   <!-- "Java ME Embedded Project Properties Dialog Box: Application Descriptor"-->
   <mapID target="org.netbeans.modules.j2me.project.ui.customizer.J2MECompilingPanel" url="f1_java_me026.htm#org.netbeans.modules.j2me.project.ui.customizer.J2MECompilingPanel" />
   <!-- "Java ME Embedded Project Properties Dialog Box: Compiling"-->
-  <mapID target="f1_java_me026.htm-sthref726" url="f1_java_me026.htm#sthref726" />
+  <mapID target="f1_java_me026.htm-sthref727" url="f1_java_me026.htm#sthref727" />
   <!-- "Java ME Embedded Project Properties Dialog Box: Compiling"-->
   <mapID target="org.netbeans.modules.j2me.project.ui.customizer.J2MESigningPanel" url="f1_java_me027.htm#org.netbeans.modules.j2me.project.ui.customizer.J2MESigningPanel" />
   <!-- "Java ME Embedded Project Properties Dialog Box: Signing"-->
-  <mapID target="f1_java_me027.htm-sthref727" url="f1_java_me027.htm#sthref727" />
+  <mapID target="f1_java_me027.htm-sthref728" url="f1_java_me027.htm#sthref728" />
   <!-- "Java ME Embedded Project Properties Dialog Box: Signing"-->
   <mapID target="org.netbeans.modules.j2me.project.ui.customizer.J2MEObfuscatingPanel" url="f1_java_me028.htm#org.netbeans.modules.j2me.project.ui.customizer.J2MEObfuscatingPanel" />
   <!-- "Java ME Embedded Project Properties Dialog Box: Obfuscating"-->
-  <mapID target="f1_java_me028.htm-sthref728" url="f1_java_me028.htm#sthref728" />
+  <mapID target="f1_java_me028.htm-sthref729" url="f1_java_me028.htm#sthref729" />
   <!-- "Java ME Embedded Project Properties Dialog Box: Obfuscating"-->
   <mapID target="org.netbeans.modules.j2me.project.ui.customizer.J2MEJavadocPanel" url="f1_java_me029.htm#org.netbeans.modules.j2me.project.ui.customizer.J2MEJavadocPanel" />
   <!-- "Java ME Embedded Project Properties Dialog Box: Documenting"-->
-  <mapID target="f1_java_me029.htm-sthref729" url="f1_java_me029.htm#sthref729" />
+  <mapID target="f1_java_me029.htm-sthref730" url="f1_java_me029.htm#sthref730" />
   <!-- "Java ME Embedded Project Properties Dialog Box: Documenting"-->
   <mapID target="org.netbeans.modules.j2me.project.ui.customizer.J2MERunPanel" url="f1_java_me030.htm#org.netbeans.modules.j2me.project.ui.customizer.J2MERunPanel" />
   <!-- "Java ME Embedded Project Properties Dialog Box: Run"-->
-  <mapID target="f1_java_me030.htm-sthref730" url="f1_java_me030.htm#sthref730" />
+  <mapID target="f1_java_me030.htm-sthref731" url="f1_java_me030.htm#sthref731" />
   <!-- "Java ME Embedded Project Properties Dialog Box: Run"-->
   <mapID target="org.netbeans.modules.j2me.project.ui.customizer.AddPermissionPanel" url="f1_java_me031.htm#org.netbeans.modules.j2me.project.ui.customizer.AddPermissionPanel" />
   <!-- "Add/Edit Permission for API"-->
-  <mapID target="f1_java_me031.htm-sthref731" url="f1_java_me031.htm#sthref731" />
+  <mapID target="f1_java_me031.htm-sthref732" url="f1_java_me031.htm#sthref732" />
   <!-- "Add/Edit Permission for API"-->
   <mapID target="f1_database.htm" url="f1_database.htm" />
   <!-- "Using Databases "-->
   <mapID target="org.netbeans.modules.db.explorer.dlg.AddDriverDialog" url="f1_database001.htm#org.netbeans.modules.db.explorer.dlg.AddDriverDialog" />
   <!-- "Adding a JDBC Driver: New Connection Wizard and Add Driver"-->
-  <mapID target="f1_database001.htm-sthref733" url="f1_database001.htm#sthref733" />
+  <mapID target="f1_database001.htm-sthref734" url="f1_database001.htm#sthref734" />
   <!-- "Adding a JDBC Driver: New Connection Wizard and Add Driver"-->
   <mapID target="db_save_password" url="f1_database002.htm#db_save_password" />
   <!-- "Connect to Database Dialog"-->
@@ -2731,7 +2735,7 @@
   <!-- "Connect to Database Dialog"-->
   <mapID target="org.netbeans.modules.db.explorer.dlg.ConnectionPanel" url="f1_database003.htm#org.netbeans.modules.db.explorer.dlg.ConnectionPanel" />
   <!-- "New Connection Wizard: Customize Connection Dialog"-->
-  <mapID target="f1_database003.htm-sthref734" url="f1_database003.htm#sthref734" />
+  <mapID target="f1_database003.htm-sthref735" url="f1_database003.htm#sthref735" />
   <!-- "New Connection Wizard: Customize Connection Dialog"-->
   <mapID target="org.netbeans.modules.db.explorer.action.ConnectAction" url="f1_database004.htm#org.netbeans.modules.db.explorer.action.ConnectAction" />
   <!-- "Connect to Database Dialog"-->
@@ -2739,26 +2743,26 @@
   <!-- "Connect to Database Dialog"-->
   <mapID target="org.netbeans.modules.db.explorer.dlg.ChoosingSchemaPanel" url="f1_database005.htm#org.netbeans.modules.db.explorer.dlg.ChoosingSchemaPanel" />
   <!-- "New Connection Wizard: Choose Database Schemas"-->
-  <mapID target="f1_database005.htm-sthref735" url="f1_database005.htm#sthref735" />
+  <mapID target="f1_database005.htm-sthref736" url="f1_database005.htm#sthref736" />
   <!-- "New Connection Wizard: Choose Database Schemas"-->
   <mapID target="org.netbeans.modules.db.explorer.actions.CreateTableAction" url="f1_database006.htm#org.netbeans.modules.db.explorer.actions.CreateTableAction" />
   <!-- "Create Table Dialog"-->
-  <mapID target="f1_database006.htm-sthref736" url="f1_database006.htm#sthref736" />
+  <mapID target="f1_database006.htm-sthref737" url="f1_database006.htm#sthref737" />
   <!-- "Create Table Dialog"-->
   <mapID target="org.netbeans.modules.db.sql.editor.ui.actions.SQLHistoryAction" url="f1_database007.htm#org.netbeans.modules.db.sql.editor.ui.actions.SQLHistoryAction" />
   <!-- "SQL History"-->
-  <mapID target="f1_database007.htm-sthref738" url="f1_database007.htm#sthref738" />
+  <mapID target="f1_database007.htm-sthref739" url="f1_database007.htm#sthref739" />
   <!-- "SQL History"-->
   <mapID target="org.netbeans.modules.db.mysql.ui.PropertiesDialog" url="f1_database008.htm#org.netbeans.modules.db.mysql.ui.PropertiesDialog" />
   <!-- "MySQL Server Properties Dialog"-->
-  <mapID target="f1_database008.htm-sthref739" url="f1_database008.htm#sthref739" />
+  <mapID target="f1_database008.htm-sthref740" url="f1_database008.htm#sthref740" />
   <!-- "MySQL Server Properties Dialog"-->
   <mapID target="dbschema_ctxhelp_wizard" url="f1_database009.htm#dbschema_ctxhelp_wizard" />
   <!-- "New Database Schema Wizard: Database Connection"-->
-  <mapID target="f1_database009.htm-sthref740" url="f1_database009.htm#sthref740" />
+  <mapID target="f1_database009.htm-sthref741" url="f1_database009.htm#sthref741" />
   <!-- "New Database Schema Wizard: Database Connection"-->
   <mapID target="dbschema_ctxhelp_capture_tables" url="f1_database010.htm#dbschema_ctxhelp_capture_tables" />
   <!-- "New Database Schema Wizard: Tables and Views"-->
-  <mapID target="f1_database010.htm-sthref741" url="f1_database010.htm#sthref741" />
+  <mapID target="f1_database010.htm-sthref742" url="f1_database010.htm#sthref742" />
   <!-- "New Database Schema Wizard: Tables and Views"-->
 </map>
