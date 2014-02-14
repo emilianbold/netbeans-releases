@@ -5278,6 +5278,20 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             requestRegisters();
         }
     }
+
+    @Override
+    public void assignRegisterValue(String register, String value) {
+        MICommand cmd = new MiCommandImpl("-gdb-set $" + register + " = " + value) { //NOI18N
+
+            @Override
+            protected void onDone(MIRecord record) {
+                requestRegisters();
+                finish();
+            }
+        };
+        
+        gdb.sendCommand(cmd);
+    }
     
     void createWatchFromVariable(GdbVariable var) {
         MiCommandImpl cmd = new MiCommandImpl("-var-info-path-expression " + var.getMIName()) { //NOI18N

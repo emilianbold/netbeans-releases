@@ -203,15 +203,18 @@ public interface NativeDebugger {
     public void registerDisassembly(Disassembly dis);
     public void setCurrentDisLine(Line l);
     public Line getCurrentDisLine();
-    public void registerRegistersWindow(RegistersWindow w);
     public void registerMemoryWindow(MemoryWindow w);
     public void requestMems(String start, String length, FormatOption format);
     FormatOption[] getMemoryFormats();
     public void registerEvaluationWindow(EvaluationWindow w);
     FormatOption[] getEvalFormats();
 //    public void registerArrayBrowserWindow(ArrayBrowserWindow w);
-
-
+    
+    //
+    // support for registers
+    //
+    public void registerRegistersWindow(RegistersWindow w);
+    public void assignRegisterValue(String register, String value);
 
     public void activate(boolean redundant);
     public void deactivate(boolean redundant);

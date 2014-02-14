@@ -1237,8 +1237,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (extraMessage != null) {
                 text.append("\n\n").append(extraMessage); // NOI18N
             }
-            if (CndUtils.isStandalone()) {
-                System.err.println(text);
+            if (CndUtils.isStandalone() || SwingUtilities.isEventDispatchThread()) {
+                LOGGER.info(text.toString());
             } else {
                 NotifyDescriptor d = new NotifyDescriptor.Message(text, NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
