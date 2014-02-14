@@ -81,6 +81,10 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
             this.tag = tag;
             this.finishText = ""; //NOI18N
         }
+        
+        public void addFinishText(String text) {
+            finishText = text + finishText;
+        }
     }
     
     private final LinkedList<StackItem> stack;
@@ -171,7 +175,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     switch (interestedAttr) {
                         case controller:
                             processed = processController(value);
-                            stack.peek().finishText = "}\n});\n"; //NOI18N
+                            stack.peek().addFinishText("}\n});\n"); //NOI18N
                             break;
                         case model:
                         case disabled:
@@ -180,7 +184,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                             break;
                         case repeat:
                             processed = processRepeat(value);
-                            stack.peek().finishText = "}\n"; //NOI18N
+                            stack.peek().addFinishText("}\n"); //NOI18N
                             break;
                         default:   
                             processed = processExpression(value);

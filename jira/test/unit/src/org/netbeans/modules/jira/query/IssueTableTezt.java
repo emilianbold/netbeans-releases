@@ -136,7 +136,7 @@ public class IssueTableTezt extends IssuetableTestFactory {
     @Override
     public void setSaved(Query q) {
         JiraQuery jiraQuery = queries.get(q.getDisplayName());
-        jiraQuery.getController().save("IssueTableTestQuery" + System.currentTimeMillis(), true);
+        jiraQuery.getController().save("IssueTableTestQuery" + System.currentTimeMillis());
     }
         
     @Override

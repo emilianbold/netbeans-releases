@@ -50,6 +50,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
@@ -80,6 +81,8 @@ public class JsFormatter implements Formatter {
     static final Object CT_HANDLER_DOC_PROPERTY = "code-template-insert-handler"; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(JsFormatter.class.getName());
+    
+    private static final Pattern MOOTOOLS_COMMENT = Pattern.compile("/\\*\n---\\s*\n((.|\n)+)\n\\.\\.\\.\\s*\n\\*/");
 
     private static final boolean ELSE_IF_SINGLE_LINE = true;
 
@@ -644,7 +647,7 @@ public class JsFormatter implements Formatter {
 
         // mootools packager see issue #
         if (comment.getKind() == FormatToken.Kind.BLOCK_COMMENT
-                && text.startsWith("/*\n---") && text.endsWith("...\n*/")) { // NOI18N
+                && MOOTOOLS_COMMENT.matcher(text).matches()) { // NOI18N
             return;
         }
 
