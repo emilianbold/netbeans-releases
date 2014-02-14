@@ -42,7 +42,11 @@
 
 package org.netbeans.modules.debugger.jpda.js.vars.models;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.js.vars.DebuggerSupport;
 import org.netbeans.modules.debugger.jpda.js.vars.JSVariable;
@@ -75,6 +79,9 @@ public class VariablesJSTableModel implements TableModelFilter {
 
     @Override
     public Object getValueAt(TableModel original, Object node, String columnID) throws UnknownTypeException {
+        if (node instanceof JPDAWatch && !isEnabled((JPDAWatch) node)) {
+            return original.getValueAt(node, columnID);
+        }
         if (node instanceof JSVariable) {
             JSVariable jsVar = (JSVariable) node;
             switch (columnID) {
@@ -97,6 +104,18 @@ public class VariablesJSTableModel implements TableModelFilter {
             }
         }
         return original.getValueAt(node, columnID);
+    }
+    
+    private boolean isEnabled(JPDAWatch jw) {
+        try {
+            // This is clearly missing in the APIs:
+            Method getWatchMethod = jw.getClass().getMethod("getWatch");
+            getWatchMethod.setAccessible(true);
+            Watch w = (Watch) getWatchMethod.invoke(jw);
+            return w.isEnabled();
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            return true;
+        }
     }
 
     @Override

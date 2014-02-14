@@ -123,6 +123,7 @@ class SummaryCellRenderer implements ListCellRenderer {
     private MoreRevisionsRenderer mr = new MoreRevisionsRenderer();
     private DefaultListCellRenderer dlcr = new DefaultListCellRenderer();
     private ListCellRenderer remainingFilesRenderer = new RemainingFilesRenderer();
+    private final ListCellRenderer lessFilesRenderer = new LessFilesRenderer();
 
     private AttributeSet searchHiliteAttrs;
 
@@ -202,6 +203,8 @@ class SummaryCellRenderer implements ListCellRenderer {
             return comp;
         } else if (value instanceof AbstractSummaryView.ShowAllEventsItem) {
             return remainingFilesRenderer.getListCellRendererComponent(list, value, index, selected, hasFocus);
+        } else if (value instanceof AbstractSummaryView.ShowLessEventsItem) {
+            return lessFilesRenderer.getListCellRendererComponent(list, value, index, selected, hasFocus);
         } else if (value instanceof AbstractSummaryView.ActionsItem) {
             return ar.getListCellRendererComponent(list, value, index, selected, hasFocus);
         } else if (value instanceof AbstractSummaryView.MoreRevisionsItem) {
@@ -854,14 +857,19 @@ class SummaryCellRenderer implements ListCellRenderer {
 
         @Override
         public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            id = ((AbstractSummaryView.ShowAllEventsItem) value).getItemId();
+            AbstractSummaryView.ShowAllEventsItem item = (AbstractSummaryView.ShowAllEventsItem) value;
+            id = item.getItemId();
             if (linkerSupport.getLinker(ShowRemainingFilesLink.class, id) == null) {
-                linkerSupport.add(new ShowRemainingFilesLink(((AbstractSummaryView.ShowAllEventsItem) value).getParent()), id);
+                linkerSupport.add(new ShowRemainingFilesLink(item.getParent()), id);
             }
             StringBuilder sb = new StringBuilder("<html><a href=\"expand\">"); //NOI18N
-            String label = ((AbstractSummaryView.ShowAllEventsItem) value).getParent().isAllEventsExpanded()
-                    ? NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowLessFiles") //NOI18N
-                    : NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowAllFiles"); //NOI18N
+            int i = item.getParent().getNextFilesToShowCount();
+            String label;
+            if (i > 0) {
+                label = NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowMoreFiles", i); //NOI18N
+            } else {
+                label = NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowAllFiles"); //NOI18N
+            }
             if (isSelected) {
                 Component c = dlcr.getListCellRendererComponent(list, "<html><a href=\"expand\">ACTION_NAME</a>", index, isSelected, cellHasFocus); //NOI18N
                 sb.append("<font color=\"").append(getColorString(c.getForeground())).append("\">") //NOI18N
@@ -885,6 +893,54 @@ class SummaryCellRenderer implements ListCellRenderer {
         public void paint (Graphics g) {
             super.paint(g);
             ShowRemainingFilesLink link = linkerSupport.getLinker(ShowRemainingFilesLink.class, id);
+            if (link != null) {
+                link.computeBounds(comp);
+            }
+        }
+        
+    }
+    
+    private class LessFilesRenderer extends JPanel implements ListCellRenderer{
+        private String id;
+        private Component comp;
+
+        public LessFilesRenderer () {
+            setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+            setBorder(BorderFactory.createEmptyBorder(0, INDENT, 3, 0));
+        }
+
+        @Override
+        public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            AbstractSummaryView.ShowLessEventsItem item = (AbstractSummaryView.ShowLessEventsItem) value;
+            id = item.getItemId();
+            if (linkerSupport.getLinker(ShowLessFilesLink.class, id) == null) {
+                linkerSupport.add(new ShowLessFilesLink(item.getParent()), id);
+            }
+            StringBuilder sb = new StringBuilder("<html><a href=\"expand\">"); //NOI18N
+            String label = NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowLessFiles"); //NOI18N
+            if (isSelected) {
+                Component c = dlcr.getListCellRendererComponent(list, "<html><a href=\"expand\">ACTION_NAME</a>", index, isSelected, cellHasFocus); //NOI18N
+                sb.append("<font color=\"").append(getColorString(c.getForeground())).append("\">") //NOI18N
+                        .append(label).append("</font>"); //NOI18N
+            } else if (LINK_COLOR != null) {
+                sb.append("<font color=\"").append(getColorString(LINK_COLOR)).append("\">") //NOI18N
+                        .append(label).append("</font>"); //NOI18N
+            } else {
+                sb.append(label);
+            }
+            sb.append("</a></html>"); //NOI18N
+            comp = dlcr.getListCellRendererComponent(list, sb.toString(), index, isSelected, cellHasFocus);
+            removeAll();
+            add(comp);
+            comp.setMaximumSize(comp.getPreferredSize());
+            setBackground(comp.getBackground());
+            return this;
+        }
+
+        @Override
+        public void paint (Graphics g) {
+            super.paint(g);
+            ShowLessFilesLink link = linkerSupport.getLinker(ShowLessFilesLink.class, id);
             if (link != null) {
                 link.computeBounds(comp);
             }
@@ -1295,7 +1351,14 @@ class SummaryCellRenderer implements ListCellRenderer {
         public boolean mouseMoved(Point p, JComponent component) {
             if (bounds != null && bounds.contains(p)) {
                 component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                component.setToolTipText(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowAllFiles")); //NOI18N
+                int i = item.getNextFilesToShowCount();
+                String tooltip;
+                if (i > 0) {
+                    tooltip = NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowMoreFiles", i); //NOI18N
+                } else {
+                    tooltip = NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowAllFiles"); //NOI18N
+                }
+                component.setToolTipText(tooltip);
                 return true;
             }
             return false;
@@ -1304,7 +1367,45 @@ class SummaryCellRenderer implements ListCellRenderer {
         @Override
         public boolean mouseClicked(Point p) {
             if (bounds != null && bounds.contains(p)) {
-                summaryView.showRemainingFiles(item);
+                summaryView.showRemainingFiles(item, true);
+                return true;
+            }
+            return false;
+        }
+    }
+    
+    public class ShowLessFilesLink extends VCSHyperlinkSupport.Hyperlink {
+
+        private Rectangle bounds;
+        private final AbstractSummaryView.RevisionItem item;
+
+        private ShowLessFilesLink (AbstractSummaryView.RevisionItem item) {
+            this.item = item;
+        }
+
+        @Override
+        public void computeBounds (JTextPane textPane) {
+            
+        }
+
+        public void computeBounds (Component component) {
+            bounds = component.getBounds();
+        }
+
+        @Override
+        public boolean mouseMoved(Point p, JComponent component) {
+            if (bounds != null && bounds.contains(p)) {
+                component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                component.setToolTipText(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowLessFiles")); //NOI18N
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean mouseClicked(Point p) {
+            if (bounds != null && bounds.contains(p)) {
+                summaryView.showRemainingFiles(item, false);
                 return true;
             }
             return false;
