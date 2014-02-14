@@ -355,11 +355,8 @@ public class AndroidPlatform implements MobilePlatform {
         try {
             String result = ProcessUtilities.callProcess(getAdbCommand(), true, AndroidPlatform.DEFAULT_TIMEOUT, "shell", "ps"); //NOI18N
             BufferedReader r = new BufferedReader(new StringReader(result));
-            while (r.ready()) {
-                String line = r.readLine();
-                if (line == null) {
-                    return null;
-                }
+            String line;
+            while ((line = r.readLine()) != null) {
                 if (line.trim().endsWith(appName)) {
                     Pattern column = Pattern.compile("(\\S+)(\\s+)(\\S+)(\\s+)(.+)");
                     Matcher matcher = column.matcher(line);

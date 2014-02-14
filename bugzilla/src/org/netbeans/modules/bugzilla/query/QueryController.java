@@ -528,7 +528,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         } else if (e.getSource() == panel.keywordsButton) {
             onKeywords();
         } else if (e.getSource() == panel.saveChangesButton) {
-            onSave(true); // refresh
+            onSave(); // refresh
         } else if (e.getSource() == panel.cancelChangesButton) {
             onCancelChanges();
         } else if (e.getSource() == panel.webButton) {
@@ -594,18 +594,19 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         selectFilter(filter);
     }
 
-    private void onSave(final boolean refresh) {
-       Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
+    private void onSave() {
+        Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                saveSynchronously(null, refresh);
+                saveSynchronously(null);
             }
-       });
+        });
     }
 
-    boolean saveSynchronously(String name, boolean refresh) {
+    boolean saveSynchronously(String name) {
         Bugzilla.LOG.fine("on save start");
-        if (!query.isSaved()) {
+        boolean firstTime = !query.isSaved();
+        if (firstTime) {
             name = name == null ? getSaveName() : name;
             if (name == null) {
                 return false;
@@ -616,15 +617,14 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         Bugzilla.LOG.log(Level.FINE, "saving query '{0}'", new Object[]{name});
         save(name);
         
-        if (!query.wasRun()) {
+        if (!firstTime) {
             Bugzilla.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
             onRefresh();
         }
+        
         Bugzilla.LOG.log(Level.FINE, "query '{0}' saved", new Object[]{name});
         Bugzilla.LOG.fine("on save finnish");
-        if(refresh) {
-            onRefresh();
-        }
+        
         return true;
     }
 
@@ -1068,7 +1068,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
     @Override
     public boolean saveChanges(String name) {
-        return saveSynchronously(name, true);
+        return saveSynchronously(name);
     }
 
     @Override

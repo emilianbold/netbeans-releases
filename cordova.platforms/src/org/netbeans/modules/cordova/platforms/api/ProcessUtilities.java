@@ -43,10 +43,12 @@ package org.netbeans.modules.cordova.platforms.api;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ProcessBuilder;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -59,7 +61,7 @@ public final class ProcessUtilities {
     
     private static final Logger LOGGER = Logger.getLogger(ProcessUtilities.class.getName());
     
-    private static RequestProcessor KILLER = new RequestProcessor(ProcessUtilities.class);
+    private static final RequestProcessor RP = new RequestProcessor(ProcessUtilities.class.getName(), 20);
 
     private static InputOutput io;
     
@@ -84,6 +86,31 @@ public final class ProcessUtilities {
         }
     }
     
+    private static class Redirector implements Runnable {
+
+        private final InputStream stream;
+        private final StringBuilder output;
+        
+        private Redirector(InputStream stream, StringBuilder output) {
+            this.stream = stream;
+            this.output = output;
+        }
+
+        @Override
+        public void run() { 
+            try (InputStreamReader inputStreamReader = new InputStreamReader(new BufferedInputStream(stream))) {
+                char[] ch = new char[1];
+                int number = inputStreamReader.read(ch);
+                while (number > 0) {
+                    output.append(ch);
+                    number = inputStreamReader.read(ch);
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } 
+        }
+    }
+    
     
     public static String callProcess(final String executable, boolean wait, int timeout, String... parameters) throws IOException {
         ProcessBuilder pb = ProcessBuilder.getLocal();
@@ -96,7 +123,7 @@ public final class ProcessUtilities {
         }
         logOut("\n");
         if (timeout > 0) {
-            KILLER.post(new Runnable() {
+            RP.post(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -108,36 +135,12 @@ public final class ProcessUtilities {
                 }
             }, timeout);
         }
-        if (!wait) {
-            return null;
-        }
-        try {
-            call.waitFor();
-        } catch (InterruptedException ex) {
-            throw new IOException(ex);
-        }
-        InputStreamReader inputStreamReader = new InputStreamReader(new BufferedInputStream(call.getErrorStream()));
         StringBuilder error = new StringBuilder();
-        char[] ch = new char[1];
-        while (inputStreamReader.ready()) {
-            inputStreamReader.read(ch);
-            error.append(ch);
-        }
-        logErr(error.toString());
-        if (!error.toString().trim().isEmpty()) {
-            LOGGER.warning(error.toString());
-        }
-        inputStreamReader = new InputStreamReader(call.getInputStream());
-        StringBuilder avdString = new StringBuilder();
-        while (inputStreamReader.ready()) {
-            inputStreamReader.read(ch);
-            avdString.append(ch);
-        }
-        logOut(avdString.toString());
-        inputStreamReader.close();
-        if (avdString.toString().isEmpty()) {
-            LOGGER.severe("No output when executing " + executable + " " + Arrays.toString(parameters)); // NOI18N
-        }
+        RequestProcessor.Task errTask = RP.post(new Redirector(call.getErrorStream(), error));
+        
+        StringBuilder output = new StringBuilder();
+        RequestProcessor.Task outTask = RP.post(new Redirector(call.getInputStream(), output));
+        
         if (executable.endsWith("ios-sim") && call.exitValue() > 0) {
             for (String p:parameters) {
                 if (p.endsWith("MobileSafari.app")) {
@@ -145,7 +148,30 @@ public final class ProcessUtilities {
                 }
             }
         }
-        return avdString.toString();
+
+        if (!wait) {
+            return null;
+        }
+
+        try {
+            call.waitFor();
+            errTask.waitFinished();
+            outTask.waitFinished();
+        } catch (InterruptedException ex) {
+            throw new IOException(ex);
+        }
+
+        logErr(error.toString());
+        if (!error.toString().trim().isEmpty()) {
+            LOGGER.warning(error.toString());
+        }
+
+        logOut(output.toString());
+        if (output.toString().isEmpty()) {
+            LOGGER.severe("No output when executing " + executable + " " + Arrays.toString(parameters)); // NOI18N
+        }
+        
+        return output.toString();
     }
     
 }

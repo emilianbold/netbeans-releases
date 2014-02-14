@@ -783,7 +783,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         } else if (e.getSource() == panel.searchButton) {
             onRefresh();
         } else if (e.getSource() == panel.saveChangesButton) {
-            onSave(null, true);   // invoke refresh after save
+            onSave(null);   // invoke refresh after save
         } else if (e.getSource() == panel.cancelChangesButton) {
             onCancelChanges();
         } else if (e.getSource() == panel.webButton) {
@@ -841,24 +841,24 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         query.setFilter(filter);
     }
 
-    private void onSave(final String newName, final boolean refresh) {
-       Jira.getInstance().getRequestProcessor().post(new Runnable() {
+    private void onSave(final String newName) {
+        Jira.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
                 String name = newName != null ? newName : query.getDisplayName();
-                boolean firstTime = false;
-                if(name == null && !query.isSaved()) {
-                    firstTime = true;
+                boolean firstTimeSave = !query.isSaved();
+                if(name == null && firstTimeSave) {
                     name = getSaveName();
                     if(name == null) {
                         return;
                     }
+                    firstTimeSave = true;
                 }
                 assert name != null;
                 jiraFilter = getFilterDefinition();
-                save(name, firstTime);
+                save(name);
                 
-                if(refresh) {
+                if(!firstTimeSave) {
                     onRefresh();
                 }
             }
@@ -881,15 +881,12 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         return SaveQueryPanel.show(v, new HelpCtx("org.netbeans.modules.jira.query.savePanel")); // NOI18N
     }
 
-    void save(String name, boolean firstTime) {
+    void save(String name) {
         query.setName(name);
         repository.saveQuery(query);
         query.setSaved(true); // XXX
         setAsSaved();
         changed(false);
-        if(!query.wasRun()) {
-            onRefresh();
-        }
     }
 
     private void onCancelChanges() {
@@ -1358,7 +1355,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
     @Override
     public boolean saveChanges(String name) {
-        onSave(name, true);
+        onSave(name);
         return true;
     }
 
@@ -1412,7 +1409,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                             : repository.getDisplayName();
                     handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_SearchingQuery", new Object[] { displayName }), QueryTask.this); // NOI18N
                     handle.start();
-
+                    
                     enableFields(false);
                     panel.showSearchingProgress(true, NbBundle.getMessage(QueryController.class, "MSG_Searching")); // NOI18N
                     
