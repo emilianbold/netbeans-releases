@@ -746,7 +746,8 @@ public abstract class PsProvider {
      * PsData will columnize lines later.
      */
 
-    public PsData getData(boolean allProcesses) {
+    static int a = 0;
+    public PsData getData(boolean allProcesses) {a++; if (a%2==0) return null;
 	PsData psData = new PsData();
         String luid = allProcesses ? null : getUid();
 	
