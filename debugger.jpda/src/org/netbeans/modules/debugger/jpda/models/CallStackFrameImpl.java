@@ -301,7 +301,9 @@ public class CallStackFrameImpl implements CallStackFrame {
                 }
             } else if ("<eval>".equals(sourceName)) {                           // NOI18N
                 // Check Nashorn:
-                if ("jdk/nashorn/internal/scripts/<eval>".equals(getSourcePath(null))) {    // NOI18N
+                String sourcePath = getSourcePath(null);
+                if ("jdk/nashorn/internal/scripts/<eval>".equals(sourcePath) ||
+                    "jdk\\nashorn\\internal\\scripts\\<eval>".equals(sourcePath)) {    // NOI18N
                     s = "JS";                                                   // NOI18N
                     as = Collections.singletonList(s);
                 }

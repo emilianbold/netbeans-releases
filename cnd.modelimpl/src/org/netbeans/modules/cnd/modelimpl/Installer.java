@@ -85,7 +85,7 @@ public final class Installer {
             }
         }
 
-        private static final class RunnableImpl implements Runnable, org.openide.util.Cancellable {
+        private static final class RunnableImpl implements Runnable/*, org.openide.util.Cancellable*/ {
 
             public RunnableImpl() {
             }
@@ -99,7 +99,7 @@ public final class Installer {
                 
             }
 
-            @Override
+//            @Override
             public boolean cancel() {
                 return true;
             }            

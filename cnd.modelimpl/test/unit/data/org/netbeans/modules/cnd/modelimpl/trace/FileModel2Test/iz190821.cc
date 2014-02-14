@@ -13,3 +13,5 @@ int main(int argc, char** argv) {
     char* str = VER_STRING_WITH_MAGIC;
     return 0;
 }
+
+#define BOOST_SPIRIT_LOG2 (#error)(#error) (2) (3)

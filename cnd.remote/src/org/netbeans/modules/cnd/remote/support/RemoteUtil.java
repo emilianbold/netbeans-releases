@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.openide.util.Utilities;
 
 /**
  * Misc. utiliy finctions
@@ -128,5 +129,9 @@ public class RemoteUtil {
                 cacheManager.applyChanges();
             }
         }
+    }
+    
+    public static boolean isWindows(ExecutionEnvironment env) {
+        return env.isLocal() && Utilities.isWindows();
     }
 }
