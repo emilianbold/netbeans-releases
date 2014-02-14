@@ -80,7 +80,7 @@ public class IOSSDK implements SDK {
         
         line = r.readLine();
       
-        while (line !=null && r.ready()) {
+        while (line !=null) {
             Matcher m = pattern.matcher(line);
             if (m.matches()) {
                 IOSSDK sdk = new IOSSDK(m.group(1).trim(), m.group(2).trim());
