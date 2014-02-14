@@ -81,18 +81,13 @@ public class AVD implements Device {
         
         ArrayList<Device> result = new ArrayList<Device>();
         //ignore first line
-        r.readLine();
+        String line = r.readLine();
+        
+        line = r.readLine();
         
         AVD current = new AVD();
         String lastProp = null;
-        while (r.ready()) {
-            String line = r.readLine();
-            if (line == null) {
-                if (current.name !=null) {
-                    result.add(current);
-                }
-                break;
-            }
+        while (line != null) {
             Matcher m = pattern.matcher(line);
             if (m.matches()) {
                 if ("Name".equals(m.group(1))) { //NOI18N
@@ -108,6 +103,10 @@ public class AVD implements Device {
                 } else {
                     current.props.put(lastProp, current.props.get(lastProp) + line);
                 }
+            }
+            line = r.readLine();
+            if (line == null && current.name != null) {
+                result.add(current);
             }
         }
         return result;
