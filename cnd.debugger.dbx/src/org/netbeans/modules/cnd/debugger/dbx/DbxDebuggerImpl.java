@@ -3571,6 +3571,10 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
+    public void assignRegisterValue(String register, String value) {
+        dbx.sendCommand(0, 0, "assign $" + register + " = " + value);
+    }
+
     void setRegs(String regs) {
 	if (RegistersWindow.getDefault().isShowing()) {
             LinkedList<String> res = new LinkedList<String>();
