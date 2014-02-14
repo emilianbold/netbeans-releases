@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Set;
 import org.openide.util.Lookup.Template;
 import org.openide.util.lookup.AbstractLookup;
 
@@ -132,7 +133,15 @@ final class NodeLookup extends AbstractLookup {
     @Override
     protected final void beforeLookup(Template template) {
         Class type = template.getType();
-
+        Set<Node> nds = Node.blockEvents();
+        try {
+            blockingBeforeLookup(type);
+        } finally {
+            Node.unblockEvents(nds);
+        }
+    }
+    
+    private void blockingBeforeLookup(Class<?> type) {
         if (type == Object.class) {
             // ok, this is likely query for everything
             java.util.Set all;
