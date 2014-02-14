@@ -114,7 +114,13 @@ public class ComboBoxWithTree extends JComboBox {
                 Point p = getLocationOnScreen();
                 Window w = getPopup();
                 w.setLocation(p.x, p.y + dim.height);
-                w.setSize(new Dimension(dim.width, scrollPane.getPreferredSize().height));
+                Dimension popupSize = scrollPane.getPreferredSize();
+                if (popupSize.width < dim.width) {
+                    popupSize.width = dim.width;
+                } else if (popupSize.width > 400) {
+                    popupSize.width = Math.max(dim.width, 400);
+                }
+                w.setSize(popupSize);
                 w.setVisible(true);
             }
         });

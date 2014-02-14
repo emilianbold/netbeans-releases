@@ -943,6 +943,10 @@ public final class CreateElementUtilities {
                 return true;
             }
             BlockTree constructorBody = ((MethodTree) ctorTree.getLeaf()).getBody();
+            if (constructorBody == null) {
+                // no other constructors present && this one does not have any body :)
+                return true;
+            }
             TypeElement source = (TypeElement)info.getTrees().getElement(classTree);
             // FIXME: the check is insufficient; the symbol may be assigned in other parts of the code
             // despite it's undefined at the moment. The IDE will generate final field based on ctor analysis,

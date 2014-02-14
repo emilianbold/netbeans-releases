@@ -223,7 +223,7 @@ public class CommonTestUtil {
      */
     public static SourceGroup findSourceGroupOwner(FileObject file) {
         final Project project = FileOwnerQuery.getOwner(file);
-        return findSourceGroupOwner(project, file);
+        return project == null ? null : findSourceGroupOwner(project, file);
     }
     
     /**

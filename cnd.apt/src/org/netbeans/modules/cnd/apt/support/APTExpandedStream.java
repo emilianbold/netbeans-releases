@@ -347,7 +347,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
             }         
             // check for error
             if (APTUtils.isEOF(next)) {
-                APTUtils.LOG.log(Level.SEVERE, "error expanding macro {0} : unterminated arguments list", token);// NOI18N
+                APTUtils.LOG.log(Level.INFO, "error expanding macro {0} : unterminated arguments list {1}", new Object[] {token, Thread.currentThread().getName()});
             }
         } finally {
             extractingMacroParams = false;              

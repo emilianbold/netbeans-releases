@@ -58,6 +58,7 @@ import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
 import org.netbeans.modules.html.editor.lib.api.HelpItem;
 import org.netbeans.modules.html.editor.lib.api.HelpResolver;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -235,8 +236,9 @@ public class AngularCustomAttribute implements CustomAttribute {
             try {
                 return Utils.getContentAsString(url, null);
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
+                String message = Bundle.doc_cannotGet(url.toString());
+                LOGGER.log(Level.INFO, message); //NOI18N
+                return message;
             }
         }
 

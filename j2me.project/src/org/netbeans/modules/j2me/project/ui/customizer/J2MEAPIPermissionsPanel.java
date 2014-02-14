@@ -45,6 +45,8 @@ package org.netbeans.modules.j2me.project.ui.customizer;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -97,6 +99,14 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
             }
         };
         table.getSelectionModel().addListSelectionListener(listSelectionListener);
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(final MouseEvent e) {
+                if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
+                    bEditActionPerformed(null);
+                }
+            }
+        });
         TableColumn col0 = table.getColumnModel().getColumn(0);
         TableColumn col1 = table.getColumnModel().getColumn(1);
         col0.setResizable(true);
@@ -107,8 +117,6 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
     }
     
     private void postInitComponents() {
-        String platformProfile = uiProperties.getProject().evaluator().getProperty(J2MEProjectProperties.PLATFORM_PROFILE);
-        final boolean notMIDP10 = platformProfile != null && !platformProfile.equals("MIDP-1.0"); //NOI18N
         String[] propertyNames = uiProperties.API_PERMISSIONS_PROPERTY_NAMES;
         String values[] = new String[propertyNames.length];
         for (int i = 0; i < values.length; i++) {
@@ -117,7 +125,6 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
         tableModel.setDataDelegates(values);
         table.setBackground(UIManager.getDefaults().getColor("Table.background")); //NOI18N
         listSelectionListener.valueChanged(null);
-        lError.setVisible(! notMIDP10);
     }
 
     /**
@@ -134,7 +141,6 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
         scrollPane = new javax.swing.JScrollPane();
         bAdd = new javax.swing.JButton();
         bRemove = new javax.swing.JButton();
-        lError = new javax.swing.JLabel();
         bEdit = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
@@ -186,17 +192,6 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 11, 5, 8);
         add(bRemove, gridBagConstraints);
-
-        lError.setForeground(new java.awt.Color(89, 79, 191));
-        org.openide.awt.Mnemonics.setLocalizedText(lError, org.openide.util.NbBundle.getMessage(J2MEAPIPermissionsPanel.class, "J2MEAPIPermissionsPanel.lError.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 8, 8, 8);
-        add(lError, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(bEdit, java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/project/ui/customizer/Bundle").getString("J2MEAPIPermissionsPanel.bEdit.text"), new Object[] {})); // NOI18N
         bEdit.setEnabled(false);
@@ -285,7 +280,6 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
     private javax.swing.JButton bAdd;
     private javax.swing.JButton bEdit;
     private javax.swing.JButton bRemove;
-    private javax.swing.JLabel lError;
     private javax.swing.JLabel lTable;
     private javax.swing.JScrollPane scrollPane;
     // End of variables declaration//GEN-END:variables

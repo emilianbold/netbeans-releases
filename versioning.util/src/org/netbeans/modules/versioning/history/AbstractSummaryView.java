@@ -78,6 +78,7 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
     private JScrollPane scrollPane;
 
     private VCSHyperlinkSupport linkerSupport = new VCSHyperlinkSupport();
+    private static final int NEXT_FILES_INITIAL_PAGING = 50;
 
     public AbstractSummaryView(SummaryViewMaster master, final List<? extends LogEntry> results, Map<String, KenaiUser> kenaiUsersMap) {
         this.master = master;
@@ -123,7 +124,9 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
                 Object[] selection = resultsList.getSelectedValues();
                 if (selection.length == 1) {
                     if (selection[0] instanceof ShowAllEventsItem) {
-                        showRemainingFiles(((ShowAllEventsItem) selection[0]).getParent());
+                        showRemainingFiles(((ShowAllEventsItem) selection[0]).getParent(), true);
+                    } else if (selection[0] instanceof ShowLessEventsItem) {
+                        showRemainingFiles(((ShowAllEventsItem) selection[0]).getParent(), false);
                     } else if (selection[0] instanceof MoreRevisionsItem) {
                         moreRevisions(10);
                     }
@@ -320,12 +323,16 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
         });
     }
 
-    void showRemainingFiles (RevisionItem item) {
+    void showRemainingFiles (RevisionItem item, boolean showMore) {
         assert EventQueue.isDispatchThread();
         JFrame mainWindow = (JFrame) WindowManager.getDefault().getMainWindow();
         Cursor cursor = mainWindow.getCursor();
         try {
-            item.allEventsExpanded = !item.allEventsExpanded;
+            if (showMore) {
+                item.showMoreFiles();
+            } else {
+                item.showLessFiles();
+            }
             mainWindow.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             mainWindow.getGlassPane().setVisible(true);
             ((SummaryListModel) resultsList.getModel()).refreshModel();
@@ -546,8 +553,9 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
         boolean messageExpanded;
         boolean revisionExpanded;
         private boolean viewEventsInitialized;
-        private boolean allEventsExpanded;
         private boolean initializingStarted;
+        private int showingFiles;
+        private int nextFilesPaging = NEXT_FILES_INITIAL_PAGING;
 
         public RevisionItem (LogEntry entry) {
             super(entry);
@@ -565,18 +573,7 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
         }
 
         private boolean isAllEventsVisible () {
-            boolean visible = revisionExpanded;
-            if (visible) {
-                if (!allEventsExpanded) {
-                    for (LogEntry.Event e : entry.getEvents()) {
-                        if (!e.isVisibleByDefault()) {
-                            visible = false;
-                            break;
-                        }
-                    }
-                }
-            }
-            return visible;
+            return revisionExpanded && showingFiles == -1;
         }
 
         @Override
@@ -589,6 +586,7 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
             if (revisionExpanded) {
                 if (entry.isEventsInitialized()) {
                     if (!viewEventsInitialized) {
+                        showLessFiles();
                         ((SummaryListModel) resultsList.getModel()).addEvents(getUserData());
                     }
                 } else {
@@ -601,24 +599,71 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
             }
         }
 
-        public boolean isAllEventsExpanded () {
-            return allEventsExpanded;
+        private boolean canShowLessEvents() {
+            return revisionExpanded && showingFiles > NEXT_FILES_INITIAL_PAGING || isAllEventsVisible();
         }
 
-        private boolean canShowLessEvents() {
-            boolean retval = revisionExpanded;
-            if (retval) {
-                retval = false;
-                if (allEventsExpanded) {
-                    for (LogEntry.Event e : entry.getEvents()) {
-                        if (!e.isVisibleByDefault()) {
-                            retval = true;
-                            break;
+        int getNextFilesToShowCount () {
+            int cnt = entry.getEvents().size() - showingFiles;
+            if (cnt <= nextFilesPaging) {
+                cnt = -1;
+            } else {
+                cnt = nextFilesPaging;
+            }
+            return cnt;
+        }
+
+        private void showMoreFiles () {
+            int nextFiles = getNextFilesToShowCount();
+            if (nextFiles > 0) {
+                showingFiles += nextFiles;
+                nextFilesPaging = nextFilesPaging * 2;
+            } else {
+                showingFiles = -1;
+            }
+        }
+
+        private void showLessFiles () {
+            showingFiles = Math.min(NEXT_FILES_INITIAL_PAGING, getDefaultVisibleEventCount());
+            nextFilesPaging = NEXT_FILES_INITIAL_PAGING;
+        }
+
+        private boolean isEventVisible (EventItem event) {
+            if (!viewEventsInitialized || isAllEventsVisible()) {
+                return true;
+            } else if (showingFiles == 0) {
+                // not yet 
+                showLessFiles();
+            }
+            int visibleCount = 0;
+            boolean visible = false;
+            // at first display visible by default
+            // only then the rest
+            for (boolean defaultVisible : new boolean[] { true, false }) {
+                for (LogEntry.Event e : entry.getEvents()) {
+                    if (visibleCount >= showingFiles || visible) {
+                        // over the paging limit or ound as visible
+                        break;
+                    }
+                    if (e.isVisibleByDefault() == defaultVisible) {
+                        ++visibleCount;
+                        if (e == event.getUserData()) {
+                            visible = true;
                         }
                     }
                 }
             }
-            return retval;
+            return visible;
+        }
+        
+        private int getDefaultVisibleEventCount () {
+            int i = 0;
+            for (LogEntry.Event e : entry.getEvents()) {
+                if (e.isVisibleByDefault()) {
+                    ++i;
+                }
+            }
+            return i;
         }
     }
 
@@ -713,11 +758,7 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
         boolean isVisible () {
             boolean visible = false;
             if (super.isVisible() && parent.isVisible() && parent.revisionExpanded) {
-                if (parent.isAllEventsVisible()) {
-                    visible = true;
-                } else {
-                    visible = event.isVisibleByDefault();
-                }
+                visible = parent.isEventVisible(this);
             }
             return visible;
         }
@@ -765,8 +806,29 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
 
         @Override
         boolean isVisible () {
-            return parent.isVisible() && parent.revisionExpanded && 
-                    (!parent.isAllEventsVisible() || parent.canShowLessEvents());
+            return parent.isVisible() && parent.revisionExpanded && !parent.isAllEventsVisible();
+        }
+
+        RevisionItem getParent () {
+            return parent;
+        }
+    }
+
+    class ShowLessEventsItem extends Item {
+        private final RevisionItem parent;
+        public ShowLessEventsItem (RevisionItem parent) {
+            super(null);
+            this.parent = parent;
+        }
+
+        @Override
+        String getItemId () {
+            return parent.getItemId() + "#SHOW_LESS_FILES"; //NOI18N
+        }
+
+        @Override
+        boolean isVisible () {
+            return parent.isVisible() && parent.revisionExpanded && parent.canShowLessEvents();
         }
 
         RevisionItem getParent () {
@@ -856,6 +918,7 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
                     it.add(new EventItem(ev, rev));
                 }
                 it.add(new ShowAllEventsItem(rev));
+                it.add(new ShowLessEventsItem(rev));
             }
             refreshModel();
         }

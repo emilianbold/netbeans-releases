@@ -58,24 +58,23 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-@NavigatorPanel.Registrations({
-@NavigatorPanel.Registration(mimeType = MIMENames.HEADER_MIME_TYPE, displayName = "#LBL_members"),
-@NavigatorPanel.Registration(mimeType = MIMENames.C_MIME_TYPE, displayName = "#LBL_members"),
-@NavigatorPanel.Registration(mimeType = MIMENames.CPLUSPLUS_MIME_TYPE, displayName = "#LBL_members"),
-@NavigatorPanel.Registration(mimeType = MIMENames.FORTRAN_MIME_TYPE, displayName = "#LBL_members")
-})
 public final class NavigatorComponent implements NavigatorPanel, LookupListener {
-    
+
     /** Lookup template to search for java data objects. shared with InheritanceTreePanel */
     private Lookup.Result<DataObject> doContext;
     /** UI of this navigator panel */
     private NavigatorPanelUI panelUI;
-    private static NavigatorComponent INSTANCE;
+    private boolean activated = false;
+    private static NavigatorComponent INSTANCE = new NavigatorComponent();
     /** actual data */
     private DataObject curData;
     private final static class Lock{};
     private final Lock lock = new Lock();
     private final Lock uiLock = new Lock();
+        
+    private NavigatorComponent() {
+//        INSTANCE = this;
+    }
     
     @Override
     public String getDisplayName() {
@@ -106,7 +105,7 @@ public final class NavigatorComponent implements NavigatorPanel, LookupListener 
     @Override
     public void panelActivated(Lookup context) {
         synchronized(lock) {
-            INSTANCE = this;
+            activated = true;
             doContext = context.lookupResult(DataObject.class);
             doContext.addLookupListener(this);
             resultChanged(null);
@@ -120,7 +119,7 @@ public final class NavigatorComponent implements NavigatorPanel, LookupListener 
     @Override
     public void panelDeactivated() {
         synchronized(lock) {
-            INSTANCE = null;
+            activated = false;
             doContext.removeLookupListener(this);
             doContext = null;
             curData = null;
@@ -143,6 +142,18 @@ public final class NavigatorComponent implements NavigatorPanel, LookupListener 
         }
     }
 
+    boolean isNavigatorEnabled() {
+        synchronized (uiLock) {
+            return activated && panelUI != null;
+        }
+    }
+    
+    @NavigatorPanel.Registrations({
+        @NavigatorPanel.Registration(mimeType = MIMENames.HEADER_MIME_TYPE, displayName = "#LBL_members"),
+        @NavigatorPanel.Registration(mimeType = MIMENames.C_MIME_TYPE, displayName = "#LBL_members"),
+        @NavigatorPanel.Registration(mimeType = MIMENames.CPLUSPLUS_MIME_TYPE, displayName = "#LBL_members"),
+        @NavigatorPanel.Registration(mimeType = MIMENames.FORTRAN_MIME_TYPE, displayName = "#LBL_members")
+    })    
     public static NavigatorComponent getInstance() {
         return INSTANCE;
     }
@@ -156,16 +167,22 @@ public final class NavigatorComponent implements NavigatorPanel, LookupListener 
     
     private void setNewContent(final DataObject cdo) {
         final NavigatorPanelUI ui = getPanelUI();
-        ui.setDataObject(cdo);
-        ui.showWaitNode();
+        DataObject old = ui.getDataObject();
+        if (old == null || !old.equals(cdo)) {
+            ui.showWaitNode();
+        }
     }
     
     NavigatorPanelUI getPanelUI() {
         synchronized(uiLock) {
             if (panelUI == null) {
-                panelUI = new NavigatorPanelUI();
+                panelUI = new NavigatorPanelUI(getContent());
             }
             return panelUI;
         }
+    }
+    private static final NavigatorContent content = new NavigatorContent();
+    static NavigatorContent getContent() {
+        return content;
     }
 }

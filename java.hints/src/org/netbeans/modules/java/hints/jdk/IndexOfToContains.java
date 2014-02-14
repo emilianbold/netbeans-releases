@@ -66,12 +66,30 @@ import org.openide.util.NbBundle;
 public class IndexOfToContains {
     
     @TriggerPatterns({
-        @TriggerPattern(value="$site.indexOf($substring) != (-1)", constraints = @ConstraintVariableType(variable = "$substring", type = "java.lang.String")),
-        @TriggerPattern(value="$site.indexOf($substring) >= (0)", constraints = @ConstraintVariableType(variable = "$substring", type = "java.lang.String")),
-        @TriggerPattern(value="$site.indexOf($substring) > (-1)", constraints = @ConstraintVariableType(variable = "$substring", type = "java.lang.String")),
-        @TriggerPattern(value="$site.indexOf($substring) != -1", constraints = @ConstraintVariableType(variable = "$substring", type = "java.lang.String")),
-        @TriggerPattern(value="$site.indexOf($substring) >= 0", constraints = @ConstraintVariableType(variable = "$substring", type = "java.lang.String")),
-        @TriggerPattern(value="$site.indexOf($substring) > -1", constraints = @ConstraintVariableType(variable = "$substring", type = "java.lang.String"))
+        @TriggerPattern(value="$site.indexOf($substring) != (-1)", constraints = {
+            @ConstraintVariableType(variable = "$substring", type = "java.lang.String"),
+            @ConstraintVariableType(variable = "$site", type = "java.lang.String"),
+        }),
+        @TriggerPattern(value="$site.indexOf($substring) >= (0)", constraints = {
+            @ConstraintVariableType(variable = "$substring", type = "java.lang.String"),
+            @ConstraintVariableType(variable = "$site", type = "java.lang.String"),
+        }),
+        @TriggerPattern(value="$site.indexOf($substring) > (-1)", constraints = {
+            @ConstraintVariableType(variable = "$substring", type = "java.lang.String"),
+            @ConstraintVariableType(variable = "$site", type = "java.lang.String"),
+        }),
+        @TriggerPattern(value="$site.indexOf($substring) != -1", constraints = {
+            @ConstraintVariableType(variable = "$substring", type = "java.lang.String"),
+            @ConstraintVariableType(variable = "$site", type = "java.lang.String"),
+        }),
+        @TriggerPattern(value="$site.indexOf($substring) >= 0", constraints = {
+            @ConstraintVariableType(variable = "$substring", type = "java.lang.String"),
+            @ConstraintVariableType(variable = "$site", type = "java.lang.String"),
+        }),
+        @TriggerPattern(value="$site.indexOf($substring) > -1", constraints = {
+            @ConstraintVariableType(variable = "$substring", type = "java.lang.String"),
+            @ConstraintVariableType(variable = "$site", type = "java.lang.String"),
+        })
     })
     public static ErrorDescription containsForIndexOf(HintContext ctx) {
         String target = "$site.contains($substring)";
@@ -82,12 +100,30 @@ public class IndexOfToContains {
     }
 
     @TriggerPatterns({
-        @TriggerPattern(value="$site.indexOf($substring) == (-1)", constraints = @ConstraintVariableType(variable = "$substring", type = "java.lang.String")),
-        @TriggerPattern(value="$site.indexOf($substring) <= (-1)", constraints = @ConstraintVariableType(variable = "$substring", type = "java.lang.String")),
-        @TriggerPattern(value="$site.indexOf($substring) < (0)", constraints = @ConstraintVariableType(variable = "$substring", type = "java.lang.String")),
-        @TriggerPattern(value="$site.indexOf($substring) == -1", constraints = @ConstraintVariableType(variable = "$substring", type = "java.lang.String")),
-        @TriggerPattern(value="$site.indexOf($substring) <= -1", constraints = @ConstraintVariableType(variable = "$substring", type = "java.lang.String")),
-        @TriggerPattern(value="$site.indexOf($substring) < 0", constraints = @ConstraintVariableType(variable = "$substring", type = "java.lang.String"))
+        @TriggerPattern(value="$site.indexOf($substring) == (-1)", constraints = {
+            @ConstraintVariableType(variable = "$substring", type = "java.lang.String"),
+            @ConstraintVariableType(variable = "$site", type = "java.lang.String"),
+        }),
+        @TriggerPattern(value="$site.indexOf($substring) <= (-1)", constraints = {
+            @ConstraintVariableType(variable = "$substring", type = "java.lang.String"),
+            @ConstraintVariableType(variable = "$site", type = "java.lang.String"),
+        }),
+        @TriggerPattern(value="$site.indexOf($substring) < (0)", constraints = {
+            @ConstraintVariableType(variable = "$substring", type = "java.lang.String"),
+            @ConstraintVariableType(variable = "$site", type = "java.lang.String"),
+        }),
+        @TriggerPattern(value="$site.indexOf($substring) == -1", constraints = {
+            @ConstraintVariableType(variable = "$substring", type = "java.lang.String"),
+            @ConstraintVariableType(variable = "$site", type = "java.lang.String"),
+        }),
+        @TriggerPattern(value="$site.indexOf($substring) <= -1", constraints = {
+            @ConstraintVariableType(variable = "$substring", type = "java.lang.String"),
+            @ConstraintVariableType(variable = "$site", type = "java.lang.String"),
+        }),
+        @TriggerPattern(value="$site.indexOf($substring) < 0", constraints = {
+            @ConstraintVariableType(variable = "$substring", type = "java.lang.String"),
+            @ConstraintVariableType(variable = "$site", type = "java.lang.String"),
+        })
     })
     public static ErrorDescription notContainsForIndexOf(HintContext ctx) {
         String target = "!$site.contains($substring)";

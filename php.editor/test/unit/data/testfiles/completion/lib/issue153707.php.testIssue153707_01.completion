@@ -106,11 +106,13 @@ PACKAGE    f                               [PUBLIC]   Test204925_07_C\d\e
 PACKAGE    f                               [PUBLIC]   Test204925_08_C\d\e
 PACKAGE    lib                             [PUBLIC]   foo
 PACKAGE    url                             [PUBLIC]   foo\lib
+CLASS      A                               [PUBLIC]   A.php
 CLASS      A                               [PUBLIC]   Test197084.php
 CLASS      A                               [PUBLIC,   a
 CLASS      A                               [PUBLIC]   classConstructorOptionalParam.php
 CLASS      A                               [PUBLIC]   issue195232.php
 CLASS      A                               [PUBLIC]   issue226071.php
+CLASS      A                               [PUBLIC]   issue241695.php
 CLASS      A                               [PUBLIC]   test.php
 CLASS      A135618                         [PUBLIC]   issue135618.php
 CLASS      AA                              [PUBLIC]   Test197084.php
@@ -122,8 +124,10 @@ CLASS      AliasedClassName                [PUBLIC]   Foo\Bar
 CLASS      AnonymousObject                 [PUBLIC]   anonymousObjectVariables.php
 CLASS      Another                         [PUBLIC]   test224549.php
 CLASS      ArraysCc                        [PUBLIC]   arrays.php
+CLASS      Article                         [PUBLIC]   issue225687.php
 CLASS      Author                          [PUBLIC]   mixedtypes.php
 CLASS      Author_1                        [PUBLIC]   mixedtypes_1.php
+CLASS      B                               [PUBLIC]   B.php
 CLASS      B                               [PUBLIC]   Test197084.php
 CLASS      B                               [PUBLIC]   b
 CLASS      B                               [PUBLIC]   issue195232.php
@@ -152,6 +156,7 @@ CLASS      Book_Abstract                   [PUBLIC,   test203332_01.php
 CLASS      Brejla                          [PUBLIC]   test211230.php
 CLASS      Buuu                            [PUBLIC]   ShowMe
 CLASS      C                               [PUBLIC]   c
+CLASS      C                               [PUBLIC]   issue241695.php
 CLASS      C                               [PUBLIC]   test.php
 CLASS      CIface1                         [PUBLIC]   First
 CLASS      CIface2                         [PUBLIC]   Second
@@ -203,6 +208,7 @@ CLASS      ExMyException                   [PUBLIC]   issue201310.php
 CLASS      ExMyException1                  [PUBLIC]   issue204958.php
 CLASS      ExMyExceptionFromNs             [PUBLIC]   Extra
 CLASS      ExMyExceptionFromNs             [PUBLIC]   ExtraThrow
+CLASS      Exception                       [PUBLIC]   Exception.php
 CLASS      Exception                       [PUBLIC]   MySpace
 CLASS      Exception                       [PUBLIC]   MySpaceThrow
 CLASS      Exception                       [PUBLIC]   Nette\Application
@@ -234,6 +240,7 @@ CLASS      If2                             [PUBLIC]   tests166339.php
 CLASS      Image                           [PUBLIC]   Bar
 CLASS      Image                           [PUBLIC]   Foo
 CLASS      Index                           [PUBLIC]   issue208193.php
+CLASS      Index                           [PUBLIC]   test215371.php
 CLASS      IndexController                 [PUBLIC]   App\Test
 CLASS      InsideClass                     [PUBLIC]   insideClass.php
 CLASS      InstanceOfBar                   [PUBLIC]   issue204958.php
@@ -471,6 +478,8 @@ METHOD     getBookMagazine()               [PUBLIC]   mixedtypes_1.php
 METHOD     issue157534(&$var)              [PUBLIC]   issue157534.php
 METHOD     mytest()                        [PUBLIC]   varAssignment.php
 METHOD     paramsfnc($a, $b, $c, $d)       [PUBLIC]   paramdecltypes.php
+METHOD     parseArticles_01($articles)     [PUBLIC]   issue225687.php
+METHOD     parseArticles_02(Article $arti  [PUBLIC]   issue225687.php
 METHOD     printMyName()                   [PUBLIC]   varTypeComment.php
 METHOD     test()                          [PUBLIC]   issue195232.php
 METHOD     test()                          [PUBLIC]   typeInPHPDoc01.php

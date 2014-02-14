@@ -1528,4 +1528,8 @@ public class Css3ParserScssTest extends CssTestBase {
                 "    @import \"_768up.less\";\n" +
                 "}");
     }
+
+    public void testIssue236706() {
+        assertParses("@mixin web-font($fonts, $variants: (), $subsets: (), $text: '', $effects: (), $secure: false) {}");
+    }
 }

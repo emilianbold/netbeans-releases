@@ -42,10 +42,13 @@
 package org.netbeans.modules.java.hints.introduce;
 
 import com.sun.source.tree.BreakTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ContinueTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
@@ -96,6 +99,11 @@ final class ScanStatement extends TreePathScanner<Void, Void> {
     private boolean secondPass = false;
     private boolean stopSecondPass = false;
     private final AtomicBoolean cancel;
+    
+    /**
+     * Nesting level for local classes and lambdas. Ignore returns in nested scopes
+     */
+    private int nesting;
 
     public ScanStatement(CompilationInfo info, Tree firstInSelection, Tree lastInSelection, Map<TypeMirror, TreePathHandle> typeVar2Def, Map<Tree, Iterable<? extends TreePath>> assignmentsForUse, AtomicBoolean cancel) {
         this.info = info;
@@ -129,6 +137,32 @@ final class ScanStatement extends TreePathScanner<Void, Void> {
         }
         return null;
     }
+
+    @Override
+    public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
+        nesting++;
+        super.visitLambdaExpression(node, p);
+        nesting--;
+        return null;
+    }
+
+    @Override
+    public Void visitNewClass(NewClassTree node, Void p) {
+        nesting++;
+        super.visitNewClass(node, p);
+        nesting--;
+        return null;
+    }
+
+    @Override
+    public Void visitClass(ClassTree node, Void p) {
+        nesting++;
+        super.visitClass(node, p);
+        nesting--;
+        return null;
+    }
+    
+    
 
     @Override
     public Void visitVariable(VariableTree node, Void p) {
@@ -211,10 +245,14 @@ final class ScanStatement extends TreePathScanner<Void, Void> {
         ll.retainAll(usedTypeVariables);
         return ll;
     }
+    
+    private boolean isMethodCode() {
+        return nesting == 0;
+    }
 
     @Override
     public Void visitReturn(ReturnTree node, Void p) {
-        if (phase == PHASE_INSIDE_SELECTION) {
+        if (isMethodCode() && phase == PHASE_INSIDE_SELECTION) {
             selectionExits.add(getCurrentPath());
             hasReturns = true;
         }
@@ -223,7 +261,7 @@ final class ScanStatement extends TreePathScanner<Void, Void> {
 
     @Override
     public Void visitBreak(BreakTree node, Void p) {
-        if (phase == PHASE_INSIDE_SELECTION && !treesSeensInSelection.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()))) {
+        if (isMethodCode() && phase == PHASE_INSIDE_SELECTION && !treesSeensInSelection.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()))) {
             selectionExits.add(getCurrentPath());
             hasBreaks = true;
         }
@@ -232,7 +270,7 @@ final class ScanStatement extends TreePathScanner<Void, Void> {
 
     @Override
     public Void visitContinue(ContinueTree node, Void p) {
-        if (phase == PHASE_INSIDE_SELECTION && !treesSeensInSelection.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()))) {
+        if (isMethodCode() && phase == PHASE_INSIDE_SELECTION && !treesSeensInSelection.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()))) {
             selectionExits.add(getCurrentPath());
             hasContinues = true;
         }
@@ -242,7 +280,7 @@ final class ScanStatement extends TreePathScanner<Void, Void> {
     @Override
     public Void visitWhileLoop(WhileLoopTree node, Void p) {
         super.visitWhileLoop(node, p);
-        if (phase == PHASE_AFTER_SELECTION) {
+        if (isMethodCode() && phase == PHASE_AFTER_SELECTION) {
             //#109663&#112552:
             //the selection was inside the while-loop, the variables inside the
             //condition&statement of the while loop need to be considered to be used again after the loop:
@@ -260,7 +298,7 @@ final class ScanStatement extends TreePathScanner<Void, Void> {
     @Override
     public Void visitForLoop(ForLoopTree node, Void p) {
         super.visitForLoop(node, p);
-        if (phase == PHASE_AFTER_SELECTION) {
+        if (isMethodCode() && phase == PHASE_AFTER_SELECTION) {
             //#109663&#112552:
             //the selection was inside the for-loop, the variables inside the
             //condition, update and statement parts of the for loop need to be considered to be used again after the loop:
@@ -279,7 +317,7 @@ final class ScanStatement extends TreePathScanner<Void, Void> {
     @Override
     public Void visitDoWhileLoop(DoWhileLoopTree node, Void p) {
         super.visitDoWhileLoop(node, p);
-        if (phase == PHASE_AFTER_SELECTION) {
+        if (isMethodCode() && phase == PHASE_AFTER_SELECTION) {
             //#109663&#112552:
             //the selection was inside the do-while, the variables inside the
             //statement part of the do-while loop need to be considered to be used again after the loop:

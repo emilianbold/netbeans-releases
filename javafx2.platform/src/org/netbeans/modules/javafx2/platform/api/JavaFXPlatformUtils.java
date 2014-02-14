@@ -164,7 +164,8 @@ public final class JavaFXPlatformUtils {
     public static JavaPlatform findJavaPlatform(@NonNull final String platformName) {
         JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
         for (JavaPlatform javaPlatform : platforms) {
-            if (javaPlatform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME).equals(platformName)) {
+            final String antName = javaPlatform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
+            if (antName != null && antName.equals(platformName)) {
                 return javaPlatform;
             }
         }

@@ -152,6 +152,9 @@ public class FinalizeDoesNotCallSuper {
             final TreeMaker tm = wc.getTreeMaker();
             TreePath tp = ctx.getPath();
             final BlockTree oldBody = ((MethodTree)tp.getLeaf()).getBody();
+            if (oldBody == null) {
+                return;
+            }
             final List<StatementTree> newStatements = new ArrayList<StatementTree>(2);
             BlockTree superFinalize = tm.Block(
                                         Collections.singletonList(

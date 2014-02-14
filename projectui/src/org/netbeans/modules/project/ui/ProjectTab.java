@@ -629,9 +629,14 @@ public class ProjectTab extends TopComponent
                                 // Bad day node found but can't be selected
                             }
                         } else if (prompt) {
-                            StatusDisplayer.getDefault().setStatusText(
-                                NbBundle.getMessage( ProjectTab.class,
-                                                     ID_LOGICAL.equals( id ) ? "MSG_NodeNotFound_ProjectsTab" : "MSG_NodeNotFound_FilesTab" ) ); // NOI18N
+                            try {
+                                manager.setSelectedNodes( new Node[] {} );
+                                StatusDisplayer.getDefault().setStatusText(
+                                    NbBundle.getMessage( ProjectTab.class,
+                                                         ID_LOGICAL.equals( id ) ? "MSG_NodeNotFound_ProjectsTab" : "MSG_NodeNotFound_FilesTab" ) ); // NOI18N
+                            } catch (PropertyVetoException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
                         }
                         setCursor( null );
                     }

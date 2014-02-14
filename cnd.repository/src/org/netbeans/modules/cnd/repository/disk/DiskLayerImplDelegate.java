@@ -129,10 +129,6 @@ final class DiskLayerImplDelegate implements Layer {
         impl.closeUnit(unitIdInLayer, cleanRepository, requiredUnits, writableLayers.contains(impl));
     }
 
-    @Override
-    public List<CharSequence> getFileNameTable(int unitIdInLayer) {
-        return impl.getFileNameTable(unitIdInLayer);
-    }
 
     @Override
     public List<UnitDescriptor> getUnitsTable() {

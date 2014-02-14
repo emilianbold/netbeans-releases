@@ -294,6 +294,9 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
     }
     
     public void setCurrentProfile (String currentScheme) {
+        if (currentScheme == this.currentScheme) {
+            return;
+        }
         String oldScheme = this.currentScheme;
         this.currentScheme = currentScheme;
         List<AttributeSet> v = getAnnotations(currentScheme);
@@ -304,6 +307,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
             toBeSaved.add (currentScheme);
             v = getAnnotations (currentScheme);
         }
+        toBeSaved.add(currentScheme);
         lCategories.setListData (v.toArray(new AttributeSet[]{}));
         if (lCategories.getModel ().getSize () > 0)
             lCategories.setSelectedIndex (0);

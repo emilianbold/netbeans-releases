@@ -77,21 +77,32 @@ public final class Installer {
         @Override
         public void run() {
             CndUtils.assertNonUiThread();
-            final Runnable runnable = new Runnable() {
-                @Override
-                public void run() {
-                    if (TraceFlags.TRACE_MODEL_STATE) {
-                        System.err.println("=== Installer.Stop");
-                    }
-                    ModelSupport.instance().shutdown();
-
-                }
-            };
+            final Runnable runnable = new RunnableImpl();
             if (CndUtils.isStandalone() || CndUtils.isUnitTestMode() || !ModelSupport.instance().hasOpenedProjects()) {
                 runnable.run();
             } else {
                 ProgressUtils.showProgressDialogAndRun(runnable, NbBundle.getMessage(Installer.class, "CLOSE_PROJECT_DIALOG_MESSAGE")); //NOI18N
             }
+        }
+
+        private static final class RunnableImpl implements Runnable, org.openide.util.Cancellable {
+
+            public RunnableImpl() {
+            }
+
+            @Override
+            public void run() {
+                if (TraceFlags.TRACE_MODEL_STATE) {
+                    System.err.println("=== Installer.Stop");
+                }
+                ModelSupport.instance().shutdown();
+                
+            }
+
+            @Override
+            public boolean cancel() {
+                return true;
+            }            
         }
     }
 }

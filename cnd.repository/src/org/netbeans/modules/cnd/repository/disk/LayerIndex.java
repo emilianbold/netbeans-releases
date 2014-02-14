@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.repository.disk;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -56,7 +55,6 @@ import java.util.Set;
 import org.netbeans.modules.cnd.repository.api.RepositoryExceptions;
 import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
-import org.netbeans.modules.cnd.repository.util.IntToValueList;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Utilities;
@@ -70,11 +68,9 @@ public final class LayerIndex {
     private final File cacheDirectoryFile;
     private int version;
     private static final String INDEX_FILE_NAME = "index";//NOI18N
-    private static final String UNITS_INDEX_FILE_NAME = "project-index";//NOI18N
     private long lastModificationTime;
     private final List<FileSystem> fileSystems = new ArrayList<FileSystem>();
     private final List<UnitDescriptor> units = new ArrayList<UnitDescriptor>();
-    private final Map<Integer, IntToValueList<CharSequence>> fileNamesTable = new HashMap<Integer, IntToValueList<CharSequence>>();
     private final Map<Integer, List<Integer>> dependencies = new HashMap<Integer, List<Integer>>();
 
     LayerIndex(URI cacheDirectory) {
@@ -231,58 +227,6 @@ public final class LayerIndex {
         return Collections.unmodifiableList(fileSystems);
     }
 
-    // 5
-    List<CharSequence> getFileNameTable(int unitIdx) {
-        final IntToValueList<CharSequence> result = fileNamesTable.get(unitIdx);
-        return result == null ? Collections.<CharSequence>emptyList() : Collections.unmodifiableList(result.getTable());
-    }
-
-    void loadUnitIndex(int unitIdx) throws IOException {
-        File indexFile = getUnitIndexFile(unitIdx);
-        if (!indexFile.exists()) {
-            return;
-        }
-
-        DataInputStream in = null;
-        try {
-            in = RepositoryImplUtil.getBufferedDataInputStream(indexFile);
-            IntToValueList<CharSequence> filesCache = IntToValueList.<CharSequence>createFromStream(
-                    in, units.get(unitIdx).getName(), IntToValueList.CHAR_SEQUENCE_FACTORY);
-            fileNamesTable.put(unitIdx, filesCache);
-        } finally {
-            if (in != null) {
-                in.close();
-            }
-        }
-    }
-
-    void storeFilesTable(Integer unitIDInLayer, List<CharSequence> filesList) throws IOException {
-        File indexFile = getUnitIndexFile(unitIDInLayer);
-        DataOutputStream out = null;
-        try {
-            out = RepositoryImplUtil.getBufferedDataOutputStream(indexFile);
-            IntToValueList<CharSequence> list = IntToValueList.<CharSequence>createEmpty(units.get(unitIDInLayer).getName());
-            int i = 0;
-            for (CharSequence file : filesList) {
-                list.set(i++, file);
-            }
-            list.write(out);
-        } catch (FileNotFoundException ex) {
-            RepositoryExceptions.throwException(this, ex);
-        } finally {
-            if (out != null) {
-                out.close();
-            }
-        }
-    }
-
-    private File getUnitIndexFile(int unitIdx) {
-        File unitDir = new File(cacheDirectoryFile, "" + unitIdx); // NOI18N
-        if (!unitDir.exists()) {
-            unitDir.mkdirs();
-        }
-        return new File(unitDir, UNITS_INDEX_FILE_NAME);
-    }
 
     int registerUnit(UnitDescriptor unitDescriptor) {
         units.add(unitDescriptor);
@@ -296,11 +240,6 @@ public final class LayerIndex {
         units.remove(unitIDInLayer);
     }
 
-    int registerFile(int unitIDInLayer, CharSequence fileName) {
-        List<CharSequence> table = getFileNameTable(unitIDInLayer);
-        table.add(fileName);
-        return table.size() - 1;
-    }
 
     int registerFileSystem(FileSystem fileSystem) {
         fileSystems.add(fileSystem);

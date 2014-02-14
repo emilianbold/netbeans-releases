@@ -64,6 +64,7 @@ import org.netbeans.modules.versioning.util.SearchHistorySupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.*;
 
@@ -90,6 +91,7 @@ class FilesystemHandler extends VCSInterceptor {
             return size() > 100;
         }
     });
+    private static final RequestProcessor RP = new RequestProcessor("Subversion FileSystemHandler", 1, false, false); //NOI18N
 
     /**
      * Stores .svn folders that should be deleted ASAP.
@@ -171,7 +173,7 @@ class FilesystemHandler extends VCSInterceptor {
 
         // there was no doDelete event for the file ->
         // could be deleted externaly, so try to handle it by 'svn rm' too
-        Utils.post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -540,7 +542,7 @@ class FilesystemHandler extends VCSInterceptor {
             // not interested in .svn events
             return;
         }
-        Utils.post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 if (file == null) return;
@@ -593,7 +595,7 @@ class FilesystemHandler extends VCSInterceptor {
             return;
         }
         Subversion.LOG.log(Level.FINE, "afterChange {0}", file);
-        Utils.post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {

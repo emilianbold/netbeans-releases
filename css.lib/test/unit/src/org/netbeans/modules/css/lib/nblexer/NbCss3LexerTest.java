@@ -190,14 +190,14 @@ public class NbCss3LexerTest extends NbTestCase {
     }
 
     ;
-    
+
     public void testNamespaces() throws Exception {
         LexerTestUtilities.checkTokenDump(this, "testfiles/namespaces.css",
                 CssTokenId.language());
     }
 
     ;
-    
+
     public void testInput() throws Exception {
         LexerTestUtilities.checkTokenDump(this, "testfiles/testInputGeneratedCode.css.txt",
                 CssTokenId.language());
@@ -205,6 +205,21 @@ public class NbCss3LexerTest extends NbTestCase {
 
     public void testImportsLexing() throws Exception {
         LexerTestUtilities.checkTokenDump(this, "testfiles/testImportsLexing.css.txt",
+                CssTokenId.language());
+    }
+
+    public void testIssue240881() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/testIssue240881.css.txt",
+                CssTokenId.language());
+    }
+
+    public void testIssue240757() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/less/testIssue240757.less.txt",
+                CssTokenId.language());
+    }
+
+    public void testIssue240701() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/less/testIssue240701.less.txt",
                 CssTokenId.language());
     }
 }

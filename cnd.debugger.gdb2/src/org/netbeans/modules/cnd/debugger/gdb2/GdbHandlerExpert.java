@@ -562,7 +562,7 @@ public class GdbHandlerExpert implements HandlerExpert {
                 funcString = ((FunctionBreakpoint) template).getFunction();
             }
 
-            fb.setFunction(funcString);
+            fb.setFunction(IpeUtils.unquoteIfNecessary(funcString));
 
 	} else if (template instanceof InstructionBreakpoint) {
 	    InstructionBreakpoint ib = (InstructionBreakpoint) breakpoint;

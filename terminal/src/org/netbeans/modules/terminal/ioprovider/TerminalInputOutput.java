@@ -474,11 +474,11 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	}
 
 	@Override
-	protected void connect(OutputStream pin, InputStream pout, InputStream perr) {
-	    Task task = new Task.Connect(terminal, pin, pout, perr);
+	protected void connect(OutputStream pin, InputStream pout, InputStream perr, String charset) {
+	    Task task = new Task.Connect(terminal, pin, pout, perr, charset);
 	    task.post();
 	}
-
+	
 	@Override
 	protected void disconnect(final Runnable continuation) {
 	    Task task = new Task.Disconnect(terminal, continuation);

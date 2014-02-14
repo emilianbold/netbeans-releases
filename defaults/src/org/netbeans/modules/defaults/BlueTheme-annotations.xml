@@ -81,4 +81,20 @@ made subject to such option by the copyright holder.
     <fontcolor bgColor="611D1D" name="CondBreakpoint"/>
     <fontcolor bgColor="611D1D" name="CurrentPC2_BP"/>
     <fontcolor bgColor="2D6035" name="OtherThread_PC_BP"/>
+
+
+    <fontcolor bgColor="666666" name="OtherThreads_DBP"/>
+    <fontcolor bgColor="666666" name="DisabledBreakpoint"/>
+    <fontcolor bgColor="666666" name="debugger-multi_DBPCBP"/>
+    <fontcolor bgColor="666666" name="Breakpoint_broken"/>
+    <fontcolor bgColor="666666" name="DisabledBreakpoint_stroke"/>
+    <fontcolor bgColor="666666" name="CondBreakpoint_broken"/>
+    <fontcolor bgColor="666666" name="Breakpoint_stroke"/>
+    <fontcolor bgColor="666666" name="debugger-mixed_BP_broken"/>
+    <fontcolor bgColor="666666" name="CondBreakpoint_stroke"/>
+    <fontcolor bgColor="666666" name="DisabledCondBreakpoint"/>
+    <fontcolor bgColor="666666" name="debugger-multi_BPCBP_broken"/>
+    <fontcolor bgColor="666666" name="DisabledCondBreakpoint_stroke"/>
+    <fontcolor bgColor="666666" name="OtherThread_DBP"/>
+    <fontcolor bgColor="666666" name="CurrentPC2_DBP"/>
 </fontscolors>

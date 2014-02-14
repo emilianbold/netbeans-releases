@@ -567,6 +567,9 @@ public class ProjectActionSupport {
                         stopAction.setEnabled(false);
                     }
                 }
+            } catch (IllegalStateException ex) {
+                //thrown when connection is broken
+                ex.printStackTrace();
             } finally {
                 tabs.unlockAndCloseOutput();
                 rerunAction.setEnabled(true);

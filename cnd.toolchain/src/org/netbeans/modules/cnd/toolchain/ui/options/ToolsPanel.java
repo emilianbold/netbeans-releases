@@ -128,7 +128,6 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     private CompilerSetManagerImpl savedCSM;
     private CompilerSet currentCompilerSet;
     private final ToolsCacheManagerImpl tcm = (ToolsCacheManagerImpl) ToolsPanelSupport.getToolsCacheManager();
-    private final ToolsCacheManagerImpl savedTCM = (ToolsCacheManagerImpl) ToolsPanelSupport.getToolsCacheManager();
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(ToolsPanel.class.getName(), 1);
     //See Bug #215447
@@ -241,10 +240,10 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     }
     
     private boolean areToolsOptionsChanged() {
-        if(!savedTCM.getDefaultHostRecord().getExecutionEnvironment().equals(tcm.getDefaultHostRecord().getExecutionEnvironment())) {
+        if(!ServerList.getDefaultRecord().getExecutionEnvironment().equals(tcm.getDefaultHostRecord().getExecutionEnvironment())) {
             return true;
         }
-        Collection<? extends ServerRecord> savedHosts = savedTCM.getHosts();
+        Collection<? extends ServerRecord> savedHosts = ServerList.getRecords();
         Collection<? extends ServerRecord> currentHosts = tcm.getHosts();
         if (savedHosts.size() != currentHosts.size()) {
             return true;
@@ -252,7 +251,13 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         Iterator<? extends ServerRecord> savedHostsIter = savedHosts.iterator();
         Iterator<? extends ServerRecord> currentHostsIter = currentHosts.iterator();
         while(savedHostsIter.hasNext()) {
-            if (!savedHostsIter.next().getExecutionEnvironment().equals(currentHostsIter.next().getExecutionEnvironment())) {
+            ServerRecord savedRecord = savedHostsIter.next();
+            ServerRecord currentRecord = currentHostsIter.next();
+            if (!savedRecord.getExecutionEnvironment().equals(currentRecord.getExecutionEnvironment())
+                    || !savedRecord.getSyncFactory().getID().equals(currentRecord.getSyncFactory().getID())
+                    || savedRecord.getX11Forwarding() != currentRecord.getX11Forwarding()
+                    || savedRecord.isRememberPassword() != currentRecord.isRememberPassword()
+                    || !savedRecord.getDisplayName().equals(currentRecord.getDisplayName())) {
                 return true;
             }
         }

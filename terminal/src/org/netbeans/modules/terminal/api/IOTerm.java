@@ -97,9 +97,26 @@ public abstract class IOTerm {
      *             ptys.
      */
     public static void connect(InputOutput io, OutputStream pin, InputStream pout, InputStream perr) {
+	connect(io, pin, pout, perr, null);
+    }
+    
+    /**
+     * Connect an I/O stream pair or triple to this Term.
+     *
+     * @param pin Input (and paste operations) to the sub-process.
+     *             this stream.
+     * @param pout Main output from the sub-process. Stuff received via this
+     *             stream will be rendered on the screen.
+     * @param perr Error output from process. May be null if the error stream
+     *		   is already absorbed into 'pout' as the case might be with
+     *             ptys.
+     * @param charset The name of a supported
+     *         {@link java.nio.charset.Charset </code>charset<code>}, null for system default
+     */
+    public static void connect(InputOutput io, OutputStream pin, InputStream pout, InputStream perr, String charset) {
 	IOTerm iot = find(io);
 	if (iot != null)
-	    iot.connect(pin, pout, perr);
+	    iot.connect(pin, pout, perr, charset);
 	else
 	    return;
     }
@@ -126,8 +143,8 @@ public abstract class IOTerm {
      * Return the underlying Term associatd with this IO.
      * @return underlying Term associatd with io.
      */
-    abstract protected Term term();
-
+    abstract protected Term term();   
+    
     /**
      * Connect an I/O stream pair or triple to this Term.
      *
@@ -138,8 +155,10 @@ public abstract class IOTerm {
      * @param perr Error output from process. May be null if the error stream
      *		   is already absorbed into 'pout' as the case might be with
      *             ptys.
-     */
-    abstract protected void connect(OutputStream pin, InputStream pout, InputStream perr);
+     * @param charset The name of a supported
+     *         {@link java.nio.charset.Charset </code>charset<code>}, null for system default
+     */    
+    abstract protected void connect(OutputStream pin, InputStream pout, InputStream perr, String charset);
 
     abstract protected void disconnect(Runnable continuation);
 }

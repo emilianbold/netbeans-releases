@@ -40,6 +40,7 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
@@ -123,6 +124,9 @@ public class CsmFileModel {
                     preBuildModel.newList.add(node);
                 }
                 unopenedProject = FileOwnerQuery.getOwner(fileObject);
+                if (OpenProjects.getDefault().isProjectOpen(unopenedProject)) {
+                    unopenedProject = null;
+                }
             }
             if (filter.isApplicableInclude()) {
                 if (!canceled.get()) {

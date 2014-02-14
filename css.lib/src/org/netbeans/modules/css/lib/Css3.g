@@ -729,6 +729,7 @@ cssClass
     : DOT
         (
             IDENT
+            | LESS_IMPORT_TYPE
             | GEN
             | {isLessSource()}? less_selector_interpolation // .@{var} { ... }
         )
@@ -1013,7 +1014,7 @@ cp_expression_atom
         (NOT ws?)?
         (
             (cp_math_expression)=>cp_math_expression
-            | LPAREN ws? cp_expression_list ws? RPAREN
+            | LPAREN ws? (cp_expression_list ws?)? RPAREN
         )
     ;
 
@@ -1093,7 +1094,7 @@ cp_mixin_call_args
     :
     //the term separatos is supposed to be just COMMA, but in some weird old? samples
     //I found semicolon used as a delimiter between arguments
-    cp_mixin_call_arg ( (COMMA | SEMI) ws? cp_mixin_call_arg)*  CP_DOTS?
+    cp_mixin_call_arg ( (COMMA | SEMI) ws? cp_mixin_call_arg)*  (CP_DOTS ws?)?
     ;
 
 cp_mixin_call_arg
@@ -1113,9 +1114,9 @@ cp_args_list
     //sass varargs:
     //@mixin box-shadow($shadows...) {} -- note that now also LESS parser allows this incorrectly (minor issue)
 
-    ( cp_arg ( ( COMMA | SEMI ) ws? cp_arg)*  ( (COMMA | SEMI) ws? )? (CP_DOTS | LESS_REST)?)
+    ( cp_arg ( ( COMMA | SEMI ) ws? cp_arg)*  ( (COMMA | SEMI) ws? )? ( (CP_DOTS | LESS_REST) ws? )?)
     |
-    (CP_DOTS | LESS_REST)
+    (CP_DOTS | LESS_REST) ws?
     ;
 
 //.box-shadow ("@x: 0", @y: 0, @blur: 1px, @color: #000)
@@ -1128,7 +1129,7 @@ cp_arg
 //.mixin (@a) "when (@a > 10), (@a < -10)" { ... }
 less_mixin_guarded
     :
-    LESS_WHEN ws? less_condition ( (COMMA | AND) ws? less_condition)*
+    LESS_WHEN ws? less_condition (ws? (COMMA | AND) ws? less_condition)*
     ;
 
 //.truth (@a) when (@a) { ... }
