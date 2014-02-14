@@ -335,8 +335,9 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
                     end--;
                 }
                 if (end > 4) {
-                     if (text.indexOf("-->", end - 4) != -1) { //NOI18N
-                        String helpText = text.substring(0, end - 4);
+                    int index = text.indexOf("-->", end - 4);
+                    if (index != -1) { //NOI18N
+                        String helpText = text.substring(0, index);
                         if (helpText.lastIndexOf("<!--") <= helpText.lastIndexOf("-->")) { //NOI18N
                             text = helpText;
                         }

@@ -113,7 +113,7 @@ public class JsEmbeddingProviderTest extends CslTestBase {
                 + " </script>",
                 "\n"
                 + "      window.alert(\"Hello World!\");\n"
-                + " \n");
+                + "   \n");
 
         assertEmbedding(
                 "<script type=\"text/javascript\">\n"

@@ -80,12 +80,8 @@ public class Target implements SDK {
         
         Target current = new Target();
         String lastProp = null;
-        while (r.ready()) {
-            String line = r.readLine();
-            if (line == null) {
-                result.add(current);
-                break;
-            }
+        String line = r.readLine();
+        while (line != null) {
             Matcher m = pattern.matcher(line);
             if (m.matches()) {
                 current.id = Integer.parseInt(m.group(1));
@@ -97,6 +93,10 @@ public class Target implements SDK {
                 } else {
                     //current.props.put(lastProp, current.props.get(lastProp) + line);
                 }
+            }
+            line = r.readLine();
+            if (line == null) {
+                result.add(current);
             }
         }
         if (result.isEmpty()) {

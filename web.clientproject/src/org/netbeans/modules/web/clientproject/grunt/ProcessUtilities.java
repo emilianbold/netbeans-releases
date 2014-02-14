@@ -46,12 +46,13 @@ package org.netbeans.modules.web.clientproject.grunt;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.api.extexecution.ProcessBuilder;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -62,7 +63,32 @@ public final class ProcessUtilities {
     
     private static final Logger LOGGER = Logger.getLogger(ProcessUtilities.class.getName());
     
-    private static final RequestProcessor KILLER = new RequestProcessor(ProcessUtilities.class);
+    private static final RequestProcessor RP = new RequestProcessor(ProcessUtilities.class);
+
+    private static class Redirector implements Runnable {
+
+        private final InputStream stream;
+        private final StringBuilder output;
+        
+        private Redirector(InputStream stream, StringBuilder output) {
+            this.stream = stream;
+            this.output = output;
+        }
+
+        @Override
+        public void run() { 
+            try (InputStreamReader inputStreamReader = new InputStreamReader(new BufferedInputStream(stream))) {
+                char[] ch = new char[1];
+                int number = inputStreamReader.read(ch);
+                while (number > 0) {
+                    output.append(ch);
+                    number = inputStreamReader.read(ch);
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } 
+        }
+    }
 
     public static String callProcess(final String executable, String workDir, boolean wait, int timeout, String... parameters) throws IOException {
         ExternalProcessBuilder pb = new ExternalProcessBuilder(executable);
@@ -72,7 +98,7 @@ public final class ProcessUtilities {
         }
         final Process call = pb.call();
         if (timeout > 0) {
-            KILLER.post(new Runnable() {
+            RP.post(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -84,35 +110,32 @@ public final class ProcessUtilities {
                 }
             }, timeout);
         }
+        StringBuilder error = new StringBuilder();
+        RequestProcessor.Task errTask = RP.post(new Redirector(call.getErrorStream(), error));
+        
+        StringBuilder output = new StringBuilder();
+        RequestProcessor.Task outTask = RP.post(new Redirector(call.getInputStream(), output));
+
         if (!wait) {
             return null;
         }
+
         try {
             call.waitFor();
+            errTask.waitFinished();
+            outTask.waitFinished();
         } catch (InterruptedException ex) {
             throw new IOException(ex);
         }
-        InputStreamReader inputStreamReader = new InputStreamReader(new BufferedInputStream(call.getErrorStream()));
-        StringBuilder error = new StringBuilder();
-        char[] ch = new char[1];
-        while (inputStreamReader.ready()) {
-            inputStreamReader.read(ch);
-            error.append(ch);
-        }
+
         if (!error.toString().trim().isEmpty()) {
             LOGGER.warning(error.toString());
         }
-        inputStreamReader = new InputStreamReader(call.getInputStream());
-        StringBuilder result = new StringBuilder();
-        while (inputStreamReader.ready()) {
-            inputStreamReader.read(ch);
-            result.append(ch);
+
+        if (output.toString().isEmpty()) {
+            LOGGER.severe("No output when executing " + executable + " " + Arrays.toString(parameters)); // NOI18N
         }
-        inputStreamReader.close();
-        if (result.toString().isEmpty()) {
-            LOGGER.log(Level.SEVERE, "No output when executing {0} {1}", new Object[]{executable, Arrays.toString(parameters)}); // NOI18N
-        }
-        return result.toString();
+        return output.toString();
     }
     
 }
