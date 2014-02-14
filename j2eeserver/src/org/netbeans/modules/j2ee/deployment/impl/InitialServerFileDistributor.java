@@ -173,12 +173,14 @@ public class InitialServerFileDistributor extends ServerProgress {
     private boolean cleanup(File f) {
         String [] chNames = f.list();
         boolean deleted = true;
-        for (int i = 0; i < chNames.length; i++) {
-            File ch = new File(f.getAbsolutePath(), chNames[i]);
-            if (ch.isDirectory()) {
-                deleted = deleted && cleanup(ch);
-            } else {
-                deleted = deleted && ch.delete();
+        if (chNames != null) {
+            for (int i = 0; i < chNames.length; i++) {
+                File ch = new File(f.getAbsolutePath(), chNames[i]);
+                if (ch.isDirectory()) {
+                    deleted = deleted && cleanup(ch);
+                } else {
+                    deleted = deleted && ch.delete();
+                }
             }
         }
         deleted = deleted && f.delete();

@@ -181,8 +181,9 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
                     array = (JSONArray) obj;
                     if (array.size() == 0) {
                         try (BufferedReader r = new BufferedReader(new InputStreamReader(chromeJson.openConnection(Proxy.NO_PROXY).getInputStream()))) {
-                            while (r.ready()) {
-                                LOGGER.info(r.readLine());
+                            String line;
+                            while ((line = r.readLine()) != null) {
+                                LOGGER.info(line);
                             }
                         }
                     }

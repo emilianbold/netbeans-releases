@@ -113,8 +113,9 @@ public final class ProgressUtils {
     }
 
     /**
-     * Show a modal progress dialog that blocks the main window, while running
-     * the passed runnable on a background thread.
+     * Show a modal progress dialog that blocks the main window and all other
+     * currently displayed frames or dialogs, while running the passed runnable
+     * on a background thread.
      * <p/>
      * This method is thread-safe, and will block until the operation has
      * completed, regardless of what thread calls this method.
@@ -224,8 +225,9 @@ public final class ProgressUtils {
     }
     
     /**
-     * Show a modal progress dialog that blocks the main window, while running
-     * the passed runnable on a background thread.
+     * Show a modal progress dialog that blocks the main window and all other
+     * currently displayed frames or dialogs, while running the passed runnable
+     * on a background thread.
      * <p/>
      * This method is thread-safe, and will block until the operation has
      * completed, regardless of what thread calls this method.
@@ -268,9 +270,9 @@ public final class ProgressUtils {
 
 
     /**
-     * Show a modal progress dialog that blocks the main window, while running
-     * the passed runnable on a background thread with an indeterminate-state
-     * progress bar.
+     * Show a modal progress dialog that blocks the main window and all other
+     * currently displayed frames or dialogs, while running the passed runnable
+     * on a background thread with an indeterminate-state progress bar.
      * <p/>
      * This method is thread-safe, and will block until the operation has
      * completed, regardless of what thread calls this method.
@@ -293,11 +295,12 @@ public final class ProgressUtils {
     }
 
     /**
-     * Show a modal progress dialog that blocks the main window while running
-     * a background process.  This call should block until the work is
-     * started, and then return a task which can be monitored for completion
-     * or cancellation.  This method will not block while the work is run,
-     * only until the progress UI is initialized.
+     * Show a modal progress dialog that blocks the main window and all other
+     * currently displayed frames or dialogs while running a background process.
+     * This call should block until the work is started, and then return a task
+     * which can be monitored for completion or cancellation. This method will
+     * not block while the work is run, only until the progress UI is
+     * initialized.
      * <p/>
      * The resulting progress UI should show a cancel button if the passed
      * runnable implements org.openide.util.Cancellable.
