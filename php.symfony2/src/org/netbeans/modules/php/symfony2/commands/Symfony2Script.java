@@ -68,6 +68,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.InputOutput;
@@ -117,7 +118,18 @@ public final class Symfony2Script {
             // perhaps deleted app dir? fallback to default and let it fail later...
             return null;
         }
-        return appDir.getFileObject(SCRIPT_NAME);
+        File appDirFile = FileUtil.toFile(appDir); // #238679
+        if (appDirFile != null) {
+            try {
+                File retFile = new File(appDirFile, SCRIPT_NAME).getCanonicalFile();
+                return FileUtil.toFileObject(retFile);
+            } catch (IOException ex) {
+                LOGGER.log(Level.FINE, null, ex);
+                return null;
+            }
+        } else {
+            return null;
+        }
     }
 
     /**
