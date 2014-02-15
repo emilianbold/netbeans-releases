@@ -735,7 +735,7 @@ public final class EditorRegistry {
 
         @Override
         public void ancestorRemoved(AncestorEvent event) {
-            final JComponent component = event.getComponent();
+            JComponent component = event.getComponent();
             Item item = item(component);
             // In case the ancestor has class of certain type
             // the ancestor removal is not significant and the registry expects
@@ -746,17 +746,22 @@ public final class EditorRegistry {
             }
             if (!item.ignoreAncestorChange) {
                 // Only start timer when ancestor changes are not ignored.
+                // Use weak ref to component since if the timer would not fire the component would not get released
+                final Reference<JComponent> componentRef = new WeakReference(component);
                 item.runningTimer = new Timer(BEFORE_REMOVE_DELAY,
                     new ActionListener() {
                         public @Override void actionPerformed(ActionEvent e) {
-                            ArrayList<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>();
-                            synchronized (EditorRegistry.class) {
-                                Item item = item(component);
-                                item.runningTimer.stop();
-                                item.runningTimer = null;
-                                removeFromRegistry(item, events);
+                            JComponent c = componentRef.get();
+                            if (c != null) {
+                                ArrayList<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>();
+                                synchronized (EditorRegistry.class) {
+                                    Item item = item(c);
+                                    item.runningTimer.stop();
+                                    item.runningTimer = null;
+                                    removeFromRegistry(item, events);
+                                }
+                                fireEvents(events);
                             }
-                            fireEvents(events);
                         }
                     }
                 );
