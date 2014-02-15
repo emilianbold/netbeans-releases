@@ -58,6 +58,7 @@ import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -151,6 +152,30 @@ public class CopyResourcesIndexer extends CustomIndexer {
                                 } catch (IOException ex) {
                                     Logger.getLogger("global").log(Level.INFO, "persistebce.xml indexing problem: {0}", ex.getMessage()); //NOI18N
                                 }
+                            } else { //we need to remove from cache
+                                if (activeRoot != null) {
+                                    final String path = getCachePath();
+
+                                    if (path != null) {
+                                        final FileObject cacheRoot = context.getIndexFolder().getParent().getParent();
+                                        final FileObject cacheDir = cacheRoot.getFileObject(path);
+                                        if (cacheDir != null) {
+                                                final FileObject toDelete2 = cacheDir.getFileObject(PERSISTENCE_XML);
+                                                if (toDelete2 != null) {
+                                                    try {
+                                                        toDelete2.delete();
+                                                        activeRoot = null;
+                                                        timestampPersistenceXml = null;
+                                                        lengthPersistenceXml = 0;
+                                                        timestampOrmXml = null;
+                                                        lengthOrmXml = 0;
+                                                    } catch (IOException ex) {
+                                                    }
+                                                }
+                                       }
+                                    }                                    
+                                }
+                                
                             }
                         }
                     }
