@@ -1267,11 +1267,50 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     protected final void fireCookieChange() {
         Lookup l = findDelegatingLookup();
 
-        if (l instanceof NodeLookup) {
-            ((NodeLookup) l).updateLookupAsCookiesAreChanged(null);
+        if (l instanceof NodeLookup && updateNow(this)) {
+            Set<Node> prev = blockEvents();
+            try {
+                ((NodeLookup) l).updateLookupAsCookiesAreChanged(null);
+            } finally {
+                unblockEvents(prev);
+            }
         }
 
         fireOwnPropertyChange(PROP_COOKIE, null, null);
+    }
+    
+    private static final ThreadLocal<Set<Node>> BLOCK_EVENTS = new ThreadLocal<Set<Node>>();
+    static Set<Node> blockEvents() {
+        Set<Node> prev = BLOCK_EVENTS.get();
+        if (prev != null) {
+            return prev;
+        }
+        BLOCK_EVENTS.set(new HashSet<Node>());
+        return null;
+    }
+    
+    private static boolean updateNow(Node n) {
+        final Set<Node> set = BLOCK_EVENTS.get();
+        if (set == null) {
+            return true;
+        }
+        set.add(n);
+        return false;
+    }
+    
+    static void unblockEvents(Set<Node> prev) {
+        final Set<Node> set = BLOCK_EVENTS.get();
+        if (prev == null) {
+            while (!set.isEmpty()) {
+                Node[] arr = set.toArray(new Node[set.size()]);
+                for (Node n : arr) {
+                    NodeLookup l = (NodeLookup) n.findDelegatingLookup();
+                    l.updateLookupAsCookiesAreChanged(null);
+                }
+                set.removeAll(Arrays.asList(arr));
+            }
+        }
+        BLOCK_EVENTS.set(prev);
     }
 
     /** Fires info about change of own property.
