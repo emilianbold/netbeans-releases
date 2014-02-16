@@ -493,35 +493,6 @@ public class DetectPanel extends javax.swing.JPanel {
             javadoc = null;
             javadocString = null;
             this.wiz = settings;
-            JavaPlatform platform = this.iterator.getPlatform();
-            String srcPath = null;
-            ClassPath src = platform.getSourceFolders();
-            if (src.entries().size()>0) {
-                URL folderRoot = src.entries().get(0).getURL();
-                if ("jar".equals(folderRoot.getProtocol())) {   //NOI18N
-                    folderRoot = FileUtil.getArchiveFile (folderRoot);
-                }
-                srcPath = Utilities.toFile(URI.create(folderRoot.toExternalForm())).getAbsolutePath();
-            }
-            else if (firstPass) {
-                for (FileObject folder : platform.getInstallFolders()) {
-                    File base = FileUtil.toFile(folder);
-                    if (base!=null) {
-                        File f = new File (base,"src.zip"); //NOI18N
-                        if (f.canRead()) {
-                            srcPath = f.getAbsolutePath();
-                        }
-                        else {
-                            f = new File (base,"src.jar");  //NOI18N
-                            if (f.canRead()) {
-                                srcPath = f.getAbsolutePath();
-                            }
-                        }
-                    }
-                }                
-                firstPass = false;
-            }
-            this.component.setSources (srcPath);
             this.component.progressPanel.setVisible (true);
             this.component.progressLabel.setVisible (true);
             
@@ -554,10 +525,7 @@ public class DetectPanel extends javax.swing.JPanel {
             final List<? extends PathResourceImplementation> src = sources;
             final List<URL> jdoc = javadoc;
             if (isValid() && src != null && jdoc != null) {                                
-                String name = component.getPlatformName();
-                if (src == null || jdoc == null) {
-                    return;
-                }
+                String name = component.getPlatformName();                
                 NewJ2SEPlatform platform = this.iterator.getPlatform();
                 platform.setDisplayName (name);
                 platform.setAntName (createAntName (name));
@@ -617,7 +585,12 @@ public class DetectPanel extends javax.swing.JPanel {
             if (jdoc.isEmpty()) {
                 jdoc = J2SEPlatformImpl.defaultJavadoc(platform);
             }
-            final String jdocStr = javadocToString(jdoc);
+            final String jdocStr = urlsToString(jdoc);
+            List<URL> src = cpToUrls(platform.getSourceFolders());
+            if (src.isEmpty()) {
+                src = J2SEPlatformImpl.defaultSources(platform);
+            }
+            final String srcStr = urlsToString(src);
             detected.set(
                 platform.isValid()?
                     PlatformState.VALID:
@@ -627,6 +600,7 @@ public class DetectPanel extends javax.swing.JPanel {
                 public void run () {
                     component.updatePlatformName(platform);
                     component.setJavadoc(jdocStr);
+                    component.setSources(srcStr);
                     assert progressHandle != null;
                     progressHandle.finish ();
                     component.progressPanel.setVisible (false);
@@ -711,31 +685,51 @@ public class DetectPanel extends javax.swing.JPanel {
         private static List<PathResourceImplementation> stringToSourcePath(@NonNull final String path) {
             assert path != null;
             final List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
-            if (path.trim().length()>0) {
-                final File f = new File (path);
-                if (f.exists()) {
-                    try {
-                        URL url = Utilities.toURI(f).toURL();
-                        if (FileUtil.isArchiveFile(url)) {
-                            url = FileUtil.getArchiveRoot(url);
-                            FileObject fo = URLMapper.findFileObject(url);
-                            if (fo != null) {
-                                fo = fo.getFileObject("src");   //NOI18N
-                                if (fo != null) {
-                                    url = fo.toURL();
-                                }
+            final StringTokenizer tk = new StringTokenizer(path,PATH_SEPARATOR);
+            while (tk.hasMoreTokens()) {
+                try {
+                    final String token =  tk.nextToken().trim();
+                    if (!token.isEmpty()) {
+
+                        int index = token.lastIndexOf(INNER_SEPARATOR);
+                        if (index > 0) {
+                            final String outherPath = token.substring(0, index);
+                            final String innerPath = index+2 == token.length() ? "" : token.substring(index+2);
+                            final File f = new File (outherPath);
+                            if (f.exists()) {
+                                result.add (ClassPathSupport.createResource(
+                                    new URL (FileUtil.getArchiveRoot(Utilities.toURI(f).toURL()).toExternalForm() + innerPath)));
+                            } else {
+                                throw new IllegalStateException();
                             }
-                            result.add (ClassPathSupport.createResource(url));
                         } else {
-                            result.add (ClassPathSupport.createResource(url));
+                            final File f = new File(token);
+                            if (f.exists()) {
+                                try {
+                                    URL url = Utilities.toURI(f).toURL();
+                                    if (FileUtil.isArchiveFile(url)) {
+                                        url = FileUtil.getArchiveRoot(url);
+                                        FileObject fo = URLMapper.findFileObject(url);
+                                        if (fo != null) {
+                                            fo = fo.getFileObject("src");   //NOI18N
+                                            if (fo != null) {
+                                                url = fo.toURL();
+                                            }
+                                        }
+                                        result.add (ClassPathSupport.createResource(url));
+                                    } else {
+                                        result.add (ClassPathSupport.createResource(url));
+                                    }
+                                } catch (IllegalArgumentException | MalformedURLException mue) {
+                                    throw new IllegalStateException(mue);
+                                }
+                            } else {
+                                throw new IllegalStateException();
+                            }
                         }
-                    } catch (IllegalArgumentException mue) {
-                        throw new IllegalStateException(mue);
-                    } catch (MalformedURLException mue) {
-                        throw new IllegalStateException(mue);
                     }
-                } else {
-                    throw new IllegalStateException();
+                } catch (MalformedURLException e) {
+                    throw new IllegalStateException(e);
                 }
             }
             return result;
@@ -777,17 +771,24 @@ public class DetectPanel extends javax.swing.JPanel {
                             }
                         }
                     }
-                } catch (MalformedURLException e) {
-                    throw new IllegalStateException(e);
-                } catch (URISyntaxException e) {
+                } catch (MalformedURLException | URISyntaxException e) {
                     throw new IllegalStateException(e);
                 }
             }
             return result;
         }
+
+        @NonNull
+        private static List<URL> cpToUrls(@NonNull final ClassPath cp) {
+            final List<URL> result = new ArrayList<>();
+            for (ClassPath.Entry entry : cp.entries()) {
+                result.add(entry.getURL());
+            }
+            return result;
+        }
         
         @NonNull
-        private static String javadocToString(@NonNull final List<URL> path) {
+        private static String urlsToString(@NonNull final List<URL> path) {
             final StringBuilder result = new StringBuilder();
             for (final URL jdocRoot : path) {
                 try {
