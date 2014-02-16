@@ -279,4 +279,8 @@ public class JsCodeCompletionTest extends JsCodeCompletionBase {
     public void testIssue240914_04() throws Exception {
         checkCompletion("testfiles/completion/issue240914.js", "        ^prop1);", false);
     }
+    
+    public void testIssue249454() throws Exception {
+        checkCompletion("testfiles/model/person.js", "this.^dirtFactor++;", false);
+    }
 }
