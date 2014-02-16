@@ -44,6 +44,7 @@
 
 package org.openide.filesystems;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.EventObject;
@@ -221,7 +222,33 @@ public class FileEvent extends EventObject {
         this.atomActionID = atomActionID;
     }
 
-    /** Tests if FileEvent was fired from atomic action.
+    /** Tests if this event has been generated from given atomic action. This can
+     * be used to <em>filter out</em> own changes - when one modifies a file
+     * that one also observes, one can use following trick:
+     * <pre>
+     * <b>class</b> MyAction <b>implements</b> {@link FileSystem.AtomicAction} {
+     *   <b>public void </b>run() throws {@link IOException} {
+     *     // change a file
+     *   }
+     * 
+     *   <b>public boolean</b> equals(Object obj) {
+     *     <b>return</b> obj != null && obj.getClass() == {@link #getClass()};
+     *   }
+     * 
+     *   <b>public int</b> hashCode() {
+     *     return getClass().{@link #hashCode()};
+     *   }
+     * }
+     * 
+     * // later when an event is delivered to {@link FileChangeListener your listener} one can check:
+     * <b>public void</b> fileChangedEvent({@link FileEvent} ev) {
+     *   if (!ev.firedFrom(new MyAction()) {
+     *     // the event is not caused by my action, so react somehow
+     *   }
+     * }
+     * 
+     * </pre>
+     * 
      * @param run is tested atomic action.
      * @return true if fired from run.
      * @since 1.35
