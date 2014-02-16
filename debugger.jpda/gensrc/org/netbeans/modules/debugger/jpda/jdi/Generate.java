@@ -144,6 +144,8 @@ public class Generate {
         ClassTypeExceptions.put("allInterfaces", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));
         ClassTypeExceptions.put("setValue", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class)); // JDWP protocol says that this can be thrown!
         ClassTypeExceptions.put("concreteMethodByName", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));
+        ClassTypeExceptions.put("invokeMethod", Collections.singleton((Class) com.sun.jdi.ObjectCollectedException.class));
+        ClassTypeExceptions.put("newInstance", Collections.singleton((Class) com.sun.jdi.ObjectCollectedException.class));
         EXCEPTIONS_BY_METHODS.put(com.sun.jdi.ClassType.class.getName(), ClassTypeExceptions);
         Map<String, Set<Class>> InterfaceTypeExceptions = new LinkedHashMap<String, Set<Class>>();
         InterfaceTypeExceptions.put("superinterfaces", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));

@@ -101,8 +101,6 @@ public class J2MEPushRegistryPanel extends javax.swing.JPanel {
             public void tableChanged(TableModelEvent tme) {
                 if (classes != null && !classes.containsAll(tableModel.getClasses())) {
                     ((ErrorPanel) errorPanel).setErrorBundleMessage("ERR_CustMIDlets_WrongMIDlets"); //NOI18N
-                } else {
-                    ((ErrorPanel) errorPanel).setErrorBundleMessage(isMIDP10() ? "ERR_Push_NotUsed" : null); //NOI18N
                 }
             }
         });
@@ -168,11 +166,6 @@ public class J2MEPushRegistryPanel extends javax.swing.JPanel {
         tableModel.setDataDelegates(values);
         table.setBackground(UIManager.getDefaults().getColor("Table.background")); //NOI18N
         listSelectionListener.valueChanged(null);
-    }
-    
-    private boolean isMIDP10() {
-        String platformProfile = uiProperties.getProject().evaluator().getProperty(J2MEProjectProperties.PLATFORM_PROFILE);
-        return platformProfile != null && platformProfile.equals("MIDP-1.0"); //NOI18N
     }
 
     /**

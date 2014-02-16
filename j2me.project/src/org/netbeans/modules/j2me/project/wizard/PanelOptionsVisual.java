@@ -100,6 +100,9 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
                 createMainCheckBox.setSelected(lastMainClassCheck);
                 mainClassTextField.setEnabled(lastMainClassCheck);
                 break;
+            case SAMPLE:
+                setBottomPanelAreaVisible(false);
+                break;
         }
 
         mainClassTextField.getDocument().addDocumentListener(this);
@@ -437,7 +440,7 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
 
     @Override
     boolean valid(WizardDescriptor settings) {
-        setBottomPanelAreaVisible(true);
+        setBottomPanelAreaVisible(type != WizardType.SAMPLE);
 
         if (cbSharable.isSelected()) {
             String location = txtLibFolder.getText();

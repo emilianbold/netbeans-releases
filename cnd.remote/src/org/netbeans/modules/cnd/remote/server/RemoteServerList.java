@@ -59,7 +59,6 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
-import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteProjectSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
@@ -67,14 +66,12 @@ import org.netbeans.modules.cnd.spi.remote.ServerListImplementation;
 import org.netbeans.modules.cnd.spi.remote.setup.RemoteSyncFactoryDefaultProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -443,12 +440,18 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
             RemoteUtil.LOGGER.warning("RemoteServerList.isValidExecutable from EDT"); // NOI18N
         }        
         if (!CndPathUtilities.isPathAbsolute(path)) {
+            if (RemoteUtil.isWindows(env) ? 
+                    (path.contains("\\") | path.contains("/")) : //NOI18N
+                    path.contains("/")) { //NOI18N
+                // path contains slashes - don't call 'which'
+                return false;
+            }
             ProcessUtils.ExitStatus res = ProcessUtils.execute(env, "/usr/bin/which", path); // NOI18N
             if (res.isOK()) {
                 path = res.output;
             } else {
                 return false;
-            }
+            }            
         }
         try {
             FileInfoProvider.StatInfo info = FileInfoProvider.stat(env, path, new PrintWriter(System.err)).get();

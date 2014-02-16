@@ -66,6 +66,7 @@ public class CCCompletionTest extends CndBaseTestSuite {
         this.addTestSuite(StaticMembersTestCase.class);
         this.addTestSuite(FriendTestCase.class);
         this.addTestSuite(EnumTestCase.class);
+        this.addTestSuite(EnumTestC_Case.class);
     }
 
     public static Test suite() {

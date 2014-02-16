@@ -2,19 +2,19 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Manage Calibration Data Dialog Box</title>
+<title>CPU Snapshot: Find in Results Dialog Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-02-07</p>
-<p><a id="ManageCalibration.HelpCtx" name="ManageCalibration.HelpCtx"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref402" name="sthref402"></a>
-<h1>Manage Calibration Data Dialog Box</h1>
+<p>Beta Draft: 2014-02-14</p>
+<p><a id="ProfilerUiFindDialog.HelpCtx" name="ProfilerUiFindDialog.HelpCtx"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref404" name="sthref404"></a>
+<h1>CPU Snapshot: Find in Results Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to calibrate the IDE with a specific Java platform. 
+<p>Use to quickly search the results in the CPU snapshot window for a method or class. A <i>CPU snapshot</i> captures data on method call chains, times and invocations. You can take a CPU snapshot when you are analyzing application performance. The snapshot is displayed in the main editor window. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG696">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG780">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
@@ -33,52 +33,10 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t34" headers="r1c1-t34">
-<p>Java platforms available for profiling</p>
+<p>Find What</p>
 </td>
 <td align="left" headers="r2c1-t34 r1c2-t34">
-<p>This table displays a list of the available local and remote Java platforms and the date of the most recent calibration.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t34" headers="r1c1-t34">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Java Platform</p>
-</td>
-<td align="left" headers="r3c1-t34 r1c2-t34">
-<p>This column displays the name of the platform.</p>
-<p>You can add or remove Java platforms in the Java Platform Manager.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t34" headers="r1c1-t34">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Last Calibrated</p>
-</td>
-<td align="left" headers="r4c1-t34 r1c2-t34">
-<p>This column displays the date of the most recent calibration data for the platform.</p>
-<p>No date is displayed if the file containing the calibration data for the platform is missing or corrupted.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t34" headers="r1c1-t34">
-<p>Calibrate</p>
-</td>
-<td align="left" headers="r5c1-t34 r1c2-t34">
-<p>Click to run the calibration process for the selected Java platform.</p>
-<p>The button is disabled if you select a remote Java platform.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t34" headers="r1c1-t34">
-<p>Java Platforms</p>
-</td>
-<td align="left" headers="r6c1-t34 r1c2-t34">
-<p>Click to open the Java Platform Manager to add or remove a Java platform. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2385">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
+<p>Specifies the text that you want to locate in the results in the window</p>
 </td>
 </tr>
 </tbody>
@@ -88,8 +46,24 @@
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG689">
-<param name="text" value="<html><u>&quot;Starting a Profiling Session&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG727">
+<param name="text" value="<html><u>&quot;Taking a Snapshot&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG755">
+<param name="text" value="<html><u>&quot;Analyzing CPU Performance&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG769">
+<param name="text" value="<html><u>&quot;Working with Live Profiling Results&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

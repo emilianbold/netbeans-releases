@@ -2,26 +2,26 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Add Java Platform Wizard: Bootstrap Libraries Page</title>
+<title>Java ME Embedded Project Properties Dialog Box: Platform</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-02-07</p>
-<p><a id="org.netbeans.modules.mobility.cldcplatform.customwizard.ClasspathPanel" name="org.netbeans.modules.mobility.cldcplatform.customwizard.ClasspathPanel"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref722" name="sthref722"></a>
-<h1>Add Java Platform Wizard: Bootstrap Libraries Page</h1>
+<p>Beta Draft: 2014-02-14</p>
+<p><a id="org.netbeans.modules.j2me.project.ui.customizer.J2MEPlatformPanel" name="org.netbeans.modules.j2me.project.ui.customizer.J2MEPlatformPanel"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref724" name="sthref724"></a>
+<h1>Java ME Embedded Project Properties Dialog Box: Platform</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to specify the classpaths of libraries used by a custom (non-UEI compliant) emulator platform. 
+<p>Use to view and modify the emulator platform properties of a project configuration. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1641">
-<param name="text" value="<html><u>How?</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1615">
+<param name="text" value="<html><u>More</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 
-<table summary="Descriptions of elements on Bootstrap Libraries page of the Add Java Platform wizard." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<table summary="Descriptions of elements on the Platform page of the project properties dialog box." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="31%" />
 <col width="*" />
 <thead>
@@ -33,19 +33,68 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t24" headers="r1c1-t24">
-<p>Bootstrap Libraries</p>
+<p>JDK Path</p>
 </td>
 <td align="left" headers="r2c1-t24 r1c2-t24">
-<p>Displays the libraries and APIs used by the platform that the IDE detects.</p>
-<p>Click <b>Add</b> and navigate to the library file to add another library. Select a library and click <b>Remove</b> to remove it from the platform.</p>
+<p>Specifies the target JDK.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t24" headers="r1c1-t24">
-<p>Detected APIs</p>
+<p>Java ME Platform</p>
 </td>
 <td align="left" headers="r3c1-t24 r1c2-t24">
-<p>Displays the device profiles, device profiles, and any optional APIs supported by the platform.</p>
+<p>Selects the emulator platform from all platforms that have been added to the IDE.</p>
+<p>Click <b>Manage Platforms</b> to perform the following operations:</p>
+<ul>
+<li>Add or remove available platforms</li>
+<li>View the platform classpath</li>
+<li>View the list of devices provided by the platform</li>
+<li>Add or remove platform source files</li>
+<li>Add or remove java documentation sources</li>
+</ul>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t24" headers="r1c1-t24">
+<p>Configuration</p>
+</td>
+<td align="left" headers="r4c1-t24 r1c2-t24">
+<p>Enables you to create a project configuration other than the default configuration.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t24" headers="r1c1-t24">
+<p>Device</p>
+</td>
+<td align="left" headers="r5c1-t24 r1c2-t24">
+<p>Selects the device emulator the IDE uses to simulate application performance when the project is executed.</p>
+<p>The drop-down menu lists all device emulators available on the selected emulator platform.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t24" headers="r1c1-t24">
+<p>Configuration</p>
+</td>
+<td align="left" headers="r6c1-t24 r1c2-t24">
+<p>Specifies the version of the Connected, Limited Device Connection (CLDC) supported by the emulator platform.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t24" headers="r1c1-t24">
+<p>Profile</p>
+</td>
+<td align="left" headers="r7c1-t24 r1c2-t24">
+<p>Specifies the version of the Micro Edition Embedded Profile (MEEP) supported by the emulator platform.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t24" headers="r1c1-t24">
+<p>Optional Packages</p>
+</td>
+<td align="left" headers="r8c1-t24 r1c2-t24">
+<p>Lists the optional packages and APIs supported by the selected emulator platform and emulator device.</p>
+<p>You can select or deselect any of the listed packages to test your target device under differing conditions.</p>
 </td>
 </tr>
 </tbody>
@@ -55,8 +104,8 @@
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1640">
-<param name="text" value="<html><u>&quot;Using Java ME Emulator Platforms&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1558">
+<param name="text" value="<html><u>&quot;Creating Java ME Projects&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

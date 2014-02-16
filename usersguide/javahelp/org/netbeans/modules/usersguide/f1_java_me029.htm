@@ -2,32 +2,26 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>New Localization Support Class Wizard: Name and Location Page</title>
+<title>Java ME Embedded Project Properties Dialog Box: Documenting</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-02-07</p>
-<p><a id="org.netbeans.modules.mobility.project.ui.wizard.i18n.LocalizationSupportPanel" name="org.netbeans.modules.mobility.project.ui.wizard.i18n.LocalizationSupportPanel"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref728" name="sthref728"></a>
-<h1>New Localization Support Class Wizard: Name and Location Page</h1>
+<p>Beta Draft: 2014-02-14</p>
+<p><a id="org.netbeans.modules.j2me.project.ui.customizer.J2MEJavadocPanel" name="org.netbeans.modules.j2me.project.ui.customizer.J2MEJavadocPanel"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref730" name="sthref730"></a>
+<h1>Java ME Embedded Project Properties Dialog Box: Documenting</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to create the two key files necessary for localization:</p>
-<ul>
-<li>A Java class with the code that initializes localization</li>
-<li>
-<p>A properties file where message keys and their localized values are stored. 
+<p>Use to configure how the IDE generates Javadoc documentation for each of your projects. For each of your projects, you can produce a set of Javadoc HTML pages that describe the project's classes, inner classes, interfaces, constructors, methods, and fields. The Javadoc is constructed from the structure of your code and the Javadoc comments embedded in your code. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1597">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1584">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
-</li>
-</ul>
 
-<table summary="Descriptions of fields in Name and Location page of the New Localization Support Class wizard." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<table summary="Descriptions of elements in Generating Javadoc page of Project Properties dialog box." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="33%" />
 <col width="*" />
 <thead>
@@ -39,80 +33,87 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t30" headers="r1c1-t30">
-<p>Class Name</p>
+<p>Include Private and Package Private Members.</p>
 </td>
 <td align="left" headers="r2c1-t30 r1c2-t30">
-<p>Specifies the name of the new Java class that provides the code for localization.</p>
+<p>Indicates that private and package private members are documented.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t30" headers="r1c1-t30">
-<p>Messages Bundle Name</p>
+<p>Generate</p>
 </td>
 <td align="left" headers="r3c1-t30 r1c2-t30">
-<p>Specifies the name of the file that is used to store message keys and their values for localization.</p>
+<p>Includes the selected elements in the generated HTML document such as index, navigation bar, class hierarchical tree, and such.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t30" headers="r1c1-t30">
-<p>Project</p>
+<p>Document Additional Tags</p>
 </td>
 <td align="left" headers="r4c1-t30 r1c2-t30">
-<p>Displays the name of the project selected in the previous step.</p>
-<p>This field is not editable.</p>
+<p>Documents the selected tags.</p>
+<p>The tags listed are not documented by default.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t30" headers="r1c1-t30">
-<p>Package</p>
+<p>@author</p>
 </td>
 <td align="left" headers="r5c1-t30 r1c2-t30">
-<p>Specifies the location of the created Java class.</p>
-<p>You can select an existing package from the drop-down list or type in the name of a new package. The new package is created along with the class file when it is created.</p>
+<p>Documents the author tag.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t30" headers="r1c1-t30">
-<p>Created Class File</p>
+<p>@version</p>
 </td>
 <td align="left" headers="r6c1-t30 r1c2-t30">
-<p>Displays the full path and name of the localization support class name. The name is based on the values entered in the Localization Support Class Name and Package fields.</p>
-<p>This field is not editable.</p>
+<p>Documents the version tag.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r7c1-t30" headers="r1c1-t30">
-<p>Created Bundle File</p>
+<p>Browser Window Title</p>
 </td>
 <td align="left" headers="r7c1-t30 r1c2-t30">
-<p>Displays the location of the created bundle file. The file name is based on the values entered in the Messages Bundle Name and Package fields. The filename has the default extension <code>.properties</code>.</p>
+<p>Displays the title in the browser window used to view the generated document. You must enter the title to be placed in the <code>&lt;title&gt;</code> tag of the generated HTML document.</p>
+<p>This checkbox corresponds to the <code>-windowtitle</code> Javadoc option.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r8c1-t30" headers="r1c1-t30">
-<p>Default String Value</p>
+<p>Additional Javadoc Options</p>
 </td>
 <td align="left" headers="r8c1-t30 r1c2-t30">
-<p>Specifies the default text that displays in the MIDlet when localization is not successfully initialized.</p>
+<p>Adds additional Javadoc options separated with a space.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r9c1-t30" headers="r1c1-t30">
-<p>Error Message</p>
+<p>Preview Generated Javadoc</p>
 </td>
 <td align="left" headers="r9c1-t30 r1c2-t30">
-<p>Specifies a default error message that displays when the localization is not successfully initialized.</p>
+<p>Indicates that when Javadoc is generated, a browser is opened displaying the generated documents</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
+<p>For more information on the Java API Documentation Generator, see: <code>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://docs.oracle.com/javase/7/docs/technotes/tools/windows/javadoc.html">
+<param name="text" value="<html><u>http://docs.oracle.com/javase/7/docs/technotes/tools/windows/javadoc.html</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</code>.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1597">
-<param name="text" value="<html><u>&quot;Adding Localization Support to a MIDP Application&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG461">
+<param name="text" value="<html><u>&quot;Adding Javadoc to a Project&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

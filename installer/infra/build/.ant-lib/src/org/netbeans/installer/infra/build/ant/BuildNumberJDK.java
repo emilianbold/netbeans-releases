@@ -100,11 +100,26 @@ public class BuildNumberJDK extends Task {
                 getProject().setProperty("jdk.version.number", jdkVersion); // NOI18N
                 getProject().setProperty("jdk.update.number", jdkUpdate); // NOI18N
                 getProject().setProperty("jdk.ea.text", jdkEaText); // NOI18N
-                getProject().setProperty("jdk.build.number", jdkBuildNumber); // NOI18N
-                
+                getProject().setProperty("jdk.build.number", jdkBuildNumber); // NOI18N                
             } else {
-                throw new BuildException(
-                        "Cannot parse the input file " + file); // NOI18N
+                // In case there is no update number                
+                matcher = PATTERN_NO_UPDATE.matcher(contents);
+                
+                if (matcher.find()) {
+                    System.out.println("###: GROUP COUNT: " + matcher.groupCount());
+                    String jdkVersion = matcher.group(1);               
+                    String jdkBuildType = matcher.group(2);
+                    String jdkBuildNumber = matcher.group(3);
+                    String jdkEaText = "fcs".equals(jdkBuildType) ? "" : "ea-"; // NOI18N
+
+                    getProject().setProperty("jdk.version.number", jdkVersion); // NOI18N
+                    getProject().setProperty("jdk.ea.text", jdkEaText); // NOI18N
+                    getProject().setProperty("jdk.build.number", jdkBuildNumber); // NOI18N    
+                    getProject().setProperty("jdk.update.number", "0"); // NOI18N
+                } else {          
+                    throw new BuildException(
+                            "Cannot parse the input file " + file); // NOI18N
+                }
             }
         } catch (IOException e) {
             throw new BuildException(e);
@@ -119,6 +134,14 @@ public class BuildNumberJDK extends Task {
      */
     private static final Pattern PATTERN = Pattern.compile(
             "jdk-([0-9]+)u([0-9]+)-([a-z]+)-bin-" + // NOI18N
+            "b(([0-9]+)+)-([A-Za-z0-9_-]+)\\.tar.gz"); // NOI18N
+    
+    /**
+     * Pattern for which to look in the input file. No update number
+     * ${jdk_builds_host}/java/re/jdk/8/promoted/latest/bundles/linux-x64/jdk-8-fcs-bin-b127-linux-x64-29_jan_2014.tar.gz 
+     */
+    private static final Pattern PATTERN_NO_UPDATE = Pattern.compile(
+            "jdk-([0-9]+)-([a-z]+)-bin-" + // NOI18N
             "b(([0-9]+)+)-([A-Za-z0-9_-]+)\\.tar.gz"); // NOI18N
     
 }

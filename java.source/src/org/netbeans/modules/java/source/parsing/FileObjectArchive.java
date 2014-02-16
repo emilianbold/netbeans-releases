@@ -77,7 +77,7 @@ public class FileObjectArchive implements Archive {
         for (FileObject fo : children) {
             if (fo.isData() && (entry == null || entry.includes(fo))) {
                 if (kinds == null || kinds.contains (FileObjects.getKind(fo.getExt()))) {
-                    result.add(FileObjects.nbFileObject(fo, root, filter,false));
+                    result.add(FileObjects.sourceFileObject(fo, root, filter,false));
                 }
             }
         }
@@ -94,7 +94,7 @@ public class FileObjectArchive implements Archive {
     @Override
     public JavaFileObject getFile(String name) throws IOException {
         final FileObject file = root.getFileObject(name);
-        return file == null ? null : FileObjects.nbFileObject(file, root, null, false);
+        return file == null ? null : FileObjects.sourceFileObject(file, root, null, false);
     }
 
 }

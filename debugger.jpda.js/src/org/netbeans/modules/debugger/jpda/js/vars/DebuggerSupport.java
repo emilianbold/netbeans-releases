@@ -216,17 +216,23 @@ public final class DebuggerSupport {
                     return ov.getToStringValue();
                 } catch (InvalidExpressionException ex) {
                 }
-            }
-            JPDAClassType supportClass = supportClasses.get(0);
-            Variable[] args = new Variable[1];
-            try {
-                args[0] = var;
-                var = supportClass.invokeMethod(METHOD_VALUE_AS_STRING, SIGNAT_VALUE_AS_STRING, args);
-            } catch (NoSuchMethodException | InvalidExpressionException ex) {
-                Exceptions.printStackTrace(ex);
+            } else {
+                JPDAClassType supportClass = supportClasses.get(0);
+                Variable[] args = new Variable[1];
                 try {
-                    return ov.getToStringValue();
-                } catch (InvalidExpressionException iex) {
+                    args[0] = var;
+                    var = supportClass.invokeMethod(METHOD_VALUE_AS_STRING, SIGNAT_VALUE_AS_STRING, args);
+                } catch (NoSuchMethodException ex) {
+                    Exceptions.printStackTrace(ex);
+                    try {
+                        return ov.getToStringValue();
+                    } catch (InvalidExpressionException iex) {
+                    }
+                } catch (InvalidExpressionException ex) {
+                    try {
+                        return ov.getToStringValue();
+                    } catch (InvalidExpressionException iex) {
+                    }
                 }
             }
         }

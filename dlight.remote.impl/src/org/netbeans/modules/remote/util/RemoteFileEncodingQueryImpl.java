@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,47 +34,44 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.source.parsing;
+package org.netbeans.modules.remote.util;
 
-import java.io.IOException;
-import javax.tools.JavaFileManager;
-import javax.tools.JavaFileObject;
-import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
+import javax.xml.ws.ServiceMode;
+import org.netbeans.modules.remote.impl.RemoteLogger;
+import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Factory for creating {@link JavaFileObject}s used by the {@link JavacParser}.
- * The unit tests may implement this interface to force the {@link JavacParser} to
- * use different implementation of the {@link JavaFileObject}.
- * @see JavacParser
- * @see JavaFileObject
- * @see JavaFileManager
- * @author Tomas Zezula
+ *
+ * @author vkvashin
  */
-public interface JavaFileObjectProvider {
-    
-    /**
-     * Creates {@link JavaFileObject} for given file under given root.
-     * @param fo for which the {@link JavaFileObject} should be created
-     * @param root the owner root of the file
-     * @param filter used to read the content
-     * @param content of the file object if null, the snapshot from fo is taken
-     * @return the {@link JavaFileObject}
-     * @throws java.io.IOException on io failure.
-     */
-    public JavaFileObject createJavaFileObject (FileObject fo, FileObject root, JavaFileFilterImplementation filter, CharSequence content) throws IOException;
-       
-    /**
-     * Forces the provider to refresh the content of the given file,
-     * @param javaFileObject to be refreshed
-     * @param content of the file object if null, the snapshot from fo is taken
-     * @throws java.io.IOException on io failure.
-     */
-    public void update (JavaFileObject javaFileObject, CharSequence content) throws IOException;
+@ServiceProvider(service = FileEncodingQueryImplementation.class, position = 1000)
+public class RemoteFileEncodingQueryImpl extends FileEncodingQueryImplementation {
+
+    @Override
+    public Charset getEncoding(FileObject file) {
+        if (file instanceof RemoteFileObject) {
+            try {
+                return Charset.forName("UTF-8"); //NOI18N
+            } catch (UnsupportedCharsetException ex) {
+                RemoteLogger.fine(ex);
+            } catch (IllegalCharsetNameException ex) {
+                RemoteLogger.fine(ex);
+            } catch (IllegalArgumentException ex) {
+                RemoteLogger.fine(ex);
+            }
+        }
+        return null;
+    }
 }

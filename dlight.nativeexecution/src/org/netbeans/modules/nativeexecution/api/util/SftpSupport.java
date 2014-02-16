@@ -47,6 +47,7 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.StringWriter;
@@ -100,7 +101,7 @@ class SftpSupport {
     /** for test purposes only */
     /*package-local*/ static int getUploadCount() {
         return uploadCount.get();        
-    }
+    }   
 
     /*package*/ static SftpSupport getInstance(ExecutionEnvironment execEnv) {
         SftpSupport instance;
@@ -568,13 +569,16 @@ class SftpSupport {
             if (path.isEmpty()) { // This make sence when clients ask path for root FileObject
                 path = "/"; //NOI18N
             }
-            assert path.startsWith("/"); //NOI18N
+            softAssertAbsolutePath(path);
             this.path = path;
             this.lstat = lstat;
         }
 
         @Override
         public StatInfo call() throws IOException, CancellationException, JSchException, ExecutionException, InterruptedException, SftpException {
+            if (!path.startsWith("/")) { //NOI18N
+                throw new FileNotFoundException("Path is not absolute: " + path); //NOI18N
+            }
             StatInfo result = null;
             SftpException exception = null;
             if (LOG.isLoggable(Level.FINE)) {
@@ -642,7 +646,7 @@ class SftpSupport {
             return "Getting stat for " + path; //NOI18N
         }
     }
-
+    
     private class LsLoader extends BaseWorker implements Callable<StatInfo[]> {
 
         //private static final int S_IFMT   =  0xF000; //bitmask for the file type bitfields
@@ -650,13 +654,16 @@ class SftpSupport {
         private final String path;
 
         public LsLoader(String path) {
-            assert path.startsWith("/"); //NOI18N
+            softAssertAbsolutePath(path);
             this.path = path;
         }
 
         @Override
         @SuppressWarnings("unchecked")
         public StatInfo[] call() throws IOException, CancellationException, JSchException, ExecutionException, InterruptedException, SftpException {
+            if (!path.startsWith("/")) { //NOI18N
+                throw new FileNotFoundException("Path is not absolute: " + path); //NOI18N
+            }
             List<StatInfo> result = null;
             SftpException exception = null;
             if (LOG.isLoggable(Level.FINE)) {
@@ -796,6 +803,13 @@ class SftpSupport {
         synchronized (channelLock) {
             return maxBusyChannels;
         }
+    }
+    
+    private static void softAssertAbsolutePath(String path) {
+        if (!path.startsWith("/") && LOG.isLoggable(Level.FINE)) { //NOI18N
+            String emsg = "path should be absolute: " + path; //NOI18N
+            LOG.log(Level.FINE, emsg, new IllegalArgumentException(emsg));
+        }        
     }
 }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,25 +37,57 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.source.parsing;
+package org.netbeans.modules.cnd.remote.support;
 
-import org.openide.util.Parameters;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
- * @author Tomas Zezula
+ * @author vkvashin
  */
-public class JavacParserTestUtil {
+public class RemoteLogger {
 
-    public static void setJavacFileObjectProvider (final JavaFileObjectProvider provider) {
-        Parameters.notNull("provider", provider);   //NOI18N
-        JavacParser.jfoProvider = provider;
+    private static final Logger LOGGER = Logger.getLogger("cnd.remote.logger"); //NOI18N
+    
+    private RemoteLogger() {
     }
 
-    public static JavaFileObjectProvider defaultJavaFileObjectProvider () {
-        return new DefaultJavaFileObjectProvider();
+    public static Logger getInstance() {
+        return LOGGER;
     }
+    
+    public static void log(Level level, String message, Object... args) {
+        if (LOGGER.isLoggable(level)) {
+            LOGGER.log(level, message, args);
+        }
+    }
+    
+    public static void severe(String msg, Object... params) {
+        log(Level.SEVERE, msg, params);
+    }
+
+    public static void warning(String msg, Object... params) {
+        log(Level.WARNING, msg, params);
+    }
+
+    public static void info(String msg, Object... params) {
+        log(Level.INFO, msg, params);
+    }
+
+    public static void fine(String msg, Object... params) {
+        log(Level.FINE, msg, params);
+    }
+
+    public static void finer(String msg, Object... params) {
+        log(Level.FINER, msg, params);
+    }
+    
+    public static void finest(String msg, Object... params) {
+        log(Level.FINEST, msg, params);
+    }        
+    
 }

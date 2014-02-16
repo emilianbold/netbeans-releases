@@ -94,7 +94,7 @@ public class NavigatorModel {
     private final Object lock = new Lock();
     private final CsmFile csmFile;
 
-    public NavigatorModel(DataObject cdo, FileObject fo, NavigatorPanelUI ui, NavigatorComponent component, final String mimeType, final CsmFile csmFile) {
+    public NavigatorModel(DataObject cdo, FileObject fo, NavigatorPanelUI ui, final String mimeType, final CsmFile csmFile) {
         this.cdo = cdo;
         this.fo = fo;
         this.ui = ui;
@@ -138,7 +138,9 @@ public class NavigatorModel {
         synchronized(lock) {
             fileModel.clear();
             setChildren(null);
-            ui.selectNodes(new Node[] {});
+            if (ui != null) {
+                ui.selectNodes(new Node[] {});
+            }
         }
     }
     
@@ -188,7 +190,9 @@ public class NavigatorModel {
             }
         }
         if (!canceled.get()) {
-            ui.newContentReady();
+            if (ui != null) {
+                ui.newContentReady();
+            }
         }
     }
 
@@ -209,7 +213,9 @@ public class NavigatorModel {
         synchronized(lock) {
             Node node = fileModel.setSelection(caretLineNo);
             if (node != null) {
-                ui.selectNodes(new Node[]{node});
+                if (ui != null) {
+                    ui.selectNodes(new Node[]{node});
+                }
                 if (jEditorPane == null) {
                     return;
                 }
@@ -625,5 +631,10 @@ public class NavigatorModel {
         public Action getPreferredAction() {
             return new EnableCodeAssistanceAction(project);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "" + cdo;
     }
 }

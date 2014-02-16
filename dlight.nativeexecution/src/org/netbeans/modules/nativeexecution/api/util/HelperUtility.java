@@ -102,8 +102,19 @@ public class HelperUtility {
     }
 
     public final String getPath(final ExecutionEnvironment env, final HostInfo hinfo) throws IOException {
+        //one of the stacks when we come here is (see bz#239059):
+        /*
+        at org.netbeans.modules.nativeexecution.api.util.HelperUtility.getPath(HelperUtility.java:106)
+        at org.netbeans.modules.nativeexecution.support.hostinfo.impl.UnixHostInfoProvider.getRemoteUserEnvironment(UnixHostInfoProvider.java:272)
+        at org.netbeans.modules.nativeexecution.support.hostinfo.impl.UnixHostInfoProvider.getHostInfo(UnixHostInfoProvider.java:115)
+        at org.netbeans.modules.nativeexecution.support.hostinfo.FetchHostInfoTask.compute(FetchHostInfoTask.java:64)
+        at org.netbeans.modules.nativeexecution.api.util.HostInfoUtils.getHostInfo(HostInfoUtils.java:235)
+        at org.netbeans.modules.nativeexecution.api.util.ConnectionManager.initiateConnection(ConnectionManager.java:407)
+        Also the code below and comment (see 235998:3c427e2d4185) says that we can be here erlier then connection is
+        */
         if (!ConnectionManager.getInstance().isConnectedTo(env)) {
-            throw new IllegalStateException(env.toString() + " is not connected"); // NOI18N
+            log.log(Level.FINE, env.toString() + " is not connected", //NOI18N
+                    new IllegalStateException(env.toString() + " is not connected")); // NOI18N
         }
 
         String result;

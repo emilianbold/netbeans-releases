@@ -106,7 +106,7 @@ public class SourceFileManager implements JavaFileManager {
                             if (ignoreExcludes || entry.includes(file)) {
                                 final JavaFileObject.Kind kind = FileObjects.getKind(file.getExt());                                
                                 if (kinds.contains(kind)) {                        
-                                    result.add (SourceFileObject.create(file, root));
+                                    result.add (FileObjects.sourceFileObject(file, root));
                                 }
                             }
                         }
@@ -121,7 +121,7 @@ public class SourceFileManager implements JavaFileManager {
     public javax.tools.FileObject getFileForInput (final Location l, final String pkgName, final String relativeName) {
         final String rp = FileObjects.getRelativePath (pkgName, relativeName);
         final FileObject[] fileRootPair = findFile(rp);
-        return fileRootPair == null ? null : SourceFileObject.create (fileRootPair[0], fileRootPair[1]);
+        return fileRootPair == null ? null : FileObjects.sourceFileObject(fileRootPair[0], fileRootPair[1]);
     }
 
     @Override
@@ -139,7 +139,7 @@ public class SourceFileManager implements JavaFileManager {
                     FileObject[] children = parent.getChildren();
                     for (FileObject child : children) {
                         if (namePair[1].equals(child.getName()) && ext.equalsIgnoreCase(child.getExt()) && (ignoreExcludes || entry.includes(child))) {
-                            return SourceFileObject.create (child, root);
+                            return FileObjects.sourceFileObject(child, root);
                         }
                     }
                 }
@@ -165,10 +165,11 @@ public class SourceFileManager implements JavaFileManager {
             if (rootFile == null) {
                 return null;
             }
-            return FileObjects.nbFileObject(Utilities.toURI(new File(rootFile,FileObjects.convertFolder2Package(rp, File.separatorChar))).toURL(), roots[0]); //Todo: wrap to protect from write
-        }
-        else {
-            return SourceFileObject.create (fileRootPair[0], fileRootPair[1]); //Todo: wrap to protect from write
+            return FileObjects.sourceFileObject(
+                Utilities.toURI(new File(rootFile,FileObjects.convertFolder2Package(rp, File.separatorChar))).toURL(),
+                roots[0]);
+        } else {
+            return FileObjects.sourceFileObject(fileRootPair[0], fileRootPair[1]); //Todo: wrap to protect from write
         }
     }
 
@@ -242,12 +243,13 @@ public class SourceFileManager implements JavaFileManager {
     }
 
     @Override
-    public boolean isSameFile(javax.tools.FileObject fileObject, javax.tools.FileObject fileObject0) {
+    public boolean isSameFile(javax.tools.FileObject a, javax.tools.FileObject b) {
         return
-            fileObject instanceof SourceFileObject  &&
-            fileObject0 instanceof SourceFileObject &&
-            ((SourceFileObject)fileObject).handle.file != null &&
-            ((SourceFileObject)fileObject).handle.file == ((SourceFileObject)fileObject0).handle.file;
+            a instanceof AbstractSourceFileObject  &&
+            b instanceof AbstractSourceFileObject &&
+            ((AbstractSourceFileObject)a).getHandle().file != null &&
+            ((AbstractSourceFileObject)a).getHandle().file.equals(
+                ((AbstractSourceFileObject)b).getHandle().file);
     }
 
     private FileObject[] findFile (final String relativePath) {

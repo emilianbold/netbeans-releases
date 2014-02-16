@@ -2,27 +2,28 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Monitor Application: Advanced Options</title>
+<title>OQL Console: Query Properties Dialog Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-02-07</p>
-<p><a id="MonitorSettings.Advanced.HelpCtx" name="MonitorSettings.Advanced.HelpCtx"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref386" name="sthref386"></a>
-<h1>Monitor Application: Advanced Options</h1>
+<p>Beta Draft: 2014-02-14</p>
+<p><a id="OQLQueryCustomizer.QueryProps.HelpCtx" name="OQLQueryCustomizer.QueryProps.HelpCtx"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref388" name="sthref388"></a>
+<h1>OQL Console: Query Properties Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to create a custom configuration and set more advanced profiling options. 
+<p>Use to modify the properties of custom saved OQL queries and to modify the order that custom saved queries are listed under the Custom node in the Saved Queries pane. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG752">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG793">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
+<p><b>Note:</b> You cannot modify the properties or change the order of the default saved queries that are bundled with the IDE and listed under the Samples node or the PermGen Analysis node.</p>
 
-<table summary="Descriptions of advanced option sfor monitoring an application." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="33%" />
+<table summary="Descriptions of Query Properties dialog box fields." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="34%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
@@ -33,34 +34,18 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t18" headers="r1c1-t18">
-<p>Override Global Settings</p>
+<p>Name</p>
 </td>
 <td align="left" headers="r2c1-t18 r1c2-t18">
-<p>Enables you to override the global settings and specify the following options when profiling the application.</p>
+<p>Modify the name of the query.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t18" headers="r1c1-t18">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Working Directory</p>
+<p>Description</p>
 </td>
 <td align="left" headers="r3c1-t18 r1c2-t18">
-<p>Specifies the directory to become current directory for your application when it starts. For example, you might have to specify a specific working directory when attaching to a local application.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t18" headers="r1c1-t18">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Java Platform</p>
-</td>
-<td align="left" headers="r4c1-t18 r1c2-t18">
-<p>Specifies a target JVM other than the default JVM the IDE is running on. You can choose any Java platforms registered in the Java Platform Manager.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t18" headers="r1c1-t18">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;JVM Arguments</p>
-</td>
-<td align="left" headers="r5c1-t18 r1c2-t18">
-<p>Specifies any arguments to pass on to the JVM, for example, the default maximum heap size.</p>
+<p>(Optional) Modify the description of the query.</p>
 </td>
 </tr>
 </tbody>
@@ -70,24 +55,16 @@
 <hr><p><b>Related Topics</b></p>
 <p>Developing Applications with NetBeans IDE, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG765">
-<param name="text" value="<html><u>&quot;Analyzing Memory Usage&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG783">
+<param name="text" value="<html><u>&quot;Working with Captured Profiling Results&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 <p>Developing Applications with NetBeans IDE, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG689">
-<param name="text" value="<html><u>&quot;Starting a Profiling Session&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p>Developing Applications with NetBeans IDE, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG744">
-<param name="text" value="<html><u>&quot;Setting Profiling Points&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG733">
+<param name="text" value="<html><u>&quot;Taking a Heap Dump&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

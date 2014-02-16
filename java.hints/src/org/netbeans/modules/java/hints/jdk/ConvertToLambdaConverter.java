@@ -94,7 +94,9 @@ public class ConvertToLambdaConverter {
     public void performRewriteToLambda() {
 
         LambdaExpressionTree lambdaTree = getLambdaTreeFromAnonymous(newClassTree, copy);
-        
+        if (lambdaTree == null) {
+            return;
+        }
         if (preconditionChecker.foundShadowedVariable()) {
             TreePath pathToLambda = new TreePath(pathToNewClassTree, lambdaTree);
             renameShadowedVariables(pathToLambda);
@@ -152,7 +154,9 @@ public class ConvertToLambdaConverter {
 
         MethodTree methodTree = getMethodFromFunctionalInterface(newClassTree);
         Tree lambdaBody = getLambdaBody(methodTree, copy);
-
+        if (lambdaBody == null) {
+            return null;
+        }
         return make.LambdaExpression(methodTree.getParameters(), lambdaBody);
     }
 
@@ -163,7 +167,9 @@ public class ConvertToLambdaConverter {
     }
 
     private Tree getLambdaBody(MethodTree methodTree, WorkingCopy copy) {
-
+        if (methodTree.getBody() == null) {
+            return null;
+        }
         TreePath pathToMethodBody = TreePath.getPath(pathToNewClassTree, methodTree.getBody());
 
         //if body is just a return statement, the lambda body should omit the block and return keyword

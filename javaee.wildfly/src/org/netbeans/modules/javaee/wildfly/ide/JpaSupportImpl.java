@@ -52,9 +52,9 @@ import org.netbeans.modules.javaee.specs.support.spi.JpaSupportImplementation;
  * @author Petr Hejl
  */
 class JpaSupportImpl implements JpaSupportImplementation {
-    private final JBJ2eePlatformFactory.J2eePlatformImplImpl platformImpl;
+    private final WildflyJ2eePlatformFactory.J2eePlatformImplImpl platformImpl;
 
-    public JpaSupportImpl(JBJ2eePlatformFactory.J2eePlatformImplImpl platformImpl) {
+    public JpaSupportImpl(WildflyJ2eePlatformFactory.J2eePlatformImplImpl platformImpl) {
         this.platformImpl = platformImpl;
     }
 
@@ -69,14 +69,14 @@ class JpaSupportImpl implements JpaSupportImplementation {
         String defaultProvider = platformImpl.getDefaultJpaProvider();
         boolean jpa2 = true;
         Set<JpaProvider> providers = new HashSet<JpaProvider>();
-        if (platformImpl.containsPersistenceProvider(JBJ2eePlatformFactory.HIBERNATE_JPA_PROVIDER)) {
-            providers.add(JpaProviderFactory.createJpaProvider(JBJ2eePlatformFactory.HIBERNATE_JPA_PROVIDER, JBJ2eePlatformFactory.HIBERNATE_JPA_PROVIDER.equals(defaultProvider), true, jpa2, true));
+        if (platformImpl.containsPersistenceProvider(WildflyJ2eePlatformFactory.HIBERNATE_JPA_PROVIDER)) {
+            providers.add(JpaProviderFactory.createJpaProvider(WildflyJ2eePlatformFactory.HIBERNATE_JPA_PROVIDER, WildflyJ2eePlatformFactory.HIBERNATE_JPA_PROVIDER.equals(defaultProvider), true, jpa2, true));
         }
-        if (platformImpl.containsPersistenceProvider(JBJ2eePlatformFactory.TOPLINK_JPA_PROVIDER)) {
-            providers.add(JpaProviderFactory.createJpaProvider(JBJ2eePlatformFactory.TOPLINK_JPA_PROVIDER, JBJ2eePlatformFactory.TOPLINK_JPA_PROVIDER.equals(defaultProvider), true, false, false));
+        if (platformImpl.containsPersistenceProvider(WildflyJ2eePlatformFactory.TOPLINK_JPA_PROVIDER)) {
+            providers.add(JpaProviderFactory.createJpaProvider(WildflyJ2eePlatformFactory.TOPLINK_JPA_PROVIDER, WildflyJ2eePlatformFactory.TOPLINK_JPA_PROVIDER.equals(defaultProvider), true, false, false));
         }
-        if (platformImpl.containsPersistenceProvider(JBJ2eePlatformFactory.KODO_JPA_PROVIDER)) {
-            providers.add(JpaProviderFactory.createJpaProvider(JBJ2eePlatformFactory.KODO_JPA_PROVIDER, JBJ2eePlatformFactory.KODO_JPA_PROVIDER.equals(defaultProvider), true, false, false));
+        if (platformImpl.containsPersistenceProvider(WildflyJ2eePlatformFactory.KODO_JPA_PROVIDER)) {
+            providers.add(JpaProviderFactory.createJpaProvider(WildflyJ2eePlatformFactory.KODO_JPA_PROVIDER, WildflyJ2eePlatformFactory.KODO_JPA_PROVIDER.equals(defaultProvider), true, false, false));
         }
         return providers;
     }

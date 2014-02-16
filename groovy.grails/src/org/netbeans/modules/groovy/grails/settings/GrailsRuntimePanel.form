@@ -58,6 +58,9 @@
           <ResourceString bundle="org/netbeans/modules/groovy/grails/settings/Bundle.properties" key="SupportPanel.grailsHomeLocation.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="grailsHomeLocationActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="chooseDir">
       <Properties>

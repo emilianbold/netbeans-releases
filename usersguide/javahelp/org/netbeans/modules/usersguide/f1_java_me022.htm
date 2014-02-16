@@ -2,27 +2,21 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Add Java Platform Wizard: General Information Page</title>
+<title>Java ME Embedded Project Properties Dialog Box: Sources</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-02-07</p>
-<p><a id="org.netbeans.modules.mobility.cldcplatform.customwizard.CommandLinesPanel" name="org.netbeans.modules.mobility.cldcplatform.customwizard.CommandLinesPanel"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref721" name="sthref721"></a>
-<h1>Add Java Platform Wizard: General Information Page</h1>
+<p>Beta Draft: 2014-02-14</p>
+<p><a id="org.netbeans.modules.j2me.project.ui.customizer.J2MESourcesPanel" name="org.netbeans.modules.j2me.project.ui.customizer.J2MESourcesPanel"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref723" name="sthref723"></a>
+<h1>Java ME Embedded Project Properties Dialog Box: Sources</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to define the general parameters for an emulator that is not UEI-compliant. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1641">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
+<p>Use to view the location of the project folder, manage source folders, and set the source level of the packages that the IDE uses.</p>
+<p>Use the buttons on the right side of the panel to add, remove, and change the order of classpath elements.</p>
 
-<table summary="Descriptions of elements on General Information page of Add Java Platform Wizard." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="31%" />
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
@@ -33,62 +27,65 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t23" headers="r1c1-t23">
-<p>Platform Home</p>
+<p>Project Folder</p>
 </td>
 <td align="left" headers="r2c1-t23 r1c2-t23">
-<p>Specifies the path to the directory where the emulator platform is installed. You can enter a path, or use the Browse button to navigate to the directory.</p>
+<p>Displays the path to the project folder.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t23" headers="r1c1-t23">
-<p>Platform Name</p>
+<p>Source Package Folders</p>
 </td>
 <td align="left" headers="r3c1-t23 r1c2-t23">
-<p>Specifies a name for the emulator platform.</p>
+<p>Specifies the folder that contains the Java source code for the project. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG372">
+<param name="text" value="<html><u>More</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>You must set the Source Package Folders to the folder that contains the default package.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t23" headers="r1c1-t23">
-<p>Device Name</p>
+<p>Source/Binary Format</p>
 </td>
 <td align="left" headers="r4c1-t23 r1c2-t23">
-<p>Specifies a name for the emulator platform.</p>
+<p>Specifies the JDK version that applies to the lowest Java platform version with which the Java code in your project is compatible. Default options range from JDK 1.3 to 8.</p>
+<p>This setting corresponds to the <code>javac -source</code> option. Setting the source/binary format helps prevent you from using Java language constructs that are not available in the platform version to which you want to deploy. However, setting the source/binary format does not ensure that the platform APIs are used compatibly with that platform version. To make sure that your application is fully compatible with an earlier Java platform version, switch to the <b>Libraries</b> tab and set the Java Platform setting to the minimum version on which you plan to deploy</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t23" headers="r1c1-t23">
-<p>Preverify Command</p>
+<p>Includes/Excludes</p>
 </td>
 <td align="left" headers="r5c1-t23 r1c2-t23">
-<p>Specifies the command line syntax that invokes the emulator to preverify a MIDlet.</p>
+<p>Includes or excludes specific classes in or from compilation.</p>
+<p>In the <b>Configure Includes and Excludes</b> dialog, use <code>regex</code> patterns in the <b>Includes</b> and <b>Excludes</b> fields to specify which classes on the project classpath you want to have compiled. The <b>Included Files</b> and <b>Excluded Files</b> panes list the resources that are compiled based on the supplied patterns.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t23" headers="r1c1-t23">
-<p>Execution Command</p>
+<p>Encoding</p>
 </td>
 <td align="left" headers="r6c1-t23 r1c2-t23">
-<p>Specifies the command line syntax that invokes the emulator to execute a MIDlet.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t23" headers="r1c1-t23">
-<p>Debugger Command</p>
-</td>
-<td align="left" headers="r7c1-t23 r1c2-t23">
-<p>Specifies the command line syntax that invokes the emulator to debug a MIDlet.</p>
+<p>Specifies the character encoding the IDE applies when it saves and displays project source files.</p>
+<p>The project character encoding determines how the IDE interprets characters in your source files. The IDE displays and saves any new files you create using the encoding set by the project in which they reside. The default character encoding used with projects is UTF-8. Use the <b>Encoding</b> drop-down to change the character encoding used with the project.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>To see descriptions of the command line syntax parameters, click in the appropriate field.</p>
+<p><b>Note:</b> Specifying the source/binary format does not change the Java platform. To set the Java Platform from which the tools are used or set the Java ME Platform that is used for compiling and running your project, click <b>Platform</b> and set the JDK Path and Java ME Platform settings accordingly. You cannot set the source/binary format of a project to a higher release than the lower value of the project's JDK or Java ME platform.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1640">
-<param name="text" value="<html><u>&quot;Using Java ME Emulator Platforms&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1558">
+<param name="text" value="<html><u>&quot;Creating Java ME Projects&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

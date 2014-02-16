@@ -343,8 +343,8 @@ public class APTDefineNode extends APTMacroBaseNode implements APTDefine, Serial
                         if (APTUtils.isCommentToken(token.getType())) {
                             // stay in the current state
                         } else if (token.getType() == APTTokenTypes.IDENT) {
-                            // error check: token after # must be parameter
-                            node.stateAndHashCode = isInParamList(token) ? IN_BODY : ERROR;
+                            // error check: token after # must be parameter or it must be # with leading LPAREN
+                            node.stateAndHashCode = (node.stateAndHashCode == IN_BODY_AFTER_LPAREN_AND_SHARP) || isInParamList(token) ? IN_BODY : ERROR;
                         } else {
                             // special case is '(#)' - sharp between parens
                             if (node.stateAndHashCode == IN_BODY_AFTER_LPAREN_AND_SHARP && token.getType() == APTTokenTypes.RPAREN) {

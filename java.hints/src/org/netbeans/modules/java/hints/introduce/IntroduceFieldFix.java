@@ -237,6 +237,9 @@ class IntroduceFieldFix extends IntroduceFixBase implements Fix {
 
                 boolean hasParameterOfTheSameName = false;
                 MethodTree constr = (MethodTree) constructor.getLeaf();
+                if (constr.getBody() == null) {
+                    continue;
+                }
                 for (VariableTree p : constr.getParameters()) {
                     if (name.equals(p.getName().toString())) {
                         hasParameterOfTheSameName = true;

@@ -134,6 +134,9 @@ public class Lambda {
 
         LambdaExpressionTree lambda = (LambdaExpressionTree) ctx.getPath().getLeaf();
         Tree tree = lambda.getBody();
+        if (tree == null) {
+            return null;
+        }
         if (tree.getKind() == Tree.Kind.BLOCK) {
             if (((BlockTree)tree).getStatements().size() == 1) {
                 tree = ((BlockTree)tree).getStatements().get(0);

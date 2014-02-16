@@ -1,7 +1,8 @@
 
 State of macro map:
 Own Map:
-MACROS (sorted 9):
+MACROS (sorted 10):
+<U>#define '["BOOST_SPIRIT_LOG2",<ID>,line=17,col=9],offset=451,file=null'='["(",<LPAREN>,line=17,col=27],offset=469,file=null ["#",<SHARP>,line=17,col=28],offset=470,file=null ["error",<ID>,line=17,col=29],offset=471,file=null [")",<RPAREN>,line=17,col=34],offset=476,file=null ["(",<LPAREN>,line=17,col=35],offset=477,file=null ["#",<SHARP>,line=17,col=36],offset=478,file=null ["error",<ID>,line=17,col=37],offset=479,file=null [")",<RPAREN>,line=17,col=42],offset=484,file=null ["(",<LPAREN>,line=17,col=44],offset=486,file=null ["2",<DECIMALINT>,line=17,col=45],offset=487,file=null [")",<RPAREN>,line=17,col=46],offset=488,file=null ["(",<LPAREN>,line=17,col=48],offset=490,file=null ["3",<DECIMALINT>,line=17,col=49],offset=491,file=null [")",<RPAREN>,line=17,col=50],offset=492,file=null'
 <U>#define '["RELEASE",<ID>,line=1,col=9],offset=8,file=null'='["Sun",<ID>,line=1,col=17],offset=16,file=null'
 <U>#define '["VERSION",<ID>,line=2,col=9],offset=28,file=null'='["10",<DECIMALINT>,line=2,col=17],offset=36,file=null'
 <U>#define '["VER_BUILD_DATE",<ID>,line=4,col=9],offset=75,file=null'='["11",<DECIMALINT>,line=4,col=24],offset=90,file=null ["/",<DIVIDE>,line=4,col=26],offset=92,file=null ["11",<DECIMALINT>,line=4,col=27],offset=93,file=null ["/",<DIVIDE>,line=4,col=29],offset=95,file=null ["2011",<DECIMALINT>,line=4,col=30],offset=96,file=null'
@@ -19,6 +20,7 @@ MACROS (sorted 0):
 Includes:
     <no includes>
 Macros:
+#define 'BOOST_SPIRIT_LOG2' [17:1/443-17:51/493]
 #define 'RELEASE' [1:1/0-1:20/19]
 #define 'VERSION' [2:1/20-2:19/38]
 #define 'VER_BUILD_DATE' [4:1/67-4:34/100]

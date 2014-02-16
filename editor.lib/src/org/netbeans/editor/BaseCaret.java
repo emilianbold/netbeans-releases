@@ -1470,7 +1470,7 @@ AtomicLockListener, FoldHierarchyListener {
         }
 
         JTextComponent c = component;
-        if (isLeftMouseButtonExt(evt)) {
+        if (c != null && isLeftMouseButtonExt(evt)) {
             // Expand fold if offset is in collapsed fold
             int offset = mouse2Offset(evt);
             switch (evt.getClickCount()) {

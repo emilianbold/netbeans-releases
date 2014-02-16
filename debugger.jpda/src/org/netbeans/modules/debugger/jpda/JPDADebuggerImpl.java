@@ -2305,6 +2305,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 String stratum = f.getDefaultStratum ();
                 //String sourceDebugExtension;
                     //sourceDebugExtension = (String) f.getClass().getMethod("getSourceDebugExtension").invoke(f);
+                /* This was moved to CallStackFrameImpl.
                 if (l.size() == 1 && "Java".equals(l.get(0))) {     // NOI18N
                     // Hack for non-Java languages that do not define stratum:
                     String sourceName = f.getSourceName(null);
@@ -2323,7 +2324,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                             stratum = "JS";
                         }
                     }
-                }
+                }*/
                 int i, k = l.size ();
                 for (i = 0; i < k; i++) {
                     if (!languages.contains (l.get (i))) {

@@ -68,7 +68,7 @@ public class FindWizardPanel implements WizardDescriptor.FinishablePanel {
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx(DetectWizardPanel.class);
+        return new HelpCtx("org.netbeans.modules.mobility.cldcplatform.wizard.FindWizardPanel");
     }
     
     public void readSettings(final Object object) {

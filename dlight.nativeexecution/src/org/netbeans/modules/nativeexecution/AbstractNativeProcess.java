@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.Callable;
@@ -616,5 +617,13 @@ public abstract class AbstractNativeProcess extends NativeProcess implements ExP
 
         infoProviderSearchTask = NativeTaskExecutorService.submit(callable,
                 "get info provider for process " + pid); // NOI18N
+    }
+
+    String getCharset() {
+        Charset charset = info.getCharset();
+        if (charset != null) {
+            return charset.name();
+        }
+        return null;
     }
 }

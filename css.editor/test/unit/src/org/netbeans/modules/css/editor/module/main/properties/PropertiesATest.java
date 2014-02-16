@@ -253,7 +253,7 @@ public class PropertiesATest extends CssModuleTestBase {
         assertCssCode(code);
     }
 
-//    //Bug 206035 
+//    //Bug 206035
 //    public void testCaseMin30() throws ParseException {
 //        String code = "#search-form .text{background:#fff url(../images/google) no-repeat center left;min-width:2em;}";
 //        assertCssCode(code);
@@ -1144,19 +1144,19 @@ public class PropertiesATest extends CssModuleTestBase {
         assertCssCode(code);
     }
 
-//    //Bug 206035 
+//    //Bug 206035
 //    public void testCaseAdv1() throws ParseException {
 //        String code = "/*!* Source in advanced-src.css */ body{font-size:.82em;background:#fff url(../images/page/page_bkg.jpg) repeat-x top left;}";
 //        assertCssCode(code);
 //    }
 
-//    //Bug 206035 
+//    //Bug 206035
 //    public void testCaseAdv2() throws ParseException {
 //        String code = "body.w3c_member{background-image:url(../images/page/page_bkg_member.jpg);}";
 //        assertCssCode(code);
 //    }
 
-//    //Bug 206035 
+//    //Bug 206035
 //    public void testCaseAdv3() throws ParseException {
 //        String code = "body.w3c_team{background-image:url(../images/page/page_bkg_team.jpg);}";
 //        assertCssCode(code);
@@ -1782,7 +1782,7 @@ public class PropertiesATest extends CssModuleTestBase {
         assertCssCode(code);
     }
 
-//    //Bug 206035 
+//    //Bug 206035
 //    public void testCaseAdv128() throws ParseException {
 //        String code = ".theme .icon{background:url(../images/theme-all.png) no-repeat left top;height:22px;width:22px;display:block;float:left;margin-right:10px;-moz-border-radius:5px;}";
 //        assertCssCode(code);
@@ -1838,7 +1838,7 @@ public class PropertiesATest extends CssModuleTestBase {
         assertCssCode(code);
     }
 
-//    //Bug 206035 
+//    //Bug 206035
 //    public void testCaseAdv139() throws ParseException {
 //        String code = ".theme_ext .icon{background:#FFC0CB url(../images/icon_sprite.png) no-repeat 0 0;height:44px;width:44px;display:block;position:absolute;top:28px;left:20px;}";
 //        assertCssCode(code);
@@ -2484,13 +2484,13 @@ public class PropertiesATest extends CssModuleTestBase {
         assertCssCode(code);
     }
 
-//    //Bug 206035 
+//    //Bug 206035
 //    public void testCaseAdv268() throws ParseException {
 //        String code = "#w3c_main .plans li a.call-to-action{font-family:\"Helvetica Neue\",Helvetica,Arial,Verdana,Geneva,sans-serif;font-size:80%;letter-spacing:.5px;-moz-border-radius:23px;-webkit-border-radius:23px;border-radius:23px;-moz-box-shadow:0 1px 2px rgba(0,0,0,0.5);-webkit-box-shadow:0 1px 2px rgba(0,0,0,0.5);box-shadow:0 1px 2px rgba(0,0,0,0.5);background-color:#bbb;background-image:-webkit-gradient(linear,0% 0,0% 100%,from(#fff),to(#bbb));background-image:-moz-linear-gradient(0% 100% 90deg,#bbb,#fff);border:none;color:#555;font-weight:bold;padding:6px 15px;text-shadow:0 1px 1px rgba(255,255,255,0.85);}";
 //        assertCssCode(code);
 //    }
 
-//    //Bug 206035 
+//    //Bug 206035
 //    public void testCaseAdv269() throws ParseException {
 //        String code = "#w3c_main .plans li a.call-to-action.external{background-color:#95BFD2;background-image:-webkit-gradient(linear,0% 0,0% 100%,from(#fff),to(#95BFD2));background-image:-moz-linear-gradient(0% 100% 90deg,#95BFD2,#fff);}";
 //        assertCssCode(code);
@@ -2663,6 +2663,16 @@ public class PropertiesATest extends CssModuleTestBase {
 
     public void testCaseAdv304() throws ParseException {
         String code = "#w3c_main .w3c_plans h2[id]+ul li{line-height:1.35em;}";
+        assertCssCode(code);
+    }
+
+    public void testIssue241560_01() throws ParseException {
+        String code = "#foo {height: inherit;}";
+        assertCssCode(code);
+    }
+
+    public void testIssue241560_02() throws ParseException {
+        String code = "#foo {width: inherit;}";
         assertCssCode(code);
     }
 }

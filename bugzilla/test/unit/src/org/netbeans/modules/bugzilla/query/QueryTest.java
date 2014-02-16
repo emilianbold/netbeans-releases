@@ -373,9 +373,9 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
     }
 
     private void save(QueryController c) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        Method m = c.getClass().getDeclaredMethod("onSave", boolean.class);
+        Method m = c.getClass().getDeclaredMethod("onSave");
         m.setAccessible(true);
-        m.invoke(c, false);
+        m.invoke(c);
     }
 
     private void remove(QueryController c) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {

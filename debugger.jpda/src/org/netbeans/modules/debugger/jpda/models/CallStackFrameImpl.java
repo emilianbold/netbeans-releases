@@ -121,6 +121,8 @@ public class CallStackFrameImpl implements CallStackFrame {
     private volatile Operation  currentOperation;
     private final EqualsInfo    equalsInfo;
     private boolean             valid;
+    private String              stratum;
+    private List<String>        availableStrata;
     
     public CallStackFrameImpl (
         JPDAThreadImpl      thread,
@@ -242,20 +244,10 @@ public class CallStackFrameImpl implements CallStackFrame {
     */
     public synchronized String getDefaultStratum () {
         if (!valid && sfLocation == null) return "";
-        try {
-            Location l = getStackFrameLocation();
-            return ReferenceTypeWrapper.defaultStratum(LocationWrapper.declaringType(l));
-        } catch (InvalidStackFrameExceptionWrapper ex) {
-            // this stack frame is not available or information in it is not available
-            valid = false;
-            return "";
-        } catch (ObjectCollectedExceptionWrapper ex) {
-            return "";
-        } catch (VMDisconnectedExceptionWrapper ex) {
-            return "";
-        } catch (InternalExceptionWrapper ex) {
-            return "";
+        if (stratum == null) {
+            initStrata();
         }
+        return stratum;
     }
 
     /**
@@ -265,20 +257,61 @@ public class CallStackFrameImpl implements CallStackFrame {
     */
     public synchronized List<String> getAvailableStrata () {
         if (!valid && sfLocation == null) return Collections.emptyList();
+        if (availableStrata == null) {
+            initStrata();
+        }
+        return availableStrata;
+    }
+    
+    private synchronized void initStrata() {
+        String s;
+        List<String> as;
         try {
             Location l = getStackFrameLocation();
-            return ReferenceTypeWrapper.availableStrata(LocationWrapper.declaringType(l));
+            s = ReferenceTypeWrapper.defaultStratum(LocationWrapper.declaringType(l));
+            as = ReferenceTypeWrapper.availableStrata(LocationWrapper.declaringType(l));
         } catch (InvalidStackFrameExceptionWrapper ex) {
             // this stack frame is not available or information in it is not available
             valid = false;
-            return Collections.emptyList();
+            s = "";
+            as = Collections.emptyList();
         } catch (ObjectCollectedExceptionWrapper ex) {
-            return Collections.emptyList();
+            s = "";
+            as = Collections.emptyList();
         } catch (VMDisconnectedExceptionWrapper ex) {
-            return Collections.emptyList();
+            s = "";
+            as = Collections.emptyList();
         } catch (InternalExceptionWrapper ex) {
-            return Collections.emptyList();
+            s = "";
+            as = Collections.emptyList();
         }
+        //String sourceDebugExtension;
+            //sourceDebugExtension = (String) f.getClass().getMethod("getSourceDebugExtension").invoke(f);
+        if (as.size() == 1 && "Java".equals(as.get(0))) {     // NOI18N
+            // Hack for non-Java languages that do not define stratum:
+            try {
+            String sourceName = getSourceName(null);
+            int ext = sourceName.lastIndexOf('.');
+            if (ext > 0) {
+                String extension = sourceName.substring(++ext);
+                extension = extension.toUpperCase();
+                if (!"JAVA".equals(extension)) {    // NOI18N
+                    as = Collections.singletonList(extension);
+                    s = extension;
+                }
+            } else if ("<eval>".equals(sourceName)) {                           // NOI18N
+                // Check Nashorn:
+                String sourcePath = getSourcePath(null);
+                if ("jdk/nashorn/internal/scripts/<eval>".equals(sourcePath) ||
+                    "jdk\\nashorn\\internal\\scripts\\<eval>".equals(sourcePath)) {    // NOI18N
+                    s = "JS";                                                   // NOI18N
+                    as = Collections.singletonList(s);
+                }
+            }
+            } catch (AbsentInformationException aiex) {}
+        }
+        this.stratum = s;
+        this.availableStrata = as;
     }
 
     /**

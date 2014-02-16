@@ -51,6 +51,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -88,6 +89,8 @@ import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheMap;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
@@ -106,7 +109,7 @@ public class CsmContextUtilities {
     /** Creates a new instance of CsmScopeUtilities */
     private CsmContextUtilities() {
     }
-    
+
     public static List<CsmDeclaration> findLocalDeclarations(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
         return findLocalDeclarations(context, strPrefix, match, caseSensitive, true/*include file locals*/, false/*include function locals*/);
     }
@@ -118,7 +121,7 @@ public class CsmContextUtilities {
     public static List<CsmDeclaration> findFileLocalVariables(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
         return findLocalDeclarations(context, strPrefix, match, caseSensitive, true/*include file locals*/, false/*exclude function locals*/);
     }
-    
+
     public static List<CsmDeclaration> findFunctionLocalVariables(CsmContext context) {
         List<CsmDeclaration> decls = findFunctionLocalDeclarations(context, "", false, false);
         List<CsmDeclaration> out = new ArrayList<CsmDeclaration>(decls.size());
@@ -127,7 +130,7 @@ public class CsmContextUtilities {
                 out.add(elem);
             }
         }
-        return out;        
+        return out;
     }
 
     public static List<CsmDeclaration> findFunctionLocalDeclarations(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
@@ -191,7 +194,7 @@ public class CsmContextUtilities {
         }
         return res;
     }
-    
+
     private static void getFileLocalMacros(CsmFile file, List<CsmMacro> res, Set<CharSequence> alredyInList,
             CharSequence strPrefix, boolean match, boolean caseSensitive){
         CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(strPrefix, match, caseSensitive, false);
@@ -234,10 +237,10 @@ public class CsmContextUtilities {
                     getFileLocalMacros((CsmFile)i.next(), res, alredyInList, strPrefix, match, caseSensitive);
                 }
             }
-            
+
         }
     }
-    
+
     private static void gatherIncludeMacros(CsmFile file, CsmProject prj, boolean own,
             Set<CsmFile> visitedFiles, Set<CharSequence> alredyInList,
             List<CsmMacro> res, CharSequence strPrefix, boolean match, boolean caseSensitive) {
@@ -276,7 +279,7 @@ public class CsmContextUtilities {
                 // check if something changed
                 if (!includeFileLocal) {
                     assert (includeFunctionVars);
-                    // if it wasn't necessary to include all file local variables, but now 
+                    // if it wasn't necessary to include all file local variables, but now
                     // we jump in function => mark that from now include all
                     if (CsmKindUtilities.isFunction(entry.getScope())) {
                         incAll = include = true;
@@ -312,7 +315,7 @@ public class CsmContextUtilities {
         List<CsmDeclaration> newList = findEntryDeclarations(entry, fullContext, strPrefix, match, caseSensitive);
         return mergeDeclarations(decls, newList);
     }
-    
+
     private static List<CsmDeclaration> findEntryDeclarations(CsmContext.CsmContextEntry entry, CsmContext fullContext,
                                                                 String strPrefix, boolean match, boolean caseSensitive) {
         assert (entry != null) : "can't work on null entries";
@@ -342,7 +345,7 @@ public class CsmContextUtilities {
         }
         return resList;
     }
-  
+
     public static CsmFilter createFilter(final CsmDeclaration.Kind[] kinds, final String strPrefix,
             final boolean match, boolean caseSensitive, final boolean returnUnnamedMembers){
         CsmFilter filter = null;
@@ -367,7 +370,7 @@ public class CsmContextUtilities {
             int offsetInScope = entry.getOffset();
             if (CsmKindUtilities.isFile(scope)){
                 CsmFile file = (CsmFile)scope;
-                CsmFilter fileFilter = createFilter(new CsmDeclaration.Kind[] {CsmDeclaration.Kind.ENUM, CsmDeclaration.Kind.NAMESPACE_DEFINITION, 
+                CsmFilter fileFilter = createFilter(new CsmDeclaration.Kind[] {CsmDeclaration.Kind.ENUM, CsmDeclaration.Kind.NAMESPACE_DEFINITION,
                     CsmDeclaration.Kind.CLASS, CsmDeclaration.Kind.STRUCT},
                                    null, match, caseSensitive, true);
                 for (Iterator itFile = CsmSelect.getDeclarations(file, fileFilter); itFile.hasNext();) {
@@ -377,13 +380,13 @@ public class CsmContextUtilities {
                     }
                     if (CsmKindUtilities.isEnum(decl)) {
                         CsmEnum en = (CsmEnum)decl;
-                        if (!en.isStronglyTyped() && en.getName().length()==0){
+                        if (!context.isCpp() || !en.isStronglyTyped() && en.getName().length()==0){
                             addEnumerators(res, en, strPrefix, match, caseSensitive);
                         }
                     } else if (CsmKindUtilities.isNamespaceDefinition(decl) && decl.getName().length()==0){
                         CsmNamespaceDefinition ns = (CsmNamespaceDefinition)decl;
                         CsmFilter filter = createFilter(new CsmDeclaration.Kind[] {CsmDeclaration.Kind.ENUM},
-                                strPrefix, match, caseSensitive, true);
+                                null, match, caseSensitive, true);
                         for(Iterator i = CsmSelect.getDeclarations(ns, filter); i.hasNext();){
                             CsmDeclaration nsDecl = (CsmDeclaration) i.next();
                             if (canBreak(offsetInScope, nsDecl, context)) {
@@ -396,15 +399,16 @@ public class CsmContextUtilities {
                                 }
                             }
                         }
-                    } else if (CsmKindUtilities.isClass(decl) && decl.getName().length()==0){
+                    } else if (CsmKindUtilities.isClass(decl) &&
+                               (!context.isCpp() || decl.getName().length()==0)){
                         CsmClass cls = (CsmClass) decl;
                         for (CsmMember member : cls.getMembers()) {
                             if (canBreak(offsetInScope, member, context)) {
                                 break;
-                            }                            
+                            }
                             if (CsmKindUtilities.isEnum(member)) {
                                 CsmEnum en = (CsmEnum)member;
-                                if (!en.isStronglyTyped() && en.getName().length()==0){
+                                if (!context.isCpp() || !en.isStronglyTyped() && en.getName().length()==0){
                                     addEnumerators(res, en, strPrefix, match, caseSensitive);
                                 }
                             }
@@ -425,7 +429,7 @@ public class CsmContextUtilities {
             }
         }
     }
-    
+
     private static boolean canBreak(int offsetInScope, CsmScopeElement elem, CsmContext fullContext) {
         // break if element already is in context
         // or element is after offset
@@ -436,9 +440,9 @@ public class CsmContextUtilities {
         }
         return isInContext(fullContext, elem);
     }
-    
+
     private static List<CsmDeclaration> mergeDeclarations(List<CsmDeclaration> prevScopeDecls, List<CsmDeclaration> newScopeDecls) {
-        // new scope elements have priority 
+        // new scope elements have priority
         List<CsmDeclaration> res = new ArrayList<CsmDeclaration>();
         if (newScopeDecls != null && newScopeDecls.size() > 0) {
             res.addAll(newScopeDecls);
@@ -454,13 +458,13 @@ public class CsmContextUtilities {
 //            context.setLastObject(obj);
 //        }
 //    }
-    
+
     public static void updateContextObject(CsmObject obj, int offset, CsmContext context) {
         if (context != null && obj != null) {
             context.setLastObject(obj);
         }
     }
-    
+
 //    public static void updateContext(CsmObject obj, CsmContext context) {
 //        if (context != null && CsmKindUtilities.isScope(obj)) {
 //            context.add((CsmScope)obj);
@@ -468,7 +472,7 @@ public class CsmContextUtilities {
 //            updateContextObject(obj, context);
 //        }
 //    }
-    
+
     public static void updateContext(CsmObject obj, int offset, CsmContext context) {
         if (context != null) {
             if (CsmKindUtilities.isScope(obj)) {
@@ -478,7 +482,7 @@ public class CsmContextUtilities {
             }
         }
     }
-    
+
     private static boolean isInContext(CsmContext context, CsmObject obj) {
         for (ListIterator<CsmContext.CsmContextEntry> it = context.reverseIterator(); it.hasPrevious();) {
             CsmContext.CsmContextEntry elem = it.previous();
@@ -492,7 +496,7 @@ public class CsmContextUtilities {
     private static CsmClassifier getTypeClassifier(CsmContext fullContext, CsmType type) {
         return CsmBaseUtilities.getClassifier(type, fullContext.getFile(), fullContext.getOffset(), true);
     }
-    
+
     @SuppressWarnings("unchecked")
     private static List<CsmDeclaration> extractDeclarations(CsmContext fullContext, CsmScopeElement scpElem,
                                                         String strPrefix, boolean match, boolean caseSensitive) {
@@ -535,60 +539,100 @@ public class CsmContextUtilities {
         return list;
     }
 
+    private static final Callable<CsmCacheMap> CACHE_INITIALIZER = new Callable<CsmCacheMap>() {
+
+        @Override
+        public CsmCacheMap call() {
+            return new CsmCacheMap("CsmContextUtilities Cache", 0, 16); // NOI18N
+        }
+    };      
+    private static final class ObjectKey {
+        private final Object obj;
+
+        public ObjectKey(Object obj) {
+            this.obj = obj;
+        }
+
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(obj);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ObjectKey other = (ObjectKey) obj;
+            return this.obj == other.obj;
+        }            
+    }
+    
     public static CsmClass getClass(CsmContext context, boolean checkFunDefition, boolean inScope) {
         CsmClass clazz = null;
-        
+
         // Support of GCC extension - designated initializers (bug 240016)
         if (CsmKindUtilities.isVariable(context.getLastObject()) && CsmContextUtilities.isInInitializerList(context, context.getOffset())) {
             CsmVariable var = (CsmVariable) context.getLastObject();
-            
+
             CsmClassifier classifier = var.getType().getClassifier();
-            
+
             if (classifier != null && CsmKindUtilities.isClass(classifier)) {
-                CsmExpression expression = var.getInitialValue();                
+                CsmExpression expression = var.getInitialValue();
                 if (expression != null) {
-                    String expressionText = expression.getExpandedText().toString();        
-                    int startOffset = expression.getStartOffset();
-
-                    TokenHierarchy<String> hi = TokenHierarchy.create(expressionText, CppTokenId.languageCpp());
-                    List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(expression.getEndOffset() - expression.getStartOffset(), true);
-                    // Go from inner to outer TSes
-                    TokenSequence<TokenId> cppts = null;
-                    for (int i = tsList.size() - 1; i >= 0; i--) {
-                        TokenSequence<?> ts = tsList.get(i);
-                        final Language<?> lang = ts.languagePath().innerLanguage();
-                        if (CndLexerUtilities.isCppLanguage(lang, false)) {
-                            @SuppressWarnings("unchecked") // NOI18N
-                            TokenSequence<TokenId> uts = (TokenSequence<TokenId>) ts;
-                            cppts = uts;
-                        }
-                    }    
-                    if (cppts != null) {
-                        cppts.move(context.getOffset() - startOffset);
-                        if (cppts.movePrevious() && cppts.token() != null && CppTokenId.IDENTIFIER.equals(cppts.token().id())) {
-                            boolean leftSeparatorFound = findToken(
-                                    cppts,
-                                    true,
-                                    Arrays.asList(CppTokenId.LBRACE, CppTokenId.COMMA),
-                                    CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT
-                            ) != null;
-
-                            boolean rightSeparatorFound = findToken(
-                                    cppts,
-                                    false,
-                                    Arrays.asList(CppTokenId.COLON),
-                                    CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT
-                            ) != null;
-
-                            if (leftSeparatorFound && rightSeparatorFound) {
-                                clazz = (CsmClass) classifier;
+                    CsmCacheMap cache = CsmCacheManager.getClientCache(CsmContextUtilities.class, CACHE_INITIALIZER);
+                    ObjectKey key = new ObjectKey(var);
+                    boolean[] found = new boolean[] { false };
+                    TokenSequence<TokenId> cppts = (TokenSequence<TokenId>)CsmCacheMap.getFromCache(cache, key, found);
+                    if (cppts != null || !found[0]) {
+                        if (cppts == null) {
+                            CharSequence expressionText = expression.getExpandedText();
+                            TokenHierarchy<CharSequence> hi = TokenHierarchy.create(expressionText, CppTokenId.languageCpp());
+                            List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(expression.getEndOffset() - expression.getStartOffset(), true);
+                            // Go from inner to outer TSes
+                            for (int i = tsList.size() - 1; i >= 0; i--) {
+                                TokenSequence<?> ts = tsList.get(i);
+                                final Language<?> lang = ts.languagePath().innerLanguage();
+                                if (CndLexerUtilities.isCppLanguage(lang, false)) {
+                                    @SuppressWarnings("unchecked") // NOI18N
+                                    TokenSequence<TokenId> uts = (TokenSequence<TokenId>) ts;
+                                    cppts = uts;
+                                }
+                            }
+                            if (cache != null) {
+                                cache.put(key, CsmCacheMap.toValue(cppts, Integer.MAX_VALUE));
+                            }
+                        }                        
+                        if (cppts != null) {
+                            cppts.move(context.getOffset() - expression.getStartOffset());
+                            if (cppts.movePrevious() && cppts.token() != null && CppTokenId.IDENTIFIER.equals(cppts.token().id())) {
+                                boolean leftSeparatorFound = findToken(
+                                        cppts,
+                                        true,
+                                        Arrays.asList(CppTokenId.LBRACE, CppTokenId.COMMA),
+                                        CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT
+                                ) != null;
+                                
+                                boolean rightSeparatorFound = findToken(
+                                        cppts,
+                                        false,
+                                        Arrays.asList(CppTokenId.COLON),
+                                        CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT
+                                ) != null;
+                                
+                                if (leftSeparatorFound && rightSeparatorFound) {
+                                    clazz = (CsmClass) classifier;
+                                }
                             }
                         }
                     }
                 }
-            }    
+            }
         }
-        
+
         if (clazz == null) {
             CsmScope enumScope = null;
             for (int i = context.size() - 1; 0 <= i; --i) {
@@ -624,16 +668,16 @@ public class CsmContextUtilities {
         }
         return clazz;
     }
-    
+
     private static Token<TokenId> findToken(TokenSequence<TokenId> ts,
-                                            boolean backward, 
-                                            List<? extends TokenId> targetTokens, 
+                                            boolean backward,
+                                            List<? extends TokenId> targetTokens,
                                             TokenId ... skipTokens
     ) {
         int offset = ts.offset();
-        
+
         Token<TokenId> result = null;
-        
+
         while (backward ? ts.movePrevious() : ts.moveNext())  {
             Token<TokenId> token = ts.token();
 
@@ -643,28 +687,28 @@ public class CsmContextUtilities {
                     break;
                 }
             }
-            
+
             if (result != null) {
                 break;
             }
 
             boolean skip = false;
-            
+
             for (TokenId tId : skipTokens) {
                 if (tId.equals(token.id())) {
                     skip = true;
                     break;
                 }
             }
-            
+
             if (!skip) {
                 break;
             }
         }
-        
+
         ts.move(offset);
         ts.moveNext();
-        
+
         return result;
     }
 
@@ -685,7 +729,7 @@ public class CsmContextUtilities {
             }
         }
         return result;
-    }    
+    }
 
     public static CsmFunctionInstantiation getFunctionInstantiation(CsmContext context, boolean inScope) {
         for (int i = context.size() - 1; 0 <= i; --i) {
@@ -697,8 +741,8 @@ public class CsmContextUtilities {
             }
         }
         return null;
-    }    
-    
+    }
+
     public static CsmFunctionDefinition getFunctionDefinition(CsmContext context) {
         CsmFunctionDefinition fun = null;
         for (Iterator it = context.iterator(); it.hasNext();) {
@@ -707,10 +751,10 @@ public class CsmContextUtilities {
                 fun = (CsmFunctionDefinition)elem.getScope();
                 break;
             }
-        }        
+        }
         return fun;
-    }   
-    
+    }
+
     public static CsmNamespace getNamespace(CsmContext context) {
         CsmFunction fun = getFunction(context, false);
         CsmNamespace ns;
@@ -740,15 +784,15 @@ public class CsmContextUtilities {
     private static CsmNamespace getClassNamespace(CsmClass cls) {
         return CsmBaseUtilities.getClassNamespace(cls);
     }
-    
+
     public static boolean isInFunctionBodyOrInitializerList(CsmContext context, int offset) {
         return isInFunctionBody(context, offset) || isInInitializerList(context, offset);
     }
-    
+
     public static boolean isInFunctionBody(CsmContext context, int offset) {
         CsmFunctionDefinition funDef = getFunctionDefinition(context);
         return (funDef == null) ? false : CsmOffsetUtilities.isInObject(funDef.getBody(), offset);
-    }   
+    }
 
     public static boolean isInInitializerList(CsmContext context, int offset) {
         CsmFunction f = getFunction(context, false);
@@ -771,35 +815,35 @@ public class CsmContextUtilities {
 
     public static boolean isInFunction(CsmContext context, int offset) {
         CsmFunction fun = getFunction(context, true);
-        return fun != null; 
-    }     
-    
+        return fun != null;
+    }
+
     public static boolean isInFunctionInstantiation(CsmContext context, int offset) {
         CsmFunctionInstantiation fi = getFunctionInstantiation(context, true);
         return fi != null;
-    }     
-    
+    }
+
     public static boolean isInSimpleType(CsmContext context, int offset) {
         CsmType type = extractLastType(context, offset);
         // in instantianiton and decltype everything is possible
-        return (type != null) && 
-                !type.isInstantiation() && 
+        return (type != null) &&
+                !type.isInstantiation() &&
                 !checkDecltype(type) &&
                 !CsmKindUtilities.isFunctionPointerType(type) &&
                 CsmOffsetUtilities.isInObject(type, offset);
     }
-    
+
     public static boolean isInForwardDeclaration(CsmContext context, int offset) {
         CsmObject last = context.getLastObject();
         return CsmKindUtilities.isClassForwardDeclaration(last);
     }
-    
+
     public static boolean isInType(CsmContext context, int offset) {
         CsmType type = extractLastType(context, offset);
         return (type != null) && CsmOffsetUtilities.isInObject(type, offset);
     }
-    
-    
+
+
     private static CsmType extractLastType(CsmContext context, int offset) {
         CsmObject last = context.getLastObject();
         CsmType type = null;
@@ -810,19 +854,19 @@ public class CsmContextUtilities {
         }
         return type;
     }
-    
+
     /**
      * @param type
      * @return true if type is based on decltype
      */
     static boolean checkDecltype(CsmType type) {
         String fullName = type.getClassifierText().toString();
-        String nameParts[] = fullName.split("::"); // NOI18N         
+        String nameParts[] = fullName.split("::"); // NOI18N
         for (String part : nameParts) {
             if (part.equals("decltype")) { // NOI18N
                 return true;
             }
         }
         return false;
-    }    
+    }
 }

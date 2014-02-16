@@ -52,35 +52,30 @@ import org.openide.nodes.Node;
  * @author Alexander Simon
  */
 public class NavigatorContent {
-    private volatile NavigatorModel curModel;
-    private volatile DataObject cdo;
+    private NavigatorModel curModel;
     
     public NavigatorContent() {
     }
 
-    void setDataObject(DataObject cdo) {
-        this.cdo= cdo;
-    }
-
-    DataObject getDataObject() {
-        return cdo;
+    synchronized DataObject getDataObject() {
+        if (curModel == null) {
+            return null;
+        }
+        return curModel.getDataObject();
     }
     
-    void setModel(NavigatorModel curModel) {
+    synchronized void setModel(NavigatorModel curModel) {
         this.curModel = curModel;
     }
 
-    NavigatorModel getModel() {
+    synchronized NavigatorModel getModel() {
         return curModel;
     }
 
-    Node getRoot(){
+    synchronized Node getRoot(){
         if (curModel != null) {
             return curModel.getRoot();
         }
         return Node.EMPTY;
-    }
-    
-    void repaint() {
     }
 }

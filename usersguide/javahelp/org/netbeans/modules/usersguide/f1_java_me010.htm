@@ -2,27 +2,27 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Create Key Pair</title>
+<title>Java ME Project Node</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-02-07</p>
-<p><a id="org.netbeans.modules.j2me.keystore.ui.CreateKeyAliasPanel" name="org.netbeans.modules.j2me.keystore.ui.CreateKeyAliasPanel"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref709" name="sthref709"></a>
-<h1>Create Key Pair</h1>
+<p>Beta Draft: 2014-02-14</p>
+<p><a id="org.netbeans.modules.mobility.project.ui.J2MEPhysicalViewProvider$J2MEProjectRootNode" name="org.netbeans.modules.mobility.project.ui.J2MEPhysicalViewProvider$J2MEProjectRootNode"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref711" name="sthref711"></a>
+<h1>Java ME Project Node</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to create new key pairs to add to a keystore file. Keystore (<code>.ks</code>) files are used to store key pairs for signing MIDlet suites. 
+<p>Use to view a logical view of a mobile application in the Projects window. The logical view of the project, shown in the Projects window, provides a hierarchy of sources and resources which reflects the type of project and its contents. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1594">
-<param name="text" value="<html><u>How?</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1558">
+<param name="text" value="<html><u>More</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 
-<table summary="Descriptions of fields in Create Key Pair dialog box." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="32%" />
+<table summary="Descriptions of elements of the Abilities dialog box." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="34%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
@@ -33,104 +33,66 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t11" headers="r1c1-t11">
-<p>Key Pair Alias</p>
+<p>Batch Build</p>
 </td>
 <td align="left" headers="r2c1-t11 r1c2-t11">
-<p>Specifies a unique name for the key pair. Aliases are case-insensitive. For example, the aliases "Lock" and "lock" would refer to the same keystore entry.</p>
+<p>Opens a dialog that lets you select multiple configurations.</p>
+<p>The IDE builds a distribution JAR for each configuration you select.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t11" headers="r1c1-t11">
-<p>Certificate Details</p>
+<p>Batch Clean &amp; Build</p>
 </td>
 <td align="left" headers="r3c1-t11 r1c2-t11">
-<p>Specifies the certificate details: <b>Common Name</b>, <b>Organization Unit</b>, <b>Organization Name</b>, <b>Locality Name</b>, <b>State Name</b>, and <b>Country</b>.</p>
+<p>Opens a dialog that lets you select multiple configurations.</p>
+<p>The IDE cleans and builds a distribution JAR file for each configuration you select.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t11" headers="r1c1-t11">
-<p>Common Name</p>
+<p>Batch Clean</p>
 </td>
 <td align="left" headers="r4c1-t11 r1c2-t11">
-<p>Specifies a common name of a person, such as "Susan Jones"</p>
+<p>Opens a dialog that lets you select multiple configurations.</p>
+<p>The IDE cleans the build files for each configuration you select.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t11" headers="r1c1-t11">
-<p>Organization Unit</p>
+<p>Batch Deploy</p>
 </td>
 <td align="left" headers="r5c1-t11 r1c2-t11">
-<p>Specifies a department or division name, such as "Purchasing"</p>
+<p>Opens a dialog that lets you select multiple configurations.</p>
+<p>The IDE deploys your application according to the deployment properties set in each configuration you select.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t11" headers="r1c1-t11">
-<p>Organization Name</p>
+<p>Run With</p>
 </td>
 <td align="left" headers="r6c1-t11 r1c2-t11">
-<p>Specifies a large organization name, such as "MyCompany, Inc."</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t11" headers="r1c1-t11">
-<p>Locality Name</p>
-</td>
-<td align="left" headers="r7c1-t11 r1c2-t11">
-<p>Specifies a locality (city) name, such as "Jamestown"</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t11" headers="r1c1-t11">
-<p>State Name</p>
-</td>
-<td align="left" headers="r8c1-t11 r1c2-t11">
-<p>Specifies a State or province name, such as "California"</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r9c1-t11" headers="r1c1-t11">
-<p>Country</p>
-</td>
-<td align="left" headers="r9c1-t11 r1c2-t11">
-<p>Specifies a two-letter country code, such as "CH"</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r10c1-t11" headers="r1c1-t11">
-<p>Password</p>
-</td>
-<td align="left" headers="r10c1-t11 r1c2-t11">
-<p>Sets a password that unlocks the keystore file so it can be used.</p>
-<p>The password must be at least 6 characters long.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r11c1-t11" headers="r1c1-t11">
-<p>Confirm Password</p>
-</td>
-<td align="left" headers="r11c1-t11 r1c2-t11">
-<p>Confirms the password.</p>
-<p>Re-type the password to ensure that it is the password you want.</p>
+<p>Opens the Quick Project Run dialog.</p>
+<p>In this dialog, you can select a device "on the fly" on which to test your application. The IDE runs your application on the selected platform, but does not build the project or create a distribution JAR for that platform.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>For more information about key pairs and keystores, see <code>
+<hr><p><b>Related Topics</b></p>
+<p>Developing Applications with NetBeans IDE, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://docs.oracle.com/javase/1.4.2/docs/tooldocs/windows/keytool.html">
-<param name="text" value="<html><u>http://docs.oracle.com/javase/1.4.2/docs/tooldocs/windows/keytool.html</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1585">
+<param name="text" value="<html><u>&quot;Building Java ME Applications&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-</code>
-.</p>
-<hr><p><b>Related Topics</b></p>
-<p><i>Developing Applications with NetBeans IDE</i>, "
+</p>
+<p>Developing Applications with NetBeans IDE, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1591">
-<param name="text" value="<html><u>Working with Security and MIDlet Signing&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1625">
+<param name="text" value="<html><u>&quot;Running MIDP Applications&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

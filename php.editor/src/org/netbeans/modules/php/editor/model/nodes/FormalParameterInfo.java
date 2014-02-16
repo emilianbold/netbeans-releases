@@ -51,6 +51,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
 import org.netbeans.modules.php.editor.elements.TypeResolverImpl;
+import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
@@ -70,7 +71,17 @@ public final class FormalParameterInfo extends ASTNodeInfo<FormalParameter> {
         String defVal = CodeUtils.getParamDefaultValue(formalParameter);
         Expression parameterType = formalParameter.getParameterType();
         final boolean isRawType = parameterType != null;
-        List<QualifiedName> types = isRawType ? Collections.singletonList(QualifiedName.create(parameterType)) : paramDocTypes.get(name);
+        QualifiedName parameterTypeName = QualifiedName.create(parameterType);
+        List<QualifiedName> types;
+        if (isRawType && parameterTypeName != null) {
+            if (!Type.isPrimitive(parameterTypeName.toString()) || paramDocTypes.isEmpty()) {
+                types = Collections.singletonList(parameterTypeName);
+            } else {
+                types = paramDocTypes.get(name);
+            }
+        } else {
+            types = paramDocTypes.get(name);
+        }
         if (types == null) {
             types = Collections.emptyList();
         }

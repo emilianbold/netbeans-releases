@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.html.angular.model.Directive;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
 import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
@@ -78,7 +79,8 @@ public class AngularDoc {
     private boolean loadingStarted;
     
     private static final String CACHE_FOLDER_NAME = "ajs-doc"; //NOI18N
-
+    public static final String DOC_VERSION = "1.2.12";
+    
     public static synchronized AngularDoc getDefault() {
         if (INSTANCE == null) {
             INSTANCE = new AngularDoc();
@@ -107,7 +109,7 @@ public class AngularDoc {
     }
 
     private File getCacheFile(Directive directive) {
-        return Places.getCacheSubfile(new StringBuilder().append(CACHE_FOLDER_NAME).append('/').append(directive.name()).toString());
+        return Places.getCacheSubfile(new StringBuilder().append(CACHE_FOLDER_NAME).append('/').append(DOC_VERSION).append('/').append(directive.name()).toString());
     }
 
     private String getDoc(Directive directive) {
@@ -136,11 +138,19 @@ public class AngularDoc {
         String docURL = directive.getExternalDocumentationURL_partial();
         URL url = new URI(docURL).toURL();
         synchronized (cacheFile) {
-            try (Writer writer = new OutputStreamWriter(new FileOutputStream(cacheFile), "UTF-8")) { // NOI18N
+            String tmpFileName = cacheFile.getAbsolutePath() + ".tmp";
+            File tmpFile = new File(tmpFileName);
+            try (Writer writer = new OutputStreamWriter(new FileOutputStream(tmpFile), "UTF-8")) { // NOI18N
                 writer.append("<!doctype html><html><head><title>AngularJS documentation</title></head><body>");
                 Utils.loadURL(url, writer, null);
                 writer.append("</body></html>");
+                tmpFile.renameTo(cacheFile);
+            } finally {
+                if (tmpFile.exists()) {
+                    tmpFile.delete();
+                }
             }
+            
         }
     }
 

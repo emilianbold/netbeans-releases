@@ -44,7 +44,10 @@
 
 package org.netbeans.modules.java.navigation;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -52,6 +55,7 @@ import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.openide.filesystems.FileObject;
+import org.openide.util.WeakListeners;
 
 /**
  * This factory creates tasks sensitive to the caret position in open Java editor.
@@ -59,19 +63,28 @@ import org.openide.filesystems.FileObject;
  * @author Sandip V. Chitale (Sandip.Chitale@Sun.Com)
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.api.java.source.JavaSourceTaskFactory.class)
-public class CaretListeningFactory extends CaretAwareJavaSourceTaskFactory {
+public class CaretListeningFactory extends CaretAwareJavaSourceTaskFactory implements PropertyChangeListener {
     
     private static CaretListeningFactory INSTANCE;
     
     public CaretListeningFactory() {
         super(Phase.RESOLVED, Priority.LOW, TaskIndexingMode.ALLOWED_DURING_SCAN);
         INSTANCE = this;
+        EditorRegistry.addPropertyChangeListener(WeakListeners.propertyChange(this, EditorRegistry.class));
     }
 
+    @Override
     public CancellableTask<CompilationInfo> createTask(FileObject fileObject) {
         return new CaretListeningTask(fileObject);
     }
-    
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (EditorRegistry.FOCUS_GAINED_PROPERTY.equals(evt.getPropertyName())) {
+            CaretListeningTask.resetLastEH();
+        }
+    }
+
     static void runAgain() {
         if (INSTANCE != null) {
             List<FileObject> fileObjects = INSTANCE.getFileObjects();

@@ -294,6 +294,9 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
     }
     
     public void setCurrentProfile (String currentScheme) {
+        if (currentScheme == this.currentScheme) {
+            return;
+        }
         String oldScheme = this.currentScheme;
         this.currentScheme = currentScheme;
         List<AttributeSet> v = getAnnotations(currentScheme);
@@ -304,6 +307,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
             toBeSaved.add (currentScheme);
             v = getAnnotations (currentScheme);
         }
+        toBeSaved.add(currentScheme);
         lCategories.setListData (v.toArray(new AttributeSet[]{}));
         if (lCategories.getModel ().getSize () > 0)
             lCategories.setSelectedIndex (0);
@@ -312,16 +316,17 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
     }
     
     public void deleteProfile (String scheme) {
-        if (colorModel.isCustomProfile (scheme))
+        if (colorModel.isCustomProfile (scheme)) {
             schemes.remove (scheme);
-        else {
+            toBeSaved.remove(scheme); // duplicated profile deleted before saving options
+        } else {
             schemes.put (scheme, getDefaults (scheme));
             lCategories.setListData (getAnnotations(scheme).toArray(new AttributeSet[]{}));
             lCategories.repaint();
             lCategories.setSelectedIndex (0);   
             refreshUI ();
+            toBeSaved.add(scheme); // 'default' profile restored
         }
-        toBeSaved.add (scheme);
         fireChanged();
     }
 
@@ -393,6 +398,10 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
                 } else {
                     isChanged |= checkMaps(currentAnnotations, savedAnnotations);
                 }
+                if(isChanged) { // no need to iterate further
+                    changed = true;
+                    return;
+                }
             }
         }
         changed = isChanged;
@@ -409,7 +418,9 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
                 isChanged |= (Color) currentAS.getAttribute(StyleConstants.Foreground) != (Color) savedAS.getAttribute(StyleConstants.Foreground)
                         || (Color) currentAS.getAttribute(StyleConstants.Background) != (Color) savedAS.getAttribute(StyleConstants.Background)
                         || (currentWave == null ? savedWave != null : !currentWave.equals(savedWave));
-
+                if(isChanged) { // no need to iterate further
+                    return true;
+                }
             }
         }
         return isChanged;

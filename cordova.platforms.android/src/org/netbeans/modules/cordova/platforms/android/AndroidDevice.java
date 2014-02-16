@@ -78,7 +78,7 @@ public class AndroidDevice implements Device {
 
         String line = r.readLine();
 
-        while (r.ready() && ((line = r.readLine()) != null)) {
+        while (((line = r.readLine()) != null)) {
             Matcher m = pattern.matcher(line);
             if (m.matches()) {
                 final String name = m.group(1);

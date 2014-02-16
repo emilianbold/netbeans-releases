@@ -2,27 +2,26 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>OQL Console: Query Properties Dialog Box</title>
+<title>OQL Console: Save Query Dialog Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-02-07</p>
-<p><a id="OQLQueryCustomizer.QueryProps.HelpCtx" name="OQLQueryCustomizer.QueryProps.HelpCtx"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref387" name="sthref387"></a>
-<h1>OQL Console: Query Properties Dialog Box</h1>
+<p>Beta Draft: 2014-02-14</p>
+<p><a id="OQLQueryCustomizer.SaveQuery.HelpCtx" name="OQLQueryCustomizer.SaveQuery.HelpCtx"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref389" name="sthref389"></a>
+<h1>OQL Console: Save Query Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to modify the properties of custom saved OQL queries and to modify the order that custom saved queries are listed under the Custom node in the Saved Queries pane. 
+<p>Use to save an OQL query and to assign a name and description to the query. Saved queries are listed in the Saved Queries pane of the OQL Console tab in the Heap window. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG793">
-<param name="text" value="<html><u>How?</u></html>">
+<param name="text" value="<html><u>How</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-</p>
-<p><b>Note:</b> You cannot modify the properties or change the order of the default saved queries that are bundled with the IDE and listed under the Samples node or the PermGen Analysis node.</p>
+?</p>
 
-<table summary="Descriptions of Query Properties dialog box fields." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<table summary="Descriptions of Save Query options." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="34%" />
 <col width="*" />
 <thead>
@@ -34,18 +33,35 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t19" headers="r1c1-t19">
-<p>Name</p>
+<p>Create a New Query.</p>
 </td>
 <td align="left" headers="r2c1-t19 r1c2-t19">
-<p>Modify the name of the query.</p>
+<p>Saves the query in the Query Editor pane as a new named query and enter the following details about the query.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t19" headers="r1c1-t19">
-<p>Description</p>
+<p>Name</p>
 </td>
 <td align="left" headers="r3c1-t19 r1c2-t19">
-<p>(Optional) Modify the description of the query.</p>
+<p>Specifies a name to identify the query.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t19" headers="r1c1-t19">
+<p>Description</p>
+</td>
+<td align="left" headers="r4c1-t19 r1c2-t19">
+<p>(Optional) Enables you to provide a short description of the query.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t19" headers="r1c1-t19">
+<p>Use Existing Query</p>
+</td>
+<td align="left" headers="r5c1-t19 r1c2-t19">
+<p>Modifies an existing custom saved query. When you select this option you must select a custom query from the list. The query in the Query Editor pane replaces the query associated with the custom query that you select.</p>
+<p>This option is only available if custom queries exist.</p>
 </td>
 </tr>
 </tbody>

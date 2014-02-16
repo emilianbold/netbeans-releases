@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
 import org.netbeans.modules.cnd.repository.impl.spi.ReadLayerCapability;
 import org.netbeans.modules.cnd.repository.impl.spi.WriteLayerCapability;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -92,11 +91,7 @@ public final class DiskLayerImpl {
     }
 
     public void openUnit(int unitIdx) {
-        try {
-            layerIndex.loadUnitIndex(unitIdx);
-        } catch (IOException ex) {
-            RepositoryExceptions.throwException(this, ex);
-        }
+        //does  nothing now
     }
 
     public void closeUnit(int unitIdx, boolean cleanRepository, Set<Integer> requiredUnits) {
@@ -108,9 +103,6 @@ public final class DiskLayerImpl {
         fas.closeUnit(unitIdInLayer, cleanRepository);
     }
 
-    public List<CharSequence> getFileNameTable(int unitIdx) {
-        return layerIndex.getFileNameTable(unitIdx);
-    }
 
     public List<UnitDescriptor> getUnitsTable() {
         return layerIndex.getUnitsTable();
