@@ -121,22 +121,30 @@ public class ColoringStorageTest extends NbTestCase {
         ColoringStorage cs = new ColoringStorage(ColoringStorage.FAV_HIGHLIGHT);
         Map<String, AttributeSet> colorings = cs.load(MimePath.EMPTY, "MyProfileXyz", true); //NOI18N
         assertNotNull("Colorings map should not be null", colorings);
-        assertEquals("Wrong number of colorings", 1, colorings.size());
+        assertEquals("Wrong number of colorings", 2, colorings.size());
         
         AttributeSet c = colorings.get("test-text-limit-line");
         assertNotNull("Should have test-text-limit-line coloring", c);
         assertEquals("Wrong bgColor", new Color(0x010101), c.getAttribute(StyleConstants.Foreground));
+        
+        c = colorings.get("test-text-limit-line2");
+        assertNotNull("Should have test-text-limit-line coloring2", c);
+        assertEquals("Wrong bgColor", new Color(0x88010101, true), c.getAttribute(StyleConstants.Foreground));
     }
     
     public void testAllLanguagesHighlights2() {
         ColoringStorage cs = new ColoringStorage(ColoringStorage.FAV_HIGHLIGHT);
         Map<String, AttributeSet> colorings = cs.load(MimePath.EMPTY, "MyProfileXyz", false); //NOI18N
         assertNotNull("Colorings map should not be null", colorings);
-        assertEquals("Wrong number of colorings", 1, colorings.size());
+        assertEquals("Wrong number of colorings", 2, colorings.size());
         
         AttributeSet c = colorings.get("test-text-limit-line");
         assertNotNull("Should have test-text-limit-line coloring", c);
         assertEquals("Wrong bgColor", new Color(0x010101), c.getAttribute(StyleConstants.Foreground));
+        
+        c = colorings.get("test-text-limit-line2");
+        assertNotNull("Should have test-text-limit-line coloring2", c);
+        assertEquals("Wrong foreColor", new Color(0x88010101, true), c.getAttribute(StyleConstants.Foreground));
     }
     
     public void testMultipleFiles() throws IOException {

@@ -70,6 +70,7 @@ public class PanelConfigureProjectVisual extends JPanel {
         this.type = type;
         setName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NameAndLoc")); // NOI18N
         switch (type) {
+            case SAMPLE:                
             case APPLICATION:
                 projectLocationPanel = new PanelProjectLocationVisual(panel, type);
                 putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewJavaMEApp")); // NOI18N
@@ -91,10 +92,13 @@ public class PanelConfigureProjectVisual extends JPanel {
 
     void read(WizardDescriptor d) {
         Object lastType = d.getProperty("wizard-type"); //NOI18N
-        if (lastType == null || lastType != type) {
+        if ((lastType == null || lastType != type) && type != J2MEProjectWizardIterator.WizardType.SAMPLE) {
             //bugfix #46387 The type of project changed, reset values to defaults
             d.putProperty("name", null); //NOI18N
             d.putProperty("projdir", null); //NOI18N
+        }
+        if (type == J2MEProjectWizardIterator.WizardType.SAMPLE) {
+            putClientProperty("NewProjectWizard_Title", d.getProperty("NewProjectWizard_Title")); //NOI18N
         }
         projectLocationPanel.read(d);
         optionsPanel.read(d);

@@ -71,6 +71,9 @@ public final class XMLRPCConnectorLifecycleManager extends JiraConnectorLifecycl
     @Override
     public void restored() {
         if( JiraConnectorSupport.getActiveConnector() != JiraConnectorProvider.Type.XMLRPC ) {
+            
+            JiraConnectorSupport.LOG.info("stopping XMLRPC connector bundle");
+            
             // HACK! this one shouldn't be the active connector!
             // we can't have both jira connectors sunning at the same time (equinox complains),
             // the Jira module guarantees that this bundle isn't accessed 

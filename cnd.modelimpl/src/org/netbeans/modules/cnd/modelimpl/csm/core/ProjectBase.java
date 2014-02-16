@@ -1647,7 +1647,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         FileContainer fileContainer = getFileContainer();
         FileEntry fileEntry = fileContainer.getEntry(absPath);
         if (fileEntry == null) {
-            CndUtils.assertTrue(!fileImpl.isValid(), "null entry for valid file ", fileImpl); //NOI18N
+            CndUtils.assertTrueInConsole(!fileImpl.isValid(), "null entry for valid file ", fileImpl); //NOI18N
             return;
         }
         Object stateLock = fileEntry.getLock();

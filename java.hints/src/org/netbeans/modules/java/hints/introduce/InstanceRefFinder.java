@@ -59,6 +59,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -164,7 +165,11 @@ public class InstanceRefFinder extends TreePathScanner {
                     if (enclosingElement == null) {
                         return;
                     }
-                    enclosingType = ci.getElementUtilities().enclosingTypeElement(enclosingElement);
+                    if (enclosingElement instanceof TypeElement) {
+                        this.enclosingType = (TypeElement)enclosingElement;
+                    } else {
+                        enclosingType = ci.getElementUtilities().enclosingTypeElement(enclosingElement);
+                    }
                     return;
             }
             path = path.getParentPath();
@@ -275,7 +280,7 @@ public class InstanceRefFinder extends TreePathScanner {
         if (el == null) {
             return false;
         }
-        Element e = enclosingElement.getEnclosingElement();
+        Element e = enclosingElement;
         while (e != null && e != el) {
             e = e.getEnclosingElement();
         }
@@ -354,6 +359,16 @@ public class InstanceRefFinder extends TreePathScanner {
         return usedMembers;
     }
     
+    private void addInstanceOfParameterOwner(Element el) {
+        while (el != null && el.getKind() != ElementKind.CONSTRUCTOR && el.getKind() != ElementKind.METHOD && !el.getKind().isClass() && !el.getKind().isInterface()) {
+            el = el.getEnclosingElement();
+        }
+        if (el == null || el instanceof TypeElement || el == enclosingElement) {
+            return;
+        }
+        addInstanceForMemberOf(el);
+    }
+    
     @Override
     public Object visitIdentifier(IdentifierTree node, Object p) {
         Element el = ci.getTrees().getElement(getCurrentPath());
@@ -378,6 +393,13 @@ public class InstanceRefFinder extends TreePathScanner {
                 if (node.getName().contentEquals("this") || node.getName().contentEquals("super")) {
                     addInstanceForType(enclosingType);
                 }
+                break;
+            case EXCEPTION_PARAMETER:
+            case RESOURCE_VARIABLE:
+                addLocalClassVariable(el);
+                // fall through
+            case PARAMETER:
+                addInstanceOfParameterOwner(el);
                 break;
             case PACKAGE:
                 break;
@@ -432,7 +454,7 @@ public class InstanceRefFinder extends TreePathScanner {
         }
         return null;
     }
-
+    
     @Override
     public Object visitClass(ClassTree node, Object p) {
         TypeElement saveType = this.enclosingType;

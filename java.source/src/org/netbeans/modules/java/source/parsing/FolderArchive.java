@@ -166,7 +166,7 @@ public class FolderArchive implements Archive {
                     if (srcRootFo != null) {
                         final FileObject resource = srcRootFo.getFileObject(name);
                         if (resource != null) {
-                            return  FileObjects.nbFileObject(resource, srcRootFo);
+                            return  FileObjects.sourceFileObject(resource, srcRootFo);
                         }
                     }
                 }

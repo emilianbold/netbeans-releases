@@ -52,6 +52,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.progress.spi.RunOffEDTProvider;
 import org.netbeans.modules.progress.spi.RunOffEDTProvider.Progress;
 import org.netbeans.modules.progress.spi.RunOffEDTProvider.Progress2;
+import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -112,8 +113,9 @@ public final class ProgressUtils {
     }
 
     /**
-     * Show a modal progress dialog that blocks the main window, while running
-     * the passed runnable on a background thread.
+     * Show a modal progress dialog that blocks the main window and all other
+     * currently displayed frames or dialogs, while running the passed runnable
+     * on a background thread.
      * <p/>
      * This method is thread-safe, and will block until the operation has
      * completed, regardless of what thread calls this method.
@@ -223,8 +225,9 @@ public final class ProgressUtils {
     }
     
     /**
-     * Show a modal progress dialog that blocks the main window, while running
-     * the passed runnable on a background thread.
+     * Show a modal progress dialog that blocks the main window and all other
+     * currently displayed frames or dialogs, while running the passed runnable
+     * on a background thread.
      * <p/>
      * This method is thread-safe, and will block until the operation has
      * completed, regardless of what thread calls this method.
@@ -267,9 +270,9 @@ public final class ProgressUtils {
 
 
     /**
-     * Show a modal progress dialog that blocks the main window, while running
-     * the passed runnable on a background thread with an indeterminate-state
-     * progress bar.
+     * Show a modal progress dialog that blocks the main window and all other
+     * currently displayed frames or dialogs, while running the passed runnable
+     * on a background thread with an indeterminate-state progress bar.
      * <p/>
      * This method is thread-safe, and will block until the operation has
      * completed, regardless of what thread calls this method.
@@ -282,15 +285,22 @@ public final class ProgressUtils {
      * @since 1.19
      */
     public static void showProgressDialogAndRun(Runnable operation, String displayName) {
-        showProgressDialogAndRun(new RunnableWrapper(operation), displayName, false);
+        RunnableWrapper wrapper;
+        if (operation instanceof Cancellable) {
+            wrapper = new CancellableRunnableWrapper(operation);
+        } else {
+            wrapper = new RunnableWrapper(operation);
+        }
+        showProgressDialogAndRun(wrapper, displayName, false);
     }
 
     /**
-     * Show a modal progress dialog that blocks the main window while running
-     * a background process.  This call should block until the work is
-     * started, and then return a task which can be monitored for completion
-     * or cancellation.  This method will not block while the work is run,
-     * only until the progress UI is initialized.
+     * Show a modal progress dialog that blocks the main window and all other
+     * currently displayed frames or dialogs while running a background process.
+     * This call should block until the work is started, and then return a task
+     * which can be monitored for completion or cancellation. This method will
+     * not block while the work is run, only until the progress UI is
+     * initialized.
      * <p/>
      * The resulting progress UI should show a cancel button if the passed
      * runnable implements org.openide.util.Cancellable.
@@ -316,7 +326,7 @@ public final class ProgressUtils {
         }
     }
 
-    private static final class RunnableWrapper implements ProgressRunnable<Void> {
+    private static class RunnableWrapper implements ProgressRunnable<Void> {
         private final Runnable toRun;
         RunnableWrapper(Runnable toRun) {
             this.toRun = toRun;
@@ -329,6 +339,19 @@ public final class ProgressUtils {
         }
     }
 
+    private static final class CancellableRunnableWrapper extends RunnableWrapper implements Cancellable {
+        private final Cancellable cancelable;
+        CancellableRunnableWrapper(Runnable toRun) {
+            super(toRun);
+            this.cancelable = (Cancellable)toRun;
+        }
+
+        @Override
+        public boolean cancel() {
+            return cancelable.cancel();
+        }
+    }
+        
     private static class Trivial implements RunOffEDTProvider {
         private static final RequestProcessor WORKER = new RequestProcessor(ProgressUtils.class.getName());
 

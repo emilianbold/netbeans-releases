@@ -403,7 +403,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             }
         }
         FileObject fo = URLMapper.findFileObject(indexable.getURL());
-        return fo != null ? new CompileTuple(SourceFileObject.create(fo, context.getRoot()), indexable) : null;
+        return fo != null ? new CompileTuple(FileObjects.sourceFileObject(fo, context.getRoot()), indexable) : null;
     }
 
     private static void clearFiles(final Context context, final Iterable<? extends Indexable> files) {

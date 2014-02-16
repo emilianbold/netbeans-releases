@@ -643,7 +643,7 @@ public final class ColoringStorage implements StorageDescription<String, Attribu
 	if (nameToColor.containsKey (color))
 	    return (Color) nameToColor.get (color);
         try {
-            return new Color ((int) Long.parseLong (color, 16));
+            return new Color ((int) Long.parseLong (color, 16), (color.length() != 6)); // formats: #AARRGGBB or #RRGGBB (Alpha is defaulted to 255)
         } catch (NumberFormatException ex) {
             throw new Exception ();
         }

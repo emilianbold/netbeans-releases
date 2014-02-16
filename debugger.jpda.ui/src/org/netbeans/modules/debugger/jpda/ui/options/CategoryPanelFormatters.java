@@ -737,13 +737,12 @@ class CategoryPanelFormatters extends StorablePanel {
 
     @Override
     public boolean isChanged() {
-        Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
         ListModel formattersModel = formattersList.getModel();
         VariablesFormatter[] formatters = new VariablesFormatter[formattersModel.getSize()];
         for (int i = 0; i < formatters.length; i++) {
             formatters[i] = (VariablesFormatter) formattersModel.getElementAt(i);
         }
-        Object[] saved = p.getArray("VariableFormatters", null);
+        VariablesFormatter[] saved = VariablesFormatter.loadFormatters();
         if(saved == null) {
             return false;
         }
@@ -751,7 +750,7 @@ class CategoryPanelFormatters extends StorablePanel {
             return true;
         }
         for (int i = 0; i < saved.length; i++) {
-            VariablesFormatter savedFormatter = (VariablesFormatter) saved[i];
+            VariablesFormatter savedFormatter = saved[i];
             VariablesFormatter currentFormatter = (VariablesFormatter) formattersModel.getElementAt(i);
             if(!areVariablesFormattersEqual(savedFormatter, currentFormatter)) {
                 return true;

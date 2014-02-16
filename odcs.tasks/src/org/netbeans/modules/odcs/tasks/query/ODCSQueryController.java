@@ -487,7 +487,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         } else if (e.getSource() == panel.gotoIssueButton) {
             onGotoIssue();
         } else if (e.getSource() == panel.saveChangesButton) {
-            onSave(null, true); // refresh
+            onSave(null); // refresh
         } else if (e.getSource() == panel.cancelChangesButton) {
             onCancelChanges();
         } else if (e.getSource() == panel.webButton) {
@@ -556,8 +556,8 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         selectFilter(filter);
     }
 
-    private void onSave(final String newName, final boolean refresh) {
-       ODCS.getInstance().getParallelRequestProcessor().post(new Runnable() {
+    private void onSave(final String newName) {
+        ODCS.getInstance().getParallelRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
                 ODCS.LOG.fine("on save start");
@@ -566,6 +566,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
                     return;
                 }
                 
+                boolean firtsTime = !query.isSaved();
                 String name = newName != null ? newName : query.getDisplayName();
                 if(name == null) {
                     name = getSaveName();
@@ -577,7 +578,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
                 save(name);
                 ODCS.LOG.fine("on save finnish");
 
-                if(refresh) {
+                if(!firtsTime) {
                     onRefresh();
                 }
             }
@@ -1069,7 +1070,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
 
     @Override
     public boolean saveChanges(String name) {
-        onSave(name, true);
+        onSave(name);
         return true;
     }
 

@@ -164,6 +164,9 @@ public class MissingReturnStatement implements ErrorRule<Void> {
                     assert method.getLeaf().getKind() == Kind.METHOD;
 
                     BlockTree body = ((MethodTree) method.getLeaf()).getBody();
+                    if (body == null) {
+                        return;
+                    }
                     TypeMirror type = ((ExecutableElement) methodEl).getReturnType();
                     TypeKind kind = type.getKind();
                     Object value;

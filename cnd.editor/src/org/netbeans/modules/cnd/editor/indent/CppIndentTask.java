@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.editor.indent;
 import java.util.MissingResourceException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
@@ -59,6 +60,7 @@ import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
 import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor.MutableContext;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 
 /**
@@ -69,7 +71,7 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
 
     private Context context;
     private MutableContext TBIcontext;
-    private Document doc;
+    private final Document doc;
 
     public CppIndentTask(Context context) {
         this.context = context;
@@ -124,21 +126,48 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
         }
         int caretOffset = context.caretOffset();
         int lineOffset = context.lineStartOffset(caretOffset);
-        ts = CndLexerUtilities.getCppTokenSequence(doc, lineOffset, false, false);
-        if (ts == null) {
-            return;
-        }
-        int index = ts.index();
-        int indent = indentLine(new TokenItem(ts, true), caretOffset);
-        if (indent >= 0) {
-            int tokenIndent = -1;
-            if (ts.isValid()) {
-                ts.moveIndex(index);
-                ts.moveNext();
-                tokenIndent = getTokenIndent(moveToFirstLineImportantToken(new TokenItem(ts, false)));
+        int startOffset = context.startOffset();
+        int endOffset = context.endOffset();
+        int lnStart = NbDocument.findLineNumber((StyledDocument)doc, startOffset);
+        int lnEnd = NbDocument.findLineNumber((StyledDocument)doc, endOffset);
+        if (lnStart == lnEnd) {
+            ts = CndLexerUtilities.getCppTokenSequence(doc, lineOffset, false, false);
+            if (ts == null) {
+                return;
             }
-            if (indent != tokenIndent) {
-                context.modifyIndent(lineOffset, indent);
+            int index = ts.index();
+            int indent = indentLine(new TokenItem(ts, true), caretOffset, true);
+            if (indent >= 0) {
+                int tokenIndent = -1;
+                if (ts.isValid()) {
+                    ts.moveIndex(index);
+                    ts.moveNext();
+                    tokenIndent = getTokenIndent(moveToFirstLineImportantToken(new TokenItem(ts, false)));
+                }
+                if (indent != tokenIndent) {
+                    context.modifyIndent(lineOffset, indent);
+                }
+            }
+        } else {
+            for(int i = lnStart; i <= lnEnd; i++) {
+                int lnStartOffset = NbDocument.findLineOffset ((StyledDocument)doc, i);
+                ts = CndLexerUtilities.getCppTokenSequence(doc, lnStartOffset, false, false);
+                if (ts == null) {
+                    return;
+                }
+                int index = ts.index();
+                int indent = indentLine(new TokenItem(ts, true), lnStartOffset, false);
+                if (indent >= 0) {
+                    int tokenIndent = -1;
+                    if (ts.isValid()) {
+                        ts.moveIndex(index);
+                        ts.moveNext();
+                        tokenIndent = getTokenIndent(moveToFirstLineImportantToken(new TokenItem(ts, false)));
+                    }
+                    if (indent != tokenIndent) {
+                        context.modifyIndent(lnStartOffset, indent);
+                    }
+                }
             }
         }
     }
@@ -200,7 +229,7 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
         }
     }
 
-    private int indentLine(TokenItem token, int caretOffset) {
+    private int indentLine(TokenItem token, int caretOffset, boolean singleLine) {
         //if ((dotPos >= 1 && DocumentUtilities.getText(doc).charAt(dotPos-1) != '\\')
         //    || (dotPos >= 2 && DocumentUtilities.getText(doc).charAt(dotPos-2) == '\\')) {
         if (token.getTokenID() == CppTokenId.STRING_LITERAL || token.getTokenID() == CppTokenId.RAW_STRING_LITERAL ||
@@ -233,19 +262,21 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
             } else {
                 int indent = getTokenColumn(token) + 1;
                 try {
-                    if (caretOffset - token.getTokenSequence().offset() == 4
-                            && doc.getLength() > token.getTokenSequence().offset() + 6
-                            && "/**\n*/".equals(doc.getText(token.getTokenSequence().offset(), 6))) { // NOI18N
-                        Function function = CsmDocGeneratorProvider.getDefault().getFunction(doc, caretOffset);
-                        if (function != null) {
-                            StringBuilder buf = createDoc(indent, function);
-                            doc.insertString(caretOffset, buf.toString(), null);
-                            context.setCaretOffset(caretOffset+indent+2);
-                        }
-                    } else {
-                        if (!"*".equals(doc.getText(caretOffset, 1))) { // NOI18N
-                            if (caretOffset > 0 && "\n".equals(doc.getText(caretOffset - 1, 1))) { // NOI18N
-                                doc.insertString(caretOffset, "* ", null); // NOI18N
+                    if (singleLine) {
+                        if (caretOffset - token.getTokenSequence().offset() == 4
+                                && doc.getLength() > token.getTokenSequence().offset() + 6
+                                && "/**\n*/".equals(doc.getText(token.getTokenSequence().offset(), 6))) { // NOI18N
+                            Function function = CsmDocGeneratorProvider.getDefault().getFunction(doc, caretOffset);
+                            if (function != null) {
+                                StringBuilder buf = createDoc(indent, function);
+                                doc.insertString(caretOffset, buf.toString(), null);
+                                context.setCaretOffset(caretOffset+indent+2);
+                            }
+                        } else {
+                            if (!"*".equals(doc.getText(caretOffset, 1))) { // NOI18N
+                                if (caretOffset > 0 && "\n".equals(doc.getText(caretOffset - 1, 1))) { // NOI18N
+                                    doc.insertString(caretOffset, "* ", null); // NOI18N
+                                }
                             }
                         }
                     }
@@ -908,7 +939,7 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
         if (ts == null) {
             return 0;
         }
-        int indent = indentLine(new TokenItem(ts, true), caretOffset);
+        int indent = indentLine(new TokenItem(ts, true), caretOffset, true);
         return indent;
     }
 
@@ -922,7 +953,7 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
         if (ts == null) {
             return;
         }
-        int indent = indentLine(new TokenItem(ts, true), caretOffset);
+        int indent = indentLine(new TokenItem(ts, true), caretOffset, true);
         if (indent >= 0) {
             modifyIndent(lineOffset, indent);
         }

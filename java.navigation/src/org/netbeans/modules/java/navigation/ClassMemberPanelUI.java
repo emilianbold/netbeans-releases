@@ -136,6 +136,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     private static final String CMD_HISTORY = "history";    //NOI18N
     private static final int MIN_HISTORY_WIDTH = 50;
     private static final int HISTORY_HEIGHT = 20;
+    private static final ThreadLocal<Boolean> ignoreJavaDoc = new ThreadLocal();
 
     private final ExplorerManager manager = new ExplorerManager();
     private final MyBeanTreeView elementView;
@@ -343,10 +344,13 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             return;
         }
         ElementNode node = root.getNodeForElement(eh);
+        ignoreJavaDoc.set(true);
         try {
             manager.setSelectedNodes(new Node[]{ node == null ? getRootNode() : node });
         } catch (PropertyVetoException propertyVetoException) {
             Exceptions.printStackTrace(propertyVetoException);
+        } finally {
+            ignoreJavaDoc.remove();
         }
     }
     
@@ -762,6 +766,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     @Override
     public void propertyChange(final PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+            final boolean javadocDone = ignoreJavaDoc.get() == Boolean.TRUE;
             RP.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -773,7 +778,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                     for (Node n : newNodes) {
                         selectedNodes.add(n);
                     }
-                    if (newNodes.length > 0 && JavadocTopComponent.shouldUpdate()) {
+                    if (newNodes.length > 0 && !javadocDone && JavadocTopComponent.shouldUpdate()) {
                         scheduleJavadocRefresh(JDOC_TIME);
                     }
                 }

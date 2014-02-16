@@ -115,6 +115,7 @@ import org.netbeans.modules.cnd.debugger.gdb2.mi.MIUserInteraction;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -2853,7 +2854,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    // On the Mac a 'changelist' is a list of results not values
 	    if (update_list.isResultList()) {
 		MIResult result = (MIResult)item;
-		assert result.variable().equals("varobj");
+                CndUtils.assertTrue(result.variable().equals("varobj"), "Erroneous response:" + var.toString()); // NOI18N
 		updatevar = result.value();
 	    } else {
 		updatevar = (MIValue)item;
@@ -5276,6 +5277,20 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (w != null) {
             requestRegisters();
         }
+    }
+
+    @Override
+    public void assignRegisterValue(String register, String value) {
+        MICommand cmd = new MiCommandImpl("-gdb-set $" + register + " = " + value) { //NOI18N
+
+            @Override
+            protected void onDone(MIRecord record) {
+                requestRegisters();
+                finish();
+            }
+        };
+        
+        gdb.sendCommand(cmd);
     }
     
     void createWatchFromVariable(GdbVariable var) {

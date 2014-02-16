@@ -110,7 +110,7 @@ public class TargetLister {
         BufferedReader r = new BufferedReader(new StringReader(output));
 
         Collection<Target> col = new ArrayList<>();
-        while (r.ready()) {
+        for (;;) {
             String line = r.readLine();
             if (line == null) {
                 col.add(new Target("default", gruntFile));//NI18N
@@ -121,11 +121,8 @@ public class TargetLister {
             }
         }
         
-        while (r.ready()) {
-            String line = r.readLine();
-            if (line == null) {
-                break;
-            }
+        String line = r.readLine();
+        while (line != null) {
             if (line.trim().isEmpty()) {
                 break;
             }
@@ -135,8 +132,13 @@ public class TargetLister {
             }
 
             String l = line.trim();
-            l = l.substring(0,l.indexOf(" "));
-            col.add(new Target(l, gruntFile));
+            int right = l.indexOf(" ");
+            
+            if (right > 0) {
+                l = l.substring(0, right);
+                col.add(new Target(l, gruntFile));
+            }
+            line = r.readLine();
         }
         cache.put(gruntFile.getPath(), Pair.of(gruntFile.lastModified().getTime(), col));
     }

@@ -530,6 +530,20 @@ public final class NbMavenProjectImpl implements Project {
     }
 
     public URI[] getGeneratedSourceRoots(boolean test) {
+        //#241874 calculate the test source roots up front just in case they are in target/generated-sources. if so, remove the from non-test generated source roots
+        Set<URI> BHTestUris = new HashSet<URI>();
+        String[] buildHelpers = PluginPropertyUtils.getPluginPropertyList(this,
+                "org.codehaus.mojo", //NOI18N
+                "build-helper-maven-plugin", "sources", "source", "add-test-source"); //NOI18N
+        if (buildHelpers != null && buildHelpers.length > 0) {
+            File root = FileUtil.toFile(getProjectDirectory());
+            for (String helper : buildHelpers) {
+                BHTestUris.add(FileUtilities.getDirURI(root, helper));
+            }
+        }
+        
+        
+        
         URI uri = FileUtilities.getDirURI(getProjectDirectory(), test ? "target/generated-test-sources" : "target/generated-sources"); //NOI18N
         Set<URI> uris = new HashSet<URI>();
         File[] roots = Utilities.toFile(uri).listFiles();
@@ -542,10 +556,14 @@ public final class NbMavenProjectImpl implements Project {
                     continue;
                 }
                 File[] kids = root.listFiles();
+                URI u = Utilities.toURI(root);
+                if (!test && BHTestUris.contains(u)) {
+                    continue; //a test source root was put in target/generated-sources - #241874
+                }
                 if (kids != null && /* #190626 */kids.length > 0) {
-                    uris.add(Utilities.toURI(root));
+                    uris.add(u);
                 } else {
-                    watcher.addWatchedPath(Utilities.toURI(root)); //TODO who reacts to this?
+                    watcher.addWatchedPath(u); //TODO who reacts to this?
                 }
             }
         }
@@ -568,14 +586,18 @@ public final class NbMavenProjectImpl implements Project {
             }
         }
 
-        String[] buildHelpers = PluginPropertyUtils.getPluginPropertyList(this,
-                "org.codehaus.mojo", //NOI18N
-                "build-helper-maven-plugin", "sources", "source", test ? "add-test-source" : "add-source"); //NOI18N
-        if (buildHelpers != null && buildHelpers.length > 0) {
-            File root = FileUtil.toFile(getProjectDirectory());
-            for (String helper : buildHelpers) {
-                uris.add(FileUtilities.getDirURI(root, helper));
+        if (!test) {
+            buildHelpers = PluginPropertyUtils.getPluginPropertyList(this,
+                    "org.codehaus.mojo", //NOI18N
+                    "build-helper-maven-plugin", "sources", "source", "add-source"); //NOI18N
+            if (buildHelpers != null && buildHelpers.length > 0) {
+                File root = FileUtil.toFile(getProjectDirectory());
+                for (String helper : buildHelpers) {
+                    uris.add(FileUtilities.getDirURI(root, helper));
+                }
             }
+        } else {
+            uris.addAll(BHTestUris);
         }
 
         return uris.toArray(new URI[uris.size()]);

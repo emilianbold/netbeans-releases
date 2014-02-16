@@ -81,9 +81,12 @@ public class CoSAlternativeExecutorImpl implements CoSAlternativeExecutorImpleme
 
     @Override
     public boolean execute(RunConfig config, ExecutionContext executionContext) {
-        Object skipBuild = config.getInternalProperties().get(ExecutionConstants.SKIP_BUILD); //NOI18N
+        // In some cases we want to proceed standard execution (e.g. when running single main file)
+        if (isSet(config, ExecutionConstants.STANDARD_EXECUTION)) {
+            return false;
+        }
 
-        if (skipBuild instanceof Boolean && (Boolean) skipBuild) {
+        if (isSet(config, ExecutionConstants.SKIP_BUILD)) {
             DeploymentHelper.DeploymentResult result = DeploymentHelper.perform(config, executionContext);
 
             switch (result) {
@@ -96,6 +99,15 @@ public class CoSAlternativeExecutorImpl implements CoSAlternativeExecutorImpleme
             }
         }
         // If the skip.build property is not set, it means we do want to proceed standard execution
+        return false;
+    }
+
+    private boolean isSet(RunConfig config, String key) {
+        Object standardExecution = config.getInternalProperties().get(key);
+
+        if (standardExecution instanceof Boolean) {
+            return (Boolean) standardExecution;
+        }
         return false;
     }
 }

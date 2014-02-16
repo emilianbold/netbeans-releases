@@ -170,6 +170,18 @@ public final class RegistersWindow extends TopComponent
         tab.requestFocusInWindow();
     }
     
+    private class RegisterTableModel extends DefaultTableModel {
+        public RegisterTableModel(Object[] columns) {
+            super(columns, 0);
+        }
+
+        @Override
+        public void setValueAt(Object aValue, int row, int column) {
+            debugger.assignRegisterValue(getValueAt(row, 0).toString(), aValue.toString());
+        }
+
+    }
+    
     private void updateWindow() {
         assert SwingUtilities.isEventDispatchThread();
         
@@ -187,8 +199,8 @@ public final class RegistersWindow extends TopComponent
 		Catalog.get("LBL_NameCol"),		// NOI18N
 		Catalog.get("LBL_ValueCol")		// NOI18N
 	    };
-
-            dataModel = new DefaultTableModel(columnNames, 0);
+            
+            dataModel = new RegisterTableModel(columnNames);
             tab = new JTable(dataModel);
 	    // You need to set preferredWidth on all columns for it to take
 	    tab.getColumnModel().getColumn(0).setPreferredWidth(40);

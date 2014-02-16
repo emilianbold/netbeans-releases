@@ -349,8 +349,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
 
     private void addUnusedLibrary(Collection<OffsetRange> ranges, Map<String, Attribute> namespace2Attribute,
             Library lib, Snapshot snapshot, CharSequence docText) {
-        Attribute declAttr = namespace2Attribute.get(lib.getNamespace()) != null ?
-                namespace2Attribute.get(lib.getNamespace()) : namespace2Attribute.get(lib.getLegacyNamespace());
+        Attribute declAttr = NamespaceUtils.getForNs(namespace2Attribute, lib.getNamespace());
         if (declAttr != null) {
             int from = declAttr.nameOffset();
             int to = declAttr.valueOffset() + declAttr.value().length();

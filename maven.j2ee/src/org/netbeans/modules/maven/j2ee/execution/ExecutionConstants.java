@@ -57,4 +57,8 @@ public final class ExecutionConstants {
      */
     public static final String SKIP_BUILD = "skip.build"; // NOI18N
 
+    /**
+     * Used to perform standard execution (without application server startup etc.).
+     */
+    public static final String STANDARD_EXECUTION = "standard.execution"; // NOI18N
 }

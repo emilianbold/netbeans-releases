@@ -61,8 +61,6 @@ public interface WriteLayerCapability extends LayerCapability {
     
     public void closeUnit(int unitIDInLayer, boolean cleanRespository);
 
-    public void storeFilesTable(Integer unitIDInLayer, List<CharSequence> filesList);
-
     public int registerNewUnit(UnitDescriptor unitDescriptor);
 
     public int registerClientFileSystem(FileSystem clientFileSystem);

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <installer-gui-script minSpecVersion="1.0">
-    <title>jdk7-netbeans-Title</title>
+    <title>jdk-netbeans-Title</title>
     <welcome file="Welcome.html"></welcome>
     <background file="background.tif" scaling="none" alignment="bottomleft"></background>
     <options allow-external-scripts="no" customize="never" rootVolumeOnly="false"></options>
