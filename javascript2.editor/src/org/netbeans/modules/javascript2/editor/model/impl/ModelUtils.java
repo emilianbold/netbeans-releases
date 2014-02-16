@@ -465,7 +465,8 @@ public class ModelUtils {
                             JsFunction function = rObject instanceof JsFunctionImpl
                                     ? (JsFunctionImpl) rObject
                                     : rObject instanceof JsFunctionReference ? ((JsFunctionReference) rObject).getOriginal() : null;
-                            if (function != null && function.getParent().equals(object.getParent())
+                            if (function != null && function.getParent() != null && object != null
+                                    && function.getParent().equals(object.getParent())
                                     && object.getDeclarationName() != null) {
                                 // creates reference to the original function
                                 object.getParent().addProperty(object.getName(), new JsFunctionReference(
