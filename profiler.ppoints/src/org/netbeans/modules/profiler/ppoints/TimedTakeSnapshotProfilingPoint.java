@@ -459,7 +459,7 @@ public final class TimedTakeSnapshotProfilingPoint extends TimedGlobalProfilingP
             if (hasResults()) {
                 int size = results.size();
                 long timeStamp = results.get(size - 1).getTimestamp();
-                String time = Utils.formatProfilingPointTime(timeStamp);
+                String time = Utils.formatLocalProfilingPointTime(timeStamp);
 
                 return (size == 1)
                        ? Bundle.TimedTakeSnapshotProfilingPoint_OneHitString(time)
