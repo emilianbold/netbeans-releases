@@ -1062,6 +1062,9 @@ public class FormatVisitor extends NodeVisitor {
                 return null;
             }
         }
+        if (stopMark != null && ((ts.offset() > stopMark && !backward) || (ts.offset() < stopMark && backward))) {
+            return null;
+        }
         if (token != null) {
             return getFallback(ts.offset(), startFallback);
         }
