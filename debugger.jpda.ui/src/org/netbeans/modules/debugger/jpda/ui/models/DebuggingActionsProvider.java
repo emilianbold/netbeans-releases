@@ -156,7 +156,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
     }
 
     private Action createCOPY_TO_CLBD_ACTION(RequestProcessor requestProcessor) {
-        return  Models.createAction (
+        Action a = Models.createAction (
         NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_CallstackAction_Copy2CLBD_Label"),
         new LazyActionPerformer (requestProcessor) {
             public boolean isEnabled (Object node) {
@@ -188,6 +188,8 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         },
         Models.MULTISELECTION_TYPE_ANY
     );
+        a.putValue("debuggerActionKind", "copyToClipboard");    // NOI18N
+        return a;
     }
 
     static final Action createGO_TO_SOURCE_ACTION(final RequestProcessor requestProcessor) {

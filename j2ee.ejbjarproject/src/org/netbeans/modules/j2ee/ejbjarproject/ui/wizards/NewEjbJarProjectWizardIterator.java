@@ -154,6 +154,7 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Progress
         String platformName = (String)wiz.getProperty(ProjectServerWizardPanel.JAVA_PLATFORM);
         String sourceLevel = (String)wiz.getProperty(ProjectServerWizardPanel.SOURCE_LEVEL);
         if (platformName != null || sourceLevel != null) {
+            sourceLevel = adaptSourceLevelToJavaEEProfile(createData.getJavaEEProfile(), sourceLevel);
             EjbJarProjectGenerator.setPlatform(h, platformName, sourceLevel);
         }
         
@@ -249,5 +250,17 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Progress
 
     @Override
     public final void removeChangeListener(ChangeListener l) {}
+
+    private static String adaptSourceLevelToJavaEEProfile(Profile javaEEProfile, String defaultSourceLevel) {
+        if (javaEEProfile.isAtLeast(Profile.JAVA_EE_7_WEB)) {
+            return "1.7"; //NOI18N
+        } else if (javaEEProfile.isAtLeast(Profile.JAVA_EE_6_WEB)) {
+            return "1.6"; //NOI18N
+        } else if (javaEEProfile.isAtLeast(Profile.JAVA_EE_5)) {
+            return "1.5"; //NOI18N
+        }
+
+        return defaultSourceLevel;
+    }
     
 }
