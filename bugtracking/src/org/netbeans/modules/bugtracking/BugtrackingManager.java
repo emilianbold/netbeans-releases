@@ -197,7 +197,7 @@ public final class BugtrackingManager implements LookupListener {
         }
     }
 
-    DelegatingConnector getConnector(String connectorId) {
+    public DelegatingConnector getConnector(String connectorId) {
         assert connectorId != null;
         for(DelegatingConnector c : getConnectors()) {
             if(connectorId.equals(c.getID())) {
