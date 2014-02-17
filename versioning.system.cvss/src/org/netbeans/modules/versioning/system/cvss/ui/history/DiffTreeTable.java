@@ -67,8 +67,12 @@ import java.util.logging.Level;
 import java.beans.PropertyVetoException;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.CharConversionException;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import org.openide.explorer.view.OutlineView;
 import org.netbeans.swing.outline.RenderDataProvider;
+import org.openide.xml.XMLUtil;
 
 /**
  * Treetable to show results of Search History action.
@@ -204,6 +208,8 @@ class DiffTreeTable extends OutlineView implements MouseListener, MouseMotionLis
         columns[1] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_DATE, String.class, loc.getString("LBL_DiffTree_Column_Time"), loc.getString("LBL_DiffTree_Column_Time_Desc"));
         columns[2] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_USERNAME, String.class, loc.getString("LBL_DiffTree_Column_Username"), loc.getString("LBL_DiffTree_Column_Username_Desc"));
         setProperties(columns);
+        TableColumn column = getOutline().getColumn(loc.getString("LBL_DiffTree_Column_Message"));
+        column.setCellRenderer(new MessageRenderer(getOutline().getDefaultRenderer(String.class)));
     }
     
     private void setDefaultColumnSizes() {
@@ -302,6 +308,44 @@ class DiffTreeTable extends OutlineView implements MouseListener, MouseMotionLis
         ExplorerManager em = ExplorerManager.find(this);
         if (em != null) {
             em.setRootContext(rootNode);
+        }
+    }
+
+    private static class MessageRenderer implements TableCellRenderer {
+        private final TableCellRenderer delegate;
+        private final Map<String, String> tooltips = new HashMap<String, String>();
+
+        public MessageRenderer (TableCellRenderer delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public Component getTableCellRendererComponent (JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            Component comp = delegate.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            if (comp instanceof JComponent) {
+                JComponent c = (JComponent) comp;
+                if (value == null) {
+                    c.setToolTipText(null);
+                } else {
+                    String val = value.toString();
+                    String tooltip = tooltips.get(val);
+                    if (tooltip == null) {
+                        tooltip = val.replace("\r\n", "\n").replace("\r", "\n"); //NOI18N
+                        try {
+                            tooltip = XMLUtil.toElementContent(tooltip);
+                        } catch (CharConversionException e1) {
+                            Logger.getLogger(DiffTreeTable.class.getName()).log(Level.INFO, "Can not HTML escape: ", tooltip);  //NOI18N
+                        }
+                        if (tooltip.contains("\n")) {
+                            tooltip = "<html><body><p>" + tooltip.replace("\n", "<br>") + "</p></body></html>"; //NOI18N
+                            c.setToolTipText(tooltip);
+                        }
+                        tooltips.put(val, tooltip);
+                    }
+                    c.setToolTipText(tooltip);
+                }
+            }
+            return comp;
         }
     }
     

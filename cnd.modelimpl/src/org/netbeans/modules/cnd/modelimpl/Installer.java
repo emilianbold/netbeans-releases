@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
@@ -57,7 +58,12 @@ import org.openide.util.NbBundle;
  * @author Vladimir Voskresensky
  */
 public final class Installer {
+    private static final AtomicBoolean closed = new AtomicBoolean(false);
 
+    public static boolean isClosed() {
+        return closed.get();
+    }
+    
     @OnStart
     public static final class Start implements Runnable {
 
@@ -77,6 +83,7 @@ public final class Installer {
         @Override
         public void run() {
             CndUtils.assertNonUiThread();
+            closed.set(true);
             final Runnable runnable = new RunnableImpl();
             if (CndUtils.isStandalone() || CndUtils.isUnitTestMode() || !ModelSupport.instance().hasOpenedProjects()) {
                 runnable.run();

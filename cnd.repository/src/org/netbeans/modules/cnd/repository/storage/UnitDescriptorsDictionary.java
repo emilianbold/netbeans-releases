@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
 
     private final Map<UnitDescriptor, Integer> map = new HashMap<UnitDescriptor, Integer>();
     private final AtomicInteger counter = new AtomicInteger(7);
+    private final Object lock = new Object();
 
     /**
      *
@@ -65,17 +66,21 @@ import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
      * @return clientShortUnitID
      */
     public int getUnitID(UnitDescriptor clientUnitDescriptor) {
-        Integer result = map.get(clientUnitDescriptor);
-        if (result == null) {
-            result = counter.getAndIncrement();
-            map.put(clientUnitDescriptor, result);
-        }
+        synchronized (lock) {
+            Integer result = map.get(clientUnitDescriptor);
+            if (result == null) {
+                result = counter.getAndIncrement();
+                map.put(clientUnitDescriptor, result);
+            }
 
-        return result;
+            return result;
+        }
     }
 
     public Integer remove(final Integer clientShortUnitID) {
-        return map.remove(getUnitDescriptor(clientShortUnitID));
+        synchronized (lock) {
+            return map.remove(getUnitDescriptor(clientShortUnitID));
+        }
     }
 
     /**
@@ -84,28 +89,36 @@ import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
      * @return
      */
     UnitDescriptor getUnitDescriptor(Integer clientShortUnitID) {
-        for (Map.Entry<UnitDescriptor, Integer> entry : map.entrySet()) {
-            if (entry.getValue().equals(clientShortUnitID)) {
-                return entry.getKey();
+        synchronized (lock) {
+            for (Map.Entry<UnitDescriptor, Integer> entry : map.entrySet()) {
+                if (entry.getValue().equals(clientShortUnitID)) {
+                    return entry.getKey();
+                }
             }
+            return null;
         }
-        return null;
     }
 
     boolean contains(UnitDescriptor clientUnitDescriptor) {
-        return map.containsKey(clientUnitDescriptor);
+        synchronized (lock) {        
+            return map.containsKey(clientUnitDescriptor);
+        }
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("\n[clientUnitDescriptor <-> clientShortUnitID]\n"); // NOI18N
-        for (Map.Entry<UnitDescriptor, Integer> entry : map.entrySet()) {
-            sb.append(entry.getKey()).append(" => ").append(entry.getValue()).append("\n"); // NOI18N
+        synchronized (lock) {        
+            for (Map.Entry<UnitDescriptor, Integer> entry : map.entrySet()) {
+                sb.append(entry.getKey()).append(" => ").append(entry.getValue()).append("\n"); // NOI18N
+            }
+            return sb.toString();
         }
-        return sb.toString();
     }
 
     Collection<Integer> getUnitIDs() {
-        return map.values();
+        synchronized (lock) { 
+            return map.values();
+        }
     }
 }

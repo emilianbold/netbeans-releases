@@ -688,7 +688,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
                                     removeUnique(res, macro.getMacro());
                                 } else {
                                     // add macro
-                                    addUnique(res, macro.getMacro());
+                                    addUniqueOrReplace(res, macro.getMacro());
                                 }
                             }
                         }

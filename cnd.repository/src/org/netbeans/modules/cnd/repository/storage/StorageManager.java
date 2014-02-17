@@ -133,6 +133,18 @@ public final class StorageManager {
     public RepositoryDataOutput getOutputStream(final Key key) {
         return getStorage(key).getOutputStream(key);
     }
+    
+    public void flush() {
+        synchronized (lock) {
+            for (Storage storage : storages.values()) {
+                try {
+                    storage.flush();
+                } catch (Exception ex) {
+                    RepositoryExceptions.throwException(this, ex);
+                }
+            }
+        }        
+    }
 
     public void shutdown() {
         isShuttedDown = true;
