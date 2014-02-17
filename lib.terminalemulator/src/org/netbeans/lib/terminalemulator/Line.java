@@ -414,7 +414,7 @@ final class Line {
         }
         int count = ecol - bcol + 1;
         if (bcol < 0 ||  count < 0) {
-            throw new IllegalArgumentException(String.format("offset=%d; count=%d; buf.length=%d", bcol, count, buf.length));
+            throw new IllegalArgumentException(String.format("offset=%d; count=%d; buf_length=%d; buf_capacity=%d", bcol, count, length, capacity));
         }
         return new String(buf, bcol, count) + newline;
     }
