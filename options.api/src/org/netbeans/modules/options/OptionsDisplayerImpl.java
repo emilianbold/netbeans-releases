@@ -466,8 +466,13 @@ public class OptionsDisplayerImpl {
                 }
                 descriptor.setHelpCtx(helpCtx);
             } else if (ev.getPropertyName ().equals ("buran" + OptionsPanelController.PROP_VALID)) {                  //NOI18N            
-                bOK.setEnabled (optionsPanel.dataValid ());
-		bAPPLY.setEnabled (optionsPanel.isChanged() && optionsPanel.dataValid());
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        bOK.setEnabled(optionsPanel.dataValid());
+                        bAPPLY.setEnabled(optionsPanel.isChanged() && optionsPanel.dataValid());
+                    }
+                });
             }
         }
         
