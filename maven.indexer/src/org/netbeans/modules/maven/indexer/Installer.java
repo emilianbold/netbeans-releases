@@ -69,7 +69,11 @@ public class Installer extends ModuleInstall {
                 }
             }
         }
-        ((NexusRepositoryIndexerImpl)Lookup.getDefault().lookup(RepositoryIndexerImplementation.class)).shutdownAll();
+        for (RepositoryIndexerImplementation rii : Lookup.getDefault().lookupAll(RepositoryIndexerImplementation.class)) {
+            if (rii instanceof NexusRepositoryIndexerImpl) {
+                ((NexusRepositoryIndexerImpl)rii).shutdownAll();
+            }
+        }
     }
 
 }

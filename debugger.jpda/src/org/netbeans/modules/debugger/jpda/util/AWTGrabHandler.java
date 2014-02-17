@@ -46,6 +46,8 @@ import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.Field;
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.IntegerValue;
+import com.sun.jdi.InterfaceType;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.InvocationException;
 import com.sun.jdi.LongValue;
@@ -65,6 +67,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
@@ -97,6 +100,8 @@ import org.openide.windows.OutputWriter;
  * This prevents from not responding X server due to paused application which holds the grab.
  * Warning: this class contains really hacked code accessing X11 functionality.
  * 
+ * This class was extended with focus ungrab for JavaFX.
+ * 
  * @author Martin Entlicher
  */
 // See https://netbeans.org/bugzilla/show_bug.cgi?id=93076
@@ -106,6 +111,21 @@ class AWTGrabHandler {
     
     private JPDADebuggerImpl debugger;
     private Boolean doGrabCheck = null; // Not decided at the beginning
+    
+    private static enum TOOLKIT {
+        AWT,
+        JAVAFX;
+        
+        static TOOLKIT get(String threadName) {
+            if (threadName.startsWith("AWT-EventQueue")) {                      // NOI18N
+                return AWT;
+            }
+            if (threadName.startsWith("JavaFX Application Thread")) {           // NOI18N
+                return JAVAFX;
+            }
+            return null;
+        }
+    }
     
     AWTGrabHandler(JPDADebuggerImpl debugger) {
         this.debugger = debugger;
@@ -150,20 +170,28 @@ class AWTGrabHandler {
         } catch (IllegalThreadStateExceptionWrapper ex) {
             return true;
         }
-        if (name.startsWith("AWT-EventQueue")) {
+        logger.fine("solveGrabbing("+name+")");
+        TOOLKIT tkt = TOOLKIT.get(name);
+        if (tkt != null) {
+            
             if (doGrabCheck == null) {
-                doGrabCheck = checkXServer(t);
+                doGrabCheck = checkXServer(t, tkt);
                 logger.fine("Doing the AWT grab check = "+doGrabCheck);
             }
             if (Boolean.TRUE.equals(doGrabCheck)) {
                 //System.err.println("");
-                ObjectReference grabbedWindow = getGrabbedWindow(t);
+                ObjectReference grabbedWindow;
+                if (tkt == TOOLKIT.AWT) {
+                    grabbedWindow = getGrabbedWindow(t);
+                } else {
+                    grabbedWindow = null; // We do not detect grabbed windows in FX
+                }
                 //System.err.println("Thread "+t+": some window is grabbed: "+isGrabbed+"\n");
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("Thread "+t+": some window is grabbed: "+grabbedWindow);
                 }
-                if (grabbedWindow != null) {
-                    boolean successUngrab = ungrabWindow(t, grabbedWindow, 5000);
+                if (grabbedWindow != null || tkt == TOOLKIT.JAVAFX) {
+                    boolean successUngrab = ungrabWindow(t, grabbedWindow, 5000, tkt);
                     logger.fine("Grabbed window was ungrabbed: "+successUngrab);
                     if (!successUngrab) {
                         InputOutput io = debugger.getIO();
@@ -192,7 +220,7 @@ class AWTGrabHandler {
         return true;
     }*/
     
-    public static ObjectReference getGrabbedWindow(ThreadReference t) {
+    private static ObjectReference getGrabbedWindow(ThreadReference t) {
         try {
             VirtualMachine vm = MirrorWrapper.virtualMachine(t);
             List<ReferenceType> classesByName = VirtualMachineWrapper.classesByName0(vm, "sun.awt.X11.XAwtState");  // NOI18N
@@ -244,12 +272,24 @@ class AWTGrabHandler {
         }
     }
     
-    private boolean ungrabWindow(final ThreadReference tr, final ObjectReference grabbedWindow, int timeout) {
+    private boolean ungrabWindow(final ThreadReference tr,
+                                 final ObjectReference grabbedWindow,
+                                 int timeout,
+                                 final TOOLKIT tkt) {
         final boolean[] success = new boolean[] { false };
         Task task = debugger.getRequestProcessor().create(new Runnable() {
             @Override
             public void run() {
-                success[0] = ungrabWindow(tr, grabbedWindow);
+                switch (tkt) {
+                    case AWT:
+                        success[0] = ungrabWindowAWT(tr, grabbedWindow);
+                        break;
+                    case JAVAFX:
+                        ungrabWindowFX(tr);
+                        success[0] = true;  // Be always successful in FX.
+                        break;
+                }
+                
             }
         });
         JPDAThreadImpl thread = debugger.getThread(tr);
@@ -277,7 +317,7 @@ class AWTGrabHandler {
         return success[0];
     }
     
-    public boolean ungrabWindow(ThreadReference tr, ObjectReference grabbedWindow) {
+    private boolean ungrabWindowAWT(ThreadReference tr, ObjectReference grabbedWindow) {
         // Call XBaseWindow.ungrabInput()
         try {
             VirtualMachine vm = MirrorWrapper.virtualMachine(grabbedWindow);
@@ -301,17 +341,136 @@ class AWTGrabHandler {
         }
         return true;
     }
-
-    private boolean checkXServer(ThreadReference t) {
+    
+    private boolean ungrabWindowFX(ThreadReference tr) {
+        // javafx.stage.Window.impl_getWindows() - Iterator<Window>
+        // while (iterator.hasNext()) {
+        //     Window w = iterator.next();
+        //     ungrabWindowFX(w);
+        // }
         try {
-            return checkXServerExc(t);
+            VirtualMachine vm = MirrorWrapper.virtualMachine(tr);
+            List<ReferenceType> windowClassesByName = VirtualMachineWrapper.classesByName(vm, "javafx.stage.Window");
+            if (windowClassesByName.isEmpty()) {
+                logger.info("Unable to release FX X grab, no javafx.stage.Window class in target VM "+VirtualMachineWrapper.description(vm));
+                return true; // We do not know whether there was any grab
+            }
+            ClassType WindowClass = (ClassType) windowClassesByName.get(0);
+            Method getWindowsMethod = WindowClass.concreteMethodByName("impl_getWindows", "()Ljava/util/Iterator;");
+            if (getWindowsMethod == null) {
+                logger.info("Unable to release FX X grab, no impl_getWindows() method in "+WindowClass);
+                return true; // We do not know whether there was any grab
+            }
+            ObjectReference windowsIterator = (ObjectReference) WindowClass.invokeMethod(tr, getWindowsMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+            if (windowsIterator == null) {
+                return true; // We do not know whether there was any grab
+            }
+            InterfaceType IteratorClass = (InterfaceType) VirtualMachineWrapper.classesByName(vm, Iterator.class.getName()).get(0);
+            Method hasNext = IteratorClass.methodsByName("hasNext", "()Z").get(0);
+            Method next = IteratorClass.methodsByName("next", "()Ljava/lang/Object;").get(0);
+            while (hasNext(hasNext, tr, windowsIterator)) {
+                ObjectReference w = next(next, tr, windowsIterator);
+                ungrabWindowFX(WindowClass, w, tr);
+            }
+        } catch (VMDisconnectedExceptionWrapper vmdex) {
+            return true; // Disconnected, all is good.
+        } catch (Exception ex) {
+            logger.log(Level.INFO, "Unable to release FX X grab (if any).", ex);
+            return true; // We do not know whether there was any grab
+        }
+        return true;
+    }
+    
+    private boolean hasNext(Method hasNext, ThreadReference tr, ObjectReference iterator) throws Exception {
+        Value v = iterator.invokeMethod(tr, hasNext, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+        return (v instanceof BooleanValue) && ((BooleanValue) v).booleanValue();
+    }
+    
+    private ObjectReference next(Method next, ThreadReference tr, ObjectReference iterator) throws Exception {
+        return (ObjectReference) iterator.invokeMethod(tr, next, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+    }
+    
+    private void ungrabWindowFX(ClassType WindowClass, ObjectReference w, ThreadReference tr) throws Exception {
+        // javafx.stage.Window w
+        // w.focusGrabCounter
+        // while (focusGrabCounter-- > 0) {
+        //     w.impl_getPeer().ungrabFocus(); OR: w.impl_peer.ungrabFocus();
+        // }
+        Field focusGrabCounterField = WindowClass.fieldByName("focusGrabCounter");
+        if (focusGrabCounterField == null) {
+            logger.info("Unable to release FX X grab, no focusGrabCounter field in "+w);
+            return ;
+        }
+        Value focusGrabCounterValue = w.getValue(focusGrabCounterField);
+        if (!(focusGrabCounterValue instanceof IntegerValue)) {
+            logger.info("Unable to release FX X grab, focusGrabCounter does not have an integer value in "+w);
+            return ;
+        }
+        int focusGrabCounter = ((IntegerValue) focusGrabCounterValue).intValue();
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("Focus grab counter of "+w+" is: "+focusGrabCounter);
+        }
+        while (focusGrabCounter-- > 0) {
+            //Method impl_getPeerMethod = WindowClass.concreteMethodByName("impl_getPeer", "");
+            Field impl_peerField = WindowClass.fieldByName("impl_peer");
+            if (impl_peerField == null) {
+                logger.info("Unable to release FX X grab, no impl_peer field in "+w);
+                return ;
+            }
+            ObjectReference impl_peer = (ObjectReference) w.getValue(impl_peerField);
+            if (impl_peer == null) {
+                continue;
+            }
+            InterfaceType TKStageClass = (InterfaceType) w.virtualMachine().classesByName("com.sun.javafx.tk.TKStage").get(0);
+            Method ungrabFocusMethod = TKStageClass.methodsByName("ungrabFocus", "()V").get(0);
+            impl_peer.invokeMethod(tr, ungrabFocusMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("FX Window "+w+" was successfully ungrabbed.");
+            }
+        }
+    }
+    
+    private boolean ungrabWindowFX_OLD(ThreadReference tr) {
+        // com.sun.javafx.tk.quantum.WindowStage has:
+        // field static Map<Window, WindowStage> platformWindows = new HashMap<>();
+        // com.sun.glass.ui.Window.ungrabFocus()
+        try {
+            VirtualMachine vm = MirrorWrapper.virtualMachine(tr);
+            List<ReferenceType> windowStageClassesByName = VirtualMachineWrapper.classesByName(vm, "com.sun.javafx.tk.quantum.WindowStage");
+            if (windowStageClassesByName.isEmpty()) {
+                logger.info("Unable to release FX X grab, no quantum WindowStage class in target VM "+VirtualMachineWrapper.description(vm));
+                return false;
+            }
+            ClassType WindowStageClass = (ClassType) windowStageClassesByName.get(0);
+            Field platformWindowsField = WindowStageClass.fieldByName("platformWindows");
+            if (platformWindowsField == null) {
+                logger.info("Unable to release FX X grab, no platformWindows field found in WindowStage in target VM "+VirtualMachineWrapper.description(vm));
+                return false;
+            }
+            ObjectReference platformWindows = (ObjectReference) WindowStageClass.getValue(platformWindowsField);
+            if (platformWindows == null) {
+                logger.info("Unable to release FX X grab, no platformWindows field has null value in WindowStage in target VM "+VirtualMachineWrapper.description(vm));
+                return false;
+            }
+        } catch (VMDisconnectedExceptionWrapper vmdex) {
+            return true; // Disconnected, all is good.
+        } catch (Exception ex) {
+            logger.log(Level.INFO, "Unable to release FX X grab (if any).", ex);
+            return true; // We do not know whether there was any grab
+        }
+        return true;
+    }
+
+    private boolean checkXServer(ThreadReference t, TOOLKIT tkt) {
+        try {
+            return checkXServerExc(t, tkt);
         } catch (Exception ex) {
             logger.log(Level.FINE, "Exception thrown from checkXServer: ", ex);
             return false;
         }
     }
     
-    private Boolean checkXServerExc(ThreadReference tr) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException {
+    private Boolean checkXServerExc(ThreadReference tr, TOOLKIT tkt) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException {
         // Check if we're running under X11:
         //if (!(Toolkit.getDefaultToolkit() instanceof sun.awt.X11.XToolkit)) {
         //    return false; // Not an X server
@@ -377,14 +536,33 @@ class AWTGrabHandler {
                 String prop = xa.getProperty(defaultRootWindow);
              */
             VirtualMachine virtualMachine = MirrorWrapper.virtualMachine(tr);
+            List<ReferenceType> xtoolkitClassesByName = null;
+            switch (tkt) {
+                case AWT:
+                    xtoolkitClassesByName = VirtualMachineWrapper.classesByName(virtualMachine, "sun.awt.X11.XToolkit");
+                    if (xtoolkitClassesByName.isEmpty()) {
+                        // not an X Server
+                        logger.fine("No sun.awt.X11.XToolkit class found => not an X server");
+                        return false;
+                    }
+                    break;
+                case JAVAFX:
+                    if (VirtualMachineWrapper.classesByName(virtualMachine, "com.sun.glass.ui.gtk.GtkWindow").isEmpty()) {
+                        // not an X Server
+                        logger.fine("No com.sun.glass.ui.gtk.GtkWindow class found => not an X server");
+                        return false;
+                    }
+                    break;
+                default:
+                    throw new IllegalStateException(tkt.name());
+            }
             List<ReferenceType> toolkitClassesByName = VirtualMachineWrapper.classesByName(virtualMachine, "java.awt.Toolkit");
             if (toolkitClassesByName.isEmpty()) {
+                if (tkt != TOOLKIT.AWT) {
+                    logger.fine("Have no AWT toolkit in "+tkt.name()+" therefore doing ungrab automatically.");
+                    return true;    // NO AWT toolkit, therefore we must suppose that there can be a grab
+                }
                 return null; // There is AWT-EventQueue thread and no Toolkit ? Try again, later...
-            }
-            List<ReferenceType> xtoolkitClassesByName = VirtualMachineWrapper.classesByName(virtualMachine, "sun.awt.X11.XToolkit");
-            if (xtoolkitClassesByName.isEmpty()) {
-                // not an X Server
-                return false;
             }
             thread = debugger.getThread(tr);
             thread.notifyMethodInvoking();
@@ -394,24 +572,48 @@ class AWTGrabHandler {
             Method getDefaultToolkit = ClassTypeWrapper.concreteMethodByName(ToolkitClass, "getDefaultToolkit", "()Ljava/awt/Toolkit;");
             ObjectReference toolkit = (ObjectReference) ToolkitClass.invokeMethod(tr, getDefaultToolkit, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
             
-            ClassType XToolkitClass = (ClassType) xtoolkitClassesByName.get(0);
+            ClassType XToolkitClass;
+            switch (tkt) {
+                case AWT:
+                    XToolkitClass = (ClassType) xtoolkitClassesByName.get(0);
+                    break;
+                case JAVAFX:
+                    ReferenceType toolkitType = toolkit.referenceType();
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.fine("Toolkit Type = "+toolkitType.name()+" is X toolkit = "+toolkitType.name().endsWith(".X11.XToolkit"));
+                    }
+                    if (!toolkitType.name().endsWith(".X11.XToolkit")) {
+                        // NO X toolkit
+                        return false;
+                    }
+                    XToolkitClass = (ClassType) toolkitType;
+                    /*if (XToolkitClass == null) {
+                        // NO X toolkit, therefore we must suppose that there can be a grab
+                        return true;
+                    }*/
+                    break;
+                default:
+                    throw new IllegalStateException(tkt.name());
+            }
             // if (!(Toolkit.getDefaultToolkit() instanceof XToolkit)) {
             if (!isAssignable(XToolkitClass, (ClassType) toolkit.referenceType())) {
                 return false; // XToolkit not found.
             }
             
-            //boolean sunAwtDisableGrab = XToolkit.getSunAwtDisableGrab();
-            Method getSunAwtDisableGrab = ClassTypeWrapper.concreteMethodByName(XToolkitClass, "getSunAwtDisableGrab", "()Z");
-            if (getSunAwtDisableGrab == null) {
-                logger.fine("XToolkit.getSunAwtDisableGrab() method not found in target VM "+VirtualMachineWrapper.description(virtualMachine));
-            } else {
-                BooleanValue sunAwtDisableGrab = (BooleanValue) XToolkitClass.invokeMethod(tr, getSunAwtDisableGrab, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("sunAwtDisableGrab = "+sunAwtDisableGrab.value());
-                }
-                if (sunAwtDisableGrab.value()) {
-                    // AWT grab is disabled, no need to check for grabbed windows.
-                    return false;
+            if (tkt == TOOLKIT.AWT) {
+                //boolean sunAwtDisableGrab = XToolkit.getSunAwtDisableGrab();
+                Method getSunAwtDisableGrab = ClassTypeWrapper.concreteMethodByName(XToolkitClass, "getSunAwtDisableGrab", "()Z");
+                if (getSunAwtDisableGrab == null) {
+                    logger.fine("XToolkit.getSunAwtDisableGrab() method not found in target VM "+VirtualMachineWrapper.description(virtualMachine));
+                } else {
+                    BooleanValue sunAwtDisableGrab = (BooleanValue) XToolkitClass.invokeMethod(tr, getSunAwtDisableGrab, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.fine("sunAwtDisableGrab = "+sunAwtDisableGrab.value());
+                    }
+                    if (sunAwtDisableGrab.value()) {
+                        // AWT grab is disabled, no need to check for grabbed windows.
+                        return false;
+                    }
                 }
             }
             
