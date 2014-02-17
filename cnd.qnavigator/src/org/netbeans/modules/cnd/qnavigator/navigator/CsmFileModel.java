@@ -31,6 +31,7 @@
 package org.netbeans.modules.cnd.qnavigator.navigator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
@@ -190,7 +191,7 @@ public class CsmFileModel {
         boolean res = true;
         if (csmFile != null &&  csmFile.isValid()) {
             resetScope(preBuildModel.newLineNumberIndex);
-            if (force || preBuildModel.forceRebuild || isNeedChange(preBuildModel.newLineNumberIndex)) {
+            if (force || preBuildModel.forceRebuild || isNeedChange(preBuildModel.newLineNumberIndex,  preBuildModel.newList)) {
                 clear();
                 list.addAll(preBuildModel.newList);
                 lineNumberIndex.addAll(preBuildModel.newLineNumberIndex);
@@ -209,7 +210,7 @@ public class CsmFileModel {
         return res;
     }
 
-    private boolean isNeedChange(List<IndexOffsetNode> newLineNumberIndex){
+    private boolean isNeedChange(List<IndexOffsetNode> newLineNumberIndex,  List<CppDeclarationNode> newList){
         if (newLineNumberIndex.size() != lineNumberIndex.size()) {
             return true;
         }
@@ -233,7 +234,23 @@ public class CsmFileModel {
             updateNodeContent(n1, n2);
             i++;
         }
-        return false;
+        return !isTreeEquals(list, newList);
+    }
+    
+    private boolean isTreeEquals(List<? extends Node> list1, List<? extends Node> list2) {
+        if (list1.size() != list2.size()) {
+            return false;
+        }
+        for(int i = 0; i < list1.size(); i++) {
+            Node n1 = list1.get(i);
+            Node n2 = list2.get(i);
+            List<Node> l1 = Arrays.asList(n1.getChildren().getNodes());
+            List<Node> l2 = Arrays.asList(n2.getChildren().getNodes());
+            if (!isTreeEquals(l1, l2)) {
+                return false;
+            }
+        }
+        return true;
     }
     
     private boolean compareNodeContent(IndexOffsetNode n1, IndexOffsetNode n2){
