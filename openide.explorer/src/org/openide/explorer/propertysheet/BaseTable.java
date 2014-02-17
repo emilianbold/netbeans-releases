@@ -1263,6 +1263,7 @@ abstract class BaseTable extends JTable implements FocusListener {
             if (root != null) { // #57417 NPE
                 root.getLayeredPane().repaint();
             }
+            setCaretPosition(getText().length());
         }
 
         public void focusLost(FocusEvent e) {
