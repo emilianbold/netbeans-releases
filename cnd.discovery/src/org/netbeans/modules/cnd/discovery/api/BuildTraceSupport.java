@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.discovery.buildsupport;
+package org.netbeans.modules.cnd.discovery.api;
 
 import java.io.IOException;
 import java.util.HashSet;
