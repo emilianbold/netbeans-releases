@@ -47,6 +47,7 @@ import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.IfTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
@@ -361,5 +362,9 @@ public class MethodExitDetector extends CancellableTreePathScanner<Boolean, Stac
     public Boolean visitClass(ClassTree node, Stack<Tree> p) {
         return null;
     }
-    
+
+    @Override
+    public Boolean visitLambdaExpression(LambdaExpressionTree node, Stack<Tree> p) {
+        return null;
+    }    
 }

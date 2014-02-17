@@ -578,22 +578,11 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         private boolean shouldWriteSources () {
             if (defaultPlatform) {
                 assert this.instance instanceof DefaultPlatformImpl;
-                DefaultPlatformImpl dp = (DefaultPlatformImpl) this.instance;
-                List<ClassPath.Entry> sfEntries = dp.getSourceFolders().entries();
-                List<URL> defaultSf = DefaultPlatformImpl.getSources(FileUtil.normalizeFile(new File(dp.getSystemProperties().get("jdk.home")))); // NOI18N
-                if (defaultSf == null || sfEntries.size() != defaultSf.size()) {
-                    return true;
+                final List<URL> roots = new ArrayList<>();
+                for (ClassPath.Entry entry : instance.getSourceFolders().entries()) {
+                    roots.add(entry.getURL());
                 }
-                Iterator<ClassPath.Entry> sfit = sfEntries.iterator();
-                Iterator<URL> defif = defaultSf.iterator();
-                while (sfit.hasNext()) {
-                    ClassPath.Entry entry = sfit.next ();                    
-                    URL url = defif.next();
-                    if (!url.equals(entry.getURL())) {
-                        return true;
-                    }
-                }
-                return false;
+                return !roots.equals(J2SEPlatformImpl.defaultSources(instance));
             }
             return true;
         }
