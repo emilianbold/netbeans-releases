@@ -44,6 +44,7 @@ package org.netbeans.modules.css.prep.editor;
 import java.io.IOException;
 import org.netbeans.modules.css.prep.editor.model.CPModel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -117,6 +118,9 @@ public class CPCssEditorModule extends CssEditorModule {
 
     private final SemanticAnalyzer semanticAnalyzer = new CPSemanticAnalyzer();
     private static Map<NodeType, ColoringAttributes> COLORINGS;
+    private static final Collection<String> PSEUDO_CLASSES = Arrays.asList(new String[]{
+                "extend" //NOI18N
+            });
 
     @Override
     public SemanticAnalyzer getSemanticAnalyzer() {
@@ -263,7 +267,7 @@ public class CPCssEditorModule extends CssEditorModule {
                 }
                     switch (ts.token().id()) {
                         case SASS_INCLUDE:
-                            //completion at: @include | 
+                            //completion at: @include |
                             proposals.addAll(getMixinsCompletionProposals(context, model));
                             break;
 
@@ -420,7 +424,7 @@ public class CPCssEditorModule extends CssEditorModule {
         int diff = tokenSequence.move(context.getCaretOffset());
         if (diff > 0 && tokenSequence.moveNext() || diff == 0 && tokenSequence.movePrevious()) {
             Token<CssTokenId> token = tokenSequence.token();
-            return token.id() == CssTokenId.AT_IDENT //less 
+            return token.id() == CssTokenId.AT_IDENT //less
                     || token.id() == CssTokenId.SASS_VAR //sass
                     || token.id() == CssTokenId.IDENT; //sass/less mixin name
 
@@ -735,6 +739,15 @@ public class CPCssEditorModule extends CssEditorModule {
             }
         };
 
+    }
+
+    @Override
+    public Collection<String> getPseudoClasses(EditorFeatureContext context) {
+        Collection<String> result = null;
+        if (CPUtils.LESS_FILE_MIMETYPE.equals(context.getSource().getMimeType())) {
+            result = PSEUDO_CLASSES;
+        }
+        return result;
     }
 
     private static class CpAlternativeLocation implements DeclarationFinder.AlternativeLocation {
