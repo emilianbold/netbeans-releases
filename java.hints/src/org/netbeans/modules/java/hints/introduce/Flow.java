@@ -503,6 +503,15 @@ public class Flow {
             return false;
         }
         
+        private void addUse2Values(Tree place, State prevState) {
+            State s = use2Values.get(place);
+            if (true && s == null) {
+                use2Values.put(place, prevState);
+            } else {
+                use2Values.put(place, s.merge(prevState));
+            }
+        }
+        
         @Override
         public Boolean visitCompoundAssignment(CompoundAssignmentTree node, ConstructorData p) {
             TypeElement oldQName = this.referenceTarget;
@@ -521,7 +530,7 @@ public class Flow {
                     VariableElement ve = (VariableElement) e;
                     State prevState = variable2State.get(ve);
                     if (LOCAL_VARIABLES.contains(e.getKind())) {
-                        use2Values.put(node.getVariable(), prevState); //XXX
+                        addUse2Values(node.getVariable(), prevState);
                     } else if (e.getKind() == ElementKind.FIELD && prevState != null && prevState.hasUnassigned() && !finalCandidates.contains(ve)) {
                         usedWhileUndefined.add(ve);
                     }
@@ -605,7 +614,7 @@ public class Flow {
                 State prevState = variable2State.get(ve);
                 
                 if (LOCAL_VARIABLES.contains(e.getKind())) {
-                    use2Values.put(getCurrentPath().getLeaf(), prevState);
+                    addUse2Values(getCurrentPath().getLeaf(), prevState);
                 } else if (e.getKind() == ElementKind.FIELD && (prevState == null || prevState.hasUnassigned()) && !finalCandidates.contains(ve)) {
                     usedWhileUndefined.add(ve);
                 }
@@ -764,7 +773,7 @@ public class Flow {
                         State prevState = variable2State.get(ve);
 
                         if (LOCAL_VARIABLES.contains(e.getKind())) {
-                            use2Values.put(node.getExpression(), prevState);
+                            addUse2Values(node.getExpression(), prevState);
                         } else if (e.getKind() == ElementKind.FIELD && prevState != null && prevState.hasUnassigned() && !finalCandidates.contains(ve)) {
                             usedWhileUndefined.add(ve);
                         }
@@ -904,7 +913,8 @@ public class Flow {
                 scan(node.getCondition(), null);
                 
                 doNotRecord = oldDoNotRecord;
-                variable2State = beforeLoop;
+                variable2State = mergeOr(beforeLoop, variable2State);
+//                variable2State = beforeLoop;
             }
 
             return null;
