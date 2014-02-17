@@ -42,12 +42,10 @@
 
 package org.netbeans.modules.bugtracking.ui.selectors;
 
-import javax.swing.LayoutStyle;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Image;
 import java.awt.ItemSelectable;
 import java.awt.LayoutManager;
@@ -56,40 +54,42 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.ListCellRenderer;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.bugtracking.RepositoryImpl;
-import org.openide.DialogDescriptor;
-import org.openide.awt.Mnemonics;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import static javax.swing.JComponent.LEFT_ALIGNMENT;
 import static javax.swing.BoxLayout.X_AXIS;
 import static javax.swing.BoxLayout.Y_AXIS;
 import javax.swing.Icon;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import static javax.swing.JComponent.LEFT_ALIGNMENT;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.LayoutStyle;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
+import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
+import javax.swing.ListCellRenderer;
 import static javax.swing.SwingConstants.EAST;
 import static javax.swing.SwingConstants.HORIZONTAL;
 import static javax.swing.SwingConstants.NORTH;
 import static javax.swing.SwingConstants.SOUTH;
 import static javax.swing.SwingConstants.VERTICAL;
 import static javax.swing.SwingConstants.WEST;
-import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
-import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.APIAccessor;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.openide.util.ImageUtilities;
+import org.openide.DialogDescriptor;
+import org.openide.awt.Mnemonics;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * Allows the user to select an existing connection to a bug-tracking repository
@@ -195,7 +195,15 @@ public final class RepositorySelectorBuilder implements ItemListener,
             repositories = null;
         }
 
-        this.existingRepositories = repositories;
+        List<RepositoryImpl> l = new LinkedList<RepositoryImpl>();
+        for (RepositoryImpl r : repositories) {
+            DelegatingConnector c = BugtrackingManager.getInstance().getConnector(r.getConnectorId());
+            if(c.providesRepositoryManagement()) {
+                l.add(r);
+            }
+        }
+        
+        this.existingRepositories = l.toArray(new RepositoryImpl[l.size()]);
     }
 
     public void setBugtrackingConnectors(DelegatingConnector[] connectors) {
