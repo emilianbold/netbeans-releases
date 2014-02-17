@@ -316,6 +316,9 @@ final class Line {
             length = column+1;
         }
         term.checkForMultiCell(c);
+        if (column < 0) {
+            throw new IllegalArgumentException(String.format("column=%d; buf_length=%d; buf_capacity=%d", column, length, capacity));
+        }
         charAtPut(column, c);
         if (haveAttributes(a)) {
             attr[column] = a;
