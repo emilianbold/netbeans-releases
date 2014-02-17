@@ -80,6 +80,7 @@ public final class J2SEPlatformDefaultJavadocImpl implements J2SEPlatformDefault
         OFFICIAL_JAVADOC.put("1.5", "http://download.oracle.com/javase/1.5.0/docs/api/"); // NOI18N
         OFFICIAL_JAVADOC.put("1.6", "http://download.oracle.com/javase/6/docs/api/"); // NOI18N
         OFFICIAL_JAVADOC.put("1.7", "http://download.oracle.com/javase/7/docs/api/"); // NOI18N
+        OFFICIAL_JAVADOC.put("1.8", "http://download.oracle.com/javase/8/docs/api/"); // NOI18N
     }
 
     @Override
