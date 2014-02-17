@@ -49,6 +49,7 @@ import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
@@ -106,7 +107,7 @@ public final class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
 
     public static List<? extends PhpDocTypeTagInfo> create(PHPDocTypeTag typeTag, Scope scope) {
         Kind kind;
-        if (scope instanceof ClassScope) {
+        if (scope instanceof ClassScope || scope instanceof TraitScope) {
             kind = Kind.FIELD;
         } else {
             kind = Kind.VARIABLE;

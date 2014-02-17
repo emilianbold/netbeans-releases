@@ -73,6 +73,7 @@ PACKAGE    NNS                             [PUBLIC]   CNS
 PACKAGE    Name                            [PUBLIC]   More
 PACKAGE    Name                            [PUBLIC]   Other
 PACKAGE    Ns                              [PUBLIC]   Testing
+PACKAGE    Second                          [PUBLIC]   First
 PACKAGE    Space                           [PUBLIC]   More\Name
 PACKAGE    Space                           [PUBLIC]   Name
 PACKAGE    Space                           [PUBLIC]   Other\Name
@@ -339,6 +340,7 @@ CLASS      TestIssue145206                 [PUBLIC]   issue145206.php
 CLASS      TestIssue146176                 [PUBLIC]   issue146176.php
 CLASS      TestMethod                      [PUBLIC]   test202530.php
 CLASS      TestOptionalArgsClass           [PUBLIC]   optional_args.php
+CLASS      ThirdC                          [PUBLIC]   First\Second
 CLASS      TraitedClass                    [PUBLIC]   traits.php
 CLASS      Types                           [PUBLIC]   Package1
 CLASS      TypesinPHPDoc                   [PUBLIC]   types_in_phpdoc.php

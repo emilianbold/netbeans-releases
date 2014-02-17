@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.refactoring.findusages.impl;
+package org.netbeans.modules.php.editor.completion;
 
-import java.util.HashSet;
-import java.util.Set;
-import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.control.SourceUnit;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Martin Janicek
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class AbstractFindUsagesVisitor extends ClassCodeVisitorSupport {
+public class PHPCodeCompletion241902Test extends PHPCodeCompletionTestBase {
 
-    protected final ModuleNode moduleNode;
-    protected final Set<ASTNode> usages;
-
-
-    public AbstractFindUsagesVisitor(ModuleNode moduleNode) {
-        this.moduleNode = moduleNode;
-        this.usages = new HashSet<ASTNode>();
+    public PHPCodeCompletion241902Test(String testName) {
+        super(testName);
     }
 
-    public Set<ASTNode> findUsages() {
-        if (moduleNode != null) {
-            for (Object object : moduleNode.getClasses()) {
-                visitClass((ClassNode) object);
-            }
-        }
-        return usages;
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests241902/issue241902.php", "use ^; //ns", false);
+    }
+
+    public void testUseCase2() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests241902/issue241902.php", "use ^; //cls", false);
+    }
+
+    public void testUseCase3() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests241902/issue241902.php", "use ^; //trt", false);
     }
 
     @Override
-    protected SourceUnit getSourceUnit() {
-        return moduleNode.getContext();
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests241902/"))
+            })
+        );
     }
+
 }

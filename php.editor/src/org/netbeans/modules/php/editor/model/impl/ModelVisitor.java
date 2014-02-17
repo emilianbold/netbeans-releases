@@ -85,6 +85,7 @@ import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.NavUtils;
+import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -1092,7 +1093,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     fqNames.append(qualifiedTypeNames);
                     sb.append(typeName);
                 }
-                if (currentScope instanceof ClassScope && !it.hasNext()) {
+                if ((currentScope instanceof ClassScope || currentScope instanceof TraitScope) && !it.hasNext()) {
                     new FieldElementImpl(currentScope, sb.length() > 0 ? sb.toString() : null, fqNames.length() > 0 ? fqNames.toString() : null, phpDocTypeTagInfo);
                 }
             } else if (node.getKind().equals(PHPDocTag.Type.GLOBAL) && phpDocTypeTagInfo.getKind().equals(Kind.VARIABLE)) {

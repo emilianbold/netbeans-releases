@@ -72,6 +72,7 @@ PACKAGE    NNS                             [PUBLIC]   CNS
 PACKAGE    Name                            [PUBLIC]   More
 PACKAGE    Name                            [PUBLIC]   Other
 PACKAGE    Ns                              [PUBLIC]   Testing
+PACKAGE    Second                          [PUBLIC]   First
 PACKAGE    Space                           [PUBLIC]   More\Name
 PACKAGE    Space                           [PUBLIC]   Name
 PACKAGE    Space                           [PUBLIC]   Other\Name
@@ -115,6 +116,7 @@ CLASS      MyIface                         [PUBLIC]   insideInterface.php
 CLASS      MySecondIface                   [PUBLIC]   insideInterface.php
 CLASS      MyTestInterface                 [PUBLIC]   test225454.php
 CLASS      ParentInterface                 [PUBLIC]   interfaces.php
+CLASS      ThirdI                          [PUBLIC]   First\Second
 CLASS      XUserInterface                  [PUBLIC]   XUser
 CLASS      a                               [PUBLIC]   issue137033.php
 CLASS      a186936                         [PUBLIC]   a.php

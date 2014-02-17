@@ -1734,6 +1734,10 @@ public class JsFormatterTest extends JsTestBase {
     public void testIssue228716() throws Exception {
         format("var o = {};", "var o = {};", new IndentPrefs(4, 4));
     }
+    
+    public void testIssue240402() throws Exception {
+        reformatFileContents("testfiles/formatter/issue240402.js",new IndentPrefs(4, 4));
+    }
 
     // test from original formatter
 

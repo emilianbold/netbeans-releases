@@ -125,6 +125,10 @@ public final class Identifiers extends ELRule {
                         parent = node;
                     }
                     if (node instanceof AstDotSuffix || NodeUtil.isMethodCall(node)) {
+                        if (parent == null) {
+                            // parent is not static collection or identifier, don't care about the expression
+                            return;
+                        }
                         String image = parent.getImage();
                         boolean valid;
                         if (image != null && "cc".equals(image)) { //NOI18N
