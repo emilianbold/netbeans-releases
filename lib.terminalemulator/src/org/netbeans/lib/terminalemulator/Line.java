@@ -317,7 +317,7 @@ final class Line {
         }
         term.checkForMultiCell(c);
         if (column < 0) {
-            throw new IllegalArgumentException(String.format("column=%d; buf_length=%d; buf_capacity=%d", column, length, capacity));
+            throw new IllegalArgumentException(String.format("column=%d; buf_length=%d; buf_capacity=%d", column, length, capacity));   //NOI18N
         }
         charAtPut(column, c);
         if (haveAttributes(a)) {
@@ -417,7 +417,7 @@ final class Line {
         }
         int count = ecol - bcol + 1;
         if (bcol < 0 ||  count < 0) {
-            throw new IllegalArgumentException(String.format("offset=%d; count=%d; buf_length=%d; buf_capacity=%d", bcol, count, length, capacity));
+            throw new IllegalArgumentException(String.format("offset=%d; count=%d; buf_length=%d; buf_capacity=%d", bcol, count, length, capacity));    //NOI18N
         }
         return new String(buf, bcol, count) + newline;
     }
