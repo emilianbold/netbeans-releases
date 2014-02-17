@@ -68,7 +68,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
@@ -92,6 +91,7 @@ import org.netbeans.modules.cnd.builds.CMakeExecSupport;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.builds.QMakeExecSupport;
+import org.netbeans.modules.cnd.discovery.api.BuildTraceSupport;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.execution.ExecutionSupport;
@@ -134,7 +134,6 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -184,10 +183,6 @@ public class ImportRemoteProject implements PropertyChangeListener {
     private FileObject configureFileObject;
     private final Map<Step, State> importResult = new EnumMap<Step, State>(Step.class);
 
-    private static final String CND_TOOLS = "__CND_TOOLS__"; //NOI18N
-    private static final String CND_TOOLS_VALUE = System.getProperty("cnd.buildtrace.tools", "gcc:c++:g++:gfortran:g77:g90:g95:cc:CC:ffortran:f77:f90:f95"); //NOI18N
-    private static final String CND_BUILD_LOG = "__CND_BUILD_LOG__"; //NOI18N
-    private boolean useBuildTrace = true;
     private final CountDownLatch waitSources = new CountDownLatch(1);
     private final AtomicInteger openState = new AtomicInteger(0);
     private Interrupter interrupter;
@@ -229,10 +224,10 @@ public class ImportRemoteProject implements PropertyChangeListener {
         } else {
             customSetup(wizard);
         }
-        Preferences makeProjectPref = NbPreferences.root().node("/org/netbeans/modules/cnd/makeproject"); //NOI18N
-        if (makeProjectPref != null) {
-            useBuildTrace = makeProjectPref.getBoolean("useBuildTrace", true);
-        }
+        //Preferences makeProjectPref = NbPreferences.root().node("/org/netbeans/modules/cnd/makeproject"); //NOI18N
+        //if (makeProjectPref != null) {
+        //    useBuildTrace = makeProjectPref.getBoolean("useBuildTrace", true);
+        //}
     }
 
     private void simpleSetup(WizardDescriptor wizard) {
@@ -767,6 +762,7 @@ public class ImportRemoteProject implements PropertyChangeListener {
             try {
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
                 switch (hostInfo.getOSFamily()) {
+                case MACOSX:
                 case SUNOS:
                 case LINUX:
                     if (fileSystemExecutionEnvironment.isRemote()) {
@@ -777,17 +773,16 @@ public class ImportRemoteProject implements PropertyChangeListener {
             } catch (CancellationException ex) {
             }
         }
-        if(useBuildTrace) {
+        ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
+        if(BuildTraceSupport.useBuildTrace(makeConfigurationDescriptor.getActiveConfiguration()) &&
+           BuildTraceSupport.supportedPlatforms(executionEnvironment)) {
             try {
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
-                switch (hostInfo.getOSFamily()) {
-                case SUNOS:
-                case LINUX:
-                    execLog = createTempFile("exec"); // NOI18N
-                    execLog.deleteOnExit();
-                    if (executionEnvironment.isRemote()) {
-                        remoteExecLog = hostInfo.getTempDir()+"/"+execLog.getName(); // NOI18N
-                    }
+                execLog = createTempFile("exec"); // NOI18N
+                execLog.deleteOnExit();
+                if (executionEnvironment.isRemote()) {
+                    remoteExecLog = hostInfo.getTempDir()+"/"+execLog.getName(); // NOI18N
                 }
             } catch (IOException ex) {
             } catch (CancellationException ex) {
@@ -854,11 +849,11 @@ public class ImportRemoteProject implements PropertyChangeListener {
             try {
                 ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
                 if (execLog != null) {
-                    vars.add(CND_TOOLS+"="+CND_TOOLS_VALUE); // NOI18N
+                    vars.add(BuildTraceSupport.CND_TOOLS+"="+BuildTraceSupport.getTools(makeConfigurationDescriptor.getActiveConfiguration(), executionEnvironment)); // NOI18N
                     if (executionEnvironment.isLocal()) {
-                        vars.add(CND_BUILD_LOG+"="+execLog.getAbsolutePath()); // NOI18N
+                        vars.add(BuildTraceSupport.CND_BUILD_LOG+"="+execLog.getAbsolutePath()); // NOI18N
                     } else {
-                        vars.add(CND_BUILD_LOG+"="+remoteExecLog); // NOI18N
+                        vars.add(BuildTraceSupport.CND_BUILD_LOG+"="+remoteExecLog); // NOI18N
                     }
                 }
             } catch (IOException ex) {

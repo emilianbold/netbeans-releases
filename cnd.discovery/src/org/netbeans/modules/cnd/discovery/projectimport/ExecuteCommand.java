@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.discovery.api.BuildTraceSupport;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -168,7 +169,7 @@ public class ExecuteCommand {
         MacroMap mm = MacroMap.forExecEnv(execEnv);
         mm.putAll(envMap);
 
-        if (envMap.containsKey("__CND_TOOLS__")) { // NOI18N
+        if (envMap.containsKey(BuildTraceSupport.CND_TOOLS)) { // NOI18N
             try {
                 if (BuildTraceHelper.isMac(execEnv)) {
                     String what = BuildTraceHelper.INSTANCE.getLibraryName(execEnv);
