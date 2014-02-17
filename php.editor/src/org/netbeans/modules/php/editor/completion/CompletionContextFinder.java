@@ -78,6 +78,7 @@ final class CompletionContextFinder {
 
     private static final String NAMESPACE_FALSE_TOKEN = "NAMESPACE_FALSE_TOKEN"; //NOI18N
     private static final String COMBINED_USE_STATEMENT_TOKENS = "COMBINED_USE_STATEMENT_TOKENS"; //NOI18N
+    private static final String TYPE_KEYWORD = "TYPE_KEYWORD"; //NOI18N
     private static final PHPTokenId[] COMMENT_TOKENS = new PHPTokenId[]{
             PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_COMMENT_END};
     private static final PHPTokenId[] PHPDOC_TOKENS = new PHPTokenId[]{
@@ -106,16 +107,16 @@ final class CompletionContextFinder {
             new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN},
             new Object[]{PHPTokenId.PHP_USE, COMBINED_USE_STATEMENT_TOKENS});
     private static final List<Object[]> USE_TRAIT_KEYWORD_TOKENS = Arrays.asList(
-            new Object[]{PHPTokenId.WHITESPACE, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE},
-            new Object[]{PHPTokenId.WHITESPACE, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.WHITESPACE, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.WHITESPACE, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN},
-            new Object[]{PHPTokenId.WHITESPACE, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, COMBINED_USE_STATEMENT_TOKENS},
-            new Object[]{PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE},
-            new Object[]{PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN},
-            new Object[]{PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, COMBINED_USE_STATEMENT_TOKENS});
+            new Object[]{TYPE_KEYWORD, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE},
+            new Object[]{TYPE_KEYWORD, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE},
+            new Object[]{TYPE_KEYWORD, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+            new Object[]{TYPE_KEYWORD, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN},
+            new Object[]{TYPE_KEYWORD, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, COMBINED_USE_STATEMENT_TOKENS},
+            new Object[]{TYPE_KEYWORD, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE},
+            new Object[]{TYPE_KEYWORD, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE},
+            new Object[]{TYPE_KEYWORD, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+            new Object[]{TYPE_KEYWORD, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN},
+            new Object[]{TYPE_KEYWORD, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, COMBINED_USE_STATEMENT_TOKENS});
     private static final List<Object[]> NAMESPACE_KEYWORD_TOKENS = Arrays.asList(
             new Object[]{PHPTokenId.PHP_NAMESPACE},
             new Object[]{PHPTokenId.PHP_NAMESPACE, PHPTokenId.WHITESPACE},
@@ -454,6 +455,11 @@ final class CompletionContextFinder {
                     accept = false;
                     break;
                 }
+            } else if (tokenID == TYPE_KEYWORD) {
+                if (!consumeUntilTypeKeyword(tokenSequence)) {
+                    accept = false;
+                    break;
+                }
             } else {
                 assert false : "Unsupported token type: " + tokenID.getClass().getName();
             }
@@ -511,6 +517,23 @@ final class CompletionContextFinder {
                 || consumeNameSpace(tokenSequence));
 
         return hasCommaDelimiter;
+    }
+
+    private static boolean consumeUntilTypeKeyword(TokenSequence tokenSequence) {
+        boolean result = false;
+        do {
+            if (tokenSequence.token().id() == PHPTokenId.PHP_CLASS || tokenSequence.token().id() == PHPTokenId.PHP_INTERFACE
+                    || tokenSequence.token().id() == PHPTokenId.PHP_TRAIT || tokenSequence.token().id() == PHPTokenId.PHP_EXTENDS
+                    || tokenSequence.token().id() == PHPTokenId.PHP_IMPLEMENTS) {
+                result = true;
+                break;
+            }
+            if (tokenSequence.token().id() == PHPTokenId.PHP_NAMESPACE) {
+                result = false;
+                break;
+            }
+        } while(tokenSequence.movePrevious());
+        return result;
     }
 
     private static Token[] getLeftPreceedingTokens(TokenSequence tokenSequence) {
