@@ -90,9 +90,10 @@ class RevisionNode extends AbstractNode {
         this.path = null;
         int changedPaths = container.getLog().getChangedPaths().length;
 
-        setName(container.getLog().getRevision().getNumber() +
-                (changedPaths > 0 ? NbBundle.getMessage(RevisionNode.class, "LBL_NumberOfChangedPaths", changedPaths) : ""));
-
+        String name = container.getLog().getRevision().getNumber() +
+                (changedPaths > 0 ? NbBundle.getMessage(RevisionNode.class, "LBL_NumberOfChangedPaths", changedPaths) : "");
+        setName(name);
+        setShortDescription(name);
         initProperties();
     }
 
@@ -101,6 +102,7 @@ class RevisionNode extends AbstractNode {
         this.path = revision.getChangedPath().getPath();
         this.event = revision;
         setName(revision.getName());
+        setShortDescription(path);
         initProperties();
     }
 
@@ -114,11 +116,6 @@ class RevisionNode extends AbstractNode {
 
     RepositoryRevision.Event getEvent() {
         return event;
-    }
-
-    @Override
-    public String getShortDescription() {
-        return path;
     }
 
     @Override
