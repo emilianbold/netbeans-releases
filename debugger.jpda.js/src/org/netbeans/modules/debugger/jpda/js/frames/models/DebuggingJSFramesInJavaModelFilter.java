@@ -77,13 +77,15 @@ import org.openide.util.actions.Presenter;
                                      NodeActionsProviderFilter.class })
 public class DebuggingJSFramesInJavaModelFilter implements TreeModelFilter, NodeActionsProviderFilter {
     
+    static final Preferences preferences = NbPreferences.forModule(DebuggingJSFramesInJavaModelFilter.class);
+    static final String PREF_DISPLAY_JS_STACKS = "displayJSStacks";     // NOI18N
+    
     private final Set<JPDAThread> threadsWithJSStacks = Collections.synchronizedSet(new WeakSet<JPDAThread>());
-    private final Preferences preferences = NbPreferences.forModule(DebuggingJSFramesInJavaModelFilter.class);
     // By default, filter frames to display just JS frames, where appropriate
-    private volatile boolean displayJSStacks = preferences.getBoolean("displayJSStacks", true);
+    private volatile boolean displayJSStacks = preferences.getBoolean(PREF_DISPLAY_JS_STACKS, true);
     private final DisplayJSStacksAction displayJSStacksAction = new DisplayJSStacksAction();
     private final List<ModelListener> listeners = new CopyOnWriteArrayList<>();
-
+    
     @Override
     public Object getRoot(TreeModel original) {
         return original.getRoot();
@@ -171,7 +173,7 @@ public class DebuggingJSFramesInJavaModelFilter implements TreeModelFilter, Node
         @Override
         public void actionPerformed(ActionEvent e) {
             displayJSStacks = !displayJSStacks;
-            preferences.putBoolean("displayJSStacks", displayJSStacks);
+            preferences.putBoolean(PREF_DISPLAY_JS_STACKS, displayJSStacks);
             fireModelListeners();
         }
 
