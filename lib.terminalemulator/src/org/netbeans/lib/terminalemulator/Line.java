@@ -412,7 +412,11 @@ final class Line {
             if (bcol >= length)
                 bcol = length-1;
         }
-        return new String(buf, bcol, ecol-bcol+1) + newline;
+        int count = ecol - bcol + 1;
+        if (bcol < 0 ||  count < 0) {
+            throw new IllegalArgumentException(String.format("offset=%d; count=%d; buf.length=%d", bcol, count, buf.length));
+        }
+        return new String(buf, bcol, count) + newline;
     }
     
     public void setCharacterAttribute(int bcol, int ecol,
