@@ -325,6 +325,10 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
             "ERR_NoAndroid=Android SDK not found."
             )
     boolean valid() {
+        if (!inited) {
+            //panel is loading
+            return true;
+        }
         File androidLoc = new File(androidSdkField.getText());
         File androidTools = new File(androidLoc, "platform-tools"); //NOI18N
         boolean adroidValid = androidSdkField.getText().isEmpty() || (androidLoc.exists() && androidLoc.isDirectory()
