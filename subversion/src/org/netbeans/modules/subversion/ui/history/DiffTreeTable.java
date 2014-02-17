@@ -57,13 +57,18 @@ import org.openide.util.lookup.Lookups;
 import javax.swing.*;
 import java.util.*;
 import java.beans.PropertyVetoException;
+import java.io.CharConversionException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.swing.etable.ETableColumnModel;
 import org.netbeans.swing.outline.RenderDataProvider;
 import org.openide.explorer.view.OutlineView;
+import org.openide.xml.XMLUtil;
 
 /**
  * Treetable to show results of Search History action.
@@ -104,6 +109,8 @@ class DiffTreeTable extends OutlineView {
         if (model instanceof ETableColumnModel) {
             ((ETableColumnModel) model).setColumnHidden(model.getColumn(1), true);
         }
+        TableColumn column = getOutline().getColumn(loc.getString("LBL_DiffTree_Column_Message"));
+        column.setCellRenderer(new MessageRenderer(getOutline().getDefaultRenderer(String.class)));
         setDefaultColumnSizes();
     }
     
@@ -200,6 +207,44 @@ class DiffTreeTable extends OutlineView {
     public void refreshResults (List<RepositoryRevision> results) {
         this.results = results;
         ((RevisionsRootNodeChildren) rootNode.getChildren()).refreshKeys();
+    }
+
+    private static class MessageRenderer implements TableCellRenderer {
+        private final TableCellRenderer delegate;
+        private final Map<String, String> tooltips = new HashMap<>();
+
+        public MessageRenderer (TableCellRenderer delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public Component getTableCellRendererComponent (JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            Component comp = delegate.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            if (comp instanceof JComponent) {
+                JComponent c = (JComponent) comp;
+                if (value == null) {
+                    c.setToolTipText(null);
+                } else {
+                    String val = value.toString();
+                    String tooltip = tooltips.get(val);
+                    if (tooltip == null) {
+                        tooltip = val.replace("\r\n", "\n").replace("\r", "\n"); //NOI18N
+                        try {
+                            tooltip = XMLUtil.toElementContent(tooltip);
+                        } catch (CharConversionException e1) {
+                            Logger.getLogger(DiffTreeTable.class.getName()).log(Level.INFO, "Can not HTML escape: ", tooltip);  //NOI18N
+                        }
+                        if (tooltip.contains("\n")) {
+                            tooltip = "<html><body><p>" + tooltip.replace("\n", "<br>") + "</p></body></html>"; //NOI18N
+                            c.setToolTipText(tooltip);
+                        }
+                        tooltips.put(val, tooltip);
+                    }
+                    c.setToolTipText(tooltip);
+                }
+            }
+            return comp;
+        }
     }
     
     private class RevisionsRootNode extends AbstractNode {

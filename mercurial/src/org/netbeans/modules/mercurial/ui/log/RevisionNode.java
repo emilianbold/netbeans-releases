@@ -87,6 +87,7 @@ class RevisionNode extends AbstractNode {
         this.event = null;
         this.path = null;
         setName(container.getLog().getRevisionNumber());
+        setShortDescription(container.getLog().getRevisionNumber());
         initProperties();
     }
 
@@ -95,6 +96,7 @@ class RevisionNode extends AbstractNode {
         this.path = revision.getChangedPath().getPath();
         this.event = revision;
         setName(revision.getName());
+        setShortDescription(path);
         initProperties();
     }
 
@@ -108,11 +110,6 @@ class RevisionNode extends AbstractNode {
 
     RepositoryRevision.Event getEvent() {
         return event;
-    }
-
-    @Override
-    public String getShortDescription() {
-        return path;
     }
 
     @Override
