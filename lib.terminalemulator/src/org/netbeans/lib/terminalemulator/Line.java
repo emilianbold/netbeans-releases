@@ -316,6 +316,9 @@ final class Line {
             length = column+1;
         }
         term.checkForMultiCell(c);
+        if (column < 0) {
+            throw new IllegalArgumentException(String.format("column=%d; buf_length=%d; buf_capacity=%d", column, length, capacity));   //NOI18N
+        }
         charAtPut(column, c);
         if (haveAttributes(a)) {
             attr[column] = a;
@@ -412,7 +415,11 @@ final class Line {
             if (bcol >= length)
                 bcol = length-1;
         }
-        return new String(buf, bcol, ecol-bcol+1) + newline;
+        int count = ecol - bcol + 1;
+        if (bcol < 0 ||  count < 0) {
+            throw new IllegalArgumentException(String.format("offset=%d; count=%d; buf_length=%d; buf_capacity=%d", bcol, count, length, capacity));    //NOI18N
+        }
+        return new String(buf, bcol, count) + newline;
     }
     
     public void setCharacterAttribute(int bcol, int ecol,
