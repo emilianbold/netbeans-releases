@@ -3448,6 +3448,7 @@ public class CasualDiff {
                     break;
                 }
                 case NOCHANGE: {
+                    boolean insetBlankLine = lastGroup >= 0 && lastGroup != group;
                     lastGroup = group;
                     int[] pos = estimator.getPositions(i);
                     // I don't know the reason for i != 0 (do not copy prefix for 1st item ??). Anyway, if insertion happens,
@@ -3456,6 +3457,8 @@ public class CasualDiff {
                         // print fill-in
                         copyTo(localPointer, pos[0], printer);
                     }
+                    if (insetBlankLine)
+                        printer.blankline();
                     if (pos[0] >= localPointer) {
                         localPointer = pos[0];
                         if (pos.length > 3 && pos[3] != (-1) && j + 1 < result.length) {

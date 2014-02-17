@@ -47,6 +47,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.keyring.Keyring;
@@ -58,6 +60,8 @@ import org.openide.util.Parameters;
  * @author Tomas Zezula
  */
 public final class ConnectionMethod {
+
+    private static final Logger LOG = Logger.getLogger(ConnectionMethod.class.getName());
 
     private final static String PLAT_PROP_HOST = "platform.host";                       //NOI18N
     private final static String PLAT_PROP_PORT = "platform.port";                       //NOI18N
@@ -80,10 +84,22 @@ public final class ConnectionMethod {
                     char[] passwd = Keyring.read(RemotePlatformProvider.createPropertyName(
                         props.get(RemotePlatform.PLAT_PROP_ANT_NAME),
                         Password.PLAT_PROP_AUTH_PASSWD));
+                    final String passwdStr;
                     if (passwd == null) {
-                        throw new IllegalStateException("No password"); //NOI18N
+                        LOG.log(
+                            Level.WARNING,
+                            "No password for: {0} for platform: {1}",   //NOI18N
+                            new Object[]{
+                                user,
+                                props.get(RemotePlatform.PLAT_PROP_ANT_NAME)
+                            });
+                        passwdStr = ""; //NOI18N
+                    } else {
+                        passwdStr = String.valueOf(passwd);
                     }
-                    return new Password(user, String.valueOf(passwd));
+                    return new Password(
+                        user,
+                        passwdStr);
                 }
             },
             KEY {
@@ -101,15 +117,23 @@ public final class ConnectionMethod {
                     final char[] passPhrase = Keyring.read(RemotePlatformProvider.createPropertyName(
                         props.get(RemotePlatform.PLAT_PROP_ANT_NAME),
                         Key.PLAT_PROP_AUTH_PASSPHRASE));
-                    if (keyStore == null) {
-                        throw new IllegalStateException("No pass phrase");    //NOI18N
+                    final String passPhraseStr;
+                    if (passPhrase == null) {
+                        LOG.log(
+                            Level.WARNING,
+                            "No passprase for: {0} for platform: {1}",   //NOI18N
+                            new Object[]{
+                                user,
+                                props.get(RemotePlatform.PLAT_PROP_ANT_NAME)
+                            });
+                        passPhraseStr = "";
+                    } else {
+                        passPhraseStr = String.valueOf(passPhrase);
                     }
                     return new Key(
                         user,
                         new File(keyStore),
-                        passPhrase == null ?
-                            "" :    //NOI18N
-                            String.valueOf(passPhrase));
+                        passPhraseStr);
                 }
             };
 

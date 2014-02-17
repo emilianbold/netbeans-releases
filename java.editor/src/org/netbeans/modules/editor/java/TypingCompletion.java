@@ -186,7 +186,9 @@ class TypingCompletion {
         int lastParenPos = context.getOffset();
         int index = javaTS.index();
         // Move beyond semicolon
-        while (javaTS.moveNext() && !(javaTS.token().id() == JavaTokenId.WHITESPACE && javaTS.token().text().toString().contains("\n"))) {  // NOI18N
+        while (javaTS.moveNext()
+                && !(javaTS.token().id() == JavaTokenId.WHITESPACE && javaTS.token().text().toString().contains("\n"))
+                && javaTS.token().id() != JavaTokenId.RBRACE) {  // NOI18N
             switch (javaTS.token().id()) {
                 case RPAREN:
                     lastParenPos = javaTS.offset();
@@ -200,7 +202,7 @@ class TypingCompletion {
         // Restore javaTS position
         javaTS.moveIndex(index);
         javaTS.moveNext();
-        if (isForLoopOrTryWithResourcesSemicolon(javaTS) || posWithinAnyQuote(context, javaTS) || (lastParenPos == context.getOffset() && !javaTS.token().id().equals(JavaTokenId.RPAREN))) {
+        if (isForLoopTryWithResourcesOrLambdaSemicolon(javaTS) || posWithinAnyQuote(context, javaTS) || (lastParenPos == context.getOffset() && !javaTS.token().id().equals(JavaTokenId.RPAREN))) {
             return -1;
         }
         context.setText("", 0); // NOI18N
@@ -374,7 +376,7 @@ class TypingCompletion {
         while (ts.offset() < rowEnd) {
             switch (ts.token().id()) {
                 case SEMICOLON:
-                    if (!isForLoopOrTryWithResourcesSemicolon(ts)) {
+                    if (!isForLoopTryWithResourcesOrLambdaSemicolon(ts)) {
                         return ts.offset() + 1;
                     }
                 case LPAREN:
@@ -545,7 +547,7 @@ class TypingCompletion {
         return false;
     }
 
-    private static boolean isForLoopOrTryWithResourcesSemicolon(TokenSequence<JavaTokenId> ts) {
+    private static boolean isForLoopTryWithResourcesOrLambdaSemicolon(TokenSequence<JavaTokenId> ts) {
         int parenDepth = 0; // parenthesis depth
         int braceDepth = 0; // brace depth
         boolean semicolonFound = false; // next semicolon
@@ -581,6 +583,21 @@ class TypingCompletion {
 
                     case LBRACE:
                         if (braceDepth == 0) { // unclosed left brace
+                            if (!semicolonFound) {
+                                while (ts.movePrevious()) {
+                                    switch (ts.token().id()) {
+                                        case WHITESPACE:
+                                        case BLOCK_COMMENT:
+                                        case JAVADOC_COMMENT:
+                                        case LINE_COMMENT:
+                                            break; // skip
+                                        case ARROW:
+                                            return true;
+                                        default:
+                                            return false;
+                                    }
+                                }
+                            }
                             return false;
                         }
                         braceDepth--;
