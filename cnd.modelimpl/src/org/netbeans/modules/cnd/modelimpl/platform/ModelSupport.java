@@ -43,14 +43,9 @@
  */
 package org.netbeans.modules.cnd.modelimpl.platform;
 
-import java.io.IOException;
-import org.netbeans.modules.cnd.api.project.NativeFileItem;
-import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
-import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -62,20 +57,24 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 
 import org.netbeans.api.project.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-
-import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.api.project.NativeProjectSettings;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
+import org.netbeans.modules.cnd.modelimpl.Installer;
 import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.SuspendableFileChangeListener;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -84,7 +83,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -410,6 +408,9 @@ public class ModelSupport implements PropertyChangeListener {
             NamedRunnable task = new NamedRunnable(taskName) {
                 @Override
                 protected void runImpl() {
+                    if (Installer.isClosed()) {
+                        return;
+                    }
                     ProgressHandle handle = ProgressHandleFactory.createHandle(getName());
                     handle.start();
                     try {

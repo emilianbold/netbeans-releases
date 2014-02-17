@@ -513,17 +513,19 @@ import org.openide.util.lookup.Lookups;
 
     void closeUnit(int clientUnitID, boolean cleanRepository, Set<Integer> requiredUnits) {
         Integer clientShortUnitID = storageMask.clientToLayer(clientUnitID);
-        if (cleanRepository) {
-            //remove from cache when clean repository, fixing the problem with Reparse Project
-            //Reparse project cleans cache but as we use new scheme to
-            //write project-index and didn't clean the cache
-            //when re-parse is invoked, folder with unit is removed
-            //but after that filePathsDictionary will never be changed (all files are already in cache)
-            //and therefore will never be put into the repository writer queue -> no project-index file on disk
-            synchronized (filePathDictionaries) {
-                filePathDictionaries.remove(clientShortUnitID);
-            }
-        }
+//        if (cleanRepository) {
+//            //remove from cache when clean repository, fixing the problem with Reparse Project
+//            //Reparse project cleans cache but as we use new scheme to
+//            //write project-index and didn't clean the cache
+//            //when re-parse is invoked, folder with unit is removed
+//            //but after that filePathsDictionary will never be changed (all files are already in cache)
+//            //and therefore will never be put into the repository writer queue -> no project-index file on disk
+//            synchronized (filePathDictionaries) {
+//                //put to the queue  on write                
+//                FilePathsDictionary toRemove = filePathDictionaries.remove(clientShortUnitID);
+//            }
+//        }
+
         //delete cache
 //        List<CharSequence> flist = files == null
 //                ? Collections.<CharSequence>emptyList() : files.toList();
@@ -565,16 +567,17 @@ import org.openide.util.lookup.Lookups;
     int getFileID(int clientUnitID, CharSequence fileName) {
         Integer clientShortUnitID = storageMask.clientToLayer(clientUnitID);
         FilePathsDictionary fsDict;
-
+        int size = 0;
+        int result = 0;
         synchronized (filePathDictionaries) {
             fsDict = filePathDictionaries.get(clientShortUnitID);
             if (fsDict == null) {
                 openUnit(clientUnitID);
                 fsDict = filePathDictionaries.get(clientShortUnitID);
             }
+            size = fsDict.size();
+            result = fsDict.getFileID(fileName);
         }
-        int size = fsDict.size();
-        int result = fsDict.getFileID(fileName);
         //each time add to the quue to write
         if (fsDict.size() > size) {
             Repository.put(new FilePathsDictionaryKey(clientUnitID), fsDict);
@@ -736,6 +739,25 @@ import org.openide.util.lookup.Lookups;
             }
         }        
         
+    }
+
+    void flush() {
+        storageLock.lock();
+        try {
+            Collection<Integer> clientShortUnitIDs = clientUnitDescriptorsDictionary.getUnitIDs();
+            for (Integer clientShortUnitID : clientShortUnitIDs) {
+                FilePathsDictionary fsDict;
+                synchronized (filePathDictionaries) {
+                    //put to the queue  on write                
+                    fsDict = filePathDictionaries.get(clientShortUnitID);
+                }        
+                if (fsDict != null) {
+                    Repository.put(new FilePathsDictionaryKey(storageMask.layerToClient(clientShortUnitID)), fsDict);
+                }
+            }
+        } finally {
+            storageLock.unlock();
+        }        
     }
 
     private class LayeringSupportImpl implements LayeringSupport {
