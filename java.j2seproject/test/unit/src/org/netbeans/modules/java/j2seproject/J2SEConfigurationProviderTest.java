@@ -66,6 +66,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -270,9 +271,24 @@ public class J2SEConfigurationProviderTest extends NbTestCase {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static void setActiveConfiguration(ProjectConfigurationProvider<?> pcp, ProjectConfiguration pc) throws IOException {
-        ProjectConfigurationProvider _pcp = pcp;
-        _pcp.setActiveConfiguration(pc);
+    private static void setActiveConfiguration(
+            ProjectConfigurationProvider<?> pcp,
+            final ProjectConfiguration pc) throws IOException {
+        final ProjectConfigurationProvider _pcp = pcp;
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
+                public Void run() throws Exception {
+                    _pcp.setActiveConfiguration(pc);
+                    return null;
+                }
+            });
+        } catch (MutexException me) {
+            final Throwable inner = me.getCause();
+            throw (inner instanceof IOException) ?
+               (IOException) inner :
+               new IOException (inner);
+        }
     }
 
 }

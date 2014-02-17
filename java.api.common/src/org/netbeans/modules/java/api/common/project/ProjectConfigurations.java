@@ -435,6 +435,7 @@ public class ProjectConfigurations {
             if (c != DEFAULT && !configs.values().contains(c)) {
                 throw new IllegalArgumentException(String.valueOf(c));
             }
+            assert ProjectManager.mutex().isWriteAccess();
             final String n = c.name;
             EditableProperties ep = updateHelper.getProperties(CONFIG_PROPS_PATH);
             if (Utilities.compareObjects(n, ep.getProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG))) {
@@ -448,7 +449,10 @@ public class ProjectConfigurations {
             updateHelper.putProperties(CONFIG_PROPS_PATH, ep);
             pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE, null, null);
             ProjectManager.getDefault().saveProject(p);
-            assert p.getProjectDirectory().getFileObject(CONFIG_PROPS_PATH) != null;
+            assert ep.isEmpty() || p.getProjectDirectory().getFileObject(CONFIG_PROPS_PATH) != null :
+                String.format("Setting config to: %s, properties are empty: %b",    //NOI18N
+                n,
+                ep.isEmpty());
         }
 
         @Override
