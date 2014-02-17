@@ -1003,6 +1003,14 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue238499.js", "return new_l^ink;", true);
     }
     
+    public void testIssue230974_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue230974.js", "WidgetManager.prototype.nextP2 = data[0].p2^limit; // place cursor inside p2limit", true); 
+    }
+    
+    public void testIssue230974_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue230974.js", "WidgetManager.prototype.nextP2 = da^ta[0].p2limit; // place cursor inside p2limit", true); 
+    }
+    
    private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
