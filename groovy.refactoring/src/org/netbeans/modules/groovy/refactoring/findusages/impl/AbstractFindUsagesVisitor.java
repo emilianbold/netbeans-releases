@@ -63,8 +63,10 @@ public abstract class AbstractFindUsagesVisitor extends ClassCodeVisitorSupport 
     }
 
     public Set<ASTNode> findUsages() {
-        for (Object object : moduleNode.getClasses()) {
-            visitClass((ClassNode) object);
+        if (moduleNode != null) {
+            for (Object object : moduleNode.getClasses()) {
+                visitClass((ClassNode) object);
+            }
         }
         return usages;
     }
