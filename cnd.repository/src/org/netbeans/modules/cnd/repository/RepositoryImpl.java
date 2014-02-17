@@ -197,6 +197,7 @@ public final class RepositoryImpl implements RepositoryImplementation, RemoveKey
 
     @Override
     public void shutdown() {
+        storage.flush();
         try {
             writer.flush();
             writer.shutdown();

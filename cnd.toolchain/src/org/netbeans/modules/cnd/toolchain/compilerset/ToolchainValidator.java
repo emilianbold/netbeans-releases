@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
+import org.netbeans.modules.cnd.toolchain.Installer;
 import org.netbeans.modules.cnd.toolchain.compilers.SPICompilerAccesor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
@@ -79,7 +80,7 @@ public final class ToolchainValidator {
     }
 
     public void validate(final ExecutionEnvironment env, final CompilerSetManagerImpl csm) {
-        if (DISABLED) {
+        if (DISABLED || Installer.isClosed()) {
             return;
         }
         final Runnable runnable = new Runnable() {
@@ -117,6 +118,9 @@ public final class ToolchainValidator {
     }
 
     private void validateImpl(final ExecutionEnvironment env, final CompilerSetManagerImpl csm) {
+        if (Installer.isClosed()) {
+            return;
+        }
         ProgressHandle createHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ToolchainValidator.class, "ToolCollectionValidation", env.getDisplayName())); // NOI18N
         createHandle.start();
         try {

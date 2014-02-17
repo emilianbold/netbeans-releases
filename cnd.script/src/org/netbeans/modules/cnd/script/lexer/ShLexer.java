@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.api.script.ShTokenId;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -60,8 +59,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 class ShLexer implements Lexer<ShTokenId> {
 
-    private static Set<String> keywords = new HashSet<String> ();
-    private static Set<String> commands = new HashSet<String> ();
+    private static final Set<String> keywords = new HashSet<String> ();
+    private static final Set<String> commands = new HashSet<String> ();
 
     static {
         keywords.add ("aux"); // NOI18N
@@ -491,6 +490,7 @@ class ShLexer implements Lexer<ShTokenId> {
 
     private static enum State {
         OTHER,
+        AFTER_DOLLAR,
         AFTER_SEPARATOR,
         FOR,
         FOR_ID,
@@ -535,7 +535,13 @@ class ShLexer implements Lexer<ShTokenId> {
             case '`':
             case '%':
             case '$':
-                state = (i == ';' || ((state == State.AFTER_SEPARATOR) && (i == '@' || i == '+' || i == '-'))) ? State.AFTER_SEPARATOR : State.OTHER;
+                if (i == '$') {
+                    state = State.AFTER_DOLLAR;
+                } else if (i == ';' || ((state == State.AFTER_SEPARATOR) && (i == '@' || i == '+' || i == '-'))) {
+                    state = State.AFTER_SEPARATOR;
+                } else {
+                    state = State.OTHER;
+                }
                 return info.tokenFactory().createToken(ShTokenId.OPERATOR);
             case '&':
                 i = input.read();
@@ -586,15 +592,20 @@ class ShLexer implements Lexer<ShTokenId> {
                 }
                 return info.tokenFactory ().createToken (ShTokenId.WHITESPACE);
             case '#':
-                do {
-                    i = input.read ();
-                } while (
-                    i != '\n' &&
-                    i != '\r' &&
-                    i != LexerInput.EOF
-                );
-                state = State.AFTER_SEPARATOR;
-                return info.tokenFactory ().createToken (ShTokenId.COMMENT);
+                if (state ==State.AFTER_DOLLAR) {
+                    state = State.OTHER;
+                    return info.tokenFactory().createToken(ShTokenId.OPERATOR);
+                } else {
+                    do {
+                        i = input.read ();
+                    } while (
+                        i != '\n' &&
+                        i != '\r' &&
+                        i != LexerInput.EOF
+                    );
+                    state = State.AFTER_SEPARATOR;
+                    return info.tokenFactory ().createToken (ShTokenId.COMMENT);
+                }
             case '0':
             case '1':
             case '2':
