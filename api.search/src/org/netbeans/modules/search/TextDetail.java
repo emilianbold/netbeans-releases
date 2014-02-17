@@ -200,6 +200,9 @@ public final class TextDetail implements Selectable {
     }
 
     private void showLine(int how) {
+        if (lineObj == null) {
+            return; // DataObject updated during opening of editor.
+        }
         if (how == DH_SHOW) {
             lineObj.show(ShowOpenType.NONE, 
                          ShowVisibilityType.NONE,
