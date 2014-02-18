@@ -43,7 +43,6 @@
 package org.netbeans.modules.javascript.jstestdriver.wizard;
 
 import java.awt.Component;
-import java.awt.EventQueue;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -80,7 +79,7 @@ public class InstallJasmineWizardDescriptorPanel implements WizardDescriptor.Pan
         }
         return panel;
     }
-    
+
     public boolean installJasmine() {
         return panel != null ? panel.installJasmine() : false;
     }
@@ -118,12 +117,12 @@ public class InstallJasmineWizardDescriptorPanel implements WizardDescriptor.Pan
             File jasmineJSTD = File.createTempFile("jasmine-jstd", "zip"); // NOI18N
             download("https://github.com/pivotal/jasmine/zipball/v1.2.0", jasmine); // NOI18N
             download("https://github.com/ibolmo/jasmine-jstd-adapter/zipball/1.1.2", jasmineJSTD); // NOI18N
-            unzip(new FileInputStream(jasmine), libs.createFolder("jasmine"), "1.2.0"); // NOI18N
-            unzip(new FileInputStream(jasmineJSTD), libs.createFolder("jasmine-jstd-adapter"), "1.1.2"); // NOI18N
+            unzip(new FileInputStream(jasmine), FileUtil.createFolder(libs, "jasmine"), "1.2.0"); // NOI18N
+            unzip(new FileInputStream(jasmineJSTD), FileUtil.createFolder(libs, "jasmine-jstd-adapter"), "1.1.2"); // NOI18N
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, "download of remote jasmine files failed", ex); // NOI18N
             DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(
-                    Bundle.DownloadFailure())); 
+                    Bundle.DownloadFailure()));
         }
     }
 
@@ -141,7 +140,7 @@ public class InstallJasmineWizardDescriptorPanel implements WizardDescriptor.Pan
             throw ex;
         }
     }
-    
+
     private static void unzip(InputStream source, FileObject root, String version) throws IOException {
         try {
             ZipInputStream str = new ZipInputStream(source);
@@ -170,12 +169,12 @@ public class InstallJasmineWizardDescriptorPanel implements WizardDescriptor.Pan
             FileObject fo = FileUtil.createData(root, "version.txt"); // NOI18N
             InputStream is2 = new ByteArrayInputStream(version.getBytes());
             writeFile(is2, fo);
-            
+
         } finally {
             source.close();
         }
     }
-    
+
     private static File copyToFile(InputStream is, File target) throws IOException {
         OutputStream os = new FileOutputStream(target);
         try {
@@ -185,7 +184,7 @@ public class InstallJasmineWizardDescriptorPanel implements WizardDescriptor.Pan
         }
         return target;
     }
-    
+
     private static void writeFile(InputStream str, FileObject fo) throws IOException {
         OutputStream out = fo.getOutputStream();
         try {
@@ -194,5 +193,5 @@ public class InstallJasmineWizardDescriptorPanel implements WizardDescriptor.Pan
             out.close();
         }
     }
-    
+
 }
