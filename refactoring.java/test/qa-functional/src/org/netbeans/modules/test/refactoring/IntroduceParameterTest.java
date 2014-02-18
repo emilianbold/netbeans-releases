@@ -267,7 +267,7 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
                     case testSimple_A_B:
                     case testSimple_A_C:
                     case testSimple_A_D:
-						editor.select(12, 20, 24);
+			editor.select(12, 20, 24);
                         break;
                     case testSimple_A_E:
                     case testSimple_A_F:
@@ -275,20 +275,20 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
                     case testSimple_A_H:
                         editor.select(13, 20, 24);
                         break;
-					case testSimple_A_I:
+                    case testSimple_A_I:
                     case testSimple_A_J:
                     case testSimple_A_K:
                     case testSimple_A_L:
                         editor.select(30, 13, 22);
                         break;
-					case testSimple_A_M:
+                    case testSimple_A_M:
                         editor.select(8, 9, 22);
                         break;
                 }
                 
                 if(debugMode) new EventTool().waitNoEvent(1000);
                 
-				new EventTool().waitNoEvent(1000); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		new EventTool().waitNoEvent(1000); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				
                 // call Reafctor > Introduce parameter
                 switch(c){
@@ -307,7 +307,7 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
                 
                 if(debugMode) new EventTool().waitNoEvent(2000);
 				
-				new EventTool().waitNoEvent(1000); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		new EventTool().waitNoEvent(1000); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 
                 // type new name
                 switch(c){
