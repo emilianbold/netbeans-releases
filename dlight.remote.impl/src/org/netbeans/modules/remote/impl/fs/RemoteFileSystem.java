@@ -77,6 +77,7 @@ import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvide
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.FilesystemInterceptor;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
 import org.openide.actions.FileSystemRefreshAction;
 import org.openide.filesystems.*;
@@ -97,9 +98,12 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
 
     private static final SystemAction[] NO_SYSTEM_ACTIONS = new SystemAction[]{};
     private static final boolean ATTR_STATS = Boolean.getBoolean("remote.attr.stats");
-    
+
     public static final String ATTRIBUTES_FILE_NAME = ".rfs_attr"; // NOI18N
     public static final String CACHE_FILE_NAME = ".rfs_cache"; // NOI18N
+    // TODO: consider moving cache names to RemoteDirectory
+    protected static final String CACHE_ZIP_FILE_NAME = ".rfs_zip.zip"; // NOI18N
+    protected static final String CACHE_ZIP_PART_NAME = ".rfs_zip.part"; // NOI18N
     public static final String RESERVED_PREFIX = ".rfs_"; // NOI18N
     public static final String RESERVED_PREFIX_ESCAPED = "._rfs_"; // NOI18N
     
@@ -124,6 +128,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     transient private final StatusImpl status = new StatusImpl();
     private final LinkedHashSet<String> deleteOnExitFiles = new LinkedHashSet<String>();
     private final ThreadLocal<RemoteFileObjectBase> beingRemoved = new ThreadLocal<RemoteFileObjectBase>();
+    private final RemoteFileZipper remoteFileZipper;
 
     /*package*/ RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
@@ -168,8 +173,26 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             }
         });
         ConnectionManager.getInstance().addConnectionListener(RemoteFileSystem.this);
+        remoteFileZipper = new RemoteFileZipper(execEnv);
     }
 
+    void warmup(Collection<String> paths, FileSystemProvider.WarmupMode mode, Collection<String> extensions) {
+        for (String path : paths) {
+            // we still do this via RemoteFileObject (and eventually via RemoteDirectory)
+            // since we need its own cahche files to be created first
+            RemoteFileObject fo = findResource(path);
+            if (fo == null) {
+                RemoteLogger.info("Warmup: can't find file object {0} at {1}", path, execEnv); //NOI18N
+            } else {
+                fo.getImplementor().warmup(mode, extensions);
+            }                        
+        }
+    }
+
+    /*package*/ RemoteFileZipper getZipper() {
+        return remoteFileZipper;
+    }
+    
     /*package*/ void dispose() {
         ConnectionManager.getInstance().removeConnectionListener(this);
     }

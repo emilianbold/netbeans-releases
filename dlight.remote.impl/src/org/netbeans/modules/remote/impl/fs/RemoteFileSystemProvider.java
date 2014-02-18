@@ -58,6 +58,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.api.ui.FileObjectBasedFile;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.spi.FileSystemProviderImplementation;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
@@ -455,9 +456,19 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     }
     
     @Override
-    public void warmup(FileObject fo) {        
-        if (fo instanceof RemoteFileObject) {
-            ((RemoteFileObject) fo).getImplementor().warmup();
+    public void warmup(FileSystemProvider.WarmupMode mode, ExecutionEnvironment env, Collection<String> paths, Collection<String> extensions) {
+        switch (mode) {
+            case RECURSIVE_LS:
+                if (!RemoteFileSystemUtils.getBoolean("remote.warmup.recursive.ls", true)) {
+                    return;
+                }
+                break;
+            case FILES_CONTENT:
+                if (!RemoteFileSystemUtils.getBoolean("remote.warmup.files.content", true)) {
+                    return;
+                }
+                break;
         }
+        RemoteFileSystemManager.getInstance().getFileSystem(env).warmup(paths, mode, extensions);
     }    
 }
