@@ -50,6 +50,7 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
@@ -70,6 +71,7 @@ import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptor
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.FileProxyI;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.FilesystemInterceptor;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.IOHandler;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.*;
 
 /**
@@ -824,9 +826,9 @@ public abstract class RemoteFileObjectBase {
         return getExecutionEnvironment().toString() + ":" + getPath() + validity; // NOI18N
     }
     
-    public void warmup() {
+    public void warmup(FileSystemProvider.WarmupMode mode, Collection<String> extensions) {        
     }
-
+    
     @Override
     public boolean equals(Object obj) {
         return this == obj;

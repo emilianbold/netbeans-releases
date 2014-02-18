@@ -67,7 +67,7 @@ import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.builds.ImportUtils;
-import org.netbeans.modules.cnd.discovery.buildsupport.BuildTraceSupport;
+import org.netbeans.modules.cnd.discovery.api.BuildTraceSupport;
 import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
 import org.netbeans.modules.cnd.execution.ExecutionSupport;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;

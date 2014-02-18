@@ -123,8 +123,30 @@
         </sshsession>
     </target>
     
-    <target name="profile-clean-rp" if="profiling.started">
+    <target name="profile-clean-rp" depends="profile-rp-renew-local-calibration" if="profiling.started">
         <delete dir="${dist.dir}/remotepack"/>
+        <delete file="${user.home}/.nbprofiler/machinedata.jdk${remote.platform.java.spec.ver}.${remote.platform.host}.new"/>
+    </target>
+    
+    <target name="profile-rp-renew-local-check">
+        <condition property="profiler.calibration.local-remote.replace">
+            <and>
+                <available file="${user.home}/.nbprofiler/machinedata.jdk${remote.platform.java.spec.ver}.${remote.platform.host}.new" type="file"/>
+                <not>
+                    <filesmatch 
+                        file1="${user.home}/.nbprofiler/machinedata.jdk${remote.platform.java.spec.ver}.${remote.platform.host}" 
+                        file2="${user.home}/.nbprofiler/machinedata.jdk${remote.platform.java.spec.ver}.${remote.platform.host}.new"/>
+                </not>
+            </and>
+        </condition>
+    </target>
+    
+    <target name="profile-rp-renew-local-calibration" depends="profile-rp-renew-local-check" if="profiler.calibration.local-remote.replace">
+         <move 
+             file="${user.home}/.nbprofiler/machinedata.jdk${remote.platform.java.spec.ver}.${remote.platform.host}.new" 
+             tofile="${user.home}/.nbprofiler/machinedata.jdk${remote.platform.java.spec.ver}.${remote.platform.host}"
+             force="true"
+             verbose="true"/>
     </target>
     
     <target name="profile-rp-unzip" if="profiling.started" depends="profile-rp-create">        
@@ -159,10 +181,10 @@
                  trust="true" usepty="true" 
                  command="export JAVA_HOME=${remote.platform.home.dir}; [ -f ~/.nbprofiler/machinedata.jdk${remote.platform.java.spec.ver} ] &amp;&amp; echo &quot;Calibration data exists: skipping calibration&quot; || /bin/sh ${remote.dist.dir}/remotepack/bin/calibrate.sh"/>
         <scp file="${remote.platform.user}:${remote.platform.password}@${remote.platform.host}:~/.nbprofiler/machinedata.jdk${remote.platform.java.spec.ver}"
-            localTofile="${user.home}/.nbprofiler/machinedata.jdk${remote.platform.java.spec.ver}.${remote.platform.host}" trust="true"/>
-         <antcall target="profile-clean-rp"/>
+            localTofile="${user.home}/.nbprofiler/machinedata.jdk${remote.platform.java.spec.ver}.${remote.platform.host}.new" trust="true"/>
+        <antcall target="profile-clean-rp"/>
     </target>
-        
+    
     <target name="profile-rp-calibrate-key" if="profiling.started">
         <fail unless="remote.platform.keyfile">Must set remote.platform.keyfile</fail>
         <sshexec host="${remote.platform.host}" port="${remote.platform.port}" 
@@ -170,7 +192,7 @@
                  passphrase="${remote.platform.passphrase}" trust="true" usepty="true" 
                  command="export JAVA_HOME=${remote.platform.home.dir}; [ -f ~/.nbprofiler/machinedata.jdk${remote.platform.java.spec.ver} ] &amp;&amp; echo &quot;Calibration data exists: skipping calibration&quot; || /bin/sh ${remote.dist.dir}/remotepack/bin/calibrate.sh"/>
         <scp file="${remote.platform.user}:${remote.platform.password}@${remote.platform.host}:~/.nbprofiler/machinedata.jdk${remote.platform.java.spec.ver}"
-             localTofile="${user.home}/.nbprofiler/machinedata.jdk${remote.platform.java.spec.ver}.${remote.platform.host}" trust="true"
+             localTofile="${user.home}/.nbprofiler/machinedata.jdk${remote.platform.java.spec.ver}.${remote.platform.host}.new" trust="true"
              keyfile="${remote.platform.keyfile}" passphrase="${remote.platform.passphrase}"/>
         <antcall target="profile-clean-rp"/>
     </target>

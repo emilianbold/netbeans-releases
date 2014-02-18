@@ -87,6 +87,8 @@ public class PrerequisitesCheckerImpl implements PrerequisitesChecker, LateBound
 
     @Override
     public boolean checkRunConfig(RunConfig config) {
+        String actionName = config.getActionName();
+
         // To be able to skip standard run behavior we need to set this property
         // with respect to the current CoS/DoS setting --> See issue 230565
         Boolean alwaysBuild = (Boolean) config.getProject().getProjectDirectory().getAttribute(PROP_ALWAYS_BUILD_BEFORE_RUNNING);
@@ -101,14 +103,13 @@ public class PrerequisitesCheckerImpl implements PrerequisitesChecker, LateBound
 
         Boolean standardExecution = Boolean.FALSE;
         // Perform standard execution when running single main file --> See issue #241703
-        if (config.getActionName().equals("run.single.main")) { // NOI18N
+        if ("run.single.main".equals(actionName)) { // NOI18N
             standardExecution = Boolean.TRUE;
         }
 
         config.setInternalProperty(ExecutionConstants.SKIP_BUILD, !alwaysBuild); //NOI18N
         config.setInternalProperty(ExecutionConstants.STANDARD_EXECUTION, standardExecution);
 
-        String actionName = config.getActionName();
         if (!applicableActions.contains(actionName)) {
             return true;
         }

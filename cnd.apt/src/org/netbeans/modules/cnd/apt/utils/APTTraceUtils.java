@@ -49,6 +49,7 @@ import java.io.Writer;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
@@ -65,6 +66,9 @@ public class APTTraceUtils {
             return "<no file>"; // NOI18N
         } else {
             String file = aptFile.getPath().toString();
+            if (!CndUtils.isUnitTestMode()) {
+                return file;
+            }
             String parentFile = CndPathUtilities.getDirName(file);
             String name = CndPathUtilities.getBaseName(file);
             if (parentFile == null) {

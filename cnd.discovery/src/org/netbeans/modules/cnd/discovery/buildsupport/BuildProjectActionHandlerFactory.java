@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.discovery.buildsupport;
 
+import org.netbeans.modules.cnd.discovery.api.BuildTraceSupport;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;

@@ -52,6 +52,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -174,7 +175,7 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
     // and reload any modified files if the project is unmodified
     private MakeProjectHelperImpl(FileObject dir, Document projectXml, ProjectState state, MakeProjectTypeImpl type) {
         this.dir = dir;
-        FileSystemProvider.warmup(dir);
+        FileSystemProvider.warmup(FileSystemProvider.WarmupMode.RECURSIVE_LS, Collections.singleton(dir), null);
         try {
             this.fileSystem = dir.getFileSystem();
         } catch (FileStateInvalidException ex) {

@@ -134,7 +134,8 @@ import org.netbeans.modules.cnd.utils.CndUtils;
     public void write(RepositoryDataOutput output) throws IOException {
         IntToValueList<CharSequence> list = IntToValueList.<CharSequence>createEmpty("traceName");//NOI18N
         int i = 0;
-        for (CharSequence file : toList()) {
+        final List<CharSequence> toList = toList();
+        for (CharSequence file : toList) {
             list.set(i++, file);
         }
         list.write(output);

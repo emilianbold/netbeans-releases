@@ -859,7 +859,11 @@ public final class VariousUtils {
 
     private static String extractVariableTypeFromVariableBase(VariableBase varBase, Map<String, AssignmentImpl> allAssignments) {
         if (varBase instanceof AnonymousObjectVariable) {
-            String className = CodeUtils.extractVariableName((Variable) varBase);
+            AnonymousObjectVariable aov = (AnonymousObjectVariable) varBase;
+            Expression clsName = aov.getName();
+            assert clsName instanceof ClassInstanceCreation;
+            ClassInstanceCreation cis = (ClassInstanceCreation) clsName;
+            String className = CodeUtils.extractClassName(cis.getClassName());
             return PRE_OPERATION_TYPE_DELIMITER + CONSTRUCTOR_TYPE_PREFIX + className;
         } else if (varBase instanceof Variable) {
             String varName = CodeUtils.extractVariableName((Variable) varBase);

@@ -55,6 +55,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 
+import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.util.SourcePositions;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -130,6 +131,9 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter {
                                             }
                                         }
                                         treeKindCtx = tree.getKind();
+                                        if (treeKindCtx == Tree.Kind.CASE && startOffset < controller.getTrees().getSourcePositions().getEndPosition(controller.getCompilationUnit(), ((CaseTree)tree).getExpression())) {
+                                            treeKindCtx = null;
+                                        }
                                     }
                                 }
                             });

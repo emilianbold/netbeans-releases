@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.discovery.buildsupport;
 
+import org.netbeans.modules.cnd.discovery.api.BuildTraceSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;

@@ -303,4 +303,12 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new InitializeFieldSuggestion(), "testIssue239640.php", "public function __construct(array $get = array(), array $post2 = array()^);");
     }
 
+    public void testIssue241824_01() throws Exception {
+        checkHints(new IntroduceSuggestion(), "testIssue241824.php", "(new \\MyFoo(\"Whatever can be here\"))->myFnc()^;");
+    }
+
+    public void testIssue241824_02() throws Exception {
+        checkHints(new IntroduceSuggestion(), "testIssue241824.php", "(new \\MyFoo(\"Whatever can be here\"))->notMyFnc()^;");
+    }
+
 }

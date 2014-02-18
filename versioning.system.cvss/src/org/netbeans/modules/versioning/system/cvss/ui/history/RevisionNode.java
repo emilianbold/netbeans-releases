@@ -93,7 +93,9 @@ class RevisionNode extends AbstractNode {
         this.container = container;
         this.revision = null;
         this.path = container.getPath();
-        setName(((SearchHistoryPanel.DispRevision) container.getRevisions().get(0)).getRevision().getLogInfoHeader().getFile().getName());
+        String name = ((SearchHistoryPanel.DispRevision) container.getRevisions().get(0)).getRevision().getLogInfoHeader().getFile().getName();
+        setName(name);
+        setShortDescription(name);
         initProperties();
     }
 
@@ -112,6 +114,7 @@ class RevisionNode extends AbstractNode {
         } else {
             setName(revision.getRevision().getNumber());
         }
+        setShortDescription(path);
         initProperties();
     }
 

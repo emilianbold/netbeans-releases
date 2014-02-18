@@ -90,6 +90,7 @@ class RevisionNode extends AbstractNode {
         String rev = container.getLog().getRevision();
         String name = rev.length() > 7 ? rev.substring(0, 7) : rev;
         setName(name);
+        setShortDescription(rev);
         initProperties();
     }
 
@@ -98,6 +99,7 @@ class RevisionNode extends AbstractNode {
         this.path = revision.getPath();
         this.event = revision;
         setName(revision.getName());
+        setShortDescription(path);
         initProperties();
     }
 
@@ -107,11 +109,6 @@ class RevisionNode extends AbstractNode {
 
     RepositoryRevision.Event getEvent() {
         return event;
-    }
-
-    @Override
-    public String getShortDescription() {
-        return path;
     }
 
     @Override

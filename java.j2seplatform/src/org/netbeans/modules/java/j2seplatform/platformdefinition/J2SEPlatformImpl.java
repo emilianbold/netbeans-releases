@@ -67,6 +67,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.java.j2seplatform.spi.J2SEPlatformDefaultJavadoc;
+import org.netbeans.modules.java.j2seplatform.spi.J2SEPlatformDefaultSources;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -97,6 +98,8 @@ public class J2SEPlatformImpl extends JavaPlatform {
     private static final String PROP_NO_DEFAULT_JAVADOC = "no.default.javadoc";       //NOI18N
     private static final String DEFAULT_JAVADOC_PROVIDER_PATH =
             "org-netbeans-api-java/platform/j2seplatform/defaultJavadocProviders/";  //NOI18N
+    private static final String DEFAULT_SOURCES_PROVIDER_PATH =
+            "org-netbeans-api-java/platform/j2seplatform/defaultSourcesProviders/";  //NOI18N
     private static final Logger LOG = Logger.getLogger(J2SEPlatformImpl.class.getName());
 
     /**
@@ -165,7 +168,9 @@ public class J2SEPlatformImpl extends JavaPlatform {
             }
         }
         this.properties = initialProperties;
-        this.sources = createClassPath(sources);
+        if (sources != null) {
+            this.sources = createClassPath(sources);
+        }
         if (javadoc != null) {
             this.javadoc = Collections.unmodifiableList(javadoc);   //No copy needed, called from this module => safe
         }
@@ -309,6 +314,9 @@ public class J2SEPlatformImpl extends JavaPlatform {
      */
     @Override
     public final ClassPath getSourceFolders () {
+        if (sources == null) {
+            sources = createClassPath(defaultSources(this));
+        }
         return this.sources;
     }
 
@@ -460,6 +468,29 @@ public class J2SEPlatformImpl extends JavaPlatform {
         final Set<URI> roots = new LinkedHashSet<>();
         for (J2SEPlatformDefaultJavadoc jdoc : Lookups.forPath(DEFAULT_JAVADOC_PROVIDER_PATH).lookupAll(J2SEPlatformDefaultJavadoc.class)) {
             roots.addAll(jdoc.getDefaultJavadoc(safePlatform));
+        }
+        final List<URL> result = new ArrayList<>(roots.size());
+        for (URI root : roots) {
+            try {
+                result.add(root.toURL());
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return Collections.unmodifiableList(result);
+    }
+
+    @NonNull
+    public static List<URL> defaultSources(JavaPlatform platform) {
+        final JavaPlatform safePlatform = new ForwardingJavaPlatform(platform) {
+            @Override
+            public List<URL> getJavadocFolders() {
+                return Collections.<URL>emptyList();
+            }
+        };
+        final Set<URI> roots = new LinkedHashSet<>();
+        for (J2SEPlatformDefaultSources src : Lookups.forPath(DEFAULT_SOURCES_PROVIDER_PATH).lookupAll(J2SEPlatformDefaultSources.class)) {
+            roots.addAll(src.getDefaultSources(safePlatform));
         }
         final List<URL> result = new ArrayList<>(roots.size());
         for (URI root : roots) {
