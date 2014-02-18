@@ -154,7 +154,7 @@ public final class UnitTable extends JTable {
         Color bgColor = getBackground ();
         Color bgColorDarker = getDarkerColor(bgColor);
         
-        Unit u = model.getUnitAtRow (rowIndex);
+        Unit u = model.getUnitAtRow(convertRowIndexToModel(rowIndex));
         if (u != null && !u.canBeMarked ()) {
             c.setForeground (Color.gray);
         } else {
