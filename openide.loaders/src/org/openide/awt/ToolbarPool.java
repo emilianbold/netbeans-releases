@@ -627,6 +627,8 @@ public final class ToolbarPool extends JComponent implements Accessible {
         */
         @Override
         public String getName () {
+            if( null == comp )
+                return super.getName();
             return comp.getName ();
         }
 
