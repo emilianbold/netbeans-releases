@@ -252,7 +252,7 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(closeButton, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(lblOrderBy, "Order by");
+        org.openide.awt.Mnemonics.setLocalizedText(lblOrderBy, NbBundle.getMessage(DocumentsDlg.class, "Lbl_OrderBy")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -261,7 +261,7 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
 
         buttonGroup1.add(radioOrderByName);
         radioOrderByName.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(radioOrderByName, "&name");
+        org.openide.awt.Mnemonics.setLocalizedText(radioOrderByName, NbBundle.getMessage(DocumentsDlg.class, "Lbl_OrderByName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -270,7 +270,7 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
         add(radioOrderByName, gridBagConstraints);
 
         buttonGroup1.add(radioOrderByUsage);
-        org.openide.awt.Mnemonics.setLocalizedText(radioOrderByUsage, "&recent usage");
+        org.openide.awt.Mnemonics.setLocalizedText(radioOrderByUsage, NbBundle.getMessage(DocumentsDlg.class, "Lbl_OrderByUsage")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
