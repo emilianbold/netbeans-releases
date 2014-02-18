@@ -812,14 +812,7 @@ public final class SingleModuleProperties extends ModuleProperties {
                 }
 
                 public void storeAdditionalProperties(List<Item> items, String projectXMLElement) {
-                    if (wrappedJarsChanged && CPEXT.equals(projectXMLElement)) {
-                        for (Item item : items) {
-                            // remove file ref properties for <cp-e> jars, keep only src&javadoc
-                            if (item.getReference() != null) {
-                                getRefHelper().destroyReference(item.getReference());
-                            }
-                        }
-                    }
+                
                 }
             };
             cps = new ClassPathSupport(getEvaluator(), getRefHelper(), getHelper(), getUpdateHelper(), cback);

@@ -663,8 +663,8 @@ out:                for (int tmp = 0; tmp == 0; tmp++) {
         }
         
         private boolean hasChangedSource() {
-            if ((initialSourceFilePath == null) != (sourceFilePath == null)) {
-                return true;
+            if (initialSourceFilePath == null && sourceFilePath == null) {
+                return false;
             }
             if (initialSourceFilePath != null && sourceFilePath != null) {
                 return ! initialSourceFilePath.equals(sourceFilePath);
@@ -673,8 +673,8 @@ out:                for (int tmp = 0; tmp == 0; tmp++) {
         }
         
         private boolean hasChangedJavadoc() {
-            if ((initialJavadocFilePath == null) != (javadocFilePath == null)) {
-                return true;
+            if (initialJavadocFilePath == null && javadocFilePath == null) {
+                return false;
             }
             if (initialJavadocFilePath != null && javadocFilePath != null) {
                 return ! initialJavadocFilePath.equals(javadocFilePath);

@@ -46,6 +46,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.awt.ActionID;
@@ -72,12 +73,19 @@ public final class CloseAllProjectsAction implements ActionListener {
         RP.post(new Runnable() { //#239718
             @Override
             public void run() {
-                OpenProjects manager = OpenProjects.getDefault();
-                List<Project> openProjects = new ArrayList<Project>(Arrays.asList(manager.getOpenProjects()));
-                if (!openProjects.isEmpty()) {
-                    Project[] projectsToBeClosed = openProjects.toArray(new Project[openProjects.size()]);
-                    manager.close(projectsToBeClosed);
-                }
+                SwingUtilities.invokeLater(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            OpenProjects manager = OpenProjects.getDefault();
+                            List<Project> openProjects = new ArrayList<Project>(Arrays.asList(manager.getOpenProjects()));
+                            if (!openProjects.isEmpty()) {
+                                Project[] projectsToBeClosed = openProjects.toArray(new Project[openProjects.size()]);
+                                manager.close(projectsToBeClosed);
+                            }
+                        }
+                    }
+                );
             }
         });
     }

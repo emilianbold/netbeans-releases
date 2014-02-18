@@ -340,13 +340,17 @@ public class ChildFactoryTest extends NbTestCase {
         Children c = Children.create(f, true);
         Node root = new AbstractNode(c);
         
-        assertEquals(3, root.getChildren().getNodes(true).length);
+        // must keep reference to nodes => each node keeps ref to ChildrenArray (its parent ChildrenArray)
+        // so it cannot be GCed
+        Node[] nodes = root.getChildren().getNodes(true);
+        assertEquals(3, nodes.length);
         assertEquals("[1, 2, 3]", nodesCreated.toString());
         LOG.info("Three elements in there!");
         size.set(4);
         f.refresh();
         LOG.info("After refresh");
-        assertEquals(4, root.getChildren().getNodes(true).length);
+        nodes = root.getChildren().getNodes(true);
+        assertEquals(4, nodes.length);
         assertEquals("[1, 2, 3, 4]", nodesCreated.toString());
     }
     
