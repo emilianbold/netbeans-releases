@@ -1691,7 +1691,7 @@ public final class UnitTab extends javax.swing.JPanel {
                 Unit u = model.getUnitAtRow (i);
                 if ((u != null) && (u instanceof Unit.Installed) && category.equals (u.getCategoryName ())) {
                     Unit.Installed installed = (Unit.Installed)u;
-                    if (!installed.getRelevantElement ().isEnabled ()) {
+                    if (!installed.getRelevantElement().isEnabled() && !installed.updateUnit.isPending()) {
                         OperationInfo info = Containers.forEnable ().add (installed.updateUnit, installed.getRelevantElement ());
                         if (info ==  null) {
                             Logger.getLogger(UnitTab.class.getName()).log(Level.WARNING, "Null OperationInfo for {0}", installed.getRelevantElement());
@@ -1979,7 +1979,7 @@ public final class UnitTab extends javax.swing.JPanel {
                 Unit u = model.getUnitAtRow (i);
                 if ((u != null) && (u instanceof Unit.Installed) && category.equals (u.getCategoryName ())) {
                     Unit.Installed installed = (Unit.Installed)u;
-                    if (installed.getRelevantElement ().isEnabled ()) {
+                    if (installed.getRelevantElement().isEnabled() && !installed.updateUnit.isPending()) {
                         OperationInfo info = Containers.forDisable ().add (installed.updateUnit, installed.getRelevantElement ());
                         // Issue #169640
                         // The relevant element can actually be present in forDisable container
