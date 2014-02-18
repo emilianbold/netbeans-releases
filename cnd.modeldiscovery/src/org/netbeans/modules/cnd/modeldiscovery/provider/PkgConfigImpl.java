@@ -70,6 +70,8 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
+import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -215,6 +217,7 @@ public class PkgConfigImpl implements PkgConfig {
     }
 
     private void initPackages(List<String> folders, boolean isWindows) {
+        FileSystemProvider.warmup(FileSystemProvider.WarmupMode.FILES_CONTENT, env, folders, null);
         Set<FileObject> done = new HashSet<FileObject>();
         for(String folder:folders) {
             FileObject file = RemoteFileUtil.getFileObject(RemoteFileUtil.normalizeAbsolutePath(folder, env), env);
