@@ -46,8 +46,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.apache.lucene.search.BooleanQuery;
@@ -306,19 +309,19 @@ public class FindResultsNode extends AbstractNode {
             myChildren.setNewKeys(infos);
         }
 
-        static class ArtifactNodeChildren extends Children.Keys<NBVersionInfo> {
+        static class ArtifactNodeChildren extends Children.Keys<NBVersionInfoTuple> {
 
-            private List<NBVersionInfo> keys;
+            private List<NBVersionInfoTuple> keys;
+
 
             public ArtifactNodeChildren(List<NBVersionInfo> keys) {
-                this.keys = keys;
+                this.keys = processKeys(keys);
             }
 
             @Override
-            protected Node[] createNodes(NBVersionInfo info) {
-                RepositoryInfo rinf = RepositoryPreferences.getInstance().getRepositoryInfoById(info.getRepoId());
-                return new Node[]{new VersionNode(rinf, info, info.isJavadocExists(),
-                            info.isSourcesExists(), true)
+            protected Node[] createNodes(NBVersionInfoTuple info) {                
+                return new Node[]{new VersionNode(info.repo, info.info, info.info.isJavadocExists(),
+                            info.info.isSourcesExists(), true)
                         };
             }
 
@@ -328,9 +331,55 @@ public class FindResultsNode extends AbstractNode {
             }
 
             protected void setNewKeys(List<NBVersionInfo> keys) {
-                this.keys = keys;
-                setKeys(keys);
+                this.keys = processKeys(keys);
+                setKeys(this.keys);
             }
+
+            private List<NBVersionInfoTuple> processKeys(List<NBVersionInfo> keys) {
+                List<NBVersionInfoTuple> toRet = new ArrayList<NBVersionInfoTuple>();
+                HashMap<RepositoryInfo, Set<NBVersionInfo>> map = new HashMap<RepositoryInfo, Set<NBVersionInfo>>();
+                for (NBVersionInfo k : keys) {
+                    RepositoryInfo rinf = RepositoryPreferences.getInstance().getRepositoryInfoById(k.getRepoId());
+                    NBVersionInfoTuple t = new NBVersionInfoTuple(k, rinf);
+                    toRet.add(t);
+                    Set<NBVersionInfo> set = map.get(rinf);
+                    if (set == null) {
+                        set = new HashSet<NBVersionInfo>();
+                        map.put(rinf, set);
+                    }
+                    set.add(k);
+                }
+                Iterator<NBVersionInfoTuple> it = toRet.iterator();
+                //this stuff is likely slow for large amount of data..
+                LBL: while (it.hasNext()) {
+                    NBVersionInfoTuple one = it.next();
+                    if (one.repo.isLocal()) { //for local ones right now only..
+                        for (java.util.Map.Entry<RepositoryInfo, Set<NBVersionInfo>> ent : map.entrySet()) {
+                            if (ent.getKey().equals(one.repo)) {
+                                continue;
+                            }
+                            for (NBVersionInfo ver : ent.getValue()) {
+                                if (one.info.compareToWithoutRepoId(ver) == 0) {
+                                    //do some kind of merging?
+                                    it.remove();
+                                    continue LBL;
+                                }
+                            }
+                        }
+                    }
+                }
+                return toRet;
+            }
+        }
+        static class NBVersionInfoTuple {
+            final NBVersionInfo info;
+            final RepositoryInfo repo;
+
+            public NBVersionInfoTuple(NBVersionInfo info, RepositoryInfo repo) {
+                this.info = info;
+                this.repo = repo;
+            }
+            
         }
     }
 
