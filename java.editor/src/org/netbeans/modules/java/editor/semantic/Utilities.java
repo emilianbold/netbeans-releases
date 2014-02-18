@@ -78,6 +78,8 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.tools.Diagnostic;
+
+import com.sun.source.tree.ModifiersTree;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.lexer.Token;
@@ -320,9 +322,13 @@ public class Utilities {
             
             SourcePositions positions = info.getTrees().getSourcePositions();
             CompilationUnitTree cu = info.getCompilationUnit();
-            int start = (int)positions.getStartPosition(cu, leaf);
-            int end   = (int)positions.getEndPosition(cu, leaf);
+            ModifiersTree mods = ((ClassTree) leaf).getModifiers();
             
+            int start = mods != null ? (int)positions.getEndPosition(cu, mods) : -1;
+            if (start == (-1))
+                start = (int)positions.getStartPosition(cu, leaf);
+            int end = (int)positions.getEndPosition(cu, leaf);
+
             if (start == (-1) || end == (-1)) {
                 return null;
             }
