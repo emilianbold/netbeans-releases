@@ -63,6 +63,7 @@ public final class GitStatus {
     private boolean isFolder;
     private DiffEntry diffEntry;
     private final String workTreePath;
+    private long indexEntryModificationDate;
 
     /**
      * File's status, respectively the state of a file between two trees
@@ -175,6 +176,20 @@ public final class GitStatus {
     public GitConflictDescriptor getConflictDescriptor () {
         return conflictDescriptor;
     }
+    
+    /**
+     * Returns the time in milliseconds of the last modification timestamp of
+     * the index entry. Useful when you need to know when the file was last
+     * updated in the index.
+     *
+     * @return modification timestamp of the index in milliseconds. When there
+     * is no such entry in the index (file was removed or not yet added) this
+     * returns <code>-1</code>.
+     * @since 1.19
+     */
+    public long getIndexEntryModificationDate () {
+        return indexEntryModificationDate;
+    }
 
     void setDiffEntry (DiffEntry diffEntry) {
         this.diffEntry = diffEntry;
@@ -198,5 +213,9 @@ public final class GitStatus {
 
     void setStatusIndexWC (Status statusIndexWC) {
         this.statusIndexWC = statusIndexWC;
+    }
+
+    void setIndexEntryModificationDate (long ts) {
+        this.indexEntryModificationDate = ts;
     }
 }

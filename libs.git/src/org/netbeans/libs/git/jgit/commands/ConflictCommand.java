@@ -116,9 +116,12 @@ public class ConflictCommand extends StatusCommand {
                     DirCacheIterator indexIterator = treeWalk.getTree(0, DirCacheIterator.class);
                     DirCacheEntry indexEntry = indexIterator != null ? indexIterator.getDirCacheEntry() : null;
                     int stage = indexEntry == null ? 0 : indexEntry.getStage();
+                    long indexTS = indexEntry == null ? -1 : indexEntry.getLastModified();
 
                     if (stage != 0) {
-                        GitStatus status = getClassFactory().createStatus(true, path, workTreePath, file, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, null, false, null);
+                        GitStatus status = getClassFactory().createStatus(true, path, workTreePath, file,
+                                Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL,
+                                null, false, null, indexTS);
                         conflicts[stage - 1] = status;
                     }
                 }
