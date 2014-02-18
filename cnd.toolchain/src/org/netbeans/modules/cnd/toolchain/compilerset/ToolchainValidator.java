@@ -132,6 +132,8 @@ public final class ToolchainValidator {
                             List<List<String>> systemIncludesAndDefines = new SPICompilerAccesor(tool).getSystemIncludesAndDefines();
                             if (!isEqualsSystemIncludesAndDefines(systemIncludesAndDefines, (AbstractCompiler) tool)) {
                                 needReset.put(tool, systemIncludesAndDefines);
+                            } else {
+                                
                             }
                         }
                     }

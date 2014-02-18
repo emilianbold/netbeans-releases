@@ -47,6 +47,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -465,14 +466,32 @@ public final class FileSystemProvider {
         return '/';
     }
     
-    public static void warmup(FileObject fo) {
-        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
-            if (provider.isMine(fo)) {
-                provider.warmup(fo);
-            }
-        }        
+    public enum WarmupMode {
+        FILES_CONTENT,
+        RECURSIVE_LS
     }
     
+    public static void warmup(WarmupMode mode, Collection<FileObject> fileObjects, Collection<String> extensions) {
+        Collection<String> paths = new ArrayList<>();
+        ExecutionEnvironment env = null;
+        for (FileObject fo : fileObjects) {
+            if (env == null) {
+                env = FileSystemProvider.getExecutionEnvironment(fo);
+            } else {
+                RemoteLogger.assertTrue(env.equals(FileSystemProvider.getExecutionEnvironment(fo)));
+            }
+        }
+        warmup(mode, env, paths, extensions);
+    }
+
+    public static void warmup(WarmupMode mode, ExecutionEnvironment env, Collection<String> paths, Collection<String> extensions) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(env)) {
+                provider.warmup(mode, env, paths, extensions);
+            }
+        }
+    }
+
     private static void noProvidersWarning(Object object) {
         if (RemoteLogger.getInstance().isLoggable(Level.FINE)) {        
             if (RemoteLogger.getInstance().isLoggable(Level.FINEST)) {

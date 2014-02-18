@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -56,6 +57,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.impl.RemoteLogger;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -380,4 +382,12 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         }
         return null;
     }
+
+    @Override
+    public void warmup(FileSystemProvider.WarmupMode mode, Collection<String> extensions) {        
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
+        if (delegate != null) {
+            delegate.warmup(mode, extensions);
+        }
+    }    
 }

@@ -1412,6 +1412,7 @@ public final class MakeProject implements Project, MakeProjectListener {
                     synchronized (openStateAndLock) {
                         if (openStateAndLock.get()) {
                             if (nativeProject instanceof NativeProjectProvider) {
+                                warmupNativeProject();
                                 NativeProjectRegistry.getDefault().register(nativeProject);
                             }
                             registerClassPath(true);
@@ -1420,6 +1421,33 @@ public final class MakeProject implements Project, MakeProjectListener {
                 }
             });
         }
+    }
+    
+    private void warmupNativeProject() {
+        Set<String> extensions = new HashSet<>();
+        extensions.addAll(cExtensions);
+        extensions.addAll(cppExtensions);
+        extensions.addAll(headerExtensions);
+        FileSystemProvider.warmup(
+                FileSystemProvider.WarmupMode.FILES_CONTENT,
+                FileSystemProvider.getExecutionEnvironment(helper.getProjectDirectory()),
+                nativeProject.getSourceRoots(),
+                extensions);
+
+        List<FSPath> sysIncPaths = nativeProject.getSystemIncludePaths();
+        if (sysIncPaths != null && !sysIncPaths.isEmpty()) {
+            ExecutionEnvironment env = null;
+            List<String> paths = new ArrayList<>(sysIncPaths.size());
+            for (FSPath fsp : sysIncPaths) {
+                if (env == null) {
+                    env = FileSystemProvider.getExecutionEnvironment(fsp.getFileSystem());
+                } else {
+                    CndUtils.assertTrue(env.equals(FileSystemProvider.getExecutionEnvironment(fsp.getFileSystem())));
+                }
+                paths.add(fsp.getPath());
+            }
+            FileSystemProvider.warmup(FileSystemProvider.WarmupMode.FILES_CONTENT, env, paths, null);
+        }        
     }
     
     private void createLaunchersFileIfNeeded(final FileObject projectDir) {
@@ -1530,7 +1558,7 @@ public final class MakeProject implements Project, MakeProjectListener {
 
         @Override
         protected void projectOpened() {
-            project.onProjectOpened();
+            project.onProjectOpened();            
         }
 
         @Override
