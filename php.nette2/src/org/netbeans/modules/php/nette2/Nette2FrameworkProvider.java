@@ -42,17 +42,11 @@
 package org.netbeans.modules.php.nette2;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.php.api.framework.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
@@ -197,18 +191,8 @@ public class Nette2FrameworkProvider extends PhpFrameworkProvider {
         File parentFile = FileUtil.toFile(parent);
         if (parentFile != null) {
             String nativePath = relPath.replace('/', File.separatorChar);
-            try {
-                Path filePath = parentFile.toPath().resolve(nativePath);
-                if (!Files.exists(filePath)) {
-                    return null;
-                }
-                Path realPath = filePath.toRealPath(LinkOption.NOFOLLOW_LINKS);
-                return FileUtil.toFileObject(realPath.toFile());
-            } catch (IOException ex) {
-                Logger.getLogger(Nette2FrameworkProvider.class.getName()).log(
-                        Level.FINE, null, ex);
-                return null;
-            }
+            File file = new File(parentFile, nativePath);
+            return FileUtil.toFileObject(FileUtil.normalizeFile(file));
         } else {
             return null;
         }

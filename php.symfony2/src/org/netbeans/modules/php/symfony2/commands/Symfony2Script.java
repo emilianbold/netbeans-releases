@@ -47,9 +47,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -122,17 +119,8 @@ public final class Symfony2Script {
         }
         File appDirFile = FileUtil.toFile(appDir); // #238679
         if (appDirFile != null) {
-            try {
-                Path filePath = appDirFile.toPath().resolve(SCRIPT_NAME);
-                if (!Files.exists(filePath)) {
-                    return null;
-                }
-                Path realPath = filePath.toRealPath(LinkOption.NOFOLLOW_LINKS);
-                return FileUtil.toFileObject(realPath.toFile());
-            } catch (IOException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-                return null;
-            }
+            File file = new File(appDirFile, SCRIPT_NAME);
+            return FileUtil.toFileObject(FileUtil.normalizeFile(file));
         } else {
             return null;
         }

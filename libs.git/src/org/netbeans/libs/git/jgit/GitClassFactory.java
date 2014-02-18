@@ -114,7 +114,8 @@ public abstract class GitClassFactory {
 
     public abstract GitStatus createStatus (boolean tracked, String path, String workTreePath, File file, 
                 Status statusHeadIndex, Status statusIndexWC, Status statusHeadWC, 
-                GitConflictDescriptor conflictDescriptor, boolean folder, DiffEntry diffEntry);
+                GitConflictDescriptor conflictDescriptor, boolean folder, DiffEntry diffEntry,
+                long indexEntryTimestamp);
     
     public abstract GitSubmoduleStatus createSubmoduleStatus (SubmoduleStatus status, File folder);
 

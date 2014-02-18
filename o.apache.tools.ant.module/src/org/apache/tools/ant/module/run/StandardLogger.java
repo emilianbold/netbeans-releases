@@ -84,7 +84,7 @@ import org.openide.windows.OutputListener;
 public final class StandardLogger extends AntLogger {
     
     private static final Logger ERR = Logger.getLogger(StandardLogger.class.getName());
-    public static final int LOGGER_MAX_LINE_LENGTH = Integer.getInteger("logger.max.line.length", 1000); //NOI18N
+    public static final int LOGGER_MAX_LINE_LENGTH = Integer.getInteger("logger.max.line.length", 3000); //NOI18N
     
     /**
      * Regexp matching an output line that is a column marker from a compiler or similar.

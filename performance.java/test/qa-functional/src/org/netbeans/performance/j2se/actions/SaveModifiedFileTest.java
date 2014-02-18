@@ -50,6 +50,7 @@ import org.netbeans.jellytools.actions.SaveAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
@@ -104,6 +105,7 @@ public class SaveModifiedFileTest extends PerformanceTestCase {
         Node n = new Node(spn, "org.netbeans.test.performance|Main.java");
         new OpenAction().performAPI(n);
         editorOperator = new EditorOperator("Main.java");
+        WAIT_AFTER_OPEN = 100;
     }
 
     @Override
@@ -119,6 +121,8 @@ public class SaveModifiedFileTest extends PerformanceTestCase {
 
     @Override
     public ComponentOperator open() {
+        // wait only for saving and ignore other repaint events (badging etc.)
+        MY_END_EVENT = ActionTracker.TRACK_OPEN_AFTER_TRACE_MESSAGE;
         new SaveAction().performShortcut(editorOperator);
         editorOperator.waitModified(false);
         return null;
