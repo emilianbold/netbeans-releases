@@ -271,8 +271,11 @@ public class StatusCommand extends GitCommand {
                     }
 
                     int stage = indexEntry == null ? 0 : indexEntry.getStage();
+                    long indexTimestamp = indexEntry == null ? -1 : indexEntry.getLastModified();
 
-                    GitStatus status = getClassFactory().createStatus(tracked, path, workTreePath, file, statusHeadIndex, statusIndexWC, statusHeadWC, null, isFolder, renames.get(path));
+                    GitStatus status = getClassFactory().createStatus(tracked, path, workTreePath, file,
+                            statusHeadIndex, statusIndexWC, statusHeadWC,
+                            null, isFolder, renames.get(path), indexTimestamp);
                     if (stage == 0) {
                         if (isSymlinkFolder(mHead, symlink)) {
                             symLinks.add(status);
@@ -355,7 +358,7 @@ public class StatusCommand extends GitCommand {
             // how do we get other types??
             GitConflictDescriptor desc = getClassFactory().createConflictDescriptor(type);
             status = getClassFactory().createStatus(true, status.getRelativePath(), workTreePath, status.getFile(), GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL,
-                    GitStatus.Status.STATUS_NORMAL, desc, status.isFolder(), null);
+                    GitStatus.Status.STATUS_NORMAL, desc, status.isFolder(), null, status.getIndexEntryModificationDate());
             addStatus(status.getFile(), status);
         }
         // clear conflicts cache
@@ -464,7 +467,7 @@ public class StatusCommand extends GitCommand {
                 }
             }
             status = getClassFactory().createStatus(status.isTracked(), status.getRelativePath(), workTreePath, status.getFile(),
-                    statusHeadIndex, statusIndexWC, statusHeadWC, null, status.isFolder(), null);
+                    statusHeadIndex, statusIndexWC, statusHeadWC, null, status.isFolder(), null, status.getIndexEntryModificationDate());
             addStatus(status.getFile(), status);
             symLinks.clear();
         }

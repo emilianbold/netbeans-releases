@@ -137,7 +137,8 @@ final class GitClassFactoryImpl extends GitClassFactory {
     @Override
     public GitStatus createStatus (boolean tracked, String path, String workTreePath, File file, 
                 GitStatus.Status statusHeadIndex, GitStatus.Status statusIndexWC, GitStatus.Status statusHeadWC, 
-                GitConflictDescriptor conflictDescriptor, boolean folder, DiffEntry diffEntry) {
+                GitConflictDescriptor conflictDescriptor, boolean folder, DiffEntry diffEntry,
+                long indexEntryTimestamp) {
         GitStatus status = new GitStatus(workTreePath, file, path, tracked);
         status.setDiffEntry(diffEntry);
         status.setConflictDescriptor(conflictDescriptor);
@@ -145,6 +146,7 @@ final class GitClassFactoryImpl extends GitClassFactory {
         status.setStatusHeadIndex(statusHeadIndex);
         status.setStatusHeadWC(statusHeadWC);
         status.setStatusIndexWC(statusIndexWC);
+        status.setIndexEntryModificationDate(indexEntryTimestamp);
         return status;
     }
 

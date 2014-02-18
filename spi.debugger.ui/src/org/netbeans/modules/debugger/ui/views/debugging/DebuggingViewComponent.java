@@ -146,6 +146,7 @@ public class DebuggingViewComponent extends TopComponent implements org.openide.
     private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
     private PreferenceChangeListener prefListener;
     private SessionsComboBoxListener sessionsComboListener;
+    private VisibleTreePosition visibleTreePosition = null;
 
     private transient ImageIcon resumeIcon;
     private transient ImageIcon focusedResumeIcon;
@@ -265,6 +266,17 @@ public class DebuggingViewComponent extends TopComponent implements org.openide.
         treeScrollBar.addAdjustmentListener(this);
 
         setSuspendTableVisible(preferences.getBoolean(FiltersDescriptor.SHOW_SUSPEND_TABLE, true));
+
+        mainScrollPane.getVerticalScrollBar().addAdjustmentListener(
+                new AdjustmentListener() {
+
+                    @Override
+                    public void adjustmentValueChanged(AdjustmentEvent e) {
+                        if (e.getValueIsAdjusting()) {
+                            storeScrollPosition();
+                        }
+                    }
+                });
     }
 
     /** This method is called from within the constructor to
@@ -577,8 +589,8 @@ public class DebuggingViewComponent extends TopComponent implements org.openide.
             }
             if (currentThread != null) {
                 DVThread thread = threadMadeCurrentRef != null ? threadMadeCurrentRef.get() : null;
-                if (thread == currentThread) {
-                    threadToScrollRef = new WeakReference(thread);
+                if (thread != currentThread) {
+                    threadToScrollRef = new WeakReference(currentThread);
                 }
             }
             refreshView();
@@ -682,7 +694,30 @@ public class DebuggingViewComponent extends TopComponent implements org.openide.
     
     @Override
     public void treeExpanded(TreeExpansionEvent event) {
+        TreePath path = event.getPath();
+        checkIfWeShouldScrollToCurrentThread(path);
         refreshView();
+    }
+
+    /**
+     * Check whether we should scroll to the current thread.
+     *
+     * @param path Path of node that has been just expanded, or that has new
+     * children.
+     */
+    private void checkIfWeShouldScrollToCurrentThread(TreePath path) {
+        Node node = Visualizer.findNode(path.getLastPathComponent());
+        if (node == null) {
+            return;
+        }
+        DVThread dvThread = node.getLookup().lookup(DVThread.class);
+        DVThread currentThread;
+        synchronized (lock) {
+            currentThread = (debugger != null) ? debugger.getCurrentThread() : null;
+        }
+        if (currentThread != null && currentThread == dvThread) {
+            threadToScrollRef = new WeakReference<DVThread>(dvThread);
+        }
     }
 
     @Override
@@ -697,6 +732,8 @@ public class DebuggingViewComponent extends TopComponent implements org.openide.
 
     @Override
     public void treeNodesInserted(TreeModelEvent e) {
+        TreePath path = e.getTreePath();
+        checkIfWeShouldScrollToCurrentThread(path);
         refreshView();
     }
 
@@ -856,6 +893,87 @@ public class DebuggingViewComponent extends TopComponent implements org.openide.
         setRootContext(compoundModel, de);
     }
     
+    /**
+     * Store first visible node and its offset. Called when the view is scrolled
+     * by the user.
+     */
+    private void storeScrollPosition() {
+
+        JTree tree = getJTree();
+        if (tree != null) {
+            int scrollTop = mainScrollPane.getViewport().getViewPosition().y;
+            int row = tree.getRowForLocation(tree.getRowBounds(0).x + 1,
+                    scrollTop);
+            if (row >= 0) {
+                TreePath path = tree.getPathForRow(row);
+                if (path != null) {
+                    int offset = tree.getRowBounds(row).y - scrollTop;
+                    visibleTreePosition = new VisibleTreePosition(
+                            path, offset);
+                    return;
+                }
+            }
+        }
+        visibleTreePosition = null;
+    }
+
+    /**
+     * Store visible offset of an important node. Called when the view is
+     * scrolled by ViewRefresher
+     *
+     * @param path Path to a node that should stay visible at the same position.
+     */
+    private void storeScrollPosition(TreePath path) {
+        JTree tree = getJTree();
+        if (tree != null && path != null) {
+            int row = tree.getRowForPath(path);
+            if (row > 0) {
+                int scrollTop = mainScrollPane.getViewport().getViewPosition().y;
+                int offset = tree.getRowBounds(row).y - scrollTop;
+                visibleTreePosition = new VisibleTreePosition(
+                        path, offset);
+                return;
+            }
+        }
+        visibleTreePosition = null;
+    }
+
+    private JTree getJTree() {
+        DebugTreeView treeView1 = getTreeView();
+        if (treeView1 != null) {
+            JTree tree = treeView1.getTree();
+            if (tree != null && tree.getRowCount() > 0) {
+                return tree;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Restore stored scroll position.
+     */
+    private void restoreScrollPosition() {
+        if (visibleTreePosition != null) {
+            JTree tree = getJTree();
+            if (tree != null) {
+                int row = tree.getRowForPath(visibleTreePosition.getPath());
+                if (row != -1) {
+                    Rectangle bounds = tree.getRowBounds(row);
+                    if (bounds != null) {
+                        int scrollY = bounds.y - visibleTreePosition.getOffset();
+                        JViewport viewport = mainScrollPane.getViewport();
+                        Rectangle rect = viewport.getViewRect();
+                        rect.y = scrollY;
+                        if (!rect.isEmpty()) {
+                            ((JComponent) viewport.getView()).scrollRectToVisible(
+                                    rect);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // **************************************************************************
     // inner classes
     // **************************************************************************
@@ -893,7 +1011,6 @@ public class DebuggingViewComponent extends TopComponent implements org.openide.
             DVThread threadToScroll = threadToScrollRef != null ? threadToScrollRef.get() : null;
             threadToScrollRef = null;
             int scrollStart = -1, scrollEnd = -1;
-            boolean pathToScrollSearching = false;
 
             int mainPanelHeight = 0;
             int treeViewWidth = 0;
@@ -904,6 +1021,7 @@ public class DebuggingViewComponent extends TopComponent implements org.openide.
             Object currentObject = null;
             int currentSY = 0;
             int height = 0;
+            TreePath scrollPath = null;
 
             if (tView != null) {
                 for (TreePath path : tView.getVisiblePaths()) {
@@ -916,9 +1034,10 @@ public class DebuggingViewComponent extends TopComponent implements org.openide.
                     height = rect != null ? (int) Math.round(rect.getHeight()) : 0;
 
                     if (dvThread != null || dvThreadGroup != null) {
-                        pathToScrollSearching = dvThread == threadToScroll;
-                        if (pathToScrollSearching) {
+                        if (dvThread == threadToScroll) {
                             scrollStart = mainPanelHeight;
+                            scrollEnd = scrollStart + height;
+                            scrollPath = path;
                         }
                         if (currentObject != null) {
                             addPanels(currentObject, isCurrent, isAtBreakpoint, isInDeadlock,
@@ -946,8 +1065,8 @@ public class DebuggingViewComponent extends TopComponent implements org.openide.
                     leftBarHeight += height;
                     sy += height;
 
-                    if (pathToScrollSearching) {
-                        scrollEnd = mainPanelHeight;
+                    if (scrollPath != null && scrollPath.equals(path.getParentPath())) {
+                        scrollEnd += height;
                     }
                 } // for
             } // if
@@ -977,7 +1096,10 @@ public class DebuggingViewComponent extends TopComponent implements org.openide.
                 Rectangle aRect = new Rectangle(0, scrollStart, 1, aRectHeight);
                 if (!aRect.isEmpty()) {
                     ((JComponent)viewport.getView()).scrollRectToVisible(aRect);
+                    storeScrollPosition(scrollPath);
                 }
+            } else {
+                restoreScrollPosition();
             }
         }
 
@@ -1279,4 +1401,27 @@ public class DebuggingViewComponent extends TopComponent implements org.openide.
 
     }
 
+    private class VisibleTreePosition {
+
+        final TreePath path;
+        final int offset;
+
+        public VisibleTreePosition(TreePath path, int offset) {
+            this.path = path;
+            this.offset = offset;
+        }
+
+        public TreePath getPath() {
+            return path;
+        }
+
+        public int getOffset() {
+            return offset;
+        }
+
+        @Override
+        public String toString() {
+            return "VisibleTreePosition[" + path + ", " + offset + "]"; //NOI18N
+        }
+    }
 }

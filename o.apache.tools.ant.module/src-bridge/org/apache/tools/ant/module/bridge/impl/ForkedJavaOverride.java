@@ -60,7 +60,7 @@ import org.openide.windows.OutputWriter;
 public class ForkedJavaOverride extends Java {
 
     private static final RequestProcessor PROCESSOR = new RequestProcessor(ForkedJavaOverride.class.getName(), Integer.MAX_VALUE);
-    public static final int LOGGER_MAX_LINE_LENGTH = Integer.getInteger("logger.max.line.length", 1000); //NOI18N
+    public static final int LOGGER_MAX_LINE_LENGTH = Integer.getInteger("logger.max.line.length", 3000); //NOI18N
 
     // should be consistent with java.project.JavaAntLogger.STACK_TRACE
     private static final String JIDENT = "[\\p{javaJavaIdentifierStart}][\\p{javaJavaIdentifierPart}]*"; // NOI18N

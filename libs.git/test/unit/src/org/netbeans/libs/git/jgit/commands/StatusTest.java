@@ -767,6 +767,46 @@ public class StatusTest extends AbstractGitTestCase {
         assertStatus(statuses, workDir, link, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
     }
     
+    public void testLastIndexModificationDate () throws Exception {
+        File f = new File(workDir, "f");
+        
+        GitClient client = getClient(workDir);
+        write(f, "init");
+        
+        // not yet added to the index => ts: -1
+        GitStatus status = client.getStatus(new File[] { f }, NULL_PROGRESS_MONITOR).get(f);
+        assertEquals(-1, status.getIndexEntryModificationDate());
+        
+        add(f);
+        // added => current timestamp
+        status = client.getStatus(new File[] { f }, NULL_PROGRESS_MONITOR).get(f);
+        long ts = f.lastModified();
+        assertEquals((ts / 1000) * 1000, (status.getIndexEntryModificationDate() / 1000) * 1000);
+        
+        commit(f);
+        // still the same => current timestamp
+        status = client.getStatus(new File[] { f }, NULL_PROGRESS_MONITOR).get(f);
+        assertEquals((ts / 1000) * 1000, (status.getIndexEntryModificationDate() / 1000) * 1000);
+        
+        Thread.sleep(1000);
+        write(f, "modification");
+        // modified => both should differ
+        status = client.getStatus(new File[] { f }, NULL_PROGRESS_MONITOR).get(f);
+        assertEquals((ts / 1000) * 1000, (status.getIndexEntryModificationDate() / 1000) * 1000);
+        ts = f.lastModified();
+        assertNotSame((ts / 1000) * 1000, (status.getIndexEntryModificationDate() / 1000) * 1000);
+        
+        add(f);
+        // updated -> both are the same
+        status = client.getStatus(new File[] { f }, NULL_PROGRESS_MONITOR).get(f);
+        assertEquals((ts / 1000) * 1000, (status.getIndexEntryModificationDate() / 1000) * 1000);
+        
+        client.remove(new File[] { f }, true, NULL_PROGRESS_MONITOR);
+        // removed => ts: -1
+        status = client.getStatus(new File[] { f }, NULL_PROGRESS_MONITOR).get(f);
+        assertEquals(-1, status.getIndexEntryModificationDate());
+    }
+    
     private void assertStatus(Map<File, GitStatus> statuses, File repository, File file, boolean tracked, Status headVsIndex, Status indexVsWorking, Status headVsWorking, boolean conflict, TestStatusListener monitor) {
         assertStatus(statuses, repository, file, tracked, headVsIndex, indexVsWorking, headVsWorking, conflict);
         assertStatus(monitor.notifiedStatuses, repository, file, tracked, headVsIndex, indexVsWorking, headVsWorking, conflict);

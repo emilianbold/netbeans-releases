@@ -191,6 +191,7 @@ public class MainSubMenusTest extends PerformanceTestCase {
             editor.close();
             editor = null;
         }
+        MainWindowOperator.getDefault().pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
     }
 
     @Override

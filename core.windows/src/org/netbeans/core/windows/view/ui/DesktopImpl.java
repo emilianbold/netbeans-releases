@@ -95,7 +95,7 @@ public final class DesktopImpl {
 
     /** Minimal thick of slided component when system is trying to align
      * slided component with editor area */
-    private static final int MIN_EDITOR_ALIGN_THICK = 200;
+    private static final int MIN_EDITOR_ALIGN_THICK = 80;
     
     /** Creates a new instance of DesktopImpl */
     public DesktopImpl () {

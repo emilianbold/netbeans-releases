@@ -82,7 +82,7 @@ import org.openide.windows.OutputWriter;
 @ServiceProvider(service=AntLogger.class, position=50)
 public final class JavaAntLogger extends AntLogger {
     
-    public static final int LOGGER_MAX_LINE_LENGTH = Integer.getInteger("logger.max.line.length", 1000); //NOI18N
+    public static final int LOGGER_MAX_LINE_LENGTH = Integer.getInteger("logger.max.line.length", 3000); //NOI18N
     
     static final class StackTraceParse {
         final String line;

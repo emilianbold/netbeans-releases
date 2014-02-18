@@ -115,8 +115,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
         boolean switchMacroExpanding;
         for (;;) {
             if (++generatedTokens > MAX_GENERATED_TOKENS) {
-                APTUtils.LOG.log(Level.WARNING, "stop ({0} is too much) generating tokens {1}", new Object[] { MAX_GENERATED_TOKENS, Thread.currentThread().getName()});
-                System.err.println("\n");
+                APTUtils.LOG.log(Level.SEVERE, "stop ({0} is too much) generating tokens {1}", new Object[] { MAX_GENERATED_TOKENS, Thread.currentThread().getName()});
                 return APTUtils.EOF_TOKEN;
             }
             try {
