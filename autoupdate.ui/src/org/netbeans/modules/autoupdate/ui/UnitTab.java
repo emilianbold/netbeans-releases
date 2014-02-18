@@ -2330,7 +2330,7 @@ public final class UnitTab extends javax.swing.JPanel {
             JLabel renderComponent = (JLabel)super.getTableCellRendererComponent (table, value, isSelected, hasFocus, row, column);
             
             if (value instanceof Boolean) {
-                Unit u = model.getUnitAtRow (row);
+                Unit u = model.getUnitAtRow(table.convertRowIndexToModel(row));
                 if (u != null && u.getRelevantElement ().getUpdateUnit ().isPending ()) {
                     renderComponent.setIcon (ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/restart.png", false)); // NOI18N
                 } else {
