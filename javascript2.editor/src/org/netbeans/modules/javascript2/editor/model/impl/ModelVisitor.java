@@ -786,7 +786,7 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     private JsArray handleArrayCreation(Node initNode, JsObject parent, Identifier name) {
-        if (initNode instanceof UnaryNode) {
+        if (initNode instanceof UnaryNode && parent != null) {
             UnaryNode uNode = (UnaryNode)initNode;
             if (uNode.tokenType() == TokenType.NEW && uNode.rhs() instanceof CallNode) {
                 CallNode cNode = (CallNode)uNode.rhs();
