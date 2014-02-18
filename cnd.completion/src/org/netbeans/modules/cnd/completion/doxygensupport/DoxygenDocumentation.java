@@ -357,6 +357,7 @@ public class DoxygenDocumentation {
                         switch (ts.token().id()) {
                             case WHITESPACE:
                                 continue;
+                            case PREPROCESSOR_DIRECTIVE:
                             case NEW_LINE:
                                 break;
                             default:
