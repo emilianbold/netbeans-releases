@@ -169,31 +169,12 @@ public class Flow {
     }
     
     public static FlowResult assignmentsForUse(CompilationInfo info, TreePath from, Cancel cancel) {
-        Map<Tree, Iterable<? extends TreePath>> result = new HashMap<Tree, Iterable<? extends TreePath>>();
         VisitorImpl v = new VisitorImpl(info, null, cancel);
 
         v.scan(from, null);
 
         if (cancel.isCanceled()) return null;
-
-        for (Entry<Tree, State> e : v.use2Values.entrySet()) {
-            result.put(e.getKey(), e.getValue() != null ? e.getValue().assignments : Collections.<TreePath>emptyList());
-        }
-
-        v.deadBranches.remove(null);
-        
-        Set<Element> fc = v.finalCandidates;
-        // PENDING: optimize case with empty fc
-        Set<VariableElement> finalCandidates = new HashSet<VariableElement>(fc.size());
-        for (Element e : fc) {
-            if (SUPPORTED_VARIABLES.contains(e.getKind())) {
-                finalCandidates.add((VariableElement)e);
-            }
-        }
-        
-        finalCandidates.removeAll(v.usedWhileUndefined);
-
-        return new FlowResult(Collections.unmodifiableMap(result), Collections.unmodifiableSet(v.deadBranches), Collections.unmodifiableSet(finalCandidates));
+        return new FlowResult(v);
     }
     
     public static final class FlowResult {
@@ -205,11 +186,37 @@ public class Flow {
         private final Set<VariableElement> finalCandidates;
         private Map<Tree, TreePath> locations;
         private volatile Map<Tree, Collection<Tree>> dataFlow;
-        private FlowResult(Map<Tree, Iterable<? extends TreePath>> assignmentsForUse, Set<Tree> deadBranches, Set<VariableElement> finalCandidates) {
-            this.assignmentsForUse = assignmentsForUse;
-            this.deadBranches = deadBranches;
-            this.finalCandidates = finalCandidates;
+        private final Map<Element, Collection<Element>> finalFieldConstructors;
+        
+        private FlowResult(VisitorImpl v) { // Map<Tree, Iterable<? extends TreePath>> assignmentsForUse, Set<Tree> deadBranches, Set<VariableElement> finalCandidates) {
+            Map<Tree, Iterable<? extends TreePath>> result = new HashMap<Tree, Iterable<? extends TreePath>>();
+            for (Entry<Tree, State> e : v.use2Values.entrySet()) {
+                result.put(e.getKey(), e.getValue() != null ? e.getValue().assignments : Collections.<TreePath>emptyList());
+            }
+            Set<Element> fc = v.finalCandidates;
+            // PENDING: optimize case with empty fc
+            Set<VariableElement> finalCandidates = new HashSet<VariableElement>(fc.size());
+            for (Element e : fc) {
+                if (SUPPORTED_VARIABLES.contains(e.getKind())) {
+                    finalCandidates.add((VariableElement)e);
+                }
+            }
+            v.deadBranches.remove(null);
+            finalCandidates.removeAll(v.usedWhileUndefined);
+            v.finalFieldConstructors.keySet().retainAll(finalCandidates);
+            
+            this.assignmentsForUse = Collections.unmodifiableMap(result);
+            this.deadBranches = Collections.unmodifiableSet(v.deadBranches);
+            this.finalCandidates = Collections.unmodifiableSet(finalCandidates);
+            // the collection is never served out of the FlowResult
+            this.finalFieldConstructors = v.finalFieldConstructors;
         }
+        
+        public Collection<Element> getFieldInitConstructors(Element var) {
+            Collection<Element> els = finalFieldConstructors.get(var);
+            return els == null ? Collections.<Element>emptyList() : Collections.unmodifiableCollection(els);
+        }
+        
         public Map<Tree, Iterable<? extends TreePath>> getAssignmentsForUse() {
             return assignmentsForUse;
         }
@@ -392,6 +399,11 @@ public class Flow {
         private boolean doNotRecord;
         private /*Map<ClassTree, */Set<Element> finalCandidates = new ReluctantSet<>();
         private final Set<Element> usedWhileUndefined = new HashSet<Element>();
+        /**
+         * For field final candidates, this Map contains all constructors, which initialize the field. Used
+         * for checking whether the final transformation can be done easily.
+         */
+        private final Map<Element, Collection<Element>> finalFieldConstructors = new HashMap<Element, Collection<Element>>();
 
         /**
          * The target type for a qualified L-value reference. Null for unqualified symbols.
@@ -789,6 +801,15 @@ public class Flow {
 
             return null;
         }
+        
+        private void addFieldConstructor(Element field, Element ctor) {
+            Collection<Element> ctors = finalFieldConstructors.get(field);
+            if (ctors == null) {
+                ctors = new HashSet<Element>();
+                finalFieldConstructors.put(field, ctors);
+            }
+            ctors.add(ctor);
+        }
 
         @Override
         public Boolean visitMethod(MethodTree node, ConstructorData p) {
@@ -855,6 +876,12 @@ public class Flow {
                         finalCandidates.addAll(definitellyAssignedOnce);
                     } else {
                         finalCandidates.retainAll(definitellyAssignedOnce);
+                    }
+                    
+                    if (methodEl != null) {
+                        for (Element e : definitellyAssignedOnce) {
+                            addFieldConstructor(e, methodEl);
+                        }
                     }
                     
                     for (Element var : assigned) {
