@@ -58,6 +58,7 @@ public final class CharBuffer {
     int leftMargin = 0;
     int hardRightMargin = UNLIMITED;
     int lastBlankLines = 0;
+    int lastObserved;
     public final int length() { return used; }
     public void setLength(int l) { if (l < used) used = l < 0 ? 0 : l; }
     public CharBuffer() { chars = new char[10]; }
@@ -237,15 +238,19 @@ public final class CharBuffer {
 	if(t>0 && chars[t-1]>' ')
 	    append(' ');
     }
+    // preparation to some trimmed-notification, might be needed.
+    private void trimTo(int newUsed) {
+        used = newUsed;
+    }
     public void nlTerm() {
 	if(hasMargin())
 	    needSpace();
 	else {
 	    int t = used;
 	    if (t <= 0) return;
-	    while (t > 0 && chars[t-1] <= ' ') t--;
-	    used = t;
-	    append('\n');
+	    while (t > 0 && chars[t-1] <= ' ') t--; // NOI18N
+            trimTo(t);
+	    append('\n'); // NOI18N
 	}
     }
     public void toLineStart() {
@@ -254,8 +259,8 @@ public final class CharBuffer {
 	else {
 	    int t = used;
 	    if (t <= 0) return;
-	    while (t > 0 && chars[t-1] <= ' ' && chars[t-1] != '\n') t--;
-	    used = t;
+	    while (t > 0 && chars[t-1] <= ' ' && chars[t-1] != '\n') t--; // NOI18N
+            trimTo(t);
             col = 0;
 	}
     }
@@ -263,12 +268,12 @@ public final class CharBuffer {
     public void eatAwayChars(int count) {
         if (used <= 0) return;
         int nCol = 0;
-        while (count > nCol && chars[used-nCol] != '\n') nCol++;
+        while (count > nCol && chars[used-nCol] != '\n') nCol++; // NOI18N
         col = nCol;
-        used -= nCol;
+        trimTo(used - nCol);
     }
     
-    public void blanklines(int n) {
+    public void _blanklines(int n) {
         int numBlankLines = n = Math.max(lastBlankLines, n);
 	if(hasMargin())
 	    needSpace();
@@ -279,12 +284,79 @@ public final class CharBuffer {
 	}
         lastBlankLines = numBlankLines;
     }
+    
+    /**
+     * Ensures there's exactly `n' blank lines between previous contents and end of the buffer.
+     * The implementation attempts not to touch preceding completed lines unless it really needs to strip
+     * some lines from the end. If the buffer ends with all-whitespace line but without line terminator,
+     * this line is truncated to empty so that the buffer always ends with a newline character.
+     * <p/>
+     * This complicated algorithm helps to preserve boundaries of guarded blocks (see BlockSequences); with simpler
+     * implementation, end of a guarded block might get truncated as it ended with whitespaces followed by a newline
+     * and such line was trimmed by the previous (simpler) impl.
+     * 
+     * @param n desired number of blank lines
+     */
+    public void blanklines(int n) {
+        int numBlankLines = n = Math.max(lastBlankLines, n);
+	if(hasMargin())
+	    needSpace();
+	else {
+	    int t = used;
+	    if (t <= 0) {
+                while(n-- > 0)
+                    append('\n'); // NOI18N
+                lastBlankLines = numBlankLines;
+                return;
+            }
+            
+            final int l = n + 1;
+            int c = 0;
+            int lastNl = -1;
+            // ring buffer nli cycles through last n newlines, so newline at pointer is the -(n + 1)th newline found.
+            int[] nlpos = new int[l];
+            int nli = 0;
+	    while (t > 0 && chars[t-1] <= ' ') { // NOI18N
+                if (chars[t-1] == '\n') { // NOI18N
+                    if (lastNl == -1) lastNl = t;
+                    c++;
+                    nlpos[nli] = t;
+                    nli = (nli + 1) % l;
+                }
+                t--;
+            }
+            if (c == l) {
+                this.used = lastNl - 1;
+                // does some processing for '\n', e.g. updates col
+                append('\n'); // NOI18N
+            } else if (c > l) {
+                int p = 0;
+                if (n > 0) {
+                    // discard some newlines, use the ring buffer
+                    p = nli;
+                }
+                this.used = nlpos[p] - 1;
+                // let the other vars adjust
+                append('\n'); // NOI18N
+            } else {
+                // must generate some more newlines, trim the last line if unterminated
+                if (lastNl > -1) {
+                    this.used = lastNl;
+                }
+                while (c < l) {
+                    c++;
+                    append('\n'); // NOI18N
+                }
+            }
+	}
+        lastBlankLines = numBlankLines;
+    }
     public boolean isWhitespaceLine() {
         if (col > 0) {
             int pos = used - 1;
 
             while (pos >= 0) {
-                if (chars[pos] == '\n') return true;
+                if (chars[pos] == '\n') return true; // NOI18N
 
                 if (!Character.isWhitespace(chars[pos])) {
                     return false;
