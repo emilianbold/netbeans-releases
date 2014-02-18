@@ -60,6 +60,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
+import org.netbeans.modules.remote.spi.FileSystemProvider.WarmupMode;
 import org.netbeans.modules.remote.spi.FileSystemProviderImplementation;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
@@ -435,6 +436,6 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     }
     
     @Override
-    public void warmup(FileObject fo) {        
-    }
+    public void warmup(WarmupMode mode, ExecutionEnvironment env, Collection<String> paths, Collection<String> extensions) {        
+    }    
 }

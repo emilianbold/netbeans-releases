@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
+import org.netbeans.modules.remote.spi.FileSystemProvider.WarmupMode;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -97,5 +98,5 @@ public interface FileSystemProviderImplementation {
     public char getFileSeparatorChar();
     void addFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem);
     void removeFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem);
-    void warmup(FileObject fo);
+    void warmup(WarmupMode mode, ExecutionEnvironment env, Collection<String> paths, Collection<String> extensions);
 }

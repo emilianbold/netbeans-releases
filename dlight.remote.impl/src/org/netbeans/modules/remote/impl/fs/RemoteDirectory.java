@@ -45,6 +45,7 @@ package org.netbeans.modules.remote.impl.fs;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,6 +63,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -72,11 +75,13 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.FilesystemInterceptor;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
@@ -540,13 +545,12 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return getPath().equals("/proc") || getPath().equals("/dev");//NOI18N
     }
 
-    @Override
-    public void warmup() {
+    private void warmupDirs() {
         if (RemoteFileSystemUtils.getBoolean("remote.warmup", true)) {
             setFlag(MASK_WARMUP, true);   
         }
     }
-
+    
     @Override
     public RemoteDirectory getParent() {
         return (RemoteDirectory) super.getParent(); // see constructor
@@ -1339,6 +1343,88 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 //        return new CachedRemoteInputStream(child, getExecutionEnvironment());
 //    }
     
+    @Override
+    public void warmup(FileSystemProvider.WarmupMode mode, Collection<String> extensions) {
+        switch(mode) {
+            case FILES_CONTENT:
+                warmupFiles(extensions);
+                break;
+            case RECURSIVE_LS:
+                warmupDirs();
+                break;
+            default:
+                Exceptions.printStackTrace(new IllegalAccessException("Unexpected warmup mode: " + mode)); //NOI18N
+        }        
+    }
+
+    private void warmupFiles(Collection<String> extensions) {        
+        if (ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
+            File zipFile = new File(getCache(), RemoteFileSystem.CACHE_ZIP_FILE_NAME);
+            if (!zipFile.exists()) {
+                File zipPartFile = new File(getCache(), RemoteFileSystem.CACHE_ZIP_PART_NAME);
+                getFileSystem().getZipper().schedule(zipFile, zipPartFile, getPath(), extensions);
+            }
+        }
+    }
+
+    private boolean ensureChildSyncFromZip(RemotePlainFile child) {
+        File file = new File(getCache(), RemoteFileSystem.CACHE_ZIP_FILE_NAME);
+        if (file.exists()) {
+            ZipFile zipFile = null;
+            InputStream is = null;
+            OutputStream os = null;
+            boolean ok = false;
+            try {
+                zipFile = new ZipFile(file);
+                String path = child.getPath();
+                RemoteLogger.assertTrue(path.startsWith("/")); //NOI18N
+                path = path.substring(1); // remove starting '/'
+                ZipEntry zipEntry = zipFile.getEntry(path);
+                boolean result = false;
+                if (zipEntry != null) {
+                    //if (zipEntry.getTime() == child.lastModified().getTime()) {
+                        is = zipFile.getInputStream(zipEntry);
+                        os = new FileOutputStream(child.getCache());
+                        FileUtil.copy(is, os);
+                        ok = true;
+                    //}
+                }
+            } catch (IOException ex) {
+                RemoteLogger.fine(ex);
+            } finally {
+                if (os != null) {
+                    try {
+                        os.close();
+                    } catch (IOException ex) {
+                        ok = false;
+                        RemoteLogger.fine(ex);
+                    }
+                }
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException ex) {
+                        RemoteLogger.fine(ex);
+                    }
+                }
+                if (zipFile != null) {
+                    try {
+                        zipFile.close();
+                    } catch (IOException ex) {
+                        RemoteLogger.fine(ex);
+                    }
+                }
+                return ok;
+            }
+        } else {
+            RemoteDirectory parent = getParent();
+            if (parent != null) {
+                return parent.ensureChildSyncFromZip(child);
+            } 
+        }
+        return false;
+    }
+    
     void ensureChildSync(RemotePlainFile child) throws
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
@@ -1366,6 +1452,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     throw new IOException("Unable to create parent firectory " + cacheParentFile.getAbsolutePath()); //NOI18N
                 }
             }
+            if (ensureChildSyncFromZip(child)) {
+                return; // cleanup is in finally block
+            }            
             StringWriter errorWriter = new StringWriter();
             Future<Integer> task = CommonTasksSupport.downloadFile(child.getPath(), getExecutionEnvironment(), child.getCache().getAbsolutePath(), errorWriter);
             int rc = task.get().intValue();
