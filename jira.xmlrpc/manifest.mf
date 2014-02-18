@@ -3,3 +3,4 @@ AutoUpdate-Show-In-Client: false
 OpenIDE-Module: org.netbeans.modules.jira.xmlrpc
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/jira/xmlrpc/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.2
+OpenIDE-Module-Provides: org.netbeans.modules.jira.connector
