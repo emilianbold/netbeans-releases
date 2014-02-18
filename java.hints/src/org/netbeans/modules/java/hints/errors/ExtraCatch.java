@@ -87,8 +87,6 @@ public class ExtraCatch implements ErrorRule<Void> {
 
     @Override
     public List<Fix> run(CompilationInfo compilationInfo, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
-        // tree path is 'catch' clause or an offending type alternative in the case of multi-catch.
-        boolean multiCatch = treePath.getParentPath().getLeaf().getKind() == Tree.Kind.UNION_TYPE;
         TreePath catchPath = treePath;
         while (catchPath != null && catchPath.getLeaf().getKind() != Tree.Kind.CATCH) {
             catchPath = catchPath.getParentPath();
@@ -97,6 +95,8 @@ public class ExtraCatch implements ErrorRule<Void> {
             return null;
         }
         String typeName = null;
+        // tree path is 'catch' clause or an offending type alternative in the case of multi-catch.
+        boolean multiCatch = treePath.getParentPath().getLeaf().getKind() == Tree.Kind.UNION_TYPE;
         if (multiCatch) {
             typeName = compilationInfo.getTypeUtilities().getTypeName(compilationInfo.getTrees().getTypeMirror(treePath)).toString();
         }

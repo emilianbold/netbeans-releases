@@ -44,6 +44,7 @@
 package org.netbeans.modules.java.source.save;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -57,7 +58,8 @@ import org.netbeans.modules.java.source.save.CasualDiff.Diff;
  */
 class DiffFacility {
     private final Collection<Diff> gdiff;
-
+    private int[] sections;
+    
     public DiffFacility(Collection<Diff> diff) {
         this.gdiff = diff;
     }
@@ -109,13 +111,59 @@ class DiffFacility {
         return list;
     }
     
+    public DiffFacility withSections(int[] sections) {
+        this.sections = sections;
+        return this;
+    }
+    
+    /**
+     * Converts character offsets found in this.sections into line indexes.
+     * Assumes that a section spans whole lines (currently true with the guarded block implementation). Returns an array
+     * of line index pairs (lines1Idx, lines2Idx) for lines that form boundaries of readonly/writable areas in the text.
+     * 
+     * @param lines1 original lines
+     * @param lines2 generated lines
+     * @param offset offset of the lines1[0]'s start
+     * @return array that contain pairs of matching lines for individual boundaries
+     */
+    private int[] computeLineSections(Line[] lines1, Line[] lines2, int offset) {
+        int i1 = 0, i2 = 0;
+        int res[] = new int[sections.length];
+        for (int p = 0; p < sections.length; p += 2) {
+            int orig = sections[p] - offset;
+            int nue = sections[p + 1];
+            while (i1 < lines1.length && lines1[i1].end <= orig) {
+                i1++;
+            }
+            while (i2 < lines2.length && lines2[i2].end <= nue) {
+                i2++;
+            }
+            
+            if (i1 < lines1.length && i2 < lines2.length) {
+                if ((lines1[i1].start >= orig) != lines2[i2].start >= nue) {
+                    // some error, better discard the whole boundary
+                    continue;
+                }
+            } else {
+                return (p == res.length) ?
+                        res  : Arrays.copyOf(res, p);
+            }
+            res[p] = i1;
+            res[p + 1] = i2;
+        }
+        return res;
+    }
+    
     public List<Diff> makeListMatch(String text1, String text2, int offset) {
+        if (sections == null) {
+            sections = new int[] { text1.length(), text2.length() };
+        }
         List<Line> list1 = getLines(text1);
         List<Line> list2 = getLines(text2);
         Line[] lines1 = list1.toArray(new Line[list1.size()]);
         Line[] lines2 = list2.toArray(new Line[list2.size()]);
         
-        List<Difference> diffs = new ComputeDiff<Line>(lines1, lines2).diff();
+        List<Difference> diffs = new ComputeDiff<Line>(lines1, lines2, computeLineSections(lines1, lines2, offset)).diff();
         for (Difference diff : diffs) {
             int delStart = diff.getDeletedStart();
             int delEnd   = diff.getDeletedEnd();
@@ -247,7 +295,7 @@ class DiffFacility {
         }
         Line[] lines1 = list1.toArray(new Line[list1.size()]);
         Line[] lines2 = list2.toArray(new Line[list2.size()]);
-        List<Difference> diffs = new ComputeDiff<Line>(lines1, lines2).diff();
+        List<Difference> diffs = new ComputeDiff<Line>(lines1, lines2, null).diff();
         for (Difference diff : diffs) {
             int delStart = diff.getDeletedStart();
             int delEnd   = diff.getDeletedEnd();

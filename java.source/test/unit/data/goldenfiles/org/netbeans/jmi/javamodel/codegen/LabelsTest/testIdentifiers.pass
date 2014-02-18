@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -46,14 +46,17 @@ package org0.netbeans0.test0.codegen0.labels0;
  */
 public class SetLabelTestClass0 {
 
-    public void <init>0() {
+    public <init>0() {
         super0();
     }
+
     int number0 = 25;
 
+    /** Creates a new instance of Pepik */
     public <AnyType0> void breakWithLabel0() {
         Alois0: {
             System0.err0.println0("Tady je Lojzovo.");
+
             Marenka0: {
                 System0.err0.println0("Marenka bydli na Lojzove.");
                 if (number0 > 10) {
@@ -63,14 +66,14 @@ public class SetLabelTestClass0 {
                 }
             }
         }
-        Frantisek0:
-            for (int i0 = 0; i0 < 10; i0++) {
-                if (number0 == 0) {
-                    continue Frantisek0;
-                }
-                number0++;
+        Frantisek0: for (int i0 = 0; i0 < 10; i0++) {
+            if (number0 == 0) {
+                continue Frantisek0;
             }
+            number0++;
+        }
         java0.util0.List0<AnyType0> l0;
-        java0.util0.List0<java0.lang0.String0> ls0;
+        java0.util0.List0<String0> ls0;
     }
+    
 }
