@@ -393,15 +393,20 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
     }
     
     public void destroyImpl() throws IOException {
-        if (!getFolder().isDiskFolder()) {
+        final Folder aFolder = getFolder();
+        if (!aFolder.isDiskFolder()) {
             return;
         }
-        String absPath = CndPathUtilities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), getFolder().getRootPath());
-        FileObject folderFileObject = CndFileUtils.toFileObject(getFolder().getConfigurationDescriptor().getBaseDirFileSystem(), absPath);
+        String absPath = CndPathUtilities.toAbsolutePath(aFolder.getConfigurationDescriptor().getBaseDirFileObject(), aFolder.getRootPath());
+        FileObject folderFileObject = CndFileUtils.toFileObject(aFolder.getConfigurationDescriptor().getBaseDirFileSystem(), absPath);
         if (folderFileObject == null /*paranoia*/ || !folderFileObject.isValid() || !folderFileObject.isFolder()) {
             return;
         }
         folderFileObject.delete();
+        Folder parent = aFolder.getParent();
+        if (parent != null) {
+            parent.removeFolderAction(aFolder);
+        }
         super.destroy();
     }
     
