@@ -324,8 +324,8 @@ public class APTDefineNode extends APTMacroBaseNode implements APTDefine, Serial
                         if (bodyTokens == null) {
                             bodyTokens = new ArrayList<APTToken>();
                         }
-                        // check for errors:
-                        if (token.getType() == APTTokenTypes.SHARP) {
+                        // check for errors with sharp for function like macro:
+                        if (token.getType() == APTTokenTypes.SHARP && params != null) {
                             node.stateAndHashCode = IN_BODY_AFTER_SHARP;
                             // there is a special case of escaping sharp by putting it between parens like '(#)'
                             if (bodyTokens.size() > 0 && bodyTokens.get(bodyTokens.size() - 1).getType() == APTTokenTypes.LPAREN) {

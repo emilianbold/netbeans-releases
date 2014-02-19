@@ -15,3 +15,5 @@ int main(int argc, char** argv) {
 }
 
 #define BOOST_SPIRIT_LOG2 (#error)(#error) (2) (3)
+
+#define YYY (#error) #x + 1 + #y
