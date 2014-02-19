@@ -228,7 +228,24 @@ public class VerifyClassLinkage extends Task {
                 if (cp != null) {
                     String[] uris = cp.trim().split("[, ]+");
                     for (int i = 0; i < uris.length; i++) {
-                        File otherJar = new File(jar.toURI().resolve(uris[i]));
+                        String path = uris[i];
+                        if (path.equals("${java.home}/lib/ext/jfxrt.jar")) { 
+                            String jhm = System.getProperty("java.home");
+                            File classpathFile = new File(new File(new File(new File(jhm), "lib"), "ext"), "jfxrt.jar");
+                            if (!classpathFile.exists()) {
+                                File jdk7 = new File(new File(new File(jhm), "lib"), "jfxrt.jar");
+                                if (jdk7.exists()) {
+                                    classpathFile = jdk7;
+                                }
+                            }
+                            if (!classpathFile.isFile()) {
+                                task.log( "Could not resolve Class-Path item in manifest, path is:" + path +  ", skipping", Project.MSG_WARN);
+                                continue; //try to guard against future failures
+                            } else {
+                                path = classpathFile.getAbsolutePath();
+                            }
+                        }
+                        File otherJar = new File(jar.toURI().resolve(path));
                         if (alreadyRead.add(otherJar)) {
                             if (otherJar.isFile()) {
                                 JarFile otherJF = new JarFile(otherJar);
