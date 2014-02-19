@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import java.awt.Color;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -206,7 +207,11 @@ public class VariablesNodeModel implements ExtendedNodeModel {
             return NbBundle.getMessage(VariablesNodeModel.class, "NativeMethod");
         }
         if (o == "noDebugInfoWarning") {
-            return NbBundle.getMessage(VariablesNodeModel.class, "noDebugInfoWarning");
+            return BoldVariablesTableModelFilter.toHTML(
+                    NbBundle.getMessage(VariablesNodeModel.class, "noDebugInfoWarning"),
+                    true,
+                    false,
+                    Color.RED);
         }
         String str = o.toString();
         if (str.startsWith("SubArray")) { // NOI18N
