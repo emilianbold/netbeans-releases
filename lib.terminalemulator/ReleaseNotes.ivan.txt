@@ -1,3 +1,7 @@
+nobugid - Track API changes: TermListener.titleChanged()
+	This is in examples/ projects which got missed when titleChanged()
+	was added. TermApp now shows it's title.
+
 nobugid - Default $TERM for TermApp -> xterm
 nobugid - PrintStatsAction for TermApp
 	This is all to help debug bug 238225.

@@ -115,7 +115,9 @@ public class Main {
             program = new Program(command);
         }
 
-        Terminal terminal = new Terminal(executor(), termType, program, processErrors, rows, cols);
+        TermExecutor executor = executor();
+        Terminal terminal = new Terminal(executor, termType, program, processErrors, rows, cols);
+        executor.setTitledWindow(terminal);
         Thread thread = new Thread(terminal);
         thread.start();
     }
