@@ -206,6 +206,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         
         serverType = new JComboBox(new String[]{"Local","Remote"});//NOI18N
         serverType.addActionListener(new ActionListener(){
+            @Override
             public void actionPerformed(ActionEvent e) {
                 serverTypeChanged();
             }

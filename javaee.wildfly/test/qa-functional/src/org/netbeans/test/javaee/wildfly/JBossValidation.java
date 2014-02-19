@@ -52,12 +52,10 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.javaee.lib.Util;
-import org.netbeans.test.javaee.lib.ProgressOperator;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.test.javaee.lib.ProgressOperator;
 
 /**
  *
