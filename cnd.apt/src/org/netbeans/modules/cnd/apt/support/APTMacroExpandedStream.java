@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.antlr.RecognitionException;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
@@ -57,6 +58,10 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  */
 public class APTMacroExpandedStream extends APTExpandedStream {
     private final boolean emptyExpansionAsComment;
+    private int generatedTokens = 0;
+    private final static int EOF_MARKER = -1;
+    private final static int MAX_GENERATED_TOKENS = Integer.getInteger("apt.limit.tokens", 8000000); // NOI18N
+    private final static int MIN_REPORTED_TOKENS = Integer.getInteger("apt.report.tokens", Integer.MAX_VALUE); // NOI18N
     
     public APTMacroExpandedStream(TokenStream stream, APTMacroCallback callback, boolean emptyExpansionAsComment) {
         super(stream, callback);
@@ -73,6 +78,26 @@ public class APTMacroExpandedStream extends APTExpandedStream {
         APTTokenStream expandedMacros = new MacroExpandWrapper(token, origExpansion, last, emptyExpansionAsComment);
         return expandedMacros;
     }   
+
+    @Override
+    public APTToken nextToken() {
+        if (generatedTokens == EOF_MARKER) {
+            return APTUtils.EOF_TOKEN;
+        }
+        if (++generatedTokens > MAX_GENERATED_TOKENS) {
+            APTUtils.LOG.log(Level.SEVERE, "stop ({0} is too much) generating tokens {1}", new Object[]{MAX_GENERATED_TOKENS, Thread.currentThread().getName()});
+            generatedTokens = EOF_MARKER;
+            return APTUtils.EOF_TOKEN;
+        }
+        APTToken token = super.nextToken();
+        if (token == APTUtils.EOF_TOKEN) {
+            if (generatedTokens > MIN_REPORTED_TOKENS) {
+                APTUtils.LOG.log(Level.SEVERE, "generated {0} tokens for {1}", new Object[]{generatedTokens, Thread.currentThread().getName()});
+            }
+            generatedTokens = EOF_MARKER;
+        }
+        return token;
+    }
     
     private static final class MacroExpandWrapper implements TokenStream, APTTokenStream {
         private final APTToken expandedFrom;
