@@ -99,7 +99,8 @@ public class WildflyManagerNode extends AbstractNode implements Node.Cookie {
     @Override
     public Component getCustomizer() {
         CustomizerDataSupport dataSup = new CustomizerDataSupport(getDeploymentManager().getProperties());
-        return new Customizer(dataSup, new WildflyJ2eePlatformFactory().getJ2eePlatformImpl(getDeploymentManager()));
+        return new Customizer(getDeploymentManager(), dataSup, 
+                new WildflyJ2eePlatformFactory().getJ2eePlatformImpl(getDeploymentManager()));
     }
     
     public String  getAdminURL() {

@@ -54,6 +54,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
+import static org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.getDefaultConfigurationFile;
 import org.openide.util.NbBundle;
 
 /**
@@ -311,8 +312,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
             if (WildflyPluginProperties.getInstance().getConfigLocation() != null) {
                 configurationTextField.setText(WildflyPluginProperties.getInstance().getConfigLocation());
             } else {
-                configurationTextField.setText(WildflyPluginProperties.getInstance().getInstallLocation() + File.separatorChar
-                        + "standalone" + File.separatorChar + "configuration" + File.separatorChar + "standalone-full.xml");
+                configurationTextField.setText(getDefaultConfigurationFile(WildflyPluginProperties.getInstance().getInstallLocation()));
             }            
         }
     }
