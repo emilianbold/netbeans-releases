@@ -157,9 +157,13 @@ public class Utilities {
     }
     
     public static Collection<Certificate> getCertificates (KeyStore keyStore) throws KeyStoreException {
-        List<Certificate> certs = new ArrayList<Certificate> ();
+        Set<Certificate> certs = new HashSet<Certificate> ();
         for (String alias: Collections.list (keyStore.aliases ())) {
-            certs.add (keyStore.getCertificate (alias));
+            Certificate[] certificateChain = keyStore.getCertificateChain(alias);
+            if (certificateChain != null) {
+                certs.addAll(Arrays.asList(certificateChain));
+            }
+            certs.add(keyStore.getCertificate(alias));
         }
         return certs;
     }

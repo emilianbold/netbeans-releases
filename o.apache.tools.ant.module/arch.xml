@@ -617,8 +617,18 @@ made subject to such option by the copyright holder.
         <p>
             Generally not except for <a
             href="http://ant.apache.org/manual/running.html#sysprops">properties
-            interpreted by Ant itself</a>.
+            interpreted by Ant itself</a> and the following:
         </p>
+        <ul>
+            <li>
+                <api group="systemproperty" name="logger.max.line.length" type="export" category="private">
+                    <p>
+                        If a longer message is logged the ant logger will handle the message as plain text and will not try to hyperlink, color, fold, etc. 
+                        If not set by the user a default value of <b>3000</b> will be used.
+                    </p>
+                </api>
+            </li>
+        </ul>
     </answer>
 
 

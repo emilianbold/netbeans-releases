@@ -111,6 +111,20 @@ is the proper place.
         
         <change>
             <api name="gitlibrary_api"/>
+            <summary>File status provides also information about the last index entry modification timestamp.</summary>
+            <version major="1" minor="19"/>
+            <date day="18" month="2" year="2014"/>
+            <author login="ovrabec"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>It may be useful to know when was the last time a file was updated in the index. <code>GitStatus</code> now
+                provides this value via <code>getIndexEntryModificationDate</code>.</p>
+            </description>
+            <class package="org.netbeans.libs.git" name="GitStatus"/>
+            <issue number="241798"/>
+        </change>
+        <change>
+            <api name="gitlibrary_api"/>
             <summary>The log command returns also branches containing the commits from the result.</summary>
             <version major="1" minor="16"/>
             <date day="31" month="10" year="2013"/>

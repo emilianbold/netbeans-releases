@@ -225,8 +225,20 @@ public final class NBVersionInfo implements Comparable<NBVersionInfo> {
         return true;
     }
 
+     public @Override int compareTo(NBVersionInfo o) {
+         return compareTo(o, true);
+     }
+     /**
+      * attempt to compare 2 instance without taking the repository in into account (so 2 instances are equals if the only difference is what repository they came from)
+      * @param o
+      * @return 
+      * @since 2.30
+      */
+     public int compareToWithoutRepoId(NBVersionInfo o) {
+         return compareTo(o, false);
+     }
     
-    public @Override int compareTo(NBVersionInfo o) {
+    private int compareTo(NBVersionInfo o, boolean includeRepo) {
 //        int c = Float.compare(luceneScore, o.luceneScore);
 //        if (c != 0) {
 //            return c;
@@ -243,11 +255,11 @@ public final class NBVersionInfo implements Comparable<NBVersionInfo> {
         if (c != 0) {
             return -c;
         }
-        return extrakey().compareTo(o.extrakey());// show e.g. jar vs. nbm artifacts in some predictable order
-        }
+        return extrakey(includeRepo).compareTo(o.extrakey(includeRepo));// show e.g. jar vs. nbm artifacts in some predictable order
+    }
     
-    private String extrakey() {
-        return "" + classifier + type + repoId;
+    private String extrakey(boolean repo) {
+        return "" + classifier + type + (repo ? repoId : "");
     }
     
     public float getLuceneScore() {

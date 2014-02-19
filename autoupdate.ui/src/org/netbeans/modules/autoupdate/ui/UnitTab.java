@@ -1691,7 +1691,7 @@ public final class UnitTab extends javax.swing.JPanel {
                 Unit u = model.getUnitAtRow (i);
                 if ((u != null) && (u instanceof Unit.Installed) && category.equals (u.getCategoryName ())) {
                     Unit.Installed installed = (Unit.Installed)u;
-                    if (!installed.getRelevantElement ().isEnabled ()) {
+                    if (!installed.getRelevantElement().isEnabled() && !installed.updateUnit.isPending()) {
                         OperationInfo info = Containers.forEnable ().add (installed.updateUnit, installed.getRelevantElement ());
                         if (info ==  null) {
                             Logger.getLogger(UnitTab.class.getName()).log(Level.WARNING, "Null OperationInfo for {0}", installed.getRelevantElement());
@@ -1979,7 +1979,7 @@ public final class UnitTab extends javax.swing.JPanel {
                 Unit u = model.getUnitAtRow (i);
                 if ((u != null) && (u instanceof Unit.Installed) && category.equals (u.getCategoryName ())) {
                     Unit.Installed installed = (Unit.Installed)u;
-                    if (installed.getRelevantElement ().isEnabled ()) {
+                    if (installed.getRelevantElement().isEnabled() && !installed.updateUnit.isPending()) {
                         OperationInfo info = Containers.forDisable ().add (installed.updateUnit, installed.getRelevantElement ());
                         // Issue #169640
                         // The relevant element can actually be present in forDisable container
@@ -2330,7 +2330,7 @@ public final class UnitTab extends javax.swing.JPanel {
             JLabel renderComponent = (JLabel)super.getTableCellRendererComponent (table, value, isSelected, hasFocus, row, column);
             
             if (value instanceof Boolean) {
-                Unit u = model.getUnitAtRow (row);
+                Unit u = model.getUnitAtRow(table.convertRowIndexToModel(row));
                 if (u != null && u.getRelevantElement ().getUpdateUnit ().isPending ()) {
                     renderComponent.setIcon (ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/restart.png", false)); // NOI18N
                 } else {

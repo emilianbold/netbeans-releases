@@ -46,14 +46,12 @@ package org.netbeans.modules.java.source.usages;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.Query;
@@ -71,7 +69,6 @@ import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
-import org.netbeans.modules.parsing.lucene.support.IndexReaderInjection;
 import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.parsing.lucene.support.StoppableConvertor;
 import org.netbeans.modules.parsing.lucene.support.StoppableConvertor.Stop;
@@ -96,6 +93,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
     private final IndexPatch indexPath;
     //@GuardedBy("this")
     private Set<String> rootPkgCache;
+    private volatile FileObject cachedRoot;
     private static final Logger LOGGER = Logger.getLogger(PersistentClassIndex.class.getName());
     private static final String REFERENCES = "refs";    // NOI18N
     
@@ -112,7 +110,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
         this.beforeInitType = beforeInitType;
         this.finalType = finalType;
         this.index = IndexManager.createIndex(getReferencesCacheFolder(cacheRoot), DocumentUtil.createAnalyzer());
-        this.indexPath = new IndexPatch(root,index);
+        this.indexPath = new IndexPatch();
     }
     
     @Override
@@ -519,10 +517,8 @@ public final class PersistentClassIndex extends ClassIndexImpl {
         }
     }
     
-    private static final class IndexPatch {
-        
-        private final URL root;
-        private final Index baseIndex;
+    private final class IndexPatch {
+
         //@GuardedBy("this")
         private Index indexPatch;
         //@GuardedBy("this")
@@ -530,11 +526,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
         //@GuardedBy("this")
         private Set<String> typeFilter;
         
-        IndexPatch(
-            @NonNull final URL root,
-            @NonNull final Index baseIndex) {
-            this.root = root;
-            this.baseIndex = baseIndex;
+        IndexPatch() {
         }
         
         <T> Pair<Convertor<? super Document, T>,Index> getPatch (
@@ -622,17 +614,16 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                     if (filter == null) {
                         try {
                             filter = new HashSet<String>();
-                            final String relPath = FileObjects.getRelativePath(root, url);
+                            assert file != null : "Null file for URL: " + url;  //NOI18N
+                            final String relPath = FileUtil.getRelativePath(getRoot(), file);
                             final String clsName = FileObjects.convertFolder2Package(
                                     FileObjects.stripExtension(relPath));
-                            baseIndex.query(
+                            index.query(
                                     filter,
                                     DocumentUtil.binaryNameConvertor(),
                                     DocumentUtil.declaredTypesFieldSelector(),
                                     null,
                                     DocumentUtil.queryClassWithEncConvertor(true).convert(Pair.<String,String>of(clsName,relPath)));
-                        } catch (URISyntaxException se) {
-                            throw new IOException(se);
                         } catch (InterruptedException ie) {
                             //Never thrown, but throw as IOE for sure
                             throw new IOException(ie);
@@ -665,37 +656,38 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                 return null;
             }
         }
+    }
         
     
-        private static class FilterConvertor<T> implements Convertor<Document, T> {
+    private static class FilterConvertor<T> implements Convertor<Document, T> {
 
-            private final Set<String> toExclude;
-            private final Convertor<? super Document, T> delegate;
+        private final Set<String> toExclude;
+        private final Convertor<? super Document, T> delegate;
 
-            private FilterConvertor(
-                    @NonNull final Set<String> toExclude,
-                    @NonNull final Convertor<? super Document,T> delegate) {
-                assert toExclude != null;
-                assert delegate != null;
-                this.toExclude = toExclude;
-                this.delegate = delegate;
-            }
-
-            @Override
-            @CheckForNull
-            public T convert(@NonNull final Document doc) {
-                final String rawName = DocumentUtil.getBinaryName(doc);
-                return toExclude.contains(rawName) ? null : delegate.convert(doc);
-            }
+        private FilterConvertor(
+                @NonNull final Set<String> toExclude,
+                @NonNull final Convertor<? super Document,T> delegate) {
+            assert toExclude != null;
+            assert delegate != null;
+            this.toExclude = toExclude;
+            this.delegate = delegate;
         }
-        
-        private static class NoCallConvertor<F,T> implements Convertor<F,T> {
-            @Override
-            public T convert(F p) {
-                throw new IllegalStateException();
-            }
+
+        @Override
+        @CheckForNull
+        public T convert(@NonNull final Document doc) {
+            final String rawName = DocumentUtil.getBinaryName(doc);
+            return toExclude.contains(rawName) ? null : delegate.convert(doc);
         }
     }
+
+    private static class NoCallConvertor<F,T> implements Convertor<F,T> {
+        @Override
+        public T convert(F p) {
+            throw new IllegalStateException();
+        }
+    }
+    
     
     private static final class FreqCollector implements StoppableConvertor<Index.WithTermFrequencies.TermFreq, Void> {
         
@@ -734,5 +726,14 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             pkgFreq.put(pkgName, pkgCount == null ? docCount : docCount + pkgCount);
             return null;
         }
+    }
+
+    @NonNull
+    private FileObject getRoot() {
+        FileObject res = cachedRoot;
+        if (res == null || !res.isValid()) {
+            cachedRoot = res = URLMapper.findFileObject(root);
+        }
+        return res;
     }
 }

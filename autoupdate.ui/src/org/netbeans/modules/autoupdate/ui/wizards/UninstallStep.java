@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -62,68 +62,47 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.OperationSupport.Restarter;
+import static org.netbeans.modules.autoupdate.ui.wizards.Bundle.*;
 
 /**
  *
  * @author Jiri Rechtacek
  */
 public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDescriptor> {
-    private final Logger err = Logger.getLogger ("org.netbeans.modules.autoupdate.ui.wizards.UninstallStep");
+    private static final Logger err = Logger.getLogger("org.netbeans.modules.autoupdate.ui.wizards.UninstallStep");
     private OperationPanel panel;
     private PanelBodyContainer component;
     private UninstallUnitWizardModel model = null;
     private WizardDescriptor wd = null;
     private Restarter restarter = null;
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener> ();
-    private static final String HEAD_UNINSTALL = "UninstallStep_Header_Uninstall_Head";
-    private static final String CONTENT_UNINSTALL = "UninstallStep_Header_Uninstall_Content";
-    
-    private static final String HEAD_DEACTIVATE = "UninstallStep_Header_Deactivate_Head";
-    private static final String CONTENT_DEACTIVATE = "UninstallStep_Header_Deactivate_Content";
-    
-    private static final String HEAD_ACTIVATE = "UninstallStep_Header_Activate_Head";
-    private static final String CONTENT_ACTIVATE = "UninstallStep_Header_Activate_Content";
-    
-    private static final String HEAD_DEACTIVATE_DONE = "UninstallStep_Header_DeactivateDone_Head";
-    private static final String CONTENT_DEACTIVATE_DONE = "UninstallStep_Header_DeactivateDone_Content";
-    
-    private static final String HEAD_ACTIVATE_DONE = "UninstallStep_Header_ActivateDone_Head";
-    private static final String CONTENT_ACTIVATE_DONE = "UninstallStep_Header_ActivateDone_Content";
-    
-    private static final String HEAD_UNINSTALL_DONE = "UninstallStep_Header_UninstallDone_Head";
-    private static final String CONTENT_UNINSTALL_DONE = "UninstallStep_Header_UninstallDone_Content";
-    
-    private static final String HEAD_DEACTIVATE_FAILED = "UninstallStep_Header_DeactivateFailed_Head";
-    private static final String CONTENT_DEACTIVATE_FAILED = "UninstallStep_Header_DeactivateFailed_Content";
-    
-    private static final String HEAD_ACTIVATE_FAILED = "UninstallStep_Header_ActivateFailed_Head";
-    private static final String CONTENT_ACTIVATE_FAILED = "UninstallStep_Header_ActivateFailed_Content";
-    
-    private static final String HEAD_UNINSTALL_FAILED = "UninstallStep_Header_UninstallFailed_Head";
-    private static final String CONTENT_UNINSTALL_FAILED = "UninstallStep_Header_UninstallFailed_Content";
-    
-    private static final String UNINSTALL_PROGRESS_NAME = "UninstallStep_ProgressName_Uninstall";
-    private static final String ACTIVATE_PROGRESS_NAME = "UninstallStep_ProgressName_Activate";
-    private static final String DEACTIVATE_PROGRESS_NAME = "UninstallStep_ProgressName_Deactivate";
-    
-    private static final String HEAD_RESTART = "UninstallStep_Header_Restart_Head";
-    private static final String CONTENT_RESTART = "UninstallStep_Header_Restart_Content";
     
     private boolean wasStored = false;
+    private OperationSupport support;
     
     /** Creates a new instance of OperationDescriptionStep */
     public UninstallStep (UninstallUnitWizardModel model) {
         this.model = model;
     }
     
+    @Override
     public boolean isFinishPanel() {
         return true;
     }
 
+    @NbBundle.Messages({
+        "UninstallStep_Header_Uninstall_Head=Uninstallation",
+        "UninstallStep_Header_Uninstall_Content=Please wait until the installer uninstalls all the selected plugins.",
+        "UninstallStep_Header_Activate_Head=Activation",
+        "UninstallStep_Header_Deactivate_Head=Deactivation",
+        "UninstallStep_Header_Activate_Content=Please wait until the installer finishes activating all the selected plugins.",
+        "UninstallStep_Header_Deactivate_Content=Please wait until the installer finishes deactivating all the selected plugins."})
+    @Override
     public PanelBodyContainer getComponent() {
         if (component == null) {
             panel = new OperationPanel (false);
             panel.addPropertyChangeListener (new PropertyChangeListener () {
+                    @Override
                     public void propertyChange (PropertyChangeEvent evt) {
                         if (OperationPanel.RUN_ACTION.equals (evt.getPropertyName ())) {
                             doAction ();
@@ -132,13 +111,19 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
             });
             switch (model.getOperation ()) {
                 case UNINSTALL :
-                    component = new PanelBodyContainer (getBundle (HEAD_UNINSTALL), getBundle (CONTENT_UNINSTALL), panel);
+                    component = new PanelBodyContainer(
+                            UninstallStep_Header_Uninstall_Head(),
+                            UninstallStep_Header_Uninstall_Content(), panel);
                     break;
                 case ENABLE :
-                    component = new PanelBodyContainer (getBundle (HEAD_ACTIVATE), getBundle (CONTENT_ACTIVATE), panel);
+                    component = new PanelBodyContainer(
+                            UninstallStep_Header_Activate_Head(),
+                            UninstallStep_Header_Activate_Content(), panel);
                     break;
                 case DISABLE :
-                    component = new PanelBodyContainer (getBundle (HEAD_DEACTIVATE), getBundle (CONTENT_DEACTIVATE), panel);
+                    component = new PanelBodyContainer(
+                            UninstallStep_Header_Deactivate_Head(),
+                            UninstallStep_Header_Deactivate_Content(), panel);
                     break;
                 default:
                     assert false : "Unknown OperationType " + model.getOperation ();
@@ -150,7 +135,7 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
     
     private void doAction () {
         // proceed operation
-        Restarter r = null;
+        Restarter r;
         try {
             if ((r = handleAction ()) != null) {
                 presentActionNeedsRestart (r);
@@ -163,21 +148,47 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
         fireChange ();
     }
     
+     @NbBundle.Messages({
+        "UninstallStep_NullSupport_NullElements=Not found any elements for that operation.",
+        "# {0} - invalid elements",
+        "UninstallStep_NullSupport_InvalidElements=Found invalid element(s) {0} for that operation.",
+        "UninstallStep_ProgressName_Uninstall=Uninstalling plugins",
+        "UninstallStep_ProgressName_Activate=Activating plugins",
+        "UninstallStep_ProgressName_Deactivate=Deactivating plugins",
+        "UninstallStep_Done=Done.",
+        "# {0} - A error message",
+        "UninstallStep_Failed=Failed. {0}"})
     private Restarter handleAction () throws OperationException {
         assert model.getBaseContainer () != null : "getBaseContainers() returns not null container.";
-        OperationSupport support = (OperationSupport) model.getBaseContainer ().getSupport ();
+        support = (OperationSupport) model.getBaseContainer ().getSupport ();
         assert support != null : "OperationSupport cannot be null because OperationContainer " +
                 "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
+        if (support == null) {
+            err.log(Level.WARNING, "OperationSupport cannot be null because OperationContainer contains elements: "
+                    + "{0} and invalid elements {1}", new Object[]{model.getBaseContainer().listAll(), model.getBaseContainer().listInvalid()});
+            if (!model.getBaseContainer().listInvalid().isEmpty()) {
+                // cannot continue if there are invalid elements
+                throw new OperationException(OperationException.ERROR_TYPE.UNINSTALL,
+                        UninstallStep_NullSupport_InvalidElements(model.getBaseContainer().listInvalid()));
+            } else if (model.getBaseContainer().listAll().isEmpty()) {
+                // it's weird, there must be any elemets for uninstall
+                throw new OperationException(OperationException.ERROR_TYPE.UNINSTALL,
+                        UninstallStep_NullSupport_NullElements());
+            }
+            throw new OperationException(OperationException.ERROR_TYPE.UNINSTALL,
+                    "OperationSupport cannot be null because OperationContainer "
+                    + "contains elements: " + model.getBaseContainer().listAll() + " and invalid elements " + model.getBaseContainer().listInvalid());
+        }
         ProgressHandle handle = null;
         switch (model.getOperation ()) {
             case UNINSTALL :
-                handle = ProgressHandleFactory.createHandle (getBundle (UNINSTALL_PROGRESS_NAME));
+                handle = ProgressHandleFactory.createHandle(UninstallStep_ProgressName_Uninstall());
                 break;
             case ENABLE :
-                handle = ProgressHandleFactory.createHandle (getBundle (ACTIVATE_PROGRESS_NAME));
+                handle = ProgressHandleFactory.createHandle(UninstallStep_ProgressName_Activate());
                 break;
             case DISABLE :
-                handle = ProgressHandleFactory.createHandle (getBundle (DEACTIVATE_PROGRESS_NAME));
+                handle = ProgressHandleFactory.createHandle(UninstallStep_ProgressName_Deactivate());
                 break;
             default:
                 assert false : "Unknown OperationType " + model.getOperation ();
@@ -193,25 +204,38 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
         Restarter r = null;
         try {
             r = support.doOperation (handle);
-            panel.waitAndSetProgressComponents (mainLabel, progressComponent, new JLabel (getBundle ("UninstallStep_Done")));
+            panel.waitAndSetProgressComponents(mainLabel, progressComponent, new JLabel(UninstallStep_Done()));
         } catch (OperationException ex) {
             err.log (Level.INFO, ex.getMessage (), ex);
-            panel.waitAndSetProgressComponents (mainLabel, progressComponent, new JLabel (getBundle ("UninstallStep_Failed", ex.getLocalizedMessage ())));
+            panel.waitAndSetProgressComponents(mainLabel, progressComponent,
+                    new JLabel(UninstallStep_Failed(ex.getLocalizedMessage())));
             throw ex;
         }
         return r;
     }
     
+    @NbBundle.Messages({"UninstallStep_Header_UninstallDone_Head=Uninstallation completed successfully",
+        "UninstallStep_Header_UninstallDone_Content=Click Finish to quit the plugin installer.",
+        "UninstallStep_Header_ActivateDone_Head=Activation completed successfully",
+        "UninstallStep_Header_ActivateDone_Content=Click Finish to quit the plugin installer.",
+        "UninstallStep_Header_DeactivateDone_Head=Deactivation completed successfully",
+        "UninstallStep_Header_DeactivateDone_Content=Click Finish to quit the plugin installer.",
+        "UninstallStep_UninstallDone_Text=The Plugin Installer has successfully uninstalled the following plugins:",
+        "UninstallStep_ActivateDone_Text=The Plugin Installer has successfully activated the following plugins:",
+        "UninstallStep_DeactivateDone_Text=The Plugin Installer has successfully deactivated the following plugins:"})
     private void presentActionDone () {
         switch (model.getOperation ()) {
             case UNINSTALL :
-                component.setHeadAndContent (getBundle (HEAD_UNINSTALL_DONE), getBundle (CONTENT_UNINSTALL_DONE));
+                component.setHeadAndContent (UninstallStep_Header_UninstallDone_Head(),
+                        UninstallStep_Header_UninstallDone_Content());
                 break;
             case ENABLE :
-                component.setHeadAndContent (getBundle (HEAD_ACTIVATE_DONE), getBundle (CONTENT_ACTIVATE_DONE));
+                component.setHeadAndContent (UninstallStep_Header_ActivateDone_Head(),
+                        UninstallStep_Header_ActivateDone_Content());
                 break;
             case DISABLE :
-                component.setHeadAndContent (getBundle (HEAD_DEACTIVATE_DONE), getBundle (CONTENT_DEACTIVATE_DONE));
+                component.setHeadAndContent (UninstallStep_Header_DeactivateDone_Head(),
+                        UninstallStep_Header_DeactivateDone_Content());
                 break;
             default:
                 assert false : "Unknown OperationType " + model.getOperation ();
@@ -219,29 +243,43 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
         model.modifyOptionsForDoClose (wd);
         switch (model.getOperation ()) {
             case UNINSTALL :
-                panel.setBody (getBundle ("UninstallStep_UninstallDone_Text"), model.getAllVisibleUpdateElements ());
+                panel.setBody(UninstallStep_UninstallDone_Text(), model.getAllVisibleUpdateElements());
                 break;
             case ENABLE :
-                panel.setBody (getBundle ("UninstallStep_ActivateDone_Text"), model.getAllVisibleUpdateElements ());
+                panel.setBody(UninstallStep_ActivateDone_Text(), model.getAllVisibleUpdateElements());
                 break;
             case DISABLE :
-                panel.setBody (getBundle ("UninstallStep_DeactivateDone_Text"), model.getAllVisibleUpdateElements ());
+                panel.setBody(UninstallStep_DeactivateDone_Text(), model.getAllVisibleUpdateElements());
                 break;
             default:
                 assert false : "Unknown OperationType " + model.getOperation ();
         }
     }
     
+    @NbBundle.Messages({"UninstallStep_Header_UninstallFailed_Head=Uninstallation failed",
+        "UninstallStep_Header_UninstallFailed_Content=Click Cancel to quit the plugin installer.",
+        "UninstallStep_Header_ActivateFailed_Head=Activation failed",
+        "UninstallStep_Header_ActivateFailed_Content=Click Cancel to quit the plugin installer.",
+        "UninstallStep_Header_DeactivateFailed_Head=Deactivation failed",
+        "UninstallStep_Header_DeactivateFailed_Content=Click Cancel to quit the plugin installer.",
+        "# {0} - An error message",
+        "UninstallStep_UninstallFailed_Text=Uninstallation failed: {0}",
+        "# {0} - An error message",
+        "UninstallStep_ActivateFailed_Text=Activation failed: {0}",
+        "# {0} - An error message",
+        "UninstallStep_DeactivateFailed_Text=Deactivation failed: {0}"})
     private void presentActionFailed (OperationException ex) {
         switch (model.getOperation ()) {
             case UNINSTALL :
-                component.setHeadAndContent (getBundle (HEAD_UNINSTALL_FAILED), getBundle (CONTENT_UNINSTALL_FAILED));
+                component.setHeadAndContent(UninstallStep_Header_UninstallFailed_Head(), UninstallStep_Header_UninstallFailed_Content());
                 break;
             case ENABLE :
-                component.setHeadAndContent (getBundle (HEAD_ACTIVATE_FAILED), getBundle (CONTENT_ACTIVATE_FAILED));
+                component.setHeadAndContent(UninstallStep_Header_ActivateFailed_Head(),
+                        UninstallStep_Header_ActivateFailed_Content());
                 break;
             case DISABLE :
-                component.setHeadAndContent (getBundle (HEAD_DEACTIVATE_FAILED), getBundle (CONTENT_DEACTIVATE_FAILED));
+                component.setHeadAndContent(UninstallStep_Header_DeactivateFailed_Head(),
+                        UninstallStep_Header_DeactivateFailed_Content());
                 break;
             default:
                 assert false : "Unknown OperationType " + model.getOperation ();
@@ -249,52 +287,58 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
         model.modifyOptionsForFailed (wd);
         switch (model.getOperation ()) {
             case UNINSTALL :
-                panel.setBody (getBundle ("UninstallStep_UninstallFailed_Text", ex.getLocalizedMessage ()),
-                        model.getAllVisibleUpdateElements ());
+                panel.setBody("", UninstallStep_UninstallFailed_Text(ex.getLocalizedMessage())); // NOI18N
                 break;
             case ENABLE :
-                panel.setBody (getBundle ("UninstallStep_ActivateFailed_Text",
-                        ex.getLocalizedMessage()),
-                        OperationDescriptionStep.prepareBrokenDependenciesForShow (model));
+                panel.setBody("", UninstallStep_ActivateFailed_Text(ex.getLocalizedMessage()));
                 break;
             case DISABLE :
-                panel.setBody (getBundle ("UninstallStep_DeactivateFailed_Text", ex.getLocalizedMessage ()),
-                        model.getAllVisibleUpdateElements ());
+                panel.setBody ("", UninstallStep_DeactivateFailed_Text(ex.getLocalizedMessage ()));
                 break;
             default:
                 assert false : "Unknown OperationType " + model.getOperation ();
         }
     }
     
+    @NbBundle.Messages({
+        "UninstallStep_Header_Restart_Head=Restart application to complete deactivation",
+        "UninstallStep_Header_Restart_Content=Restart application to finish plugin deactivation.",
+        "UninstallStep_ActivateLater_Text=The Plugin Installer has successfully activated the following plugins:",
+        "UninstallStep_UninstallLater_Text=The Plugin Installer has successfully uninstalled the following plugins:",
+        "UninstallStep_DeactivateLater_Text=The Plugin Installer has successfully deactivated the following plugins:"})
     private void presentActionNeedsRestart (Restarter r) {
-        component.setHeadAndContent (getBundle (HEAD_RESTART), getBundle (CONTENT_RESTART));
+        component.setHeadAndContent (UninstallStep_Header_Restart_Head(), UninstallStep_Header_Restart_Content());
         model.modifyOptionsForDoClose (wd, true);
         restarter = r;
         panel.setRestartButtonsVisible (true);
         switch (model.getOperation ()) {
             case UNINSTALL :
-                panel.setBody (getBundle ("UninstallStep_UninstallDone_Text"), model.getAllVisibleUpdateElements ());
+                panel.setBody(UninstallStep_UninstallLater_Text(), model.getAllVisibleUpdateElements());
                 break;
             case ENABLE :
-                panel.setBody (getBundle ("UninstallStep_ActivateDone_Text"), model.getAllVisibleUpdateElements ());
+                panel.setBody (UninstallStep_ActivateLater_Text(), model.getAllVisibleUpdateElements ());
                 break;
             case DISABLE :
-                panel.setBody (getBundle ("UninstallStep_DeactivateDone_Text"), model.getAllVisibleUpdateElements ());
+                panel.setBody(UninstallStep_UninstallLater_Text(), model.getAllVisibleUpdateElements());
                 break;
             default:
                 assert false : "Unknown OperationType " + model.getOperation ();
         }
     }
     
+    @Override
     public HelpCtx getHelp() {
         return null;
     }
 
+    @Override
     public void readSettings (WizardDescriptor wd) {
         this.wd = wd;
         this.wasStored = false;
     }
 
+    @Override
+    @NbBundle.Messages("UninstallSupport_RestartNeeded=Restart the application to complete the deactivation.")
     public void storeSettings (WizardDescriptor wd) {
         assert ! WizardDescriptor.PREVIOUS_OPTION.equals (wd.getValue ()) : "Cannot invoke Back in this case.";
         if (wasStored) {
@@ -308,9 +352,17 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
                 Logger.getLogger (UninstallStep.class.getName ()).log (Level.INFO, x.getMessage (), x);
             }
         } else if (restarter != null) {
-            final OperationSupport support = (OperationSupport) model.getBaseContainer ().getSupport ();
             assert support != null : "OperationSupport cannot be null because OperationContainer " +
                     "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
+            if (support == null) {
+                err.log(Level.INFO, "OperationSupport cannot be null because OperationContainer contains elements: "
+                        + "{0} and invalid elements {1}", new Object[]{model.getBaseContainer().listAll(), model.getBaseContainer().listInvalid()});
+                try {
+                    model.doCleanup(true);
+                } catch (OperationException x) {
+                    Logger.getLogger(UninstallStep.class.getName()).log(Level.INFO, x.getMessage(), x);
+                }
+            }
             if (panel.restartNow ()) {
                 try {
                     support.doRestart (restarter, null);
@@ -326,6 +378,7 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
                     err.log (Level.INFO, x.getMessage (), x);
                 }
                 final Runnable onMouseClick = new Runnable () {
+                    @Override
                     public void run () {
                         try {
                             support.doRestart (restarter, null);
@@ -334,8 +387,7 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
                         }
                     }
                 };
-                InstallStep.notifyRestartNeeded (onMouseClick, getBundle ("UninstallSupport_RestartNeeded"));
-                return ;
+                InstallStep.notifyRestartNeeded (onMouseClick, UninstallSupport_RestartNeeded());
             }
         } else {
             try {
@@ -346,14 +398,17 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
         }
     }
     
+    @Override
     public boolean isValid() {
         return true;
     }
 
+    @Override
     public synchronized void addChangeListener(ChangeListener l) {
         listeners.add(l);
     }
 
+    @Override
     public synchronized void removeChangeListener(ChangeListener l) {
         listeners.remove(l);
     }
@@ -369,7 +424,4 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
         }
     }
 
-    private String getBundle (String key, Object... params) {
-        return NbBundle.getMessage (InstallStep.class, key, params);
-    }
 }

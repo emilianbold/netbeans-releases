@@ -379,6 +379,10 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
                 if (len == -1) break;
                 sb.append(buf, 0, len);
             }
+        } catch(IllegalArgumentException ex) { // reading of extra characters into the specified character buffer failed
+            Logger.getLogger(TodoTaskScanner.class.getName()).log(Level.INFO, "Reading failed for {0}, with charset: {1}.", new Object[]{FileUtil.toFile(fileObject).getPath(), charset}); //NOI18N;
+            r.close();
+            return "";
         } finally {
             r.close();
         }

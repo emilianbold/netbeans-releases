@@ -75,6 +75,8 @@ import org.openide.util.CharSequences;
  * @author Vladimir Voskresensky
  */
 public class APTExpandedStream implements TokenStream, APTTokenStream {
+    private int generatedTokens = 0;
+    private final static int MAX_GENERATED_TOKENS = Integer.getInteger("apt.limit.tokens", 8000000); // NOI18N
 
     private final TokenStreamSelector selector = new TokenStreamSelector();
     
@@ -112,6 +114,10 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
         APTToken token;
         boolean switchMacroExpanding;
         for (;;) {
+            if (++generatedTokens > MAX_GENERATED_TOKENS) {
+                APTUtils.LOG.log(Level.SEVERE, "stop ({0} is too much) generating tokens {1}", new Object[] { MAX_GENERATED_TOKENS, Thread.currentThread().getName()});
+                return APTUtils.EOF_TOKEN;
+            }
             try {
                 token = (APTToken) selector.nextToken();
             } catch (TokenStreamException ex) {
