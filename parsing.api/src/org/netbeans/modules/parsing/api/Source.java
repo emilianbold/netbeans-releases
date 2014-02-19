@@ -73,6 +73,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.parsing.impl.Installer;
 import org.netbeans.modules.parsing.impl.SchedulerAccessor;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceCache;
@@ -328,64 +329,75 @@ public final class Source {
                 // but they usually don't and this should be good enough for Snapshots.
                 try {
                     if (fileObject.isValid ()) {
-                        final InputStream is = fileObject.getInputStream ();
-                        assert is != null : "FileObject.getInputStream() returned null for FileObject: " + FileUtil.getFileDisplayName(fileObject); //NOI18N
-                        try {
-                            BufferedReader reader = new BufferedReader (
-                                new InputStreamReader (
-                                    is,
-                                    FileEncodingQuery.getEncoding (fileObject)
-                                )
-                            );
+                        if (fileObject.getSize() <= Installer.MAX_FILE_SIZE) {
+                            final InputStream is = fileObject.getInputStream ();
+                            assert is != null : "FileObject.getInputStream() returned null for FileObject: " + FileUtil.getFileDisplayName(fileObject); //NOI18N
                             try {
-                                StringBuilder output = new StringBuilder(Math.max(16, (int) fileObject.getSize()));
-                                List<Integer> lso = new LinkedList<Integer>();
-                                boolean lastCharCR = false;
-                                char [] buffer = new char [1024];
-                                int size = -1;
+                                BufferedReader reader = new BufferedReader (
+                                    new InputStreamReader (
+                                        is,
+                                        FileEncodingQuery.getEncoding (fileObject)
+                                    )
+                                );
+                                try {
+                                    StringBuilder output = new StringBuilder(Math.max(16, (int) fileObject.getSize()));
+                                    List<Integer> lso = new LinkedList<Integer>();
+                                    boolean lastCharCR = false;
+                                    char [] buffer = new char [1024];
+                                    int size = -1;
 
-                                final char LF = '\n'; //NOI18N, Unicode line feed (0x000A)
-                                final char CR = '\r'; //NOI18N, Unicode carriage return (0x000D)
-                                final char LS = 0x2028; // Unicode line separator (0x2028)
-                                final char PS = 0x2029; // Unicode paragraph separator (0x2029)
+                                    final char LF = '\n'; //NOI18N, Unicode line feed (0x000A)
+                                    final char CR = '\r'; //NOI18N, Unicode carriage return (0x000D)
+                                    final char LS = 0x2028; // Unicode line separator (0x2028)
+                                    final char PS = 0x2029; // Unicode paragraph separator (0x2029)
 
-                                lso.add(0);
-                                while(-1 != (size = reader.read(buffer, 0, buffer.length))) {
-                                    for(int i = 0; i < size; i++) {
-                                        char ch = buffer[i];
-                                        if (lastCharCR && ch == LF) {
-                                            // CR-LF pair changed to single LF
-                                            continue;
-                                        }
-                                        if (ch == CR) {
-                                            // convert to LF; subsequent LF will be skipped
-                                            output.append(LF);
-                                            lso.add(output.length());
-                                            lastCharCR = true;
-                                        } else if (ch == LS || ch == PS) { // Unicode LS, PS
-                                            output.append(LF);
-                                            lso.add(output.length());
-                                            lastCharCR = false;
-                                        } else { // current char not CR
-                                            lastCharCR = false;
-                                            output.append(ch);
+                                    lso.add(0);
+                                    while(-1 != (size = reader.read(buffer, 0, buffer.length))) {
+                                        for(int i = 0; i < size; i++) {
+                                            char ch = buffer[i];
+                                            if (lastCharCR && ch == LF) {
+                                                // CR-LF pair changed to single LF
+                                                continue;
+                                            }
+                                            if (ch == CR) {
+                                                // convert to LF; subsequent LF will be skipped
+                                                output.append(LF);
+                                                lso.add(output.length());
+                                                lastCharCR = true;
+                                            } else if (ch == LS || ch == PS) { // Unicode LS, PS
+                                                output.append(LF);
+                                                lso.add(output.length());
+                                                lastCharCR = false;
+                                            } else { // current char not CR
+                                                lastCharCR = false;
+                                                output.append(ch);
+                                            }
                                         }
                                     }
-                                }
 
-                                int [] lsoArr = new int [lso.size()];
-                                int idx = 0;
-                                for(Integer offset : lso) {
-                                    lsoArr[idx++] = offset;
-                                }
+                                    int [] lsoArr = new int [lso.size()];
+                                    int idx = 0;
+                                    for(Integer offset : lso) {
+                                        lsoArr[idx++] = offset;
+                                    }
 
-                                text[0] = output;
-                                lineStartOffsets[0] = lsoArr;
+                                    text[0] = output;
+                                    lineStartOffsets[0] = lsoArr;
+                                } finally {
+                                    reader.close ();
+                                }
                             } finally {
-                                reader.close ();
+                                is.close ();
                             }
-                        } finally {
-                            is.close ();
+                        } else {
+                            LOG.log(
+                                Level.WARNING,
+                                "Source {0} of size: {1} has been ignored due to large size. Files large then {2} bytes are ignored, you can increase the size by parse.max.file.size property.",  //NOI18N
+                                new Object[]{
+                                    FileUtil.getFileDisplayName(fileObject),
+                                    fileObject.getSize(),
+                                    Installer.MAX_FILE_SIZE
+                                });
                         }
                     }
                 } catch (FileNotFoundException fnfe) {
@@ -432,7 +444,7 @@ public final class Source {
             }
         }
 
-        return new Snapshot (
+        return Snapshot.create (
             text[0], lineStartOffsets[0], this,
             MimePath.get (mimeType),
             new int[][] {new int[] {0, 0}},
@@ -784,7 +796,7 @@ public final class Source {
 
         @Override
         public Snapshot createSnapshot(CharSequence text, int[] lineStartOffsets, Source source, MimePath mimePath, int[][] currentToOriginal, int[][] originalToCurrent) {
-            return new Snapshot(text, lineStartOffsets, source, mimePath, currentToOriginal, originalToCurrent);
+            return Snapshot.create(text, lineStartOffsets, source, mimePath, currentToOriginal, originalToCurrent);
         }
 
         @Override
