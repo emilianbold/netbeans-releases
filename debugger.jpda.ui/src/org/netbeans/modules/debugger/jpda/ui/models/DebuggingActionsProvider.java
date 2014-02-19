@@ -590,6 +590,10 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (engine == null) return ;
         SourcePath sp = engine.lookupFirst(null, SourcePath.class);
+        String urlLang = DebuggingNodeModel.getCachedFrameURLLanguage(frame);
+        if (urlLang != null) {
+            language = urlLang;
+        }
         sp.showSource (frame, language);
     }
     
