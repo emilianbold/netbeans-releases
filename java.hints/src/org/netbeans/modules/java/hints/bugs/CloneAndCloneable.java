@@ -78,7 +78,7 @@ import static org.netbeans.modules.java.hints.bugs.Bundle.*;
  * @author sdedic
  */
 @NbBundle.Messages({
-    "TEXT_CloneWithoutSuperClone=clone() calls super.clone()",
+    "TEXT_CloneWithoutSuperClone=clone() does not call super.clone()",
     "TEXT_CloneWithoutCloneNotSupported=clone() does not throw CloneNotSupportedException",
     "TEXT_CloneWithoutCloneable=clone() in non-Cloneable class",
     "TEXT_CloneableWithoutClone=Cloneable class does not implement clone()",
