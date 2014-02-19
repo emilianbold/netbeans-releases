@@ -165,6 +165,8 @@ public class EvaluationException extends RuntimeException {
             msgParams = new String [] { String.valueOf(params[1]), Integer.toString(ArrayReferenceWrapper.length0((ArrayReference) params[0]) - 1) };
         else if (reason.equals("unknownVariable"))
             msgParams = new String [] { String.valueOf(params[0]) };
+        else if (reason.equals("unknownVarNoDebugInfo"))
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("integerLiteralTooBig"))
             msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("badFormatOfIntegerLiteral"))
