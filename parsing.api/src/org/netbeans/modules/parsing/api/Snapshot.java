@@ -111,7 +111,8 @@ public final class Snapshot {
         MimePath            mimePath,
         int[][]             currentToOriginal,
         int[][]             originalToCurrent) {
-        if (text.length() > Installer.MAX_FILE_SIZE) {
+        final int textLength = text.length();
+        if (textLength > Installer.MAX_FILE_SIZE) {
             text = "";  //NOI18N
             LOG.log(
                 Level.WARNING,
@@ -121,7 +122,7 @@ public final class Snapshot {
                         "<unknown>" : //NOI18N
                         FileUtil.getFileDisplayName(source.getFileObject()),
                     mimePath,
-                    text.length() <<1,
+                    textLength,
                     Installer.MAX_FILE_SIZE
                 });
         }
