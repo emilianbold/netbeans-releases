@@ -46,6 +46,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -170,24 +171,10 @@ public final class Util {
                 }
                 // Performance optimization for File.toURI() which calls this method
                 // and the original implementation calls into native method
-                return Utilities.toURI(new File(Utilities.toFile(root.toURI()), relativePath) {
-                    
-                    @Override
-                    public File getAbsoluteFile() {
-                        if (isAbsolute()) {
-                            return this;
-                        } else {
-                            return super.getAbsoluteFile();
-                        }
-                    }
-                                                            
-                    @Override
-                    public boolean isDirectory() {
-                        return isDirectory == null ?
-                            super.isDirectory() :
-                            isDirectory;
-                    }
-                }).toURL();
+                return Utilities.toURI(new FastFile(
+                    Utilities.toFile(root.toURI()),
+                    relativePath,
+                    isDirectory)).toURL();
             } else {
                 return new URL(root, relativePath);
             }
@@ -222,22 +209,10 @@ public final class Util {
         }
         // Performance optimization for File.toURI() which calls this method
         // and the original implementation calls into native method
-        return Utilities.toURI(new File(file, relativePath) {
-            @Override
-            public File getAbsoluteFile() {
-                if (isAbsolute()) {
-                    return this;
-                } else {
-                    return super.getAbsoluteFile();
-                }
-            }
-            @Override
-            public boolean isDirectory() {
-                return isDirectory == null ?
-                    super.isDirectory() :
-                    isDirectory;
-            }
-        }).toURL();
+        return Utilities.toURI(new FastFile(
+            file,
+            relativePath,
+            isDirectory)).toURL();
     }
 
     public static boolean containsAny(Collection<? extends String> searchIn, Collection<? extends String> searchFor) {
@@ -406,5 +381,51 @@ public final class Util {
     }
 
     private Util() {
+    }
+
+    private static final class FastFile extends File {
+
+        private static final java.nio.file.InvalidPathException IP =
+                new java.nio.file.InvalidPathException("", "") {    //NOI18N
+                    @Override
+                    public Throwable fillInStackTrace() {
+                        return this;
+                    }
+                };
+
+        private final Boolean isDirectory;
+
+        FastFile(
+            @NonNull final File file,
+            @NonNull final String path,
+            @NullAllowed final Boolean isDirectory) {
+            super(file, path);
+            this.isDirectory = isDirectory;
+        }
+
+        @Override
+        public File getAbsoluteFile() {
+            if (isAbsolute()) {
+                return this;
+            } else {
+                return super.getAbsoluteFile();
+            }
+        }
+
+        @Override
+        public boolean isDirectory() {
+            return isDirectory == null ?
+                super.isDirectory() :
+                isDirectory;
+        }
+
+        @Override
+        public Path toPath() {
+            if (isDirectory != null) {
+                throw IP;
+            } else {
+                return super.toPath();
+            }
+        }
     }
 }

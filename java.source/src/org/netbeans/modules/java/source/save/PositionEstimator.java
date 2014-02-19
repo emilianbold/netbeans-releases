@@ -1219,13 +1219,19 @@ public abstract class PositionEstimator {
         
         @Override
         public String toString() {
-            if (!initialized) initialize();
+            // state should be saved to avoid hard-to-spot defects when debugging initialize()
+            boolean inited = initialized;
+            int spos = seq.offset();
+            if (!inited) initialize();
             String result = "";
             for (int i = 0; i < data.size(); i++) {
                 int[] pos = data.get(i);
                 String s = diffContext.origText.substring(pos[0], pos[1]);
                 result += "[" + s + "]";
             }
+            this.seq.move(spos);
+            this.seq.moveNext();
+            this.initialized = inited;
             return result;
         }
 
@@ -1633,23 +1639,8 @@ public abstract class PositionEstimator {
     // Utility methods
     @SuppressWarnings("empty-statement")
     int moveBelowGuarded(int pos) {
-        if (guards != null) {
-            for (GuardedSection section : guards.getGuardedSections()) {
-                if (pos == section.getStartPosition().getOffset()) {
-                    return pos-1;
-                }
-                if (pos > section.getStartPosition().getOffset() && 
-                    pos <= section.getEndPosition().getOffset()) 
-                {
-                    seq.move(pos);
-                    while (seq.moveNext() && nonRelevant.contains(seq.token().id())) ;
-                    if (seq.offset() < section.getEndPosition().getOffset()) {
-                        return pos;
-                    } else {
-                        return section.getEndPosition().getOffset()+1;
-                    }
-                }
-            }
+        if (diffContext != null) {
+            return diffContext.blockSequences.findNextWritablePos(pos);
         }
         return pos;
     }
