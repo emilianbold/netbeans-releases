@@ -50,6 +50,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Window;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
@@ -120,6 +121,9 @@ public final class FindBugsPanel extends javax.swing.JPanel {
         this.controller = controller;
         this.filter = filter;
         this.cc = cc;
+        initComponents();
+        // prevent from jumping
+        setPreferredSize(getPreferredSize());
         reinitialize();
     }
     
@@ -188,6 +192,24 @@ public final class FindBugsPanel extends javax.swing.JPanel {
         bugsTree.setRootVisible(false);
         bugsTree.setShowsRootHandles(true);
 
+        bugsTree.addTreeSelectionListener(new TreeSelectionListener() {
+            @Override public void valueChanged(TreeSelectionEvent e) {
+                TreePath selection = bugsTree.getSelectionPath();
+
+                if (selection == null) {
+                    description.setText("");
+                } else {
+                    Object user = ((DefaultMutableTreeNode) selection.getLastPathComponent()).getUserObject();
+
+                    if (user instanceof BugCategory) {
+                        description.setText(((BugCategory) user).getDetailText()); //XXX: not HTML!!
+                    } else if (user instanceof BugPattern) {
+                        description.setText(((BugPattern) user).getDetailText());
+                    }
+                }
+            }
+        });
+
         if (cc == null || cc.getPreselectId() == null) {
             bugsTree.setCellRenderer(new CheckBoxRenderer());
         } else {
@@ -212,24 +234,6 @@ public final class FindBugsPanel extends javax.swing.JPanel {
                 }
             });
         }
-
-        bugsTree.addTreeSelectionListener(new TreeSelectionListener() {
-            @Override public void valueChanged(TreeSelectionEvent e) {
-                TreePath selection = bugsTree.getSelectionPath();
-
-                if (selection == null) {
-                    description.setText("");
-                } else {
-                    Object user = ((DefaultMutableTreeNode) selection.getLastPathComponent()).getUserObject();
-
-                    if (user instanceof BugCategory) {
-                        description.setText(((BugCategory) user).getDetailText()); //XXX: not HTML!!
-                    } else if (user instanceof BugPattern) {
-                        description.setText(((BugPattern) user).getDetailText());
-                    }
-                }
-            }
-        });
 
         bugsTree.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
@@ -256,6 +260,9 @@ public final class FindBugsPanel extends javax.swing.JPanel {
             else 
                 runInEditor.setSelected(previousRunInEditor);
         }
+        
+        setPreferredSize(null);
+        firePropertyChange("contentLoaded", null, null);
     }
 
     private boolean toggle( TreePath treePath ) {
@@ -321,7 +328,7 @@ public final class FindBugsPanel extends javax.swing.JPanel {
         runInEditor = new javax.swing.JCheckBox();
         customPlugins = new javax.swing.JButton();
 
-        jSplitPane1.setDividerLocation(200);
+        jSplitPane1.setDividerLocation(250);
 
         jScrollPane1.setViewportView(bugsTree);
 
@@ -349,7 +356,7 @@ public final class FindBugsPanel extends javax.swing.JPanel {
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel1)
-                        .addGap(0, 229, Short.MAX_VALUE))))
+                        .addGap(0, 179, Short.MAX_VALUE))))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -463,7 +470,13 @@ public final class FindBugsPanel extends javax.swing.JPanel {
 
         if (toSelect != null) {
             bugsTree.setSelectionPath(toSelect);
+            Rectangle bounds = bugsTree.getPathBounds(toSelect);
             bugsTree.scrollPathToVisible(toSelect);
+            if(bounds != null) {
+                Point pt = jScrollPane1.getViewport().getViewPosition();
+                pt.x = 0;
+                jScrollPane1.getViewport().setViewPosition(pt);
+            }
         } else {
             Logger.getLogger(FindBugsPanel.class.getName()).log(Level.WARNING, "cannot find bug to select ({0})", id);
         }

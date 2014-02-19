@@ -57,6 +57,11 @@ import org.openide.windows.WindowManager;
  */
 public class Installer extends ModuleInstall {
 
+    private static final int DEFAULT_MAX_FILE_SIZE = 50*(1<<20);
+    public static final int MAX_FILE_SIZE = Integer.getInteger(
+            "parse.max.file.size",  //NOI18N
+            DEFAULT_MAX_FILE_SIZE);
+
     private static volatile boolean closed;
 
     public static boolean isClosed() {

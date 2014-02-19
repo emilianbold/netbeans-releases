@@ -146,7 +146,7 @@ public class TreeTaggingTest extends GeneratorTestMDRCompat {
             "package hierbas.del.litoral;\n\n" +
             "import java.io.*;\n\n" +
             "public class Test {\n" +
-            "    class foo {" +
+            "    class foo {\n" +
             "        public void taragui() {\n" +
             "            ;\n" +
             "        }\n" +
@@ -195,7 +195,7 @@ public class TreeTaggingTest extends GeneratorTestMDRCompat {
         //lenghth of added statement has to be the same as the length of span
         assertEquals(delta, new String("System.err.println(true);").length());
         //absolute position of span beginning
-        assertEquals(142, span[0]);
+        assertEquals(143, span[0]);
 
         assertEquals("System.err.println(true);", diff.getResultingSource(FileUtil.toFileObject(testFile)).substring(span[0], span[1]));
     }
@@ -214,8 +214,8 @@ public class TreeTaggingTest extends GeneratorTestMDRCompat {
             "package hierbas.del.litoral;\n\n" +
             "import java.io.*;\n\n" +
             "public class Test {\n" +
-            "    public void foo() {" +
-            "        new Runnable() {" +
+            "    public void foo() {\n" +
+            "        new Runnable() {\n" +
             "            public void run() {\n" +
             "                ;\n" +
             "            }\n" +
@@ -267,7 +267,7 @@ public class TreeTaggingTest extends GeneratorTestMDRCompat {
         //lenghth of added statement has to be the same as the length of span
         assertEquals(delta, new String("System.err.println(true);").length());
         //absolute position of span beginning
-        assertEquals(182, span[0]);
+        assertEquals(184, span[0]);
 
         assertEquals("System.err.println(true);", diff.getResultingSource(FileUtil.toFileObject(testFile)).substring(span[0], span[1]));
     }
