@@ -457,6 +457,18 @@ class Terminal extends JFrame implements Runnable {
         }
     }
 
+    private final class PrintStatsAction extends AbstractAction {
+
+        public PrintStatsAction() {
+            super("Print Stats");
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (!isEnabled())
+                return;
+            term.printStats("Stats");
+        }
+    }
 
     private boolean isBooleanStateAction(Action a) {
         Boolean isBooleanStateAction = (Boolean) a.getValue(BOOLEAN_STATE_ACTION_KEY);
@@ -541,6 +553,7 @@ class Terminal extends JFrame implements Runnable {
         addMenuItem(menu, new JSeparator());
         addMenuItem(menu, logSequencesAction);
         addMenuItem(menu, dumpSequencesAction);
+        addMenuItem(menu, printStatsAction);
 
         findAction.setEnabled(!findState.isVisible());
 
@@ -565,6 +578,7 @@ class Terminal extends JFrame implements Runnable {
     private final Action wrapAction = new WrapAction();
     private final Action logSequencesAction = new LogSequencesAction();
     private final Action dumpSequencesAction = new DumpSequencesAction();
+    private final Action printStatsAction = new PrintStatsAction();
     private final Action clearAction = new ClearAction();
     private final Action optionsAction = new OptionsAction();
 

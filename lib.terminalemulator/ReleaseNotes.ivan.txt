@@ -1,3 +1,7 @@
+nobugid - Default $TERM for TermApp -> xterm
+nobugid - PrintStatsAction for TermApp
+	This is all to help debug bug 238225.
+
 207965 - Terminal incorrectly displays prompt string
 187345 - wrong characters in Terminals
 

@@ -63,7 +63,7 @@ public class Main {
     // defaults for unix
     static Boolean optLineDiscipline = null;  // line_discipline overriden by options
     static Mode mode = Mode.REGULAR;
-    static String termType = "ansi";
+    static String termType = "xterm";
     static boolean debug = false;
     static boolean processErrors = false;
     static int rows = 24;
