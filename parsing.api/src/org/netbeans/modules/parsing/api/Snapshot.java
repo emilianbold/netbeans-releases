@@ -44,13 +44,18 @@ package org.netbeans.modules.parsing.api;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.modules.parsing.impl.Installer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -68,6 +73,8 @@ import org.openide.filesystems.FileObject;
  * @author Jan Jancura
  */
 public final class Snapshot {
+
+    private static final Logger LOG = Logger.getLogger(Snapshot.class.getName());
     
     private final CharSequence text;
     /* package */ final int[] lineStartOffsets;
@@ -78,7 +85,7 @@ public final class Snapshot {
     private TokenHierarchy<?> tokenHierarchy;
     
    
-    Snapshot (
+    private Snapshot (
         CharSequence        text,
         int []              lineStartOffsets,
         Source              source,
@@ -94,6 +101,37 @@ public final class Snapshot {
                             currentToOriginal;
         this.originalToCurrent = 
                             originalToCurrent;
+    }
+
+    @NonNull
+    static Snapshot create(
+        CharSequence        text,
+        int []              lineStartOffsets,
+        Source              source,
+        MimePath            mimePath,
+        int[][]             currentToOriginal,
+        int[][]             originalToCurrent) {
+        if (text.length() > Installer.MAX_FILE_SIZE) {
+            text = "";  //NOI18N
+            LOG.log(
+                Level.WARNING,
+                "Embedding in file {0} of type: {1} of size: {2} has been ignored due to large size. Embeddings large then {3} chars are ignored, you can increase the size by parse.max.file.size property.",  //NOI18N
+                new Object[] {
+                    source.getFileObject() == null ?
+                        "<unknown>" : //NOI18N
+                        FileUtil.getFileDisplayName(source.getFileObject()),
+                    mimePath,
+                    text.length() <<1,
+                    Installer.MAX_FILE_SIZE
+                });
+        }
+        return new Snapshot(
+            text,
+            lineStartOffsets,
+            source,
+            mimePath,
+            currentToOriginal,
+            originalToCurrent);
     }
     
     /**
@@ -155,7 +193,7 @@ public final class Snapshot {
                 -1
             });
         MimePath newMimePath = MimePath.get (mimePath, mimeType);
-        Snapshot snapshot = new Snapshot (
+        Snapshot snapshot = create (
             getText ().subSequence (offset, offset + length),
             null,
             source,
@@ -182,7 +220,7 @@ public final class Snapshot {
     ) {
         MimePath newMimePath = MimePath.get (mimePath, mimeType);
         return new Embedding (
-            new Snapshot (
+            create (
                 charSequence,
                 null,
                 source,
