@@ -70,7 +70,7 @@ public class CloneAndCloneableTest extends NbTestCase {
         "    }\n" +
         "}"
         ).run(CloneAndCloneable.class).
-        assertWarnings("4:18-4:23:verifier:clone() calls super.clone()");
+        assertWarnings("4:18-4:23:verifier:clone() does not call super.clone()");
     }
 
 
