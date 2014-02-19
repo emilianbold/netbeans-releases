@@ -142,7 +142,8 @@ public class ThrowableNotThrown {
             return null;
         }
         TypeMirror b = el.asType();
-        if (tm == null || tm.getKind() == TypeKind.ERROR || !ctx.getInfo().getTypes().isAssignable(tm, b)) {
+        if (tm == null || tm.getKind() == TypeKind.ERROR || 
+            tm.getKind() == TypeKind.OTHER || !ctx.getInfo().getTypes().isAssignable(tm, b)) {
             // does not return Throwable
             return null;
         }
@@ -263,8 +264,6 @@ public class ThrowableNotThrown {
         Boolean processEnclosingStatement(TreePath excPath) {
             Tree prevLeaf = excPath.getLeaf();
 
-            boolean vars = false;
-
             boolean process;
             do {
                 excPath = excPath.getParentPath();
@@ -282,11 +281,10 @@ public class ThrowableNotThrown {
                     case VARIABLE:  {
                         VariableTree var = (VariableTree)leaf;
                         Element el = info.getTrees().getElement(new TreePath(excPath, var));
-                        if (el.getKind() == ElementKind.FIELD) {
+                        if (el == null || el.getKind() == ElementKind.FIELD) {
                             return true;
                         } else if (el.getKind() == ElementKind.LOCAL_VARIABLE) {
                             varAssignments.add(var.getInitializer());
-                            vars = true;
                         }
                         process = true;
                         break;
@@ -296,11 +294,10 @@ public class ThrowableNotThrown {
                         AssignmentTree as = (AssignmentTree)leaf;
                         Tree var = as.getVariable();
                         Element el = info.getTrees().getElement(new TreePath(excPath, var));
-                        if (el.getKind() == ElementKind.FIELD) {
+                        if (el == null || el.getKind() == ElementKind.FIELD) {
                             return true;
                         } else if (el.getKind() == ElementKind.LOCAL_VARIABLE) {
                             varAssignments.add(as.getExpression());
-                            vars = true;
                         }
                         process = true;
                         break;

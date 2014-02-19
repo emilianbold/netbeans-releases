@@ -409,9 +409,11 @@ public final class LayoutSupportManager implements LayoutSupportContext {
                              comp : (Component) metacomp.getBeanInstance();
         }
 
-        layoutDelegate.convertConstraints(oldConstraints,
-                                          newConstraints,
-                                          designComps);
+        if (metaContainer.getFormModel().isUndoRedoRecording()) {
+            layoutDelegate.convertConstraints(oldConstraints,
+                                              newConstraints,
+                                              designComps);
+        } // otherwise in undo/redo - don't try to convert constraints
 
         if (componentCount > 0) {
             layoutDelegate.acceptNewComponents(compExps, newConstraints, 0);

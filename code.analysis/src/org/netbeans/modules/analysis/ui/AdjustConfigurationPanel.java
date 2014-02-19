@@ -43,8 +43,12 @@ package org.netbeans.modules.analysis.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import java.util.EventObject;
 import java.util.HashMap;
@@ -60,6 +64,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.analysis.Configuration;
 import org.netbeans.modules.analysis.ConfigurationsManager;
@@ -76,7 +81,7 @@ import org.openide.xml.XMLUtil;
  *
  * @author lahvac
  */
-public class AdjustConfigurationPanel extends javax.swing.JPanel {
+public class AdjustConfigurationPanel extends javax.swing.JPanel implements PropertyChangeListener {
     private static final Logger LOG = Logger.getLogger(AdjustConfigurationPanel.class.getName());
 
     private static final String LBL_NEW = "New...";
@@ -168,8 +173,25 @@ public class AdjustConfigurationPanel extends javax.swing.JPanel {
         currentPreferencesOverlay = new ModifiedPreferences(null, "", currentPreferences);
         updateAnalyzer();
     }
+    
+    private JComponent currentPanel;
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getSource() == currentPanel) {
+            if ("contentLoaded".equals(evt.getPropertyName())) { // NOI18N
+                    Window w = SwingUtilities.getWindowAncestor(this);
+                    if (w != null) {
+                        w.pack();
+                    }
+            }
+        }
+    }
 
     private void updateAnalyzer() {
+        if (currentPanel != null) {
+            currentPanel.removePropertyChangeListener(this);
+        }
         analyzerPanel.removeAll();
         
         final AnalyzerFactory selected = (AnalyzerFactory) analyzerCombo.getSelectedItem();
@@ -198,7 +220,10 @@ public class AdjustConfigurationPanel extends javax.swing.JPanel {
             }
         });
         currentContext.setSelectedId(preselected);
-        analyzerPanel.add(customizer.createComponent(currentContext), BorderLayout.CENTER);
+        JComponent c = customizer.createComponent(currentContext);
+        currentPanel = c;
+        currentPanel.addPropertyChangeListener(this);
+        analyzerPanel.add(c, BorderLayout.CENTER);
         analyzerPanel.revalidate();
         analyzerPanel.repaint();
     }

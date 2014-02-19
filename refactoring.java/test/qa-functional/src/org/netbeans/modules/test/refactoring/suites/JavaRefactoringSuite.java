@@ -47,7 +47,9 @@ import org.netbeans.modules.test.refactoring.ConvertAnonymousToMemberTest;
 import org.netbeans.modules.test.refactoring.EncapsulateFieldTest;
 import org.netbeans.modules.test.refactoring.FindUsagesClassTest;
 import org.netbeans.modules.test.refactoring.FindUsagesMethodTest;
+import org.netbeans.modules.test.refactoring.InspectAndTransformTest;
 import org.netbeans.modules.test.refactoring.MoveTest;
+import org.netbeans.modules.test.refactoring.PushPullTest;
 import org.netbeans.modules.test.refactoring.RenameTest;
 
 /**
@@ -63,7 +65,9 @@ public class JavaRefactoringSuite {
                     addTest(MoveTest.class).
                     addTest(RenameTest.class).
                     addTest(ConvertAnonymousToMemberTest.class).
-                    addTest(EncapsulateFieldTest.class));
+                    addTest(EncapsulateFieldTest.class).
+                    addTest(PushPullTest.class).
+                    addTest(InspectAndTransformTest.class));
         
                     // addTest(PullUpTest.class))
     }
