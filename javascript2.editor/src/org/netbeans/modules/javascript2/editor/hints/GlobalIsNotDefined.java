@@ -75,7 +75,7 @@ public class GlobalIsNotDefined extends JsAstRule {
     private static final List<String> KNOWN_GLOBAL_OBJECTS = Arrays.asList("window", "document", "console",
             "clearInterval", "clearTimeout", "event", "frames", "history",
             "Image", "location", "name", "navigator", "Option", "parent", "screen", "setInterval", "setTimeout",
-            "XMLHttpRequest", "JSON", "Date", "undefined", "Math",  //NOI18N
+            "XMLHttpRequest", "JSON", "Date", "undefined", "Math", "$", "jQuery",  //NOI18N
             Type.ARRAY, Type.OBJECT, Type.BOOLEAN, Type.NULL, Type.NUMBER, Type.REGEXP, Type.STRING, Type.UNDEFINED, Type.UNRESOLVED);
     
     @Override
