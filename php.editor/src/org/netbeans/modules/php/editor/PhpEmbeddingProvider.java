@@ -65,6 +65,9 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 public class PhpEmbeddingProvider extends EmbeddingProvider {
 
     public static final String GENERATED_CODE = "@@@"; //NOI18N
+    private static final int MAX_EMBEDDING_LENGTH = 5000000; //cca 5M
+    private static final Logger LOGGER = Logger.getLogger(PhpEmbeddingProvider.class.getName());
+    private static final String HTML_MIME_TYPE = "text/html"; //NOI18N
 
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
@@ -100,9 +103,9 @@ public class PhpEmbeddingProvider extends EmbeddingProvider {
             } else {
                 if (from >= 0) {
                     //lets suppose the text is always html :-(
-                    embeddings.add(snapshot.create(from, len, "text/html")); //NOI18N
+                    createHtmlEmbedding(embeddings, snapshot, from, len);
                     //add only one virtual generated token for a sequence of PHP tokens
-                    embeddings.add(snapshot.create(GENERATED_CODE, "text/html"));
+                    embeddings.add(snapshot.create(GENERATED_CODE, HTML_MIME_TYPE));
                 }
 
                 from = -1;
@@ -111,16 +114,26 @@ public class PhpEmbeddingProvider extends EmbeddingProvider {
         }
 
         if (from >= 0) {
-            embeddings.add(snapshot.create(from, len, "text/html")); //NOI18N
+            createHtmlEmbedding(embeddings, snapshot, from, len);
         }
 
         if (embeddings.isEmpty()) {
             //always embed html even if there isn't any
             //this causes the parsing api to run tasks registered to text/html
             //even if there isn't any html content
-            return Collections.singletonList(snapshot.create("", "text/html"));
+            return Collections.singletonList(snapshot.create("", HTML_MIME_TYPE));
         } else {
             return Collections.singletonList(Embedding.create(embeddings));
+        }
+    }
+
+    private static void createHtmlEmbedding(List<Embedding> embeddings, Snapshot snapshot, int from, int length) {
+        assert embeddings != null;
+        assert snapshot != null;
+        if (length <= MAX_EMBEDDING_LENGTH) {
+            embeddings.add(snapshot.create(from, length, HTML_MIME_TYPE)); //NOI18N
+        } else {
+            LOGGER.log(Level.FINE, "HTML embedding wasn''t created - from: {0}, length: {1}", new Object[] {from, length});
         }
     }
 
