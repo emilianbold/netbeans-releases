@@ -59,7 +59,7 @@ import java.util.*;
  * <p>The file FileDiff.java shows an example usage of this class, in an
  * application similar to the Unix "diff" program.</p>
  */
-public class ComputeDiff<E> {
+class ComputeDiff<E> {
     /**
      * The source array, AKA the "from" values.
      */
@@ -90,12 +90,15 @@ public class ComputeDiff<E> {
      */
     private TreeMap<Integer, Integer> thresh;
     
+    private int[] sections;
+    
     /**
      * Constructs the Diff object for the two arrays, using the given comparator.
      */
-    public ComputeDiff(E[] a, E[] b, Comparator<E> comp) {
+    public ComputeDiff(E[] a, E[] b, Comparator<E> comp, int[] sections) {
         this.a = a;
         this.b = b;
+        this.sections = sections;
         this.comparator = comp;
         this.thresh = null;     // created in getLongestCommonSubsequences
     }
@@ -105,28 +108,28 @@ public class ComputeDiff<E> {
      * comparison mechanism between the objects, such as <code>equals</code> and
      * <code>compareTo</code>.
      */
-    public ComputeDiff(E[] a, E[] b) {
-        this(a, b, null);
+    public ComputeDiff(E[] a, E[] b, int[] sections) {
+        this(a, b, null, sections);
     }
     
     /**
      * Constructs the Diff object for the two collections, using the given
      * comparator.
      */
-    @SuppressWarnings("unchecked")
-    public ComputeDiff(Collection<E> a, Collection<E> b, Comparator<E> comp) {
-        this((E[]) a.toArray(), (E[]) b.toArray(), comp);
-    }
+//    @SuppressWarnings("unchecked")
+//    public ComputeDiff(Collection<E> a, Collection<E> b, Comparator<E> comp) {
+//        this((E[]) a.toArray(), (E[]) b.toArray(), comp, sections);
+//    }
     
     /**
      * Constructs the Diff object for the two collections, using the default
      * comparison mechanism between the objects, such as <code>equals</code> and
      * <code>compareTo</code>.
      */
-    @SuppressWarnings("unchecked")
-    public ComputeDiff(Collection<E> a, Collection<E> b) {
-        this((E[]) a.toArray(), (E[]) b.toArray(), null);
-    }
+//    @SuppressWarnings("unchecked")
+//    public ComputeDiff(Collection<E> a, Collection<E> b) {
+//        this((E[]) a.toArray(), (E[]) b.toArray(), null);
+//    }
     
     /**
      * Runs diff and returns the results.
@@ -286,22 +289,18 @@ public class ComputeDiff<E> {
      * Returns an array of the longest common subsequences.
      */
     public Integer[] getLongestCommonSubsequences() {
-        int aStart = 0;
+        int aStart;
+        int bStart;
         int aEnd = a.length - 1;
-        
-        int bStart = 0;
         int bEnd = b.length - 1;
         
+        int sIndex = 0;
+        int sL = sections == null ? 0 : sections.length;
+        
+        int aPrevStart = 0;
+        int bPrevStart = 0;
+        
         TreeMap<Integer, Integer> matches = new TreeMap<Integer, Integer>();
-        
-        while (aStart <= aEnd && bStart <= bEnd && equals(a[aStart], b[bStart])) {
-            matches.put(new Integer(aStart++), new Integer(bStart++));
-        }
-        
-        while (aStart <= aEnd && bStart <= bEnd && equals(a[aEnd], b[bEnd])) {
-            matches.put(new Integer(aEnd--), new Integer(bEnd--));
-        }
-        
         Map<E, List<Integer>> bMatches = null;
         if (comparator == null) {
             if (a.length > 0 && a[0] instanceof Comparable) {
@@ -316,53 +315,71 @@ public class ComputeDiff<E> {
             // implementation (as of JDK 1.4) that takes a comparator.
             bMatches = new TreeMap<E, List<Integer>>(comparator);
         }
-        
-        for (int bi = bStart; bi <= bEnd; ++bi) {
-            E element = b[bi];
-            E key = element;
-            List<Integer> positions = bMatches.get(key);
-            if (positions == null) {
-                positions = new ArrayList<Integer>();
-                bMatches.put(key, positions);
+        do {
+            aStart = aPrevStart;
+            bStart = bPrevStart;
+            if (sIndex < sL) {
+                aEnd = (aPrevStart = sections[sIndex++]) - 1;
+                bEnd = (bPrevStart = sections[sIndex++]) - 1;
             }
-            positions.add(new Integer(bi));
-        }
+
+            while (aStart <= aEnd && bStart <= bEnd && equals(a[aStart], b[bStart])) {
+                matches.put(new Integer(aStart++), new Integer(bStart++));
+            }
+
+            while (aStart <= aEnd && bStart <= bEnd && equals(a[aEnd], b[bEnd])) {
+                matches.put(new Integer(aEnd--), new Integer(bEnd--));
+            }
         
-        thresh = new TreeMap<Integer, Integer>();
-        Map<Integer, Object[]> links = new HashMap<Integer, Object[]>();
-        
-        for (int i = aStart; i <= aEnd; ++i) {
-            E aElement = a[i]; // keygen here.
-            List<Integer> positions = bMatches.get(aElement);
-            
-            if (positions != null) {
-                Integer  k   = new Integer(0);
-                ListIterator<Integer> pit = positions.listIterator(positions.size());
-                while (pit.hasPrevious()) {
-                    Integer j = pit.previous();
-                    
-                    k = insert(j, k);
-                    
-                    if (k == null) {
-                        // nothing
-                    } else {
-                        Object value = k.intValue() > 0 ? links.get(new Integer(k.intValue() - 1)) : null;
-                        links.put(k, new Object[] { value, new Integer(i), j });
+
+            for (int bi = bStart; bi <= bEnd; ++bi) {
+                E element = b[bi];
+                E key = element;
+                List<Integer> positions = bMatches.get(key);
+                if (positions == null) {
+                    positions = new ArrayList<Integer>();
+                    bMatches.put(key, positions);
+                }
+                positions.add(new Integer(bi));
+            }
+
+            thresh = new TreeMap<Integer, Integer>();
+            Map<Integer, Object[]> links = new HashMap<Integer, Object[]>();
+
+            for (int i = aStart; i <= aEnd; ++i) {
+                E aElement = a[i]; // keygen here.
+                List<Integer> positions = bMatches.get(aElement);
+
+                if (positions != null) {
+                    Integer  k   = new Integer(0);
+                    ListIterator<Integer> pit = positions.listIterator(positions.size());
+                    while (pit.hasPrevious()) {
+                        Integer j = pit.previous();
+
+                        k = insert(j, k);
+
+                        if (k == null) {
+                            // nothing
+                        } else {
+                            Object value = k.intValue() > 0 ? links.get(new Integer(k.intValue() - 1)) : null;
+                            links.put(k, new Object[] { value, new Integer(i), j });
+                        }
                     }
                 }
             }
-        }
-        
-        if (thresh.size() > 0) {
-            Integer  ti   = thresh.lastKey();
-            Object[] link = links.get(ti);
-            while (link != null) {
-                Integer x = (Integer)link[1];
-                Integer y = (Integer)link[2];
-                matches.put(x, y);
-                link = (Object[])link[0];
+
+            if (thresh.size() > 0) {
+                Integer  ti   = thresh.lastKey();
+                Object[] link = links.get(ti);
+                while (link != null) {
+                    Integer x = (Integer)link[1];
+                    Integer y = (Integer)link[2];
+                    matches.put(x, y);
+                    link = (Object[])link[0];
+                }
             }
-        }
+        } while (sIndex < sL);
+
         
         return toArray(matches);
     }

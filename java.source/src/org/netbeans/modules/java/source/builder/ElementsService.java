@@ -209,15 +209,23 @@ public class ElementsService {
     public ExecutableElement getOverriddenMethod(ExecutableElement method) {
         MethodSymbol m = (MethodSymbol)method;
 	ClassSymbol origin = (ClassSymbol)m.owner;
+        MethodSymbol bridgeCandidate = null;
 	for (Type t = jctypes.supertype(origin.type); t.hasTag(TypeTag.CLASS); t = jctypes.supertype(t)) {
 	    TypeSymbol c = t.tsym;
 	    Scope.Entry e = c.members().lookup(m.name);
 	    while (e.scope != null) {
-		if (m.overrides(e.sym, origin, jctypes, false))
-		    return (MethodSymbol)e.sym;
+		if (m.overrides(e.sym, origin, jctypes, false)) {
+                    if ((e.sym.flags() & Flags.BRIDGE) > 0) {
+                        if (bridgeCandidate == null) {
+                            bridgeCandidate = (MethodSymbol)e.sym;
+                        }
+                    } else {
+                        return (MethodSymbol)e.sym;
+                    }
+                }
 		e = e.next();
 	    }
 	}
-        return null;
+        return bridgeCandidate;
     }
 }

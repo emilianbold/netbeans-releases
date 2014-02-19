@@ -416,9 +416,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                         oldTrees.remove(var);
                         assert !isEnumerator(var);
                         assert !isSynthetic(var);
-                        toColExactly(out.leftMargin);
-                        printStat(var, true, firstMember);
-                        newline();
+                        printStat(var, true, firstMember, true, true);
                         firstMember = false;
                     }
                 }
@@ -690,8 +688,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         }
         printImportsBlock(imports, !l.isEmpty());
 	while (l.nonEmpty()) {
-            printStat(l.head, true, false);
-            newline();
+            printStat(l.head, true, false, false, true);
             l = l.tail;
 	}
     }
@@ -777,9 +774,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                 members.remove(0);
             }
             for (JCTree t : members) {
-                toColExactly(out.leftMargin);
-                printStat(t, true, firstMember);
-                newline();
+                printStat(t, true, firstMember, true, true);
                 firstMember = false;
             }
 	    blankLines(enclClassName.isEmpty() ? cs.getBlankLinesBeforeAnonymousClassClosingBrace() : cs.getBlankLinesBeforeClassClosingBrace());
@@ -797,8 +792,9 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         boolean hasNonEnumerator = false;
         for (JCTree c : defs) {
             if (isEnumerator(c)) {
+                boolean col = false;
                 if (first) {
-                    toColExactly(out.leftMargin);
+                    col = true;
                     first = false;
                 } else {
                     print(cs.spaceBeforeComma() ? " ," : ",");
@@ -812,7 +808,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                         }
                     case WRAP_ALWAYS:
                         newline();
-                        toColExactly(out.leftMargin);
+                        col = true;
                         break;
                     case WRAP_NEVER:
                         if (cs.spaceAfterComma())
@@ -820,7 +816,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                         break;
                     }
                 }
-                printStat(c, true, false);
+                printStat(c, true, false, col, false);
             } else if (!isSynthetic(c))
                 hasNonEnumerator = true;
         }
@@ -1850,6 +1846,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
             return;
         }
         int n = 0;
+        // NOTE - out.blankLines() may truncate a previous line, iff it contains trailing whitespace.
         switch (tree.getKind()) {
             case ANNOTATION_TYPE:
             case CLASS:
@@ -2605,18 +2602,46 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     private void printStat(JCTree tree) {
         printStat(tree, false, false);
     }
-
+    
     private void printStat(JCTree tree, boolean member, boolean first) {
-	if(tree==null) print(';');
+        printStat(tree, member, first, false, false);
+    }
+
+    /**
+     * Prints blank lines before, positions to the exact column (optional), prints tree and
+     * blank lines after. And optional additional newline.
+     * 
+     * @param tree
+     * @param member
+     * @param first
+     * @param col
+     * @param nl 
+     */
+    private void printStat(JCTree tree, boolean member, boolean first, boolean col, boolean nl) {
+	if(tree==null) {
+            if (col) {
+                toColExactly(out.leftMargin);
+            }
+            print(';');
+            if (nl) {
+                newline();
+            }
+        }
 	else {
             if (!first)
                 blankLines(tree, true);
+            if (col) {
+                toColExactly(out.leftMargin);
+            }
 	    printPrecedingComments(tree, !member);
             printExpr(tree, TreeInfo.notExpression);
 	    int tag = tree.getTag().ordinal();//XXX: comparing ordinals!!!
 	    if(JCTree.Tag.APPLY.ordinal()<=tag && tag<=JCTree.Tag.MOD_ASG.ordinal()) print(';');
             printTrailingComments(tree, !member);
             blankLines(tree, false);
+            if (nl) {
+                newline();
+            }
 	}
     }
 
@@ -2664,8 +2689,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 
         boolean first = true;
 	for (JCTree t : filtered) {
-	    toColExactly(out.leftMargin);
-	    printStat(t, members, first);
+	     printStat(t, members, first, true, false);
             first = false;
 	}
     }

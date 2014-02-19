@@ -198,9 +198,11 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
         } else {
             librariesLocation.setText(uiProperties.getProject().getHelper().getLibrariesLocation());
         }
-        for (int i = 2; i < 5; i++) {
-            jTabbedPane1.setEnabledAt(i, false);
-        }
+        
+        //TODO: remove unused tabs completely from this class
+        jTabbedPane1.remove(jPanelRun);
+        jTabbedPane1.remove(jPanelCompileTests);
+        jTabbedPane1.remove(jPanelRunTests);
     }
 
     /** split file name into folder and name */
