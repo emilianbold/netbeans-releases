@@ -48,7 +48,7 @@
     
     <!-- Base IDE properties   -->       
     <property name="baseide.version" value="8.0 RC1"/>
-    <property name="baseide.id" value="8.0 RC1"/>
+    <property name="baseide.id" value="8.0_RC1"/>
     <property name="appname" value="NetBeans 8.0 RC1"/> 
     <property name="mpkg.name_nb" value="NetBeans 8.0 RC1"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
