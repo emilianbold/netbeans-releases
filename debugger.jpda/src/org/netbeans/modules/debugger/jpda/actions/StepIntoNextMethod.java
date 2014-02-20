@@ -130,10 +130,12 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
     }
 
     public void runAction(boolean doResume) {
-        runAction(null, doResume, null);
+        runAction(null, doResume, null, null, null);
     }
 
-    public void runAction(Object action, boolean doResume, Lock lock) {
+    void runAction(Object action, boolean doResume, Lock lock,
+                   Boolean isSteppingFromFilteredLocation,
+                   Boolean isSteppingFromCompoundFilteredLocation) {
         smartLogger.finer("STEP INTO NEXT METHOD.");
         JPDAThread t = getDebuggerImpl ().getCurrentThread ();
         if (t == null) {
@@ -165,9 +167,17 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
             } else {
                 stepDepth = StepRequest.STEP_INTO;
             }
-            steppingFromFilteredLocation = !getSmartSteppingFilterImpl ().stopHere(t.getClassName());
-            steppingFromCompoundFilteredLocation = !getCompoundSmartSteppingListener ().stopHere
-                               (contextProvider, t, getSmartSteppingFilterImpl ());
+            if (isSteppingFromFilteredLocation != null) {
+                steppingFromFilteredLocation = isSteppingFromFilteredLocation.booleanValue();
+            } else {
+                steppingFromFilteredLocation = !getSmartSteppingFilterImpl ().stopHere(t.getClassName());
+            }
+            if (isSteppingFromCompoundFilteredLocation != null) {
+                steppingFromCompoundFilteredLocation = isSteppingFromCompoundFilteredLocation.booleanValue();
+            } else {
+                steppingFromCompoundFilteredLocation = !getCompoundSmartSteppingListener ().stopHere
+                                   (contextProvider, t, getSmartSteppingFilterImpl ());
+            }
 
             StepRequest stepRequest = setStepRequest (stepDepth, resumeThreadPtr);
             position = t.getClassName () + '.' +
