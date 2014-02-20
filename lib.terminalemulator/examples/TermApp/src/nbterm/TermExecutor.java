@@ -50,6 +50,7 @@ import org.netbeans.lib.richexecution.OS;
 import org.netbeans.lib.richexecution.program.Program;
 import java.awt.Dimension;
 import java.util.Map;
+import javax.swing.JFrame;
 import org.netbeans.lib.terminalemulator.LineDiscipline;
 import org.netbeans.lib.terminalemulator.StreamTerm;
 import org.netbeans.lib.terminalemulator.Term;
@@ -66,6 +67,7 @@ public final class TermExecutor {
     private final PtyExecutor delegate = new PtyExecutor();
     private Boolean lineDiscipline = null;
     private boolean debug = false;
+    private JFrame titledWindow;
 
     public TermExecutor() {
         switch (os) {
@@ -106,6 +108,11 @@ public final class TermExecutor {
 					 pixels.height, pixels.width);
 		    break;
 	    }
+        }
+
+        public void titleChanged(String title) {
+            if (titledWindow != null)
+                titledWindow.setTitle(title);
         }
     }
 
@@ -225,5 +232,9 @@ public final class TermExecutor {
 
     public Mode getMode() {
         return delegate.getMode();
+    }
+
+    public void setTitledWindow(JFrame titledWindow) {
+        this.titledWindow = titledWindow;
     }
 }
