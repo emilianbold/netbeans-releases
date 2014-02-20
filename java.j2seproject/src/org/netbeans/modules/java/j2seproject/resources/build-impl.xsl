@@ -2229,7 +2229,7 @@ is divided into following sections:
                     <xsl:attribute name="version">${javadoc.version}</xsl:attribute>
                     <xsl:attribute name="windowtitle">${javadoc.windowtitle}</xsl:attribute>
                     <xsl:attribute name="private">${javadoc.private}</xsl:attribute>
-                    <xsl:attribute name="additionalparam">${javadoc.additionalparam}</xsl:attribute>
+                    <xsl:attribute name="additionalparam">-J-Dfile.encoding=${file.encoding} ${javadoc.additionalparam}</xsl:attribute>
                     <xsl:attribute name="failonerror">true</xsl:attribute> <!-- #47325 -->
                     <xsl:attribute name="useexternalfile">true</xsl:attribute> <!-- #57375, requires Ant >=1.6.5 -->
                     <xsl:attribute name="encoding">${javadoc.encoding.used}</xsl:attribute>
