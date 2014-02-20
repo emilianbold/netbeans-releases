@@ -473,7 +473,9 @@ implements Executor {
             if (!stepThrough || smartSteppingStepOut) {
                 loggerStep.fine("Issuing step out, due to smart-stepping.");
                 // Assure that the action does not resume anything. Resume is done by Operator.
-                getStepIntoActionProvider ().runAction(ActionsManager.ACTION_STEP_OUT, false, lock);
+                getStepIntoActionProvider ().runAction(ActionsManager.ACTION_STEP_OUT, false, lock,
+                                                       steppingFromFilteredLocation,
+                                                       steppingFromCompoundFilteredLocation);
             } else {
                 // Assure that the action does not resume anything. Resume is done by Operator.
                 int origDepth = StepRequestWrapper.depth(sr);
@@ -484,7 +486,9 @@ implements Executor {
                 } else if (origDepth == StepRequest.STEP_OUT) {
                     runAction(ActionsManager.ACTION_STEP_OUT, false, lock);
                 } else { // if (origDepth == StepRequest.STEP_INTO) {
-                    getStepIntoActionProvider ().runAction(StepIntoActionProvider.ACTION_SMART_STEP_INTO, false, lock);
+                    getStepIntoActionProvider ().runAction(StepIntoActionProvider.ACTION_SMART_STEP_INTO, false, lock,
+                                                           steppingFromFilteredLocation,
+                                                           steppingFromCompoundFilteredLocation);
                 }
             }
             //S ystem.out.println("/nStepAction.exec end - resume");
