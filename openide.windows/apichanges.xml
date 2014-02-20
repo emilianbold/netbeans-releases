@@ -50,6 +50,21 @@ made subject to such option by the copyright holder.
 <apidef name="winsys">Window System API</apidef>
 </apidefs>
 <changes>
+<change id="COS_afterRedirect">
+    <api name="winsys"/>
+    <summary>Added method afterRedirect(CloneableOpenSupport) to CloneableOpenSupport</summary>
+    <version major="6" minor="70"/>
+    <date day="20" month="2" year="2014"/>
+    <author login="vv159170"/>
+    <compatibility addition="yes" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        <p>The method is called when CloneableOpenSupportRedirector found another instance of CloneableOpenSupport to open instead the current. 
+        It is possible to override afterRedirect in derived classes and handle this situation.
+        </p>
+    </description>
+    <class package="org.openide.windows" name="CloneableOpenSupport"/>
+    <issue number="241991"/>
+</change>    
 <change id="WinSysBrandingOverride">
     <api name="winsys"/>
     <summary>Override window system branding properties</summary>
