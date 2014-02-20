@@ -156,7 +156,7 @@ public final class CustomizerSupport {
      */
     public static String buildPath(List<URL> path) {
         String PATH_SEPARATOR = System.getProperty("path.separator"); // NOI18N
-        StringBuffer sb = new StringBuffer(path.size() * 16);
+        StringBuilder sb = new StringBuilder(path.size() * 16);
         for (Iterator<URL> i = path.iterator(); i.hasNext(); ) {
             sb.append(urlToString(i.next()));
             if (i.hasNext()) {
@@ -286,6 +286,7 @@ public final class CustomizerSupport {
          *
          * return The number of URL entries in the list.
          */
+        @Override
         public int getSize() {
             return data.size();
         }
@@ -297,6 +298,7 @@ public final class CustomizerSupport {
          *
          * @return The element at the specified position in this list.
          */
+        @Override
         public Object getElementAt(int index) {
             URL url = data.get(index);
             if ("jar".equals(url.getProtocol())) { // NOI18N
