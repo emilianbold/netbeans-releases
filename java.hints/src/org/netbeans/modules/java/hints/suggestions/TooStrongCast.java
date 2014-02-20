@@ -191,7 +191,7 @@ public class TooStrongCast {
                     info.getTypes().isAssignable(tmErasure, castErasure)) {
                 return null;
             }
-            filteredTypes.add(tm);
+            filteredTypes.add(Utilities.resolveCapturedType(info, tm));
         }
         if (filteredTypes.isEmpty()) {
             return null;
