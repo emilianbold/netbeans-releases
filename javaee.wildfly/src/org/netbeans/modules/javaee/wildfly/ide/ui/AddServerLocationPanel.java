@@ -59,32 +59,32 @@ import org.openide.util.NbBundle;
  * @author Ivan Sidorkin
  */
 public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel, ChangeListener {
-    
+
     private final WildflyInstantiatingIterator instantiatingIterator;
-    
+
     private AddServerLocationVisualPanel component;
     private WizardDescriptor wizard;
     private final transient Set listeners = new HashSet(1);
-    
-    public AddServerLocationPanel(WildflyInstantiatingIterator instantiatingIterator){
+
+    public AddServerLocationPanel(WildflyInstantiatingIterator instantiatingIterator) {
         this.instantiatingIterator = instantiatingIterator;
     }
-    
+
     @Override
     public void stateChanged(ChangeEvent ev) {
         fireChangeEvent(ev);
     }
-    
+
     private void fireChangeEvent(ChangeEvent ev) {
         Iterator it;
         synchronized (listeners) {
             it = new HashSet(listeners).iterator();
         }
         while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+            ((ChangeListener) it.next()).stateChanged(ev);
         }
     }
-    
+
     @Override
     public Component getComponent() {
         if (component == null) {
@@ -93,12 +93,12 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
         }
         return component;
     }
-    
+
     @Override
     public HelpCtx getHelp() {
         return new HelpCtx("j2eeplugins_registering_app_server_jboss_location"); //NOI18N
     }
-    
+
     @Override
     public boolean isValid() {
         String locationStr = component.getInstallLocation();
@@ -113,7 +113,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                     NbBundle.getMessage(AddServerLocationPanel.class, "MSG_InvalidServerLocation")); // NOI18N
             return false;
         }
-                
+
         wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
         wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
         WildflyPluginProperties.getInstance().setInstallLocation(component.getInstallLocation());
@@ -130,27 +130,33 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
             listeners.remove(l);
         }
     }
-    
+
     @Override
     public void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
-    
+
     @Override
     public void readSettings(Object settings) {
         if (wizard == null) {
             wizard = (WizardDescriptor) settings;
         }
     }
-    
+
     @Override
     public void storeSettings(Object settings) {
         instantiatingIterator.setInstallLocation(
                 ((AddServerLocationVisualPanel) getComponent()).getInstallLocation());
         instantiatingIterator.setConfigFile(
                 ((AddServerLocationVisualPanel) getComponent()).getConfigurationLocation());
+        instantiatingIterator.setServer("standalone");
+        String serverPath = ((AddServerLocationVisualPanel) getComponent()).getInstallLocation() + File.separatorChar + "standalone";
+        instantiatingIterator.setServerPath(serverPath);
+        instantiatingIterator.setDeployDir(WildflyPluginUtils.getDeployDir(serverPath)); 
+        instantiatingIterator.setHost("localhost");
+        instantiatingIterator.setPort("8080");
     }
 
     @Override
