@@ -742,6 +742,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             currentThread = (JPDAThreadImpl) thread;
             event = updateCurrentCallStackFrameNoFire(topFrame);
         }
+        checkJSR45Languages(thread);
         if (thread != oldT) {
             firePropertyChange (PROP_CURRENT_THREAD, oldT, thread);
         }
@@ -781,6 +782,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
         CallStackFrame old = setCurrentCallStackFrameNoFire(callStackFrame);
         if (old == callStackFrame) {
             return ;
+        }
+        if (callStackFrame != null) {
+            checkJSR45Languages(callStackFrame);
         }
         firePropertyChange (
             PROP_CURRENT_CALL_STACK_FRAME,
@@ -2300,50 +2304,53 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 if (frames.length < 1) {
                     return ; // Internal error or disconnected
                 }
-                CallStackFrame f = frames [0];
-                List<String> l = f.getAvailableStrata ();
-                String stratum = f.getDefaultStratum ();
-                //String sourceDebugExtension;
-                    //sourceDebugExtension = (String) f.getClass().getMethod("getSourceDebugExtension").invoke(f);
-                /* This was moved to CallStackFrameImpl.
-                if (l.size() == 1 && "Java".equals(l.get(0))) {     // NOI18N
-                    // Hack for non-Java languages that do not define stratum:
-                    String sourceName = f.getSourceName(null);
-                    int ext = sourceName.lastIndexOf('.');
-                    if (ext > 0) {
-                        String extension = sourceName.substring(++ext);
-                        extension = extension.toUpperCase();
-                        if (!"JAVA".equals(extension)) {    // NOI18N
-                            l = Collections.singletonList(extension);
-                            stratum = extension;
-                        }
-                    } else if ("<eval>".equals(sourceName)) {
-                        // Check Nashorn:
-                        if ("jdk/nashorn/internal/scripts/<eval>".equals(f.getSourcePath(null))) {
-                            l = Collections.singletonList("JS");
-                            stratum = "JS";
-                        }
-                    }
-                }*/
-                int i, k = l.size ();
-                for (i = 0; i < k; i++) {
-                    if (!languages.contains (l.get (i))) {
-                        String language = l.get (i);
-                        DebuggerManager.getDebuggerManager ().startDebugging (
-                            createJSR45DI (language)
-                        );
-                        languages.add (language);
-                    }
-                } // for
-                if ( (stratum != null) &&
-                     (!stratum.equals (lastStratumn))
-                ) {
-                    javaEngineProvider.getSession ().setCurrentLanguage (stratum);
-                }
-                lastStratumn = stratum;
+                checkJSR45Languages(frames[0]);
             } catch (AbsentInformationException e) {
             }
         }
+    }
+    
+    private void checkJSR45Languages(CallStackFrame f) {
+        List<String> l = f.getAvailableStrata ();
+        String stratum = f.getDefaultStratum ();
+        //String sourceDebugExtension;
+            //sourceDebugExtension = (String) f.getClass().getMethod("getSourceDebugExtension").invoke(f);
+        /* This was moved to CallStackFrameImpl.
+        if (l.size() == 1 && "Java".equals(l.get(0))) {     // NOI18N
+            // Hack for non-Java languages that do not define stratum:
+            String sourceName = f.getSourceName(null);
+            int ext = sourceName.lastIndexOf('.');
+            if (ext > 0) {
+                String extension = sourceName.substring(++ext);
+                extension = extension.toUpperCase();
+                if (!"JAVA".equals(extension)) {    // NOI18N
+                    l = Collections.singletonList(extension);
+                    stratum = extension;
+                }
+            } else if ("<eval>".equals(sourceName)) {
+                // Check Nashorn:
+                if ("jdk/nashorn/internal/scripts/<eval>".equals(f.getSourcePath(null))) {
+                    l = Collections.singletonList("JS");
+                    stratum = "JS";
+                }
+            }
+        }*/
+        int i, k = l.size ();
+        for (i = 0; i < k; i++) {
+            if (!languages.contains (l.get (i))) {
+                String language = l.get (i);
+                DebuggerManager.getDebuggerManager ().startDebugging (
+                    createJSR45DI (language)
+                );
+                languages.add (language);
+            }
+        } // for
+        if ( (stratum != null) &&
+             (!stratum.equals (lastStratumn))
+        ) {
+            javaEngineProvider.getSession ().setCurrentLanguage (stratum);
+        }
+        lastStratumn = stratum;
     }
 
     private Set<JSR45DebuggerEngineProvider> jsr45EngineProviders;

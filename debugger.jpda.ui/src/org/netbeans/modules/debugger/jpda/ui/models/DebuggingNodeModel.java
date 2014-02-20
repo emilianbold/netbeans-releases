@@ -273,7 +273,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
 
     private final Map<CallStackFrame, String> frameDescriptionsByFrame = new WeakHashMap<CallStackFrame, String>();
 
-    private static final Map<CallStackFrame, String[]> framePathClassURL = new WeakHashMap<CallStackFrame, String[]>();
+    private static final Map<CallStackFrame, FrameUIInfo> framePathClassURL = new WeakHashMap<CallStackFrame, FrameUIInfo>();
     
     public static String getDisplayName(JPDAThread t, boolean showPackageNames) throws UnknownTypeException {
         return getDisplayName(t, showPackageNames, null);
@@ -466,16 +466,37 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                 synchronized (frameDescriptionsByFrame) {
                     frameDescriptionsByFrame.put(f, frameDescr);
                 }
-                String[] pathAndClass = new String[3];
+                FrameUIInfo frameInfo = new FrameUIInfo();
                 String language = session.getCurrentLanguage();
                 try {
-                    pathAndClass[0] = f.getSourcePath(language);
+                    frameInfo.sourcePath = f.getSourcePath(language);
                 } catch (AbsentInformationException ex) {
                 }
-                pathAndClass[1] = f.getClassName();
-                pathAndClass[2] = sourcePath.getURL(f, language);
+                frameInfo.className = f.getClassName();
+                frameInfo.url = sourcePath.getURL(f, language);
+                frameInfo.language = language;
+                if (frameInfo.url == null) {
+                    // URL is not known for this language. Try other languages...
+                    List<String> supportedLanguages = f.getAvailableStrata();
+                    String otherLanguage = null;
+                    String otherURL = null;
+                    for (String ol : supportedLanguages) {
+                        if (ol.equals(language)) {
+                            continue;
+                        }
+                        otherURL = sourcePath.getURL(f, ol);
+                        if (otherURL != null) {
+                            otherLanguage = ol;
+                            break;
+                        }
+                    }
+                    if (otherURL != null) {
+                        frameInfo.url = otherURL;
+                        frameInfo.language = otherLanguage;
+                    }
+                }
                 synchronized (framePathClassURL) {
-                    framePathClassURL.put(f, pathAndClass);
+                    framePathClassURL.put(f, frameInfo);
                 }
                 fireDisplayNameChanged(f);
             }
@@ -484,9 +505,9 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
 
     static String getCachedFramePath(CallStackFrame f) {
         synchronized (framePathClassURL) {
-            String[] pathAndClass = framePathClassURL.get(f);
-            if (pathAndClass != null) {
-                return pathAndClass[0];
+            FrameUIInfo frameInfo = framePathClassURL.get(f);
+            if (frameInfo != null) {
+                return frameInfo.sourcePath;
             }
         }
         return null;
@@ -494,9 +515,9 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
 
     static String getCachedFrameClass(CallStackFrame f) {
         synchronized (framePathClassURL) {
-            String[] pathAndClass = framePathClassURL.get(f);
-            if (pathAndClass != null) {
-                return pathAndClass[1];
+            FrameUIInfo frameInfo = framePathClassURL.get(f);
+            if (frameInfo != null) {
+                return frameInfo.className;
             }
         }
         return null;
@@ -504,9 +525,19 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     
     static String getCachedFrameURL(CallStackFrame f) {
         synchronized (framePathClassURL) {
-            String[] pathAndClass = framePathClassURL.get(f);
-            if (pathAndClass != null) {
-                return pathAndClass[2];
+            FrameUIInfo frameInfo = framePathClassURL.get(f);
+            if (frameInfo != null) {
+                return frameInfo.url;
+            }
+        }
+        return null;
+    }
+    
+    static String getCachedFrameURLLanguage(CallStackFrame f) {
+        synchronized (framePathClassURL) {
+            FrameUIInfo frameInfo = framePathClassURL.get(f);
+            if (frameInfo != null) {
+                return frameInfo.language;
             }
         }
         return null;
@@ -997,5 +1028,12 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         public void removePropertyChangeListener(PropertyChangeListener l) {
             session.removePropertyChangeListener(propertyName, l);
         }
+    }
+    
+    private final static class FrameUIInfo {
+        String sourcePath;
+        String className;
+        String url;
+        String language;
     }
 }
