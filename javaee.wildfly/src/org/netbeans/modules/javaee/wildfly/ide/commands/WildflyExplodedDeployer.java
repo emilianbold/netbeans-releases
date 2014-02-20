@@ -62,7 +62,9 @@ import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import org.openide.util.RequestProcessor;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
+import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.shared.StateType;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
 import org.netbeans.modules.javaee.wildfly.WildflyTargetModuleID;
 import org.netbeans.modules.javaee.wildfly.ide.WildflyDeploymentStatus;
@@ -99,8 +101,8 @@ public class WildflyExplodedDeployer implements ProgressObject, Runnable {
         this.dm = dm;
     }
 
-    public ProgressObject deploy(Target target, File file) {
-        return redeploy(new WildflyTargetModuleID(target, file.getName()), file);
+    public ProgressObject deploy(Target target, J2eeModule.Type type, File file) {
+        return this.redeploy(new WildflyTargetModuleID(target, file.getName(),type), file);
     }
 
     public ProgressObject redeploy(TargetModuleID module_id, File file) {

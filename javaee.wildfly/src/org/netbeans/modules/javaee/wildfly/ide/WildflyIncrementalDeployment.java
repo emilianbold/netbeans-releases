@@ -89,7 +89,7 @@ public class WildflyIncrementalDeployment extends IncrementalDeployment implemen
 
     @Override
     public ProgressObject initialDeploy(Target target, J2eeModule app, ModuleConfiguration configuration, File dir) {
-        return deployer.deploy(target, dir);
+        return deployer.deploy(target, app.getType(), dir);
     }
 
     @Override
@@ -101,7 +101,18 @@ public class WildflyIncrementalDeployment extends IncrementalDeployment implemen
 
     @Override
     public File getDirectoryForNewApplication(Target target, J2eeModule app, ModuleConfiguration configuration) {
-        return new File(this.deploymentDir, app.getUrl());
+        String baseName = app.getUrl();
+        try {
+            if(app.getArchive()!= null) {
+                String extension = app.getArchive().getExt();
+                if(!baseName.endsWith(extension)) {
+                    baseName = baseName + '.' + extension;
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }        
+        return new File(this.deploymentDir, baseName);
     }
 
     @Override
@@ -128,7 +139,7 @@ public class WildflyIncrementalDeployment extends IncrementalDeployment implemen
 
     @Override
     public ProgressObject initialDeploy(Target target, DeploymentContext context) {
-        return deployer.deploy(target, context.getModuleFile());
+        return deployer.deploy(target, context.getModule().getType(), context.getModuleFile());
     }
 
     @Override
