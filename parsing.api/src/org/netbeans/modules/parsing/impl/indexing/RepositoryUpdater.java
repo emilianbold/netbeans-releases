@@ -1075,8 +1075,11 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                    evt.getPropertyName().equals(EditorRegistry.LAST_FOCUSED_REMOVED_PROPERTY))
         {
             if (evt.getOldValue() instanceof JTextComponent) {
-                JTextComponent jtc = (JTextComponent) evt.getOldValue();
-                handleActiveDocumentChange(jtc.getDocument(), null);
+                Object newValue = evt.getNewValue();
+                if (!(newValue instanceof JTextComponent) || ((JTextComponent)newValue).getClientProperty("AsTextField") == null) {
+                    JTextComponent jtc = (JTextComponent) evt.getOldValue();
+                    handleActiveDocumentChange(jtc.getDocument(), null);
+                }
             }
             
         } else if (evt.getPropertyName().equals(EditorRegistry.COMPONENT_REMOVED_PROPERTY)) {
@@ -1088,14 +1091,15 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         } else if (evt.getPropertyName().equals(EditorRegistry.FOCUS_GAINED_PROPERTY)) {
             if (evt.getNewValue() instanceof JTextComponent) {
                 JTextComponent jtc = (JTextComponent) evt.getNewValue();
-                handleActiveDocumentChange(null, jtc.getDocument());
-                JTextComponent activeComponent = activeComponentRef == null ? null : activeComponentRef.get();
-                if (activeComponent != jtc) {
-                    if (activeComponent != null)
-                        components = Collections.singletonList(activeComponent);
-                    activeComponentRef = new WeakReference<JTextComponent>(jtc);
+                if (jtc.getClientProperty("AsTextField") == null) {
+                    handleActiveDocumentChange(null, jtc.getDocument());
+                    JTextComponent activeComponent = activeComponentRef == null ? null : activeComponentRef.get();
+                    if (activeComponent != jtc) {
+                        if (activeComponent != null)
+                            components = Collections.singletonList(activeComponent);
+                        activeComponentRef = new WeakReference<JTextComponent>(jtc);
+                    }
                 }
-
             }
 
         } else if (evt.getPropertyName().equals(EditorRegistry.FOCUSED_DOCUMENT_PROPERTY)) {
