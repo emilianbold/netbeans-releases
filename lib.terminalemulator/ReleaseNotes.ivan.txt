@@ -1,3 +1,27 @@
+238225 - Midnight Commander and re-size breaks terminal
+	Looking at traces from Term MC sets the margins (op_margin())
+	but never resets them (reset/default margins always track 
+	the window size).
+
+	MC does issue the sequence \ESC[?1049l which is really the
+	combination of ...
+	1047	Revert to normal screen buffer, clearing screen if switching
+		away from alternate screen buffer.
+	1048	(DECRC) Restore cursor.
+	But AFAICT margins are not a property of a "screen" nor of a "cursor"
+	("cursor" is actually a collection of attributes) so neither of
+	the above play a role with margins.
+
+	Instead, it seems, margins need to be reset on resizes. I checked
+	with 'terminator' and 'konsole' and they reset the margins on resizes
+	only.
+
+	This is easy to fix by adding a private Term.resetMargins() and
+	calling it wherever st.rows gets modified.
+
+	BTW Term doesn't support alternate screens yet. This might explain
+	some of the other oddities when exiting MC, vi, man etc.
+
 nobugid - Track API changes: TermListener.titleChanged()
 	This is in examples/ projects which got missed when titleChanged()
 	was added. TermApp now shows it's title.
