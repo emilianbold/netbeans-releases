@@ -116,7 +116,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
     
     @Override
     public void doAction (Object action) {
-        runAction(action, true, null);
+        runAction(action, true, null, null, null);
     }
     
     @Override
@@ -125,7 +125,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
             @Override
             public void run() {
                 try {
-                    runAction(action, true, null);
+                    runAction(action, true, null, null, null);
                 } finally {
                     actionPerformedNotifier.run();
                 }
@@ -133,11 +133,15 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
         });
     }
     
-    public void runAction(Object action, boolean doResume, Lock lock) {
+    void runAction(Object action, boolean doResume, Lock lock,
+                   Boolean steppingFromFilteredLocation,
+                   Boolean steppingFromCompoundFilteredLocation) {
         if (ActionsManager.ACTION_STEP_INTO.equals(action) && doMethodSelection()) {
             return; // action performed
         }
-        stepInto.runAction(action, doResume, lock);
+        stepInto.runAction(action, doResume, lock,
+                           steppingFromFilteredLocation,
+                           steppingFromCompoundFilteredLocation);
     }
     
     @Override
