@@ -97,6 +97,7 @@ public abstract class CloneableOpenSupport extends Object {
         CloneableOpenSupport redirect = CloneableOpenSupportRedirector.findRedirect(this);
         if (redirect != null) {
             redirect.open();
+            this.afterRedirectImpl(redirect);
             return;
         }
         //Bugfix #10688 open() is now run in AWT thread
@@ -245,6 +246,30 @@ public abstract class CloneableOpenSupport extends Object {
     * @return the message or null if nothing should be displayed
     */
     protected abstract String messageOpened();
+
+    private void afterRedirectImpl(CloneableOpenSupport redirectedTo) {
+        // there is a common patern in user code:
+        // CloneableEditorSupport ces = ...;
+        // ces.edit();
+        // JEditorPane[] panes = ces.getOpenedPanes();
+        // if (panes != null) panes[0].setPosition(offset);
+        // in case when redirection has happened during edit() call
+        // 'ces' instance returns null for getOpenedPanes
+        // but we want panes to be available for 'ces' instance after redirection;
+        // remember editors from redirected instance to have correct opened panes
+        // for this instance as well
+        this.allEditors = redirectedTo.allEditors;
+//        this.env = redirect.env;
+        afterRedirect(redirectedTo);
+    }
+    
+    /**
+     * Called to notify that another redirected CloneableOpenSupport was opened instead of this one.
+     * @param redirectedTo redirected instance which was opened instead of this one
+     * @since 6.70
+     */
+    protected void afterRedirect(CloneableOpenSupport redirectedTo) {
+    }
 
     /** Abstract interface that is used by CloneableOpenSupport to
     * talk to outside world.
