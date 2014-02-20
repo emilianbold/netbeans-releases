@@ -850,7 +850,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         Collections.<CompilerSet>sort(sets, new Comparator<CompilerSet>(){
             @Override
             public int compare(CompilerSet o1, CompilerSet o2) {
-                return o1.getCompilerFlavor().getToolchainDescriptor().getName().compareTo(o2.getCompilerFlavor().getToolchainDescriptor().getName());
+                return o1.getName().compareTo(o2.getName());
             }
         });
         completeCompilerSetsSettings(false);

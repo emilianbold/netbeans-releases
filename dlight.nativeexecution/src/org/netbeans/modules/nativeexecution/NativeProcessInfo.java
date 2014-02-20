@@ -64,6 +64,7 @@ import org.openide.util.Utilities;
  */
 // @NotThreadSafe
 public final class NativeProcessInfo {
+    private static final String DEFAULT_CHARSET = "UTF-8"; // NOI18N
 
     public final MacroExpander macroExpander;
     private final ExecutionEnvironment execEnv;
@@ -472,9 +473,10 @@ public final class NativeProcessInfo {
     }
     
     public static String getCharset(NativeProcess process) {
+        String res = null;
         if (process instanceof AbstractNativeProcess) {
-            return ((AbstractNativeProcess) process).getCharset();
+            res = ((AbstractNativeProcess) process).getCharset();
         }
-        return null;
+        return res == null ? DEFAULT_CHARSET : res;
     }    
 }

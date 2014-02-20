@@ -73,12 +73,19 @@ import java.io.CharConversionException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.swing.Icon;
 import org.netbeans.api.actions.Openable;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -112,17 +119,39 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
     private final Lookup lookup;
     private final BreadCrumbsNodeImpl parent;
     private final TreePathHandle tph;
-    private final Image icon;
+    private final Callable<? extends Image> iconProvider;
     private final String htmlDisplayName;
 //    private OpenAction openAction;
 
-    public BreadCrumbsNodeImpl(BreadCrumbsNodeImpl parent, TreePathHandle tph, Image icon, String htmlDisplayName, FileObject fileObject, int[] pos) {
+    public BreadCrumbsNodeImpl(final BreadCrumbsNodeImpl parent, final TreePathHandle tph,
+        final Image icon, final String htmlDisplayName, final FileObject fileObject, final int[] pos) {
+        this(
+            parent,
+            tph,
+            new Callable<Image> () {
+                @Override
+                @CheckForNull
+                public Image call() throws Exception {
+                    return icon;
+                }
+            },
+            htmlDisplayName,
+            fileObject,
+            pos);
+    }
+
+    private BreadCrumbsNodeImpl(
+        @NullAllowed final BreadCrumbsNodeImpl parent,
+        @NonNull final TreePathHandle tph,
+        @NonNull final Callable<? extends Image> iconProvider,
+        @NullAllowed final String htmlDisplayName,
+        @NonNull final FileObject fileObject,
+        @NonNull final int[] pos) {
         this.lookup = Lookups.fixed(tph, pos, new OpenableImpl(fileObject, pos[0]));
         this.parent = parent;
         this.tph = tph;
-        this.icon = icon;
+        this.iconProvider = iconProvider;
         this.htmlDisplayName = htmlDisplayName;
-//        this.openAction = new OpenAction(fileObject, pos);
     }
 
     @Override
@@ -132,12 +161,17 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
 
     @Override
     public Image getIcon(int type) {
-        return icon;
+        try {
+            return iconProvider.call();
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
     }
 
     @Override
     public Image getOpenedIcon(int type) {
-        return icon;
+        return getIcon(type);
     }
 
     private static final String CONSTRUCTOR_NAME = "<init>";
@@ -150,12 +184,12 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
             final Tree leaf = path.getLeaf();
             switch (leaf.getKind()) {
                 case COMPILATION_UNIT:
-                    return new BreadCrumbsNodeImpl(parent, tph, null, FileUtil.getFileDisplayName(info.getFileObject()), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, (Image) null, FileUtil.getFileDisplayName(info.getFileObject()), info.getFileObject(), pos);
                 case CLASS:
                 case INTERFACE:
                 case ENUM:
                 case ANNOTATION_TYPE:
-                    return new BreadCrumbsNodeImpl(parent, tph, iconFor(info, path), className(path), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, iconProviderFor(info, path), className(path), info.getFileObject(), pos);
                 case METHOD:
                     MethodTree mt = (MethodTree) leaf;
                     CharSequence name;
@@ -164,9 +198,9 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
                     } else {
                         name = mt.getName();
                     }
-                    return new BreadCrumbsNodeImpl(parent, tph, iconFor(info, path), name.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, iconProviderFor(info, path), name.toString(), info.getFileObject(), pos);
                 case VARIABLE:
-                    return new BreadCrumbsNodeImpl(parent, tph, iconFor(info, path), ((VariableTree) leaf).getName().toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, iconProviderFor(info, path), ((VariableTree) leaf).getName().toString(), info.getFileObject(), pos);
                 case CASE:
                     ExpressionTree expr = ((CaseTree) leaf).getExpression();
                     StringBuilder sb = new StringBuilder(expr == null ? "default:" : "case "); //NOI18N
@@ -342,12 +376,20 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
     
     private static final Image DEFAULT_ICON = BreadcrumbsController.NO_ICON;
     
-    private static Image iconFor(CompilationInfo info, TreePath path) {
+    private static Callable<? extends Image> iconProviderFor(CompilationInfo info, TreePath path) {
         Element el = info.getTrees().getElement(path);
-        if (el == null) return DEFAULT_ICON;
-        Icon icon = ElementIcons.getElementIcon(el.getKind(), el.getModifiers());
-        if (icon == null) return DEFAULT_ICON;
-        return ImageUtilities.icon2Image(icon);
+        final ElementKind kind = el == null ? null : el.getKind();
+        final Set<Modifier> modifiers = el == null ? null : el.getModifiers();
+        return new Callable<Image>() {
+            @Override
+            public Image call() throws Exception {
+                if (kind == null) return DEFAULT_ICON;
+                assert modifiers != null;
+                Icon icon = ElementIcons.getElementIcon(kind, modifiers);
+                if (icon == null) return DEFAULT_ICON;
+                return ImageUtilities.icon2Image(icon);
+            }
+        };
     }
     
     private static String className(TreePath path) {

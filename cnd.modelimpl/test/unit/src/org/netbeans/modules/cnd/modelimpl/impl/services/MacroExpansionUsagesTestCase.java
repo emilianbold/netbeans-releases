@@ -110,14 +110,15 @@ public class MacroExpansionUsagesTestCase extends MacroExpansionDocProviderImplB
             assertNotNull(doc2);
             mp.expand(doc, 0, doc.getLength(), doc2);
             int[][] res = mp.getUsages(doc2, offset);
-            streamOut.println("Usages: "); // NOI18N
-            for (int i = 0; i < res.length; i++) {
-                int[] is = res[i];
+            if (res != null) {
+                streamOut.println("Usages: "); // NOI18N
+                for (int i = 0; i < res.length; i++) {
+                    int[] is = res[i];
 
-                streamOut.print("start offset: line " + getLine(doc2, is[0]) + " column " + getColumn(doc2, is[0])); // NOI18N
-                streamOut.println(" - end offset: line " + getLine(doc2, is[1]) + " column " + getColumn(doc2, is[1])); // NOI18N
+                    streamOut.print("start offset: line " + getLine(doc2, is[0]) + " column " + getColumn(doc2, is[0])); // NOI18N
+                    streamOut.println(" - end offset: line " + getLine(doc2, is[1]) + " column " + getColumn(doc2, is[1])); // NOI18N
+                }
             }
-
         } else {
             assert true; // Bad test params
         }
