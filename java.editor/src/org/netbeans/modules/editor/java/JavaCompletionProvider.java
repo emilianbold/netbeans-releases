@@ -4155,17 +4155,23 @@ public class JavaCompletionProvider implements CompletionProvider {
                 results.add(javaCompletionItemFactory.createKeywordItem(RETURN_KEYWORD, postfix, anchorOffset, false));
             }
             TreePath tp = env.getPath();
-            while (tp != null) {
+            boolean cAdded = false;
+            boolean bAdded = false;
+            while (tp != null && !(cAdded && bAdded)) {
                 switch (tp.getLeaf().getKind()) {
                     case DO_WHILE_LOOP:
                     case ENHANCED_FOR_LOOP:
                     case FOR_LOOP:
                     case WHILE_LOOP:
-                        if (Utilities.startsWith(CONTINUE_KEYWORD, prefix))
+                        if (!cAdded && Utilities.startsWith(CONTINUE_KEYWORD, prefix)) {
                             results.add(javaCompletionItemFactory.createKeywordItem(CONTINUE_KEYWORD, SEMI, anchorOffset, false));
+                            cAdded = true;
+                        }
                     case SWITCH:
-                        if (Utilities.startsWith(BREAK_KEYWORD, prefix))
+                        if (!bAdded && Utilities.startsWith(BREAK_KEYWORD, prefix)) {
                             results.add(javaCompletionItemFactory.createKeywordItem(BREAK_KEYWORD, SEMI, anchorOffset, false));
+                            bAdded = true;
+                        }
                         break;
                 }
                 tp = tp.getParentPath();
