@@ -470,6 +470,13 @@ public class CndPathUtilities {
         return normalizeSlashes(path);
     }
 
+    public static String normalizeWindowsPath(String path) {
+        path = path.replace('\\', '/');
+        path = PathUtilities.normalizeUnixPath(path);
+        path = path.replace('/', '\\');        
+        return path;
+    }
+
     /**
      * Normalizes a Unix path, not necessarily absolute
      */
