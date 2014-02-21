@@ -127,7 +127,7 @@ public class RemoteFileZipper {
             // Zip directory on remote host
             //
             time = System.currentTimeMillis();
-            StringBuilder script = new StringBuilder("F=`mktemp`; if [ $? -eq 0 ]; then echo ZIP=$F; rm -rf $F; "); //NOI18N
+            StringBuilder script = new StringBuilder("TZ=UTC; export TZ; F=`mktemp`; if [ $? -eq 0 ]; then echo ZIP=$F; rm -rf $F; "); //NOI18N
             boolean all;
             if (extensions == null || extensions.isEmpty()) {
                 all = true;
@@ -137,7 +137,7 @@ public class RemoteFileZipper {
             }
             
             if (all) {
-                script.append(" zip -rq $F ").append(path); // NOI18N
+                script.append("zip -rq $F ").append(path); // NOI18N
             } else {
                 script.append("find ").append(path); // NOI18N
                 boolean first = true;

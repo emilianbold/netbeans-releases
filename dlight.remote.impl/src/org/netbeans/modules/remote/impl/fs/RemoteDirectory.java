@@ -1380,14 +1380,17 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 RemoteLogger.assertTrue(path.startsWith("/")); //NOI18N
                 path = path.substring(1); // remove starting '/'
                 ZipEntry zipEntry = zipFile.getEntry(path);
-                boolean result = false;
                 if (zipEntry != null) {
-                    //if (zipEntry.getTime() == child.lastModified().getTime()) {
+                    long zipTime = zipEntry.getTime();
+                    long childTime = child.lastModified().getTime();
+                    long delta = childTime - zipTime;
+                    int currTzRawOffset = TimeZone.getDefault().getRawOffset();
+                    if (delta == currTzRawOffset) {
                         is = zipFile.getInputStream(zipEntry);
                         os = new FileOutputStream(child.getCache());
                         FileUtil.copy(is, os);
                         ok = true;
-                    //}
+                    }
                 }
             } catch (IOException ex) {
                 RemoteLogger.fine(ex);
