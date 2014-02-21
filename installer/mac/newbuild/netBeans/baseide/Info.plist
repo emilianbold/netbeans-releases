@@ -45,5 +45,9 @@
     
     <key>NSHighResolutionCapable</key>
     <true/>
+
+    <key>NSSupportsAutomaticGraphicsSwitching</key>
+    <true/>
+    
   </dict>
 </plist>

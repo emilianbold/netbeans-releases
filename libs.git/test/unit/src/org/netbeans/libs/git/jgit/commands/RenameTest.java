@@ -44,15 +44,17 @@ package org.netbeans.libs.git.jgit.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
+import static junit.framework.Assert.assertTrue;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
@@ -460,5 +462,29 @@ public class RenameTest extends AbstractGitTestCase {
         assertTrue(m.isCanceled());
         assertEquals(1, m.count);
         assertEquals(null, exs[0]);
+    }
+    
+    public void testMoveFromSymlinkFolder () throws Exception {
+        File target = new File(workDir, "target");
+        File folder = new File(workDir, "folder");
+        File file = new File(folder, "file");
+        File symlinkFolder = new File(folder, folder.getName());
+        File symlinkFile = new File(symlinkFolder, "file");
+        target.mkdirs();
+        folder.mkdirs();
+        write(file, "file");
+        
+        String relPath = "../folder";
+        Files.createSymbolicLink(Paths.get(symlinkFolder.getAbsolutePath()), Paths.get(relPath));
+        assertTrue(Files.isSymbolicLink(Paths.get(symlinkFolder.getAbsolutePath())));
+        
+        add();
+        commit();
+        assertTrue(symlinkFile.exists());
+        
+        getClient(workDir).rename(symlinkFile, new File(target, symlinkFile.getName()), false, NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> status = getClient(workDir).getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        assertStatus(status, workDir, file, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_REMOVED, false);
+        assertStatus(status, workDir, new File(target, file.getName()), true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, false);
     }
 }
