@@ -77,6 +77,10 @@ public class WildflyTargetModuleID implements TargetModuleID {
         }
     }
 
+    public Type getType() {
+        return type;
+    }
+
     private final String computeArchiveName(String moduleName) {
         if (Type.WAR.equals(type)) {
             if (!checkExtension(moduleName, ".war")) {

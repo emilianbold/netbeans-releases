@@ -118,6 +118,9 @@ public class WildflyIncrementalDeployment extends IncrementalDeployment implemen
     @Override
     public File getDirectoryForNewModule(File appDir, String uri, J2eeModule module, ModuleConfiguration configuration) {
         try {
+            if(appDir != null && appDir.exists() && appDir.isDirectory()) {
+                return new File(appDir, module.getArchive().getNameExt());
+            }
             return new File(this.deploymentDir, module.getArchive().getNameExt());
         } catch (IOException ex) {
             return null;
