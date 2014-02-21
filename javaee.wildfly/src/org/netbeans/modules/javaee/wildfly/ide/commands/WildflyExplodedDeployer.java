@@ -126,7 +126,9 @@ public class WildflyExplodedDeployer implements ProgressObject, Runnable {
                         CommandType.DISTRIBUTE, StateType.FAILED, message));
                 return;
             }
-          
+            if(this.mainModuleID.getType() == J2eeModule.Type.WAR) {
+                this.mainModuleID.setContextURL(this.dm.getClient().getWebModuleURL(this.mainModuleID.getModuleID()));
+            }
         } catch (MalformedURLException ex) {
             LOGGER.log(Level.INFO, null, ex);
             fireHandleProgressEvent(this.mainModuleID, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, "Failed"));
