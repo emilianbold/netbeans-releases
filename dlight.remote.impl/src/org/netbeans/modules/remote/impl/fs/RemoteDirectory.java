@@ -1382,14 +1382,33 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 ZipEntry zipEntry = zipFile.getEntry(path);
                 if (zipEntry != null) {
                     long zipTime = zipEntry.getTime();
-                    long childTime = child.lastModified().getTime();
-                    long delta = childTime - zipTime;
-                    int currTzRawOffset = TimeZone.getDefault().getRawOffset();
-                    if (delta == currTzRawOffset) {
+                    long childTime = child.lastModified().getTime() - TimeZone.getDefault().getRawOffset();
+                    zipTime /= 1000;
+                    childTime /= 1000;
+                    if (childTime%2 == 1 && zipTime%2 == 0) {
+                        childTime ++; // zip rounds up to 2 seconds
+                    }
+                    long delta = zipTime - childTime;                    
+                    boolean same;
+                    if (delta == 0) {
+                        same = true;
+                    } else {
+                        // on some servers (e.g. townes) timezone for /usr/include and /export/home differs
+                        // below is a temporary workaround
+                        if (delta%3600 == 0) {
+                            long hours = delta / 3600;
+                            same = -23 <= hours && hours <= 23;
+                        } else {
+                            same = false;
+                        }
+                    }
+                    if (same) {
                         is = zipFile.getInputStream(zipEntry);
                         os = new FileOutputStream(child.getCache());
                         FileUtil.copy(is, os);
                         ok = true;
+                    } else {
+                        RemoteLogger.finest("Zip timestamp differ for {0}", child); //NOI18N
                     }
                 }
             } catch (IOException ex) {
