@@ -54,19 +54,14 @@ import org.openide.util.Lookup;
  */
 public class WildflyRegistryNodeFactory implements RegistryNodeFactory {
 
-//    public JBRegistryNodeFactory() {
-//    }
-
+    @Override
     public Node getTargetNode(Lookup lookup) {
         return new WildflyTargetNode(lookup);
     }
 
+    @Override
     public Node getManagerNode(Lookup lookup) {
         return new WildflyManagerNode(new Children.Map(), lookup);
     }
-    
-//    public String getDisplayName() {
-//        return "Registry Node Factory"; 
-//    }
-    
+
 }
