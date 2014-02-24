@@ -43,10 +43,12 @@ package org.netbeans.modules.html.knockout;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
@@ -126,8 +128,15 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                     if (usage != null) {
                         KODataBindContext context = usage.getContext();
                         String name = null;
+                        Set<KOTemplateContext.TemplateUsage> hierarchy = new LinkedHashSet<KOTemplateContext.TemplateUsage>();
+                        hierarchy.add(usage);
                         while (usage != null && (name = usage.getParentTemplateName()) != null) {
                             usage = templateUsages.get(name);
+                            // prevents endless loops while evaluating of cycled templates
+                            if (hierarchy.contains(usage)) {
+                                break;
+                            }
+                            hierarchy.add(usage);
                             if (usage != null) {
                                 context = KODataBindContext.combine(usage.getContext(), context);
                             }
