@@ -82,7 +82,7 @@ public final class DbxPathProviderImpl implements DbxPathProvider {
 	}
 
         // use spro.home for Tool only, see CR 7014085
-        if (dbx == null && NativeDebuggerManager.isStandalone()) {
+        if (dbx == null && ( NativeDebuggerManager.isStandalone() || NativeDebuggerManager.isPL() ) ) {
 	    String overrideInstallDir = null;
 	    if (host.isRemote())
 		overrideInstallDir = host.getRemoteStudioLocation();
@@ -100,12 +100,7 @@ public final class DbxPathProviderImpl implements DbxPathProvider {
                     String dbxPath = spro_home + "/bin/dbx"; // NOI18N
                     File dbxFile = new File(dbxPath);
 
-                    if (!dbxFile.exists()) {
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                NbBundle.getMessage(DbxPathProviderImpl.class,
-                                "MSG_CantFindDbx", // NOI18N
-                                dbxFile))); // NOI18N
-                    } else {
+                    if (dbxFile.exists()) {
                         dbx = dbxFile.getAbsolutePath();
                     }
                 }
