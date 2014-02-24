@@ -180,7 +180,8 @@ class FileChooserUIImpl extends BasicFileChooserUI{
     
     private static final Logger LOG = Logger.getLogger(FileChooserUIImpl.class.getName());
 
-    private static final RequestProcessor RP = new RequestProcessor("Cnd File Chooser Update Worker"); // NOI18N
+    private static final RequestProcessor COMMON_RP = new RequestProcessor("Cnd File Chooser Common Worker", 16); // NOI18N
+    private static final RequestProcessor UPDATE_RP = new RequestProcessor("Cnd File Chooser Update Worker"); // NOI18N
 
     private static final String TIMEOUT_KEY="nb.fileChooser.timeout"; // NOI18N
 
@@ -270,7 +271,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
     private JPanel slownessPanel;
 
     private final ListFilesWorker listFilesWorker = new ListFilesWorker();
-    private final RequestProcessor.Task listFilesTask = RP.create(listFilesWorker);
+    private final RequestProcessor.Task listFilesTask = UPDATE_RP.create(listFilesWorker);
     private volatile File curDir;
 
     public static ComponentUI createUI(JComponent c) {
@@ -1038,7 +1039,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         
         if (answer == JOptionPane.YES_OPTION) {
             
-            RequestProcessor.getDefault().post(new Runnable() {
+            COMMON_RP.post(new Runnable() {
                 FileNode node;
                 ArrayList<File> list = new ArrayList<File>();
                 int cannotDelete;
@@ -1773,7 +1774,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
     }
     
     private void addNewDirectory(final TreePath path) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        COMMON_RP.post(new Runnable() {
             @Override
             public void run() {
                 EventQueue.invokeLater(new Runnable() {
@@ -1829,7 +1830,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
     
     private void expandNode(final JFileChooser fileChooser, final TreePath path) {
         
-        RequestProcessor.getDefault().post(new Runnable() {
+        COMMON_RP.post(new Runnable() {
             FileNode node;
             
             @Override
@@ -2652,7 +2653,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             return;
         }
 
-        RequestProcessor.getDefault().post(new Runnable() {
+        COMMON_RP.post(new Runnable() {
             private Set<String> realDirs;
             @Override
             public void run() {
@@ -2706,7 +2707,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
     
     private class NewDirectoryAction extends AbstractAction {
 
-        private final RequestProcessor.Task enableTask = RP.create(new ActionEnabler());
+        private final RequestProcessor.Task enableTask = UPDATE_RP.create(new ActionEnabler());
         private File file;
 
         @Override
