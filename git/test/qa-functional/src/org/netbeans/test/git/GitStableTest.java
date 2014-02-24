@@ -51,6 +51,9 @@ import org.netbeans.test.git.main.commit.CommitUiTest;
 import org.netbeans.test.git.main.commit.IgnoreTest;
 import org.netbeans.test.git.main.commit.InitializeTest;
 import org.netbeans.test.git.main.delete.DeleteTest;
+import org.netbeans.test.git.main.delete.RefactoringTest;
+import org.netbeans.test.git.main.diff.DiffTest;
+import org.netbeans.test.git.main.diff.ExportDiffPatchTest;
 import org.netbeans.test.git.utils.gitExistsChecker;
 
 /**
@@ -73,6 +76,9 @@ public class GitStableTest extends JellyTestCase {
                     .addTest(DeleteTest.class, "testDeleteRevert", "testDeleteCommit")
                     .addTest(IgnoreTest.class, "testIgnoreUnignoreFile")
                     .addTest(InitializeTest.class, "testInitializeAndFirstCommit")
+                    .addTest(RefactoringTest.class, "testRefactoring")
+                    .addTest(DiffTest.class, "testDiffFile")
+                    .addTest(ExportDiffPatchTest.class, "testInvokeExportDiffPatch")
                     .enableModules(".*")
                     .clusters(".*"));
         } else {
