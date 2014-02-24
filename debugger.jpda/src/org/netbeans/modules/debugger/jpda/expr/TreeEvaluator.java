@@ -261,7 +261,18 @@ public class TreeEvaluator {
         List<Value> args,
         JPDADebuggerImpl debugger
      ) throws InvalidExpressionException {
-        return invokeVirtual(objectReference, null, method, evaluationThread, args, debugger);
+        return invokeVirtual(objectReference, null, method, evaluationThread, args, debugger, null);
+    }
+
+    public static Value invokeVirtual (
+        ObjectReference objectReference,
+        Method method,
+        ThreadReference evaluationThread,
+        List<Value> args,
+        JPDADebuggerImpl debugger,
+        InvocationExceptionTranslated existingInvocationException
+     ) throws InvalidExpressionException {
+        return invokeVirtual(objectReference, null, method, evaluationThread, args, debugger, existingInvocationException);
     }
 
     public static Value invokeVirtual (
@@ -271,7 +282,18 @@ public class TreeEvaluator {
         List<Value> args,
         JPDADebuggerImpl debugger
      ) throws InvalidExpressionException {
-        return invokeVirtual(null, classType, method, evaluationThread, args, debugger);
+        return invokeVirtual(null, classType, method, evaluationThread, args, debugger, null);
+    }
+
+    public static Value invokeVirtual (
+        ClassType classType,
+        Method method,
+        ThreadReference evaluationThread,
+        List<Value> args,
+        JPDADebuggerImpl debugger,
+        InvocationExceptionTranslated existingInvocationException
+     ) throws InvalidExpressionException {
+        return invokeVirtual(null, classType, method, evaluationThread, args, debugger, existingInvocationException);
     }
 
     private static Value invokeVirtual (
@@ -280,7 +302,8 @@ public class TreeEvaluator {
         Method method,
         ThreadReference evaluationThread,
         List<Value> args,
-        JPDADebuggerImpl debugger
+        JPDADebuggerImpl debugger,
+        InvocationExceptionTranslated existingInvocationException
      ) throws InvalidExpressionException {
 
         try {
@@ -317,14 +340,19 @@ public class TreeEvaluator {
             ieex.initCause(itsex);
             throw ieex;
         } catch (InvocationException iex) {
-            InvocationExceptionTranslated ex = new InvocationExceptionTranslated(iex, debugger);
-            JPDAThreadImpl trImpl = debugger.getThread(evaluationThread);
-            { // Init exception translation:
-                ex.setPreferredThread(trImpl);
-                trImpl.notifyMethodInvokeDone();
-                ex.getMessage();
-                ex.getLocalizedMessage();
-                ex.getStackTrace();
+            InvocationExceptionTranslated ex;
+            if (existingInvocationException != null) {
+                ex = existingInvocationException;
+            } else {
+                ex = new InvocationExceptionTranslated(iex, debugger);
+                JPDAThreadImpl trImpl = debugger.getThread(evaluationThread);
+                { // Init exception translation:
+                    ex.setPreferredThread(trImpl);
+                    trImpl.notifyMethodInvokeDone();
+                    ex.getMessage();
+                    ex.getLocalizedMessage();
+                    ex.getStackTrace();
+                }
             }
             InvalidExpressionException ieex = new InvalidExpressionException (ex);
             ieex.initCause(ex);
