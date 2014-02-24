@@ -76,7 +76,18 @@ public final class ReturnStatementImpl extends StatementBase implements CsmRetur
     public static ReturnStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
         ReturnStatementImpl result = new ReturnStatementImpl(ast, file, scope);
         AST returnExprAST = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_EXPRESSION);
+        
+        boolean shouldCreateReturnExpression = false;
+                
         if (returnExprAST != null) {
+            // Lambda function
+            shouldCreateReturnExpression |= AstUtil.findChildOfType(returnExprAST, CPPTokenTypes.CSM_DECLARATION_STATEMENT) != null;
+            
+            // TODO: check if scope is a function and it is annotated with constexpr.
+            // In such case we should store return expression too.            
+        }
+        
+        if (shouldCreateReturnExpression) {
             result.returnExpr = ExpressionsFactory.create(returnExprAST, file, scope);
         }
         return result;
