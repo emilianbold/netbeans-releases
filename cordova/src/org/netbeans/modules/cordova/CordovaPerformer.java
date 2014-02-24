@@ -242,7 +242,7 @@ public class CordovaPerformer implements BuildPerformer {
                                     }
                                 } else {
                                     try {
-                                        Thread.sleep(2000);
+                                        Thread.sleep(target.equals(BuildPerformer.RUN_IOS)?2000:5000);
                                     } catch (InterruptedException ex) {
                                         Exceptions.printStackTrace(ex);
                                 } 
