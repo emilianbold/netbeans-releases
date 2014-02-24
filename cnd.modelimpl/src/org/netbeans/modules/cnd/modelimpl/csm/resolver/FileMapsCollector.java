@@ -70,7 +70,11 @@ import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.api.model.deep.CsmReturnStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheMap;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
@@ -497,7 +501,23 @@ public final class FileMapsCollector {
             if (stopAtOffset < endOfScopeElement || out.needToTraverseDeeper((CsmScope) element)) {
                 gatherMaps(((CsmScope) element).getScopeElements().iterator(), inLocalContext, stopAtOffset, out);
             }
+        } else if (CsmKindUtilities.isVariable(element)) {
+            gatherMaps(((CsmVariable) element).getInitialValue(), inLocalContext, stopAtOffset, out);            
+        } else if (CsmKindUtilities.isReturnStatement(element)) {
+            gatherMaps(((CsmReturnStatement) element).getReturnExpression(), inLocalContext, stopAtOffset, out);
         }
+    }
+    
+    private static void gatherMaps(CsmExpression expr, boolean inLocalContext, int stopAtOffset, MapsCollection out) {
+        if (expr != null && expr.getLambdas() != null) {
+            for (CsmStatement lambdaStmt : expr.getLambdas()) {
+                assert CsmKindUtilities.isDeclarationStatement(lambdaStmt) : "Found lamda statement of type: " + lambdaStmt.getClass(); // NOI18N
+                CsmDeclarationStatement ds = (CsmDeclarationStatement) lambdaStmt;
+                if (ds.getStartOffset() < stopAtOffset) {
+                    gatherMaps(ds.getDeclarators().iterator(), inLocalContext, stopAtOffset, out);
+                }
+            }
+        }        
     }
     
     private static final class FileMapsCacheKey {
