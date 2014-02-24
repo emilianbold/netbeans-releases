@@ -41,7 +41,6 @@
  */
 package org.netbeans.test.git.main.commit;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.logging.Level;
