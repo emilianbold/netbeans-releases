@@ -41,11 +41,8 @@
  */
 package org.netbeans.modules.html.angular.model;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.regex.Pattern;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.modules.html.angular.Utils;
 import org.netbeans.modules.html.angular.index.AngularJsIndexer;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
@@ -55,7 +52,6 @@ import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -86,17 +82,8 @@ public class AngularWhenInterceptor implements FunctionInterceptor {
                 FileObject fo = globalObject.getFileObject();
                 if (url != null && controller != null && fo != null) {
                     String content = null;
-                    try { 
-                        Source source = Source.create(fo);
-                        Document document = source.getDocument(false);
-                        if (document != null) {
-                            content = document.getText(0, document.getLength());
-                        } else {
-                            content = fo.asText();
-                        }
-                    } catch (BadLocationException | IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                    Source source = Source.create(fo);
+                    content = source.createSnapshot().getText().toString();                   
                     if (content != null) {
                         String template = getStringValueAt(content, url.getOffsetRange().getStart());
                         String controllerName = getStringValueAt(content, controller.getOffsetRange().getStart());
@@ -144,6 +131,8 @@ public class AngularWhenInterceptor implements FunctionInterceptor {
                             break;
                         case '}':
                         case ',':
+                        case '\n':
+                        case '\r':
                             state = STATE.END;
                             break;
                         case ' ': // do nothing
