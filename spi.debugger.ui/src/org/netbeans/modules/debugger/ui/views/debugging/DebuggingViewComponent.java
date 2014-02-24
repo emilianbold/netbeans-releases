@@ -64,6 +64,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
@@ -782,7 +783,12 @@ public class DebuggingViewComponent extends TopComponent implements org.openide.
                     }
                 }
                 viewRefresher.setup(currentThread, deadlockedThreads);
-                SwingUtilities.invokeLater(viewRefresher);
+                try {
+                    SwingUtilities.invokeAndWait(viewRefresher);
+                } catch (InterruptedException ex) {
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }, 20);
     }
