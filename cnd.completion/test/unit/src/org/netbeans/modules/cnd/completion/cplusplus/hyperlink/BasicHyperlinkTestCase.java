@@ -1072,6 +1072,14 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug240482.c", 3, 25, "bug240482.c", 3, 16);
     }    
     
+    public void testBug242284() throws Exception {
+        // Bug 240482 - parser errors appears if file has 'bool' variable 
+        performTest("bug242284.cpp", 7, 37, "bug242284.cpp", 5, 17);
+        performTest("bug242284.cpp", 13, 37, "bug242284.cpp", 10, 17);
+        performTest("bug242284.cpp", 15, 21, "bug242284.cpp", 7, 13);
+        performTest("bug242284.cpp", 15, 26, "bug242284.cpp", 13, 13);        
+    }    
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
