@@ -45,6 +45,7 @@ package org.netbeans.modules.javaee.wildfly.customizer;
 
 
 
+import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -66,8 +67,10 @@ public class Customizer extends JTabbedPane {
 
     private final J2eePlatformImpl platform;
     private final CustomizerDataSupport custData;
+    private final DeploymentManager dmp;
 
-    public Customizer(CustomizerDataSupport custData, J2eePlatformImpl platform) {
+    public Customizer(DeploymentManager dmp, CustomizerDataSupport custData, J2eePlatformImpl platform) {
+        this.dmp = dmp;
         this.custData = custData;
         this.platform = platform;
         initComponents ();
@@ -83,11 +86,13 @@ public class Customizer extends JTabbedPane {
                 switch (getSelectedIndex()) {
                     case 0 : helpID = "jboss_customizer_platform";  // NOI18N
                              break;
-                    case 1 : helpID = "jboss_customizer_classes";   // NOI18N
+                    case 1 : helpID = "jboss_customizer_platform";  // NOI18N
                              break;
-                    case 2 : helpID = "jboss_customizer_sources";   // NOI18N
+                    case 2 : helpID = "jboss_customizer_classes";   // NOI18N
                              break;
-                    case 3 : helpID = "jboss_customizer_javadoc";   // NOI18N
+                    case 3 : helpID = "jboss_customizer_sources";   // NOI18N
+                             break;
+                    case 4 : helpID = "jboss_customizer_javadoc";   // NOI18N
                              break;
                     default:
                              break;
@@ -95,6 +100,7 @@ public class Customizer extends JTabbedPane {
                 putClientProperty("HelpID", helpID); // NOI18N
             }
         });
+        addTab(NbBundle.getMessage(Customizer.class,"TXT_Platform"), new WildflyTabVisualPanel(this.dmp));
         addTab(NbBundle.getMessage(Customizer.class,"TXT_Platform"), new CustomizerJVM(custData));
         addTab(NbBundle.getMessage(Customizer.class,"TXT_Tab_Classes"), 
                CustomizerSupport.createClassesCustomizer(custData.getClassModel()));

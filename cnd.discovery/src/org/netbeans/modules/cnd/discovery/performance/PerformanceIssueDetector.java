@@ -692,7 +692,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             PerformanceLogger.PerformanceEvent event = entry.getValue();
             long delta = (System.nanoTime() - event.getStartTime())/NANO_TO_SEC;
             if (delta > INFINITE_CREATE_ITEM_TIMOUT) {
-                iterator2.remove();
+                iterator3.remove();
                 buf.append(Bundle.Details_infinite_item_creation(fo, format(delta)));
                 LOG.log(Level.INFO, "Too Long File Access Detected. Access to file {0} consumes more than {1}s.", new Object[]{fo, format(delta)}); //NOI18N
             }

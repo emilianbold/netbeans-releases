@@ -65,6 +65,7 @@ import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
@@ -92,9 +93,11 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
     private final WildflyClient client;
 
     /**
-     * Stores information about running instances. instance is represented by its InstanceProperties, running state by
-     * Boolean.TRUE, stopped state Boolean.FALSE. WeakHashMap should guarantee erasing of an unregistered server instance bcs
-     * instance properties are also removed along with instance.
+     * Stores information about running instances. instance is represented by
+     * its InstanceProperties, running state by Boolean.TRUE, stopped state
+     * Boolean.FALSE. WeakHashMap should guarantee erasing of an unregistered
+     * server instance bcs instance properties are also removed along with
+     * instance.
      */
     private static final Map<InstanceProperties, Boolean> PROPERTIES_TO_IS_RUNNING
             = Collections.synchronizedMap(new WeakHashMap());
@@ -123,7 +126,8 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
     }
 
     /**
-     * Returns true if the given instance properties are present in the map and value equals true. Otherwise return false.
+     * Returns true if the given instance properties are present in the map and
+     * value equals true. Otherwise return false.
      */
     public static boolean isRunningLastCheck(InstanceProperties ip) {
         return PROPERTIES_TO_IS_RUNNING.containsKey(ip) && PROPERTIES_TO_IS_RUNNING.get(ip).equals(Boolean.TRUE);
@@ -166,7 +170,7 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
         }
         List<WildflyTargetModuleID> moduleIds = new ArrayList<WildflyTargetModuleID>(targets.length);
         for (Target target : targets) {
-            moduleIds.add(new WildflyTargetModuleID(target, deployment.getModuleFile().getName()));
+            moduleIds.add(new WildflyTargetModuleID(target, deployment.getModuleFile().getName(), deployment.getModule().getType()));
         }
         WildflyTargetModuleID[] tmids = moduleIds.toArray(new WildflyTargetModuleID[targets.length]);
         final WildflyProgressObject progress = new WildflyProgressObject(tmids);
@@ -216,13 +220,13 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
             if (ModuleType.EJB.equals(mt)) {
                 for (WildflyModule module : modules) {
                     if (module.getArchiveName().endsWith("jar") && module.isRunning()) {
-                        result.add(new WildflyTargetModuleID(targets[0], module.getArchiveName()));
+                        result.add(new WildflyTargetModuleID(targets[0], module.getArchiveName(), Type.fromJsrType(mt)));
                     }
                 }
             } else if (ModuleType.WAR.equals(mt)) {
                 for (WildflyModule module : modules) {
                     if (module.getArchiveName().endsWith("war") && module.isRunning()) {
-                        WildflyTargetModuleID moduleId = new WildflyTargetModuleID(targets[0], module.getArchiveName());
+                        WildflyTargetModuleID moduleId = new WildflyTargetModuleID(targets[0], module.getArchiveName(), Type.fromJsrType(mt));
                         moduleId.setContextURL(module.getUrl());
                         result.add(moduleId);
                     }
@@ -256,13 +260,13 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
             if (ModuleType.EJB.equals(mt)) {
                 for (WildflyModule module : modules) {
                     if (module.getArchiveName().endsWith("jar") && module.isRunning()) {
-                        result.add(new WildflyTargetModuleID(targets[0], module.getArchiveName()));
+                        result.add(new WildflyTargetModuleID(targets[0], module.getArchiveName(),  Type.fromJsrType(mt)));
                     }
                 }
             } else if (ModuleType.WAR.equals(mt)) {
                 for (WildflyModule module : modules) {
                     if (module.getArchiveName().endsWith("war")) {
-                        WildflyTargetModuleID moduleId = new WildflyTargetModuleID(targets[0], module.getArchiveName());
+                        WildflyTargetModuleID moduleId = new WildflyTargetModuleID(targets[0], module.getArchiveName(), Type.fromJsrType(mt));
                         moduleId.setContextURL(module.getUrl());
                         result.add(moduleId);
                     }
@@ -388,16 +392,16 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
     }
 
     /**
-     * Mark the server with a needs restart flag. This may be needed for instance when JDBC driver is deployed to a running
-     * server.
+     * Mark the server with a needs restart flag. This may be needed for
+     * instance when JDBC driver is deployed to a running server.
      */
     public synchronized void setNeedsRestart(boolean needsRestart) {
         this.needsRestart = needsRestart;
     }
 
     /**
-     * Returns true if the server needs to be restarted. This may occur for instance when JDBC driver was deployed to a running
-     * server
+     * Returns true if the server needs to be restarted. This may occur for
+     * instance when JDBC driver was deployed to a running server
      */
     public synchronized boolean getNeedsRestart() {
         return needsRestart;

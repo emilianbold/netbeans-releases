@@ -147,7 +147,7 @@ public class EncapsulateFieldTest extends ModifyingRefactoring {
 				addTest(RenameTest.class, "testSimple_A_G").
 				addTest(RenameTest.class, "testSimple_A_H").
 				addTest(RenameTest.class, "testSimple_A_I").
-                addTest(RenameTest.class, "testSimple_A_J").
+                                addTest(RenameTest.class, "testSimple_A_J").
 				addTest(RenameTest.class, "testSimple_A_K").
 				addTest(RenameTest.class, "testSimple_A_L").
 				addTest(RenameTest.class, "testSimple_A_M").

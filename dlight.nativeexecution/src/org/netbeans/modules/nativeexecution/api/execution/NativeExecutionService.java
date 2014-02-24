@@ -165,6 +165,8 @@ public final class NativeExecutionService {
             processBuilder.getEnvironment().put("TERM", "dumb"); // NOI18N
         }
 
+        processBuilder.setCharset(descriptor.charset);
+
         Callable<Integer> callable = new Callable<Integer>() {
 
             @Override

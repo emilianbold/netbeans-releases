@@ -52,6 +52,7 @@ import org.eclipse.jgit.dircache.DirCacheBuildIterator;
 import org.eclipse.jgit.dircache.DirCacheBuilder;
 import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.errors.CorruptObjectException;
+import org.eclipse.jgit.lib.FileMode;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
@@ -90,13 +91,16 @@ abstract class MoveTreeCommand extends GitCommand {
             rename();
         }
         Repository repository = getRepository();
+        File sourceFile = this.source;
+        File targetFile = this.target;
         try {
             DirCache cache = repository.lockDirCache();
             try {
+                boolean retried = false;
                 DirCacheBuilder builder = cache.builder();
                 TreeWalk treeWalk = new TreeWalk(repository);
-                PathFilter sourceFilter = PathFilter.create(Utils.getRelativePath(repository.getWorkTree(), source));
-                PathFilter targetFilter = PathFilter.create(Utils.getRelativePath(repository.getWorkTree(), target));
+                PathFilter sourceFilter = PathFilter.create(Utils.getRelativePath(repository.getWorkTree(), sourceFile));
+                PathFilter targetFilter = PathFilter.create(Utils.getRelativePath(repository.getWorkTree(), targetFile));
                 treeWalk.setFilter(PathFilterGroup.create(Arrays.asList(sourceFilter, targetFilter)));
                 treeWalk.setRecursive(true);
                 treeWalk.reset();
@@ -115,7 +119,31 @@ abstract class MoveTreeCommand extends GitCommand {
                             }
                             continue;
                         }
-                        String newPath = getRelativePath(file, source, target);
+                        boolean symlink = (e.getFileMode().getBits() & FileMode.TYPE_SYMLINK) == FileMode.TYPE_SYMLINK;
+                        String newPath = null;
+                        try {
+                            newPath = getRelativePath(file, sourceFile, targetFile);
+                        } catch (IllegalArgumentException ex) {
+                            if (symlink && !retried) {
+                                monitor.notifyWarning(MessageFormat.format(Utils.getBundle(MoveTreeCommand.class)
+                                        .getString("MSG_Warning_FileMayBeSymlink"), sourceFile)); //NOI18N
+                                monitor.notifyWarning(MessageFormat.format(Utils.getBundle(MoveTreeCommand.class)
+                                        .getString("MSG_Warning_FileMayBeSymlink"), targetFile)); //NOI18N
+                                // reset whole iterator and start from the beginning
+                                sourceFile = sourceFile.getCanonicalFile();
+                                targetFile = targetFile.getCanonicalFile();
+                                sourceFilter = PathFilter.create(Utils.getRelativePath(repository.getWorkTree(), sourceFile));
+                                targetFilter = PathFilter.create(Utils.getRelativePath(repository.getWorkTree(), targetFile));
+                                treeWalk.setFilter(PathFilterGroup.create(Arrays.asList(sourceFilter, targetFilter)));
+                                treeWalk.reset();
+                                builder = cache.builder();
+                                treeWalk.addTree(new DirCacheBuildIterator(builder));
+                                retried = true;
+                                continue;
+                            } else {
+                                throw ex;
+                            }
+                        }
                         DirCacheEntry copied = new DirCacheEntry(newPath);
                         copied.copyMetaData(e);
                         File newFile = new File(repository.getWorkTree().getAbsolutePath() + File.separator + newPath);

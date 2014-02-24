@@ -147,7 +147,7 @@ public final class Embedding {
             });
         }
         Collections.sort (originalToCurrent, TMS_VCLV);
-        Snapshot snapshot = new Snapshot (
+        Snapshot snapshot = Snapshot.create (
             sb,
             null,
             source,

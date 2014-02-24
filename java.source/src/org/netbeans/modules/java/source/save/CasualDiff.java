@@ -122,6 +122,16 @@ public class CasualDiff {
     // such variable should not provide new line at the end.
     private boolean parameterPrint = false;
     private boolean enumConstantPrint = false;
+    
+    /**
+     * Aliases places in the new text with block sequence boundaries in the old text. The diff can then get information
+     * on how guarded blocks (or other divisor of the source) is mapped into the changed text and not generate diffs across
+     * such a boundary.
+     */
+    private Map<Integer, Integer>   blockSequenceMap = new LinkedHashMap<Integer, Integer>();
+
+    private Iterator<Integer>    boundaries;
+    private int nextBlockBoundary = -1;
 
     protected CasualDiff(Context context, DiffContext diffContext, TreeUtilities treeUtilities, Map<Tree, ?> tree2Tag, Map<Tree, DocCommentTree> tree2Doc, Map<?, int[]> tag2Span, Set<Tree> oldTrees) {
         diffs = new LinkedHashSet<Diff>();
@@ -255,6 +265,14 @@ public class CasualDiff {
         td.diffTree(oldTree, newTree, (JCTree) (oldTreePath.getParentPath() != null ? oldTreePath.getParentPath().getLeaf() : null), new int[] {start, bounds[1]});
         String resultSrc = td.printer.toString().substring(start - lineStart);
         if (!td.printer.reindentRegions.isEmpty()) {
+            // must add region boundaries to tag2span, since the text may be reformatted.
+            List<SectKey> keys = new ArrayList<SectKey>(td.blockSequenceMap.size());
+            for (Map.Entry<Integer, Integer> e : td.blockSequenceMap.entrySet()) {
+                int x = e.getValue();
+                SectKey k = new SectKey(x);
+                keys.add(k);
+                td.tag2Span.put(k, new int[] {x, x});
+            }
             try {
                 String toParse = origText.substring(0, start) + resultSrc + origText.substring(end);
                 BaseDocument doc = new BaseDocument(false, "text/x-java");
@@ -293,6 +311,13 @@ public class CasualDiff {
                     span[0] = e.getValue()[0].getOffset();
                     span[1] = e.getValue()[1].getOffset();
                 }
+                // fixup the block sequence map after formatting, expecting that the map was not changed during formatting
+                Iterator<SectKey> it = keys.iterator();
+                for (Map.Entry<Integer, Integer> e : td.blockSequenceMap.entrySet()) {
+                    SectKey k = it.next();
+                    int[] span = td.tag2Span.get(k);
+                    e.setValue(span[0]);
+                }
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -300,7 +325,26 @@ public class CasualDiff {
         String originalText = isCUT ? origText : origText.substring(start, end);
         userInfo.putAll(td.diffInfo);
 
-        return td.checkDiffs(DiffUtilities.diff(originalText, resultSrc, start));
+        return td.checkDiffs(DiffUtilities.diff(originalText, resultSrc, start, td.readSections(diffContext.origText.length(), resultSrc.length())));
+    }
+    
+    private static class SectKey {
+        private int off;
+        SectKey(int off) { this.off = off; }
+    }
+    
+    private int[] readSections(int l1, int l2) {
+        Map<Integer, Integer> seqMap = blockSequenceMap;
+        if (seqMap.isEmpty()) {
+            return new int[] { l1, l2 };
+        }
+        int[] res = new int[seqMap.size() * 2];
+        int p = 0;
+        for (Map.Entry<Integer, Integer> en : seqMap.entrySet()) {
+            res[p++] = en.getKey();
+            res[p++] = en.getValue();
+        }
+        return res;
     }
     
     private List<Diff> checkDiffs(List<Diff> theDiffs) {
@@ -3342,12 +3386,15 @@ public class CasualDiff {
                 ? diffContext.style.getImportGroups() : null;
         int lastGroup = -1;
         int i = 0;
-        // copy to start position
+        
+        // if an item will be _inserted_ at the start (= first insert after possibly some deletes, but no modifies),
+        // the text in between localPointer and insertPos should be copied. Insert pos may differ from estimator.getPositions()[0]
+        // the text should be only included for INSERT operation, so save the range. See also delete op for compensation
         int insertPos = Math.min(getCommentCorrectedOldPos(oldList.get(i)), estimator.getInsertPos(0));
-        if (insertPos > localPointer) {
-            copyTo(localPointer, localPointer = insertPos, printer);
-        } else {
-            insertPos = localPointer;
+        int insertSaveLocalPointer = localPointer;
+        
+        if (insertPos < localPointer) {
+            insertPos = -1;
         }
         // go on, match it!
         for (int j = 0; j < result.length; j++) {
@@ -3367,20 +3414,13 @@ public class CasualDiff {
                     localPointer = diffTree(oldList.get(i), item.element, bounds);
                     lastdel = null;
                     ++i;
+                    insertPos = -1;
                     break;
                 }
                 case INSERT: {
                     boolean insetBlankLine = lastGroup >= 0 && lastGroup != group;
-                    lastGroup = group;
-                    int pos = importGroups != null ? i == 0 || insetBlankLine && i < oldList.size() ? estimator.getPositions(i)[0] : estimator.getPositions(i-1)[2]
-                            : estimator.getInsertPos(i);
-                    if (pos > localPointer) {
-                        copyTo(localPointer, localPointer = pos);
-                    }
-                    if (insetBlankLine)
-                        printer.blankline();
-
                     JCTree ld = null;
+                    boolean match = false;
                     if (lastdel != null) {
                         boolean wasInFieldGroup = false;
                         // PENDING - should it be tested also in the loop of *all* deleted items ? Originally both the 
@@ -3396,34 +3436,56 @@ public class CasualDiff {
                                 }
                             }
                         }
-                        boolean match = wasInFieldGroup;
+                        match = wasInFieldGroup;
                         for (Iterator<JCTree> it = deletedItems.iterator(); !match && it.hasNext(); ) {
                             ld = it.next();
                             if (match = treesMatch(item.element, ld, false)) {
                                 it.remove();
                             }
                         }
-                        if(match) {
-                            VeryPretty oldPrinter = this.printer;
-                            int old = oldPrinter.indent();
-                            this.printer = new VeryPretty(diffContext, diffContext.style, tree2Tag, tree2Doc, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
-                            this.printer.reset(old, oldPrinter.out.getCol());
-                            this.printer.oldTrees = oldTrees;
-                            int index = oldList.indexOf(ld);
-                            int[] poss = estimator.getPositions(index);
-                            //TODO: should the original text between the return position of the following method and poss[1] be copied into the new text?
-                            int diffTo = diffTree(ld, item.element, poss);
-                            copyTo(diffTo, poss[1]);
-                            localPointer = Math.max(localPointer, poss[1]);
-                            printer.print(this.printer.toString());
-                            printer.reindentRegions.addAll(this.printer.reindentRegions);
-                            this.printer = oldPrinter;
-                            this.printer.undent(old);
-                            if (deletedItems.isEmpty()) {
-                                lastdel = null;
-                            }
-                            break;
+                    }
+                    
+                    // if inserting at the start (after possible deletes), copy the saved content detected before the result cycle start.
+                    if (insertPos > -1 && i > 0) {
+                        // do not copy past the element start, diffTree will print from that pos.
+                        if (match) {
+                            insertPos = Math.min(insertPos, i < oldList.size() ? estimator.getPositions(i)[0] : estimator.getPositions(i-1)[2]);
                         }
+                        if (insertPos > insertSaveLocalPointer) {
+                            copyTo(insertSaveLocalPointer, insertPos);
+                        }
+                        localPointer = Math.max(localPointer, insertPos);
+                    }
+                    insertPos = -1;
+                    lastGroup = group;
+                    int pos = importGroups != null ? i == 0 || insetBlankLine && i < oldList.size() ? estimator.getPositions(i)[0] : estimator.getPositions(i-1)[2]
+                            : estimator.getInsertPos(i);
+                    if (pos > localPointer) {
+                        copyTo(localPointer, localPointer = pos);
+                    }
+                    if (insetBlankLine)
+                        printer.blankline();
+
+                    if(match) {
+                        VeryPretty oldPrinter = this.printer;
+                        int old = oldPrinter.indent();
+                        this.printer = new VeryPretty(diffContext, diffContext.style, tree2Tag, tree2Doc, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
+                        this.printer.reset(old, oldPrinter.out.getCol());
+                        this.printer.oldTrees = oldTrees;
+                        int index = oldList.indexOf(ld);
+                        int[] poss = estimator.getPositions(index);
+                        //TODO: should the original text between the return position of the following method and poss[1] be copied into the new text?
+                        int diffTo = diffTree(ld, item.element, poss);
+                        copyTo(diffTo, poss[1]);
+                        localPointer = Math.max(localPointer, poss[1]);
+                        printer.print(this.printer.toString());
+                        printer.reindentRegions.addAll(this.printer.reindentRegions);
+                        this.printer = oldPrinter;
+                        this.printer.undent(old);
+                        if (deletedItems.isEmpty()) {
+                            lastdel = null;
+                        }
+                        break;
                     }
                     if (LineInsertionType.BEFORE == estimator.lineInsertType()) printer.newline();
                     // PENDING: although item.element may be among oldTrees, its surrounding whitespaces are not used
@@ -3435,7 +3497,14 @@ public class CasualDiff {
                 case DELETE: {
                     int[] pos = estimator.getPositions(i);
                     if (localPointer < pos[0] && lastdel == null) {
+                        // 1st delete in a chain
                         copyTo(localPointer, pos[0], printer);
+                        if (insertPos > -1) {
+                            // no insert, no modify == first delete ever. Since some chars were copied from localPointer == saveLocalPointer,
+                            // adjust the copy start for insert.
+                            assert localPointer == insertSaveLocalPointer;
+                            insertSaveLocalPointer = pos[0];
+                        }
                     }
                     if (lastdel == null) {
                         deletedItems.clear();
@@ -3449,6 +3518,7 @@ public class CasualDiff {
                 }
                 case NOCHANGE: {
                     boolean insetBlankLine = lastGroup >= 0 && lastGroup != group;
+                    insertPos = -1;
                     lastGroup = group;
                     int[] pos = estimator.getPositions(i);
                     // I don't know the reason for i != 0 (do not copy prefix for 1st item ??). Anyway, if insertion happens,
@@ -5023,6 +5093,35 @@ public class CasualDiff {
             // #99333, #97801: Debug message for the issues.
             LOG.severe("-----\n" + origText + "-----\n");
             throw new IllegalArgumentException("Copying to " + to + " is greater then its size (" + origText.length() + ").");
+        }
+        // lazy init
+        if (boundaries == null) {
+            boundaries = diffContext.blockSequences.getBoundaries();
+        }
+        if (nextBlockBoundary == -1 && boundaries.hasNext()) {
+            nextBlockBoundary = boundaries.next();
+        } else {
+            while (nextBlockBoundary != -1 && nextBlockBoundary < from) {
+                if (boundaries.hasNext()) {
+                    nextBlockBoundary = boundaries.next();
+                } else {
+                    nextBlockBoundary = -1;
+                    break;
+                }
+            }
+        }
+        // map the boundary if the copied text starts at OR ends at the boundary. E.g. the after-boundary text might be
+        // generated, but the boundary itself is still preserved. 
+        while (from <= nextBlockBoundary && to >= nextBlockBoundary) {
+            int off = nextBlockBoundary - from;
+            int mapped = loc.out.length() + off;
+            
+            Integer prev = blockSequenceMap.put(nextBlockBoundary, mapped);
+            if (prev != null) {
+                // the first recorded value holds. 
+                blockSequenceMap.put(nextBlockBoundary, prev);
+            }
+            nextBlockBoundary = boundaries.hasNext() ? boundaries.next() : -1;
         }
         loc.print(origText.substring(from, to));
     }

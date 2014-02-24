@@ -49,6 +49,7 @@ import java.io.Serializable;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTBaseToken;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * token as wrapper to present macro expansion
@@ -63,7 +64,7 @@ public class MacroExpandedToken implements APTToken, Serializable {
     transient private final APTToken to;
     transient private final APTToken endOffsetToken;
     transient private int offset = NOT_INITED_OFFSET;
-
+    private static final boolean OPTIMIZE_MACRO = CndUtils.getBoolean("apt.optimize.macro", false); // NOI18N
 
     /** constructor for serialization **/
     protected MacroExpandedToken() {
@@ -76,10 +77,24 @@ public class MacroExpandedToken implements APTToken, Serializable {
         while (from instanceof MacroExpandedToken) {
             from = ((MacroExpandedToken) from).from;
         }
+        if (from instanceof APTMacroParamExpansion) {
+            CndUtils.assertTrueInConsole(false, "more optimization for:" + from, Thread.currentThread().getName());
+        }
         if (from == null) {
             throw new IllegalArgumentException("why 'from' is not APTToken?"); // NOI18N
         }
         this.from = from;
+        if (OPTIMIZE_MACRO) {
+            while (true) {
+                if (to instanceof APTMacroParamExpansion) {
+                    to = ((APTMacroParamExpansion)to).getOriginal();
+                } else if (to instanceof MacroExpandedToken) {
+                    to = ((MacroExpandedToken)to).to;
+                } else {
+                    break;
+                }
+            }
+        }
         if (to == null) {
             throw new IllegalArgumentException("why 'to' is not APTToken?"); // NOI18N
         }

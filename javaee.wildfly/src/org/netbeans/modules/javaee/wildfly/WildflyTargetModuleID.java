@@ -43,9 +43,13 @@
  */
 package org.netbeans.modules.javaee.wildfly;
 
+import java.util.Locale;
 import java.util.Vector;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
+
 /**
  *
  * @author whd
@@ -55,24 +59,72 @@ public class WildflyTargetModuleID implements TargetModuleID {
     private Target target;
     private String jar_name;
     private String context_url;
+    private J2eeModule.Type type;
 
     private Vector childs = new Vector();
-    private TargetModuleID  parent = null;
+    private TargetModuleID parent = null;
 
-    WildflyTargetModuleID(Target target) {
-        this(target, "");
+    WildflyTargetModuleID(Target target, J2eeModule.Type type) {
+        this(target, "", type);
     }
 
-    public WildflyTargetModuleID(Target target, String jar_name) {
+    public WildflyTargetModuleID(Target target, String moduleName, J2eeModule.Type type) {
         this.target = target;
-        this.jar_name = jar_name;
-
+        this.type = type;
+        this.jar_name = computeArchiveName(moduleName);
+        if (type == Type.WAR) {
+            context_url = '/' + this.jar_name.substring(0, this.jar_name.length() - 4);
+        }
     }
+
+    public Type getType() {
+        return type;
+    }
+
+    private final String computeArchiveName(String moduleName) {
+        if (Type.WAR.equals(type)) {
+            if (!checkExtension(moduleName, ".war")) {
+                return moduleName + ".war";
+            }
+            return moduleName;
+        }
+
+        if (Type.EAR.equals(type)) {
+            if (!checkExtension(moduleName, ".ear")) {
+                return moduleName + ".ear";
+            }
+            return moduleName;
+        }
+        if (Type.EJB.equals(type)) {
+            if (!checkExtension(moduleName, ".jar")) {
+                return moduleName + ".jar";
+            }
+            return moduleName;
+        }
+        if (Type.RAR.equals(type)) {
+            if (!checkExtension(moduleName, ".rar")) {
+                return moduleName + ".rar";
+            }
+            return moduleName;
+        }
+        if (Type.CAR.equals(type)) {
+            if (!checkExtension(moduleName, ".car")) {
+                return moduleName + ".car";
+            }
+        }
+        return moduleName;
+    }
+
+    private boolean checkExtension(String name, String extension) {
+        return name.toLowerCase(Locale.getDefault()).endsWith(extension);
+    }
+
     public void setContextURL(String context_url) {
         this.context_url = context_url;
     }
+
     public void setJARName(String jar_name) {
-        this.jar_name = jar_name;
+        this.jar_name = computeArchiveName(jar_name);
     }
 
     public void setParent(WildflyTargetModuleID parent) {
@@ -85,29 +137,36 @@ public class WildflyTargetModuleID implements TargetModuleID {
         child.setParent(this);
     }
 
+    @Override
     public TargetModuleID[] getChildTargetModuleID() {
         return (TargetModuleID[]) childs.toArray(new TargetModuleID[childs.size()]);
     }
+
     //Retrieve a list of identifiers of the children of this deployed module.
+    @Override
     public String getModuleID() {
-        return jar_name ;
+        return jar_name;
     }
+
     //         Retrieve the id assigned to represent the deployed module.
     @Override
     public TargetModuleID getParentTargetModuleID() {
 
         return parent;
     }
+
     //Retrieve the identifier of the parent object of this deployed module.
     @Override
     public Target getTarget() {
         return target;
     }
+
     //Retrieve the name of the target server.
     @Override
     public String getWebURL() {
         return context_url;//"http://" + module_id; //NOI18N
     }
+
     //If this TargetModulID represents a web module retrieve the URL for it.
     @Override
     public String toString() {

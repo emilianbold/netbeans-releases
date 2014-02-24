@@ -526,6 +526,11 @@ public class Term extends JComponent implements Accessible {
      * The margin lines are inclusive, that is, lines on the margin lines
      * participate in scrolling.
      */
+    private void resetMargins() {
+        top_margin = 0;
+        bot_margin = 0;
+    }
+
     private int topMargin() {
         return (top_margin == 0) ? 0 : top_margin - 1;
     }
@@ -2345,6 +2350,7 @@ public class Term extends JComponent implements Accessible {
             old_rows = st.rows;
         }
         st.rows = rows;
+        resetMargins();
 
         updateScreenSize();
     }
@@ -2421,6 +2427,7 @@ public class Term extends JComponent implements Accessible {
             old_rows = st.rows;
         }
         st.rows = rows;
+        resetMargins();
         buf.setVisibleCols(columns);
 
         updateScreenSize();
@@ -4191,8 +4198,7 @@ public class Term extends JComponent implements Accessible {
             st.setG(2, 0);
             st.setG(3, 0);
 
-            top_margin = 0;		// 0 means default (see topMargin())
-            bot_margin = 0;
+            resetMargins();
             st.attr = 0;
 
             interp.softReset();
@@ -4608,6 +4614,7 @@ public class Term extends JComponent implements Accessible {
         }
 
         st.rows = newHeight / metrics.height;
+        resetMargins();
 
         // akemr - hack to fix #17807
         if (st.rows < 1) {
