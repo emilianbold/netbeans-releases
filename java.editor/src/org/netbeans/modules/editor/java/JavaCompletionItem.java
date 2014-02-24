@@ -1105,7 +1105,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             if (path != null) {
                 Trees trees = info.getTrees();
-                int pos = (int)trees.getSourcePositions().getStartPosition(path.getCompilationUnit(), path.getLeaf());
+                int pos = (int)trees.getSourcePositions().getStartPosition(path.getCompilationUnit(), path.getLeaf().getKind() == Tree.Kind.VARIABLE ? ((VariableTree)path.getLeaf()).getType() : path.getLeaf());
                 if (pos >= 0) {
                     Scope scope = tu.scopeFor(pos);
                     String stmt = info.getText().substring(pos, offset);

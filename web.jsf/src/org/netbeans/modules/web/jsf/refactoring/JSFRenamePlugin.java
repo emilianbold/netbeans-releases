@@ -174,6 +174,10 @@ public class JSFRenamePlugin implements RefactoringPlugin {
                 Project project = FileOwnerQuery.getOwner(treePathHandle.getFileObject());
                 if (project != null){
                     Element resElement = JSFRefactoringUtils.resolveElement(refactoring, treePathHandle);
+                    // issue #242249
+                    if (resElement == null) {
+                        return null;
+                    }
                     TypeElement type = (TypeElement) resElement;
                     String oldFQN = type.getQualifiedName().toString();
                     String newFQN = renameClass(oldFQN, refactoring.getNewName());
