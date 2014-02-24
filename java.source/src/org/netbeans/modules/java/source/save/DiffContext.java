@@ -81,6 +81,8 @@ public class DiffContext {
     
     public final int textLength;
     
+    public final BlockSequences blockSequences;
+    
     /**
      * Special flag; when creating new CUs from template, always include their initial comments
      */
@@ -103,6 +105,7 @@ public class DiffContext {
         this.syntheticTrees = syntheticTrees;
         
         this.textLength = copy.getSnapshot() == null ? Integer.MAX_VALUE : copy.getSnapshot().getOriginalOffset(copy.getSnapshot().getText().length());
+        this.blockSequences = new BlockSequences(this.tokenSequence, doc, textLength);
         
         this.forceInitialComment = false;
     }
@@ -125,7 +128,7 @@ public class DiffContext {
         this.mainCode = mainCode;
         
         this.textLength = copy.getSnapshot() == null ? Integer.MAX_VALUE : copy.getSnapshot().getOriginalOffset(copy.getSnapshot().getText().length());
-        
+        this.blockSequences = new BlockSequences(this.tokenSequence, doc, textLength);
         this.forceInitialComment = true;
     }
 

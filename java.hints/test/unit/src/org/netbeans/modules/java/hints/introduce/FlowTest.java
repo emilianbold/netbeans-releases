@@ -1552,6 +1552,29 @@ public class FlowTest extends NbTestCase {
                                    false);
     }
     
+    public void testDoWhileUsedNextIteration241808() throws Exception {
+        performTest("package test;\n" +
+                "public class Test {\n" +
+                "    public void test() {\n" +
+                "        int[] arr = new int[] {1, 2, 3, 4};\n" +
+                "        int di = 0;\n" +
+                "        do {\n" +
+                "            int i = di;\n" +
+                "            do {\n" +
+                "                int ii = arr[i`];                \n" +
+                "                if (ii == 4) {\n" +
+                "                    break;                    \n" +
+                "                } else {\n" +
+                "                    i = ii;\n" +
+                "                }\n" +
+                "            } while(true);\n" +
+                "        } while(++di < 4);\n" +
+                "    }\n" +
+                "}",
+                "ii",
+                "di");
+    }
+    
     private void performFinalCandidatesTest(String code, boolean allowErrors, String... finalCandidates) throws Exception {
         prepareTest(code, allowErrors);
 

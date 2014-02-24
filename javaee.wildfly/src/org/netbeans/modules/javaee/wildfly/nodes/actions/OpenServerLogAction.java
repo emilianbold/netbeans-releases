@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.javaee.wildfly.nodes.actions;
 
 import java.io.File;
@@ -62,52 +61,57 @@ import org.openide.windows.InputOutput;
  * @author Libor Kotouc
  */
 public class OpenServerLogAction extends NodeAction {
-    
+
     public OpenServerLogAction() {
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         return true;
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
         for (Node activatedNode : activatedNodes) {
             Object node = activatedNode.getLookup().lookup(WildflyManagerNode.class);
-            
+
             if (!(node instanceof WildflyManagerNode)) {
                 continue;
             }
-            
-            WildflyDeploymentManager dm = ((WildflyManagerNode)node).getDeploymentManager();
+
+            WildflyDeploymentManager dm = ((WildflyManagerNode) node).getDeploymentManager();
             InputOutput io = UISupport.getServerIO(dm.getUrl());
             if (io != null) {
                 io.select();
             }
-            
+
             InstanceProperties ip = dm.getInstanceProperties();
             WildflyOutputSupport outputSupport = WildflyOutputSupport.getInstance(ip, false);
             if (outputSupport == null) {
                 outputSupport = WildflyOutputSupport.getInstance(ip, true);
                 String serverDir = ip.getProperty(WildflyPluginProperties.PROPERTY_SERVER_DIR);
-                String logFileName = serverDir + File.separator + "log" + File.separator + "server.log" ; // NOI18N
+                String logFileName = serverDir + File.separator + "log" + File.separator + "server.log"; // NOI18N
                 File logFile = new File(logFileName);
                 if (logFile.exists()) {
                     outputSupport.start(io, logFile);
-                }                
+                }
             }
-        }        
+        }
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(OpenServerLogAction.class, "LBL_OpenServerLogAction");
     }
 
+    @Override
     public boolean asynchronous() {
         return false;
     }
-    
+
 }

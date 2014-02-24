@@ -180,7 +180,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     private UndoRedo.Manager undoRedo;
 
     /** lines set for this object */
-    private Line.Set lineSet;
+    private Line.Set[] lineSet = new Line.Set[] { null };
 
     /** Helper variable to prevent multiple cocurrent printing of this
      * instance. */
@@ -196,7 +196,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     private Set<ChangeListener> listeners;
 
     /** last selected editor pane. */
-    private transient Reference<Pane> lastSelected;
+    private transient Reference<Pane> lastSelected[] = new Reference[] { null };
 
     /** The time of the last save to determine the real external modifications */
     private long lastSaveTime;
@@ -905,17 +905,33 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
         return null;
     }
+
+    @Override
+    protected void afterRedirect(CloneableOpenSupport redirectedTo) {
+        super.afterRedirect(redirectedTo);
+        // synchronize field from redirected instance, i.e. for correct getOpenedPanes answers
+        if (redirectedTo instanceof CloneableEditorSupport) {
+            CloneableEditorSupport other = ((CloneableEditorSupport)redirectedTo);
+            this.lastSelected = other.lastSelected;
+            this.openClose = other.openClose;
+            this.lineSet = other.lineSet;
+        }
+        // notify EditorCookie.Observable listeners if any
+        if (propertyChangeSupport != null) {
+            propertyChangeSupport.firePropertyChange(EditorCookie.Observable.PROP_OPENED_PANES, null, null);
+        }
+    }
     
     /** Returns the lastly selected Pane or null
      */
     final Pane getLastSelected() {
-        Reference<Pane> r = lastSelected;
+        Reference<Pane> r = lastSelected[0];
 
         return (r == null) ? null : r.get();
     }
 
     final void setLastSelected(Pane lastSelected) {
-        this.lastSelected = new WeakReference<Pane>(lastSelected);
+        this.lastSelected[0] = new WeakReference<Pane>(lastSelected);
     }
 
     //
@@ -1639,19 +1655,19 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     */
     Line.Set updateLineSet(boolean clear) {
         synchronized (getLock()) {
-            if ((lineSet != null) && !clear) {
-                return lineSet;
+            if ((lineSet[0] != null) && !clear) {
+                return lineSet[0];
             }
 
             if ((getDoc() == null) ||
                 (openClose.getDocumentStatusLA() == DocumentStatus.RELOADING))
             {
-                lineSet = new EditorSupportLineSet.Closed(CloneableEditorSupport.this);
+                lineSet[0] = new EditorSupportLineSet.Closed(CloneableEditorSupport.this);
             } else {
-                lineSet = new EditorSupportLineSet(CloneableEditorSupport.this,getDoc());
+                lineSet[0] = new EditorSupportLineSet(CloneableEditorSupport.this,getDoc());
             }
 
-            return lineSet;
+            return lineSet[0];
         }
     }
 

@@ -45,6 +45,7 @@ package org.netbeans.modules.javaee.wildfly.ide.ui;
 
 import java.beans.PropertyVetoException;
 import java.io.File;
+import static java.io.File.separatorChar;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -74,14 +75,14 @@ import org.w3c.dom.NodeList;
  */
 public class WildflyPluginUtils {
 
-    public static final String SERVER_4_XML = File.separator + "deploy" + File.separator + // NOI18N
-            "jbossweb-tomcat55.sar" + File.separator + "server.xml"; // NOI18N
+    public static final String SERVER_4_XML = separatorChar + "deploy" + separatorChar + // NOI18N
+            "jbossweb-tomcat55.sar" + separatorChar + "server.xml"; // NOI18N
 
-    public static final String SERVER_4_2_XML = File.separator + "deploy" + File.separator + // NOI18N
-            "jboss-web.deployer" + File.separator + "server.xml"; // NOI18N
+    public static final String SERVER_4_2_XML = separatorChar + "deploy" + separatorChar + // NOI18N
+            "jboss-web.deployer" + separatorChar + "server.xml"; // NOI18N
 
-    public static final String SERVER_5_XML = File.separator + "deploy" + File.separator + // NOI18N
-            "jbossweb.sar" + File.separator + "server.xml"; // NOI18N
+    public static final String SERVER_5_XML = separatorChar + "deploy" + separatorChar + // NOI18N
+            "jbossweb.sar" + separatorChar + "server.xml"; // NOI18N
 
     public static final Version JBOSS_5_0_0 = new Version("5.0.0"); // NOI18N
 
@@ -95,14 +96,14 @@ public class WildflyPluginUtils {
 
     private static final Logger LOGGER = Logger.getLogger(WildflyPluginUtils.class.getName());
 
-    public static final String LIB = "lib" + File.separator;
+    public static final String LIB = "lib" + separatorChar;
 
-    public static final String MODULES_BASE_7 = "modules" + File.separator + "system"
-            + File.separator + "layers" + File.separator + "base" + File.separator;
+    public static final String MODULES_BASE_7 = "modules" + separatorChar + "system"
+            + separatorChar + "layers" + separatorChar + "base" + separatorChar;
 
-    public static final String CLIENT = "client" + File.separator;
+    public static final String CLIENT = "client" + separatorChar;
 
-    public static final String COMMON = "common" + File.separator;
+    public static final String COMMON = "common" + separatorChar;
 
     //--------------- checking for possible domain directory -------------
     private static List<String> domainRequirements7x;
@@ -135,6 +136,12 @@ public class WildflyPluginUtils {
     public static String getModulesBase(String serverRoot) {
         return MODULES_BASE_7;
     }
+    
+    public static final String getDefaultConfigurationFile(String installDir) {
+        return installDir + File.separatorChar + "standalone" 
+                + File.separatorChar + "configuration" 
+                + File.separatorChar + "standalone-full.xml";
+    }
 
     //------------  getting exists servers---------------------------
     /**
@@ -151,7 +158,7 @@ public class WildflyPluginUtils {
 
             if (files != null) {
                 for (String file1 : files) {
-                    String path = file.getAbsolutePath() + File.separator + file1;
+                    String path = file.getAbsolutePath() + separatorChar + file1;
                     if (isGoodJBInstanceLocation(serverDirectory, new File(path))) {
                         result.put(file1, path);
                     }
@@ -220,7 +227,7 @@ public class WildflyPluginUtils {
         }
 
         for (String next : requiredChildren) {
-            File test = new File(candidate.getPath() + File.separator + next);
+            File test = new File(candidate.getPath() + separatorChar + next);
             if (!test.exists()) {
                 return false;
             }
@@ -234,7 +241,7 @@ public class WildflyPluginUtils {
      *
      */
     public static String getDeployDir(String domainDir) {
-        return domainDir + File.separator + "deployments"; //NOI18N
+        return domainDir + separatorChar + "deployments"; //NOI18N
     }
 
     public static String getHTTPConnectorPort(String domainDir) {

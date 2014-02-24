@@ -1331,7 +1331,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private static final int PRINT_REPEAT = Integer.getInteger("gdb.print.repeat", 0); //NOI18N
     private static final int STACK_MAX_DEPTH = Integer.getInteger("gdb.stack.maxdepth", 1024); // NOI18N
-    private static final int PRINT_ELEMENTS = Integer.getInteger("gdb.print.elements", 0); // NOI18N
+    private static final int PRINT_ELEMENTS = Integer.getInteger("gdb.print.elements", 400); // NOI18N
     private static final boolean ENABLE_PRETTY_PRINTING = !Boolean.getBoolean("gdb.pretty.disable"); //NOI18N
 
     @Override

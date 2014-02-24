@@ -70,7 +70,6 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
-import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
 
 /**
  *
@@ -111,9 +110,7 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
         if (instance == null) {
             instance = new WildflyDeploymentFactory();
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance);
-
         }
-
         return instance;
     }
 
@@ -123,12 +120,14 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
             super(urls, parent);
         }
 
+        @Override
         protected PermissionCollection getPermissions(CodeSource codeSource) {
             Permissions p = new Permissions();
             p.add(new AllPermission());
             return p;
         }
 
+        @Override
        public Enumeration<URL> getResources(String name) throws IOException {
            // get rid of annoying warnings
            if (name.indexOf("jndi.properties") != -1) {// || name.indexOf("i18n_user.properties") != -1) { // NOI18N
@@ -147,21 +146,16 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
                 cl = (WildFlyClassLoader) factory.getClass().getClassLoader();
             }
             if (cl == null) {
-                cl = createWildFlyClassLoader(ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR),
-                            ip.getProperty(WildflyPluginProperties.PROPERTY_SERVER_DIR));
+                cl = createWildFlyClassLoader(ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR));
             }
             classLoaderCache.put(ip, cl);
         }
         return cl;
     }
 
-    public static WildFlyClassLoader createWildFlyClassLoader(String serverRoot, String domainRoot) {
+    public static WildFlyClassLoader createWildFlyClassLoader(String serverRoot) {
         try {
-
-            Version jbossVersion = WildflyPluginUtils.getServerVersion(new File (serverRoot));
-
             String sep = File.separator;
-
             File domFile = new File(serverRoot, WildflyPluginUtils.getModulesBase(serverRoot)
                     + "org" + sep + "dom4j" + sep + "main" + sep + "dom4j-1.6.1.jar"); // NOI18N
 
@@ -330,6 +324,7 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
         return NbBundle.getMessage (WildflyDeploymentFactory.class, "LBL_JBossFactoryVersion");
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(WildflyDeploymentFactory.class, "SERVER_NAME"); // NOI18N
     }
@@ -337,26 +332,6 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
     private DeploymentFactory getFactory(String instanceURL) {
         DeploymentFactory jbossFactory = null;
         try {
-            String jbossRoot = InstanceProperties.getInstanceProperties(instanceURL).
-                                    getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR);
-
-            String domainRoot = InstanceProperties.getInstanceProperties(instanceURL).
-                                    getProperty(WildflyPluginProperties.PROPERTY_SERVER_DIR);
-
-            // if jbossRoot is null, then we are in a server instance registration process, thus this call
-            // is made from InstanceProperties creation -> WildflyPluginProperties singleton contains
-            // install location of the instance being registered
-            if (jbossRoot == null) {
-                jbossRoot = WildflyPluginProperties.getInstance().getInstallLocation();
-            }
-
-            // if domainRoot is null, then we are in a server instance registration process, thus this call
-            // is made from InstanceProperties creation -> WildflyPluginProperties singleton contains
-            // install location of the instance being registered
-            if (domainRoot == null) {
-                domainRoot = WildflyPluginProperties.getInstance().getDomainLocation();
-            }
-
             InstanceProperties ip = InstanceProperties.getInstanceProperties(instanceURL);
             synchronized (WildflyDeploymentFactory.class) {
                 if (ip != null) {
