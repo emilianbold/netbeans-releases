@@ -2581,7 +2581,7 @@ abstract public class CsmCompletionQuery {
                                 if (look4Constructors) {
                                     Collection<? extends CsmObject> candidates = new ArrayList<CsmObject>();
                                     // try to resolve the most visible
-                                    compResolver.setResolveTypes(CompletionResolver.RESOLVE_LOCAL_VARIABLES);
+                                    compResolver.setResolveTypes(CompletionResolver.RESOLVE_LOCAL_VARIABLES | CompletionResolver.RESOLVE_LOCAL_CLASSES);
                                     if (resolve(varPos, mtdName, true)) {
                                         compResolver.getResult().addResulItemsToCol(candidates);
                                     }
@@ -2997,9 +2997,9 @@ abstract public class CsmCompletionQuery {
         private CsmClassifier findExactClass(final String var, final int varPos) {
             CsmClassifier cls = null;
             if (instantiations != null) {
-                compResolver.setResolveTypes(CompletionResolver.RESOLVE_TEMPLATE_PARAMETERS | CompletionResolver.RESOLVE_CLASSES | CompletionResolver.RESOLVE_LIB_CLASSES | CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS);
+                compResolver.setResolveTypes(CompletionResolver.RESOLVE_TEMPLATE_PARAMETERS | CompletionResolver.RESOLVE_CLASSES | CompletionResolver.RESOLVE_LOCAL_CLASSES | CompletionResolver.RESOLVE_LIB_CLASSES | CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS);
             } else {
-                compResolver.setResolveTypes(CompletionResolver.RESOLVE_CLASSES | CompletionResolver.RESOLVE_LIB_CLASSES | CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS);
+                compResolver.setResolveTypes(CompletionResolver.RESOLVE_CLASSES | CompletionResolver.RESOLVE_LOCAL_CLASSES | CompletionResolver.RESOLVE_LIB_CLASSES | CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS);
             }
             if (resolve(varPos, var, true)) {
                 CompletionResolver.Result res = compResolver.getResult();
