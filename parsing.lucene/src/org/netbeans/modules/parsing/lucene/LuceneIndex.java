@@ -50,6 +50,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -115,14 +116,12 @@ import org.openide.util.Utilities;
 //@NotTreadSafe
 public class LuceneIndex implements Index.Transactional, Index.WithTermFrequencies, Runnable {
 
-    private static final String PROP_INDEX_POLICY = "java.index.useMemCache";   //NOI18N
-    private static final String PROP_CACHE_SIZE = "java.index.size";    //NOI18N
+    private static final String PROP_INDEX_POLICY = "java.index.useMemCache";   //NOI18N    
     private static final String PROP_DIR_TYPE = "java.index.dir";       //NOI18N
     private static final String DIR_TYPE_MMAP = "mmap";                 //NOI18N
     private static final String DIR_TYPE_NIO = "nio";                   //NOI18N
     private static final String DIR_TYPE_IO = "io";                     //NOI18N
-    private static final CachePolicy DEFAULT_CACHE_POLICY = CachePolicy.DYNAMIC;
-    private static final float DEFAULT_CACHE_SIZE = 0.05f;
+    private static final CachePolicy DEFAULT_CACHE_POLICY = CachePolicy.DYNAMIC;    
     private static final CachePolicy cachePolicy = getCachePolicy();
     private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());
     
@@ -606,9 +605,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
     private static final class DirCache implements Evictable {
         
         private static final String CACHE_LOCK_PREFIX = "nb-lock";  //NOI18N
-        private static final RequestProcessor RP = new RequestProcessor(LuceneIndex.class.getName(), 1);
-        private static final long maxCacheSize = getCacheSize();
-        private static volatile long currentCacheSize;
+        private static final RequestProcessor RP = new RequestProcessor(LuceneIndex.class.getName(), 1);                
         
         private final File folder;
         private final LockFactory lockFactory;
@@ -616,6 +613,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
         private final Analyzer analyzer;
         private final StoreCloseSynchronizer storeCloseSynchronizer;
         private volatile FSDirectory fsDir;
+        //@GuardedBy("this")
         private RAMDirectory memDir;
         private CleanReference ref;
         private IndexReader reader;
@@ -1008,6 +1006,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                     }
                 }
             }
+            hit();
             return this.reader;
         }
 
@@ -1043,9 +1042,13 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
         }
         
         @Override
-        public void evicted() {
-            //When running from memory cache no need to close the reader, it does not own file handler.
-            if (!cachePolicy.hasMemCache()) {
+        public synchronized void evicted() {
+            if (memDir != null) {
+                if (ref != null) {
+                    ref.clearHRef();
+                }
+            } else {
+                //When running from memory cache no need to close the reader, it does not own file handler.
                 //Threading: The called may own the CIM.readAccess, perform by dedicated worker to prevent deadlock
                 RP.post(new Runnable() {
                     @Override
@@ -1058,21 +1061,20 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                         }
                     }
                 });
-            } else if ((ref != null && currentCacheSize > maxCacheSize)) {
-                ref.clearHRef();
             }
         }
         
         private synchronized void hit() {
-            if (!cachePolicy.hasMemCache()) {
-                try {
-                    final URL url = Utilities.toURI(folder).toURL();
-                    IndexCacheFactory.getDefault().getCache().put(url, this);
-                } catch (MalformedURLException e) {
-                    Exceptions.printStackTrace(e);
+            if (reader != null) {
+                final URI uri = Utilities.toURI(folder);
+                if (memDir != null) {
+                    IndexCacheFactory.getDefault().getRAMCache().put(uri, this);
+                    if (ref != null) {
+                        ref.get();
+                    }
+                } else {
+                    IndexCacheFactory.getDefault().getNIOCache().put(uri, this);
                 }
-            } else if (ref != null) {
-                ref.get();
             }
         }
         
@@ -1146,23 +1148,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
             }
             directory.getLockFactory().setLockPrefix(CACHE_LOCK_PREFIX);
             return directory;
-        } 
-        
-        private static long getCacheSize() {
-            float per = -1.0f;
-            final String propVal = System.getProperty(PROP_CACHE_SIZE); 
-            if (propVal != null) {
-                try {
-                    per = Float.parseFloat(propVal);
-                } catch (NumberFormatException nfe) {
-                    //Handled below
-                }
-            }
-            if (per<0) {
-                per = DEFAULT_CACHE_SIZE;
-            }
-            return (long) (per * Runtime.getRuntime().maxMemory());
-        }
+        }        
 
         private static boolean fitsIntoMem(@NonNull final Directory dir) {
             try {
@@ -1170,7 +1156,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                 for (String path : dir.listAll()) {
                     size+=dir.fileLength(path);
                 }
-                return size < maxCacheSize;
+                return IndexCacheFactory.getDefault().getRAMController().shouldLoad(size);
             } catch (IOException ioe) {
                 return false;
             }
@@ -1246,12 +1232,13 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
 
             private CleanReference(final RAMDirectory[] dir) {
                 super (dir, Utilities.activeReferenceQueue());
-                boolean doHardRef = currentCacheSize < maxCacheSize;
+                final IndexCacheFactory.RAMContoller c = IndexCacheFactory.getDefault().getRAMController();
+                final boolean doHardRef = !c.isFull();
                 if (doHardRef) {
                     this.hardRef = dir;
                     long _size = dir[0].sizeInBytes();
                     size.set(_size);
-                    currentCacheSize+=_size;
+                    c.acquire(_size);
                 }
                 LOGGER.log(Level.FINEST, "Caching index: {0} cache policy: {1}",    //NOI18N
                 new Object[]{
@@ -1282,8 +1269,8 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
             
             void clearHRef() {
                 this.hardRef = null;
-                long mySize = size.getAndSet(0);
-                currentCacheSize-=mySize;
+                IndexCacheFactory.getDefault().getRAMController().release(
+                    size.getAndSet(0));
             }
         }        
     }
