@@ -70,6 +70,7 @@ import org.netbeans.modules.javaee.wildfly.customizer.CustomizerSupport;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
+import static org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.getDefaultConfigurationFile;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbCollections;
@@ -124,7 +125,14 @@ public class WildFlyProperties {
     }
     
     public String getServerProfile() {
+        if(this.ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE) == null) {
+            return getDefaultConfigurationFile(ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR));
+        }
         return this.ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE);
+    }
+    
+    public InstanceProperties getInstanceProperties() {
+        return this.ip;
     }
 
     public Version getServerVersion() {

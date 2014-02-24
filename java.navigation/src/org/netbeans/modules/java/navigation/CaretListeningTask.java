@@ -47,6 +47,8 @@ package org.netbeans.modules.java.navigation;
 import com.sun.source.util.TreePath;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -71,7 +73,7 @@ import org.openide.filesystems.FileObject;
 public class CaretListeningTask implements CancellableTask<CompilationInfo> {
     
     private FileObject fileObject;
-    private boolean canceled;
+    private final AtomicBoolean canceled;
     
     private static ElementHandle<Element> lastEh;
     private static ElementHandle<Element> lastEhForNavigator;
@@ -84,6 +86,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
     
     CaretListeningTask(FileObject fileObject) {
         this.fileObject = fileObject;
+        this.canceled = new AtomicBoolean();
     }
     
     static void resetLastEH() {
@@ -233,25 +236,33 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
      * After this method is called the task if running should exit the run
      * method immediately.
      */
-    public final synchronized void cancel() {
-        canceled = true;
+    @Override
+    public final void cancel() {
+        canceled.set(true);
     }
     
-    protected final synchronized boolean isCancelled() {
-        return canceled;
+    protected final boolean isCancelled() {
+        return canceled.get();
     }
     
-    protected final synchronized void resume() {
-        canceled = false;
+    protected final void resume() {
+        canceled.set(false);
     }
     
    
-    private void computeAndSetJavadoc(CompilationInfo compilationInfo, Element element) {
-        
+    private void computeAndSetJavadoc(CompilationInfo compilationInfo, Element element) {        
         if (isCancelled()) {
             return;
         }
-        setJavadoc(compilationInfo.getFileObject(), ElementJavadoc.create(compilationInfo, element));
+        setJavadoc(compilationInfo.getFileObject(), ElementJavadoc.create(
+                compilationInfo,
+                element,
+                new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        return isCancelled();
+                    }
+                }));
     }
     
     private void updateNavigatorSelection(CompilationInfo ci, TreePath tp) throws Exception {

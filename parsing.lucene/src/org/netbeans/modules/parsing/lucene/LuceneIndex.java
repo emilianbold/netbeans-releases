@@ -987,7 +987,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                 //Issue #149757 - logging
                 try {
                     Directory source;
-                    if (cachePolicy.hasMemCache()) {                        
+                    if (cachePolicy.hasMemCache() && fitsIntoMem(fsDir)) {
                         memDir = new RAMDirectory(fsDir);
                         if (cachePolicy == CachePolicy.DYNAMIC) {
                             ref = new CleanReference (new RAMDirectory[] {this.memDir});
@@ -1162,6 +1162,18 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                 per = DEFAULT_CACHE_SIZE;
             }
             return (long) (per * Runtime.getRuntime().maxMemory());
+        }
+
+        private static boolean fitsIntoMem(@NonNull final Directory dir) {
+            try {
+                long size = 0;
+                for (String path : dir.listAll()) {
+                    size+=dir.fileLength(path);
+                }
+                return size < maxCacheSize;
+            } catch (IOException ioe) {
+                return false;
+            }
         }
         
         private Map<String,String> stackTraces(final Map<Thread,StackTraceElement[]> traces) {

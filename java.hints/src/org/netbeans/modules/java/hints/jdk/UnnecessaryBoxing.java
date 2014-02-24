@@ -254,7 +254,7 @@ public class UnnecessaryBoxing {
      * @param ci context
      * @param expr the conditional expression
      * @param prev the parameter containing the boxing
-1     * @return true, if it is OK to leave out the boxing
+     * @return true, if it is OK to leave out the boxing
      */
     private static boolean checkConditional(CompilationInfo ci, TreePath expr, Tree prev) {
         ConditionalExpressionTree ct = (ConditionalExpressionTree)expr.getLeaf();
@@ -266,6 +266,10 @@ public class UnnecessaryBoxing {
         TypeMirror pt = Utilities.unboxIfNecessary(ci, ci.getTrees().getTypeMirror(prevPath)); // assume boxed
         ExpectedTypeResolver res = new ExpectedTypeResolver(expr, ci);
         List<? extends TypeMirror> types = res.scan(expr, null);
+        if (types == null) {
+            // cannot determine the type -> no hint, probably an error
+            return false;
+        }
         for (TypeMirror m : types) {
             if (!m.getKind().isPrimitive() && !Utilities.isPrimitiveWrapperType(m)) {
                 return false;

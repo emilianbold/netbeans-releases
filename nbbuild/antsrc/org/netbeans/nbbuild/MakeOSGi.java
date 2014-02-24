@@ -360,6 +360,9 @@ public class MakeOSGi extends Task {
             if (classPath != null) {
                 StringBuilder bundleCP = new StringBuilder();
                 for (String entry : classPath.split("[, ]+")) {
+                    if (entry.startsWith("${java.home}")) {
+                        continue;
+                    }
                     String clusterPath = new URI(module.getParentFile().getName() + "/" + entry).normalize().toString();
                     if (bundledFiles.containsKey(clusterPath)) {
                         bundleCP.append("/OSGI-INF/files/").append(clusterPath).append(",");

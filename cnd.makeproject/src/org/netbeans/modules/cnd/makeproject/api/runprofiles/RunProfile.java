@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.Path;
@@ -572,12 +573,17 @@ public final class RunProfile implements ConfigurationAuxObject {
             runDir2 = "."; // NOI18N
         }
         runDir2 = runDir2.trim();
+
+        final ExecutionEnvironment execEnv = (makeConfiguration == null) ? 
+                ExecutionEnvironmentFactory.getLocal() : 
+                makeConfiguration.getDevelopmentHost().getExecutionEnvironment();
+
         if (makeConfiguration != null && (runDir2.startsWith("~/") || runDir2.startsWith("~\\") || runDir2.equals("~"))) { // NOI18N
             try {
-                if (makeConfiguration.getDevelopmentHost().getExecutionEnvironment().isLocal()) {
-                    runDir2 = HostInfoUtils.getHostInfo(makeConfiguration.getDevelopmentHost().getExecutionEnvironment()).getUserDirFile().getAbsolutePath() + runDir2.substring(1);
+                if (execEnv.isLocal()) {
+                    runDir2 = HostInfoUtils.getHostInfo(execEnv).getUserDirFile().getAbsolutePath() + runDir2.substring(1);
                 } else {
-                    runDir2 = HostInfoUtils.getHostInfo(makeConfiguration.getDevelopmentHost().getExecutionEnvironment()).getUserDir() + runDir2.substring(1);
+                    runDir2 = HostInfoUtils.getHostInfo(execEnv).getUserDir() + runDir2.substring(1);
                 }
             } catch (IOException ex) {
                 Logger.getLogger(RunProfile.class.getName()).log(Level.INFO, "", ex);  // NOI18N
@@ -600,7 +606,12 @@ public final class RunProfile implements ConfigurationAuxObject {
                 return canonicalDir;
             }
         } catch (IOException ex) {
-            LOGGER.log(Level.INFO, "Exception when getting canonical run directory:", ex); //NOI18N
+            LOGGER.log(Level.INFO, "Exception when getting canonical run directory:", ex); //NOI18N            
+            if (execEnv.isLocal() && Utilities.isWindows()) {
+                runDirectory = CndPathUtilities.normalizeWindowsPath(runDirectory);
+            } else {
+                runDirectory = CndPathUtilities.normalizeUnixPath(runDirectory);
+            }
             return runDirectory;
         }
     }

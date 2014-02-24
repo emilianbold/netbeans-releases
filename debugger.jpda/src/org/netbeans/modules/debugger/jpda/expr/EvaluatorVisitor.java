@@ -1855,13 +1855,16 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             evaluationContext.putScriptVariable(arg0, var);
             return var.getValue();
         }
+        boolean localVarsAbsent = false;
         try {
             LocalVariable lv = evaluationContext.getFrame().visibleVariableByName(name);
             if (lv != null) {
                 evaluationContext.putLocalVariable(arg0, lv);
                 return evaluationContext.getFrame().getValue(lv);
             }
-        } catch (AbsentInformationException aiex) {}
+        } catch (AbsentInformationException aiex) {
+            localVarsAbsent = true;
+        }
         Field field;
         if (evaluationContext.getContextObject() != null) {
             field = evaluationContext.getContextObject().referenceType().fieldByName(name);
@@ -1899,7 +1902,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (rt != null) {
             return rt;
         }
-        Assert.error(arg0, "unknownVariable", name);
+        if (localVarsAbsent) {
+            Assert.error(arg0, "unknownVarNoDebugInfo", name);
+        } else {
+            Assert.error(arg0, "unknownVariable", name);
+        }
         return null;
     }
     
@@ -2133,7 +2140,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     evaluationContext.putLocalVariable(arg0, lv);
                     return evaluationContext.getFrame().getValue(lv);
                 } catch (AbsentInformationException aiex) {
-                    return (Value) Assert.error(arg0, "unknownVariable", varName);
+                    return (Value) Assert.error(arg0, "unknownVarNoDebugInfo", varName);
                 }
             case PARAMETER:
                 ve = (VariableElement) elm;
@@ -2173,7 +2180,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                             }
                         }
                     }
-                    return (Value) Assert.error(arg0, "unknownVariable", paramName);
+                    return (Value) Assert.error(arg0, "unknownVarNoDebugInfo", paramName);
                 }
             case PACKAGE:
                 return (Value) Assert.error(arg0, "notExpression");

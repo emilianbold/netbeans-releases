@@ -511,7 +511,10 @@ public class Tiny {
         
         if (flow.getFinalCandidates().contains(ve)) {
             VariableTree vt = (VariableTree) ctx.getPath().getLeaf();
-            Fix fix = FixFactory.addModifiersFix(ctx.getInfo(), new TreePath(ctx.getPath(), vt.getModifiers()), EnumSet.of(Modifier.FINAL), Bundle.FIX_CanBeFinal(ve.getSimpleName().toString()));
+            Fix fix = null;
+            if (flow.getFieldInitConstructors(ve).size() <= 1) {
+                fix = FixFactory.addModifiersFix(ctx.getInfo(), new TreePath(ctx.getPath(), vt.getModifiers()), EnumSet.of(Modifier.FINAL), Bundle.FIX_CanBeFinal(ve.getSimpleName().toString()));
+            }
             return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_CanBeFinal(ve.getSimpleName().toString()), fix);
         }
         
