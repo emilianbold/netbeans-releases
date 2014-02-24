@@ -236,8 +236,9 @@ final class InstanceNode extends DataNode implements Runnable {
             return null;
         }
         Image beanInfoIcon = null;
+        InstanceCookie ic = null;
         try {
-            InstanceCookie ic = ic();
+            ic = ic();
             if (ic == null) {
                 return null;
             }
@@ -283,11 +284,13 @@ final class InstanceNode extends DataNode implements Runnable {
         } catch (Exception e) {
             // Problem ==>> use default icon
             Logger.getLogger(InstanceNode.class.getName()).log(Level.WARNING, null, e);
+            Logger.getLogger(InstanceNode.class.getName()).log(Level.INFO, "ic = {0}", ic); //NOI18N
             brokenIcon = true;
         } catch (LinkageError e) {
             // #30650 - catch also LinkageError.
             // Problem ==>> use default icon
             Logger.getLogger(InstanceNode.class.getName()).log(Level.WARNING, null, e);
+            Logger.getLogger(InstanceNode.class.getName()).log(Level.INFO, "ic = {0}", ic); //NOI18N
             brokenIcon = true;
         }
 
