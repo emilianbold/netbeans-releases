@@ -945,14 +945,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     } else {
                         Set<String> oldFilePaths = new HashSet<String>();
                         collectFilePaths(newFile, oldFilePath, oldFilePaths);
-                        for (String path : oldFilePaths) {
-                            final Work work = new DeleteWork(
-                                root.first(),
-                                oldFilePaths,
-                                suspendSupport.getSuspendStatus(),
-                                LogContext.create(LogContext.EventType.FILE, null).
-                                    withRoot(root.first()).
-                                    addFilePaths(oldFilePaths));
+                        final Work work = new DeleteWork(
+                            root.first(),
+                            oldFilePaths,
+                            suspendSupport.getSuspendStatus(),
+                            LogContext.create(LogContext.EventType.FILE, null).
+                                withRoot(root.first()).
+                                addFilePaths(oldFilePaths));
+                        for (String path : oldFilePaths) {                            
                             eventQueue.record(FileEventLog.FileOp.DELETE, root.first(), path, fe, work);
                         }
                     }
