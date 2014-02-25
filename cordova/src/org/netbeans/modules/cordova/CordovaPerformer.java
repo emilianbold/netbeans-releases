@@ -276,7 +276,6 @@ public class CordovaPerformer implements BuildPerformer {
                             return false;
                         }
                         
-                        AndroidManifest manifest = new AndroidManifest(FileUtil.toFile(manifestFile));
                         try (InputStream s=propertiesFile.getInputStream()) {
                             Properties props = new Properties();
                             props.load(s);
@@ -285,7 +284,7 @@ public class CordovaPerformer implements BuildPerformer {
                                 return false;
                             }
                         }
-                        return manifest.isDebuggable();
+                        return true;
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
