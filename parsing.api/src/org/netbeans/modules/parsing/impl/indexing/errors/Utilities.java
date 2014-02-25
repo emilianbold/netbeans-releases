@@ -43,6 +43,8 @@
 package org.netbeans.modules.parsing.impl.indexing.errors;
 
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -62,19 +64,24 @@ import org.openide.util.Pair;
  */
 public class Utilities {
 
-    private static volatile Pair<FileObject,ClassPath> rootCache;
+    private static volatile Pair<FileObject,Reference<ClassPath>> rootCache;
 
     public static ClassPath getSourceClassPathFor(FileObject file) {
-        Pair<FileObject,ClassPath> ce = rootCache;
-        if (ce != null && ce.first().equals(ce.second().findOwnerRoot(file))) {
-            return ce.second();
+        Pair<FileObject,Reference<ClassPath>> ce = rootCache;
+        ClassPath cp;
+        if (ce != null &&
+            (cp = ce.second().get()) != null &&
+            ce.first().equals(cp.findOwnerRoot(file))) {
+            return cp;
         }
         for (String sourceCP : PathRecognizerRegistry.getDefault().getSourceIds()) {
-            final ClassPath cp = ClassPath.getClassPath(file, sourceCP);
+            cp = ClassPath.getClassPath(file, sourceCP);
             if (cp != null) {
                 final FileObject root = cp.findOwnerRoot(file);
                 if (root != null) {
-                    rootCache = Pair.<FileObject,ClassPath>of(root, cp);
+                    rootCache = Pair.<FileObject,Reference<ClassPath>>of(
+                        root,
+                        new WeakReference<ClassPath>(cp));
                 }
                 return cp;
             }
@@ -93,7 +100,7 @@ public class Utilities {
 
                 if (   curr != null
                     && curr.getProjectDirectory() == p.getProjectDirectory()
-                    && PathRegistry.getDefault().getSources().contains(root.getURL())) {
+                    && PathRegistry.getDefault().getSources().contains(root.toURL())) {
                     result.add(root);
                 }
             }
