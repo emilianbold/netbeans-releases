@@ -181,8 +181,8 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
                             || ((name = tokenId.name()) == null)) {
                         continue;
                     }
-                    if (primCategory.toUpperCase().indexOf("COMMENT") > -1 || // primaryCategory == commment should be more or less a convention // NOI18N
-                        name.toUpperCase().indexOf("COMMENT") > -1)           // consider this as a fallback // NOI18N
+                    if (primCategory.toUpperCase().contains("COMMENT") || // primaryCategory == commment should be more or less a convention // NOI18N
+                        name.toUpperCase().contains("COMMENT"))           // consider this as a fallback // NOI18N
                     {
                         comments.add(new C(t.text(), ts.offset()));
                     }
