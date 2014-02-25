@@ -47,6 +47,7 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.java.editor.occurrences.MarkOccurrencesTest;
 import org.netbeans.test.java.editor.actions.JavaEditActionsTest;
 import org.netbeans.test.java.editor.actions.JavaNavigationActionsTest;
+import org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs;
 import org.netbeans.test.java.editor.codegeneration.CreateConstructorTest;
 import org.netbeans.test.java.editor.codegeneration.CreateEqualsHashcodeTest;
 import org.netbeans.test.java.editor.codegeneration.CreateGetterSetterTest;
@@ -86,6 +87,7 @@ public class StableSuite {
                 .addTest(CodeTemplatesTest.class)
                 .addTest(SemanticHighlightTest.class)
                 .addTest(RemoveSurroundingTest.class)
+                .addTest(Breadcrumbs.class)
                 .enableModules(".*")
                 .clusters(".*")
                 );
