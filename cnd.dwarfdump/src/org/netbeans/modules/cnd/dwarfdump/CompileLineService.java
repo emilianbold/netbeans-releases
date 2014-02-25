@@ -254,9 +254,6 @@ public class CompileLineService {
             } 
             compileLine = s.trim();
             compileDir = cu.getCompilationDir();
-            if (compileDir == null) {
-                throw new Exception("Dwarf information does not contain compile dir");  // NOI18N
-            }
             sourceFile = cu.getSourceFileName();
             if (sourceFile == null) {
                 throw new Exception("Dwarf information does not contain source file name");  // NOI18N
