@@ -179,6 +179,8 @@ public class FixUsesPerformer {
                 dataItems.get(i).addUsedNamespaceNames(usedNamespaceNames);
             }
         }
+        Collections.sort(itemIndexesToRemove);
+        Collections.reverse(itemIndexesToRemove);
         for (Integer itemIndexToRemove : itemIndexesToRemove) {
             selections.remove((int) itemIndexToRemove);
         }
