@@ -42,8 +42,8 @@
 
 package org.netbeans.modules.bugtracking.hyperlink;
 
-import java.io.File;
 import java.util.EnumSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -58,7 +58,6 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.bugtracking.api.Util;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -150,7 +149,15 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
     }
 
     private int[] getIssueSpan(final Document doc, final int offset, final HyperlinkType type) {
-        final int[][] ret = new int[1][];
+        class C {
+            CharSequence text;
+            int offset;
+            public C(CharSequence text, int offset) {
+                this.text = text;
+                this.offset = offset;
+            }
+        }
+        final List<C> comments = new LinkedList<C>();
         doc.render(new Runnable() {
             @Override
             public void run() {
@@ -174,21 +181,24 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
                             || ((name = tokenId.name()) == null)) {
                         continue;
                     }
-                    if (primCategory.toUpperCase().indexOf("COMMENT") > -1 || // primaryCategory == commment should be more or less a convention // NOI18N
-                            name.toUpperCase().indexOf("COMMENT") > -1) // consider this as a fallback // NOI18N
+                    if (primCategory.toUpperCase().contains("COMMENT") || // primaryCategory == commment should be more or less a convention // NOI18N
+                        name.toUpperCase().contains("COMMENT"))           // consider this as a fallback // NOI18N
                     {
-                        CharSequence text = t.text();
-                        int[] spans = Util.getIssueSpans(text.toString());
-                        for (int i = 1; i < spans.length; i += 2) {
-                            if (ts.offset() + spans[i - 1] <= offset && offset <= ts.offset() + spans[i]) {
-                                ret[0] = new int[] {ts.offset() + spans[i - 1], ts.offset() + spans[i]};
-                                    return;
-                                }
-                            }
-                        }
+                        comments.add(new C(t.text(), ts.offset()));
                     }
                 }
+            }
         });
+        int[][] ret = new int[1][];
+        for (C c : comments) {
+            int[] spans = Util.getIssueSpans(c.text.toString());
+            for (int i = 1; i < spans.length; i += 2) {
+                if (c.offset + spans[i - 1] <= offset && offset <= c.offset + spans[i]) {
+                    ret[0] = new int[] {c.offset + spans[i - 1], c.offset + spans[i]};
+                    break;
+                }
+            }
+        }
         return ret[0];
     }
 
