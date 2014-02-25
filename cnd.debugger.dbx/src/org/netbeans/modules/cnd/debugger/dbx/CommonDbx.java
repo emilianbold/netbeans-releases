@@ -489,8 +489,6 @@ public abstract class CommonDbx extends GPDbxSurrogate {
                 String newPath = pathProvider.getDbxPath(host);
                 if (newPath != null) {
                     dbxname = newPath;
-                } else {
-                    listener.connectFailed("dbx", Catalog.format("MSG_CantFindDbx", InstallDir.get() + "/bin/dbx "), null); // NOI18N
                 }
             }
         }
@@ -543,6 +541,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
                 updateDbxPath(host);
 
 		if (dbxname == null) {
+                    listener.connectFailed("dbx", Catalog.format("MSG_CantFindDbx", InstallDir.get() + "/bin/dbx "), null); // NOI18N
 		    return;
 		}
 
