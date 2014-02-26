@@ -47,5 +47,5 @@ import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
 /**
  * @author Radek Matous
  */
-public interface InterfaceScope extends TypeScope, InterfaceElement {
+public interface InterfaceScope extends TypeScope, VariableScope, InterfaceElement {
 }
