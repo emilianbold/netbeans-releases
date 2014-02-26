@@ -169,6 +169,7 @@ CLASS      ClassName                       [PUBLIC]   issue194300.php
 CLASS      ClassName123                    [PUBLIC]   issue209608.php
 CLASS      Cls1                            [PUBLIC]   First
 CLASS      Cls1                            [PUBLIC]   TestCase.php
+CLASS      Cls1                            [PUBLIC]   issue242351.php
 CLASS      Cls136188                       [PUBLIC]   issue136188.php
 CLASS      Cls149519                       [PUBLIC]   issue149519.php
 CLASS      Cls2                            [PUBLIC]   Second

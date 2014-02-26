@@ -106,6 +106,7 @@ CLASS      CIface2                         [PUBLIC]   Second
 CLASS      ChildInterface                  [PUBLIC]   interfaces.php
 CLASS      If1                             [PUBLIC]   tests166339.php
 CLASS      If2                             [PUBLIC]   tests166339.php
+CLASS      Iface1                          [PUBLIC]   issue242351.php
 CLASS      Inter                           [PUBLIC]   issue208193.php
 CLASS      Interf                          [PUBLIC]   issue208193.php
 CLASS      Interface1                      [PUBLIC]   test204104.php
