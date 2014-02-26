@@ -75,6 +75,8 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery;
 import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.java.source.parsing.CachingArchiveClassLoader;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
@@ -198,6 +200,14 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         //just in case something goes wrong:
         for (URL unknown : PathRegistry.getDefault().getUnknownRoots()) {
             knownSourceRootsMap.remove(unknown);
+        }
+        final Project[] projects = OpenProjects.getDefault().getOpenProjects();
+        if (projects.length == 0 && !knownSourceRootsMap.isEmpty()) {
+            LOG.log(
+                Level.WARNING,
+                "Non removed known roots: {0}",  //NOI18N
+                knownSourceRootsMap.keySet());
+            knownSourceRootsMap.clear();
         }
     }
 
