@@ -263,12 +263,14 @@ public class TokenHierarchyTest extends NbTestCase {
             threads.add(a);
             a.start();
         }
-        Thread.sleep(10); // Wait shortly so that the notifyAll will find all the threads waiting
-        synchronized (hi) {
-            hi.notifyAll(); // Should wake up all waiting threads
-        }
         for (TSAccessor a : threads) {
-            a.join();
+            // repeat to be sure that the notifyAll will find all the threads waiting
+            while (a.isAlive()) {
+                synchronized (hi) {
+                    hi.notifyAll(); // Should wake up all waiting threads
+                }
+                a.join(10);
+            }
         }
         Token<?> token1 = threads.get(0).token1;
         assertNotNull(token1);
