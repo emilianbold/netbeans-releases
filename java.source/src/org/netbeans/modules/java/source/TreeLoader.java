@@ -50,6 +50,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.JavacTask;
+import com.sun.source.util.TaskEvent;
+import com.sun.source.util.TaskListener;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Scope;
@@ -190,8 +192,9 @@ public class TreeLoader extends LazyTreeLoader {
                             if (persist) {
                                 if (canWrite(cpInfo)) {
                                     Env<AttrContext> env = Enter.instance(context).getEnv(clazz);
-                                    if (env != null && pruneTree(env.tree, Symtab.instance(context))) {
-                                        dumpSymFile(jfm, jti, clazz);
+                                    HashMap<ClassSymbol, JCClassDecl> syms2trees;
+                                    if (env != null && pruneTree(env.tree, Symtab.instance(context), syms2trees = new HashMap<>())) {
+                                        dumpSymFile(jfm, jti, clazz, syms2trees);
                                     }
                                 } else {
                                     final JavaFileObject cfo = clazz.classfile;
@@ -290,7 +293,7 @@ public class TreeLoader extends LazyTreeLoader {
         this.partialReparse = false;
     }
 
-    public static boolean pruneTree(final JCTree tree, final Symtab syms) {
+    public static boolean pruneTree(final JCTree tree, final Symtab syms, final HashMap<ClassSymbol, JCClassDecl> syms2trees) {
         final AtomicBoolean ret = new AtomicBoolean(true);
         new TreeScanner() {
             @Override
@@ -326,8 +329,11 @@ public class TreeLoader extends LazyTreeLoader {
                         prev = l;
                     }
                 }
-                if (tree.sym == null || tree.type == null || tree.type == syms.unknownType)
+                if (tree.sym == null || tree.type == null || tree.type == syms.unknownType) {
                     ret.set(false);
+                } else if (syms2trees != null) {
+                    syms2trees.put(tree.sym, tree);
+                }
             }
         }.scan(tree);
         return ret.get();
@@ -336,7 +342,8 @@ public class TreeLoader extends LazyTreeLoader {
     private static void dumpSymFile(
         JavaFileManager jfm,
         JavacTaskImpl jti,
-        ClassSymbol clazz) throws IOException {
+        ClassSymbol clazz,
+        HashMap<ClassSymbol, JCClassDecl> syms2trees) throws IOException {
         String binaryName = null;
         String surl = null;
         if (clazz.classfile != null) {
@@ -354,7 +361,7 @@ public class TreeLoader extends LazyTreeLoader {
         int index = surl.lastIndexOf(FileObjects.convertPackage2Folder(binaryName));
         if (index > 0) {
             final File classes = JavaIndex.getClassFolder(new URL(surl.substring(0, index)));
-            dumpSymFile(jfm, jti, clazz, classes);
+            dumpSymFile(jfm, jti, clazz, classes, syms2trees);
         } else {
             LOGGER.log(
                Level.INFO,
@@ -371,16 +378,32 @@ public class TreeLoader extends LazyTreeLoader {
             @NonNull final JavaFileManager jfm,
             @NonNull final JavacTaskImpl jti,
             @NonNull final ClassSymbol clazz,
-            @NonNull final File classFolder) throws IOException {
+            @NonNull final File classFolder,
+            @NonNull final HashMap<ClassSymbol, JCClassDecl> syms2trees) throws IOException {
         Log log = Log.instance(jti.getContext());
         JavaFileObject prevLogTo = log.useSource(null);
         DiscardDiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
+        final TaskListener listener = new TaskListener() {
+            @Override
+            public void started(TaskEvent e) {
+                if (e != null && e.getKind() == TaskEvent.Kind.GENERATE) {
+                    JCClassDecl tree = syms2trees.get((ClassSymbol)e.getTypeElement());
+                    if (tree != null)
+                        pruneTree(tree, Symtab.instance(jti.getContext()), null);
+                }
+            }
+            @Override
+            public void finished(TaskEvent e) {
+            }
+        };
         try {            
             jfm.handleOption("output-root", Collections.singletonList(classFolder.getPath()).iterator()); //NOI18N
+            jti.addTaskListener(listener);
             jti.generate(Collections.singletonList(clazz));
         } catch (InvalidSourcePath isp) {
             LOGGER.log(Level.INFO, "InvalidSourcePath reported when writing sym file for class: {0}", clazz.flatname); // NOI18N
         } finally {
+            jti.removeTaskListener(listener);
             jfm.handleOption("output-root", Collections.singletonList("").iterator()); //NOI18N
             log.popDiagnosticHandler(discardDiagnosticHandler);
             log.useSource(prevLogTo);
