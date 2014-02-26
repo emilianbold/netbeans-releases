@@ -639,4 +639,12 @@ public class PhpTypedTextInterceptorTest extends PhpTypinghooksTestBase {
         insertChar(original, ' ', expected);
     }
 
+//    Uncomment when CslTestBase.insertChar() will support ambiguous selection strings
+//
+//    public void testIssue242358() throws Exception {
+//        String original = "foo(\"*.txt^\");";
+//        String expected = "foo('*.txt^');";
+//        insertChar(original, '\'', expected, "\"");
+//    }
+
 }
