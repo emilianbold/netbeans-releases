@@ -4788,7 +4788,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 controller.roots2Peers = Collections.unmodifiableMap(new HashMap<URL, List<URL>>(scannedRoots2Peers));
             }
 
-            notifyRootsRemoved (depCtx.oldBinaries, depCtx.oldRoots);
+            notifyRootsRemoved (depCtx.oldBinaries, depCtx.oldRoots, unknownToRemove);
 
             final Level logLevel = Level.FINE;
             if (LOGGER.isLoggable(logLevel)) {
@@ -4846,18 +4846,21 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_COLLECTION_OF_URLS",
         justification="URLs have never host part")
-        private void notifyRootsRemoved (final Set<URL> binaries, final Set<URL> sources) {
+        private void notifyRootsRemoved (
+                @NonNull final Collection<? extends URL> binaries,
+                @NonNull final Collection<? extends URL> sources,
+                @NonNull final Collection<? extends URL> unknown) {
             if (!binaries.isEmpty()) {
                 final Collection<? extends BinaryIndexerFactory> binFactories = MimeLookup.getLookup(MimePath.EMPTY).lookupAll(BinaryIndexerFactory.class);
-                final Iterable<? extends URL> roots = Collections.unmodifiableSet(binaries);
+                final Iterable<? extends URL> roots = Collections.unmodifiableCollection(binaries);
                 for (BinaryIndexerFactory binFactory : binFactories) {
                     binFactory.rootsRemoved(roots);
                 }
                 RepositoryUpdater.getDefault().rootsListeners.remove(binaries, false);
             }
 
-            if (!sources.isEmpty()) {
-                final Iterable<? extends URL> roots = Collections.unmodifiableSet(sources);
+            if (!sources.isEmpty() || !unknown.isEmpty()) {
+                final Iterable<? extends URL> roots = new ProxyIterable<URL>(Arrays.asList(sources, unknown));
                 final Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> customIndexers = IndexerCache.getCifCache().getIndexers(null);
                 for (IndexerCache.IndexerInfo<CustomIndexerFactory> customIndexer : customIndexers) {
                     customIndexer.getIndexerFactory().rootsRemoved(roots);
