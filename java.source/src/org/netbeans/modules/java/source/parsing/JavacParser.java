@@ -632,7 +632,9 @@ public class JavacParser extends Parser {
                     v.visit(unit, null);
                     synchronized (positions) {
                         positions.clear();
-                        positions.addAll(v.getResult());
+                        if (!parserCanceled.get()) {
+                            positions.addAll(v.getResult());
+                        }
                     }
                 }
                 currentPhase = Phase.PARSED;
@@ -1102,10 +1104,14 @@ public class JavacParser extends Parser {
                     long start = System.currentTimeMillis();
                     Map<JCTree,LazyDocCommentTable.Entry> docComments = new HashMap<JCTree, LazyDocCommentTable.Entry>();
                     block = pr.reparseMethodBody(cu, orig, newBody, firstInner, docComments);
-                    if (LOGGER.isLoggable(Level.FINER)) {
-                        LOGGER.log(Level.FINER, "Reparsed method in: {0}", fo);     //NOI18N
+                    LOGGER.log(Level.FINER, "Reparsed method in: {0}", fo);     //NOI18N
+                    if (block == null) {
+                        LOGGER.log(
+                            Level.FINER,
+                            "Skeep reparse method, invalid position, newBody: ",       //NOI18N
+                            newBody);
+                        return false;
                     }
-                    assert block != null;
                     fav.reset();
                     fav.scan(block, null);
                     final int newNoInner = fav.noInner;
