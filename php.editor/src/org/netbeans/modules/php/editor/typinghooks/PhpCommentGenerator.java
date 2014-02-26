@@ -176,11 +176,11 @@ public final class PhpCommentGenerator {
     }
 
     private static class ScannerImpl extends DefaultVisitor {
-        private List<Pair<String, String>> globals = new LinkedList<>();
-        private List<Pair<String, String>> staticvars = new LinkedList<>();
-        private List<Pair<String, String>> params = new LinkedList<>();
-        private List<Pair<String, String>> throwsExceptions = new LinkedList<>();
-        private List<String> usedThrows = new LinkedList<>();
+        private final List<Pair<String, String>> globals = new LinkedList<>();
+        private final List<Pair<String, String>> staticvars = new LinkedList<>();
+        private final List<Pair<String, String>> params = new LinkedList<>();
+        private final List<Pair<String, String>> throwsExceptions = new LinkedList<>();
+        private final List<String> usedThrows = new LinkedList<>();
         final Set<VariableName> declaredVariables = new HashSet<>();
         private boolean hasReturn;
         private String returnType;
@@ -477,8 +477,8 @@ public final class PhpCommentGenerator {
     }
 
     private static final class Pair<A, B> {
-        private A a;
-        private B b;
+        private final A a;
+        private final B b;
 
         public Pair(A a, B b) {
             this.a = a;
