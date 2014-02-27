@@ -720,11 +720,12 @@ public class CsmContextUtilities {
 //            if (CsmKindUtilities.isClass(scope) && CsmOffsetUtilities.isInClassScope((CsmClass)scope, offset)) {
 //                break;
 //            } else
-            if (CsmKindUtilities.isFunction(scope)
-                    && (!inScope || CsmOffsetUtilities.isInFunctionScope((CsmFunction)scope, offset))) {
-                result = (CsmFunction)scope;
-                if (!CsmKindUtilities.isLambda(scope)) {
-                    return result;
+            if (CsmKindUtilities.isFunction(scope)) {
+                if (!inScope || CsmOffsetUtilities.isInFunctionScope((CsmFunction)scope, offset)) {
+                    result = (CsmFunction)scope;
+                    if (!CsmKindUtilities.isLambda(scope)) {
+                        return result;
+                    }
                 }
             }
         }
