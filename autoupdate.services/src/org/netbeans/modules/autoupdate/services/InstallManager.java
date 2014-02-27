@@ -211,7 +211,7 @@ public class InstallManager extends InstalledFileLocator{
                     }
 
                     System.setProperty(NETBEANS_DIRS, sb.toString ());
-                    File f = new File(new File(getUserDir(), Utilities.RUNNING_DOWNLOAD_DIR), NETBEANS_DIRS);
+                    File f = new File(new File(getUserDir(), Utilities.DOWNLOAD_DIR), NETBEANS_DIRS);
                     if (!f.exists()) {
                         f.getParentFile().mkdirs();
                         f.createNewFile();

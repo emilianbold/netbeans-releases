@@ -94,8 +94,6 @@ public class InstallSupportImpl {
     private boolean progressRunning = false;
     private static final Logger LOG = Logger.getLogger (InstallSupportImpl.class.getName ());
     
-    private static final String AUTOUPDATE_SERVICES_MODULE = "org.netbeans.modules.autoupdate.services"; // NOI18N
-    
     private Map<UpdateElementImpl, File> element2Clusters = null;
     private final Set<File> downloadedFiles = new HashSet<File> ();
     private Boolean isGlobal;
@@ -133,6 +131,14 @@ public class InstallSupportImpl {
     public boolean doDownload (final ProgressHandle progress/*or null*/, final Boolean isGlobal, final boolean useUserdirAsFallback) throws OperationException {
         this.isGlobal = isGlobal;
         this.useUserdirAsFallback = useUserdirAsFallback;
+        
+        // start progress
+        if (progress != null) {
+            progress.start();
+            progress.progress(NbBundle.getMessage(InstallSupportImpl.class, "InstallSupportImpl_Download_Estabilish"));
+            progressRunning = false;
+        }
+
         Callable<Boolean> downloadCallable = new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -151,31 +157,24 @@ public class InstallSupportImpl {
                     size += ue.getDownloadSize();
                 }
                 
-                // start progress
-                if (progress != null) {
-                    progress.start();
-                    progress.progress(NbBundle.getMessage(InstallSupportImpl.class, "InstallSupportImpl_Download_Estabilish"));
-                    progressRunning = false;
-                }
-                
                 int aggregateDownload = 0;
                 
                 try {
-                    preDownload();
+                    long id = System.currentTimeMillis();
                     for (OperationInfo info : infos) {
                         if (cancelled()) {
                             LOG.log (Level.INFO, "InstallSupport.doDownload was canceled"); // NOI18N
                             return false;
                         }
                         
-                        int increment = doDownload(info, progress, aggregateDownload, size);
+                        int increment = doDownload(info, progress, aggregateDownload, size, id);
                         if (increment == -1) {
                             return false;
                         }
                         aggregateDownload += increment;
                     }
+                    postDownload(id);
                 }  finally {
-                    postDownload();
                     // end progress
                     if (progress != null) {
                         progress.progress("");
@@ -208,21 +207,9 @@ public class InstallSupportImpl {
         return retval;
     }
 
-    private void preDownload() {
+    private void postDownload(long id) {
         for (File cluster : UpdateTracking.clusters(true)) {
-            File runningDownloadDirectory = new File(cluster, Utilities.RUNNING_DOWNLOAD_DIR);
-            if (runningDownloadDirectory.isDirectory()) {
-                for (File f : runningDownloadDirectory.listFiles()) {
-                    f.delete();
-                }
-                runningDownloadDirectory.delete();
-            }
-        }
-    }
-
-    private void postDownload() {
-        for (File cluster : UpdateTracking.clusters(true)) {
-            File runningDownloadDir = new File(cluster, Utilities.RUNNING_DOWNLOAD_DIR);
+            File runningDownloadDir = new File(cluster, Utilities.RUNNING_DOWNLOAD_DIR + '_' + id);
             if (runningDownloadDir.isDirectory()) {
                 File downloadDir = new File(cluster, Utilities.DOWNLOAD_DIR);
                 downloadDir.mkdirs();
@@ -373,20 +360,15 @@ public class InstallSupportImpl {
                     URL source = moduleImpl.getInstallInfo ().getDistribution ();
                     LOG.log (Level.FINE, "Source URL for " + moduleImpl.getCodeName () + " is " + source);
                     
-                    File dest = getDestination(targetCluster, moduleImpl.getCodeName(), source, false);
+                    File dest = getDestination(targetCluster, moduleImpl.getCodeName(), source, 0);
                     assert dest != null : "Destination file exists for " + moduleImpl + " in " + targetCluster;
                     
-                    // check if 'updater.jar' or 'updater_<branding>_<locale>.jar' is being installed
-                    if (AUTOUPDATE_SERVICES_MODULE.equals(moduleImpl.getCodeName())) {
-                        LOG.log(Level.FINEST, AUTOUPDATE_SERVICES_MODULE + " is being installed, check if contains " + ModuleUpdater.AUTOUPDATE_UPDATER_JAR_PATH);
-                    }
-
                     JarFile jf = new JarFile(dest);
                     try {
                        for (JarEntry entry : Collections.list(jf.entries())) {
                             if (ModuleUpdater.AUTOUPDATE_UPDATER_JAR_PATH.equals(entry.toString()) ||
                                     entry.toString().matches(ModuleUpdater.AUTOUPDATE_UPDATER_JAR_LOCALE_PATTERN)) {
-                                LOG.log(Level.FINE, entry.toString() + " is being installed from " + moduleImpl.getCodeName());
+                                LOG.log(Level.INFO, entry.toString() + " is being installed from " + moduleImpl.getCodeName());
                                 updaterFiles.add(new UpdaterInfo(entry, dest, targetCluster));
                                 needsRestart = true;
                              }
@@ -658,6 +640,9 @@ public class InstallSupportImpl {
             for (File f : downloadedFiles) {
                 if (f != null && f.exists ()) {
                     f.delete ();
+                    if (f.getParentFile().isDirectory() && f.getParentFile().list() != null && f.getParentFile().list().length == 0) {
+                        f.getParentFile().delete();
+                    }
                 }
             }
             downloadedFiles.clear ();
@@ -670,14 +655,14 @@ public class InstallSupportImpl {
         getElement2Clusters ().clear ();
     }
     
-    private int doDownload (OperationInfo info, ProgressHandle progress, final int aggregateDownload, final int totalSize) throws OperationException {
+    private int doDownload (OperationInfo info, ProgressHandle progress, final int aggregateDownload, final int totalSize, final long id) throws OperationException {
         UpdateElement toUpdateElement = info.getUpdateElement();
         UpdateElementImpl toUpdateImpl = Trampoline.API.impl (toUpdateElement);
         int res = 0;
         switch (toUpdateImpl.getType ()) {
         case KIT_MODULE :
         case MODULE :
-            res += doDownload (toUpdateImpl, progress, aggregateDownload, totalSize);
+            res += doDownload (toUpdateImpl, progress, aggregateDownload, totalSize, id);
             break;
         case STANDALONE_MODULE :
         case FEATURE :
@@ -690,7 +675,7 @@ public class InstallSupportImpl {
                     continue;
                 }
                 
-                int increment = doDownload (moduleImpl, progress, nestedAggregateDownload, totalSize);
+                int increment = doDownload (moduleImpl, progress, nestedAggregateDownload, totalSize, id);
                 if (increment == -1) {
                     return -1;
                 }
@@ -706,7 +691,7 @@ public class InstallSupportImpl {
     }
     
     @SuppressWarnings("null")
-    private int doDownload (UpdateElementImpl toUpdateImpl, ProgressHandle progress, final int aggregateDownload, final int totalSize) throws OperationException {
+    private int doDownload (UpdateElementImpl toUpdateImpl, ProgressHandle progress, final int aggregateDownload, final int totalSize, final long id) throws OperationException {
         if (cancelled()) {
             LOG.log (Level.INFO, "InstallSupport.doDownload was canceled, returns -1"); // NOI18N
             return -1;
@@ -730,7 +715,7 @@ public class InstallSupportImpl {
             throw new OperationException (OperationException.ERROR_TYPE.INSTALL, errorString);
         }
 
-        File dest = getDestination (targetCluster, toUpdateImpl.getCodeName(), source, true);
+        File dest = getDestination (targetCluster, toUpdateImpl.getCodeName(), source, id);
         
         // skip already downloaded modules
         if (dest.exists ()) {
@@ -743,9 +728,11 @@ public class InstallSupportImpl {
         // download
         try {
             String label = toUpdateImpl.getDisplayName ();
-            File normalized = FileUtil.normalizeFile(getDestination(targetCluster, toUpdateImpl.getCodeName(), source, false));
+            File normalized = FileUtil.normalizeFile(getDestination(targetCluster, toUpdateImpl.getCodeName(), source, 0));
+            File normalizedInProgress = FileUtil.normalizeFile(getDestination(targetCluster, toUpdateImpl.getCodeName(), source, id));
             synchronized(downloadedFiles) {
                 downloadedFiles.add(normalized);
+                downloadedFiles.add(normalizedInProgress);
             }
             c = copy (source, dest, progress, toUpdateImpl.getDownloadSize (), aggregateDownload, totalSize, label);
             boolean wasException = false;
@@ -864,14 +851,14 @@ public class InstallSupportImpl {
         File targetCluster = getTargetCluster (installed, toUpdateImpl, isGlobal, useUserdirAsFallback);
 
         URL source = toUpdateImpl.getInstallInfo().getDistribution();
-        File dest = getDestination (targetCluster, toUpdateImpl.getCodeName(), source, false);
+        File dest = getDestination (targetCluster, toUpdateImpl.getCodeName(), source, 0);
         if (!dest.exists()) {
             StringBuilder sb = new StringBuilder();
             sb.append("Cannot find ").append(dest).append("\n");
             sb.append("Parent directory contains:").append(Arrays.toString(dest.getParentFile().list())).append("\n");
             for (File f : UpdateTracking.clusters(true)) {
                 sb.append("Trying to find result in ").append(f).append(" = ");
-                File alt = getDestination (targetCluster, toUpdateImpl.getCodeName(), source, false);
+                File alt = getDestination (targetCluster, toUpdateImpl.getCodeName(), source, 0);
                 sb.append(alt).append(" exists ").append(alt.exists()).append("\n");
             }
             throw new OperationException(OperationException.ERROR_TYPE.INSTALL, sb.toString());
@@ -885,9 +872,13 @@ public class InstallSupportImpl {
         return wasVerified;
     }
     
-    static File getDestination (File targetCluster, String codeName, URL source, boolean inProgress) {
+    public static File getDestination(File targetCluster, String codeName, URL source) {
+        return getDestination(targetCluster, codeName, source, 0);
+    }
+    
+    private static File getDestination (File targetCluster, String codeName, URL source, long id) {
         LOG.log (Level.FINE, "Target cluster for " + codeName + " is " + targetCluster);
-        File destDir = new File (targetCluster, inProgress ? Utilities.RUNNING_DOWNLOAD_DIR : Utilities.DOWNLOAD_DIR);
+        File destDir = new File(targetCluster, 0 == id ? Utilities.DOWNLOAD_DIR : Utilities.RUNNING_DOWNLOAD_DIR + '_' + id);
         if (! destDir.exists ()) {
             destDir.mkdirs ();
         }
