@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
-import org.netbeans.modules.cnd.api.model.services.CsmTypeResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmEntityResolver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionsFactory;
@@ -102,7 +102,7 @@ public class DeclTypeImpl extends TypeImpl {
         if (classifier == null) {
             synchronized (this) {
                 if (!isClassifierInitialized() || !canUseCache()) {
-                    CsmType type = CsmTypeResolver.resolveType(typeExpression, instantiations);
+                    CsmType type = CsmEntityResolver.resolveType(typeExpression, instantiations);
                     classifier = type != null ? type.getClassifier() : null;
                     if (classifier == null) {
                         classifier = BuiltinTypes.getBuiltIn(DECLTYPE); // Unresolved?
@@ -137,7 +137,7 @@ public class DeclTypeImpl extends TypeImpl {
     }
     
     public boolean isPointer(List<CsmInstantiation> instantiations) {
-        CsmType type = CsmTypeResolver.resolveType(typeExpression, instantiations);
+        CsmType type = CsmEntityResolver.resolveType(typeExpression, instantiations);
         return type != null ? type.isPointer() : false;
     }
 
@@ -147,7 +147,7 @@ public class DeclTypeImpl extends TypeImpl {
     }
     
     public boolean isReference(List<CsmInstantiation> instantiations) {
-        CsmType type = CsmTypeResolver.resolveType(typeExpression, instantiations);
+        CsmType type = CsmEntityResolver.resolveType(typeExpression, instantiations);
         return type != null ? type.isReference() : false;
     }
 
@@ -157,7 +157,7 @@ public class DeclTypeImpl extends TypeImpl {
     }
     
     public boolean isConst(List<CsmInstantiation> instantiations) {
-        CsmType type = CsmTypeResolver.resolveType(typeExpression, instantiations);
+        CsmType type = CsmEntityResolver.resolveType(typeExpression, instantiations);
         return type != null ? type.isConst() : false;
     }    
 
@@ -167,7 +167,7 @@ public class DeclTypeImpl extends TypeImpl {
     }
     
     public boolean isRValueReference(List<CsmInstantiation> instantiations) {
-        CsmType type = CsmTypeResolver.resolveType(typeExpression, instantiations);
+        CsmType type = CsmEntityResolver.resolveType(typeExpression, instantiations);
         return type != null ? type.isRValueReference(): false;
     }
 
