@@ -51,15 +51,14 @@ import java.util.Set;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.launchers.Launcher;
 import org.netbeans.modules.cnd.spi.project.NativeProjectRelocationMapperProvider;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.CharSequences;
-import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
+ * This service works for NativeProject implementation of CND : NativeProjectProvider
  * project1.source_name=/export1/tmp/LLVM33
  * project1.dest_name=/export/home/masha/ssd/llvm/LLVM33
  * project1.source_root=/export1/tmp/LLVM33
@@ -78,6 +77,9 @@ public class NativeProjectRelocationMapperProviderImpl implements NativeProjectR
 
     @Override
     public CharSequence getDestinationPath(NativeProject project, CharSequence sourceFilePath) {
+        if (!(project instanceof NativeProjectProvider)) {
+            return null;
+        }
         /*
         */        
         //here we are
@@ -95,6 +97,9 @@ public class NativeProjectRelocationMapperProviderImpl implements NativeProjectR
 
     @Override
     public CharSequence getSourceProjectName(NativeProject project) {
+        if (!(project instanceof NativeProjectProvider)) {
+            return null;
+        }        
         //parse path_mapper.properties file to get map
         FileObject projectDir = CndFileUtils.toFileObject(project.getFileSystem(), project.getProjectRoot());
         ProjectMapper projectMapper = get(projectDir);
@@ -106,7 +111,7 @@ public class NativeProjectRelocationMapperProviderImpl implements NativeProjectR
     }
 
     @Override
-    public NativeProject findDestinationProject(CharSequence sourceProjectName) {
+    public NativeProject findDestinationProject(CharSequence sourceProjectName) {      
         //go through all NativeProjects and find the one where source is sourceProjectName
         Collection<NativeProject> openProjects = NativeProjectRegistry.getDefault().getOpenProjects();
         for (NativeProject project : openProjects) {
