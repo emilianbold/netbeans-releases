@@ -254,6 +254,8 @@ CLASS      Interface1                      [PUBLIC]   test204104.php
 CLASS      Interface1                      [PUBLIC]   test204104_02.php
 CLASS      Interface2                      [PUBLIC]   test204104.php
 CLASS      Interface2                      [PUBLIC]   test204104_02.php
+CLASS      InterfaceName1                  [PUBLIC]   issue242398_01.php
+CLASS      InterfaceName2                  [PUBLIC]   issue242398_02.php
 CLASS      InvisibleClass                  [PUBLIC]   issue194875.php
 CLASS      InvisibleClass                  [PUBLIC]   issue201310.php
 CLASS      InvisibleClassFromNs            [PUBLIC]   Extra
