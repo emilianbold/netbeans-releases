@@ -281,6 +281,10 @@ final class CompletionContextFinder {
         } else if (acceptTokenChains(tokenSequence, INSTANCEOF_TOKENCHAINS, moveNextSucces)) {
             return CompletionContext.TYPE_NAME;
         } else if (isInsideInterfaceDeclarationBlock(info, caretOffset, tokenSequence)) {
+            CompletionContext paramContext = getParamaterContext(token, caretOffset, tokenSequence);
+            if (paramContext != null) {
+                return paramContext;
+            }
             return CompletionContext.INTERFACE_CONTEXT_KEYWORDS;
         } else if (isInsideClassDeclarationBlock(info, caretOffset, tokenSequence)) {
             if (acceptTokenChains(tokenSequence, METHOD_NAME_TOKENCHAINS, moveNextSucces)) {
