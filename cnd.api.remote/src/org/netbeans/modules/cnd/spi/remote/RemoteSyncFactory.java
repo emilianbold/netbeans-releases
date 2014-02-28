@@ -141,6 +141,13 @@ public abstract class RemoteSyncFactory {
      * @return A unique string that identifies this factory
      */
     public abstract String getID();
+    
+    /**
+     * Determines whether files are copies to remote host 
+     * (as in FTP, AutoCopy) or not (as in Shared and FullRemote)
+     * @return true i
+     */
+    public abstract boolean isCopying();
 
     /**
      * Gets a factory by its ID. See comments to getID() method.
