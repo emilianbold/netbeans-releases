@@ -98,6 +98,11 @@ public class FullRemoteSyncFactory extends BaseSyncFactory {
     }
 
     @Override
+    public boolean isCopying() {
+        return false;
+    }
+    
+    @Override
     public boolean isApplicable(ExecutionEnvironment execEnv) {
         // return RemoteProject.FULL_REMOTE && ! RemoteUtil.isForeign(execEnv);
         return false; // never show it in the list

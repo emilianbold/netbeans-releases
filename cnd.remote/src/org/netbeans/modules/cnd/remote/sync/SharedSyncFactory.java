@@ -86,6 +86,11 @@ public class SharedSyncFactory extends BaseSyncFactory {
     }
 
     @Override
+    public boolean isCopying() {
+        return false;
+    }
+    
+    @Override
     public boolean isApplicable(ExecutionEnvironment execEnv) {
         return ! RemoteUtil.isForeign(execEnv);
     }
