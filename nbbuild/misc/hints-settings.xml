@@ -16,16 +16,24 @@
         <node name="FileUtil.hint"/>
         <node name="org.netbeans.modules.java.hints.suggestions.Ifs.joinElseIf"/>
         <node name="error-in-javadoc"/>
-        <node name="org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.packageField"/>
-        <node name="Braces_FOR_LOOP"/>
+        <node name="org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.packageField">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="Braces_FOR_LOOP">
+            <attribute name="enabled" value="true"/>
+        </node>
         <node name="org.netbeans.modules.java.hints.threading.Tiny.emptySynchronized"/>
-        <node name="org.netbeans.modules.java.hints.encapsulation.ParamEncapsulation.date"/>
+        <node name="org.netbeans.modules.java.hints.encapsulation.ParamEncapsulation.date">
+            <attribute name="enabled" value="true"/>
+        </node>
         <node name="org.netbeans.modules.java.hints.PrintStackTrace"/>
         <node name="org.netbeans.modules.java.hints.suggestions.TooStrongCast.broadTypeCast"/>
         <node name="org.netbeans.modules.java.hints.suggestions.Ifs.splitIfCondition"/>
         <node name="org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.deadBranch"/>
         <node name="org.netbeans.modules.java.hints.StaticImport"/>
-        <node name="org.netbeans.modules.java.hints.AssignmentIssues.nestedAssignment"/>
+        <node name="org.netbeans.modules.java.hints.AssignmentIssues.nestedAssignment">
+            <attribute name="enabled" value="true"/>
+        </node>
         <node name="org.netbeans.modules.java.hints.bugs.Tiny.newObject"/>
         <node name="org.netbeans.modules.java.hints.bugs.AnnotationsNotRuntime"/>
         <node name="org.netbeans.modules.java.hints.threading.Tiny.unlockOutsideTryFinally"/>
@@ -46,7 +54,9 @@
         <node name="Wrong_String_Comparison"/>
         <node name="org.netbeans.modules.java.hints.bugs.Tiny.systemArrayCopy"/>
         <node name="org.netbeans.modules.java.metrics.hints.MethodMetrics.multipleNegations"/>
-        <node name="org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.publicField"/>
+        <node name="org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.publicField">
+            <attribute name="enabled" value="true"/>
+        </node>
         <node name="Repository.hint"/>
         <node name="org.netbeans.modules.java.hints.bugs.CloneAndCloneable.cloneInNonCloneableClass"/>
         <node name="org.netbeans.modules.java.hints.ClassStructure.finalPrivateMethod"/>
@@ -62,16 +72,24 @@
         <node name="org.netbeans.modules.java.hints.ObsoleteCollection"/>
         <node name="org.netbeans.modules.java.hints.errors.ErrorFixesFakeHintSURROUND_WITH_TRY_CATCH"/>
         <node name="org.netbeans.modules.java.hints.suggestions.InvertIf"/>
-        <node name="org.netbeans.modules.java.hints.AssignmentIssues.assignmentToMethodParam"/>
+        <node name="org.netbeans.modules.java.hints.AssignmentIssues.assignmentToMethodParam">
+            <attribute name="enabled" value="true"/>
+        </node>
         <node name="org.netbeans.modules.java.hints.perf.Tiny.stringEqualsEmpty"/>
-        <node name="org.netbeans.modules.java.hints.encapsulation.ReturnEncapsulation.date"/>
+        <node name="org.netbeans.modules.java.hints.encapsulation.ReturnEncapsulation.date">
+            <attribute name="enabled" value="true"/>
+        </node>
         <node name="org.netbeans.modules.java.hints.bugs.BroadCatchBlock.broadCatch"/>
         <node name="org.netbeans.modules.java.hints.jdk.mapreduce.ForLoopToFunctionalHint"/>
         <node name="org.netbeans.modules.java.hints.ShiftOutOfRange"/>
         <node name="org.netbeans.modules.java.hints.suggestions.Move.moveInitialization"/>
         <node name="org.netbeans.modules.java.hints.AssignResultToVariable"/>
-        <node name="org.netbeans.modules.java.hints.encapsulation.ParamEncapsulation.collection"/>
-        <node name="org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.protectedCls"/>
+        <node name="org.netbeans.modules.java.hints.encapsulation.ParamEncapsulation.collection">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.protectedCls">
+            <attribute name="enabled" value="true"/>
+        </node>
         <node name="org.netbeans.modules.java.hints.threading.Tiny.unsyncNotify"/>
         <node name="org.netbeans.modules.java.hints.control.RemoveUnnecessary.unnecessaryContinue"/>
         <node name="org.netbeans.modules.java.hints.HideField"/>
@@ -82,14 +100,20 @@
         <node name="org.netbeans.modules.java.hints.bugs.TryCatchFinally.finallyDiscardsException"/>
         <node name="org.netbeans.modules.java.hints.suggestions.Lambda.expression2Return"/>
         <node name="org.netbeans.modules.java.hints.suggestions.Tiny.convertToDifferentBase"/>
-        <node name="org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.publicCls"/>
+        <node name="org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.publicCls">
+            <attribute name="enabled" value="true"/>
+        </node>
         <node name="org.netbeans.modules.java.hints.ThisInAnonymous"/>
         <node name="org.netbeans.modules.java.hints.EqualsHint"/>
         <node name="org.netbeans.modules.java.hints.threading.Tiny.waitOnCondition"/>
-        <node name="org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.protectedField"/>
+        <node name="org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.protectedField">
+            <attribute name="enabled" value="true"/>
+        </node>
         <node name="Inspection.hint"/>
         <node name="unnecessaryBreakLabel"/>
-        <node name="org.netbeans.modules.java.hints.AssignmentIssues.replaceAssignWithOpAssign"/>
+        <node name="org.netbeans.modules.java.hints.AssignmentIssues.replaceAssignWithOpAssign">
+            <attribute name="enabled" value="true"/>
+        </node>
         <node name="org.netbeans.modules.java.hints.IllegalInstanceOf"/>
         <node name="org.netbeans.modules.java.hints.OverridableMethodCallInConstructor"/>
         <node name="org.netbeans.modules.java.hints.LeakingThisInConstructor"/>
@@ -105,9 +129,13 @@
         <node name="org.netbeans.modules.java.hints.jdk.ThrowableInitCause"/>
         <node name="org.netbeans.modules.java.hints.suggestions.ImplementMethods"/>
         <node name="org.netbeans.modules.java.hints.errors.ErrorFixesFakeHintCREATE_LOCAL_VARIABLE"/>
-        <node name="org.netbeans.modules.java.hints.encapsulation.ParamEncapsulation.array"/>
+        <node name="org.netbeans.modules.java.hints.encapsulation.ParamEncapsulation.array">
+            <attribute name="enabled" value="true"/>
+        </node>
         <node name="org.netbeans.modules.java.hints.threading.Tiny.threadRun"/>
-        <node name="org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.privateField"/>
+        <node name="org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.privateField">
+            <attribute name="enabled" value="true"/>
+        </node>
         <node name="org.netbeans.modules.java.hints.jdk.UseSpecificCatch"/>
         <node name="Utilities.hint"/>
         <node name="org.netbeans.modules.java.hints.perf.NoBooleanConstructor"/>
@@ -120,7 +148,9 @@
         <node name="org.netbeans.modules.java.hints.threading.Tiny.synchronizedOnLock"/>
         <node name="org.netbeans.modules.java.hints.ClassStructure.noopMethodInAbstractClass"/>
         <node name="org.netbeans.modules.java.hints.perf.InitialCapacity.collections"/>
-        <node name="org.netbeans.modules.java.hints.encapsulation.ReturnEncapsulation.collection"/>
+        <node name="org.netbeans.modules.java.hints.encapsulation.ReturnEncapsulation.collection">
+            <attribute name="enabled" value="true"/>
+        </node>
         <node name="EmptyStatements_FOR_LOOP"/>
         <node name="org.netbeans.modules.java.hints.SyncOnNonFinal"/>
         <node name="org.netbeans.modules.java.hints.ClassStructure.multipleTopLevelClassesInFile"/>
@@ -153,25 +183,35 @@
         <node name="org.openide.loaders.DataObject.hint"/>
         <node name="org.netbeans.modules.java.hints.bugs.Regexp"/>
         <node name="org.netbeans.modules.java.hints.perf.Tiny.collectionsToArray"/>
-        <node name="org.netbeans.modules.java.hints.AssignmentIssues.incrementDecrementUsed"/>
+        <node name="org.netbeans.modules.java.hints.AssignmentIssues.incrementDecrementUsed">
+            <attribute name="enabled" value="true"/>
+        </node>
         <node name="org.netbeans.modules.java.hints.finalize.FinalizeDeclared"/>
         <node name="org.netbeans.modules.java.testrunner.hints.CreateTestClassHint"/>
-        <node name="Braces_DO_WHILE_LOOP"/>
+        <node name="Braces_DO_WHILE_LOOP">
+            <attribute name="enabled" value="true"/>
+        </node>
         <node name="org.netbeans.modules.java.hints.perf.Tiny.constantIntern"/>
         <node name="org.netbeans.modules.java.hints.jdk.AnnotationProcessors.oGSA"/>
         <node name="org.netbeans.modules.java.hints.LoggerNotStaticFinal"/>
-        <node name="Braces_WHILE_LOOP"/>
+        <node name="Braces_WHILE_LOOP">
+            <attribute name="enabled" value="true"/>
+        </node>
         <node name="org.netbeans.modules.java.hints.HideFieldByVar"/>
         <node name="org.netbeans.modules.java.metrics.hints.MethodMetrics.tooLong"/>
         <node name="org.netbeans.modules.java.metrics.hints.MethodMetrics.tooManyDependencies"/>
         <node name="org.netbeans.modules.java.metrics.hints.ClassMetrics.tooComplexClass"/>
         <node name="org.netbeans.modules.java.hints.MultipleLoggers"/>
         <node name="org.netbeans.modules.java.hints.ConvertAnonymousToInner"/>
-        <node name="org.netbeans.modules.java.hints.AssignmentIssues.assignmentToForLoopParam"/>
+        <node name="org.netbeans.modules.java.hints.AssignmentIssues.assignmentToForLoopParam">
+            <attribute name="enabled" value="true"/>
+        </node>
         <node name="org.netbeans.modules.java.hints.finalize.CallFinalize"/>
         <node name="org.netbeans.modules.java.hints.StaticAccess"/>
         <node name="org.netbeans.modules.java.hints.FieldForUnusedParam"/>
-        <node name="Braces_IF"/>
+        <node name="Braces_IF">
+            <attribute name="enabled" value="true"/>
+        </node>
         <node name="EmptyStatements_BLOCK"/>
         <node name="org.netbeans.modules.java.hints.perf.StringBuffer2Builder"/>
         <node name="org.netbeans.modules.java.hints.bugs.Tiny.stringReplaceAllDot"/>
@@ -183,7 +223,9 @@
         <node name="org.netbeans.modules.java.hints.ClassStructure.finalMethodInFinalClass"/>
         <node name="org.netbeans.modules.java.hints.threading.Tiny.threadStartInConstructor"/>
         <node name="Imports_STAR"/>
-        <node name="org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.packageCls"/>
+        <node name="org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.packageCls">
+            <attribute name="enabled" value="true"/>
+        </node>
         <node name="Javac_canUseLambda"/>
         <node name="org.netbeans.modules.java.metrics.hints.MethodMetrics.tooManyExceptions"/>
         <node name="org.netbeans.modules.java.hints.ClassStructure.classMayBeInterface"/>
@@ -217,14 +259,18 @@
         <node name="org.openide.util.Lookup.hint"/>
         <node name="org.netbeans.modules.java.hints.ClassStructure.markerInterface"/>
         <node name="unnecessaryContinueLabel"/>
-        <node name="org.netbeans.modules.java.hints.AssignmentIssues.assignmentToCatchBlockParameter"/>
+        <node name="org.netbeans.modules.java.hints.AssignmentIssues.assignmentToCatchBlockParameter">
+            <attribute name="enabled" value="true"/>
+        </node>
         <node name="org.netbeans.modules.java.metrics.hints.MethodMetrics.multipleLoops"/>
         <node name="org.netbeans.modules.java.hints.bugs.CloneAndCloneable.cloneWithoutSuperClone"/>
         <node name="org.netbeans.modules.java.hints.suggestions.FlipOperands"/>
         <node name="org.netbeans.modules.java.hints.suggestions.Tiny.splitDeclaration"/>
         <node name="org.netbeans.modules.java.hints.perf.SizeEqualsZero"/>
         <node name="org.netbeans.modules.java.hints.UtilityClass_1"/>
-        <node name="org.netbeans.modules.java.hints.jackpot.hintsimpl.LoggerStringConcat"/>
+        <node name="org.netbeans.modules.java.hints.jackpot.hintsimpl.LoggerStringConcat">
+            <attribute name="enabled" value="false"/>
+        </node>
         <node name="EmptyStatements_null"/>
         <node name="Imports_UNUSED"/>
         <node name="org.netbeans.modules.java.hints.MissingHashCode"/>
@@ -236,7 +282,9 @@
         <node name="org.netbeans.modules.java.hints.bugs.EqualsHint.arrayEquals"/>
         <node name="org.netbeans.modules.java.hints.DoubleCheck"/>
         <node name="org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.unusedAssignment"/>
-        <node name="org.netbeans.modules.java.hints.encapsulation.ReturnEncapsulation.array"/>
+        <node name="org.netbeans.modules.java.hints.encapsulation.ReturnEncapsulation.array">
+            <attribute name="enabled" value="true"/>
+        </node>
         <node name="org.netbeans.modules.java.hints.bugs.NPECheck"/>
         <node name="NbBundle.hint"/>
         <node name="org.netbeans.api.java.source.PositionConverter.hint"/>

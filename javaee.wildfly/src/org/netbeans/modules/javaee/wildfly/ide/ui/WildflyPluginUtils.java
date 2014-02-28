@@ -46,10 +46,8 @@ package org.netbeans.modules.javaee.wildfly.ide.ui;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import static java.io.File.separatorChar;
-import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,36 +57,16 @@ import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
 import org.openide.filesystems.JarFileSystem;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  *
  * @author Ivan Sidorkin
  */
 public class WildflyPluginUtils {
-
-    public static final String SERVER_4_XML = separatorChar + "deploy" + separatorChar + // NOI18N
-            "jbossweb-tomcat55.sar" + separatorChar + "server.xml"; // NOI18N
-
-    public static final String SERVER_4_2_XML = separatorChar + "deploy" + separatorChar + // NOI18N
-            "jboss-web.deployer" + separatorChar + "server.xml"; // NOI18N
-
-    public static final String SERVER_5_XML = separatorChar + "deploy" + separatorChar + // NOI18N
-            "jbossweb.sar" + separatorChar + "server.xml"; // NOI18N
-
-    public static final Version JBOSS_5_0_0 = new Version("5.0.0"); // NOI18N
-
-    public static final Version JBOSS_5_0_1 = new Version("5.0.1"); // NOI18N
-
-    public static final Version JBOSS_6_0_0 = new Version("6.0.0"); // NOI18N
 
     public static final Version JBOSS_7_0_0 = new Version("7.0.0"); // NOI18N
 
@@ -136,10 +114,10 @@ public class WildflyPluginUtils {
     public static String getModulesBase(String serverRoot) {
         return MODULES_BASE_7;
     }
-    
+
     public static final String getDefaultConfigurationFile(String installDir) {
-        return installDir + File.separatorChar + "standalone" 
-                + File.separatorChar + "configuration" 
+        return installDir + File.separatorChar + "standalone"
+                + File.separatorChar + "configuration"
                 + File.separatorChar + "standalone-full.xml";
     }
 
@@ -169,7 +147,7 @@ public class WildflyPluginUtils {
     }
 
     private static boolean isGoodJBInstanceLocation(File candidate, List<String> requirements) {
-        return null != candidate && candidate.exists() && candidate.canRead() 
+        return null != candidate && candidate.exists() && candidate.canRead()
                 && candidate.isDirectory()
                 && hasRequiredChildren(candidate, requirements);
     }
@@ -244,65 +222,9 @@ public class WildflyPluginUtils {
         return domainDir + separatorChar + "deployments"; //NOI18N
     }
 
-    public static String getHTTPConnectorPort(String domainDir) {
+    public static String getHTTPConnectorPort(String configFile) {
         String defaultPort = "8080"; // NOI18N
 
-        /*
-         * Following block is trying to solve different server versions.
-         */
-        File serverXmlFile = new File(domainDir + SERVER_4_XML);
-        if (!serverXmlFile.exists()) {
-            serverXmlFile = new File(domainDir + SERVER_4_2_XML);
-            if (!serverXmlFile.exists()) {
-                serverXmlFile = new File(domainDir + SERVER_5_XML);
-                if (!serverXmlFile.exists()) {
-                    return defaultPort;
-                }
-            }
-        }
-
-        InputStream inputStream = null;
-        Document document = null;
-        try {
-            inputStream = new FileInputStream(serverXmlFile);
-            try {
-                document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
-            } finally {
-                inputStream.close();
-            }
-
-            // get the root element
-            Element root = document.getDocumentElement();
-
-            NodeList children = root.getChildNodes();
-            for (int i = 0; i < children.getLength(); i++) {
-                Node child = children.item(i);
-                if (child.getNodeName().equals("Service")) {  // NOI18N
-                    NodeList nl = child.getChildNodes();
-                    for (int j = 0; j < nl.getLength(); j++) {
-                        Node ch = nl.item(j);
-
-                        if (ch.getNodeName().equals("Connector")) {  // NOI18N
-                            String port = ch.getAttributes().getNamedItem("port").getNodeValue();
-                            if (port.startsWith("$")) {
-                                // FIXME check properties somehow
-                                return defaultPort;
-                            }
-                            try {
-                                Integer.parseInt(port);
-                                return port;
-                            } catch (NumberFormatException ex) {
-                                return defaultPort;
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.INFO, null, e);
-            // it is ok
-            // it optional functionality so we don't need to look at any exception
-        }
 
         return defaultPort;
     }

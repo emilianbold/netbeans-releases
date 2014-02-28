@@ -89,7 +89,12 @@ class RfsSyncFactory extends BaseSyncFactory {
     public String getID() {
         return ID;
     }
-
+    
+    @Override
+    public boolean isCopying() {
+        return true;
+    }
+    
     @Override
     public boolean isApplicable(ExecutionEnvironment execEnv) {
         if (ENABLE_RFS && execEnv.isRemote() && ! RemoteUtil.isForeign(execEnv)) {
