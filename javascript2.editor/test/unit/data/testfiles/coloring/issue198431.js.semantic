@@ -4,6 +4,6 @@ function |>METHOD:test<|(){
     }
 
     doit();// Becomes green if statement below is added
-    this.|>FIELD:doitPublic<| = doit;
+    this.|>METHOD:doitPublic<| = doit;
 
 }
