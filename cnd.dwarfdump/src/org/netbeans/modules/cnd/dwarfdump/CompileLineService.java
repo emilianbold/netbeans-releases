@@ -47,7 +47,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -240,6 +239,7 @@ public class CompileLineService {
         private final String sourceFile;
         private Map<String,String> userMacros;
         private List<String> userPaths;
+        private List<String> userIncludes;
         private final String absolutePath;
         private final String sourceLanguage;
         private final boolean hasMain;
@@ -301,7 +301,10 @@ public class CompileLineService {
         }
 
         public final List<String> getIncludeFiles() {
-            return Collections.emptyList();
+            if (userIncludes == null) {
+                initMacrosAndPaths();
+            }
+            return userIncludes;
         }
         
         @Override
@@ -342,6 +345,7 @@ public class CompileLineService {
         
         private void initMacrosAndPaths(){
             userPaths = new ArrayList<String>();
+            userIncludes = new ArrayList<String>();
             userMacros = new LinkedHashMap<String, String>();
             Iterator<String> st = splitCommandLine(compileLine).iterator();
             while(st.hasNext()){
@@ -389,13 +393,13 @@ public class CompileLineService {
                     if (path.length()==0 && st.hasNext()){
                         path = st.next();
                     }
-                    userPaths.add(path);
+                    userIncludes.add(path);
                 } else if (option.startsWith("-imacros")){ // NOI18N
                     String path = option.substring(8);
                     if (path.length()==0 && st.hasNext()){
                         path = st.next();
                     }
-                    userPaths.add(path);
+                    userIncludes.add(path);
                 }
             }
         }
