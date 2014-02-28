@@ -53,7 +53,7 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  * @author Petr Hejl
  */
-public class JB7MessageDestinationHandler extends DefaultHandler {
+public class WildflyMessageDestinationHandler extends DefaultHandler {
 
     private final List<WildflyMessageDestination> messageDestinations = new ArrayList<WildflyMessageDestination>();
 

@@ -123,10 +123,12 @@ public abstract class WildflyDeploymentConfiguration
         return dsSupport;
     }
 
+    @Override
     public Set<Datasource> getDatasources() throws ConfigurationException {
         return getDatasourceSupport().getDatasources();
     }
 
+    @Override
     public Datasource createDatasource(String jndiName, String url,
             String username, String password, String driver)
             throws UnsupportedOperationException, ConfigurationException, DatasourceAlreadyExistsException {
@@ -199,19 +201,23 @@ public abstract class WildflyDeploymentConfiguration
             String destName, MessageDestination.Type type) throws ConfigurationException {
     }
 
+    @Override
     public void bindMessageDestinationReferenceForEjb(String ejbName, String ejbType,
             String referenceName, String connectionFactoryName,
             String destName, MessageDestination.Type type) throws ConfigurationException {
     }
 
 // -------------------------------------- EjbResourceConfiguration  -----------------------------------------
+    @Override
     public String findJndiNameForEjb(String ejbName) throws ConfigurationException {
         return null;
     }
 
+    @Override
     public void bindEjbReference(String referenceName, String jndiName) throws ConfigurationException {
     }
 
+    @Override
     public void bindEjbReferenceForEjb(String ejbName, String ejbType,
             String referenceName, String jndiName) throws ConfigurationException {
     }

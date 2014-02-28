@@ -49,7 +49,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -72,48 +71,48 @@ import org.openide.util.NbBundle;
  * @author Ivan Sidorkin
  */
 public class AddServerPropertiesVisualPanel extends JPanel {
-    
-    private final Set listeners = new HashSet();  
-            
+
+    private final Set listeners = new HashSet();
+
     private javax.swing.JComboBox  domainField;  // Domain name (list of registered domains) can be edited
-    private javax.swing.JTextField domainPathField;  //   
+    private javax.swing.JTextField domainPathField;  //
     private javax.swing.JLabel     domainLabel;
     private javax.swing.JLabel     domainPathLabel;
     private javax.swing.JLabel     label1;
     private javax.swing.JPanel     panel1;
     private javax.swing.JLabel     hostLabel;
-    private javax.swing.JTextField hostField;   
+    private javax.swing.JTextField hostField;
     private javax.swing.JLabel     portLabel;
-    private javax.swing.JTextField portField;   
+    private javax.swing.JTextField portField;
     private javax.swing.JLabel     userLabel;
-    private javax.swing.JTextField userField;    
+    private javax.swing.JTextField userField;
     private javax.swing.JLabel     passwordLabel;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JComboBox  serverType;  // Local or Remote
 
-    
+
     /** Creates a new instance of AddServerPropertiesVisualPanel */
     public AddServerPropertiesVisualPanel() {
         init();
-        setName(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "TITLE_ServerProperties")); //NOI18N 
+        setName(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "TITLE_ServerProperties")); //NOI18N
     }
-      
+
     public void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
-    
+
     public void removeChangeListener(ChangeListener l ) {
         synchronized (listeners) {
             listeners.remove(l);
         }
     }
-    
+
     private void somethingChanged() {
         fireChangeEvent();
     }
-      
+
     private void fireChangeEvent() {
         Iterator it;
         synchronized (listeners) {
@@ -124,43 +123,43 @@ public class AddServerPropertiesVisualPanel extends JPanel {
             ((ChangeListener)it.next()).stateChanged(ev);
         }
     }
-    
+
     public boolean isLocalServer(){
         return  ("Local".equals(serverType.getSelectedItem()));
     }
-    
+
     public String getHost(){
         return hostField.getText().trim();
     }
-    
+
     public String getPort(){
         return portField.getText().trim();
     }
-    
+
     public String getUser(){
         return userField.getText();
     }
-    
+
     public String getPassword(){
         return new String(passwordField.getPassword());
     }
-    
+
     public String getDomainPath(){
         return domainPathField.getText();
     }
-    
+
     public String getDomain(){
         return (String)domainField.getSelectedItem();
     }
-   
+
     private void domainChanged(){
         DomainComboModel model = (DomainComboModel)domainField.getModel();
         String path = model.getCurrentPath();
         domainPathField.setText(path);
         portField.setText(WildflyPluginUtils.getHTTPConnectorPort(path));
-        fireChangeEvent(); 
+        fireChangeEvent();
     }
-    
+
     void installLocationChanged() {
         DomainComboModel domainModel = (DomainComboModel) domainField.getModel();
         String serverLocation = WildflyPluginProperties.getInstance().getInstallLocation();
@@ -171,39 +170,39 @@ public class AddServerPropertiesVisualPanel extends JPanel {
             domainModel.setSelectedItem(domainDir.getName());
         } else {
             domainModel.addDomain(domainDir.getName(), domainDir.getAbsolutePath());
-        }    
+        }
         domainChanged();
     }
-            
+
     private void serverTypeChanged(){
-        
-        if (isLocalServer()){  //NOI18N 
+
+        if (isLocalServer()){  //NOI18N
             domainLabel.setVisible(true);
             domainField.setVisible(true);
-                    
+
             domainPathLabel.setVisible(true);
             domainPathField.setVisible(true);
 
-            hostField.setEditable(false);
+            hostField.setEditable(true);
         } else {  // REMOTE
-            
+
             domainLabel.setVisible(false);
             domainField.setVisible(false);
-            
+
             domainPathLabel.setVisible(false);
             domainPathField.setVisible(false);
 
             hostField.setEditable(true);
         }
-        
+
         somethingChanged();
     }
-    
+
     private void init(){
         java.awt.GridBagConstraints gridBagConstraints;
-        
+
         label1 = new JLabel(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "TXT_PROPERTY_TEXT")); //NOI18N
-        
+
         serverType = new JComboBox(new String[]{"Local","Remote"});//NOI18N
         serverType.addActionListener(new ActionListener(){
             @Override
@@ -211,48 +210,48 @@ public class AddServerPropertiesVisualPanel extends JPanel {
                 serverTypeChanged();
             }
         });
-       
+
 
         domainPathLabel = new JLabel(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_DomainPath"));//NOI18N
         domainPathField = new JTextField();
         domainPathField.setColumns(20);
         domainPathField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_DomainPath"));
         domainPathField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_DomainPath"));
-        
-               
+
+
         panel1 = new JPanel();
-        
+
         //Domain combobox
         domainLabel = new JLabel();
         String serverLocation = WildflyPluginProperties.getInstance().getInstallLocation();
         domainField = new JComboBox(new DomainComboModel(WildflyPluginUtils.getRegisteredDomains(serverLocation)));
         domainField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Domain"));
         domainField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Domain"));
-        
+
         domainField.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
                 domainChanged();
             }
         });
-        
+
         domainLabel.setLabelFor(domainField);
         org.openide.awt.Mnemonics.setLocalizedText(domainLabel, org.openide.util.NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Domain")); // NOI18N
-        
+
         hostLabel = new JLabel();
         org.openide.awt.Mnemonics.setLocalizedText(hostLabel, NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Host")); // NOI18N
-        
+
         hostField = new JTextField();
         hostField.setColumns(20);
-        hostField.setEditable(false);
+        hostField.setEditable(true);
         hostField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Host"));
         hostField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Host"));
         hostField.addKeyListener(new SomeChangesListener());
-        
+
         hostLabel.setLabelFor(hostField);
-        
+
         portLabel = new JLabel();
         org.openide.awt.Mnemonics.setLocalizedText(portLabel, NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Port")); // NOI18N
-        
+
         portField = new JTextField();
         portField.setColumns(20);
         portField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Port"));
@@ -261,24 +260,24 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         portField.addKeyListener(new SomeChangesListener());
 
         portLabel.setLabelFor(portField);
-        
+
         userLabel = new JLabel(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_User"));//NOI18N
         userField = new JTextField();
         userField.addKeyListener(new SomeChangesListener());
-        
+
         passwordLabel = new JLabel(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Password"));//NOI18N
         passwordField = new JPasswordField();
         passwordField.addKeyListener(new SomeChangesListener());
-        
-       
+
+
         setLayout(new java.awt.GridBagLayout());
-        
+
         setFocusable(false);
-        
+
         setMinimumSize(new java.awt.Dimension(280, 217));
        //   setNextFocusableComponent(domainPathField);
-        
-        
+
+
         //-------------- some label --------------------
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 3;
@@ -286,49 +285,49 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
         add(label1, gridBagConstraints);
-        
-        
-        
+
+
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridx = 2;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
-        
+
         add(serverType, gridBagConstraints);
-        
-        
+
+
         //-------------- domain ---------------
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(domainLabel, gridBagConstraints);
-        
-        
+
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
         add(domainField, gridBagConstraints);
-        
-        
-        
-        
+
+
+
+
         //-------------- domain path ---------------
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
         add(domainPathLabel, gridBagConstraints);
-        
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
         add(domainPathField, gridBagConstraints);
-        
+
         //-------------- host ---------------
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -336,8 +335,8 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(hostLabel, gridBagConstraints);
-        
-        
+
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridx = 1;
@@ -345,56 +344,56 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
         add(hostField, gridBagConstraints);
-        
-        
+
+
         //-------------- port ---------------
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(portLabel, gridBagConstraints);
-        
-        
+
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
         add(portField, gridBagConstraints);
-        
-        
+
+
         //-------------- User ---------------
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(userLabel, gridBagConstraints);
-        
-        
+
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
         add(userField, gridBagConstraints);
-        
-        
-        
+
+
+
         //-------------- Password ---------------
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(passwordLabel, gridBagConstraints);
-        
-        
+
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
         add(passwordField, gridBagConstraints);
-        
+
         //-------------  panell to fill out free space ------------------------
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -402,73 +401,73 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        
-        
+
+
         domainPathField.setEnabled(false);
-        
+
         userField.setVisible(false);
         userLabel.setVisible(false);
         passwordField.setVisible(false);
         passwordLabel.setVisible(false);
-        
-        
+
+
         serverType.setVisible(false);
-        
+
         add(panel1, gridBagConstraints);
-        
+
         hostField.setText("localhost");//NOI18N
         portField.setText(WildflyPluginUtils.getHTTPConnectorPort(domainPathField.getText()));//NOI18N
     //    serverTypeChanged();
         domainChanged();
-        
+
     }
-    
-    
+
+
     class SomeChangesListener implements KeyListener{
-        
+
         @Override
         public void keyTyped(KeyEvent e){}
-        
+
         @Override
         public void keyPressed(KeyEvent e){}
-        
+
         @Override
         public void keyReleased(KeyEvent e){ somethingChanged();}
-        
-    }      
-    
+
+    }
+
     private String browseDomainLocation(){
         String insLocation = null;
         JFileChooser chooser = getJFileChooser();
         int returnValue = chooser.showDialog(this, NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_ChooseButton")); //NOI18N
-        
+
         if(returnValue == JFileChooser.APPROVE_OPTION){
             insLocation = chooser.getSelectedFile().getAbsolutePath();
         }
         return insLocation;
     }
-    
+
     private JFileChooser getJFileChooser(){
         JFileChooser chooser = new JFileChooser();
-        
+
         chooser.setDialogTitle("LBL_Chooser_Name"); //NOI18N
         chooser.setDialogType(JFileChooser.CUSTOM_DIALOG);
-        
+
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setApproveButtonMnemonic("Choose_Button_Mnemonic".charAt(0)); //NOI18N
         chooser.setMultiSelectionEnabled(false);
         chooser.addChoosableFileFilter(new dirFilter());
         chooser.setAcceptAllFileFilterUsed(false);
         chooser.setApproveButtonToolTipText("LBL_Chooser_Name"); //NOI18N
-        
+
         chooser.getAccessibleContext().setAccessibleName("LBL_Chooser_Name"); //NOI18N
         chooser.getAccessibleContext().setAccessibleDescription("LBL_Chooser_Name"); //NOI18N
-        
+
         return chooser;
     }
-    
+
     private static class dirFilter extends javax.swing.filechooser.FileFilter {
-        
+
         @Override
         public boolean accept(File f) {
             if(!f.exists() || !f.canRead() || !f.isDirectory() ) {
@@ -477,22 +476,22 @@ public class AddServerPropertiesVisualPanel extends JPanel {
                 return true;
             }
         }
-        
+
         @Override
         public String getDescription() {
             return NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_DirType"); //NOI18N
         }
-        
+
     }
-    
+
 }
 
 
 class DomainComboModel extends AbstractListModel implements ComboBoxModel{
     private int current = -1;
     private String[][] domains = null;
-    
-    
+
+
     public void addDomain(String domain, String path){
         String[][] newDomains = new String[domains.length+1][2];
         int i = 0;
@@ -503,24 +502,24 @@ class DomainComboModel extends AbstractListModel implements ComboBoxModel{
         newDomains[i][0] = domain;
         newDomains[i][1] = path;
         domains = newDomains;
-        
+
     }
-    
+
     public DomainComboModel(Map domains){
         setDomains(domains);
     }
-    
+
     public void setDomains(Map domains) {
-        
+
         current = -1;
         this.domains = null;
-        
+
         int len = domains.size();
         this.domains = new String[len][2];
         Set en = domains.keySet();
-        
+
         if (len > 0) current = 0;
-        
+
         int i = 0;
         for(Object key : en) {
             this.domains[i][0] = (String)key;
@@ -530,14 +529,14 @@ class DomainComboModel extends AbstractListModel implements ComboBoxModel{
             i++;
         }
     }
-    
+
     @Override
     public Object  getSelectedItem() {
         if (current ==-1 )
             return "";
         return domains[current][0];
     }
-    
+
     @Override
     public void setSelectedItem(Object anItem) {
         for (int i = 0; i < getSize(); i++){
@@ -551,23 +550,23 @@ class DomainComboModel extends AbstractListModel implements ComboBoxModel{
         //currentVal = (String)anItem;
         fireContentsChanged(this, -1, -1);
     }
-    
+
     @Override
     public Object getElementAt(int index){
         return domains[index][0];
     }
-    
+
     @Override
     public int 	getSize(){
         return domains.length;
     }
     //----------------------------------------------------
-    
+
     public String getCurrentPath(){
         if (current == -1) return "";
         return domains[current][1];
     }
-    
+
     public boolean hasDomain(String domain){
         for (int i = 0; i < getSize(); i++){
             if (domains[i][0].equals(domain)){
@@ -576,7 +575,7 @@ class DomainComboModel extends AbstractListModel implements ComboBoxModel{
         }
         return false;
     }
-    
+
 }
 
 

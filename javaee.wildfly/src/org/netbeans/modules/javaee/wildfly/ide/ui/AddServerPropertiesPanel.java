@@ -49,7 +49,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import javax.swing.JFileChooser;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
@@ -66,24 +65,24 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
     private WizardDescriptor wizard;
     private AddServerPropertiesVisualPanel component;
     private WildflyInstantiatingIterator instantiatingIterator;
-    
+
     /** Creates a new instance of AddServerPropertiesPanel */
     public AddServerPropertiesPanel(WildflyInstantiatingIterator instantiatingIterator) {
         this.instantiatingIterator = instantiatingIterator;
     }
-    
+
     @Override
     public boolean isValid() {
         AddServerPropertiesVisualPanel panel = (AddServerPropertiesVisualPanel)getComponent();
-        
+
         String host = panel.getHost();
         String port = panel.getPort();
-        
+
         if(panel.isLocalServer()){
             // wrong domain path
             String path = panel.getDomainPath();
             File serverDirectory = new File(WildflyPluginProperties.getInstance().getInstallLocation());
-            
+
             if (path.length() < 1) {
                 wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
                         NbBundle.getMessage(AddServerPropertiesPanel.class, "MSG_SpecifyDomainPath"));  //NOI18N
@@ -92,6 +91,11 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
             if (!WildflyPluginUtils.isGoodJBInstanceLocation(serverDirectory, new File(path))) {
                 wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(AddServerPropertiesPanel.class, "MSG_WrongDomainPath"));  //NOI18N
+                return false;
+            }
+            if (host.length() < 1) {
+                wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
+                        NbBundle.getMessage(AddServerPropertiesPanel.class, "MSG_EnterHost"));  //NOI18N
                 return false;
             }
 
@@ -126,7 +130,7 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
                     continue;
                 }
             }
-            
+
             try{
                 Integer.parseInt(port);
             } catch(Exception e) {
@@ -134,8 +138,8 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
                         NbBundle.getMessage(AddServerPropertiesPanel.class, "MSG_InvalidPort"));  //NOI18N
                 return false;
             }
-            
-            
+
+
         } else { //remote
             if (host.length() < 1){
                 wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
@@ -148,20 +152,20 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
                 return false;
             }
         }
-        
+
         wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
         wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
-        
+
         instantiatingIterator.setHost(host);
         instantiatingIterator.setPort(port);
         instantiatingIterator.setServer(panel.getDomain());
         instantiatingIterator.setServerPath(panel.getDomainPath());
-        instantiatingIterator.setDeployDir(WildflyPluginUtils.getDeployDir( panel.getDomainPath()));        
-        
-        return true;
-    } 
+        instantiatingIterator.setDeployDir(WildflyPluginUtils.getDeployDir( panel.getDomainPath()));
 
-    
+        return true;
+    }
+
+
     @Override
     public Component getComponent() {
         if (component == null) {
@@ -170,12 +174,12 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
         }
         return component;
     }
-    
+
     @Override
     public void stateChanged(ChangeEvent ev) {
         fireChangeEvent(ev);
     }
-    
+
     private void fireChangeEvent(ChangeEvent ev) {
         Iterator it;
         synchronized (listeners) {
@@ -185,7 +189,7 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
             ((ChangeListener)it.next()).stateChanged(ev);
         }
     }
-    
+
     private final transient Set listeners = new HashSet(1);
     @Override
     public void removeChangeListener(ChangeListener l) {
@@ -193,29 +197,29 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
             listeners.remove(l);
         }
     }
-    
+
     @Override
     public void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
-    
+
     @Override
     public void readSettings(Object settings) {
         if (wizard == null)
             wizard = (WizardDescriptor)settings;
     }
-    
+
     @Override
     public void storeSettings(Object settings) {
     }
-    
+
     @Override
     public HelpCtx getHelp() {
         return new HelpCtx("j2eeplugins_registering_app_server_jboss_properties"); //NOI18N
     }
-    
+
     void installLocationChanged() {
         if (component != null)
             component.installLocationChanged();
