@@ -344,9 +344,9 @@ public class NewJ2MEFileWizardIterator implements WizardDescriptor.AsynchronousI
         midletsUpdate.append(createdMidletName);
         midletsUpdate.append(",,"); //NOI18N
         midletsUpdate.append(createdMidletClass);
-        midletsUpdate.append("\n");
+        midletsUpdate.append("\n"); //NOI18N
         if (midlets != null) {
-            midletsUpdate.append(midlets); //NOI18N
+            midletsUpdate.append(midlets);
         }
         ep.put(J2MEProjectProperties.MANIFEST_MIDLETS, midletsUpdate.toString());
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
