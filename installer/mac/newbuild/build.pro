@@ -47,10 +47,10 @@
     <property name="install.dir" value="/Applications/NetBeans"/>
     
     <!-- Base IDE properties   -->       
-    <property name="baseide.version" value="8.0 RC1"/>
-    <property name="baseide.id" value="8.0_RC1"/>
-    <property name="appname" value="NetBeans 8.0 RC1"/> 
-    <property name="mpkg.name_nb" value="NetBeans 8.0 RC1"/> 
+    <property name="baseide.version" value="8.0"/>
+    <property name="baseide.id" value="8.0"/>
+    <property name="appname" value="NetBeans 8.0"/> 
+    <property name="mpkg.name_nb" value="NetBeans 8.0"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
     <property name="nbClusterDir" value="nb"/>      
     <property name="nb.check.build.number" value="0"/>
@@ -60,9 +60,9 @@
     <!-- Unique ID in db/receipts for release build -->
     <property name="nb.id" value="${baseide.id}"/>
 
-    <property name="appversion" value="8.0 RC1"/>
-    <property name="nb.display.version.long"  value="8.0 RC1"/>
-    <property name="nb.display.version.short" value="8.0 RC1"/>
+    <property name="appversion" value="8.0"/>
+    <property name="nb.display.version.long"  value="8.0"/>
+    <property name="nb.display.version.short" value="8.0"/>
 
     <!-- Tomcat properties   -->    
     <property name="tomcat.version" value="8.0.3"/>
