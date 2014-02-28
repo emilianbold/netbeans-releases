@@ -54,8 +54,6 @@ import org.netbeans.modules.javaee.wildfly.customizer.Customizer;
 import org.netbeans.modules.javaee.wildfly.customizer.CustomizerDataSupport;
 import org.netbeans.modules.javaee.wildfly.ide.WildflyJ2eePlatformFactory;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
-import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
-import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.OpenServerLogAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.ShowAdminToolAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.WildflyEditConfigAction;
@@ -83,8 +81,6 @@ import org.openide.util.actions.SystemAction;
 public class WildflyManagerNode extends AbstractNode implements Node.Cookie {
 
     private final Lookup lookup;
-    private static final String ADMIN_URL = "/web-console/"; //NOI18N
-    private static final String ADMIN_URL_60 = "/admin-console/"; //NOI18N
     private static final String ADMIN_URL_70 = "/console"; //NOI18N
     private static final String HTTP_HEADER = "http://";
 
@@ -113,13 +109,7 @@ public class WildflyManagerNode extends AbstractNode implements Node.Cookie {
     }
 
     public String getAdminURL() {
-        Version version = getDeploymentManager().getServerVersion();
-        if (version != null && WildflyPluginUtils.JBOSS_7_0_0.compareTo(version) <= 0) {
-            return HTTP_HEADER + getDeploymentManager().getHost() + ":" + getDeploymentManager().getPort() + ADMIN_URL_70;
-        } else if (version != null && WildflyPluginUtils.JBOSS_6_0_0.compareTo(version) <= 0) {
-            return HTTP_HEADER + getDeploymentManager().getHost() + ":" + getDeploymentManager().getPort() + ADMIN_URL_60;
-        }
-        return HTTP_HEADER + getDeploymentManager().getHost() + ":" + getDeploymentManager().getPort() + ADMIN_URL;
+        return HTTP_HEADER + getDeploymentManager().getHost() + ":" + getDeploymentManager().getPort() + ADMIN_URL_70;
     }
 
     @Override
