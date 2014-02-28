@@ -1,0 +1,4 @@
+myLib:VARIABLE:[PUBLIC]:ESCAPED{myLib}<font color="#999999">ESCAPED{ : }MyLib</font>:
+MyLib:CONSTRUCTOR:[PUBLIC]:ESCAPED{MyLib}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }MyLib</font>:
+  PublicAndPrivateUsageFunc:METHOD:[PRIVATE]:ESCAPED{PublicAndPrivateUsageFunc}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{arg}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
+  publicInnerFunc:METHOD:[PUBLIC]:ESCAPED{publicInnerFunc}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{arg}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:

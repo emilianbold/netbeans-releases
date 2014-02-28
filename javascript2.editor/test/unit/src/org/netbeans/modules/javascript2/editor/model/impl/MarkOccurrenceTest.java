@@ -1031,6 +1031,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/model/issue242408.js", "Cube.prototype.f^oo = test;", true);
     }
     
+    public void testIssue242454_01() throws Exception {
+        checkOccurrences("testfiles/model/issue242454.js", "this.publicInnerFunc = PublicAndPriv^ateUsageFunc;", true);
+    }
+    
    private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

@@ -55,6 +55,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
+import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.openide.util.ImageUtilities;
@@ -119,7 +120,9 @@ public class JsStructureScanner implements StructureScanner {
                 // don't count children for functions and methods and anonyms
                 continue;
             }
-            children = getEmbededItems(result, child, children);
+            if (!(child instanceof JsObjectReference)) {
+                children = getEmbededItems(result, child, children);
+            }
             if ((child.hasExactName() || child.isAnonymous()) && child.getJSKind().isFunction()) {
                 JsFunction function = (JsFunction)child;
                 if (function.isAnonymous()) {
