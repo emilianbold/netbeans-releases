@@ -312,7 +312,12 @@ class RemoteSyncActions {
             }
             cacheActiveNodes(activatedNodes);
             ExecutionEnvironment execEnv = getEnv(activatedNodes);
-            enabled = execEnv != null && execEnv.isRemote();
+            if(execEnv != null && execEnv.isRemote()) {
+                enabled = ServerList.get(execEnv).getSyncFactory().isCopying();
+            } else {
+                enabled = false;
+            }
+            
             return enabled;
         }
 
