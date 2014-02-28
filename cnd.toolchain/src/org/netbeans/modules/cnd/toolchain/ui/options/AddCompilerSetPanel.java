@@ -114,6 +114,9 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
 
         List<CompilerFlavor> list = CompilerFlavorImpl.getFlavors(csm.getPlatform());
         for (CompilerFlavor cf : list) {
+            if (cf.getToolchainDescriptor().isAbstract()) {
+                continue;
+            }
             cbFamily.addItem(new FlavorWrapper(cf));
         }
         // add unknown as well
