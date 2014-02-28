@@ -137,7 +137,7 @@ public final class CompilerSetImpl extends CompilerSet {
             String displayName = extractDisplayName(flavor, productName);
             String name = createName(flavor, displayName);
             if (flavor instanceof CompilerFlavorImpl) {
-                CompilerFlavorImpl.putProductName((CompilerFlavorImpl) flavor, productName);
+                CompilerFlavorImpl.putProductName((CompilerFlavorImpl) flavor, displayName);
             }
             return new CompilerSetImpl(flavor, directory, name, displayName);
         }
@@ -230,11 +230,11 @@ public final class CompilerSetImpl extends CompilerSet {
                 return displayName.substring(0, start)+displayName.substring(start+1, end)+displayName.substring(end+1);
             }
         }
-        if (productName == null) {
+        //if (productName == null) {
             return displayName;
-        } else {
-            return productName;
-        }
+        //} else {
+        //    return productName;
+        //}
     }
     
     /** Creates a new instance of CompilerSet */
