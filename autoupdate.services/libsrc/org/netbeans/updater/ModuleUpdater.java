@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -207,11 +207,13 @@ public final class ModuleUpdater extends Thread {
         } else {
             files2clustersForInstall = new HashMap<File, Collection<File>> ();
             for (File nbm : context.forInstall()) {
-                File cluster = getCluster (nbm);
-                if (files2clustersForInstall.get (cluster) == null) {
-                    files2clustersForInstall.put (cluster, new HashSet<File> ());
+                if (nbm.exists()) {
+                    File cluster = getCluster (nbm);
+                    if (files2clustersForInstall.get (cluster) == null) {
+                        files2clustersForInstall.put (cluster, new HashSet<File> ());
+                    }
+                    files2clustersForInstall.get (cluster).add (nbm);
                 }
-                files2clustersForInstall.get (cluster).add (nbm);
             }
         }
     }
