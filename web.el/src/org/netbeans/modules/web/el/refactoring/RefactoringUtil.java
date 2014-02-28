@@ -221,9 +221,11 @@ public final class RefactoringUtil {
         OffsetRange nodeRange = elem.getOriginalOffset(targetNode);
 
         CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(elem.getSnapshot().getSource().getFileObject());
-        PositionRef start = editor.createPositionRef(nodeRange.getStart(), Bias.Forward);
-        PositionRef end = editor.createPositionRef(nodeRange.getEnd(), Bias.Backward);
-
-        return new PositionRef[]{start, end};
+        if (editor != null) {
+            PositionRef start = editor.createPositionRef(nodeRange.getStart(), Bias.Forward);
+            PositionRef end = editor.createPositionRef(nodeRange.getEnd(), Bias.Backward);
+            return new PositionRef[]{start, end};
+        }
+        return new PositionRef[0];
     }
 }
