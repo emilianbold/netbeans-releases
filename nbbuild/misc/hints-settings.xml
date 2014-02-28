@@ -268,9 +268,7 @@
         <node name="org.netbeans.modules.java.hints.suggestions.Tiny.splitDeclaration"/>
         <node name="org.netbeans.modules.java.hints.perf.SizeEqualsZero"/>
         <node name="org.netbeans.modules.java.hints.UtilityClass_1"/>
-        <node name="org.netbeans.modules.java.hints.jackpot.hintsimpl.LoggerStringConcat">
-            <attribute name="enabled" value="false"/>
-        </node>
+        <node name="org.netbeans.modules.java.hints.jackpot.hintsimpl.LoggerStringConcat"/>
         <node name="EmptyStatements_null"/>
         <node name="Imports_UNUSED"/>
         <node name="org.netbeans.modules.java.hints.MissingHashCode"/>
