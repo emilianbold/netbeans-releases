@@ -300,8 +300,8 @@ public final class EvaluationWindow extends TopComponent {
                             if (enter.equals(ks)) {
                                 for (ActionListener actionListener : listeners) {
                                     actionListener.actionPerformed(new ActionEvent(this, 0, e.toString()));
-                                    return;
                                 }
+                                return;
                             }
                         }
                         
