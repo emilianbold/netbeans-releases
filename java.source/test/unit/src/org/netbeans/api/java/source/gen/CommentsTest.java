@@ -1614,6 +1614,55 @@ public class CommentsTest extends GeneratorTestBase {
         assertEquals(golden, res);
     }
     
+    // modification - no comment on a separate line
+    public void testAddBraces241836() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    private void test() {\n" +
+            "        if (true) //NOI18N\n" +
+            "            //a\n" +
+            "            System.out.println(0); //b\n" +
+            "            //c\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    private void test() {\n" +
+            "        if (true) { //NOI18N\n" +
+            "            //a\n" +
+            "            System.out.println(0); //b\n" +
+            "            //c\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                final TreeMaker make = workingCopy.getTreeMaker();
+                new TreeScanner<Void, Void>() {
+                    @Override public Void visitIf(IfTree node, Void p) {
+                        node = GeneratorUtilities.get(workingCopy).importComments(node, cut);
+                        workingCopy.rewrite(node.getThenStatement(), make.Block(Collections.singletonList(node.getThenStatement()), false));
+                        return super.visitIf(node, p);
+                    }
+                }.scan(cut, null);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     public void testComments175889b() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
