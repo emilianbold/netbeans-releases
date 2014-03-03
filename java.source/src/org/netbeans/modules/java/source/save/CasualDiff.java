@@ -389,6 +389,14 @@ public class CasualDiff {
         int end = td.diffList(originalJC, nueJC, start, est, Measure.DEFAULT, td.printer);
 
         String resultSrc = td.printer.toString();
+        if (start > end) {
+            // diagnostic for the purpose of #200152
+            LOG.log(INFO, "Illegal values: start = " + start + "; end = " + end + "." +
+                "Please attach your messages.log to issue #200152 (https://netbeans.org/bugzilla/show_bug.cgi?id=200152)");
+            LOG.log(INFO, "-----\n" + td.diffContext.origText + "-----\n");
+            LOG.log(INFO, "Orig imports: " + original);
+            LOG.log(INFO, "New imports: " + nue);
+        }
         String originalText = td.diffContext.origText.substring(start, end);
         userInfo.putAll(td.diffInfo);
 
