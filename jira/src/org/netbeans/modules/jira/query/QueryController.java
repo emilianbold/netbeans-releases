@@ -892,7 +892,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     private void onCancelChanges() {
         if(query.getDisplayName() != null) {             
             resetFields();
-            if(jiraFilter != null) {
+            if(modifiable && jiraFilter != null) {
                 postPopulate((FilterDefinition) jiraFilter, false);
             }
             changed(false);
