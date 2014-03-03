@@ -601,7 +601,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         }
     }
 
-    public String readFile(File file) throws IOException {
+    public static String readFile(File file) throws IOException {
         BufferedReader rdr = new BufferedReader(new FileReader(file));
         StringBuilder sb = new StringBuilder();
         String line;
@@ -612,7 +612,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         return sb.toString();
     }
 
-    protected String readFile(FileObject fo) throws IOException {
+    protected static String readFile(FileObject fo) throws IOException {
         assertTrue("File " +  fo.getPath() + " does not exist", fo.isValid());
         InputStream is = fo.getInputStream();
         BufferedReader rdr = new BufferedReader(new InputStreamReader(is));
