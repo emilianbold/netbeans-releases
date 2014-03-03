@@ -334,18 +334,42 @@ public final class CreateElement implements ErrorRule<Void> {
         Set<ElementKind> fixTypes = EnumSet.noneOf(ElementKind.class);
         TypeMirror[] superType = new TypeMirror[1];
         int[] numTypeParameters = new int[1];
-        List<? extends TypeMirror> types = resolveType(fixTypes, info, parent, errorPath.getLeaf(), offset, superType, numTypeParameters);
+        List<TypeMirror> types = (List<TypeMirror>)resolveType(fixTypes, info, parent, errorPath.getLeaf(), offset, superType, numTypeParameters);
         ElementKind classType = getClassType(fixTypes);
-
-        if (superType[0] == null && types != null && !types.isEmpty()) superType[0] = types.get(0);
         
+        final TypeMirror type;
+        
+        if (types != null && !types.isEmpty()) {
+            List<TypeMirror> resolvedTypes = null;
+            int i = 0;
+            for (Iterator<TypeMirror> it = types.iterator(); it.hasNext(); ) {
+                final TypeMirror t = it.next();
+                final TypeMirror resolved = Utilities.resolveCapturedType(info, t);
+                if (resolved != t) {
+                    if (resolvedTypes == null) {
+                        resolvedTypes = new ArrayList(types);
+                        types = resolvedTypes;
+                    }
+                    resolvedTypes.set(i, resolved);
+                }
+                i++;
+            }
+            //XXX: should reasonably consider all the found type candidates, not only the one:
+            type = types.get(0);
+            
+            if (superType[0] == null) {
+                // the type must be already un-captured.
+                superType[0] = type;
+            }
+        } else {
+            type = null;
+        }
+
         if (target.getKind() == ElementKind.PACKAGE) {
             result.addAll(prepareCreateOuterClassFix(info, null, target, modifiers, simpleName, null, superType[0], classType != null ? classType : ElementKind.CLASS, numTypeParameters[0]));
             return result;
         }
         
-        //XXX: should reasonably consider all the found type candidates, not only the one:
-        final TypeMirror type = types != null && !types.isEmpty() && types.get(0) != null ? Utilities.resolveCapturedType(info, types.get(0)) : null;
         TypeElement outermostTypeElement = source != null ? info.getElementUtilities().outermostTypeElement(source) : null;
 
         if (newClass != null) {
@@ -393,7 +417,7 @@ public final class CreateElement implements ErrorRule<Void> {
                     result.addAll(prepareCreateInnerClassFix(info, null, outermostTypeElement, EnumSet.of(outermostTypeElement != null && outermostTypeElement.getKind().isInterface() ? Modifier.PUBLIC : Modifier.PRIVATE, Modifier.STATIC), simpleName, null, superType[0], classType, numTypeParameters[0]));
             }
         }
-
+        // check if this may be tested above, just after assignment to a type
         if (type == null || type.getKind() == TypeKind.VOID || type.getKind() == TypeKind.OTHER || type.getKind() == TypeKind.EXECUTABLE) {
             return result;
         }
