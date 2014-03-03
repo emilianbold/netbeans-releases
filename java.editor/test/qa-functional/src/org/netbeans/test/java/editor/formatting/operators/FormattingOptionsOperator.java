@@ -207,6 +207,8 @@ public class FormattingOptionsOperator extends NbDialogOperator {
     private AlignmentOperator alignmentOperator;
     private BracesOperator bracesOperator;
     private WrappingOperator wrappingOperator;
+    private BlankLinesOperatror blankLinesOperatror;
+    private SpacesOperator spacesOperator;
 
     public AllLanguageTabsAndIndentsOperator getAllLanguageTabsAndIndentsOperator() {
         if (allLanguageTabsAndIndentsOperator == null) {
@@ -236,11 +238,27 @@ public class FormattingOptionsOperator extends NbDialogOperator {
         return bracesOperator;
     }
     
-        public WrappingOperator getWrappingOperator() {
+    public WrappingOperator getWrappingOperator() {
         if (wrappingOperator == null) {
             wrappingOperator = new WrappingOperator(this);
         }
         return wrappingOperator;
+
+    }
+    
+    public BlankLinesOperatror getBlankLinesOperatror() {
+        if (blankLinesOperatror == null) {
+            blankLinesOperatror = new BlankLinesOperatror(this);
+        }
+        return blankLinesOperatror;
+
+    }
+    
+    public SpacesOperator getSpacesOperatror() {
+        if (spacesOperator == null) {
+            spacesOperator = new SpacesOperator(this);
+        }
+        return spacesOperator;
 
     }
 
@@ -262,6 +280,13 @@ public class FormattingOptionsOperator extends NbDialogOperator {
             if(isModified(WrappingOperator.Settings.class)) {
                 formattingOperator.getWrappingOperator().restoreDefaultsValues();
             }
+            if(isModified(BlankLinesOperatror.Settings.class)) {
+                formattingOperator.getBlankLinesOperatror().restoreDefaultsValues();
+            }
+            if(SpacesOperator.isModfied()) {
+                formattingOperator.getSpacesOperatror().restoreDefaultsValues();
+            }
+            
         } finally {
             formattingOperator.ok();
         }
