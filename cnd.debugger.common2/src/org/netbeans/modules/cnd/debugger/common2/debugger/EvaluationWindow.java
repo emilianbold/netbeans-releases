@@ -245,7 +245,7 @@ public final class EvaluationWindow extends TopComponent {
         ta.setCaretPosition(ta.getDocument().getLength());
         updateWindow();
     }
-
+    
     private void updateWindow () {
         int i, k;
         
@@ -290,22 +290,25 @@ public final class EvaluationWindow extends TopComponent {
 
                     public ExpressionEditorPane() {
                         super(MIMENames.CPLUSPLUS_MIME_TYPE, ""); //NOI18N
+                        restrictEvents(
+                                getInputMap(),
+                                KeyEvent.VK_ENTER, KeyEvent.VK_ESCAPE, KeyEvent.VK_TAB
+                        );              
                     }
                     
                     @Override
                     protected void processKeyEvent(KeyEvent e) {
+                        super.processKeyEvent(e);
                         KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
                         KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
                         if (KeyEvent.KEY_PRESSED == e.getID()) {
-                            if (enter.equals(ks)) {
+                            if (enter.equals(ks) && !e.isConsumed()) {
                                 for (ActionListener actionListener : listeners) {
                                     actionListener.actionPerformed(new ActionEvent(this, 0, e.toString()));
                                 }
                                 return;
                             }
                         }
-                        
-                        super.processKeyEvent(e);
                     }
                     
                     public void addActionListener(ActionListener l) {
@@ -359,7 +362,7 @@ public final class EvaluationWindow extends TopComponent {
                     pane.removeActionListener(l);
                 }
             });
-            
+                 
             exprList.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -442,6 +445,11 @@ public final class EvaluationWindow extends TopComponent {
             ta.addMouseListener(popupListener);
             ta.setText(null);
             ta.setCaretPosition(0);
+            
+            restrictEvents(
+                    exprList.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT),
+                    KeyEvent.VK_ENTER, KeyEvent.VK_ESCAPE, KeyEvent.VK_TAB
+            );            
         }
 /*
        	k = current_addrs.size();
@@ -450,6 +458,14 @@ public final class EvaluationWindow extends TopComponent {
 	    */
 
         invalidate();
+    }
+    
+    private final void restrictEvents(InputMap im, int ... events) {
+        final String NO_ACTION = "no-action"; // NOI18N
+        for (int event : events) {
+            final KeyStroke ks = KeyStroke.getKeyStroke(event, 0);
+            im.put(ks, NO_ACTION);
+        }
     }
 
     private class FormatListener implements ActionListener {

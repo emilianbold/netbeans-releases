@@ -123,6 +123,12 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     // ------------ delegating methods -------------------
 
     @Override
+    public long getSize() {
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
+        return (delegate == null) ? 0 : delegate.getSize();        
+    }
+
+    @Override
     protected boolean hasCache() {
         RemoteFileObjectBase delegate = getCanonicalDelegate();
         return (delegate == null) ? false : delegate.hasCache();
