@@ -169,6 +169,7 @@ CLASS      ClassName                       [PUBLIC]   issue194300.php
 CLASS      ClassName123                    [PUBLIC]   issue209608.php
 CLASS      Cls1                            [PUBLIC]   First
 CLASS      Cls1                            [PUBLIC]   TestCase.php
+CLASS      Cls1                            [PUBLIC]   issue242351.php
 CLASS      Cls136188                       [PUBLIC]   issue136188.php
 CLASS      Cls149519                       [PUBLIC]   issue149519.php
 CLASS      Cls2                            [PUBLIC]   Second
@@ -233,6 +234,7 @@ CLASS      I146187Parent1                  [PUBLIC]   issue146187.php
 CLASS      I146187Parent2                  [PUBLIC]   issue146187.php
 CLASS      If1                             [PUBLIC]   tests166339.php
 CLASS      If2                             [PUBLIC]   tests166339.php
+CLASS      Iface1                          [PUBLIC]   issue242351.php
 CLASS      Image                           [PUBLIC]   Bar
 CLASS      Image                           [PUBLIC]   Foo
 CLASS      Index                           [PUBLIC]   issue208193.php
@@ -247,6 +249,8 @@ CLASS      Interface1                      [PUBLIC]   test204104.php
 CLASS      Interface1                      [PUBLIC]   test204104_02.php
 CLASS      Interface2                      [PUBLIC]   test204104.php
 CLASS      Interface2                      [PUBLIC]   test204104_02.php
+CLASS      InterfaceName1                  [PUBLIC]   issue242398_01.php
+CLASS      InterfaceName2                  [PUBLIC]   issue242398_02.php
 CLASS      InvisibleClass                  [PUBLIC]   issue194875.php
 CLASS      InvisibleClass                  [PUBLIC]   issue201310.php
 CLASS      InvisibleClassFromNs            [PUBLIC]   Extra

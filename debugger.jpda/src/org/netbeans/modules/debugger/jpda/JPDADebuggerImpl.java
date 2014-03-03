@@ -128,6 +128,7 @@ import org.netbeans.api.debugger.jpda.ListeningDICookie;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.breakpoints.BreakpointsEngineListener;
 import org.netbeans.modules.debugger.jpda.expr.EvaluatorExpression;
+import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.LocalsTreeModel;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
@@ -1002,7 +1003,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         Method method,
         Value[] arguments
     ) throws InvalidExpressionException {
-        return invokeMethod(null, reference, null, method, arguments, 0);
+        return invokeMethod(null, reference, null, method, arguments, 0, null);
     }
 
     public Value invokeMethod (
@@ -1011,7 +1012,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         Value[] arguments,
         int maxLength
     ) throws InvalidExpressionException {
-        return invokeMethod(null, reference, null, method, arguments, maxLength);
+        return invokeMethod(null, reference, null, method, arguments, maxLength, null);
     }
 
     /**
@@ -1023,7 +1024,17 @@ public class JPDADebuggerImpl extends JPDADebugger {
         Method method,
         Value[] arguments
     ) throws InvalidExpressionException {
-        return invokeMethod(thread, reference, null, method, arguments, 0);
+        return invokeMethod(thread, reference, method, arguments, null);
+    }
+
+    public Value invokeMethod (
+        JPDAThreadImpl thread,
+        ObjectReference reference,
+        Method method,
+        Value[] arguments,
+        InvocationExceptionTranslated existingInvocationException
+    ) throws InvalidExpressionException {
+        return invokeMethod(thread, reference, null, method, arguments, 0, existingInvocationException);
     }
 
     /**
@@ -1035,7 +1046,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         Method method,
         Value[] arguments
     ) throws InvalidExpressionException {
-        return invokeMethod(thread, null, classType, method, arguments, 0);
+        return invokeMethod(thread, null, classType, method, arguments, 0, null);
     }
 
     private Value invokeMethod (
@@ -1044,7 +1055,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
         ClassType classType,
         Method method,
         Value[] arguments,
-        int maxLength
+        int maxLength,
+        InvocationExceptionTranslated existingInvocationException
     ) throws InvalidExpressionException {
         synchronized (currentThreadAndFrameLock) {
             if (thread == null && currentThread == null) {
@@ -1097,7 +1109,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
                                 method,
                                 tr,
                                 Arrays.asList (arguments),
-                                this
+                                this,
+                                existingInvocationException
                             );
                     } else {
                         v = org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
@@ -1106,7 +1119,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
                                 method,
                                 tr,
                                 Arrays.asList (arguments),
-                                this
+                                this,
+                                existingInvocationException
                             );
                     }
                     if (maxLength > 0 && maxLength < Integer.MAX_VALUE && (v instanceof StringReference)) {

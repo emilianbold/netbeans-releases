@@ -47,6 +47,7 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.java.editor.occurrences.MarkOccurrencesTest;
 import org.netbeans.test.java.editor.actions.JavaEditActionsTest;
 import org.netbeans.test.java.editor.actions.JavaNavigationActionsTest;
+import org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs;
 import org.netbeans.test.java.editor.codegeneration.CreateConstructorTest;
 import org.netbeans.test.java.editor.codegeneration.CreateEqualsHashcodeTest;
 import org.netbeans.test.java.editor.codegeneration.CreateGetterSetterTest;
@@ -56,6 +57,7 @@ import org.netbeans.test.java.editor.completiongui.GuiTest;
 import org.netbeans.test.java.editor.folding.JavaFoldsNavigationTest;
 import org.netbeans.test.java.editor.folding.JavaFoldsTest;
 import org.netbeans.test.java.editor.formatting.BasicTest;
+import org.netbeans.test.java.editor.remove.RemoveSurroundingTest;
 import org.netbeans.test.java.editor.semantic.SemanticHighlightTest;
 import org.netbeans.test.java.editor.smart_bracket.JavaSmartBracketTest;
 import org.netbeans.test.java.editor.smart_enter.SmartEnterTest;
@@ -84,6 +86,8 @@ public class StableSuite {
                 .addTest(BasicTest.class)
                 .addTest(CodeTemplatesTest.class)
                 .addTest(SemanticHighlightTest.class)
+                .addTest(RemoveSurroundingTest.class)
+                .addTest(Breadcrumbs.class)
                 .enableModules(".*")
                 .clusters(".*")
                 );

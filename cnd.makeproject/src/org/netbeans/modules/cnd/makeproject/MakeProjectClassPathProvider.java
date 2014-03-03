@@ -45,7 +45,11 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
@@ -60,8 +64,10 @@ import org.openide.util.WeakSet;
  *
  * @author inikiforov
  */
+//
 @org.openide.util.lookup.ServiceProvider(service = ClassPathProvider.class, position = 200)
 public class MakeProjectClassPathProvider implements ClassPathProvider {
+    private static final Logger LOG = Logger.getLogger(MakeProjectClassPathProvider.class.getName());
 
     private static final Set<ClassPath> PROJECT_CPS = new WeakSet<>();
     private static final ReadWriteLock PROJECT_LOCK = new ReentrantReadWriteLock();
@@ -92,7 +98,15 @@ public class MakeProjectClassPathProvider implements ClassPathProvider {
             PROJECT_LOCK.readLock().lock();
             try {
                 for (ClassPath spc : PROJECT_CPS) {
-                    if ((MIMENames.isFortranOrHeaderOrCppOrC(file.getMIMEType()) || file.isFolder()) && spc.contains(file)) {
+                    boolean accept = false;
+                    if (spc.contains(file)) {
+                        Project owner = FileOwnerQuery.getOwner(file);
+                        if (owner instanceof MakeProject) {
+                            accept = true;
+                        }
+                    }
+                    if (accept) {
+                        LOG.log(Level.FINE, "findClassPath({0}, {1}) -> {2} from {3}", new Object[] {file, type, spc, MakeProjectClassPathProvider.class});
                         return spc;
                     }
                 }
@@ -100,6 +114,7 @@ public class MakeProjectClassPathProvider implements ClassPathProvider {
                 PROJECT_LOCK.readLock().unlock();
             }
         }
+        LOG.log(Level.FINE, "findClassPath({0}, {1}) -> null", new Object[] {file, type});
         return null;
     }
 

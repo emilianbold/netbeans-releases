@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -102,6 +103,8 @@ public final class RunProfile implements ConfigurationAuxObject {
     public static final String PROP_ENVVARS_CHANGED = "envvars-ch"; // NOI18N
     public static final String PROP_RUNCOMMAND_CHANGED = "runcommand-ch"; // NOI18N
     public static final String DEFAULT_RUN_COMMAND = "\"${OUTPUT_PATH}\""; // NOI18N
+    // cached consoles
+    private static final Map<String,String> consoles = new HashMap<String,String>();
     private PropertyChangeSupport pcs = null;
     private boolean needSave = false;
     // Where this profile is keept
@@ -291,7 +294,7 @@ public final class RunProfile implements ConfigurationAuxObject {
                 termOptions.put(name, opts);
                 termOptions.put(def, opts);
             }
-            termPath = searchPath(path, "konsole"); // NOI18N
+            termPath = searchPath(path, "konsole", null); // NOI18N
             if (termPath != null) {
                 name = getString("TerminalType_KDE"); // NOI18N
                 list.add(name);
@@ -329,55 +332,53 @@ public final class RunProfile implements ConfigurationAuxObject {
      *
      * @param path The path to search for program "term"
      * @param term The terminal program we're searching for
-     * @returns Either a path to the specified term or null
-     */
-    private String searchPath(String path, String term) {
-        return searchPath(path, term, null);
-    }
-
-    /**
-     * Search an augmented $PATH (the user's $PATH plus various standard locations
-     * for a specific terminal emulater.
-     *
-     * @param path The path to search for program "term"
-     * @param term The terminal program we're searching for
      * @defaultPath A possible default path to check before searching the entire path
      * @returns Either a path to the specified term or null
      */
     private String searchPath(final String path, final String term, String defaultPath) {
-
-        if (defaultPath != null) {
-            File file = new File(defaultPath, term);
-            if (file.exists()) {
-                return file.getAbsolutePath();
+        synchronized(consoles) {
+            if (consoles.containsKey(term)) {
+                return consoles.get(term);
             }
-        }
-//        System.err.println("RP.searchPath: Doing PATH search for " + term);
-        final String[] patharray = new String[1];
-        patharray[0] = null;
+            String res;
 
-        Thread thread = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                StringTokenizer st = new StringTokenizer(path, ":"); // NOI18N
-
-                while (st.hasMoreTokens()) {
-                    String dir = st.nextToken();
-                    File file = new File(dir, term);
-                    if (file.exists()) {
-                        patharray[0] = file.getAbsolutePath();
-                        break;
-                    }
+            if (defaultPath != null) {
+                File file = new File(defaultPath, term);
+                if (file.exists()) {
+                    res = file.getAbsolutePath();
+                    consoles.put(term, res);
+                    return res;
                 }
             }
-        });
-        thread.start();
-        try {
-            thread.join(5000);
-        } catch (InterruptedException ex) {
+    //        System.err.println("RP.searchPath: Doing PATH search for " + term);
+            final String[] patharray = new String[1];
+            patharray[0] = null;
+
+            Thread thread = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    StringTokenizer st = new StringTokenizer(path, ":"); // NOI18N
+
+                    while (st.hasMoreTokens()) {
+                        String dir = st.nextToken();
+                        File file = new File(dir, term);
+                        if (file.exists()) {
+                            patharray[0] = file.getAbsolutePath();
+                            break;
+                        }
+                    }
+                }
+            });
+            thread.start();
+            try {
+                thread.join(5000);
+            } catch (InterruptedException ex) {
+            }
+            res = patharray[0];
+            consoles.put(term, res);
+            return res;
         }
-        return patharray[0];
     }
 
     public String getTerminalPath() {

@@ -261,6 +261,14 @@ public class CsmKindUtilities {
             return false;
         }          
     }
+    
+    public static boolean isReturnStatement(CsmObject obj) {
+        if (isStatement(obj)) {
+            return ((CsmStatement)obj).getKind() == CsmStatement.Kind.RETURN;
+        } else {
+            return false;
+        }          
+    }    
 
     public static boolean isTryCatchStatement(CsmObject obj) {
         if (isStatement(obj)) {

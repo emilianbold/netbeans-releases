@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport.Worker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -311,8 +312,13 @@ class RemoteSyncActions {
                 return false;
             }
             cacheActiveNodes(activatedNodes);
-            ExecutionEnvironment execEnv = getEnv(activatedNodes);
-            enabled = execEnv != null && execEnv.isRemote();
+            Pair<ExecutionEnvironment, RemoteSyncFactory> p = getEnv(activatedNodes);
+            if(p != null && p.first() != null && p.first().isRemote()) {
+                enabled = p.second().isCopying();
+            } else {
+                enabled = false;
+            }
+            
             return enabled;
         }
 
@@ -323,7 +329,8 @@ class RemoteSyncActions {
 
         @Override
         protected void performAction(Node[] activatedNodes) {
-            final ExecutionEnvironment execEnv = getEnv(activatedNodes);
+            Pair<ExecutionEnvironment, RemoteSyncFactory> p = getEnv(activatedNodes);
+            ExecutionEnvironment execEnv = (p == null) ? null : p.first();
             if (execEnv != null && execEnv.isRemote()) {
                 performAction(execEnv, activatedNodes);
             }
@@ -344,7 +351,8 @@ class RemoteSyncActions {
                 return getDummyItemText();
             }
 
-            final ExecutionEnvironment execEnv = getEnv(activatedNodes);
+            Pair<ExecutionEnvironment, RemoteSyncFactory> p = getEnv(activatedNodes);
+            ExecutionEnvironment execEnv = (p == null) ? null : p.first();
             if (execEnv == null || execEnv.isLocal()) {
                 return getDummyItemText();
             }
@@ -411,16 +419,16 @@ class RemoteSyncActions {
         
     }
 
-    private static ExecutionEnvironment getEnv(Node[] activatedNodes) {
-        ExecutionEnvironment result = null;
+    private static Pair<ExecutionEnvironment, RemoteSyncFactory> getEnv(Node[] activatedNodes) {
+        Pair<ExecutionEnvironment, RemoteSyncFactory> result = null;
         for (Node node : activatedNodes) {
             Project project = getNodeProject(node);
-            ExecutionEnvironment env = getEnv(project);
-            if (env != null) {
+            Pair<ExecutionEnvironment, RemoteSyncFactory> curr = getEnv(project);
+            if (curr != null) {
                 if (result == null) {
-                    result = env;
+                    result = curr;
                 } else {
-                    if (!result.equals(env)) {
+                    if (!result.equals(curr)) { // Pair.equals compares both
                         return null;
                     }
                 }
@@ -429,18 +437,17 @@ class RemoteSyncActions {
         return result;
     }
 
-    private static ExecutionEnvironment getEnv(Project project) {
-        ExecutionEnvironment developmentHost = ServerList.getDefaultRecord().getExecutionEnvironment();
+    private static Pair<ExecutionEnvironment, RemoteSyncFactory> getEnv(Project project) {        
         if (project != null) {
             RemoteProject info = project.getLookup().lookup(RemoteProject.class);
             if (info != null) {
                 ExecutionEnvironment dh = info.getDevelopmentHost();
                 if (dh != null) {
-                    developmentHost = dh;
+                    return Pair.of(dh, info.getSyncFactory());
                 }
             }
         }
-        return developmentHost;
+        return Pair.of(ServerList.getDefaultRecord().getExecutionEnvironment(), null);
     }
 
     private static Project getNodeProject(Node node) {

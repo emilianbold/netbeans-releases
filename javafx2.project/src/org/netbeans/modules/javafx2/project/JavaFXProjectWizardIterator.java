@@ -215,6 +215,10 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
                     excludes = ""; // NOI18N
                 }
                 ep.setProperty(ProjectProperties.EXCLUDES, excludes);
+                boolean fxInSwing = (Boolean) wiz.getProperty(JFXProjectProperties.JAVAFX_SWING);
+                if (fxInSwing) {
+                    ep.put(JFXProjectProperties.JAVAFX_SWING, String.valueOf(true));
+                }
                 projectHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                 
                 handle.progress(2);

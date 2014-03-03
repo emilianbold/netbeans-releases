@@ -277,7 +277,7 @@ public class Utilities {
                 module.setAttribute(ATTR_NAME, elementImpl.getDisplayName());
                 module.setAttribute(ATTR_SPEC_VERSION, elementImpl.getSpecificationVersion().toString());
                 module.setAttribute(ATTR_SIZE, Long.toString(elementImpl.getDownloadSize()));
-                module.setAttribute(ATTR_NBM_NAME, InstallSupportImpl.getDestination(cluster, elementImpl.getCodeName(), elementImpl.getInstallInfo().getDistribution(), false).getName());
+                module.setAttribute(ATTR_NBM_NAME, InstallSupportImpl.getDestination(cluster, elementImpl.getCodeName(), elementImpl.getInstallInfo().getDistribution()).getName());
 
                 root.appendChild( module );
                 isEmpty = false;
@@ -1055,7 +1055,7 @@ public class Utilities {
             if (cluster.equals (c)) {
                 Element module = document.createElement (UpdateTracking.ELEMENT_ADDITIONAL_MODULE);
                 module.setAttribute(ATTR_NBM_NAME,
-                        InstallSupportImpl.getDestination (cluster, impl.getCodeName(), impl.getInstallInfo().getDistribution(), false).getName ());
+                        InstallSupportImpl.getDestination (cluster, impl.getCodeName(), impl.getInstallInfo().getDistribution()).getName ());
                 module.setAttribute (UpdateTracking.ATTR_ADDITIONAL_SOURCE, impl.getSource ());
                 root.appendChild( module );
                 isEmpty = false;
@@ -1206,7 +1206,7 @@ public class Utilities {
         if (cluster.exists () && cluster.isDirectory ()) {
             File dir4test;
             File update = new File (cluster, UPDATE_DIR);
-            File download = new File (cluster, RUNNING_DOWNLOAD_DIR);
+            File download = new File (cluster, DOWNLOAD_DIR);
             if (download.exists ()) {
                 dir4test = download;
             } else if (update.exists ()) {

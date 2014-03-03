@@ -3192,8 +3192,8 @@ public class Reformatter implements ReformatTask {
                 throw checkWrap;
             }
             int maxCount = maxPreservedBlankLines;
-            if (bof || maxCount < count) {
-                maxCount = count;
+            if (maxCount < count) {
+                count = maxCount;
             }
             if (templateEdit && maxCount < 1) {
                 maxCount = 1;

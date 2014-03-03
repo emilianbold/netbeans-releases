@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.javaee.wildfly.config;
 
-import org.netbeans.modules.javaee.wildfly.config.xml.jms.JB7MessageDestinationHandler;
+import org.netbeans.modules.javaee.wildfly.config.xml.jms.WildflyMessageDestinationHandler;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -114,7 +114,7 @@ public final class WildflyMessageDestinationManager implements MessageDestinatio
         try {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser parser = factory.newSAXParser();
-            JB7MessageDestinationHandler handler = new JB7MessageDestinationHandler();
+            WildflyMessageDestinationHandler handler = new WildflyMessageDestinationHandler();
             InputStream is = new BufferedInputStream(configFile.getInputStream());
             try {
                 parser.parse(is, handler);

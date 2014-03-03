@@ -124,6 +124,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         currentLibrariesLocation = "." + File.separatorChar + "lib"; // NOI18N
         txtLibFolder.setText(currentLibrariesLocation);
         cbSharableActionPerformed(null);
+        existingSwingCheckBox.setVisible(false);
 
         switch (type) {
             case LIBRARY:
@@ -176,6 +177,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
                 txtPreloaderProject.setVisible(false);
                 fxmlLabel.setVisible(false);
                 fxmlTextField.setVisible(false);
+                existingSwingCheckBox.setVisible(true);
                 break;
         }
 
@@ -348,6 +350,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         jPanel2 = new javax.swing.JPanel();
         progressLabel = new javax.swing.JLabel();
         progressPanel = new javax.swing.JPanel();
+        existingSwingCheckBox = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -571,13 +574,13 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         add(filler1, new java.awt.GridBagConstraints());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.weighty = 0.1;
         add(filler2, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
@@ -588,7 +591,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         org.openide.awt.Mnemonics.setLocalizedText(progressLabel, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Progress_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         add(progressLabel, gridBagConstraints);
@@ -597,11 +600,21 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridy = 13;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 0.1;
         add(progressPanel, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(existingSwingCheckBox, "Enable Java FX in &Swing for Existing Project");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(15, 0, 0, 0);
+        add(existingSwingCheckBox, gridBagConstraints);
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSN_PanelOptionsVisual")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_PanelOptionsVisual")); // NOI18N
@@ -659,6 +672,7 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
         lblHint.setVisible(visible);
         createMainCheckBox.setVisible(type != WizardType.EXTISTING && visible);
         mainClassTextField.setVisible(type != WizardType.EXTISTING && visible);
+        existingSwingCheckBox.setVisible(type == WizardType.EXTISTING && visible);
     }
 
     @Override
@@ -736,6 +750,10 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
         if (fxmlTextField.isVisible()) {
             d.putProperty(JavaFXProjectWizardIterator.FXML_NAME, fxmlTextField.getText());
         }
+
+        if (existingSwingCheckBox.isVisible()) {
+            d.putProperty(JFXProjectProperties.JAVAFX_SWING, existingSwingCheckBox.isSelected());
+        }
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -743,6 +761,7 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
     private javax.swing.JButton btnManagePlatforms;
     private javax.swing.JCheckBox cbSharable;
     private javax.swing.JCheckBox createMainCheckBox;
+    private javax.swing.JCheckBox existingSwingCheckBox;
     private javax.swing.Box.Filler filler1;
     private javax.swing.Box.Filler filler2;
     private javax.swing.JLabel fxmlLabel;

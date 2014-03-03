@@ -246,6 +246,25 @@ public class PhpCommentGeneratorTest extends PHPNavTestBase {
                 "?>");
     }
 
+    public void testIssue242356() throws Exception {
+        insertBreak("<?php\n" +
+                "\n" +
+                "interface Iface1 {\n" +
+                "    /**^\n" +
+                "    public function faceFnc($param);\n" +
+                "}\n" +
+                "?>", "<?php\n" +
+                "\n" +
+                "interface Iface1 {\n" +
+                "    /**\n" +
+                "     * \n" +
+                "     * @param type $param^\n" +
+                "     */\n" +
+                "    public function faceFnc($param);\n" +
+                "}\n" +
+                "?>");
+    }
+
     @Override
     public void insertNewline(String source, String reformatted, IndentPrefs preferences) throws Exception {
         int sourcePos = source.indexOf('^');

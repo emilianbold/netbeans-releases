@@ -528,8 +528,19 @@ public class ModelUtils {
                              break;
                         } else {
                             if (variable.getJSKind() != JsElement.Kind.PARAMETER) {
-                                newVarType = variable.getFullyQualifiedName();
-                                result.add(new TypeUsageImpl(newVarType, type.getOffset(), false));
+                                if (variable.getJSKind().isFunction() && object.getAssignments().size() == 1
+                                        && object.getParent() != null) {
+                                    JsObject oldProperty = object.getParent().getProperty(object.getName());
+                                    JsObject newProperty = new JsFunctionReference(object.getParent(), object.getDeclarationName(), (JsFunction)variable, true, oldProperty.getModifiers());
+                                    for (Occurrence occurrence : oldProperty.getOccurrences()) {
+                                        newProperty.addOccurrence(occurrence.getOffsetRange());
+                                    }
+                                    object.getParent().addProperty(object.getName(), newProperty);
+                                    
+                                } else {
+                                    newVarType = variable.getFullyQualifiedName();
+                                    result.add(new TypeUsageImpl(newVarType, type.getOffset(), false));
+                                }
                                 resolved = true;
                                 break;
                             }

@@ -47,7 +47,7 @@ package org.netbeans.modules.javaee.wildfly.config.xml.ds;
  * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
 public class WildflyDriver {
-    private String name;
+    private final String name;
     private String driverClass;
 
     public WildflyDriver(String name) {
@@ -65,5 +65,5 @@ public class WildflyDriver {
     public String getName() {
         return name;
     }
-    
+
 }

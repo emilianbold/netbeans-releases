@@ -63,11 +63,19 @@ import java.beans.PropertyChangeListener;
  */
 
 public final class TermOptions {
-
-    private static TermOptions DEFAULT;
+    // Recommended boundary values. Noncompliance with these
+    // values rules can cause an exception (e.g. setFontSize(0);)
+    public static final int MIN_FONT_SIZE = 8;
+    public static final int MAX_FONT_SIZE = 48;
+    public static final int MIN_HISTORY_SIZE = 0;
+    public static final int MAX_HISTORY_SIZE = 50000;
+    public static final int MIN_TAB_SIZE = 1;
+    public static final int MAX_TAB_SIZE = 16;
 
     // In case settings get shared uniqueify the key names with a prefix:
     private static final String PREFIX = "term.";	// NOI18N
+    
+    private static TermOptions DEFAULT;
 
     private boolean dirty = false;
     private PropertyChangeSupport pcs = new PropertyChangeSupport(this);

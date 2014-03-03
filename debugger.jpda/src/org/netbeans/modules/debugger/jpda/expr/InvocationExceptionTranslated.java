@@ -44,16 +44,19 @@ package org.netbeans.modules.debugger.jpda.expr;
 
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ClassType;
+import com.sun.jdi.Field;
 import com.sun.jdi.IntegerValue;
 import com.sun.jdi.InvocationException;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StringReference;
 import com.sun.jdi.VMMismatchException;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
@@ -65,10 +68,13 @@ import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IntegerValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StringReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.TypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.omg.CORBA.portable.ApplicationException;
 import org.openide.util.Exceptions;
@@ -121,18 +127,34 @@ public class InvocationExceptionTranslated extends ApplicationException {
                 Method getMessageMethod = ClassTypeWrapper.concreteMethodByName((ClassType) ValueWrapper.type(exeption),
                             "getMessage", "()Ljava/lang/String;");  // NOI18N
                 if (getMessageMethod == null) {
-                    message = "Unknown exception message";
+                    if (invocationMessage != null) {
+                        message = "";
+                    } else {
+                        message = "Unknown exception message";
+                    }
                 } else {
                     try {
                         StringReference sr = (StringReference) debugger.invokeMethod (
                                 preferredThread,
                                 exeption,
                                 getMessageMethod,
-                                new Value [0]
+                                new Value [0],
+                                this
                             );
                         message = sr != null ? StringReferenceWrapper.value(sr) : ""; // NOI18N
                     } catch (InvalidExpressionException ex) {
-                        return ex.getMessage();
+                        if (ex.getTargetException() == this) {
+                            String msg = getMessageFromField();
+                            if (msg == null) {
+                                if (invocationMessage != null) {
+                                    message = "";
+                                } else {
+                                    message = "Unknown exception message";
+                                }
+                            }
+                        } else {
+                            return ex.getMessage();
+                        }
                     } catch (VMMismatchException vmMismatchEx) {
                         VirtualMachine ptvm = ((preferredThread != null) ? preferredThread.getThreadReference().virtualMachine() : null);
                         VirtualMachine ctvm = null;
@@ -164,6 +186,29 @@ public class InvocationExceptionTranslated extends ApplicationException {
         }
     }
     
+    private String getMessageFromField() throws InternalExceptionWrapper,
+                                                VMDisconnectedExceptionWrapper,
+                                                ObjectCollectedExceptionWrapper,
+                                                ClassNotPreparedExceptionWrapper {
+        List<ReferenceType> throwableClasses = VirtualMachineWrapper.classesByName(exeption.virtualMachine(), Throwable.class.getName());
+        if (throwableClasses.isEmpty()) {
+            return null;
+        }
+        Field detailMessageField = ReferenceTypeWrapper.fieldByName(throwableClasses.get(0), "detailMessage");
+        if (detailMessageField != null) {
+            Value messageValue = ObjectReferenceWrapper.getValue(exeption, detailMessageField);
+            if (messageValue instanceof StringReference) {
+                message = StringReferenceWrapper.value((StringReference) messageValue);
+                if (invocationMessage != null) {
+                    return invocationMessage + ": " + message;
+                } else {
+                    return message;
+                }
+            }
+        }
+        return null;
+    }
+    
     static String printVM(VirtualMachine vm) {
         if (vm == null) {
             return "null";
@@ -187,18 +232,34 @@ public class InvocationExceptionTranslated extends ApplicationException {
                 Method getMessageMethod = ClassTypeWrapper.concreteMethodByName((ClassType) ValueWrapper.type(exeption),
                             "getLocalizedMessage", "()Ljava/lang/String;");  // NOI18N
                 if (getMessageMethod == null) {
-                    localizedMessage = "Unknown exception message";
+                    if (invocationMessage != null) {
+                        localizedMessage = "";
+                    } else {
+                        localizedMessage = "Unknown exception message";
+                    }
                 } else {
                     try {
                         StringReference sr = (StringReference) debugger.invokeMethod (
                                 preferredThread,
                                 exeption,
                                 getMessageMethod,
-                                new Value [0]
+                                new Value [0],
+                                this
                             );
                         localizedMessage = sr == null ? "" : StringReferenceWrapper.value(sr); // NOI18N
                     } catch (InvalidExpressionException ex) {
-                        return ex.getLocalizedMessage();
+                        if (ex.getTargetException() == this) {
+                            String msg = getMessageFromField();
+                            if (msg == null) {
+                                if (invocationMessage != null) {
+                                    localizedMessage = "";
+                                } else {
+                                    localizedMessage = "Unknown exception message";
+                                }
+                            }
+                        } else {
+                            return ex.getLocalizedMessage();
+                        }
                     }
                 }
             } catch (InternalExceptionWrapper iex) {
@@ -241,7 +302,8 @@ public class InvocationExceptionTranslated extends ApplicationException {
                             preferredThread,
                             exeption,
                             getCauseMethod,
-                            new Value [0]
+                            new Value [0],
+                            this
                         );
                     }
                     if (or != null) {
@@ -250,6 +312,9 @@ public class InvocationExceptionTranslated extends ApplicationException {
                         cause = this;
                     }
                 } catch (InvalidExpressionException ex) {
+                    if (ex.getTargetException() == this) {
+                        cause = this;
+                    }
                     return null;
                 }
             } catch (InternalExceptionWrapper iex) {
@@ -381,7 +446,8 @@ public class InvocationExceptionTranslated extends ApplicationException {
                         preferredThread,
                         exeption,
                         getStackTraceMethod,
-                        new Value [0]
+                        new Value [0],
+                        this
                     );
                 int depth = ArrayReferenceWrapper.length(ar);
                 stackTrace = new StackTraceElement[depth];
@@ -389,6 +455,9 @@ public class InvocationExceptionTranslated extends ApplicationException {
                     stackTrace[i] = getStackTraceElement((ObjectReference) ArrayReferenceWrapper.getValue(ar, i));
                 }
             } catch (InvalidExpressionException ex) {
+                if (ex.getTargetException() == this) {
+                    stackTrace = new StackTraceElement[] {};
+                }
                 // Leave stackTrace unset to reload next time
                 return new StackTraceElement[0];
             } catch (ClassNotPreparedExceptionWrapper ex) {
@@ -422,7 +491,8 @@ public class InvocationExceptionTranslated extends ApplicationException {
                             preferredThread,
                             stElement,
                             getMethod,
-                            new Value [0]
+                            new Value [0],
+                            this
                         );
                     declaringClass = StringReferenceWrapper.value(sr);
                 } catch (InvalidExpressionException ex) {
@@ -442,7 +512,8 @@ public class InvocationExceptionTranslated extends ApplicationException {
                             preferredThread,
                             stElement,
                             getMethod,
-                            new Value [0]
+                            new Value [0],
+                            this
                         );
                     methodName = StringReferenceWrapper.value(sr);
                 } catch (InvalidExpressionException ex) {
@@ -462,7 +533,8 @@ public class InvocationExceptionTranslated extends ApplicationException {
                             preferredThread,
                             stElement,
                             getMethod,
-                            new Value [0]
+                            new Value [0],
+                            this
                         );
                     if (sr == null) {
                         fileName = null;
@@ -483,7 +555,8 @@ public class InvocationExceptionTranslated extends ApplicationException {
                             preferredThread,
                             stElement,
                             getMethod,
-                            new Value [0]
+                            new Value [0],
+                            this
                         );
                     lineNumber = IntegerValueWrapper.value(iv);
                 } catch (InvalidExpressionException ex) {

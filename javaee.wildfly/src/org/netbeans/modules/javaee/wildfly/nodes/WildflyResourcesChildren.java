@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
 public class WildflyResourcesChildren extends Children.Keys {
 
     WildflyResourcesChildren(Lookup lookup) {
-        setKeys(new Object[]{createDatasourcesNode(lookup), createJMSNode(lookup), createMailSessionsNode(lookup)});
+        setKeys(new Object[]{createDatasourcesNode(lookup), createJMSNode(lookup), createMailSessionsNode(lookup), createResourceAdaptersNode(lookup)});
     }
 
     @Override
@@ -81,17 +81,22 @@ public class WildflyResourcesChildren extends Children.Keys {
                 NbBundle.getMessage(WildflyTargetNode.class, "LBL_Resources_Datasources"), Util.JDBC_RESOURCE_ICON);
     }
 
-    
+    final WildflyResourcesItemNode createResourceAdaptersNode(Lookup lookup) {
+        return new WildflyResourcesItemNode(new WildflyResourceAdaptersChildren(lookup),
+                NbBundle.getMessage(WildflyTargetNode.class, "LBL_Resources_ResourceAdapters"), Util.CONNECTOR_ICON);
+    }
+
+
     final WildflyResourcesItemNode createMailSessionsNode(Lookup lookup) {
-        return new WildflyResourcesItemNode(new WildflyMailSessionsChildren(lookup), 
+        return new WildflyResourcesItemNode(new WildflyMailSessionsChildren(lookup),
                 NbBundle.getMessage(WildflyTargetNode.class, "LBL_Resources_MailSessions"), Util.JAVAMAIL_ICON);
     }
 
     private Object createJMSNode(Lookup lookup) {
-        return new WildflyResourcesItemNode(new WildflyJmsChildren(lookup), 
+        return new WildflyResourcesItemNode(new WildflyJmsChildren(lookup),
                 NbBundle.getMessage(WildflyTargetNode.class, "LBL_Resources_JMS"), Util.JMS_ICON);
     }
-    
-    
-    
+
+
+
 }

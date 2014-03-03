@@ -150,7 +150,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         return includeJstl;
     }
 
-    public SpringConfigPanelVisual getComponent() {
+    public synchronized SpringConfigPanelVisual getComponent() {
         if (component == null) {
             component = new SpringConfigPanelVisual(this);
             component.setEnabled(!customizer);
@@ -181,6 +181,11 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_WebXmlIsNotValid")); // NOI18N
             return false;
         }
+        if (getComponent().getSpringLibrary() == null) {
+            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_NoValidSpringLibraryFound")); // NOI18N
+            return false;
+        }
+
         controller.setErrorMessage(null);
         return true;
     }

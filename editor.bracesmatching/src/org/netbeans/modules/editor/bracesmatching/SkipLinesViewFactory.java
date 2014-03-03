@@ -139,6 +139,15 @@ final class SkipLinesViewFactory extends EditorViewFactory {
             this.component = component;
         }
         
+        @Override
+        public int getStartOffset() {
+            return start;
+        }
+        
+        @Override
+        public int getEndOffset() {
+            return end;
+        }
         
         @Override
         public int getRawEndOffset() {

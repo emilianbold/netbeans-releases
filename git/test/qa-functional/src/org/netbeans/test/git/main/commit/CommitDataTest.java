@@ -41,7 +41,6 @@
  */
 package org.netbeans.test.git.main.commit;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.logging.Level;
@@ -293,14 +292,15 @@ public class CommitDataTest extends JellyTestCase {
             //TestKit.hideStatusLabels();
             nodeTest = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
             nodeTest.expand();
-            new EventTool().waitNoEvent(5000);
+            new EventTool().waitNoEvent(8000);
 
             for (int i = 0; i < expected.length; i++) {
                 nodeTest = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|" + expected[i]);
                 nodeIDE = (org.openide.nodes.Node) nodeTest.getOpenideNode();
                 stream.print(expected[i] + ": " + nodeIDE.getHtmlDisplayName());
-                color = TestKit.getColor(expected[i], nodeIDE.getHtmlDisplayName());
-                assertNull("Wrong status or color of node!!!", color);
+                //color = TestKit.getColor(expected[i], nodeIDE.getHtmlDisplayName());
+                //assertEquals("", color);
+                assertNull("Wrong status or color of node!!!", nodeIDE.getHtmlDisplayName());
             }
 
             //verify versioning view

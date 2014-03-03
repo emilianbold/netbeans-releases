@@ -62,23 +62,55 @@ import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
-import org.netbeans.modules.javaee.wildfly.WildflyTargetModuleID;
 import org.netbeans.modules.javaee.wildfly.WildflyDeploymentFactory;
+import org.netbeans.modules.javaee.wildfly.WildflyTargetModuleID;
 import org.netbeans.modules.javaee.wildfly.config.WildflyConnectionFactory;
 import org.netbeans.modules.javaee.wildfly.config.WildflyDatasource;
-import org.netbeans.modules.javaee.wildfly.config.WildflyMessageDestination;
 import org.netbeans.modules.javaee.wildfly.config.WildflyMailSessionResource;
+import org.netbeans.modules.javaee.wildfly.config.WildflyMessageDestination;
+import org.netbeans.modules.javaee.wildfly.config.WildflyResourceAdapter;
 import org.netbeans.modules.javaee.wildfly.config.WildflySocket;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.addModelNodeChild;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.closeClient;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.createAddOperation;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.createClient;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.createDeploymentPathAddressAsModelNode;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.createModelNode;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.createOperation;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.createPathAddressAsModelNode;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.createReadResourceOperation;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.createRemoveOperation;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.getClientConstant;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.getModelDescriptionConstant;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.getModelNodeChild;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.getModelNodeChildAtIndex;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.getModelNodeChildAtPath;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.getPropertyName;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.getPropertyValue;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.isSuccessfulOutcome;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.modelNodeAsBoolean;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.modelNodeAsInt;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.modelNodeAsList;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.modelNodeAsPropertyForName;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.modelNodeAsPropertyForValue;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.modelNodeAsPropertyList;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.modelNodeAsString;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.modelNodeHasChild;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.modelNodeHasDefinedChild;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.modelNodeIsDefined;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.readResult;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.setModelNodeChild;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.setModelNodeChildBytes;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.setModelNodeChildEmptyList;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.setModelNodeChildString;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
 import org.netbeans.modules.javaee.wildfly.nodes.WildflyDatasourceNode;
 import org.netbeans.modules.javaee.wildfly.nodes.WildflyDestinationNode;
+import org.netbeans.modules.javaee.wildfly.nodes.WildflyEarApplicationNode;
+import org.netbeans.modules.javaee.wildfly.nodes.WildflyEjbComponentNode;
 import org.netbeans.modules.javaee.wildfly.nodes.WildflyEjbModuleNode;
 import org.netbeans.modules.javaee.wildfly.nodes.WildflyWebModuleNode;
 import org.openide.util.Lookup;
-
-import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.*;
-import org.netbeans.modules.javaee.wildfly.nodes.WildflyEarApplicationNode;
-import org.netbeans.modules.javaee.wildfly.nodes.WildflyEjbComponentNode;
 
 /**
  *
@@ -94,6 +126,7 @@ public class WildflyClient {
     private static final String DATASOURCES_SUBSYSTEM = "datasources"; // NOI18N
     private static final String MAIL_SUBSYSTEM = "mail"; // NOI18N
     private static final String MESSAGING_SUBSYSTEM = "messaging"; // NOI18N
+    private static final String RESOURCE_ADAPTER_SUBSYSTEM = "resource-adapters"; // NOI18N
 
     private static final String DATASOURCE_TYPE = "data-source"; // NOI18N
     private static final String HORNETQ_SERVER_TYPE = "hornetq-server"; // NOI18N
@@ -101,6 +134,7 @@ public class WildflyClient {
     private static final String JMSQUEUE_TYPE = "jms-queue"; // NOI18N
     private static final String JMSTOPIC_TYPE = "jms-topic"; // NOI18N
     private static final String CONNECTION_FACTORY_TYPE = "connection-factory"; // NOI18N
+    private static final String RESOURCE_ADAPTER_TYPE = "resource-adapter"; // NOI18N
 
     private final String serverAddress;
     private final int serverPort;
@@ -116,7 +150,7 @@ public class WildflyClient {
     public int getServerPort() {
         return serverPort;
     }
-    
+
     /**
      * Get the value of serverPort
      *
@@ -220,7 +254,7 @@ public class WildflyClient {
             InvocationTargetException, IllegalAccessException {
         Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
         Object clientLocal = getClient(cl);
-        if(clientLocal == null) {
+        if (clientLocal == null) {
             throw new IOException("Not connected to WildFly server");
         }
         Method method = clientLocal.getClass().getMethod("execute", modelClazz);
@@ -232,7 +266,7 @@ public class WildflyClient {
             InvocationTargetException, IllegalAccessException {
         Class operationClazz = cl.loadClass("org.jboss.as.controller.client.Operation"); // NOI18N
         Object clientLocal = getClient(cl);
-        if(clientLocal == null) {
+        if (clientLocal == null) {
             throw new IOException("Not connected to WildFly server");
         }
         Method method = clientLocal.getClass().getMethod("execute", operationClazz);
@@ -244,7 +278,7 @@ public class WildflyClient {
         Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
         Class handlerClazz = cl.loadClass("org.jboss.as.controller.client.OperationMessageHandler"); // NOI18N
         Object clientLocal = getClient(cl);
-        if(clientLocal == null) {
+        if (clientLocal == null) {
             throw new IOException("Not connected to WildFly server");
         }
         Method method = clientLocal.getClass().getMethod("executeAsync", modelClazz, handlerClazz);
@@ -1243,7 +1277,7 @@ public class WildflyClient {
         }
     }
 
-    private void enableExplodedDeployment(String scannerName) throws ClassNotFoundException, IllegalAccessException, 
+    private void enableExplodedDeployment(String scannerName) throws ClassNotFoundException, IllegalAccessException,
             InstantiationException, NoSuchMethodException, InvocationTargetException, IOException {
         WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
         LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
@@ -1260,5 +1294,57 @@ public class WildflyClient {
         setModelNodeChildString(cl, getModelNodeChild(cl, updateDeploymentScanner, getModelDescriptionConstant(cl, "NAME")), "auto-deploy-exploded");
         setModelNodeChildString(cl, getModelNodeChild(cl, updateDeploymentScanner, getModelDescriptionConstant(cl, "VALUE")), "true");
         executeOnModelNode(cl, updateDeploymentScanner);
+    }
+
+    public Collection<WildflyResourceAdapter> listResourceAdapters() throws IOException {
+        try {
+            WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            List<WildflyResourceAdapter> resourceAdapters = new ArrayList<WildflyResourceAdapter>();
+            // ModelNode
+            final Object readResourceAdapters = createModelNode(cl);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readResourceAdapters,
+                    getClientConstant(cl, "OP")), getModelDescriptionConstant(cl, "READ_CHILDREN_RESOURCES_OPERATION"));
+
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
+            values.put(getClientConstant(cl, "SUBSYSTEM"), RESOURCE_ADAPTER_SUBSYSTEM);
+            // ModelNode
+            Object path = createPathAddressAsModelNode(cl, values);
+            setModelNodeChild(cl, getModelNodeChild(cl, readResourceAdapters, getModelDescriptionConstant(cl, "ADDRESS")), path);
+            setModelNodeChild(cl, getModelNodeChild(cl, readResourceAdapters, getModelDescriptionConstant(cl, "RECURSIVE_DEPTH")), 0);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readResourceAdapters, getClientConstant(cl, "INCLUDE_RUNTIME")), "true");
+            setModelNodeChildString(cl, getModelNodeChild(cl, readResourceAdapters, getClientConstant(cl, "CHILD_TYPE")), RESOURCE_ADAPTER_TYPE);
+
+            // ModelNode
+            Object response = executeOnModelNode(cl, readResourceAdapters);
+            if (isSuccessfulOutcome(cl, response)) {
+                // List<ModelNode>
+                List ressources = modelNodeAsList(cl, readResult(cl, response));
+                for (Object resource : ressources) {
+                    Object configuration = modelNodeAsPropertyForValue(cl, resource);
+                    List properties = modelNodeAsPropertyList(cl, configuration);
+                    Map<String, String> attributes = new HashMap<String, String>(properties.size());
+                    for (Object property : properties) {
+                        String propertyName = getPropertyName(cl, property);
+                        Object propertyValue = getPropertyValue(cl, property);
+                        if (modelNodeIsDefined(cl, propertyValue)) {
+                            attributes.put(propertyName, modelNodeAsString(cl, propertyValue));
+                        }
+                    }
+                    WildflyResourceAdapter resourceAdapter = new WildflyResourceAdapter(attributes, modelNodeAsPropertyForName(cl, resource));
+                    resourceAdapters.add(resourceAdapter);
+                }
+            }
+            return resourceAdapters;
+        } catch (ClassNotFoundException ex) {
+            throw new IOException(ex);
+        } catch (NoSuchMethodException ex) {
+            throw new IOException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new IOException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new IOException(ex);
+        } catch (InstantiationException ex) {
+            throw new IOException(ex);
+        }
     }
 }

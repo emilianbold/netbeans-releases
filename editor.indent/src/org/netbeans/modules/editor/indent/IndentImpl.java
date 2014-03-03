@@ -149,11 +149,15 @@ public final class IndentImpl {
                 }
             }
             indentLockThread = currentThread;
-            TaskHandler handler = new TaskHandler(true, doc);
-            if (handler.collectTasks()) {
-                handler.lock();
+            indentHandler = new TaskHandler(true, doc);
+            try {
+                if (indentHandler.collectTasks()) {
+                    indentHandler.lock();
+                }
+            } catch (Exception e) {
+                indentUnlock();
+                throw e;
             }
-            indentHandler = handler;
         }
     }
     
@@ -200,11 +204,15 @@ public final class IndentImpl {
                 }
             }
             reformatLockThread = currentThread;
-            TaskHandler handler = new TaskHandler(false, doc);
-            if (handler.collectTasks()) {
-                handler.lock();
+            reformatHandler = new TaskHandler(false, doc);
+            try {
+                if (reformatHandler.collectTasks()) {
+                    reformatHandler.lock();
+                }
+            } catch (Exception e) {
+                reformatUnlock();
+                throw e;
             }
-            reformatHandler = handler;
         }
     }
     

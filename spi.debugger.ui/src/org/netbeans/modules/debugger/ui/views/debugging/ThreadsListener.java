@@ -303,10 +303,12 @@ public class ThreadsListener extends DebuggerManagerAdapter {
                     }
                 } else if (DVSupport.PROP_CURRENT_THREAD.equals(propName)) {
                     DVThread currentThread = debugger.getCurrentThread();
-                    removeBreakpointHit(currentThread);
-                    synchronized(currentThreadsHistory) {
-                        currentThreadsHistory.remove(currentThread);
-                        currentThreadsHistory.addFirst(currentThread);
+                    if (currentThread != null) {
+                        removeBreakpointHit(currentThread);
+                        synchronized(currentThreadsHistory) {
+                            currentThreadsHistory.remove(currentThread);
+                            currentThreadsHistory.addFirst(currentThread);
+                        }
                     }
                 } else if (DVSupport.PROP_STATE.equals(propName) &&
                            debugger != null && debugger.getState() == DVSupport.STATE.DISCONNECTED) {
