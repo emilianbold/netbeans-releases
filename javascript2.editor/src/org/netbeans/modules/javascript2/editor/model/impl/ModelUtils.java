@@ -536,10 +536,10 @@ public class ModelUtils {
                              break;
                         } else {
                             if (variable.getJSKind() != JsElement.Kind.PARAMETER) {
-                                if (variable.getJSKind() == JsElement.Kind.FUNCTION && object.getAssignments().size() == 1
-                                        && object.getParent() != null) {
+                                if (variable.getJSKind().isFunction() && object.getAssignments().size() == 1
+                                        && object.getParent() != null && object.getDeclarationName() != null) {
                                     JsObject oldProperty = object.getParent().getProperty(object.getName());
-                                    JsObject newProperty = new JsFunctionReference(object.getParent(), object.getDeclarationName(), (JsFunction)variable, true, null);
+                                    JsObject newProperty = new JsFunctionReference(object.getParent(), object.getDeclarationName(), (JsFunction)variable, true, oldProperty.getModifiers());
                                     for (Occurrence occurrence : oldProperty.getOccurrences()) {
                                         newProperty.addOccurrence(occurrence.getOffsetRange());
                                     }
