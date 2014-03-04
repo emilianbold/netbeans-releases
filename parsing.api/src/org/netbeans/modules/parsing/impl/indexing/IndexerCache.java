@@ -72,6 +72,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.SourceIndexerFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
@@ -85,7 +86,7 @@ import org.openide.util.WeakListeners;
  *
  * @author vita
  */
-public abstract class IndexerCache <T> {
+public abstract class IndexerCache <T extends SourceIndexerFactory> {
     private static final RequestProcessor RP = new RequestProcessor("Indexer Cache"); // NOI18N
 
     // -----------------------------------------------------------------------
@@ -128,10 +129,10 @@ public abstract class IndexerCache <T> {
         return infos;
     }
 
-    public Map<String, Set<IndexerInfo<T>>> getIndexersMap(Set<IndexerInfo<T>> changedIndexers) {
+    public Map<String, Collection<IndexerInfo<T>>> getIndexersMap(Set<IndexerInfo<T>> changedIndexers) {
         final Object [] data = getData(changedIndexers, false);
         @SuppressWarnings("unchecked")
-        Map<String, Set<IndexerInfo<T>>> infosMap = (Map<String, Set<IndexerInfo<T>>>) data[1];
+        Map<String, Collection<IndexerInfo<T>>> infosMap = (Map<String, Collection<IndexerInfo<T>>>) data[1];
         return infosMap;
     }
 
@@ -140,8 +141,8 @@ public abstract class IndexerCache <T> {
             final boolean transientState) {
         final Object [] data = getData(null, transientState);
         @SuppressWarnings("unchecked")
-        Map<String, Set<IndexerInfo<T>>> infosMap = (Map<String, Set<IndexerInfo<T>>>) data[1];
-        Set<IndexerInfo<T>> infos = infosMap.get(mimeType);
+        Map<String, Collection<IndexerInfo<T>>> infosMap = (Map<String, Collection<IndexerInfo<T>>>) data[1];
+        Collection<IndexerInfo<T>> infos = infosMap.get(mimeType);
         return infos == null ? Collections.<IndexerInfo<T>>emptySet() : infos;
     }
 
@@ -174,7 +175,7 @@ public abstract class IndexerCache <T> {
      *
      * @param <T>
      */
-    public static final class IndexerInfo<T> {
+    public static final class IndexerInfo<T extends SourceIndexerFactory> {
 
         public T getIndexerFactory() {
             return indexerFactory;
@@ -333,6 +334,19 @@ public abstract class IndexerCache <T> {
     private static IndexerCache<CustomIndexerFactory> instanceCIF = null;
     private static IndexerCache<EmbeddingIndexerFactory> instanceEIF = null;
 
+    private final Comparator<IndexerInfo<T>> IIC = new Comparator<IndexerInfo<T>>() {
+        @Override
+        public int compare(final @NonNull IndexerInfo<T> o1, final @NonNull IndexerInfo<T> o2) {
+            final int p1 = o1.getIndexerFactory().getPriority();
+            final int p2 = o2.getIndexerFactory().getPriority();
+            return p1 < p2 ?
+                -1 :
+                p1 == p2 ?
+                    0:
+                    1;
+        }
+    };
+
     private final Class<T> type;
     private final String infoFileName;
     private final Tracker tracker = new Tracker();
@@ -340,7 +354,7 @@ public abstract class IndexerCache <T> {
 
     private boolean firstGetData = true;
     private Map<String, Set<IndexerInfo<T>>> infosByName = null;
-    private Map<String, Set<IndexerInfo<T>>> infosByMimeType = null;
+    private Map<String, Collection<IndexerInfo<T>>> infosByMimeType = null;
     private List<IndexerInfo<T>> orderedInfos = null;
 
     private IndexerCache(Class<T> type) {
@@ -424,7 +438,7 @@ public abstract class IndexerCache <T> {
                 collectIndexerFactoriesRegisteredForEachParticularLanguage(factories, mimeTypesToCheck);
 
                 Map<String, Set<IndexerInfo<T>>> _infosByName = new HashMap<String, Set<IndexerInfo<T>>>();
-                Map<String, Set<IndexerInfo<T>>> _infosByMimeType = new HashMap<String, Set<IndexerInfo<T>>>();
+                Map<String, Collection<IndexerInfo<T>>> _infosByMimeType = new HashMap<String, Collection<IndexerInfo<T>>>();
                 List<IndexerInfo<T>> _orderedInfos = new ArrayList<IndexerInfo<T>>();
                 for (T factory : factories.keySet()) {
                     Set<String> mimeTypes = factories.get(factory);
@@ -443,12 +457,14 @@ public abstract class IndexerCache <T> {
 
                     // infos by mimetype
                     for (String mimeType : mimeTypes) {
-                        Set<IndexerInfo<T>> infos = _infosByMimeType.get(mimeType);
+                        Collection<IndexerInfo<T>> infos = _infosByMimeType.get(mimeType);
                         if (infos == null) {
-                            infos = new HashSet<IndexerInfo<T>>();
+                            infos = new ArrayList<IndexerInfo<T>>();
                             _infosByMimeType.put(mimeType, infos);
                         }
-                        infos.add(info);
+                        if (!infos.contains(info)) {
+                            infos.add(info);
+                        }
                     }
 
                     _orderedInfos.add(info);
@@ -457,6 +473,7 @@ public abstract class IndexerCache <T> {
                 // the comparator instance must not be cached, because it uses data
                 // from the default lookup
                 Collections.sort(_orderedInfos, new C());
+                sortInfosByMimeType(_infosByMimeType);
                 if (transientUpdate) {
                     return new Object [] {
                         _infosByName,
@@ -663,6 +680,27 @@ public abstract class IndexerCache <T> {
         } catch (IOException ioe) {
             LOG.log(Level.FINE, "Can't write " + infoFileName + " file in " + cacheFolder.getPath(), ioe); //NOI18N
         }
+    }
+
+
+    @SuppressWarnings("unchecked")
+    private void sortInfosByMimeType(@NonNull final Map<String, Collection<IndexerInfo<T>>> data) {
+            for (Map.Entry<String, Collection<IndexerInfo<T>>> entry : data.entrySet()) {
+                sortIndexerInfos((List<IndexerInfo<T>>)entry.getValue());
+            }
+        }
+
+    private void sortIndexerInfos(@NonNull final List<IndexerInfo<T>> data) {
+        boolean needsSort = false;
+        for (IndexerInfo<T> f : data) {
+            if (f.getIndexerFactory().getPriority() != Integer.MAX_VALUE) {
+                needsSort = true;
+                break;
+            }
+        }
+        if (needsSort) {
+            Collections.sort(data, IIC);
+        }        
     }
     
     private final class Tracker implements LookupListener, PropertyChangeListener, Runnable {
