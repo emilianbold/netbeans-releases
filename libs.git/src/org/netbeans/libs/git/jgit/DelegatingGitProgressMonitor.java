@@ -80,4 +80,19 @@ public final class DelegatingGitProgressMonitor extends ProgressMonitor {
     public void notifyWarning (String message) {
     }
 
+    @Override
+    public void beginTask (String title, int totalWork) {
+        monitor.beginTask(title, totalWork);
+    }
+
+    @Override
+    public void endTask () {
+        monitor.endTask();
+    }
+
+    @Override
+    public void updateTaskState (int completed) {
+        monitor.updateTaskState(completed);
+    }
+
 }

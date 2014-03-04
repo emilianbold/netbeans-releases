@@ -55,6 +55,12 @@ package org.netbeans.libs.git.progress;
 public abstract class ProgressMonitor {
     
     /**
+     * A constant indicating an unknown number of work units of a task.
+     * @since 1.21
+     */
+    public static final int UNKNOWN_WORK_UNITS = org.eclipse.jgit.lib.ProgressMonitor.UNKNOWN;
+    
+    /**
      * Returns <code>true</code> if the progress should be canceled.
      * Git commands periodically check the result of the method and end their
      * progress immediately when the method returns <code>true</code>
@@ -97,6 +103,45 @@ public abstract class ProgressMonitor {
      * @param message description of the warning 
      */
     public abstract void notifyWarning (String message);
+
+    /**
+     * Implementors may override this to be notified when a task is started
+     * during a command execution. The task may or may not know its precise
+     * number of steps. {@link #UNKNOWN_WORK_UNITS} as the value of
+     * <code>totalWorkUnits</code> indicates the task cannot anticipate the
+     * number of steps it will take.
+     * <p>
+     * This may be useful for long commands such as clone or fetch to update
+     * progress bars etc.
+     *
+     * @param taskName name of the task
+     * @param totalWorkUnits number of work units the task will take
+     * @since 1.21
+     */
+    public void beginTask (String taskName, int totalWorkUnits) {
+        
+    }
+
+    /**
+     * Override to get notified when the currently running task finishes one or
+     * more of its scheduled steps.
+     *
+     * @param completed number of completed steps since the last call. The value
+     * is not a sum of all finished steps but an incremental value.
+     * @since 1.21
+     */
+    public void updateTaskState (int completed) {
+        
+    }
+
+    /**
+     * Called when the currently running task ends.
+     *
+     * @since 1.21
+     */
+    public void endTask () {
+        
+    }
 
     /**
      * Basic implementation of the <code>ProgressMonitor</code> abstract class.
