@@ -86,6 +86,16 @@ public abstract class SourceIndexerFactory {
     }
 
     /**
+     * Returns a priority of the indexer.
+     * The priority is used for ordering indexers of same type working on the same mime type.
+     * @return priority, the lower number for higher priority.
+     * @since 1.73.0
+     */
+    public int getPriority() {
+        return Integer.MAX_VALUE;
+    }
+
+    /**
      * Called by indexing infrastructure to allow indexer to clean indexes for deleted files.
      * @param deleted the collection of deleted {@link Indexable}s
      * @param contents an indexing context
