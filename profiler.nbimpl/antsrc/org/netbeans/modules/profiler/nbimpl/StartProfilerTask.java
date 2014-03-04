@@ -65,6 +65,7 @@ public class StartProfilerTask extends Task {
     
     @Override
     public void execute() throws BuildException {
+        System.err.println(">>> StartProfilerTask.execute()");
         ProfilerLauncher.Session s = ProfilerLauncher.getLastSession();
         if (s == null && isFreeForm) {
             File baseDir = getProject().getBaseDir();
@@ -76,6 +77,7 @@ public class StartProfilerTask extends Task {
             }
             
         }
+        System.err.println(">>> StartProfilerTask.Session: " + s);
         if (s != null) {
             Map<String, String> props = s.getProperties();
             if (props != null) {
