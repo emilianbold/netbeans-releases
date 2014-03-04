@@ -124,11 +124,9 @@
         </folder>
     </folder>
     <folder name="Windows2">
-        <folder name="Components">
-            <file name="HierarchyTopComponent.settings" url="HierarchyTopComponentSettings.xml"/>
-            <file name="MacroExpansionTopComponent.settings" url="MacroExpansionTopComponentSettings.xml"/>
-        </folder>
+        <!--Need to define modes first, components should be declared after the mode-->
         <folder name="Modes">
+            <file name="cnd_navigation.wsmode" url="cnd_navigation.wsmode"/>
             <!--folder name="commonpalette"--> 
             <folder name="rightSlidingSide"> 
                 <file name="HierarchyTopComponent.wstcref" url="HierarchyTopComponentWstcref.xml">
@@ -140,6 +138,13 @@
                     <attr name="position" intvalue="1200"/>
                 </file>
             </folder>
+        </folder>
+        <folder name="Groups">
+            <file name="cnd_navigation.wsgrp" url="cnd_navigation.wsgrp"/>
+        </folder>
+        <folder name="Components">
+            <file name="HierarchyTopComponent.settings" url="HierarchyTopComponentSettings.xml"/>
+            <file name="MacroExpansionTopComponent.settings" url="MacroExpansionTopComponentSettings.xml"/>
         </folder>
     </folder>
 </filesystem>
