@@ -204,7 +204,7 @@ public class SftpClient implements RemoteClient {
             session.setPassword(password);
         }
         // proxy
-        setProxy(host);
+        setProxy(session, host);
         if (withUserInfo) {
             LOGGER.fine("Setting user info...");
             session.setUserInfo(new SftpUserInfo(configuration));
@@ -239,7 +239,7 @@ public class SftpClient implements RemoteClient {
         return agentUsed;
     }
 
-    private void setProxy(String host) {
+    private void setProxy(Session session, String host) {
         assert Thread.holdsLock(this);
         if (NO_PROXY_PROPERTY) {
             LOGGER.log(Level.FINE, "No proxy will be used (disabled via system property)");
@@ -267,7 +267,7 @@ public class SftpClient implements RemoteClient {
             }
         }
         if (proxy != null) {
-            sftpSession.setProxy(proxy);
+            session.setProxy(proxy);
         }
     }
 
