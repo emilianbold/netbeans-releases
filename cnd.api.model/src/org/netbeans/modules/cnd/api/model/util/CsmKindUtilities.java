@@ -206,6 +206,12 @@ public class CsmKindUtilities {
         }
     }
     
+    public static boolean isCastOperator(CsmObject obj) {
+        return isFunction(obj) && 
+               ((CsmFunction) obj).isOperator() && 
+               ((CsmFunction) obj).getOperatorKind() == CsmFunction.OperatorKind.CONVERSION;
+    }
+    
     public static boolean isFunctionPointerType(CsmObject obj) {
         return (obj instanceof CsmFunctionPointerType);
     }

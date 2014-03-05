@@ -43,10 +43,14 @@ package org.netbeans.modules.cnd.api.model.services;
 
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.spi.model.services.CsmEntityResolverImplementation;
 import org.openide.util.Lookup;
 
@@ -58,13 +62,37 @@ public final class CsmEntityResolver {
     
     /**
      * Resolves expression with the given context (instantiations)
-     * @param expression to resolve
+     * @param text to resolve
+     * @param contextFile
+     * @param contextOffset
+     * @param instantiations - context
+     * @return collection of acceptable objects
+     */
+    public static Collection<CsmObject> resolveObjects(CharSequence text, CsmFile contextFile, int contextOffset, List<CsmInstantiation> instantiations) {
+        return DEFAULT.resolveObjects(new SimpleExpression(text, contextFile, contextOffset), instantiations);
+    } 
+    
+    /**
+     * Resolves expression with the given context (instantiations)
+     * @param expression
      * @param instantiations - context
      * @return collection of acceptable objects
      */
     public static Collection<CsmObject> resolveObjects(CsmOffsetable expression, List<CsmInstantiation> instantiations) {
         return DEFAULT.resolveObjects(expression, instantiations);
-    }    
+    }     
+    
+    /**
+     * Resolves type of expression with the given context (instantiations)
+     * @param text to resolve
+     * @param contextFile
+     * @param contextOffset
+     * @param instantiations - context
+     * @return type
+     */
+    public static CsmType resolveType(CharSequence text, CsmFile contextFile, int contextOffset, List<CsmInstantiation> instantiations) {
+        return DEFAULT.resolveType(new SimpleExpression(text, contextFile, contextOffset), instantiations);
+    }      
     
     /**
      * Resolves type of expression with the given context (instantiations)
@@ -74,7 +102,7 @@ public final class CsmEntityResolver {
      */
     public static CsmType resolveType(CsmOffsetable expression, List<CsmInstantiation> instantiations) {
         return DEFAULT.resolveType(expression, instantiations);
-    }
+    }   
     
 //<editor-fold defaultstate="collapsed" desc="impl">
     
@@ -83,6 +111,122 @@ public final class CsmEntityResolver {
     private CsmEntityResolver() {
         throw new AssertionError("Not instantiable"); // NOI18N
     }    
+    
+    /**
+     * Keeps various text within context
+     */
+    private static class SimpleExpression implements CsmExpression {
+        
+        private final String expression;
+        
+        private final CsmFile containingFile;
+        
+        private final int startOffset;
+        
+        private final int endOffset;
+
+        public SimpleExpression(CharSequence expression, CsmFile containingFile, int startOffset) {
+            this.expression = expression.toString();
+            this.containingFile = containingFile;
+            this.startOffset = startOffset;
+            this.endOffset = startOffset + expression.length();
+        }
+
+        @Override
+        public CsmFile getContainingFile() {
+            return containingFile;
+        }
+
+        @Override
+        public int getStartOffset() {
+            return startOffset;
+        }
+
+        @Override
+        public int getEndOffset() {
+            return endOffset;
+        }
+
+        @Override
+        public CsmOffsetable.Position getStartPosition() {
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
+        }
+
+        @Override
+        public CsmOffsetable.Position getEndPosition() {
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
+        }
+
+        @Override
+        public CharSequence getText() {
+            return expression;
+        } 
+
+        @Override
+        public CharSequence getExpandedText() {
+            return expression;
+        }
+
+        @Override
+        public CsmExpression.Kind getKind() {
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
+        }
+
+        @Override
+        public List<CsmStatement> getLambdas() {
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
+        }
+
+        @Override
+        public List<CsmExpression> getOperands() {
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
+        }
+
+        @Override
+        public CsmExpression getParent() {
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
+        }
+
+        @Override
+        public CsmScope getScope() {
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 97 * hash + (this.expression != null ? this.expression.hashCode() : 0);
+            hash = 97 * hash + (this.containingFile != null ? this.containingFile.hashCode() : 0);
+            hash = 97 * hash + this.startOffset;
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final SimpleExpression other = (SimpleExpression) obj;
+            if (this.expression != other.expression && (this.expression == null || !this.expression.equals(other.expression))) {
+                return false;
+            }
+            if (this.containingFile != other.containingFile && (this.containingFile == null || !this.containingFile.equals(other.containingFile))) {
+                return false;
+            }
+            if (this.startOffset != other.startOffset) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            return expression + " at [" + containingFile.getAbsolutePath() + ":" + startOffset + "]"; // NOI18N
+        }
+    }        
     
     /**
      * Default implementation (just a proxy to a real service)
@@ -120,4 +264,5 @@ public final class CsmEntityResolver {
             return getDelegate().resolveObjects(expression, instantiations);
         }
     }
+//</editor-fold>    
 }

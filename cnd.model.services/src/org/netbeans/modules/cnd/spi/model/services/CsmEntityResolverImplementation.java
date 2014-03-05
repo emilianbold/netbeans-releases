@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.spi.model.services;
 
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -57,7 +58,7 @@ public interface CsmEntityResolverImplementation {
     /**
      * Resolves type of expression in a given context 
      * 
-     * @param expression - expression to resolve
+     * @param expression
      * @param instantiations - context
      * @return type of expression
      */
