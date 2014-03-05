@@ -68,6 +68,7 @@ import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate.Type;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.jgit.DelegatingProgressMonitor;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
@@ -281,6 +282,42 @@ public class FetchTest extends AbstractGitTestCase {
         assertEquals(tag.getId(), tags.get(tag.getTagName()).getTarget().getObjectId());
         assertEquals(1, updates.size());
         assertUpdate(updates.get(tag.getTagName()), tag.getTagName(), tag.getTagName(), tag.getId().getName(), null, new URIish(otherWT.toURI().toURL()).toString(), Type.TAG, GitRefUpdateResult.NEW);
+    }
+
+    public void testFetchProgress () throws Exception {
+        setupRemoteSpec("origin", "+refs/heads/*:refs/remotes/origin/*");
+        GitClient client = getClient(workDir);
+        Map<String, GitBranch> branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
+        assertEquals(0, branches.size());
+        final StringBuilder sb = new StringBuilder();
+        ProgressMonitor pm = new ProgressMonitor.DefaultProgressMonitor() {
+
+            @Override
+            public void beginTask (String taskName, int totalWorkUnits) {
+                sb.append("START: ").append(taskName);
+                if (totalWorkUnits > 0) {
+                    sb.append(" - ").append(totalWorkUnits).append("\n");
+                }
+            }
+
+            @Override
+            public void updateTaskState (int completed) {
+                sb.append("UPDATE: ").append(completed).append("\n");
+            }
+
+            @Override
+            public void endTask () {
+                sb.append("ENDED\n");
+            }
+            
+        };
+        client.fetch("origin", pm);
+        String messages = sb.toString();
+        assertTrue(messages, messages.contains("START: remote: Finding sources - "));
+        assertTrue(messages, messages.contains("START: remote: Getting sizes - "));
+        assertTrue(messages, messages.contains("START: remote: Compressing objects - "));
+        assertTrue(messages, messages.contains("START: Receiving objects - "));
+        assertTrue(messages, messages.contains("START: Updating references - "));
     }
 
     private void setupRemoteSpec (String remote, String fetchSpec) throws URISyntaxException, IOException {

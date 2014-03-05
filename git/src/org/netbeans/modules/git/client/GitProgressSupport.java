@@ -79,7 +79,17 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
     private OutputLogger logger;
     private final ProgressMonitorImpl progressMonitor = new ProgressMonitorImpl();
     private boolean error;
+    private int steps;
+    private int unitsProcessed;
 
+    public GitProgressSupport () {
+        this(1);
+    }
+    
+    public GitProgressSupport (int steps) {
+        this.steps = steps;
+    }
+    
     public RequestProcessor.Task start (RequestProcessor rp, File repositoryRoot, String displayName) {
         this.error = false;
         this.originalDisplayName = displayName;
@@ -165,6 +175,19 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
         setProgress();
     }
 
+    protected final void setDisplayName (String displayName, int units) {
+        updateProgress(units);
+        setDisplayName(displayName);
+    }
+    
+    protected final void updateProgress (int units) {
+        assert steps > 1;
+        unitsProcessed += units;
+        if (progressHandle != null) {
+            progressHandle.progress(100 * unitsProcessed);
+        }
+    }
+
     private void setProgressQueued () {
         if(progressHandle!=null) {
             setProgressMessage(progressHandle, NbBundle.getMessage(GitProgressSupport.class, "LBL_Queued", displayName)); // NOI18N
@@ -192,6 +215,9 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
     protected void startProgress () {
         getProgressHandle().start();
         getLogger().outputLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName); // NOI18N
+        if (steps > 1) {
+            progressHandle.switchToDeterminate(steps * 100);
+        }
     }
 
     protected void finishProgress () {
@@ -259,6 +285,9 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
     }
     
     private final class ProgressMonitorImpl extends ProgressMonitor {
+        private int currentTaskTotalUnits;
+        private String currentTaskTitle;
+        private int currentTaskWorked;
 
         @Override
         public boolean isCanceled () {
@@ -293,6 +322,40 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
             LOG.log(Level.FINE, "warning: {0}", message); //NOI18N
             getLogger().outputLine("warning: " + message);
         }
+
+        @Override
+        public void beginTask (String title, int totalWork) {
+            currentTaskTotalUnits = totalWork;
+            currentTaskTitle = title;
+            currentTaskWorked = 0;
+            updateTaskProgress();
+        }
+
+        @Override
+        public void updateTaskState (int completed) {
+            currentTaskWorked += completed;
+            updateTaskProgress();
+        }
+
+        @Override
+        public void endTask () {
+            currentTaskTotalUnits = 0;
+            currentTaskTitle = null;
+            currentTaskWorked = 0;
+            updateTaskProgress();
+        }
+
+        @NbBundle.Messages({
+            "# {0} - task title", "# {1} - task progress", "MSG_Progress.task={0} ({1}%)"
+        })
+        private void updateTaskProgress () {
+            String message = currentTaskTitle;
+            if (currentTaskTitle != null && currentTaskTotalUnits > 0 && currentTaskWorked <= currentTaskTotalUnits) {
+                message = Bundle.MSG_Progress_task(currentTaskTitle, (currentTaskWorked * 100) / currentTaskTotalUnits);
+            }
+            setProgress(message);
+        }
+        
     }
 
     public class DefaultFileListener implements FileListener {
