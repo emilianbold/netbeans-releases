@@ -222,9 +222,10 @@ public class ProfilerLauncher {
 //                configured = true;
 //            }
             
-            ProfilingSettings ps = projectSession == null ? null : projectSession.getProfilingSettings();
+//            System.err.println(">>> ### configure: " + projectSession.getProfilingSettings());
+//            ps = projectSession == null ? null : projectSession.getProfilingSettings();
             if (ps != null) {
-                this.ps = ps;
+//                this.ps = ps;
                 this.ps.store(props);
                 
                 setupAgentEnv(platform, ss, ProfilerIDESettings.getInstance(), ps, project, props);
@@ -262,10 +263,19 @@ public class ProfilerLauncher {
                     });
                 }
                 
-                public void start(ProfilingSettings pSettings, AttachSettings aSettings) {
+                public ProfilingSettings getProfilingSettings() {
+                    return ps;
+                }
+    
+                public AttachSettings getAttachSettings() {
+                    return null;
+                }
+                
+                public void start(final ProfilingSettings pSettings, AttachSettings aSettings) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             if (launcher != null) {
+                                setProfilingSettings(pSettings);
                                 launcher.launch(rerun);
                                 rerun = true;
                             }
@@ -284,6 +294,7 @@ public class ProfilerLauncher {
                 public void terminate() {
                     ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
                         public void run() {
+                            configured = false;
                             NetBeansProfiler.getDefault().stopApp();
                         }
                     });
