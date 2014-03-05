@@ -76,7 +76,7 @@ public abstract class NativeDVSupportImpl extends DebuggingView.DVSupport{
 
     @Override
     public List<DebuggingView.DVThread> getAllThreads() {
-        return Arrays.asList((DebuggingView.DVThread[])  debugger.getThreads());
+        return Arrays.asList((DebuggingView.DVThread[])  debugger.getThreadsWithStacks());
     }
 
     @Override

@@ -111,6 +111,22 @@ is the proper place.
         
         <change>
             <api name="gitlibrary_api"/>
+            <summary>New methods in ProgressMonitor informing about the progress of command's subtasks.</summary>
+            <version major="1" minor="21"/>
+            <date day="4" month="3" year="2014"/>
+            <author login="ovrabec"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>When a long running git command is invoked it usually calls subtasks playing a smaller execution role
+                    (e.g. counting remote objects and actual data fetching during fetch command). Git API is now able to pass
+                    messages from these subtasks to an API client to let it update a progress bar and UI.
+                </p>
+            </description>
+            <class package="org.netbeans.libs.git.progress" name="ProgressMonitor"/>
+            <issue number="242370"/>
+        </change>
+        <change>
+            <api name="gitlibrary_api"/>
             <summary>File status provides also information about the last index entry modification timestamp.</summary>
             <version major="1" minor="19"/>
             <date day="18" month="2" year="2014"/>

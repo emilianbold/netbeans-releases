@@ -2003,6 +2003,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public void registerDebuggingViewModel(ModelListener model) {
         super.registerDebuggingViewModel(model);
         get_debugging = model != null;
+        if (get_debugging && state().isProcess && !state().isRunning ) {
+            requestThreadsWithStacks();
+        }
     }
     
     private void requestThreadsWithStacks() {
