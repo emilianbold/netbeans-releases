@@ -538,10 +538,10 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 		//
 		// Update dbx path if needed
 		//
-                updateDbxPath(host);
+//                updateDbxPath(host);
 
 		if (dbxname == null) {
-                    listener.connectFailed("dbx", Catalog.format("MSG_CantFindDbx", InstallDir.get() + "/bin/dbx "), null); // NOI18N
+                    listener.connectFailed("dbx", Catalog.format("MSG_CantFindDbx",""), null); // NOI18N
 		    return;
 		}
 
