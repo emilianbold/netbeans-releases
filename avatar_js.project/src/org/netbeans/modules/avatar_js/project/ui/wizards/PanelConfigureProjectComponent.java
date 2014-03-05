@@ -103,9 +103,7 @@ class PanelConfigureProjectComponent extends javax.swing.JPanel {
         portTextField.getDocument().addDocumentListener(dl);
         fieldDocumentListener = dl;
         
-        platformsComboBox.setModel(PlatformUiSupport.createPlatformComboBoxModel(
-                null,
-                Collections.singleton(NashornPlatform.getFilter())));
+        platformsComboBox.setModel(new NashornPlatformComboBoxModel());
         platformsComboBox.addActionListener(new PlatformChangeListener());
     }
     
@@ -119,6 +117,10 @@ class PanelConfigureProjectComponent extends javax.swing.JPanel {
     }
     
     private void selectPlatform(JavaPlatform platform) {
+        if (platform == null) {
+            platformsComboBox.setSelectedIndex(-1);
+            return ;
+        }
         int n = platformsComboBox.getItemCount();
         for (int i = 0; i < n; i++) {
             Object obj = platformsComboBox.getItemAt(i);
@@ -200,7 +202,7 @@ class PanelConfigureProjectComponent extends javax.swing.JPanel {
     private String validLibs(WizardDescriptor wizardDescriptor) {
         String errorMsg = "";   // NOI18N
         JavaPlatform platform = getSelectedPlatform();
-        if (!NashornPlatform.isNashornPlatform(platform)) {
+        if (platform != null && !NashornPlatform.isNashornPlatform(platform)) {
             platform = null;
         }
         if (platform == null) {
