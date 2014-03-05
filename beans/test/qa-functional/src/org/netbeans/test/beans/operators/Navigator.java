@@ -44,14 +44,22 @@ package org.netbeans.test.beans.operators;
 import java.awt.Component;
 import java.awt.Container;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Stack;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import static junit.framework.Assert.fail;
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.beans.PatternNode;
+import org.openide.explorer.view.Visualizer;
+import org.openide.nodes.Node;
+
 
 /**
  *
@@ -59,46 +67,33 @@ import org.openide.util.Exceptions;
  */
 public class Navigator extends TopComponentOperator {
 
-    private final JTreeOperator tree;
+    private JTreeOperator tree;
 
     public Navigator() {
-        super("Navigator");
-        tree = new JTreeOperator(this);
+        super("Navigator");        
     }
-
-    public void pressDoRefactoring() {
-        JButtonOperator button = new JButtonOperator(this, "Do Refactoring");
-        button.clickMouse();
+    
+    public JTreeOperator getTreeOperator() {
+        if(tree==null) {
+            tree = new JTreeOperator(this);
+        }
+        return tree;
     }
 
     public void setScopeToMember() {
         JComboBoxOperator combo = new JComboBoxOperator(this, 0);
         combo.selectItem("Members");
+        tree = null; 
     }
 
     public void setScopeToBeanPatterns() {
         JComboBoxOperator combo = new JComboBoxOperator(this, 0);
         combo.selectItem("Bean Patterns");
+        tree = null;
     }
-
-    public String compareTree(String[] n) {
-        Stack<String> nodes = getTree();
-
-        if (nodes.size() != n.length) {
-            return "nodes.length=" + nodes.size() + ", expected: " + n.length;
-        }
-
-        for (int i = 0; i < nodes.size(); i++) {
-            if (!nodes.get(i).equals(n[i])) {
-                return "tNodes[" + i + "]=\"" + nodes.get(i) + "\", expected: \"" + n[i] + "\"";
-            }
-        }
-
-        return "ok";
-    }
-
+        
     public String getSelectedPath() {
-        return Arrays.toString(tree.getSelectionPaths());
+        return Arrays.toString(getTreeOperator().getSelectionPaths());
     }
 
     public boolean clickTheNode(String node) {
@@ -106,60 +101,94 @@ public class Navigator extends TopComponentOperator {
         TreePath treePath   = new TreePath(nodePath);
 
         try {
-            tree.clickOnPath(treePath, 2);
+            getTreeOperator().clickOnPath(treePath, 2);
             return true;
         } catch (Exception e) {
         }
         return false;
     }
+    
+    public void waitForString(final String expected) {
+        Waitable waitable = new Waitable() {
+
+            @Override
+            public Object actionProduced(Object obj) {
+                Navigator n = (Navigator) obj;
+                String tree = n.getTree();
+                if(expected.equals(tree)) {
+                    return Boolean.TRUE;
+                } else {
+                    return null;
+                }
+            }
+
+            @Override
+            public String getDescription() {
+                return "waiting for navigator tree";
+            }
+        };
+        Waiter w = new Waiter(waitable);
+        try {
+            w.getTimeouts().setTimeout("Waiter.WaitingTime", 10000);            
+            w.waitAction(this);
+        } catch(InterruptedException ie) {
+            
+        } catch (TimeoutExpiredException tee) {
+            fail("Expected tree "+expected+" but found "+this.getTree());
+            
+        }
+    }
 
     //----------------------------------------------------------
     
-    private Stack<String> getTree() {
-        return getTree((TreeNode) tree.getRoot(), "", new Stack<String>());
+    private String getTree() {
+        return (getTree((TreeNode) getTreeOperator().getRoot(), "", new StringBuilder())).toString();
     }
 
-    private Stack<String> getTree(TreeNode root, String deep, Stack<String> stack) {
-        stack.push(deep + root);
-        for (int i = 0; i < root.getChildCount(); i++) {
-            getTree(root.getChildAt(i), deep + "__", stack);
-        }
-        return stack;
-    }
-
-    private TreeNode[] getPath(String node) {
-        Stack<TreeNode> path = new Stack<TreeNode>();
-        try {
-            getPath((TreeNode) tree.getRoot(), path, node);
-            return null;
-        } catch (ToInterrupt ex) {
-            TreeNode[] ret = new TreeNode[path.size()];
-            for (int i = ret.length - 1; i >= 0; i--) {
-                ret[i] = path.pop();
+    private StringBuilder getTree(TreeNode root, String deep, StringBuilder accumulator) {                        
+        String text = root.toString();
+        Node findNode = Visualizer.findNode(root);
+        if(findNode instanceof PatternNode) {
+            PatternNode patternNode = (PatternNode) findNode;
+            if(patternNode.getShortDescription()!=null) {
+                text = patternNode.getShortDescription();
+            } else if(patternNode.getHtmlDisplayName()!=null) {
+                text = patternNode.getHtmlDisplayName();
             }
-            return ret;
         }
-    }
-
-    private Stack<TreeNode> getPath(TreeNode root, Stack<TreeNode> stack, String pattern) throws ToInterrupt {
-        stack.push(root);
+        accumulator.append(deep).append(text).append('\n');
         for (int i = 0; i < root.getChildCount(); i++) {
-            if (pattern.equals(root.getChildAt(i).toString())) {
-                stack.add(root.getChildAt(i));
-                throw new ToInterrupt();
-            }
-            getPath(root.getChildAt(i), stack, pattern);
+            getTree(root.getChildAt(i), deep + "__", accumulator);
         }
-        stack.pop();
-        return stack;
+        return accumulator;
     }
 
-    class ToInterrupt extends Exception {
+    private TreeNode[] getPath(String node) {        
+        Stack<TreeNode> lifo = new Stack<TreeNode>();
+        lifo.push((TreeNode) getTreeOperator().getRoot());
+        while(lifo.isEmpty()) {
+            TreeNode actNode = lifo.pop();
+            if(node.equals(actNode.toString())) {
+                List<TreeNode> path = new LinkedList<TreeNode>();
+                path.add(actNode);
+                actNode = actNode.getParent();
+                while(actNode!=null) {
+                    path.add(0,actNode);
+                    actNode = actNode.getParent();
+                }
+                TreeNode[] res = path.toArray(new TreeNode[path.size()]);                
+                return res;
+            }
+            while(actNode.children().hasMoreElements()) {
+                lifo.add((TreeNode)actNode.children().nextElement());
+            }            
+        }
+        return null;
     }
-
+        
     public void printAllComponents() {
         System.out.println("**************************");
-        printComp(getTopLevelAncestor(), "");
+        printComp((Container) this.getSource(), "");
         System.out.println("**************************");
     }
 
@@ -469,4 +498,5 @@ public class Navigator extends TopComponentOperator {
      ________________com.sun.java.swing.plaf.windows.WindowsScrollBarUI$WindowsArrowButton
      ________________com.sun.java.swing.plaf.windows.WindowsScrollBarUI$WindowsArrowButton
      */
+    
 }
