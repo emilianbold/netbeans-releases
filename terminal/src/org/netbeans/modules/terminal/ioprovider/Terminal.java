@@ -571,7 +571,7 @@ public final class Terminal extends JComponent {
     private final class LargerFontAction extends AbstractAction{
 
 	public LargerFontAction() {
-	    super(Catalog.get("CTL_LargerFont"));
+	    super(Catalog.get("CTL_LargerFont")); //NOI18N
 	}
 
 	@Override
@@ -583,7 +583,7 @@ public final class Terminal extends JComponent {
     private final class SmallerFontAction extends AbstractAction{
 
 	public SmallerFontAction() {
-	    super(Catalog.get("CTL_SmallerFont"));
+	    super(Catalog.get("CTL_SmallerFont")); //NOI18N
 	}
 
 	@Override
