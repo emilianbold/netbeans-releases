@@ -42,9 +42,13 @@
 
 package org.netbeans.modules.cnd.api.model.services;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.openide.util.Lookup;
@@ -100,6 +104,25 @@ public abstract class CsmClassifierResolver {
         private final Lookup.Result<CsmClassifierResolver> res;
         private static final boolean FIX_SERVICE = true;
         private CsmClassifierResolver fixedResolver;
+        
+        private static final ThreadLocal<Set<TypeResolveRequest>> threadLocalTypeAntiloopSet = new ThreadLocal<Set<TypeResolveRequest>>() {
+
+            @Override
+            protected Set<TypeResolveRequest> initialValue() {
+                return new HashSet<TypeResolveRequest>();
+            }
+
+        };      
+        
+        private static final ThreadLocal<Set<ClassifierResolveRequest>> threadLocalClassifierAntiloopSet = new ThreadLocal<Set<ClassifierResolveRequest>>() {
+
+            @Override
+            protected Set<ClassifierResolveRequest> initialValue() {
+                return new HashSet<ClassifierResolveRequest>();
+            }
+
+        };          
+        
         Default() {
             res = Lookup.getDefault().lookupResult(CsmClassifierResolver.class);
         }
@@ -121,22 +144,37 @@ public abstract class CsmClassifierResolver {
 
         @Override
         public CsmClassifier getOriginalClassifier(CsmClassifier orig, CsmFile contextFile) {
-            CsmClassifierResolver service = getService();
-            if (service != null) {
-                return service.getOriginalClassifier(orig, contextFile);
+            final ClassifierResolveRequest request = new ClassifierResolveRequest(orig, contextFile);
+            if (enterAntiloop(threadLocalClassifierAntiloopSet.get(), request)) {
+                try {
+                    CsmClassifierResolver service = getService();
+                    if (service != null) {
+                        return service.getOriginalClassifier(orig, contextFile);
+                    }
+                } finally {
+                    exitAntiloop(threadLocalClassifierAntiloopSet.get(), request);
+                }
             }
             return orig;
         }
 
         @Override
         public CsmClassifier getTypeClassifier(CsmType type, CsmFile contextFile, int contextOffset, boolean resolveTypeChain) {
-            CsmClassifierResolver service = getService();
-            if (service != null) {
-                return service.getTypeClassifier(type, contextFile, contextOffset, resolveTypeChain);
-            }
-            CsmClassifier classifier = type.getClassifier();
-            if (resolveTypeChain) {
-                classifier = getOriginalClassifier(classifier, contextFile);
+            CsmClassifier classifier = null;
+            final TypeResolveRequest request = new TypeResolveRequest(type, contextFile, contextOffset);
+            if (enterAntiloop(threadLocalTypeAntiloopSet.get(), request)) {
+                try {
+                    CsmClassifierResolver service = getService();            
+                    if (service != null) {
+                        return service.getTypeClassifier(type, contextFile, contextOffset, resolveTypeChain);
+                    }
+                    classifier = type.getClassifier();
+                    if (resolveTypeChain) {
+                        classifier = getOriginalClassifier(classifier, contextFile);
+                    }
+                } finally {
+                    exitAntiloop(threadLocalTypeAntiloopSet.get(), request);
+                }
             }
             return classifier;
         }
@@ -167,5 +205,99 @@ public abstract class CsmClassifierResolver {
             }
             return false;
         }
+        
+        private static <T> boolean enterAntiloop(Set<T> antiloop, T request) {
+            if (antiloop.contains(request)) {
+                return false;
+            }
+            antiloop.add(request);
+            return true;
+        }
+        
+        private static <T> void exitAntiloop(Set<T> antiloop, T request) {
+            antiloop.remove(request);
+        }
+        
+        private static class TypeResolveRequest {
+            
+            private final CsmType type;
+            
+            private final CsmFile contextFile;
+            
+            private final int offset;
+
+            public TypeResolveRequest(CsmType type, CsmFile contextFile, int offset) {
+                this.type = type;
+                this.contextFile = contextFile;
+                this.offset = offset;
+            }
+
+            @Override
+            public int hashCode() {
+                int hash = 7;
+                hash = 67 * hash + (this.contextFile != null ? this.contextFile.hashCode() : 0);
+                hash = 67 * hash + this.offset;
+                return hash;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == null) {
+                    return false;
+                }
+                if (getClass() != obj.getClass()) {
+                    return false;
+                }
+                final TypeResolveRequest other = (TypeResolveRequest) obj;
+                if (this.type != other.type && (this.type == null || !this.type.equals(other.type))) {
+                    return false;
+                }
+                if (this.contextFile != other.contextFile && (this.contextFile == null || !this.contextFile.equals(other.contextFile))) {
+                    return false;
+                }
+                if (this.offset != other.offset) {
+                    return false;
+                }
+                return true;
+            }            
+        }
+        
+        private static class ClassifierResolveRequest {
+            
+            private final CsmClassifier cls;
+            
+            private final CsmFile contextFile;
+
+            public ClassifierResolveRequest(CsmClassifier cls, CsmFile contextFile) {
+                this.cls = cls;
+                this.contextFile = contextFile;
+            }
+
+            @Override
+            public int hashCode() {
+                int hash = 5;
+                hash = 17 * hash + (this.cls != null ? this.cls.hashCode() : 0);
+                hash = 17 * hash + (this.contextFile != null ? this.contextFile.hashCode() : 0);
+                return hash;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == null) {
+                    return false;
+                }
+                if (getClass() != obj.getClass()) {
+                    return false;
+                }
+                final ClassifierResolveRequest other = (ClassifierResolveRequest) obj;
+                if (this.cls != other.cls && (this.cls == null || !this.cls.equals(other.cls))) {
+                    return false;
+                }
+                if (this.contextFile != other.contextFile && (this.contextFile == null || !this.contextFile.equals(other.contextFile))) {
+                    return false;
+                }
+                return true;
+            }
+        }        
     }
 }

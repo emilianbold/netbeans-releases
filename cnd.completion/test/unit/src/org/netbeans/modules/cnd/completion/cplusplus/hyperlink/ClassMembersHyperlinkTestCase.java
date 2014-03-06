@@ -1134,6 +1134,17 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz241651.cpp", 20, 36, "iz241651.cpp", 15, 9);   
     }
     
+    public void testBug242417() throws Exception {
+        // Bug 242417 - Typedefs are not syntactically equivalent of their underlining type 
+        performTest("bug242417.cpp", 12, 14, "bug242417.cpp", 18, 5);
+        performTest("bug242417.cpp", 18, 23, "bug242417.cpp", 12, 9);
+        performTest("bug242417.cpp", 19, 17, "bug242417.cpp", 14, 9);
+        performTest("bug242417.cpp", 23, 13, "bug242417.cpp", 26, 5);
+        performTest("bug242417.cpp", 26, 21, "bug242417.cpp", 23, 9);
+        performTest("bug242417.cpp", 37, 15, "bug242417.cpp", 42, 5);
+        performTest("bug242417.cpp", 42, 34, "bug242417.cpp", 37, 13);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
