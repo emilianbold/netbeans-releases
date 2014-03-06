@@ -154,7 +154,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     }
     
     /** @return either class or namespace */
-    protected CsmObject findOwner() {
+    public CsmObject findOwner() {
 	CharSequence[] cnn = classOrNspNames;
 	if( cnn != null && cnn.length > 0) {
             Resolver resolver = ResolverFactory.createResolver(this);

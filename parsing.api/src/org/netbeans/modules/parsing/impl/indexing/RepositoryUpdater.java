@@ -2367,11 +2367,11 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             @NonNull final URL root,
             @NonNull final FileObject cacheRoot,
             final boolean sourceForBinaryRoot,
-            final Collection<Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>> indexers,
+            final Collection<Collection<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>> indexers,
             final Map<SourceIndexerFactory,Boolean> votes,
             final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> ctxToFinish) throws IOException {
 
-            for(Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos : indexers) {
+            for(Collection<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos : indexers) {
                 for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> eifInfo : eifInfos) {
                     parkWhileSuspended();
                     EmbeddingIndexerFactory eif = eifInfo.getIndexerFactory();
@@ -2675,7 +2675,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         boolean containsNewIndexers = false;
                         boolean forceReindex = false;
                         final Set<EmbeddingIndexerFactory> reindexVoters = new HashSet<EmbeddingIndexerFactory>();
-                        for(Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos : indexers.eifInfosMap.values()) {
+                        for(Collection<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos : indexers.eifInfosMap.values()) {
                             for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> eifInfo : eifInfos) {
                                 if (indexers.changedEifs != null && indexers.changedEifs.contains(eifInfo)) {
                                     if (getLogContext() != null) {
@@ -2709,7 +2709,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         }
                         final boolean allFiles = containsNewIndexers || forceReindex || allResources.size() == resources.size();
                         if (allFiles) {
-                            for(Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos : indexers.eifInfosMap.values()) {
+                            for(Collection<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos : indexers.eifInfosMap.values()) {
                                 for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> eifInfo : eifInfos) {
                                     final EmbeddingIndexerFactory factory = eifInfo.getIndexerFactory();
                                     final Pair<String,Integer> key = Pair.of(factory.getIndexerName(),factory.getIndexVersion());
@@ -2977,7 +2977,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
 
         protected final boolean indexEmbedding(
-                final Map<String, Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>> eifInfosMap,
+                final Map<String, Collection<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>> eifInfosMap,
                 final FileObject cache,
                 final URL rootURL,
                 Iterable<? extends Indexable> files,
@@ -4036,10 +4036,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> transactionContexts = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
                             final UsedIndexables usedIterables = new UsedIndexables();
                             final Map<SourceIndexerFactory,Boolean> votes = new HashMap<SourceIndexerFactory, Boolean>();
-                            final Map<String, Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>> eifInfosMap = new HashMap<String, Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>>();
+                            final Map<String, Collection<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>> eifInfosMap = new HashMap<String, Collection<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>>();
                             for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> eifInfo : eifInfos) {
                                 for (String mimeType : eifInfo.getMimeTypes()) {
-                                    Set<IndexerInfo<EmbeddingIndexerFactory>> infos = eifInfosMap.get(mimeType);
+                                    Collection<IndexerInfo<EmbeddingIndexerFactory>> infos = eifInfosMap.get(mimeType);
                                     if (infos == null) {
                                         infos = new HashSet<IndexerInfo<EmbeddingIndexerFactory>>();
                                         eifInfosMap.put(mimeType, infos);
@@ -6000,7 +6000,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         public final Set<IndexerCache.IndexerInfo<CustomIndexerFactory>> changedCifs;
         public final Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> cifInfos;
         public final Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> changedEifs;
-        public final Map<String, Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>> eifInfosMap;
+        public final Map<String, Collection<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>> eifInfosMap;
 
         private SourceIndexers(boolean detectChanges) {
             final long start = System.currentTimeMillis();
@@ -6013,7 +6013,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
             cifInfos = IndexerCache.getCifCache().getIndexers(changedCifs);
             eifInfosMap = IndexerCache.getEifCache().getIndexersMap(changedEifs);
-            
+
             final long delta = System.currentTimeMillis() - start;
             LOGGER.log(Level.FINE, "Loading indexers took {0} ms.", delta); // NOI18N
         }

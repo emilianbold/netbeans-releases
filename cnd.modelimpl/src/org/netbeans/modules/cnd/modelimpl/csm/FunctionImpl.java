@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -73,9 +74,14 @@ import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmEntityResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
@@ -106,7 +112,7 @@ import org.openide.util.CharSequences;
 public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         implements CsmFunction, Disposable, RawNamable, CsmTemplate {
 
-    private static final String OPERATOR = "operator"; // NOI18N;
+    protected static final String OPERATOR = "operator"; // NOI18N;
 
     private final CharSequence name;
     private CsmType returnType;
@@ -509,17 +515,64 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
 
     // method try to find definition in case cast operator definition is declared without scope
+    // Why here? Must be in MethodImpl.
     private CsmDeclaration fixCastOperator(CsmProject prj, String uname) {
+        CsmDeclaration result = null;
         int i = uname.indexOf("operator "); // NOI18N
         if (i > 0) {
-            String s = uname.substring(i + 9);
-            int j = s.lastIndexOf("::"); // NOI18N
+            String leftPartOfFQN = uname.substring(0, i + 9);
+            String rightPartOfFQN = uname.substring(i + 9);
+            int j = rightPartOfFQN.lastIndexOf(APTUtils.SCOPE);
             if (j > 0) {
-                s = uname.substring(0, i + 9) + " " + s.substring(j + 2); // NOI18N
-                return prj.findDeclaration(s);
+                String simplyfiedFQN = leftPartOfFQN + " " + rightPartOfFQN.substring(j + 2); // NOI18N
+                result = prj.findDeclaration(simplyfiedFQN);
+            }
+            if (result == null && prj instanceof ProjectBase) {
+                CsmClassifier ourClassifier = null;
+                
+                Collection<CsmOffsetableDeclaration> decls = ((ProjectBase) prj).findDeclarationsByPrefix(leftPartOfFQN);
+                
+                for (CsmOffsetableDeclaration candidate : decls) {
+                    if (CsmKindUtilities.isCastOperator(candidate)) {
+                        if (ourClassifier == null) {
+                            ourClassifier = getCastOperatorCastEntity(this);
+                            if (!checkResolvedClassifier(ourClassifier)) {
+                                break;
+                            }
+                        }
+                        
+                        FunctionImpl operator = (FunctionImpl) candidate;
+                        CsmClassifier castClassifier = getCastOperatorCastEntity(operator);
+                        if (checkResolvedClassifier(castClassifier)) {
+                            if (castClassifier.getQualifiedName().toString().equals(ourClassifier.getQualifiedName().toString())) {
+                                result = candidate;
+                                break;
+                            }
+                        }
+                    }
+                }
             }
         }
-        return null;
+        return result;
+    }
+    
+    protected CsmClassifier getCastOperatorCastEntity(CsmFunction operator) {
+        assert CsmKindUtilities.isCastOperator(operator) : "Must be cast operator!"; // NOI18N
+     
+        CsmType retType = operator.getReturnType();
+        CsmClassifier castClassifier = retType != null ? CsmClassifierResolver.getDefault().getTypeClassifier(retType, retType.getContainingFile(), retType.getStartOffset(), true) : null;
+        if (!checkResolvedClassifier(castClassifier)) {                                
+            retType = CsmEntityResolver.resolveType(retType.getText(), retType.getContainingFile(), retType.getStartOffset(), null);
+            castClassifier = retType != null ? CsmClassifierResolver.getDefault().getTypeClassifier(retType, retType.getContainingFile(), retType.getStartOffset(), true) : null;
+        }                        
+        if (!checkResolvedClassifier(castClassifier)) {
+            castClassifier = null;
+        }
+        return castClassifier;
+    }
+    
+    protected boolean checkResolvedClassifier(CsmClassifier cls) {
+        return CsmBaseUtilities.isValid(cls) || CsmKindUtilities.isBuiltIn(cls);
     }
 
     public static boolean isObjectVisibleInFile(CsmFile currentFile, CsmOffsetableDeclaration item) {
@@ -537,7 +590,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         Collection<CsmOffsetableDeclaration> defs = prj.findDeclarations(uname);
         CsmDeclaration res = null;
         if (defs.isEmpty()) {
-            if (isOperator()) {
+            if (CsmKindUtilities.isCastOperator(this)) {
                 res = fixCastOperator(prj, uname);
             }
         } else if (defs.size() == 1) {
@@ -667,7 +720,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     public boolean isOperator() {
         return hasFlags(FLAGS_OPERATOR);
     }
-
+    
     @Override
     public OperatorKind getOperatorKind() {
         OperatorKind out = OperatorKind.NONE;
@@ -695,8 +748,12 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                 } else {
                     out = nonBinaryKind;
                 }
+            } else if (binaryKind != OperatorKind.NONE) {
+                out = binaryKind;
+            } else if (nonBinaryKind != OperatorKind.NONE) {
+                out = nonBinaryKind;
             } else {
-                out = (binaryKind != OperatorKind.NONE) ? binaryKind : nonBinaryKind;
+                out = signText.length() > 0 ? OperatorKind.CONVERSION : OperatorKind.NONE;
             }
         }
         return out;

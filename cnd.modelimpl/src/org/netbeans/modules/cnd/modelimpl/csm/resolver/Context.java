@@ -51,10 +51,14 @@ import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.services.CsmEntityResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.BaseUtilitiesProviderImpl;
 
@@ -141,6 +145,18 @@ public class Context {
                     CsmFunction fun = getFunctionDeclaration(fd);
                     if( fun != null && CsmKindUtilities.isMethodDeclaration(fun) ) {
                         containingClass = getMethodContainingClass((CsmMethod) fun);
+                    } else {
+                        if (CsmKindUtilities.isCastOperator(fd)) {
+                            // We could get containing class without declaration of cast operator
+                            if (fd instanceof FunctionImplEx) {
+                                CsmObject owner = ((FunctionImplEx) fd).findOwner();
+                                if (CsmKindUtilities.isClass(owner)) {
+                                    containingClass = (CsmClass) owner;
+                                }
+                            } else {
+                                // Here could be logic with CsmEntityResolver
+                            }
+                        }                        
                     }
                 }
             }

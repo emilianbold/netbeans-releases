@@ -133,9 +133,11 @@ public class OccurrencesSupport {
         }
         if (result == null) {
             for(JsObject property: object.getProperties().values()) {
-                result = findDeclaration(property, offset);
-                if (result != null) {
-                    break;
+                if (!(property instanceof JsObjectReference)) {
+                    result = findDeclaration(property, offset);
+                    if (result != null) {
+                        break;
+                    }
                 }
             }
         }
