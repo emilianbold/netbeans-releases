@@ -162,7 +162,8 @@ abstract public class CsmCompletionQuery {
     private static final int MAX_DEPTH = 15;
     
     private static enum AntiloopClient {
-        query_type
+        query_type,
+        query_objects
     }
     
     private static final ThreadLocal<Map<AntiloopClient, Set<CsmOffsetable>>> threadLocalAntiloopMap = new ThreadLocal<Map<AntiloopClient, Set<CsmOffsetable>>>() {
@@ -237,6 +238,69 @@ abstract public class CsmCompletionQuery {
         return query(component, doc, offset, openingSource, sort, instantiateTypes, tooltip);
     }
     
+    class QueryObjectsTask implements QueryTask {
+        
+        private Collection<CsmObject> objects;
+
+        @Override
+        public void perform(Context context) {
+            if (context != null) {
+                List<? extends CompletionItem> items = context.result.getItems();
+                if (!items.isEmpty()) {
+                    objects = new ArrayList<CsmObject>(items.size());
+                    for (CompletionItem item : items) {
+                        if (item instanceof CsmResultItem) {
+                            CsmResultItem csmItem = (CsmResultItem) item;
+                            objects.add((CsmObject) csmItem.getAssociatedObject());
+                        }
+                    }
+                }
+            }
+        }
+        
+        @Override
+        public AntiloopClient getAntiloopKind() {
+            return AntiloopClient.query_objects;
+        }        
+
+        public Collection<CsmObject> getObjects() {
+            return objects;
+        }
+    }
+    
+    /**
+     * Perform the query on the given component to get collection of possible objects.
+     * 
+     * @param expression - expression (qualified id for example)
+     * @param instantiations - context
+     */    
+    public Collection<CsmObject> queryObjects(CsmOffsetable expression, List<CsmInstantiation> instantiations) {
+        QueryObjectsTask task = new QueryObjectsTask();
+        performQueryTask(expression, instantiations, task);
+        return task.getObjects();
+    }
+    
+    class QueryTypeTask implements QueryTask {
+        
+        private CsmType type;
+
+        @Override
+        public void perform(Context context) {
+            if (context != null) {
+                type = context.lastType;
+            }
+        }
+
+        @Override
+        public AntiloopClient getAntiloopKind() {
+            return AntiloopClient.query_type;
+        }
+
+        public CsmType getType() {
+            return type;
+        }
+    }
+    
     /**
      * Perform the query on the given component to get type of expression.
      * 
@@ -244,6 +308,26 @@ abstract public class CsmCompletionQuery {
      * @param instantiations - context
      */
     public CsmType queryType(CsmOffsetable expression, List<CsmInstantiation> instantiations) {
+        QueryTypeTask task = new QueryTypeTask();
+        performQueryTask(expression, instantiations, task);
+        return task.getType();
+    }    
+    
+    static interface QueryTask {
+        
+        AntiloopClient getAntiloopKind();
+        
+        void perform(Context context);
+        
+    }
+    
+    /**
+     * Perform the query on the given component to get type of expression.
+     * 
+     * @param expression - expression to get type from
+     * @param instantiations - context
+     */
+    private boolean performQueryTask(CsmOffsetable expression, List<CsmInstantiation> instantiations, QueryTask task) {
         if (enterThreadLocalAntiloop(AntiloopClient.query_type, expression)) {
             try {
                 CsmCacheManager.enter();
@@ -256,10 +340,8 @@ abstract public class CsmCompletionQuery {
                 final int startOffset = expression.getStartOffset();
                 final int endOffset = expression.getEndOffset();
 
-                CsmType ret = null;        
-
                 if (!checkCondition(baseDocument, endOffset, true)) {
-                    return null;
+                    return false;
                 }
 
                 long docVersion = DocumentUtilities.getDocumentVersion(baseDocument);
@@ -289,18 +371,34 @@ abstract public class CsmCompletionQuery {
                         pushResolveContext(CsmResolveContext.create(csmFile, startOffset));
 
                         CsmCompletionExpression exp = tp.getResultExp();
-                        ret = getResultType(baseDocument, exp, instantiations, endOffset, true, true);
+                        
+                        Context ctx = getResolvedContext(
+                                null,
+                                baseDocument, 
+                                true, 
+                                endOffset,
+                                exp, 
+                                instantiations, 
+                                false, 
+                                isInIncludeDirective(baseDocument, endOffset), 
+                                true, 
+                                true
+                        );
+                        
+                        task.perform(ctx);
+                        
                         if (TRACE_COMPLETION) {
                             System.err.println("expression " + exp);
                         }
+                        
+                        return true;
+                        
                     } finally {
                         popResolveContext();
                     }
                 } else if (TRACE_COMPLETION) {
                     System.err.println("Error expression " + tp.getResultExp());
                 }
-
-                return ret;   
             } catch (IOException ex) {
                 ex.printStackTrace(System.err);
             } finally {
@@ -308,7 +406,7 @@ abstract public class CsmCompletionQuery {
                 CsmCacheManager.leave();
             }
         }
-        return null;
+        return false;
     }
     
     public static boolean checkCondition(final Document doc, final int dot, boolean takeLock) {
@@ -652,6 +750,31 @@ abstract public class CsmCompletionQuery {
     abstract protected boolean isProjectBeeingParsed(boolean openingSource);
 
     private CsmCompletionResult getResult(JTextComponent component, Document doc, boolean openingSource, int offset, CsmCompletionExpression exp, boolean sort, boolean inIncludeDirective, boolean instantiateTypes) {
+        Context ctx = getResolvedContext(component, doc, openingSource, offset, exp, null, sort, inIncludeDirective, instantiateTypes, false);
+        if (ctx != null) {
+            return ctx.result;
+        } else {
+            boolean isProjectBeeingParsed = isProjectBeeingParsed(openingSource);
+            return new CsmCompletionResult(component, getBaseDocument(), Collections.EMPTY_LIST, "", exp, 0, isProjectBeeingParsed, null, instantiateTypes);
+        }
+    } 
+    
+    private CsmType getResultType(Document doc, CsmCompletionExpression expression, List<CsmInstantiation> instantiations, int offset, boolean openingSource, boolean instantiateTypes) {
+        Context ctx = getResolvedContext(null, doc, openingSource, offset, expression, instantiations, false, false, instantiateTypes, true);
+        return ctx != null ? ctx.lastType : null;
+    }
+    
+    private Context getResolvedContext(JTextComponent component, 
+                                       Document doc, 
+                                       boolean openingSource, 
+                                       int offset, 
+                                       CsmCompletionExpression exp, 
+                                       List<CsmInstantiation> instantiations, 
+                                       boolean sort, 
+                                       boolean inIncludeDirective, 
+                                       boolean instantiateTypes, 
+                                       boolean findType
+    ) {
         CompletionResolver resolver = getCompletionResolver(openingSource, sort, inIncludeDirective);
         if (resolver != null) {
             CompletionSupport sup = CompletionSupport.get(doc);
@@ -659,11 +782,16 @@ abstract public class CsmCompletionQuery {
             if (!openingSource && context == null) {
                 instantiateTypes = false;
             }
-            Context ctx = new Context(component, sup, openingSource, offset, getFinder(), resolver, context, sort, instantiateTypes, null);
+            
+            Context ctx = new Context(component, sup, openingSource, offset, getFinder(), resolver, context, sort, instantiateTypes, instantiations);
+            ctx.setFindType(findType);
+            
             ctx.resolveExp(exp, true);
+            
             if (ctx.result != null) {
                 ctx.result.setSimpleVariableExpression(isSimpleVariableExpression(exp));
             }
+            
             if (TRACE_COMPLETION) {
                 CompletionItem[] array = ctx.result == null ? new CompletionItem[0] : ctx.result.getItems().toArray(new CompletionItem[ctx.result.getItems().size()]);
                 //Arrays.sort(array, CompletionItemComparator.BY_PRIORITY);
@@ -673,79 +801,10 @@ abstract public class CsmCompletionQuery {
                     System.err.println(completionItem.toString());
                 }
             }
-            return ctx.result;
-        } else {
-            boolean isProjectBeeingParsed = isProjectBeeingParsed(openingSource);
-            return new CsmCompletionResult(component, getBaseDocument(), Collections.EMPTY_LIST, "", exp, 0, isProjectBeeingParsed, null, instantiateTypes);
-        }
-//	CsmCompletionResult result = null;
-//
-//	// prepare input values
-//	String title = "*";
-//	int cntM1 = exp.getTokenCount() - 1;
-//	int substituteOffset = offset;
-//	int substituteLength = 0;
-//	String prefix = "";
-//	boolean exactMatch = false;
-//        int id = exp.getExpID();
-//        // TODO: must be in resolver
-//	if (cntM1 >= 0 &&
-//                id != CsmCompletionExpression.NEW &&
-//                id != CsmCompletionExpression.TYPE &&
-//                id != CsmCompletionExpression.CASE &&
-//                id != CsmCompletionExpression.DOT_OPEN &&
-//                id != CsmCompletionExpression.ARROW_OPEN &&
-//                id != CsmCompletionExpression.PARENTHESIS &&
-//                id != CsmCompletionExpression.PARENTHESIS_OPEN) {
-//	    substituteOffset = exp.getTokenOffset(cntM1);
-//	    substituteLength = exp.getTokenLength(cntM1);
-//	    title = formatName(exp.getTokenText(cntM1), true);
-//	    prefix = exp.getTokenText(cntM1);
-//	}
-//        // prepare sorting
-//        Class kitClass = Utilities.getKitClass(component);
-//        boolean caseSensitive = isCaseSensitive(kitClass);
-//        boolean naturalSort = isNaturalSort(kitClass);
-//
-//        int emptyOffset = exp.getTokenOffset(0);
-//	// try to resolve
-//	if (resolver != null && resolver.resolve(emptyOffset, prefix, exactMatch)) {
-//	    List data = resolver.getResult();
-//            if (data.size() == 0) {
-//                title = NO_SUGGESTIONS;
-//            }
-//
-//	    int classDisplayOffset = 0;
-//	    result = new CsmCompletionResult(component, data,
-//					    title, exp,
-//					    substituteOffset, substituteLength,
-//					    classDisplayOffset);
-//	}
-//	return result;
-    }
-    
-    private CsmType getResultType(Document doc, CsmCompletionExpression expression, List<CsmInstantiation> instantiations, int offset, boolean openingSource, boolean instantiateTypes) {
-        CompletionResolver resolver = getCompletionResolver(openingSource, false, false);
-        if (resolver != null) {
-            CompletionSupport sup = CompletionSupport.get(doc);
-            CsmOffsetableDeclaration context = sup.getDefinition(getCsmFile(), offset, getFileReferencesContext());
-            if (!openingSource && context == null) {
-                instantiateTypes = false;
-            }
-            
-            Context ctx = new Context(null, sup, openingSource, offset, getFinder(), resolver, context, false, instantiateTypes, instantiations);
-            ctx.setFindType(true);
-            
-            ctx.resolveExp(expression, true);
-            
-            if (TRACE_COMPLETION) {
-                System.err.println("Completion Type " + ctx.lastType); // NOI18N
-            }
-            
-            return ctx.lastType;
+            return ctx;
         }
         return null;
-    }    
+    }       
 
     // ================= help methods to generate CsmCompletionResult ==========
     private String formatName(String name, boolean appendStar) {

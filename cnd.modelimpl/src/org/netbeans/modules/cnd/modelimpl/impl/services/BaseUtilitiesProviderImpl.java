@@ -46,11 +46,15 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import static org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities.getFunctionDeclaration;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
 import org.netbeans.modules.cnd.spi.model.CsmBaseUtilitiesProvider;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -89,18 +93,33 @@ public class BaseUtilitiesProviderImpl extends CsmBaseUtilitiesProvider {
     }
     
     public CsmNamespace _getFunctionNamespace(CsmFunction fun) {
+        CsmObject owner = null;
+        
         CsmFunction decl = _getFunctionDeclaration(fun);
-        fun = decl != null ? decl : fun;
-        if (fun != null) {
-            CsmScope scope = fun.getScope();
-            if (CsmKindUtilities.isNamespaceDefinition(scope)) {
-                CsmNamespace ns = ((CsmNamespaceDefinition) scope).getNamespace();
+        
+        if (decl == null && CsmKindUtilities.isCastOperator(fun)) {
+            // We could get namespace without declaration of cast operator
+            if (fun instanceof FunctionImplEx) {
+                owner = ((FunctionImplEx) fun).findOwner();
+            } else {
+                // Here could be logic with CsmEntityResolver
+            }
+        } else {
+            fun = decl != null ? decl : fun;
+            if (fun != null) {
+                owner = fun.getScope();
+            }
+        }
+
+        if (owner != null) {
+            if (CsmKindUtilities.isNamespaceDefinition(owner)) {
+                CsmNamespace ns = ((CsmNamespaceDefinition) owner).getNamespace();
                 return ns;
-            } else if (CsmKindUtilities.isNamespace(scope)) {
-                CsmNamespace ns = (CsmNamespace) scope;
+            } else if (CsmKindUtilities.isNamespace(owner)) {
+                CsmNamespace ns = (CsmNamespace) owner;
                 return ns;
-            } else if (CsmKindUtilities.isClass(scope)) {
-                return _getClassNamespace((CsmClass) scope);
+            } else if (CsmKindUtilities.isClass(owner)) {
+                return _getClassNamespace((CsmClass) owner);
             }
         }
         return null;
@@ -120,6 +139,34 @@ public class BaseUtilitiesProviderImpl extends CsmBaseUtilitiesProvider {
         }
         return null;
     }
+
+    @Override
+    public CsmClass getFunctionClass(CsmFunction fun) {
+        assert (fun != null) : "must be not null";
+        CsmClass clazz = null;
+        CsmFunction funDecl = getFunctionDeclaration(fun);
+        if (funDecl != null) {
+            if (CsmKindUtilities.isClassMember(funDecl)) {
+                clazz = ((CsmMember)funDecl).getContainingClass();
+            }
+        } else {
+            if (CsmKindUtilities.isCastOperator(fun)) {
+                // We could get class without declaration of cast operator
+                if (fun instanceof FunctionImplEx) {
+                    CsmObject owner = ((FunctionImplEx) fun).findOwner();
+                    if (CsmKindUtilities.isClass(owner)) {
+                        clazz = (CsmClass) owner;
+                    }
+                } else {
+                    // Here could be logic with CsmEntityResolver
+                }
+            }               
+        }
+        
+        return clazz;
+    }
+    
+    
     
     public static BaseUtilitiesProviderImpl getImpl() {
         return IMPL;
