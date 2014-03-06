@@ -41,25 +41,41 @@
  */
 package org.netbeans.modules.debugger.jpda.ui;
 
+import java.awt.AWTException;
+import java.awt.Robot;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
-import javax.swing.tree.TreePath;
+import javax.swing.JViewport;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.BuildJavaProjectAction;
+import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.actions.SaveAction;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
-import org.netbeans.jellytools.modules.debugger.actions.StepIntoAction;
-import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
-import org.netbeans.jellytools.modules.debugger.actions.RunToCursorAction;
+import org.netbeans.jellytools.modules.debugger.actions.DebugJavaFileAction;
+import org.netbeans.jellytools.modules.debugger.actions.FinishDebuggerAction;
 import org.netbeans.jellytools.modules.debugger.actions.PauseAction;
+import org.netbeans.jellytools.modules.debugger.actions.RunToCursorAction;
+import org.netbeans.jellytools.modules.debugger.actions.StepIntoAction;
+import org.netbeans.jellytools.modules.debugger.actions.StepOutAction;
+import org.netbeans.jellytools.modules.debugger.actions.StepOverAction;
+import org.netbeans.jellytools.modules.debugger.actions.StepOverExpressionAction;
+import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
+import org.netbeans.jellytools.modules.debugger.actions.ApplyCodeChangesAction;
+import org.netbeans.jellytools.modules.debugger.actions.TakeGUISnapshotAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import static org.netbeans.modules.debugger.jpda.ui.Utilities.debuggerConsoleTitle;
 import org.openide.util.Exceptions;
 
 /**
@@ -78,9 +94,16 @@ public class AntSanityTest extends JellyTestCase {
         "startDebuggingF7",
         "pause",
         "testLineBreakpoint",
-        "runToCursor"
+        "runToCursor",
+        "stepInto",
+        "stepOut",
+        "stepOver",
+        "stepOverExpression",
+        "finishDebugger",
+        "applyCodeChanges",
+        "takeGUISnapshot"
     };
-    
+
     /**
      * Name of tested project root node.
      */
@@ -139,7 +162,7 @@ public class AntSanityTest extends JellyTestCase {
         stt.stop();
         assertEquals(new EditorOperator("MemoryView.java").getLineNumber(), 276);
     }
-    
+
     /**
      * Only pauses debugging session.
      */
@@ -147,8 +170,7 @@ public class AntSanityTest extends JellyTestCase {
         new PauseAction().perform();
         TopComponentOperator debuggingView = new TopComponentOperator("Debugging");
         JTreeOperator threads = new JTreeOperator(debuggingView);
-        TreePath firstThread = threads.getPathForRow(0);
-        assertTrue(firstThread.toString().equals("[, 'Finalizer' suspended at 'Object.wait']"));
+        new Node(threads, "'Finalizer' suspended at 'Object.wait'");
     }
 
     /**
@@ -165,9 +187,10 @@ public class AntSanityTest extends JellyTestCase {
         stt.stop();
         assertEquals(new EditorOperator("MemoryView.java").getLineNumber(), 278);
     }
-    
+
     /**
-     * Sets line 280 breakpoint, disables it and then continues to run to cursor at line 282.
+     * Sets line 280 breakpoint, disables it and then continues to run to cursor
+     * at line 283.
      */
     public void runToCursor() {
         EditorOperator eo = new EditorOperator("MemoryView.java");
@@ -179,10 +202,150 @@ public class AntSanityTest extends JellyTestCase {
         MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
         stt.start();
         eo.makeComponentVisible();
-        eo.setCaretPositionToLine(282);
+        eo.setCaretPositionToLine(283);
         new RunToCursorAction().perform();
-        stt.waitText("Thread main stopped at MemoryView.java:282.");
+        stt.waitText("Thread main stopped at MemoryView.java:283.");
         stt.stop();
-        assertEquals(new EditorOperator("MemoryView.java").getLineNumber(), 282);
-    }    
+        assertEquals(new EditorOperator("MemoryView.java").getLineNumber(), 283);
+    }
+
+    /**
+     * Steps into Window.setLocation method.
+     */
+    public void stepInto() {
+        new StepIntoAction().perform();
+        EditorOperator eo = new EditorOperator("Window.java");
+        int lineNumber = eo.getLineNumber();
+        TopComponentOperator debuggingView = new TopComponentOperator("Debugging");
+        JTreeOperator threads = new JTreeOperator(debuggingView);
+        new Node(threads, "'main' suspended at 'Window.setLocation:" + lineNumber + "'");
+        assertEquals(eo.getText(lineNumber).trim(), "super.setLocation(x, y);");
+    }
+
+    /**
+     * Steps out back from Window.setLocation method to MemoryView.main.
+     */
+    public void stepOut() {
+        new StepOutAction().perform();
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        int lineNumber = eo.getLineNumber();
+        TopComponentOperator debuggingView = new TopComponentOperator("Debugging");
+        JTreeOperator threads = new JTreeOperator(debuggingView);
+        new Node(threads, "'main' suspended at 'MemoryView.main:" + lineNumber + "'");
+        assertEquals(eo.getText(lineNumber).trim(), "mv.setVisible(true);");
+    }
+
+    /**
+     * Sets line 141 breakpoint and then steps over it.
+     */
+    public void stepOver() {
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        eo.setCaretPositionToLine(141);
+        new ToggleBreakpointAction().perform();
+        new ContinueAction().perform();
+        TopComponentOperator debuggingView = new TopComponentOperator("Debugging");
+        JTreeOperator threads = new JTreeOperator(debuggingView);
+        new Node(threads, "'AWT-EventQueue-0' at line breakpoint MemoryView.java : 141");
+        new StepOverAction().perform();
+        new Node(threads, "'AWT-EventQueue-0' suspended at 'MemoryView.updateStatus:143'");
+        JTableOperator breakpoints = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
+        new JPopupMenuOperator(breakpoints.callPopupOnCell(1, 0)).pushMenu("Delete All");
+    }
+
+    /**
+     * Steps over expression at line 143.
+     */
+    public void stepOverExpression() {
+        new StepOverExpressionAction().perform();
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.variablesViewTitle));
+        jTableOperator.waitCell("Before call to '<init>()'", 1, 0);
+        jTableOperator.waitCell("Arguments", 2, 0);
+        jTableOperator.selectCell(2, 0);
+        pressKey(KeyEvent.VK_RIGHT);
+        jTableOperator.waitCell("total", 3, 0);
+        new StepOverExpressionAction().perform();
+        jTableOperator.waitCell("free", 3, 0);
+        jTableOperator.waitCell("Return values history", 4, 0);
+        jTableOperator.waitCell("return <init>()", 5, 0);
+        new StepOverExpressionAction().perform();
+        jTableOperator.waitCell("taken", 3, 0);
+        jTableOperator.waitCell("Return values history", 4, 0);
+        jTableOperator.waitCell("return <init>()", 5, 0);
+        jTableOperator.waitCell("return <init>()", 6, 0);
+        new StepOverExpressionAction().perform();
+        jTableOperator.waitCell("new Object[]{new Long(total), new Long(free), new Integer(taken)}", 3, 0);
+        jTableOperator.waitCell("Return values history", 4, 0);
+        jTableOperator.waitCell("return <init>()", 5, 0);
+        jTableOperator.waitCell("return <init>()", 6, 0);
+        jTableOperator.waitCell("return <init>()", 7, 0);
+        new StepOverExpressionAction().perform();
+        jTableOperator.waitCell("msgMemory.format(new Object[]{new Long(total), new Long(free), new Integer(taken)})", 3, 0);
+        jTableOperator.waitCell("Return values history", 4, 0);
+        jTableOperator.waitCell("return <init>()", 5, 0);
+        jTableOperator.waitCell("return <init>()", 6, 0);
+        jTableOperator.waitCell("return <init>()", 7, 0);
+        jTableOperator.waitCell("return format()", 8, 0);
+    }
+    
+    /**
+     * Finishes debugging session.
+     */
+    public void finishDebugger() {
+        new FinishDebuggerAction().perform();
+        OutputTabOperator op = new OutputTabOperator(debuggerConsoleTitle);
+        assertEquals("User program finished", op.getLine(op.getLineCount() - 2));
+    }
+    
+    /**
+     * Applies simple code change during debugging session.
+     */
+    public void applyCodeChanges() {
+        Node projectNode = new ProjectsTabOperator().getProjectRootNode(DEBUG_TEST_PROJECT_ANT);
+        Node testFile = new Node(new SourcePackagesNode(projectNode), "advanced|ApplyCodeChangesTest.java");
+        new OpenAction().perform(testFile);
+        EditorOperator eo = new EditorOperator("ApplyCodeChangesTest.java");
+        Utilities.toggleBreakpoint(eo, 50);
+        MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
+        stt.start();
+        new DebugJavaFileAction().perform(testFile);
+        stt.waitText("Thread main stopped at ApplyCodeChangesTest.java:50");
+        stt.stop();
+        eo.select(54);
+        eo.replace("beforeFix()", "afterFix()");
+        new SaveAction().perform();
+        new ApplyCodeChangesAction().perform();
+        new StepOverAction().perform();
+        new FinishDebuggerAction().perform();
+        OutputTabOperator op = new OutputTabOperator("debugTestProjectAnt (debug-single)");
+        assertEquals("Before code changes", op.getLine(op.getLineCount() - 5));
+        assertEquals("After code changes", op.getLine(op.getLineCount() - 4));
+    }
+    
+    /**
+     * Takes GUI snapshot of debugged application.
+     */
+    public void takeGUISnapshot() {
+        new Action("Debug|Debug Project (debugTestProjectAnt)", null).perform();
+        OutputTabOperator op = new OutputTabOperator(debuggerConsoleTitle);
+        assertEquals("User program running", op.getLine(op.getLineCount() - 2));
+        new TakeGUISnapshotAction().perform();
+        TopComponentOperator guiSnapshot = new TopComponentOperator("Snapshot of \"Memory View\"");
+        assertEquals(guiSnapshot.getComponent(1).getName(), "Snapshot Zoom Toolbar");
+        JViewport viewPort = (JViewport) guiSnapshot.getComponent(0).getComponentAt(10, 10);
+        assertTrue(viewPort.getComponent(0).toString().startsWith("org.netbeans.modules.debugger.jpda.visual.ui.ScreenshotComponent$ScreenshotCanvas"));
+    }
+
+    /**
+     * Using AWT robot presses and immediately releases certain key.
+     * @param code Code of the key to be pressed.
+     */
+    private void pressKey(int code) {
+        try {
+            Robot robot = new Robot();
+            robot.keyPress(code);
+            robot.keyRelease(code);
+        } catch (AWTException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 }
