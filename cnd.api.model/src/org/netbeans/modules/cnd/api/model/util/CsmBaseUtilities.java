@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -239,13 +240,7 @@ public class CsmBaseUtilities {
     }
     
     public static CsmClass getFunctionClass(CsmFunction fun) {
-        assert (fun != null) : "must be not null";
-        CsmClass clazz = null;
-        CsmFunction funDecl = getFunctionDeclaration(fun);
-        if (CsmKindUtilities.isClassMember(funDecl)) {
-            clazz = ((CsmMember)funDecl).getContainingClass();
-        }
-        return clazz;
+        return CsmBaseUtilitiesProvider.getDefault().getFunctionClass(fun);
     }   
 
     public static CsmClass getFunctionClassByQualifiedName(CsmFunction fun) {

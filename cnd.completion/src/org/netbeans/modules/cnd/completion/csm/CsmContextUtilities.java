@@ -720,11 +720,12 @@ public class CsmContextUtilities {
 //            if (CsmKindUtilities.isClass(scope) && CsmOffsetUtilities.isInClassScope((CsmClass)scope, offset)) {
 //                break;
 //            } else
-            if (CsmKindUtilities.isFunction(scope)
-                    && (!inScope || CsmOffsetUtilities.isInFunctionScope((CsmFunction)scope, offset))) {
-                result = (CsmFunction)scope;
-                if (!CsmKindUtilities.isLambda(scope)) {
-                    return result;
+            if (CsmKindUtilities.isFunction(scope)) {
+                if (!inScope || CsmOffsetUtilities.isInFunctionScope((CsmFunction)scope, offset)) {
+                    result = (CsmFunction)scope;
+                    if (!CsmKindUtilities.isLambda(scope)) {
+                        return result;
+                    }
                 }
             }
         }
@@ -785,8 +786,18 @@ public class CsmContextUtilities {
         return CsmBaseUtilities.getClassNamespace(cls);
     }
 
-    public static boolean isInFunctionBodyOrInitializerList(CsmContext context, int offset) {
-        return isInFunctionBody(context, offset) || isInInitializerList(context, offset);
+    public static boolean isInFunctionBodyOrInitializerListOrCastOperatorType(CsmContext context, int offset) {
+        return isInFunctionBody(context, offset) || 
+               isInInitializerList(context, offset) ||
+               isInCastOperatorType(context, offset);
+    }
+    
+    public static boolean isInCastOperatorType(CsmContext context, int offset) {
+        CsmFunctionDefinition funDef = getFunctionDefinition(context);
+        if (funDef != null && CsmKindUtilities.isCastOperator(funDef)) {
+            return CsmOffsetUtilities.isInObject(funDef.getReturnType(), offset);
+        }
+        return false;
     }
 
     public static boolean isInFunctionBody(CsmContext context, int offset) {
