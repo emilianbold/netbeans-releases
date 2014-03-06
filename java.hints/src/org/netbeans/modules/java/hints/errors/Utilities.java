@@ -149,6 +149,7 @@ import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 
 import static com.sun.source.tree.Tree.Kind.*;
+import javax.lang.model.type.UnionType;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CodeStyleUtils;
 import org.openide.util.Pair;
@@ -1592,6 +1593,51 @@ public class Utilities {
             }
         }
         return false;
+    }
+
+    /**
+     * Helper that retrieves all caught exception from a conventional catch
+     * clause or from catch clause that contain alternatives. Empty collection
+     * is returned in the case of an error.
+     * 
+     * @param ct catch clause
+     * @return exception list, never null.
+     */
+    public static List<? extends TypeMirror> getUnionExceptions(CompilationInfo info, TreePath cP, CatchTree ct) {
+        if (ct.getParameter() == null) {
+            return Collections.emptyList();
+        }
+        TypeMirror exT = info.getTrees().getTypeMirror(new TreePath(cP, ct.getParameter()));
+        return getCaughtExceptions(exT);
+    }
+
+    private static List<? extends TypeMirror> getCaughtExceptions(TypeMirror caught) {
+        if (caught == null) {
+            return Collections.emptyList();
+        }
+        switch (caught.getKind()) {
+            case UNION: {
+                boolean cloned = false;
+                List<? extends TypeMirror> types = ((UnionType) caught).getAlternatives();
+                int i = types.size() - 1;
+                for (; i >= 0; i--) {
+                    TypeMirror m = types.get(i);
+                    TypeKind mk = m.getKind();
+                    if (mk == null || mk != TypeKind.DECLARED) {
+                        if (!cloned) {
+                            types = new ArrayList<TypeMirror>(types);
+                        }
+                        types.remove(i);
+                    }
+                }
+                
+                return types;
+            }
+            case DECLARED:
+                return Collections.singletonList(caught);
+            default:
+                return Collections.emptyList();
+        }
     }
 
     private static final Set<String> PRIMITIVE_NAMES = new HashSet<String>(7);
