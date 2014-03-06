@@ -225,7 +225,8 @@ class PanelConfigureProjectComponent extends javax.swing.JPanel {
         return errorMsg;
     }
     
-    @NbBundle.Messages({"MSG_ERR_IllegalMainFileName=Main server file is not a valid file name."})
+    @NbBundle.Messages({"MSG_ERR_IllegalMainFileName=Main server file is not a valid file name.",
+                        "MSG_ERR_BadPort=Bad port number: \"{0}\""})
     private String validMainFile(WizardDescriptor wizardDescriptor) {
         String errorMsg = "";   // NOI18N
         if (mainServerCheckBox.isSelected()) {
@@ -243,7 +244,8 @@ class PanelConfigureProjectComponent extends javax.swing.JPanel {
                 port = Integer.parseInt(portStr);
             } catch (NumberFormatException nfex) {
                 port = 0;
-                errorMsg = nfex.getLocalizedMessage();
+                errorMsg = Bundle.MSG_ERR_BadPort(portStr);
+                           // nfex.getLocalizedMessage();
             }
         }
         return errorMsg;

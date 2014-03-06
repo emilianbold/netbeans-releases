@@ -53,7 +53,7 @@ import java.io.IOException;
 public final class NativeLibrarySearch {
     
     public static final String[] AVATAR_LIB_NAMES = new String[] {
-        "avatar-js", "http-parser-java", "uv-java"                     // NOI18N
+        "avatar-js"// , "http-parser-java", "uv-java"                     // NOI18N
     };
     
     // The paths searched for libraries
