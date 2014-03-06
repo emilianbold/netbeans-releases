@@ -44,12 +44,17 @@ package org.netbeans.modules.profiler.nbimpl.actions;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.ProfilerLogger;
+import org.netbeans.lib.profiler.common.AttachSettings;
+import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.common.SessionSettings;
+import org.netbeans.lib.profiler.common.event.ProfilingStateAdapter;
+import org.netbeans.lib.profiler.common.event.ProfilingStateEvent;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import org.netbeans.lib.profiler.global.CommonConstants;
 import org.netbeans.lib.profiler.global.Platform;
@@ -62,7 +67,10 @@ import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
 import org.netbeans.modules.profiler.nbimpl.NetBeansProfiler;
 import org.netbeans.modules.profiler.nbimpl.providers.JavaPlatformManagerImpl;
 import org.netbeans.modules.profiler.spi.JavaPlatformProvider;
+import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.netbeans.modules.profiler.utils.IDEUtils;
+import org.netbeans.modules.profiler.v2.session.ProjectSession;
+import org.netbeans.modules.profiler.v2.ui.ProfilerWindow;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -91,6 +99,8 @@ public class ProfilerLauncher {
         private String command;
         private Lookup context;
         final private Map<String, Object> customProps = new HashMap<String, Object>();
+        
+        private ProjectSession projectSession;
         
         private boolean configured = false;
         private boolean rerun;
@@ -198,9 +208,21 @@ public class ProfilerLauncher {
             final ProjectProfilingSupport pSupport = ProjectProfilingSupport.get(project);
 
             NetBeansProfiler.getDefaultNB().setProfiledProject(project, fo);
-
-            // ** display select task panel
-            ProfilingSettings ps = ProfilingSupport.getDefault().selectTaskForProfiling(project, ss, fo, true);;
+            
+//            // ** display select task panel
+//            ProfilingSettings ps = ProfilingSupport.getDefault().selectTaskForProfiling(project, ss, fo, true);;
+//            if (ps != null) {
+//                this.ps = ps;
+//                this.ps.store(props);
+//                
+//                setupAgentEnv(platform, ss, ProfilerIDESettings.getInstance(), ps, project, props);
+//                pSupport.configurePropertiesForProfiling(props, fo);
+//
+//                rerun = false;
+//                configured = true;
+//            }
+            
+            ProfilingSettings ps = projectSession == null ? null : projectSession.getProfilingSettings();
             if (ps != null) {
                 this.ps = ps;
                 this.ps.store(props);
@@ -211,16 +233,66 @@ public class ProfilerLauncher {
                 rerun = false;
                 configured = true;
             }
+            
             return configured;
         }
         
         public void run() {
-            if (launcher != null) {
-                launcher.launch(rerun);
-                rerun = true;
-            } else {
-                // LOG
-            }
+            projectSession = new ProjectSession(project) {
+                
+                // TODO: FIX, will leak until listener is removed on session end
+                {
+                    NetBeansProfiler.getDefault().addProfilingStateListener(new ProfilingStateAdapter() {
+                        public void profilingStateChanged(ProfilingStateEvent e) {
+                            switch (e.getNewState()) {
+                                case Profiler.PROFILING_STARTED:
+                                    setState(State.STARTED);
+                                    break;
+                                case Profiler.PROFILING_RUNNING:
+                                case Profiler.PROFILING_IN_TRANSITION:
+                                    setState(State.RUNNING);
+                                    break;
+                                case Profiler.PROFILING_PAUSED:
+                                    setState(State.PAUSED);
+                                    break;
+                                default:
+                                    setState(State.INACTIVE);
+                            }
+                        }
+                    });
+                }
+                
+                public void start(ProfilingSettings pSettings, AttachSettings aSettings) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            if (launcher != null) {
+                                launcher.launch(rerun);
+                                rerun = true;
+                            }
+                        }
+                    });
+                }
+
+                public void modify(final ProfilingSettings pSettings) {
+                    ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
+                        public void run() {
+                            NetBeansProfiler.getDefault().modifyCurrentProfiling(pSettings);
+                        }
+                    });
+                }
+
+                public void terminate() {
+                    ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
+                        public void run() {
+                            NetBeansProfiler.getDefault().stopApp();
+                        }
+                    });
+                }
+            };
+            
+            ProfilerWindow window = ProfilerWindow.forSession(projectSession);
+            window.open();
+            window.requestActive();
         }
         
         private void initLauncher() {
