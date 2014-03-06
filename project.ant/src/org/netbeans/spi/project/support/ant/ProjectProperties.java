@@ -303,6 +303,7 @@ final class ProjectProperties {
                                 OutputStream os = _f.getOutputStream(_lock[0]);
                                 try {
                                     os.write(data);
+                                    cachedPropertiesFromFile = properties;
                                 } finally {
                                     os.close();
                                 }
@@ -317,6 +318,7 @@ final class ProjectProperties {
                                                     OutputStream os = _f.getOutputStream();
                                                     try {
                                                         os.write(data);
+                                                        cachedPropertiesFromFile = properties;
                                                     } finally {
                                                         os.close();
                                                     }

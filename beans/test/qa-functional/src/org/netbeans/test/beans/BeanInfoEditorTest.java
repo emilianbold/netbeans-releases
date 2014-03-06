@@ -39,83 +39,81 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+
 package org.netbeans.test.beans;
 
-import java.awt.event.KeyEvent;
-import javax.swing.ListModel;
+import java.awt.Component;
+import java.awt.Container;
+import javax.swing.tree.TreeModel;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.AbstractButtonOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.spi.editor.codegen.CodeGenerator;
-import org.netbeans.test.beans.operators.AddProperty;
 
 /**
  *
  * @author jprox
  */
-public class BeansTestCase extends JellyTestCase {
+public class BeanInfoEditorTest extends BeansTestCase {
 
-    private static final String sample_project = "Beans";
- 
-
-    public BeansTestCase(String testName) {
+    public BeanInfoEditorTest(String testName) {
         super(testName);
     }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    
+    private EditorOperator editor;
+    
+    public void testBI() {
+        editor = openEditor("beans", "SourceBeanInfo");
+        AbstractButtonOperator toolbarButton = editor.getToolbarButton("Designer View");
+        toolbarButton.pushNoBlock();
+        new EventTool().waitNoEvent(2000);
+        editor = new EditorOperator("SourceBeanInfo");
+        printAllComponents(editor);
+        JTreeOperator tree = new JTreeOperator(editor);
+        System.out.println("****************************************TREE****");
+        browseTree(tree.getRoot(),tree.getModel(),"");
+    }
+    public void printAllComponents(Operator comp) {
+        System.out.println("**************************");
+        printComp((Component) comp.getSource(), "");
+        System.out.println("**************************");
     }
 
-    @Override
-     protected void setUp() throws Exception {
-        super.setUp();
-        this.openDataProjects("projects/" + sample_project);        
-     }
-
-    protected void openFile(String pack, String className) {
-        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode(sample_project),"Source Packages|"+pack.replace('.', '|')+"|"+className);
-        new OpenAction().performAPI(openFile);
-    }
-           
-    public boolean openDialog(EditorOperator operator) {
-        operator.pressKey(KeyEvent.VK_INSERT, KeyEvent.ALT_DOWN_MASK);
-        JDialogOperator jdo = new JDialogOperator();        
-        JListOperator list = new JListOperator(jdo);
-        ListModel lm = list.getModel();
-        for (int i = 0; i < lm.getSize(); i++) {
-            CodeGenerator cg  = (CodeGenerator) lm.getElementAt(i);
-            if(cg.getDisplayName().equals("Add Property...")) {
-                list.setSelectedIndex(i);
-                jdo.pushKey(KeyEvent.VK_ENTER);                
-                return true;
+    public void printComp(Component c, String s) {        
+        System.out.println(s + c.getClass().getName());
+        if (c instanceof Container) {
+            for (Component com : ((Container)c).getComponents()) {
+                printComp((Container) com, s + "__");
             }
         }
-        return false;
     }
     
-    protected EditorOperator openEditor(String className) {
-        openFile("beans", className);
-        EditorOperator operator = new EditorOperator(className);
-        return operator;
+    private void browseTree(Object root, TreeModel model, String string) {
+        System.out.println(string + root.getClass().getName());
+        int childCount = model.getChildCount(root);
+        for (int i = 0; i < childCount; i++) {
+            browseTree(model.getChild(root, i), model, string+"  ");
+            
+        }        
     }
     
-    protected EditorOperator openEditor(String packageName, String className) {
-        openFile(packageName, className);
-        EditorOperator operator = new EditorOperator(className);
-        return operator;
+    /*
+    testEditing in beaninfo
+    test change source file - add to bi
+    test creating bi
+    
+    
+    */
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(BeanInfoEditorTest.class)
+                .enableModules(".*")
+                .clusters(".*"));
     }
 
-    protected void checkEditorContent(EditorOperator operator) {
-        ref(operator.getText());
-        compareReferenceFiles();
-    }
-
+    
 }
