@@ -1143,6 +1143,10 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug242417.cpp", 26, 21, "bug242417.cpp", 23, 9);
         performTest("bug242417.cpp", 37, 15, "bug242417.cpp", 42, 5);
         performTest("bug242417.cpp", 42, 34, "bug242417.cpp", 37, 13);
+        performTest("bug242417.cpp", 51, 13, "bug242417.cpp", 54, 5);
+        performTest("bug242417.cpp", 55, 14, "bug242417.cpp", 50, 9);
+        performTest("bug242417.cpp", 61, 17, "bug242417.cpp", 65, 5);
+        performTest("bug242417.cpp", 65, 44, "bug242417.cpp", 61, 13);
     }
     
     public static class Failed extends HyperlinkBaseTestCase {

@@ -223,6 +223,8 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
                     if (checkResolvedClassifier(memberClassifier)) {
                         if (ourClassifier.getQualifiedName().toString().equals(memberClassifier.getQualifiedName().toString())) {
                             candidateMatch = true;
+                        } else if (CsmKindUtilities.isTemplateParameter(ourClassifier) && CsmKindUtilities.isTemplateParameter(memberClassifier)) {
+                            candidateMatch = true;
                         }
                     }
                 }

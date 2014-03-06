@@ -42,4 +42,27 @@ namespace bug242417 {
     DDD_242417::AAA3_242417::operator DDD_242417::TEST_242417() {
         return Test_242417(); 
     }       
+    
+    template <typename T>
+    using Identity_242417 = T;
+    
+    struct AAA4 {
+        template <typename T>
+        operator T();
+    }; 
+
+    template <typename T>
+    AAA4::operator Identity_242417<T>() {
+        return T();
+    }
+    
+    namespace RRR_242417 {
+        struct AAA5_242417 {
+            operator CastStruct242417();
+        };
+    }
+    
+    bug242417::RRR_242417::AAA5_242417::operator bug242417::Identity_242417<bug242417::CastStruct242417>() {
+        return CastStruct242417();
+    }    
 }
