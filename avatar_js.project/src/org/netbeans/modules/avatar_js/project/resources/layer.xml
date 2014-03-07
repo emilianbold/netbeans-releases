@@ -60,6 +60,7 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
                 <attr name="displayName" bundlevalue="org.netbeans.modules.avatar_js.project.Bundle#package.json"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateCategory" stringvalue="avatar_js"/>
             </file>
         </folder>
     </folder>

@@ -45,20 +45,30 @@ package org.netbeans.modules.avatar_js.project.ui.nodes;
 import java.awt.Image;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.avatar_js.project.AvatarJSProject;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.openide.actions.NewTemplateAction;
+import org.openide.actions.PasteAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -108,7 +118,7 @@ public class JSSourceNodeFactory implements NodeFactory {
         public Node node(FileObject key) {
             DataFolder folder = DataFolder.findFolder(key);
             Children children = folder.createNodeChildren(DataFilter.ALL);
-            return new JSSourceNode(key, children);
+            return new JSSourceNode(key, children, project);
         }
 
         @Override
@@ -129,9 +139,18 @@ public class JSSourceNodeFactory implements NodeFactory {
         private final FileObject root;
         private static final String JS_ICON_BASE = "org/netbeans/modules/avatar_js/project/ui/resources/javascript.png";  // NOI18N
         
-        JSSourceNode(FileObject root, Children ch) {
-            super(ch);
+        JSSourceNode(FileObject root, Children ch, Project project) {
+            super(ch, createLookup(root, project));
             this.root = root;
+        }
+        
+        private static Lookup createLookup(FileObject fo, Project project) {
+            try {
+                Node node = DataObject.find(fo).getNodeDelegate();
+                return new ProxyLookup(node.getLookup(), Lookups.fixed(project));
+            } catch (DataObjectNotFoundException donfex) {
+                return null;
+            }
         }
 
         @Override
@@ -147,6 +166,12 @@ public class JSSourceNodeFactory implements NodeFactory {
         @Override
         public Image getOpenedIcon(int type) {
             return getIcon(type);
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[] { CommonProjectActions.newFileAction(),
+                                  SystemAction.get(PasteAction.class) };
         }
         
     }

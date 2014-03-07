@@ -72,6 +72,8 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -296,7 +298,10 @@ public class AvatarJSProject implements Project {
                         addOpenPostAction(newUpdateCopyLibsAction()).
                         addClosePostAction(newStopMainUpdaterAction()).*/
                         build()),
-            LookupProviderSupport.createActionProviderMerger()
+            new RecommendedTempatesImpl(),
+            LookupProviderSupport.createActionProviderMerger(),
+            UILookupMergerSupport.createPrivilegedTemplatesMerger(),
+            UILookupMergerSupport.createRecommendedTemplatesMerger()
         );
         this.lookup = base;
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-avatar_js-project/Lookup"); //NOI18N
@@ -314,5 +319,27 @@ public class AvatarJSProject implements Project {
             return AvatarJSProject.this;
         }
 
+    }
+    
+    private class RecommendedTempatesImpl implements RecommendedTemplates,
+                                                     PrivilegedTemplates {
+
+        @Override
+        public String[] getRecommendedTypes() {
+            return new String[] {
+                "avatar_js",
+                "simple-files"
+            };
+        }
+
+        @Override
+        public String[] getPrivilegedTemplates() {
+            return new String[] {
+                "Templates/Avatar_js/ServerFile.js",
+                "Templates/Avatar_js/package.json",
+                "Templates/other/JavaScript.js",
+            };
+        }
+        
     }
 }
