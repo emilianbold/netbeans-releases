@@ -5,7 +5,7 @@
 16:OVERRIDDEN CatDogRomb::boo romb_half_virtual.cc:23
 18:OVERRIDES_AND_OVERRIDDEN BaseRomb::foo romb_half_virtual.cc:2,CatDogRomb::foo romb_half_virtual.cc:22
 19:OVERRIDDEN CatDogRomb::boo romb_half_virtual.cc:23
-22:OVERRIDES CatRomb::foo romb_half_virtual.cc:8
+22:OVERRIDES CatRomb::foo romb_half_virtual.cc:8,DogRomb::foo romb_half_virtual.cc:15
 23:OVERRIDES DogRomb::boo romb_half_virtual.cc:16
-25:OVERRIDES CatRomb::foo romb_half_virtual.cc:8
+25:OVERRIDES CatRomb::foo romb_half_virtual.cc:8,DogRomb::foo romb_half_virtual.cc:15
 26:OVERRIDES DogRomb::boo romb_half_virtual.cc:16
