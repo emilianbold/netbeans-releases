@@ -44,8 +44,11 @@ package org.netbeans.modules.cnd.api.model.services;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -122,12 +125,10 @@ public abstract class CsmVirtualInfoQuery {
     public static final class CsmOverrideInfo {
         private final CsmMethod method;
         private final boolean virtual;
-        private final boolean hasVirtualKeyword;
 
-        private CsmOverrideInfo(CsmMethod method, boolean virtual, boolean hasVirtualKeyword) {
+        private CsmOverrideInfo(CsmMethod method, boolean virtual) {
             this.method = method;
             this.virtual = virtual;
-            this.hasVirtualKeyword = hasVirtualKeyword;
         }
 
         public CsmMethod getMethod() {
@@ -139,7 +140,7 @@ public abstract class CsmVirtualInfoQuery {
         }
         
         public boolean hasVirtualKeyword() {
-            return hasVirtualKeyword;
+            return method.isVirtual();
         }        
     }    
     
@@ -193,9 +194,10 @@ public abstract class CsmVirtualInfoQuery {
     //
     private static final class Empty extends CsmVirtualInfoQuery {
         private static enum Overridden {
-            FIRST,
-            TOP,
-            ALL
+            FIRST, // returns nearest parent virtual method
+            TOP, // returns topmost parent virtual method
+            ALL, // returns all parent virtual methods
+            PSEUDO // returns all parent virtual and not virtual methods
         }
         
         private Empty() {
@@ -235,17 +237,17 @@ public abstract class CsmVirtualInfoQuery {
         
         @Override
         public Collection<CsmMethod> getTopmostBaseDeclarations(CsmMethod method) {
-            return getBaseDeclaration(method, Overridden.TOP);
+            return getBaseDeclaration(method, Overridden.TOP).keySet();
         }
         
         @Override
         public Collection<CsmMethod> getFirstBaseDeclarations(CsmMethod method) {
-            return getBaseDeclaration(method, Overridden.FIRST);
+            return getBaseDeclaration(method, Overridden.FIRST).keySet();
         }
         
         @Override
         public Collection<CsmMethod> getAllBaseDeclarations(CsmMethod method) {
-            return getBaseDeclaration(method, Overridden.ALL);
+            return getBaseDeclaration(method, Overridden.ALL).keySet();
         }
         
         @Override
@@ -253,9 +255,9 @@ public abstract class CsmVirtualInfoQuery {
             throw new UnsupportedOperationException();
         }
         
-        private Collection<CsmMethod> getBaseDeclaration(CsmMethod method, Overridden overridden) {
-            Set<CharSequence> antilLoop = new HashSet<CharSequence>();
-            Set<CsmMethod> result = new HashSet<CsmMethod>();
+        private Map<CsmMethod, CsmOverrideInfo> getBaseDeclaration(CsmMethod method, Overridden overridden) {
+            LinkedList<CharSequence> antilLoop = new LinkedList<CharSequence>();
+            Map<CsmMethod, CsmOverrideInfo> result = new HashMap<CsmMethod, CsmOverrideInfo>();
             CsmClass cls = method.getContainingClass();
             if (cls != null) {
                 for(CsmInheritance inh : cls.getBaseClasses()) {
@@ -275,57 +277,72 @@ public abstract class CsmVirtualInfoQuery {
          * @param first if true, returns first found method, otherwise the topmost one
          * @return true if method found and it is virtual, otherwise false
          */
-        private void processMethod(CsmMethod toSearch, CsmClass cls, Set<CharSequence> antilLoop,
+        private boolean processMethod(CsmMethod toSearch, CsmClass cls, LinkedList<CharSequence> antilLoop,
                 CsmMethod firstFound, CsmMethod lastFound,
-                Set<CsmMethod> result, Overridden overridden) {
+                Map<CsmMethod, CsmOverrideInfo> result, Overridden overridden) {
             
             boolean theLastInHierarchy;
             if (cls == null || antilLoop.contains(cls.getQualifiedName())) {
                 theLastInHierarchy = true;
             } else {
-                
-                antilLoop.add(cls.getQualifiedName());
-                for(CsmMember member : cls.getMembers()) {
-                    if (CsmKindUtilities.isMethod(member)) {
-                        CsmMethod method = (CsmMethod) member;
-                        if (methodEquals(toSearch, method)) {
-                            if (firstFound == null) {
-                                firstFound = method;
-                            }
-                            lastFound = method;
-                            if (method.isVirtual()) {
-                                switch (overridden) {
-                                    case FIRST:
-                                        result.add(firstFound);
-                                        return;
-                                    case ALL:
-                                        result.add(method);
-                                        break;
+                antilLoop.addLast(cls.getQualifiedName());
+                try {
+                    boolean virtual = false;
+                    for(CsmMember member : cls.getMembers()) {
+                        if (CsmKindUtilities.isMethod(member)) {
+                            CsmMethod method = (CsmMethod) member;
+                            if (methodEquals(toSearch, method)) {
+                                if (firstFound == null) {
+                                    firstFound = method;
                                 }
+                                lastFound = method;
+                                if (method.isVirtual()) {
+                                    virtual = true;
+                                    switch (overridden) {
+                                        case FIRST:
+                                            result.put(firstFound, new CsmOverrideInfo(firstFound, virtual));
+                                            return true;
+                                    }
+                                }
+                                break;
                             }
                         }
                     }
+                    theLastInHierarchy = cls.getBaseClasses().isEmpty();
+                    for(CsmInheritance inh : cls.getBaseClasses()) {
+                        virtual |= processMethod(toSearch, CsmInheritanceUtilities.getCsmClass(inh), antilLoop, firstFound, lastFound, result, overridden);
+                    }
+                    if (lastFound != null) {
+                        switch (overridden) {
+                            case PSEUDO:
+                                result.put(lastFound, new CsmOverrideInfo(lastFound, virtual));
+                                break;
+                            case ALL:
+                                if (virtual) {
+                                    result.put(lastFound, new CsmOverrideInfo(lastFound, virtual));
+                                }
+                                break;
+                        }
+                    }
+                } finally {
+                    antilLoop.removeLast();
                 }
-                theLastInHierarchy = cls.getBaseClasses().isEmpty();
-                for(CsmInheritance inh : cls.getBaseClasses()) {
-                    processMethod(toSearch, CsmInheritanceUtilities.getCsmClass(inh), antilLoop, firstFound, lastFound, result, overridden);
-                }
-                
             }
-            if (theLastInHierarchy) {
-                CsmMethod m  = lastFound;
-                if (m != null && m.isVirtual()) {
+            if (theLastInHierarchy && lastFound != null) {
+                if (lastFound.isVirtual()) {
                     CndUtils.assertNotNull(firstFound, "last found != null && first found == null ?!"); //NOI18N
                     switch (overridden) {
                         case FIRST:
-                            result.add(firstFound);
+                            result.put(firstFound, new CsmOverrideInfo(firstFound, true));
                             break;
                         case TOP:
-                            result.add(m);
+                            result.put(lastFound, new CsmOverrideInfo(lastFound, true));
                             break;
                     }
+                    return true;
                 }
             }
+            return false;
         }
         
         @Override
