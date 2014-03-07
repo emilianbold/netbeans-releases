@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
     @Override
     public String getShortDescription() {
         String out = "";
-        if (baseUIDs.isEmpty() && pseudoBaseUIDs.isEmpty() && (!descUIDs.isEmpty() || !descUIDs.isEmpty())) {
+        if (baseUIDs.isEmpty() && pseudoBaseUIDs.isEmpty() && (!descUIDs.isEmpty() || !pseudoDescUIDs.isEmpty())) {
             out = NbBundle.getMessage(getClass(), "LAB_IsOverriden");
         } else if ((!baseUIDs.isEmpty() || !pseudoBaseUIDs.isEmpty()) && descUIDs.isEmpty() && pseudoDescUIDs.isEmpty()) {
             CharSequence text = "..."; //NOI18N
