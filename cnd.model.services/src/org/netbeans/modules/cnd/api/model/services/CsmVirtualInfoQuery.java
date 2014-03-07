@@ -42,12 +42,14 @@
 
 package org.netbeans.modules.cnd.api.model.services;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -237,35 +239,51 @@ public abstract class CsmVirtualInfoQuery {
         
         @Override
         public Collection<CsmMethod> getTopmostBaseDeclarations(CsmMethod method) {
-            return getBaseDeclaration(method, Overridden.TOP).keySet();
+            Map<CsmMethod, CsmOverrideInfo> result = new HashMap<CsmMethod, CsmOverrideInfo>();
+            getBaseDeclaration(result, method, Overridden.TOP);
+            return result.keySet();
         }
         
         @Override
         public Collection<CsmMethod> getFirstBaseDeclarations(CsmMethod method) {
-            return getBaseDeclaration(method, Overridden.FIRST).keySet();
+            Map<CsmMethod, CsmOverrideInfo> result = new HashMap<CsmMethod, CsmOverrideInfo>();
+            getBaseDeclaration(result, method, Overridden.FIRST);
+            return result.keySet();
         }
         
         @Override
         public Collection<CsmMethod> getAllBaseDeclarations(CsmMethod method) {
-            return getBaseDeclaration(method, Overridden.ALL).keySet();
+            Map<CsmMethod, CsmOverrideInfo> result = new HashMap<CsmMethod, CsmOverrideInfo>();
+            getBaseDeclaration(result, method, Overridden.ALL);
+            return result.keySet();
         }
         
         @Override
         public CsmOverriddenChain getOverriddenChain(CsmMethod method) {
-            throw new UnsupportedOperationException();
+            Map<CsmMethod, CsmOverrideInfo> result = new HashMap<CsmMethod, CsmOverrideInfo>();
+            boolean virtual = getBaseDeclaration(result, method, Overridden.PSEUDO);
+            CsmOverrideInfo current = new CsmOverrideInfo(method, virtual);
+            ArrayList<CsmOverrideInfo> overridden = new ArrayList<CsmOverrideInfo>();
+            for(CsmMethod m : getOverriddenMethods(method, false)) {
+                // simplified virtual
+                // TODO: count true virtual
+                overridden.add(new CsmOverrideInfo(m, virtual||m.isVirtual()));
+            }
+            overridden.trimToSize();
+            return new CsmOverriddenChain(result.values(), current, overridden);
         }
         
-        private Map<CsmMethod, CsmOverrideInfo> getBaseDeclaration(CsmMethod method, Overridden overridden) {
+        private boolean getBaseDeclaration(Map<CsmMethod, CsmOverrideInfo> result, CsmMethod method, Overridden overridden) {
             LinkedList<CharSequence> antilLoop = new LinkedList<CharSequence>();
-            Map<CsmMethod, CsmOverrideInfo> result = new HashMap<CsmMethod, CsmOverrideInfo>();
             CsmClass cls = method.getContainingClass();
+            boolean virtual = method.isVirtual();
             if (cls != null) {
                 for(CsmInheritance inh : cls.getBaseClasses()) {
-                    processMethod(method, CsmInheritanceUtilities.getCsmClass(inh), antilLoop,
+                    virtual |= processMethod(method, CsmInheritanceUtilities.getCsmClass(inh), antilLoop,
                             null, null, result, overridden);
                 }
             }
-            return result;
+            return virtual;
         }
         
         /**

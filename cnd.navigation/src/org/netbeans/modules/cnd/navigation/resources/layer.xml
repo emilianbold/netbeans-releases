@@ -3,10 +3,16 @@
 <filesystem>
     <folder name="Editors">
         <folder name="AnnotationTypes">
-            <file name="org-netbeans-modules-cnd-navigation-is_specialized.xml" url="overrides/is-specialized-annotation.xml"/>
-            <file name="org-netbeans-modules-cnd-navigation-specializes.xml" url="overrides/specializes-annotation.xml"/>
-            <file name="org-netbeans-modules-cnd-navigation-extended_is_specialized.xml" url="overrides/extended-is-specialized-annotation.xml"/>
-            <file name="org-netbeans-modules-cnd-navigation-extended_specializes.xml" url="overrides/extended-specializes-annotation.xml"/>
+            <file name="org-netbeans-modules-cnd-navigation-is_specialized.xml" url="overrides/is-specialized.xml"/>
+            <file name="org-netbeans-modules-cnd-navigation-specializes.xml" url="overrides/specializes.xml"/>
+            <file name="org-netbeans-modules-cnd-navigation-extended_is_specialized.xml" url="overrides/extended-is-specialized.xml"/>
+            <file name="org-netbeans-modules-cnd-navigation-extended_specializes.xml" url="overrides/extended-specializes.xml"/>
+            <file name="org-netbeans-modules-cnd-navigation-is_overridden.xml" url="overrides/is-overridden.xml"/>
+            <file name="org-netbeans-modules-cnd-navigation-is_overridden_pseudo.xml" url="overrides/is-overridden-pseudo.xml"/>
+            <file name="org-netbeans-modules-cnd-navigation-overrides.xml" url="overrides/overrides.xml"/>
+            <file name="org-netbeans-modules-cnd-navigation-overrides_pseudo.xml" url="overrides/overrides-pseudo.xml"/>
+            <file name="org-netbeans-modules-cnd-navigation-override_is_overriden.xml" url="overrides/override-is-overridden-combined.xml"/>
+            <file name="org-netbeans-modules-cnd-navigation-override_is_overriden_pseudo.xml" url="overrides/override-is-overridden-combined-pseudo.xml"/>
         </folder>
         <folder name="text">
             <folder name="x-h">
