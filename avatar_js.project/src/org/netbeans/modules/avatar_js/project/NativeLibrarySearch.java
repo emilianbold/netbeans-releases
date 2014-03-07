@@ -126,7 +126,7 @@ public final class NativeLibrarySearch {
             String libName = System.mapLibraryName(name);
             File lib = new File(folder, libName);
             if (!canLoadLibrary(lib)) {
-                missing[n++] = name;
+                missing[n++] = libName;
             }
         }
         return missing;

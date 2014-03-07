@@ -195,6 +195,8 @@ class PanelConfigureProjectComponent extends javax.swing.JPanel {
         
     @NbBundle.Messages({"# {0} - The minimum version of acceptable Java platform",
                         "MSG_ERR_NoNashornPlatform=No suitable Java platform is selected. The minimum version is {0}.",
+                        "# {0} - A name of missing Avatar.js library",
+                        "MSG_ERR_MissingAvatarLib=Avatar.js library {0} not found.",
                         "# {0} - Comma-separated list of missing Avatar.js libraries",
                         "MSG_ERR_MissingAvatarLibs=Avatar.js libraries {0} not found.",
                         "# {0} - The name of Avatar.js JAR file",
@@ -212,9 +214,13 @@ class PanelConfigureProjectComponent extends javax.swing.JPanel {
             File libsFolderFile = new File(libsFolderPath);
             String[] missingAvatarLibraries = NativeLibrarySearch.getMissingAvatarLibrariesIn(libsFolderFile);
             if (missingAvatarLibraries != null) {
-                String missingLibNames = Arrays.toString(missingAvatarLibraries);
-                missingLibNames = missingLibNames.substring(1, missingLibNames.length() - 1);
-                errorMsg = Bundle.MSG_ERR_MissingAvatarLibs(missingLibNames);
+                if (missingAvatarLibraries.length == 1) {
+                    errorMsg = Bundle.MSG_ERR_MissingAvatarLib(missingAvatarLibraries[0]);
+                } else {
+                    String missingLibNames = Arrays.toString(missingAvatarLibraries);
+                    missingLibNames = missingLibNames.substring(1, missingLibNames.length() - 1);
+                    errorMsg = Bundle.MSG_ERR_MissingAvatarLibs(missingLibNames);
+                }
             } else {
                 File jar = new File(libsFolderFile, AvatarJSProject.AVATAR_JS_JAR_NAME);
                 if (!jar.exists() || !jar.canRead()) {
