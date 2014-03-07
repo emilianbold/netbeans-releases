@@ -48,6 +48,8 @@ import java.awt.Graphics;
 import java.awt.Insets;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
@@ -76,7 +78,12 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.text.Line;
+import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
@@ -165,25 +172,55 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
         descriptionPanel.addHyperlinkListener(new HyperlinkListener() {
             @Override public void hyperlinkUpdate(HyperlinkEvent e) {
                 if (e.getEventType() == EventType.ACTIVATED && e.getURL() != null) {
-                    if ("file".equals(e.getURL().getProtocol())) {
-                        FileObject file = URLMapper.findFileObject(e.getURL());
-                        
-                        if (file != null) {
-                            EditCookie ec = file.getLookup().lookup(EditCookie.class);
-                            
-                            if (ec != null) {
-                                ec.edit();
-                                return ;
+                    //if ("file".equals(e.getURL().getProtocol())||"rfs".equals(e.getURL().getProtocol())) {
+                        if (e.getURL().getRef() == null) {
+                            FileObject file = URLMapper.findFileObject(e.getURL());
+
+                            if (file != null) {
+                                EditCookie ec = file.getLookup().lookup(EditCookie.class);
+
+                                if (ec != null) {
+                                    ec.edit();
+                                    return ;
+                                }
+
+                                OpenCookie oc = file.getLookup().lookup(OpenCookie.class);
+
+                                if (oc != null) {
+                                    oc.open();
+                                    return ;
+                                }
                             }
-                            
-                            OpenCookie oc = file.getLookup().lookup(OpenCookie.class);
-                            
-                            if (oc != null) {
-                                oc.open();
-                                return ;
+                        } else {
+                            try {
+                                int line;
+                                if (e.getURL().getRef().startsWith("line")) {
+                                    line = Integer.parseInt(e.getURL().getRef().substring(4));
+                                } else {
+                                    line = Integer.parseInt(e.getURL().getRef());
+                                }
+                                String s = e.getURL().toExternalForm();
+                                URL url;
+                                if (s.indexOf("#")>0) {
+                                    s = s.substring(0, s.indexOf("#"));
+                                    url = new URL(s);
+                                } else {
+                                    url=e.getURL();
+                                }
+                                FileObject file = URLMapper.findFileObject(url);
+                                if (file != null) {
+                                    DataObject dobj = DataObject.find(file);
+                                    if (dobj != null) {
+                                        NbDocument.openDocument(dobj, line-1, 0, Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+                                        return;
+                                    }
+                                }
+                            } catch (NumberFormatException ex) {
+                            } catch (MalformedURLException ex) {
+                            } catch (DataObjectNotFoundException ex) {
                             }
                         }
-                    }
+                    //}
                     URLDisplayer.getDefault().showURL(e.getURL());
                 }
             }
