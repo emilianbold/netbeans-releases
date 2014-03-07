@@ -419,7 +419,7 @@ public class DiscoveryUtils {
                     path = st.next();
                 }
                 path = removeQuotes(path);
-                artifacts.userIncludes.add(path);
+                artifacts.userFiles.add(path);
             } else if (option.startsWith("-Y")){ // NOI18N
                 String defaultSearchPath = option.substring(2);
                 if (defaultSearchPath.length()==0 && st.hasNext()){

@@ -1413,6 +1413,7 @@ public final class J2MEProjectProperties {
             }
             if (combo.getModel().getSize() != 0) {
                 combo.setSelectedIndex(0);
+                changed(getPropertyValue());
             }
         }
     }

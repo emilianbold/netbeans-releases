@@ -50,6 +50,7 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JPanel;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -71,7 +72,7 @@ public final class TermOptionsPanel extends JPanel {
     private final PropertyChangeListener propertyListener;
     private boolean inApplyingModel;
     private TermOptions termOptions;
-
+    
     /**
      * Creates new form TermOptionPanel
      */
@@ -87,7 +88,7 @@ public final class TermOptionsPanel extends JPanel {
 		refreshView();
 	    }
 	};
-
+	
 	initComponents();
 	initCustomComponents();
 
@@ -192,7 +193,7 @@ public final class TermOptionsPanel extends JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(fontSizeLabel, org.openide.util.NbBundle.getMessage(TermOptionsPanel.class, "TermOptionsPanel.fontSizeLabel.text")); // NOI18N
 
-        fontSizeSpinner.setModel(new javax.swing.SpinnerNumberModel(12, 8, 48, 1));
+        fontSizeSpinner.setModel(new SpinnerNumberModel(12, termOptions.MIN_FONT_SIZE, termOptions.MAX_FONT_SIZE, 1));
         fontSizeSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 fontSizeSpinnerStateChanged(evt);
@@ -225,7 +226,7 @@ public final class TermOptionsPanel extends JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(historySizeLabel, org.openide.util.NbBundle.getMessage(TermOptionsPanel.class, "TermOptionsPanel.historySizeLabel.text")); // NOI18N
 
-        historySizeSpinner.setModel(new javax.swing.SpinnerNumberModel(5000, 0, 50000, 10));
+        historySizeSpinner.setModel(new SpinnerNumberModel(5000, TermOptions.MIN_HISTORY_SIZE, TermOptions.MAX_HISTORY_SIZE, 1));
         historySizeSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 historySizeSpinnerStateChanged(evt);
@@ -234,7 +235,7 @@ public final class TermOptionsPanel extends JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(tabSizeLabel, org.openide.util.NbBundle.getMessage(TermOptionsPanel.class, "TermOptionsPanel.tabSizeLabel.text")); // NOI18N
 
-        tabSizeSpinner.setModel(new javax.swing.SpinnerNumberModel(8, 1, 16, 1));
+        tabSizeSpinner.setModel(new SpinnerNumberModel(8, TermOptions.MIN_TAB_SIZE, TermOptions.MAX_TAB_SIZE, 1));
         tabSizeSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 tabSizeSpinnerStateChanged(evt);

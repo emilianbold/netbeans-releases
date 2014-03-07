@@ -61,14 +61,17 @@ public final class DelegatingProgressMonitor implements ProgressMonitor {
 
     @Override
     public void beginTask (String title, int totalWork) {
+        monitor.beginTask(title, totalWork);
     }
 
     @Override
     public void update (int completed) {
+        monitor.updateTaskState(completed);
     }
 
     @Override
     public void endTask () {
+        monitor.endTask();
     }
 
     @Override

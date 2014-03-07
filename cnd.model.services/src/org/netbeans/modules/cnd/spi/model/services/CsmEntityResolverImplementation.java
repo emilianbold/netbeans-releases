@@ -39,31 +39,38 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.completion.cplusplus;
+package org.netbeans.modules.cnd.spi.model.services;
 
+import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmType;
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
-import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
-import org.netbeans.modules.cnd.spi.model.services.CsmTypeResolverImplementation;
 
 /**
  *
  * @author petrk
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.model.services.CsmTypeResolverImplementation.class)
-public final class CsmTypeResolverImpl implements CsmTypeResolverImplementation {
-
-    @Override
-    public CsmType resolveType(CsmOffsetable expression, List<CsmInstantiation> instantiations) {
-        CsmCompletionQuery query = getCompletionQuery(expression);
-        CsmType type = query.queryType(expression, instantiations);
-        return type;
-    }    
+public interface CsmEntityResolverImplementation {
     
-    private static CsmCompletionQuery getCompletionQuery(CsmOffsetable expression) {
-        return CsmCompletionProvider.createCompletionResolver(expression.getContainingFile(), CompletionResolver.QueryScope.GLOBAL_QUERY, null);
-    }    
+    /**
+     * Resolves type of expression in a given context 
+     * 
+     * @param expression
+     * @param instantiations - context
+     * @return type of expression
+     */
+    Collection<CsmObject> resolveObjects(CsmOffsetable expression, List<CsmInstantiation> instantiations);
+    
+    /**
+     * Resolves type of expression in a given context 
+     * 
+     * @param expression - expression to resolve
+     * @param instantiations - context
+     * @return type of expression
+     */
+    CsmType resolveType(CsmOffsetable expression, List<CsmInstantiation> instantiations);
+    
 }

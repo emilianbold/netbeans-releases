@@ -60,8 +60,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
@@ -72,7 +70,6 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -85,8 +82,6 @@ public class SuspiciousNamesCombination extends AbstractHint {
     static final String SEPARATORS_REGEX = "[, \t;]";
     static final String GROUP_KEY = "groups";
     static final String DEFAULT_GROUPS = "x, width|y, height";
-    
-    private Map<String, Integer> mapNameToGroup;
     
     /** Creates a new instance of SuspiciousNamesCombination */
     public SuspiciousNamesCombination() {
@@ -114,15 +109,19 @@ public class SuspiciousNamesCombination extends AbstractHint {
         // XXX implement me
     }
     
-    private void ensureNameMapLoaded() {
+    private static final String KEY = SuspiciousNamesCombination.class.getName();
+    
+    private Map<String, Integer> ensureNameMapLoaded(CompilationInfo info) {
+        Map<String, Integer> mapNameToGroup = (Map<String, Integer>)info.getCachedValue(KEY);
         if (mapNameToGroup != null) {
-            return;
+            return mapNameToGroup;
         }
         mapNameToGroup = new HashMap<String, Integer>();
         Preferences prefs = getPreferences(null);
         String value = prefs.get(GROUP_KEY, DEFAULT_GROUPS);
         if (value == null) {
-            return;
+            info.putCachedValue(KEY, mapNameToGroup, CompilationInfo.CacheClearPolicy.ON_TASK_END);
+            return mapNameToGroup;
         }
         String[] groups = value.split(Pattern.quote(GROUP_SEPARATOR));
         int idx = 0;
@@ -136,6 +135,8 @@ public class SuspiciousNamesCombination extends AbstractHint {
             }
             idx++;
         }
+        info.putCachedValue(KEY, mapNameToGroup, CompilationInfo.CacheClearPolicy.ON_TASK_END);
+        return mapNameToGroup;
     }
 
     @Override
@@ -167,7 +168,7 @@ public class SuspiciousNamesCombination extends AbstractHint {
             ExpressionTree arg             = mit.getArguments().get(cntr);
             String         actualName      = getName(arg);
             
-            if (isConflicting(declarationName, actualName)) {
+            if (isConflicting(info, declarationName, actualName)) {
                 long start = info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), arg);
                 long end   = info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), arg);
                 
@@ -186,7 +187,7 @@ public class SuspiciousNamesCombination extends AbstractHint {
         String declarationName = getName(at.getVariable());
         String actualName      = getName(at.getExpression());
         
-        if (isConflicting(declarationName, actualName)) {
+        if (isConflicting(info, declarationName, actualName)) {
             long start = info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), at.getVariable());
             long end   = info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), at.getVariable());
             
@@ -207,7 +208,7 @@ public class SuspiciousNamesCombination extends AbstractHint {
         String declarationName = vt.getName().toString();
         String actualName      = getName(vt.getInitializer());
         
-        if (isConflicting(declarationName, actualName)) {
+        if (isConflicting(info, declarationName, actualName)) {
             int[] span = info.getTreeUtilities().findNameSpan(vt);
 
             if (span != null) {
@@ -236,19 +237,19 @@ public class SuspiciousNamesCombination extends AbstractHint {
         }
     }
     
-    private boolean isConflicting(String declarationName, String actualName) {
+    private boolean isConflicting(CompilationInfo info, String declarationName, String actualName) {
         if (declarationName == null || actualName == null)
             return false;
         
-        int declarationCat = findCategory(declarationName);
-        int actualCat      = findCategory(actualName);
+        int declarationCat = findCategory(info, declarationName);
+        int actualCat      = findCategory(info, actualName);
         
         return declarationCat != actualCat && declarationCat != (-1) && actualCat != (-1);
     }
     
-    private int findCategory(String name) {
+    private int findCategory(CompilationInfo info, String name) {
         Set<String> broken = breakName(name);
-        ensureNameMapLoaded();
+        Map<String, Integer> mapNameToGroup = ensureNameMapLoaded(info);
         for (String s : broken) {
             Integer i = mapNameToGroup.get(s);
             if (i != null) {
@@ -289,12 +290,6 @@ public class SuspiciousNamesCombination extends AbstractHint {
         
         return result;
     }
-    
-    private List<List<String>> NAME_CATEGORIES = Arrays.asList(
-            Arrays.asList("x", "width"), //NOI18N
-            Arrays.asList("y", "height") //NOI18N
-    );
-    
     
     public String getId() {
         return SuspiciousNamesCombination.class.getName();
