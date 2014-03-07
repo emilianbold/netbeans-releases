@@ -1,0 +1,2 @@
+32:OVERRIDDEN B1C1::v_foo single_inh_tree.cc:40
+40:OVERRIDES B1::v_foo single_inh_tree.cc:32
