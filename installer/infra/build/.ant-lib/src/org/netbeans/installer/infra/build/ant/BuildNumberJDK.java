@@ -93,9 +93,6 @@ public class BuildNumberJDK extends Task {
                 System.out.println("###: GROUP COUNT: " + matcher.groupCount());
                 String jdkVersion = matcher.group(1);
                 String jdkUpdate = matcher.group(2);
-                if (jdkUpdate.length() == 1) {
-                    jdkUpdate = "0" + jdkUpdate;
-                }
                 String jdkBuildType = matcher.group(3);
                 String jdkBuildNumber = matcher.group(4);
                 String jdkEaText = "fcs".equals(jdkBuildType) ? "" : "ea-"; // NOI18N
