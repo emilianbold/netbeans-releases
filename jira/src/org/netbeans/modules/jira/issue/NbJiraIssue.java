@@ -1328,6 +1328,9 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
                         if(!value.trim().equals(seenValue)) {
                             changedFields.add(f);
                         }
+                        
+//                        System.out.println(" +++ " + f.getDisplayName());
+                        
                     }
                     int changedCount = changedFields.size();
                     if(changedCount == 1) {
@@ -1354,7 +1357,11 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
                                     recentChanges = NbBundle.getMessage(NbJiraIssue.class, "LBL_ATTACHMENTS_CHANGED");
                                     break;
                                 default :
-                                    recentChanges = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGED_TO", new Object[] {changedField.getDisplayName(), getFieldDisplayValue(changedField)});
+                                    if(changedField.displayNameKey != null) {
+                                        recentChanges = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGED_TO", new Object[] {changedField.getDisplayName(), getFieldDisplayValue(changedField)});
+                                    } else {
+                                        recentChanges = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES", new Object[] {changedCount});
+                                    }
                             }
                         }
                     } else {
