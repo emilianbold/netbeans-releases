@@ -72,29 +72,37 @@ public class OverrideAnnotationsTest extends ProjectBasedTestCase {
     public void testPrimitiveOverrides() throws Exception {
         performTest("primitive.cc", "\\d*:OVERRID.*", ".overrides.ref");
     }
-
-    public void testProperOverridesParentSingle() throws Exception {
-        performTest("proper_parent_single.cc", "\\d*:OVERRID.*", ".overrides.ref");
-    }
-
-    public void testProperOverridesParentMulty() throws Exception {
-        performTest("proper_parent_multy.cc", "\\d*:OVERRID.*", ".overrides.ref");
-    }
-
     public void testPrimitiveClasses() throws Exception {
         performTest("primitive.cc", "\\d*:INHERIT.*", ".extends.ref");
     }
 
+    public void testProperOverridesParentSingle() throws Exception {
+        performTest("proper_parent_single.cc", "\\d*:OVERRID.*", ".overrides.ref");
+    }
     public void testClassesSingleInh() throws Exception {
         performTest("proper_parent_single.cc", "\\d*:INHERIT.*", ".extends.ref");
     }
 
+
+    public void testProperOverridesParentMulty() throws Exception {
+        performTest("proper_parent_multy.cc", "\\d*:OVERRID.*", ".overrides.ref");
+    }
     public void testClassesMultyInh() throws Exception {
         performTest("proper_parent_multy.cc", "\\d*:INHERIT.*", ".extends.ref");
     }
 
+    public void testSingleOverrides() throws Exception {
+        performTest("single_inh_tree.cc", "\\d*:OVERRID.*", ".overrides.ref");
+    }
     public void testSingleInhTree() throws Exception {
         performTest("single_inh_tree.cc", "\\d*:INHERIT.*", ".extends.ref");
+    }
+
+    public void testRombOverrides() throws Exception {
+        performTest("romb_half_virtual.cc", "\\d*:OVERRID.*", ".overrides.ref");
+    }
+    public void testRombInhTree() throws Exception {
+        performTest("romb_half_virtual.cc", "\\d*:INHERIT.*", ".extends.ref");
     }
 
     private void performTest(String sourceFileName, String patternString, String refPostfix) throws Exception {

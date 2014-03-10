@@ -42,9 +42,15 @@
 
 package org.netbeans.modules.cnd.api.model.services;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -66,13 +72,7 @@ import org.openide.util.Lookup;
  * @author Vladimir Voskresensky
  */
 public abstract class CsmVirtualInfoQuery {
-    public abstract boolean isVirtual(CsmMethod method);
-    public abstract Collection<CsmMethod> getTopmostBaseDeclarations(CsmMethod method);
-    public abstract Collection<CsmMethod> getFirstBaseDeclarations(CsmMethod method);
-    public abstract Collection<CsmMethod> getAllBaseDeclarations(CsmMethod method);
-    public abstract Collection<CsmMethod> getOverriddenMethods(CsmMethod method, boolean searchFromBase);
     private static final CsmVirtualInfoQuery EMPTY = new Empty();
-    
     /** default instance */
     private static CsmVirtualInfoQuery defaultQuery;
     
@@ -90,6 +90,63 @@ public abstract class CsmVirtualInfoQuery {
         defaultQuery = Lookup.getDefault().lookup(CsmVirtualInfoQuery.class);
         return defaultQuery == null ? EMPTY : defaultQuery;
     }
+
+    public abstract boolean isVirtual(CsmMethod method);
+    public abstract Collection<CsmMethod> getTopmostBaseDeclarations(CsmMethod method);
+    public abstract Collection<CsmMethod> getFirstBaseDeclarations(CsmMethod method);
+    public abstract Collection<CsmMethod> getAllBaseDeclarations(CsmMethod method);
+    public abstract Collection<CsmMethod> getOverriddenMethods(CsmMethod method, boolean searchFromBase);
+    
+    public abstract CsmOverriddenChain getOverriddenChain(CsmMethod method);
+    
+    public static final class CsmOverriddenChain {
+        
+        private final Collection<CsmOverrideInfo> baseMethods;
+        private final CsmOverrideInfo thisMethod;
+        private final Collection<CsmOverrideInfo> derivedMethods;
+
+        private CsmOverriddenChain(Collection<CsmOverrideInfo> baseMethods, CsmOverrideInfo thisMethod, Collection<CsmOverrideInfo> derivedMethods) {
+            this.baseMethods = baseMethods;
+            this.thisMethod = thisMethod;
+            this.derivedMethods = derivedMethods;
+        }
+
+        public Collection<CsmOverrideInfo> getBaseMethods() {
+            return Collections.unmodifiableCollection(baseMethods);
+        }
+
+        public Collection<CsmOverrideInfo> getDerivedMethods() {
+            return Collections.unmodifiableCollection(derivedMethods);
+        }
+
+        public CsmOverrideInfo getThisMethod() {
+            return thisMethod;
+        }                
+    }
+
+    public static final class CsmOverrideInfo {
+        private final CsmMethod method;
+        private final boolean virtual;
+
+        private CsmOverrideInfo(CsmMethod method, boolean virtual) {
+            this.method = method;
+            this.virtual = virtual;
+        }
+
+        public CsmMethod getMethod() {
+            return method;
+        }
+
+        public boolean isVirtual() {
+            return virtual;
+        }
+        
+        public boolean hasVirtualKeyword() {
+            return method.isVirtual();
+        }        
+    }    
+    
+    //<editor-fold defaultstate="collapsed" desc="implementation">
     
     private static boolean methodEquals(CsmMethod toSearch, CsmMethod method) {
         if (!toSearch.getName().equals(method.getName())) {
@@ -132,20 +189,22 @@ public abstract class CsmVirtualInfoQuery {
         }
         return true;
     }
-
+        
+    
     //
     // Implementation of the default query
     //
     private static final class Empty extends CsmVirtualInfoQuery {
         private static enum Overridden {
-            FIRST,
-            TOP,
-            ALL
+            FIRST, // returns nearest parent virtual method
+            TOP, // returns topmost parent virtual method
+            ALL, // returns all parent virtual methods
+            PSEUDO // returns all parent virtual and not virtual methods
         }
-
+        
         private Empty() {
         }
-
+        
         @Override
         public boolean isVirtual(CsmMethod method) {
             if (method.isVirtual()) {
@@ -153,7 +212,7 @@ public abstract class CsmVirtualInfoQuery {
             }
             return processClass(method, method.getContainingClass(), new AntiLoop());
         }
-
+        
         private boolean processClass(CsmMethod toSearch, CsmClass cls, AntiLoop antilLoop){
             if (cls == null || antilLoop.contains(cls)) {
                 return false;
@@ -177,35 +236,56 @@ public abstract class CsmVirtualInfoQuery {
             }
             return false;
         }
-
+        
         @Override
         public Collection<CsmMethod> getTopmostBaseDeclarations(CsmMethod method) {
-            return getBaseDeclaration(method, Overridden.TOP);
+            Map<CsmMethod, CsmOverrideInfo> result = new HashMap<CsmMethod, CsmOverrideInfo>();
+            getBaseDeclaration(result, method, Overridden.TOP);
+            return result.keySet();
         }
-
+        
         @Override
         public Collection<CsmMethod> getFirstBaseDeclarations(CsmMethod method) {
-            return getBaseDeclaration(method, Overridden.FIRST);
+            Map<CsmMethod, CsmOverrideInfo> result = new HashMap<CsmMethod, CsmOverrideInfo>();
+            getBaseDeclaration(result, method, Overridden.FIRST);
+            return result.keySet();
         }
-
+        
         @Override
         public Collection<CsmMethod> getAllBaseDeclarations(CsmMethod method) {
-            return getBaseDeclaration(method, Overridden.ALL);
+            Map<CsmMethod, CsmOverrideInfo> result = new HashMap<CsmMethod, CsmOverrideInfo>();
+            getBaseDeclaration(result, method, Overridden.ALL);
+            return result.keySet();
         }
-
-        private Collection<CsmMethod> getBaseDeclaration(CsmMethod method, Overridden overridden) {
-            Set<CharSequence> antilLoop = new HashSet<CharSequence>();
-            Set<CsmMethod> result = new HashSet<CsmMethod>();
+        
+        @Override
+        public CsmOverriddenChain getOverriddenChain(CsmMethod method) {
+            Map<CsmMethod, CsmOverrideInfo> result = new HashMap<CsmMethod, CsmOverrideInfo>();
+            boolean virtual = getBaseDeclaration(result, method, Overridden.PSEUDO);
+            CsmOverrideInfo current = new CsmOverrideInfo(method, virtual);
+            ArrayList<CsmOverrideInfo> overridden = new ArrayList<CsmOverrideInfo>();
+            for(CsmMethod m : getOverriddenMethods(method, false)) {
+                // simplified virtual
+                // TODO: count true virtual
+                overridden.add(new CsmOverrideInfo(m, virtual||m.isVirtual()));
+            }
+            overridden.trimToSize();
+            return new CsmOverriddenChain(result.values(), current, overridden);
+        }
+        
+        private boolean getBaseDeclaration(Map<CsmMethod, CsmOverrideInfo> result, CsmMethod method, Overridden overridden) {
+            LinkedList<CharSequence> antilLoop = new LinkedList<CharSequence>();
             CsmClass cls = method.getContainingClass();
+            boolean virtual = method.isVirtual();
             if (cls != null) {
                 for(CsmInheritance inh : cls.getBaseClasses()) {
-                    processMethod(method, CsmInheritanceUtilities.getCsmClass(inh), antilLoop,
-                                null, null, result, overridden);
+                    virtual |= processMethod(method, CsmInheritanceUtilities.getCsmClass(inh), antilLoop,
+                            null, null, result, overridden);
                 }
             }
-            return result;
+            return virtual;
         }
-
+        
         /**
          * Searches for method with the given signature in the given class and its ancestors.
          * @param sig signature to search
@@ -215,59 +295,74 @@ public abstract class CsmVirtualInfoQuery {
          * @param first if true, returns first found method, otherwise the topmost one
          * @return true if method found and it is virtual, otherwise false
          */
-        private void processMethod(CsmMethod toSearch, CsmClass cls, Set<CharSequence> antilLoop,
+        private boolean processMethod(CsmMethod toSearch, CsmClass cls, LinkedList<CharSequence> antilLoop,
                 CsmMethod firstFound, CsmMethod lastFound,
-                Set<CsmMethod> result, Overridden overridden) {
-
+                Map<CsmMethod, CsmOverrideInfo> result, Overridden overridden) {
+            
             boolean theLastInHierarchy;
             if (cls == null || antilLoop.contains(cls.getQualifiedName())) {
                 theLastInHierarchy = true;
             } else {
-
-                antilLoop.add(cls.getQualifiedName());
-                for(CsmMember member : cls.getMembers()) {
-                    if (CsmKindUtilities.isMethod(member)) {
-                        CsmMethod method = (CsmMethod) member;
-                        if (methodEquals(toSearch, method)) {
-                            if (firstFound == null) {
-                                firstFound = method;
-                            }
-                            lastFound = method;
-                            if (method.isVirtual()) {
-                                switch (overridden) {
-                                    case FIRST:
-                                        result.add(firstFound);
-                                        return;
-                                    case ALL:
-                                        result.add(method);
-                                        break;
+                antilLoop.addLast(cls.getQualifiedName());
+                try {
+                    boolean virtual = false;
+                    for(CsmMember member : cls.getMembers()) {
+                        if (CsmKindUtilities.isMethod(member)) {
+                            CsmMethod method = (CsmMethod) member;
+                            if (methodEquals(toSearch, method)) {
+                                if (firstFound == null) {
+                                    firstFound = method;
                                 }
+                                lastFound = method;
+                                if (method.isVirtual()) {
+                                    virtual = true;
+                                    switch (overridden) {
+                                        case FIRST:
+                                            result.put(firstFound, new CsmOverrideInfo(firstFound, virtual));
+                                            return true;
+                                    }
+                                }
+                                break;
                             }
                         }
                     }
+                    theLastInHierarchy = cls.getBaseClasses().isEmpty();
+                    for(CsmInheritance inh : cls.getBaseClasses()) {
+                        virtual |= processMethod(toSearch, CsmInheritanceUtilities.getCsmClass(inh), antilLoop, firstFound, lastFound, result, overridden);
+                    }
+                    if (lastFound != null) {
+                        switch (overridden) {
+                            case PSEUDO:
+                                result.put(lastFound, new CsmOverrideInfo(lastFound, virtual));
+                                break;
+                            case ALL:
+                                if (virtual) {
+                                    result.put(lastFound, new CsmOverrideInfo(lastFound, virtual));
+                                }
+                                break;
+                        }
+                    }
+                } finally {
+                    antilLoop.removeLast();
                 }
-                theLastInHierarchy = cls.getBaseClasses().isEmpty();
-                for(CsmInheritance inh : cls.getBaseClasses()) {
-                    processMethod(toSearch, CsmInheritanceUtilities.getCsmClass(inh), antilLoop, firstFound, lastFound, result, overridden);
-                }
-
             }
-            if (theLastInHierarchy) {
-                CsmMethod m  = lastFound;
-                if (m != null && m.isVirtual()) {
+            if (theLastInHierarchy && lastFound != null) {
+                if (lastFound.isVirtual()) {
                     CndUtils.assertNotNull(firstFound, "last found != null && first found == null ?!"); //NOI18N
                     switch (overridden) {
                         case FIRST:
-                            result.add(firstFound);
+                            result.put(firstFound, new CsmOverrideInfo(firstFound, true));
                             break;
                         case TOP:
-                            result.add(m);
+                            result.put(lastFound, new CsmOverrideInfo(lastFound, true));
                             break;
                     }
+                    return true;
                 }
             }
+            return false;
         }
-
+        
         @Override
         public Collection<CsmMethod> getOverriddenMethods(CsmMethod method, boolean searchFromBase) {
             Set<CsmMethod> res = new HashSet<CsmMethod>();
@@ -298,5 +393,6 @@ public abstract class CsmVirtualInfoQuery {
             }
             return res;
         }
-    }    
+    }
+//</editor-fold>
 }

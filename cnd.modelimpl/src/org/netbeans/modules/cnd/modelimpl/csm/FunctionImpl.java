@@ -518,7 +518,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     // Why here? Must be in MethodImpl.
     private CsmDeclaration fixCastOperator(CsmProject prj, String uname) {
         CsmDeclaration result = null;
-        int i = uname.indexOf("operator "); // NOI18N
+        int i = uname.indexOf(OPERATOR + " "); // NOI18N
         if (i > 0) {
             String leftPartOfFQN = uname.substring(0, i + 9);
             String rightPartOfFQN = uname.substring(i + 9);
@@ -542,9 +542,12 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                         }
                         
                         FunctionImpl operator = (FunctionImpl) candidate;
-                        CsmClassifier castClassifier = getCastOperatorCastEntity(operator);
-                        if (checkResolvedClassifier(castClassifier)) {
-                            if (castClassifier.getQualifiedName().toString().equals(ourClassifier.getQualifiedName().toString())) {
+                        CsmClassifier defClassifier = getCastOperatorCastEntity(operator);
+                        if (checkResolvedClassifier(defClassifier)) {
+                            if (defClassifier.getQualifiedName().toString().equals(ourClassifier.getQualifiedName().toString())) {
+                                result = candidate;
+                                break;
+                            } else if (CsmKindUtilities.isTemplateParameter(ourClassifier) && CsmKindUtilities.isTemplateParameter(defClassifier)) {
                                 result = candidate;
                                 break;
                             }
@@ -561,7 +564,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
      
         CsmType retType = operator.getReturnType();
         CsmClassifier castClassifier = retType != null ? CsmClassifierResolver.getDefault().getTypeClassifier(retType, retType.getContainingFile(), retType.getStartOffset(), true) : null;
-        if (!checkResolvedClassifier(castClassifier)) {                                
+        if (!checkResolvedClassifier(castClassifier) || (CsmKindUtilities.isTemplateParameter(castClassifier) && !retType.isTemplateBased())) {                                
             retType = CsmEntityResolver.resolveType(retType.getText(), retType.getContainingFile(), retType.getStartOffset(), null);
             castClassifier = retType != null ? CsmClassifierResolver.getDefault().getTypeClassifier(retType, retType.getContainingFile(), retType.getStartOffset(), true) : null;
         }                        
