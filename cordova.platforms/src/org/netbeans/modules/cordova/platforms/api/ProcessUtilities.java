@@ -141,6 +141,10 @@ public final class ProcessUtilities {
         StringBuilder output = new StringBuilder();
         RequestProcessor.Task outTask = RP.post(new Redirector(call.getInputStream(), output));
         
+        if (!wait) {
+            return null;
+        }
+
         try {
             call.waitFor();
             errTask.waitFinished();
@@ -149,10 +153,6 @@ public final class ProcessUtilities {
             throw new IOException(ex);
         }
         
-        if (!wait) {
-            return null;
-        }
-
         if (executable.endsWith("ios-sim") && call.exitValue() > 0) {
             for (String p:parameters) {
                 if (p.endsWith("MobileSafari.app")) {
