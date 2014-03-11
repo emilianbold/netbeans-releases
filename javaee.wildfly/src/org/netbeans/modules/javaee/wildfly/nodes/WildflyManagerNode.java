@@ -54,6 +54,7 @@ import org.netbeans.modules.javaee.wildfly.customizer.Customizer;
 import org.netbeans.modules.javaee.wildfly.customizer.CustomizerDataSupport;
 import org.netbeans.modules.javaee.wildfly.ide.WildflyJ2eePlatformFactory;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.KillServerAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.OpenServerLogAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.ShowAdminToolAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.WildflyEditConfigAction;
@@ -81,7 +82,7 @@ import org.openide.util.actions.SystemAction;
 public class WildflyManagerNode extends AbstractNode implements Node.Cookie {
 
     private final Lookup lookup;
-    private static final String ADMIN_URL_70 = "/console"; //NOI18N
+    private static final String ADMIN_URL_WILDFLY = "/console"; //NOI18N
     private static final String HTTP_HEADER = "http://";
 
     public WildflyManagerNode(Children children, Lookup lookup) {
@@ -109,16 +110,17 @@ public class WildflyManagerNode extends AbstractNode implements Node.Cookie {
     }
 
     public String getAdminURL() {
-        return HTTP_HEADER + getDeploymentManager().getHost() + ":" + getDeploymentManager().getPort() + ADMIN_URL_70;
+        return HTTP_HEADER + getDeploymentManager().getHost() + ":" + getDeploymentManager().getPort() + ADMIN_URL_WILDFLY;
     }
 
     @Override
     public Action[] getActions(boolean context) {
-        Action[] newActions = new Action[4];
+        Action[] newActions = new Action[5];
         newActions[0] = null;
         newActions[1] = (SystemAction.get(ShowAdminToolAction.class));
         newActions[2] = (SystemAction.get(WildflyEditConfigAction.class));
         newActions[3] = (SystemAction.get(OpenServerLogAction.class));
+        newActions[4] = (SystemAction.get(KillServerAction.class));
         return newActions;
     }
 
