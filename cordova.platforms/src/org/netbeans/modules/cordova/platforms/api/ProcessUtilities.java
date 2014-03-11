@@ -141,14 +141,6 @@ public final class ProcessUtilities {
         StringBuilder output = new StringBuilder();
         RequestProcessor.Task outTask = RP.post(new Redirector(call.getInputStream(), output));
         
-        if (executable.endsWith("ios-sim") && call.exitValue() > 0) {
-            for (String p:parameters) {
-                if (p.endsWith("MobileSafari.app")) {
-                    throw new IllegalStateException();
-                }
-            }
-        }
-
         if (!wait) {
             return null;
         }
@@ -159,6 +151,14 @@ public final class ProcessUtilities {
             outTask.waitFinished();
         } catch (InterruptedException ex) {
             throw new IOException(ex);
+        }
+        
+        if (executable.endsWith("ios-sim") && call.exitValue() > 0) {
+            for (String p:parameters) {
+                if (p.endsWith("MobileSafari.app")) {
+                    throw new IllegalStateException();
+                }
+            }
         }
 
         logErr(error.toString());

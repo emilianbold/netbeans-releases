@@ -483,17 +483,19 @@ public class BugzillaRepository {
 
     public synchronized void setInfoValues(String user, char[] password) {
         setTaskRepository(info.getDisplayName(), info.getUrl(), user, password, null, null, Boolean.parseBoolean(info.getValue(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN)));
-        info = createInfo(info.getID(), info.getUrl(), info.getDisplayName(), user, null, password, null);
+        info = createInfo(info.getID(), info.getUrl(), info.getDisplayName(), user, null, password, null, Boolean.parseBoolean(info.getValue(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN)));
     }
     
     synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword, boolean localUserEnabled) {
         setTaskRepository(name, url, user, password, httpUser, httpPassword, localUserEnabled);
         String id = info != null ? info.getID() : name + System.currentTimeMillis();
-        info = createInfo(id, url, name, user, httpUser, password, httpPassword);
+        info = createInfo(id, url, name, user, httpUser, password, httpPassword, localUserEnabled);
     }
 
-    protected RepositoryInfo createInfo(String id, String url, String name, String user, String httpUser, char[] password, char[] httpPassword) {
-        return new RepositoryInfo(id, BugzillaConnector.ID, url, name, getTooltip(name, user, url), user, httpUser, password, httpPassword);
+    protected RepositoryInfo createInfo(String id, String url, String name, String user, String httpUser, char[] password, char[] httpPassword, boolean localUserEnabled) {
+        RepositoryInfo ri = new RepositoryInfo(id, BugzillaConnector.ID, url, name, getTooltip(name, user, url), user, httpUser, password, httpPassword);
+        ri.putValue(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN, Boolean.toString(localUserEnabled));
+        return ri;
     }
     
     public void ensureCredentials() {
