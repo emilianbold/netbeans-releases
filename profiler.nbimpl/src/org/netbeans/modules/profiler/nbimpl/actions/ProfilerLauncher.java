@@ -250,11 +250,16 @@ public class ProfilerLauncher {
                                     setState(State.STARTED);
                                     break;
                                 case Profiler.PROFILING_RUNNING:
-                                case Profiler.PROFILING_IN_TRANSITION:
                                     setState(State.RUNNING);
                                     break;
                                 case Profiler.PROFILING_PAUSED:
                                     setState(State.PAUSED);
+                                    break;
+                                case Profiler.PROFILING_IN_TRANSITION:
+                                    setState(State.TRANSITION);
+                                    break;
+                                case Profiler.PROFILING_STOPPED:
+                                    setState(State.STOPPED);
                                     break;
                                 default:
                                     setState(State.INACTIVE);
