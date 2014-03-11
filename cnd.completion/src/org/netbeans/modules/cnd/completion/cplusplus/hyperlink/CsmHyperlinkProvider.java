@@ -48,11 +48,15 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
@@ -61,6 +65,7 @@ import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
@@ -73,6 +78,7 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmEntityResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFunctionDefinitionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
@@ -125,6 +131,7 @@ public class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 switch ((CppTokenId)token.id()) {
                     case IDENTIFIER:
                     case OPERATOR:
+                    case DELETE:
                     case PROC_DIRECTIVE:
                         return true;
                     case PREPROCESSOR_INCLUDE:
@@ -145,8 +152,21 @@ public class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         CsmCacheManager.enter();
         try {
             TokenItem<TokenId> jumpToken = getJumpToken();
-            CsmObject primary = findTargetObject(doc, jumpToken, offset, false);
+            CsmObject primary;
             CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
+            if (jumpToken.id() == CppTokenId.DELETE) {
+                primary = null;
+                String deleteExpr = getRestExpression(doc, offset);
+                CsmType resolvedType = CsmEntityResolver.resolveType(deleteExpr, csmFile, offset, null);
+                if (type != null) {
+                    CsmClassifier classifier = CsmClassifierResolver.getDefault().getTypeClassifier(resolvedType, csmFile, offset, true);
+                    if (CsmKindUtilities.isClass(classifier)) {
+                        primary = CsmVirtualInfoQuery.getDefault().getFirstDestructor((CsmClass)classifier);
+                    }
+                }
+            } else {
+                primary = findTargetObject(doc, jumpToken, offset, false);
+            }
             CsmOffsetable item = toJumpObject(primary, csmFile, offset);
             if (type == HyperlinkType.ALT_HYPERLINK) {
                 if (CsmKindUtilities.isFunction(item)) {
@@ -199,6 +219,35 @@ public class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         }            
     }
 
+    String getRestExpression(final Document doc, final int offset) {
+        final AtomicReference<String> out = new AtomicReference<String>();
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                TokenSequence<TokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, offset, true, false);
+                if (cppTokenSequence == null) {
+                    return;
+                }
+                cppTokenSequence.move(offset);
+                if (cppTokenSequence.moveNext() && cppTokenSequence.moveNext()) {
+                    int start = cppTokenSequence.offset();
+                    while(cppTokenSequence.moveNext()) {
+                        Token<TokenId> token = cppTokenSequence.token();
+                        if (token.id() == CppTokenId.SEMICOLON) {
+                            break;
+                        }
+                    }
+                    int end = cppTokenSequence.offset();
+                    try {
+                        out.set(doc.getText(start, end-start));
+                    } catch (BadLocationException ex) {
+                    }
+                }
+            }
+        });
+        return out.get();
+    }
+    
     private boolean showOverridesPopup(CsmOffsetableDeclaration mainDeclaration,
             Collection<? extends CsmOffsetableDeclaration> baseDeclarations,
             Collection<? extends CsmOffsetableDeclaration> descendantDeclarations,
