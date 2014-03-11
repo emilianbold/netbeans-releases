@@ -15,7 +15,7 @@ CLASS A<class T> (A ) [2:1/1-7:2/98] lcurly=28 SCOPE: $Global$
     BASE CLASSES:
     MEMBERS:
         FUNCTION operator  TT [5:5/42-5:38/75] MethodImpl SCOPE: A 
-            DEFINITION: null
+            DEFINITION: operator  int  [15:1/186-18:2/250]
             SIGNATURE operator  TT<class>()
             UNIQUE NAME F:A::operator  TT<class>()
             PARAMETERS:
@@ -79,7 +79,7 @@ CLASS A<class T> (A ) [2:1/1-7:2/98] lcurly=28 SCOPE: $Global$
     BASE CLASSES:
     MEMBERS:
         FUNCTION operator  TT [5:5/42-5:38/75] MethodImpl SCOPE: A 
-            DEFINITION: null
+            DEFINITION: operator  int  [15:1/186-18:2/250]
             SIGNATURE operator  TT<class>()
             UNIQUE NAME F:A::operator  TT<class>()
             PARAMETERS:
