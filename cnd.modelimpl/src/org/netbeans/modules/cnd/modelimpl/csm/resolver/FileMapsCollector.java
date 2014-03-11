@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
@@ -80,6 +81,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmCacheMap;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import static org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver3.LOGGER;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -415,6 +417,17 @@ public final class FileMapsCollector {
                     }
                     if (stopAtOffset < endOfScopeElement || out.needToTraverseDeeper(nsd)) {
                         //currentNamespace = nsd.getNamespace();
+                        if (nsd.getNamespace() instanceof NamespaceImpl) {
+                            NamespaceImpl namespace = (NamespaceImpl) nsd.getNamespace();
+                            for (CsmUID<CsmUsingDirective> directiveUID : namespace.getUsingDirectives()) {
+                                CsmUsingDirective directive = directiveUID.getObject();
+                                if (directive != null) {
+                                    gatherMaps(directive, directive.getEndOffset(), inLocalContext, stopAtOffset, out);
+                                }
+                            }
+                        } else {
+                            Resolver3.LOGGER.log(Level.WARNING, "Unexpected implementation of logical namespace: {0}", nsd.getNamespace().getClass()); //NOI18N
+                        }
                         gatherMaps(nsd.getDeclarations().iterator(), inLocalContext, stopAtOffset, out);
                     } else if (out.needClassifiers()) {
                         // VV: removed this phase
