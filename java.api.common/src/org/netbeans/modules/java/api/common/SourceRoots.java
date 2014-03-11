@@ -45,6 +45,7 @@ package org.netbeans.modules.java.api.common;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -364,7 +365,23 @@ public final class SourceRoots extends Roots {
                         }
                         Element cfgEl = helper.getPrimaryConfigurationData(true);
                         NodeList nl = cfgEl.getElementsByTagNameNS(projectConfigurationNamespace, elementName);
-                        assert nl.getLength() == 1 : "Illegal project.xml"; //NOI18N
+                        if (nl.getLength() != 1) {
+                            final FileObject prjDir = helper.getAntProjectHelper().getProjectDirectory();
+                            final FileObject projectXml = prjDir == null ?
+                                    null :
+                                    prjDir.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
+                            String content = null;
+                            try {
+                                content = projectXml == null ?
+                                    null :
+                                    projectXml.asText("UTF-8");      //NOI18N
+                            } catch (IOException e) {/*ignore*/}
+                            throw new IllegalArgumentException(String.format(
+                                "Broken nbproject/project.xml, missing %s in %s namespace, content: %s.",   //NOI18N
+                                elementName,
+                                projectConfigurationNamespace,
+                                content));
+                        }
                         Element ownerElement = (Element) nl.item(0);
                         // remove all old roots
                         NodeList rootsNodes =
