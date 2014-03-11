@@ -149,6 +149,9 @@ public abstract class CsmVirtualInfoQuery {
     //<editor-fold defaultstate="collapsed" desc="implementation">
     
     private static boolean methodEquals(CsmMethod toSearch, CsmMethod method) {
+        if (CsmKindUtilities.isDestructor(toSearch) && CsmKindUtilities.isDestructor(method)) {
+            return true;
+        }
         if (!toSearch.getName().equals(method.getName())) {
             return false;
         }
