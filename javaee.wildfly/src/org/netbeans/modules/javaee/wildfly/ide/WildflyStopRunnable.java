@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.javaee.wildfly.ide;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
@@ -53,14 +51,9 @@ import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
-import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
-import org.netbeans.modules.javaee.wildfly.util.WildFlyProperties;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -79,32 +72,19 @@ class WildflyStopRunnable implements Runnable {
 
     private final WildflyStartServer startServer;
 
+    private final WildflyKiller killer;
+
     WildflyStopRunnable(WildflyDeploymentManager dm, WildflyStartServer startServer) {
         this.dm = dm;
         this.startServer = startServer;
+        this.killer = new WildflyKiller();
     }
 
-    private String[] createEnvironment() {
 
-        WildFlyProperties properties = dm.getProperties();
 
-        JavaPlatform platform = properties.getJavaPlatform();
-        FileObject fo = (FileObject) platform.getInstallFolders().iterator().next();
-        String javaHome = FileUtil.toFile(fo).getAbsolutePath();
-        List<String> envp = new ArrayList<String>(3);
-        envp.add("JAVA=" + javaHome + "/bin/java"); // NOI18N
-        envp.add("JAVA_HOME=" + javaHome); // NOI18N
-        envp.add("JBOSS_HOME=" + properties.getRootDir().getAbsolutePath());    // NOI18N
-        if (Utilities.isWindows()) {
-            // the shutdown script should not wait for a key press
-            envp.add("NOPAUSE=true"); // NOI18N
-        }
-        return (String[]) envp.toArray(new String[envp.size()]);
-    }
-
+    @Override
     public void run() {
-
-        InstanceProperties ip = dm.getInstanceProperties();
+         InstanceProperties ip = dm.getInstanceProperties();
 
         String configName = ip.getProperty("server"); // NOI18N
         if ("minimal".equals(configName)) { // NOI18N
@@ -164,15 +144,16 @@ class WildflyStopRunnable implements Runnable {
                 startServer.fireHandleProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.COMPLETED,
                         NbBundle.getMessage(WildflyStopRunnable.class, "MSG_SERVER_STOPPED", serverName)));//NOI18N
                 LOGGER.log(Level.FINER, "STOPPED message fired"); // NOI18N
-                
+
                 startServer.setConsoleConfigured(false);
                 return;
             }
         }
-
-        startServer.fireHandleProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
-                NbBundle.getMessage(WildflyStopRunnable.class, "MSG_StopServerTimeout")));
-        LOGGER.log(Level.FINER, "TIMEOUT expired"); // NOI18N
+        if (!killer.killServers()) {
+            startServer.fireHandleProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
+                    NbBundle.getMessage(WildflyStopRunnable.class, "MSG_StopServerTimeout")));
+            LOGGER.log(Level.FINER, "TIMEOUT expired"); // NOI18N
+        }
     }
 }
 

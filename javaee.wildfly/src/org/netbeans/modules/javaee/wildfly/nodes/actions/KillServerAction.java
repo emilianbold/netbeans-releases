@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,27 +34,28 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.javaee.wildfly.nodes.actions;
 
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.javaee.wildfly.nodes.WildflyManagerNode;
-import org.openide.awt.HtmlBrowser.URLDisplayer;
+import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
+import org.netbeans.modules.javaee.wildfly.ide.WildflyKiller;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
+import static org.openide.util.actions.CookieAction.MODE_EXACTLY_ONE;
 
-/** Action that can always be invoked and work procedurally.
- * This action will display the URL for the given admin server node in the runtime explorer
- * Copied from appsrv81 server plugin.
+/**
+ *
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class ShowAdminToolAction extends CookieAction {
+public class KillServerAction extends CookieAction {
+
+    private final WildflyKiller killer = new WildflyKiller();
 
     @Override
     protected int mode() {
@@ -69,17 +64,14 @@ public class ShowAdminToolAction extends CookieAction {
 
     @Override
     protected void performAction(Node[] nodes) {
-        if( (nodes == null) || (nodes.length < 1) )
+        if ((nodes == null) || (nodes.length < 1)) {
             return;
-
-        for (int i = 0; i < nodes.length; i++) {
-            Object node = nodes[i].getLookup().lookup(WildflyManagerNode.class);
-            if (node instanceof WildflyManagerNode) {
-                try {
-                    URL url = new URL(((WildflyManagerNode) node).getAdminURL());
-                    URLDisplayer.getDefault().showURL(url);
-                } catch (MalformedURLException ex) {
-                    Logger.getLogger("global").log(Level.INFO, null, ex);
+        }
+        if (killer.killServers()) {
+            for (Node node : nodes) {
+                ServerInstance si = (ServerInstance) node.getCookie(ServerInstance.class);
+                if (si != null) {
+                    si.refresh();
                 }
             }
         }
@@ -87,14 +79,12 @@ public class ShowAdminToolAction extends CookieAction {
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(ShowAdminToolAction.class, "LBL_ShowAdminGUIAction");
+        return NbBundle.getMessage(KillServerAction.class, "LBL_KillServerGUIAction");
     }
 
     @Override
     public HelpCtx getHelpCtx() {
-        return null; // HelpCtx.DEFAULT_HELP;
-        // If you will provide context help then use:
-        // return new HelpCtx(RefreshAction.class);
+        return null;
     }
 
     @Override

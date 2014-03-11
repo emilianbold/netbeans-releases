@@ -119,9 +119,9 @@ class WildflyStartRunnable implements Runnable {
     private final static String NEW_IF_CONDITION_STRING
             = "\"xx\" == \"x\"";                      // NOI18N
 
-    private static final SpecificationVersion JDK_14 = new SpecificationVersion("1.4");       // NOI18N
-
     private static final Logger LOGGER = Logger.getLogger(WildflyStartRunnable.class.getName());
+
+    private static final SpecificationVersion JDK_18 = new SpecificationVersion("1.8");
 
     private WildflyDeploymentManager dm;
     private String instanceName;
@@ -187,10 +187,10 @@ class WildflyStartRunnable implements Runnable {
                                 while ((line = br.readLine()) != null) {
                                     noNL.append(line);
                                 }
-                                value = noNL.toString();
+                                value = noNL.toString().replaceAll("<", "").replace(">", "").replace("\"", "").replace('|', ',').trim();
 
                                 // enclose the host list in double quotes because it may contain spaces
-                                value = "\"" + value + "\""; // NOI18N
+                                value = '\"' + value + '\"'; // NOI18N
                             } catch (IOException ioe) {
                                 Exceptions.attachLocalizedMessage(ioe, NbBundle.getMessage(WildflyStartRunnable.class, "ERR_NonProxyHostParsingError"));
                                 Logger.getLogger("global").log(Level.WARNING, null, ioe);
@@ -198,7 +198,7 @@ class WildflyStartRunnable implements Runnable {
                             }
                         }
                         if (value != null) {
-                            javaOptsBuilder.append(" -D").append(prop).append("=").append(value); // NOI18N
+                            javaOptsBuilder.append(" -D").append(prop).append('=').append(value); // NOI18N
                         }
                     }
                 }
@@ -207,21 +207,16 @@ class WildflyStartRunnable implements Runnable {
 
         // get Java platform that will run the server
         JavaPlatform platform = properties.getJavaPlatform();
-
-        if (startServer.getMode() == WildflyStartServer.MODE.DEBUG && javaOptsBuilder.toString().indexOf("-Xdebug") == -1) { // NOI18N
+        javaOptsBuilder.append(" -server -XX:+UseCompressedOops");
+        if (startServer.getMode() == WildflyStartServer.MODE.DEBUG && javaOptsBuilder.toString().indexOf("-Xdebug") == -1
+                && javaOptsBuilder.toString().indexOf("-agentlib:jdwp") == -1) { // NOI18N
             // if in debug mode and the debug options not specified manually
-            if (platform.getSpecification().getVersion().compareTo(JDK_14) <= 0) {
-                javaOptsBuilder.append(" -classic");
-            }
-            javaOptsBuilder.append(" -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address="). // NOI18N
-                    append(dm.getDebuggingPort()).
-                    append(",server=y,suspend=n"); // NOI18N
+            javaOptsBuilder.append(String.format(" -agentlib:jdwp=transport=dt_socket,address=%1s,server=y,suspend=n", dm.getDebuggingPort())); // NOI18N
 
-        } else if (startServer.getMode() == WildflyStartServer.MODE.PROFILE) {
-            if (properties.isVersion(WildflyPluginUtils.JBOSS_7_0_0)) {
-                javaOptsBuilder.append(" ").append("-Djava.util.logging.manager=org.jboss.logmanager.LogManager");
-            }
         }
+        javaOptsBuilder.append(" -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true");
+
+
 
         for (StartupExtender args : StartupExtender.getExtenders(
                 Lookups.singleton(CommonServerBridge.getCommonInstance(ip.getProperty("url"))), getMode(startServer.getMode()))) {
