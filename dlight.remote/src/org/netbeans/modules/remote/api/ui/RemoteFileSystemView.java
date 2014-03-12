@@ -156,7 +156,8 @@ import org.openide.filesystems.FileSystem;
                 return getDefaultDirectory();
             }
             HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
-            return factory.create(env, fs.findResource(hostInfo.getUserDir()));
+            FileObject fo = fs.findResource(hostInfo.getUserDir());
+            return (fo == null) ? factory.create(env, fs.getRoot()) : factory.create(env, fo);
         } catch (IOException ex) {
             RemoteLogger.finest(ex);
         } catch (CancellationException ex) {
