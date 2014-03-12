@@ -134,7 +134,7 @@ import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.QueryScope;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
-import org.netbeans.modules.cnd.modelutil.AntiLoop;
+import org.netbeans.modules.cnd.modelutil.ClassifiersAntiLoop;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -1052,10 +1052,10 @@ abstract public class CsmCompletionQuery {
         }
         CsmClass cls = (CsmClass) classifier;
         CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter("operator " + opKind.getImage(), false, true, false); // NOI18N
-        return getOperatorCheckBaseClasses(cls, contextFile, offset, filter, opKind, new AntiLoop());
+        return getOperatorCheckBaseClasses(cls, contextFile, offset, filter, opKind, new ClassifiersAntiLoop());
     }
 
-    private static CsmFunction getOperatorCheckBaseClasses(CsmClass cls, CsmFile contextFile, int offset, CsmFilter filter, CsmFunction.OperatorKind opKind, AntiLoop antiLoop) {
+    private static CsmFunction getOperatorCheckBaseClasses(CsmClass cls, CsmFile contextFile, int offset, CsmFilter filter, CsmFunction.OperatorKind opKind, ClassifiersAntiLoop antiLoop) {
         if (antiLoop.contains(cls)) {
             return null;
         }

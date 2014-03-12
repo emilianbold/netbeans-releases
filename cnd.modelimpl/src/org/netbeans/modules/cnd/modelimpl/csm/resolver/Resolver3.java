@@ -97,7 +97,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.impl.services.BaseUtilitiesProviderImpl;
-import org.netbeans.modules.cnd.modelutil.AntiLoop;
+import org.netbeans.modules.cnd.modelutil.ClassifiersAntiLoop;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 
@@ -304,7 +304,7 @@ public final class Resolver3 implements Resolver {
         if (isRecursionOnResolving(INFINITE_RECURSION)) {
             return null;
         }
-        AntiLoop set = new AntiLoop(100);
+        ClassifiersAntiLoop set = new ClassifiersAntiLoop(100);
         while (true) {
             set.add(orig);
             CsmClassifier resovedClassifier;

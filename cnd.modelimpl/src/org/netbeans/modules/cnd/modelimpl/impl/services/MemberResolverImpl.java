@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
-import org.netbeans.modules.cnd.modelutil.AntiLoop;
+import org.netbeans.modules.cnd.modelutil.ClassifiersAntiLoop;
 
 /**
  *
@@ -80,7 +80,7 @@ public final class MemberResolverImpl {
             if (CsmKindUtilities.isClass(cls)){
                 List<CsmMember> res = new ArrayList<>();
                 getClassMembers((CsmClass)cls, name, res);
-                getSuperClasses((CsmClass)cls, name, res, new AntiLoop());
+                getSuperClasses((CsmClass)cls, name, res, new ClassifiersAntiLoop());
                 return res.iterator();
             }
         }
@@ -98,7 +98,7 @@ public final class MemberResolverImpl {
         }
     }
 
-    private void getSuperClasses(CsmClass cls, CharSequence name, List<CsmMember> res, AntiLoop antiLoop){
+    private void getSuperClasses(CsmClass cls, CharSequence name, List<CsmMember> res, ClassifiersAntiLoop antiLoop){
         if (antiLoop.contains(cls)){
             return;
         }
