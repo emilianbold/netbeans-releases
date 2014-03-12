@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.36.1
+#Version 1.39.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -46,6 +46,8 @@ meth public abstract java.lang.annotation.ElementType[] value()
 CLSS public final org.netbeans.core.api.multiview.MultiViewHandler
 meth public org.netbeans.core.api.multiview.MultiViewPerspective getSelectedPerspective()
 meth public org.netbeans.core.api.multiview.MultiViewPerspective[] getPerspectives()
+meth public void addMultiViewDescription(org.netbeans.core.spi.multiview.MultiViewDescription,int)
+meth public void removeMultiViewDescription(org.netbeans.core.spi.multiview.MultiViewDescription)
 meth public void requestActive(org.netbeans.core.api.multiview.MultiViewPerspective)
 meth public void requestVisible(org.netbeans.core.api.multiview.MultiViewPerspective)
 supr java.lang.Object
@@ -203,6 +205,7 @@ meth protected org.openide.text.CloneableEditor createCloneableEditor()
 meth protected org.openide.text.CloneableEditorSupport$Pane createPane()
 meth protected org.openide.util.Task reloadDocument()
 meth protected org.openide.windows.CloneableTopComponent createCloneableTopComponent()
+meth protected void afterRedirect(org.openide.windows.CloneableOpenSupport)
 meth protected void initializeCloneableEditor(org.openide.text.CloneableEditor)
 meth protected void loadFromStreamToKit(javax.swing.text.StyledDocument,java.io.InputStream,javax.swing.text.EditorKit) throws java.io.IOException,javax.swing.text.BadLocationException
 meth protected void notifyClosed()
@@ -252,6 +255,7 @@ meth protected abstract org.openide.windows.CloneableTopComponent createCloneabl
 meth protected boolean canClose()
 meth protected boolean close(boolean)
 meth protected final org.openide.windows.CloneableTopComponent openCloneableTopComponent()
+meth protected void afterRedirect(org.openide.windows.CloneableOpenSupport)
 meth public boolean close()
 meth public void edit()
 meth public void open()

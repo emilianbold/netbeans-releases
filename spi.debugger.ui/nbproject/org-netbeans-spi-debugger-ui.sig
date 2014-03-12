@@ -1,5 +1,27 @@
 #Signature file v4.1
-#Version 2.40.1
+#Version 2.43.1
+
+CLSS public abstract interface java.io.Serializable
+
+CLSS public abstract interface java.lang.Comparable<%0 extends java.lang.Object>
+meth public abstract int compareTo({java.lang.Comparable%0})
+
+CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
+cons protected init(java.lang.String,int)
+intf java.io.Serializable
+intf java.lang.Comparable<{java.lang.Enum%0}>
+meth protected final java.lang.Object clone() throws java.lang.CloneNotSupportedException
+meth protected final void finalize()
+meth public final boolean equals(java.lang.Object)
+meth public final int compareTo({java.lang.Enum%0})
+meth public final int hashCode()
+meth public final int ordinal()
+meth public final java.lang.Class<{java.lang.Enum%0}> getDeclaringClass()
+meth public final java.lang.String name()
+meth public java.lang.String toString()
+meth public static <%0 extends java.lang.Enum<{%%0}>> {%%0} valueOf(java.lang.Class<{%%0}>,java.lang.String)
+supr java.lang.Object
+hfds name,ordinal
 
 CLSS public java.lang.Object
 cons public init()
@@ -118,6 +140,135 @@ meth public abstract boolean isValid()
 meth public abstract boolean ok()
 meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
+
+CLSS public final org.netbeans.spi.debugger.ui.DebuggingView
+innr public abstract interface static DVThread
+innr public abstract interface static DVThreadGroup
+innr public abstract static DVSupport
+innr public final static DVFilter
+innr public final static Deadlock
+meth public org.openide.windows.TopComponent getViewTC()
+meth public static org.netbeans.spi.debugger.ui.DebuggingView getDefault()
+supr java.lang.Object
+hfds INSTANCE,dvcRef
+
+CLSS public final static org.netbeans.spi.debugger.ui.DebuggingView$DVFilter
+ outer org.netbeans.spi.debugger.ui.DebuggingView
+innr public final static !enum DefaultFilter
+innr public final static Group
+meth public boolean isSelected()
+meth public java.lang.String getDisplayName()
+meth public java.lang.String getName()
+meth public java.lang.String getPrefKey()
+meth public java.lang.String getTooltip()
+meth public java.util.prefs.Preferences getPreferences()
+meth public javax.swing.Icon getIcon()
+meth public org.netbeans.spi.debugger.ui.DebuggingView$DVFilter$Group getGroup()
+meth public static org.netbeans.spi.debugger.ui.DebuggingView$DVFilter create(java.lang.String,java.lang.String,java.lang.String,javax.swing.Icon,java.util.prefs.Preferences,java.lang.String,boolean,org.netbeans.spi.debugger.ui.DebuggingView$DVFilter$Group)
+meth public static org.netbeans.spi.debugger.ui.DebuggingView$DVFilter getDefault(org.netbeans.spi.debugger.ui.DebuggingView$DVFilter$DefaultFilter)
+meth public void setSelected(boolean)
+supr java.lang.Object
+hfds fimpl,group,sortGroupRef
+
+CLSS public final static !enum org.netbeans.spi.debugger.ui.DebuggingView$DVFilter$DefaultFilter
+ outer org.netbeans.spi.debugger.ui.DebuggingView$DVFilter
+fld public final static org.netbeans.spi.debugger.ui.DebuggingView$DVFilter$DefaultFilter showMonitors
+fld public final static org.netbeans.spi.debugger.ui.DebuggingView$DVFilter$DefaultFilter showQualifiedNames
+fld public final static org.netbeans.spi.debugger.ui.DebuggingView$DVFilter$DefaultFilter showSuspendTable
+fld public final static org.netbeans.spi.debugger.ui.DebuggingView$DVFilter$DefaultFilter showSuspendedThreadsOnly
+fld public final static org.netbeans.spi.debugger.ui.DebuggingView$DVFilter$DefaultFilter showSystemThreads
+fld public final static org.netbeans.spi.debugger.ui.DebuggingView$DVFilter$DefaultFilter showThreadGroups
+fld public final static org.netbeans.spi.debugger.ui.DebuggingView$DVFilter$DefaultFilter sortAlphabetic
+fld public final static org.netbeans.spi.debugger.ui.DebuggingView$DVFilter$DefaultFilter sortNatural
+fld public final static org.netbeans.spi.debugger.ui.DebuggingView$DVFilter$DefaultFilter sortSuspend
+meth public static org.netbeans.spi.debugger.ui.DebuggingView$DVFilter$DefaultFilter valueOf(java.lang.String)
+meth public static org.netbeans.spi.debugger.ui.DebuggingView$DVFilter$DefaultFilter[] values()
+supr java.lang.Enum<org.netbeans.spi.debugger.ui.DebuggingView$DVFilter$DefaultFilter>
+
+CLSS public final static org.netbeans.spi.debugger.ui.DebuggingView$DVFilter$Group
+ outer org.netbeans.spi.debugger.ui.DebuggingView$DVFilter
+cons public init()
+meth public java.util.List<org.netbeans.spi.debugger.ui.DebuggingView$DVFilter> getItems()
+supr java.lang.Object
+hfds items
+
+CLSS public abstract static org.netbeans.spi.debugger.ui.DebuggingView$DVSupport
+ outer org.netbeans.spi.debugger.ui.DebuggingView
+cons protected init()
+fld public final static java.lang.String PROP_CURRENT_THREAD = "currentThread"
+fld public final static java.lang.String PROP_DEADLOCK = "deadlock"
+fld public final static java.lang.String PROP_STATE = "state"
+fld public final static java.lang.String PROP_THREAD_DIED = "threadDied"
+fld public final static java.lang.String PROP_THREAD_GROUP_ADDED = "threadGroupAdded"
+fld public final static java.lang.String PROP_THREAD_RESUMED = "threadResumed"
+fld public final static java.lang.String PROP_THREAD_STARTED = "threadStarted"
+fld public final static java.lang.String PROP_THREAD_SUSPENDED = "threadSuspended"
+innr public abstract interface static !annotation Registration
+innr public final static !enum STATE
+meth protected abstract java.util.List<org.netbeans.spi.debugger.ui.DebuggingView$DVFilter> getFilters()
+meth protected final org.netbeans.spi.debugger.ui.DebuggingView$Deadlock createDeadlock(java.util.Collection<org.netbeans.spi.debugger.ui.DebuggingView$DVThread>)
+meth protected final void firePropertyChange(java.beans.PropertyChangeEvent)
+meth protected final void firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public abstract java.awt.Image getIcon(org.netbeans.spi.debugger.ui.DebuggingView$DVThread)
+meth public abstract java.lang.String getDisplayName(org.netbeans.spi.debugger.ui.DebuggingView$DVThread)
+meth public abstract java.util.List<org.netbeans.spi.debugger.ui.DebuggingView$DVThread> getAllThreads()
+meth public abstract java.util.Set<org.netbeans.spi.debugger.ui.DebuggingView$Deadlock> getDeadlocks()
+meth public abstract org.netbeans.api.debugger.Session getSession()
+meth public abstract org.netbeans.spi.debugger.ui.DebuggingView$DVSupport$STATE getState()
+meth public abstract org.netbeans.spi.debugger.ui.DebuggingView$DVThread getCurrentThread()
+meth public abstract void resume()
+meth public final javax.swing.Action[] getFilterActions()
+meth public final void addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public final void removePropertyChangeListener(java.beans.PropertyChangeListener)
+supr java.lang.Object
+hfds pcs
+
+CLSS public abstract interface static !annotation org.netbeans.spi.debugger.ui.DebuggingView$DVSupport$Registration
+ outer org.netbeans.spi.debugger.ui.DebuggingView$DVSupport
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault int position()
+meth public abstract java.lang.String path()
+
+CLSS public final static !enum org.netbeans.spi.debugger.ui.DebuggingView$DVSupport$STATE
+ outer org.netbeans.spi.debugger.ui.DebuggingView$DVSupport
+fld public final static org.netbeans.spi.debugger.ui.DebuggingView$DVSupport$STATE DISCONNECTED
+fld public final static org.netbeans.spi.debugger.ui.DebuggingView$DVSupport$STATE RUNNING
+meth public static org.netbeans.spi.debugger.ui.DebuggingView$DVSupport$STATE valueOf(java.lang.String)
+meth public static org.netbeans.spi.debugger.ui.DebuggingView$DVSupport$STATE[] values()
+supr java.lang.Enum<org.netbeans.spi.debugger.ui.DebuggingView$DVSupport$STATE>
+
+CLSS public abstract interface static org.netbeans.spi.debugger.ui.DebuggingView$DVThread
+ outer org.netbeans.spi.debugger.ui.DebuggingView
+fld public final static java.lang.String PROP_BREAKPOINT = "currentBreakpoint"
+fld public final static java.lang.String PROP_LOCKER_THREADS = "lockerThreads"
+fld public final static java.lang.String PROP_SUSPENDED = "suspended"
+meth public abstract boolean isInStep()
+meth public abstract boolean isSuspended()
+meth public abstract java.lang.String getName()
+meth public abstract java.util.List<org.netbeans.spi.debugger.ui.DebuggingView$DVThread> getLockerThreads()
+meth public abstract org.netbeans.api.debugger.Breakpoint getCurrentBreakpoint()
+meth public abstract org.netbeans.spi.debugger.ui.DebuggingView$DVSupport getDVSupport()
+meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public abstract void makeCurrent()
+meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public abstract void resume()
+meth public abstract void resumeBlockingThreads()
+meth public abstract void suspend()
+
+CLSS public abstract interface static org.netbeans.spi.debugger.ui.DebuggingView$DVThreadGroup
+ outer org.netbeans.spi.debugger.ui.DebuggingView
+meth public abstract java.lang.String getName()
+meth public abstract org.netbeans.spi.debugger.ui.DebuggingView$DVThreadGroup getParentThreadGroup()
+meth public abstract org.netbeans.spi.debugger.ui.DebuggingView$DVThreadGroup[] getThreadGroups()
+meth public abstract org.netbeans.spi.debugger.ui.DebuggingView$DVThread[] getThreads()
+
+CLSS public final static org.netbeans.spi.debugger.ui.DebuggingView$Deadlock
+ outer org.netbeans.spi.debugger.ui.DebuggingView
+meth public java.util.Collection<org.netbeans.spi.debugger.ui.DebuggingView$DVThread> getThreads()
+supr java.lang.Object
+hfds threads
 
 CLSS public final org.netbeans.spi.debugger.ui.EditorContextDispatcher
 fld public final static java.lang.String PROP_EDITOR = "editor"

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.53.1
+#Version 1.58.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -76,7 +76,7 @@ meth public {org.netbeans.api.lexer.Language%0} tokenId(java.lang.String)
 meth public {org.netbeans.api.lexer.Language%0} validTokenId(int)
 meth public {org.netbeans.api.lexer.Language%0} validTokenId(java.lang.String)
 supr java.lang.Object
-hfds cat2ids,id2cats,id2nonPrimaryCats,idName2id,ids,indexedIds,languageHierarchy,languageOperation,maxOrdinal,mimeType
+hfds cat2ids,id,id2cats,id2nonPrimaryCats,idName2id,ids,indexedIds,languageHierarchy,languageOperation,languageRefList,maxOrdinal,mimeType
 hcls Accessor
 
 CLSS public final org.netbeans.api.lexer.LanguagePath
@@ -221,7 +221,7 @@ meth public org.netbeans.api.lexer.TokenSequence<{org.netbeans.api.lexer.TokenSe
 meth public void moveEnd()
 meth public void moveStart()
 supr java.lang.Object
-hfds modCount,token,tokenIndex,tokenList,tokenOffset
+hfds embeddedTokenList,modCount,rootTokenList,token,tokenIndex,tokenList,tokenOffset
 
 CLSS public final org.netbeans.api.lexer.TokenUtilities
 meth public static boolean endsWith(java.lang.CharSequence,java.lang.CharSequence)

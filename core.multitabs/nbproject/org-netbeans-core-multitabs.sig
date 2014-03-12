@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 6.70.1
+#Version 1.7.1
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -368,6 +368,14 @@ meth public abstract boolean postEvent(java.awt.Event)
 meth public abstract java.awt.Font getFont()
 meth public abstract void remove(java.awt.MenuComponent)
 
+CLSS public abstract interface java.awt.event.MouseListener
+intf java.util.EventListener
+meth public abstract void mouseClicked(java.awt.event.MouseEvent)
+meth public abstract void mouseEntered(java.awt.event.MouseEvent)
+meth public abstract void mouseExited(java.awt.event.MouseEvent)
+meth public abstract void mousePressed(java.awt.event.MouseEvent)
+meth public abstract void mouseReleased(java.awt.event.MouseEvent)
+
 CLSS public abstract interface java.awt.image.ImageObserver
 fld public final static int ABORT = 128
 fld public final static int ALLBITS = 32
@@ -379,22 +387,7 @@ fld public final static int SOMEBITS = 8
 fld public final static int WIDTH = 1
 meth public abstract boolean imageUpdate(java.awt.Image,int,int,int,int,int)
 
-CLSS public abstract interface java.beans.PropertyChangeListener
-intf java.util.EventListener
-meth public abstract void propertyChange(java.beans.PropertyChangeEvent)
-
-CLSS public abstract interface java.io.Externalizable
-intf java.io.Serializable
-meth public abstract void readExternal(java.io.ObjectInput) throws java.io.IOException,java.lang.ClassNotFoundException
-meth public abstract void writeExternal(java.io.ObjectOutput) throws java.io.IOException
-
 CLSS public abstract interface java.io.Serializable
-
-CLSS public abstract interface !annotation java.lang.Deprecated
- anno 0 java.lang.annotation.Documented()
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, PARAMETER, TYPE])
-intf java.lang.annotation.Annotation
 
 CLSS public java.lang.Object
 cons public init()
@@ -410,42 +403,7 @@ meth public final void wait(long,int) throws java.lang.InterruptedException
 meth public int hashCode()
 meth public java.lang.String toString()
 
-CLSS public abstract interface java.lang.annotation.Annotation
-meth public abstract boolean equals(java.lang.Object)
-meth public abstract int hashCode()
-meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
-meth public abstract java.lang.String toString()
-
-CLSS public abstract interface !annotation java.lang.annotation.Documented
- anno 0 java.lang.annotation.Documented()
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
-intf java.lang.annotation.Annotation
-
-CLSS public abstract interface !annotation java.lang.annotation.Retention
- anno 0 java.lang.annotation.Documented()
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
-intf java.lang.annotation.Annotation
-meth public abstract java.lang.annotation.RetentionPolicy value()
-
-CLSS public abstract interface !annotation java.lang.annotation.Target
- anno 0 java.lang.annotation.Documented()
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
-intf java.lang.annotation.Annotation
-meth public abstract java.lang.annotation.ElementType[] value()
-
 CLSS public abstract interface java.util.EventListener
-
-CLSS public java.util.EventObject
-cons public init(java.lang.Object)
-fld protected java.lang.Object source
-intf java.io.Serializable
-meth public java.lang.Object getSource()
-meth public java.lang.String toString()
-supr java.lang.Object
-hfds serialVersionUID
 
 CLSS public abstract interface javax.accessibility.Accessible
 meth public abstract javax.accessibility.AccessibleContext getAccessibleContext()
@@ -611,486 +569,212 @@ supr java.awt.Container
 hfds ACTIONMAP_CREATED,ANCESTOR_INPUTMAP_CREATED,ANCESTOR_USING_BUFFER,AUTOSCROLLS_SET,COMPLETELY_OBSCURED,CREATED_DOUBLE_BUFFER,DEBUG_GRAPHICS_LOADED,FOCUS_INPUTMAP_CREATED,FOCUS_TRAVERSAL_KEYS_BACKWARD_SET,FOCUS_TRAVERSAL_KEYS_FORWARD_SET,INHERITS_POPUP_MENU,INPUT_VERIFIER_SOURCE_KEY,IS_DOUBLE_BUFFERED,IS_OPAQUE,IS_PAINTING_TILE,IS_PRINTING,IS_PRINTING_ALL,IS_REPAINTING,KEYBOARD_BINDINGS_KEY,KEY_EVENTS_ENABLED,NEXT_FOCUS,NOT_OBSCURED,OPAQUE_SET,PARTIALLY_OBSCURED,REQUEST_FOCUS_DISABLED,RESERVED_1,RESERVED_2,RESERVED_3,RESERVED_4,RESERVED_5,RESERVED_6,REVALIDATE_RUNNABLE_SCHEDULED,WHEN_IN_FOCUSED_WINDOW_BINDINGS,WIF_INPUTMAP_CREATED,WRITE_OBJ_COUNTER_FIRST,WRITE_OBJ_COUNTER_LAST,aaTextInfo,actionMap,alignmentX,alignmentY,ancestorInputMap,autoscrolls,border,clientProperties,componentObtainingGraphicsFrom,componentObtainingGraphicsFromLock,defaultLocale,flags,focusController,focusInputMap,inputVerifier,isAlignmentXSet,isAlignmentYSet,managingFocusBackwardTraversalKeys,managingFocusForwardTraversalKeys,paintingChild,popupMenu,readObjectCallbacks,tempRectangles,uiClassID,verifyInputWhenFocusTarget,vetoableChangeSupport,windowInputMap
 hcls ActionStandin,IntVector,KeyboardState,ReadObjectCallback
 
-CLSS public org.openide.nodes.NodeAdapter
+CLSS public javax.swing.JPanel
 cons public init()
-intf org.openide.nodes.NodeListener
-meth public void childrenAdded(org.openide.nodes.NodeMemberEvent)
-meth public void childrenRemoved(org.openide.nodes.NodeMemberEvent)
-meth public void childrenReordered(org.openide.nodes.NodeReorderEvent)
-meth public void nodeDestroyed(org.openide.nodes.NodeEvent)
-meth public void propertyChange(java.beans.PropertyChangeEvent)
-supr java.lang.Object
-
-CLSS public abstract interface org.openide.nodes.NodeListener
-intf java.beans.PropertyChangeListener
-meth public abstract void childrenAdded(org.openide.nodes.NodeMemberEvent)
-meth public abstract void childrenRemoved(org.openide.nodes.NodeMemberEvent)
-meth public abstract void childrenReordered(org.openide.nodes.NodeReorderEvent)
-meth public abstract void nodeDestroyed(org.openide.nodes.NodeEvent)
-
-CLSS public final org.openide.util.HelpCtx
-cons public init(java.lang.Class<?>)
- anno 0 java.lang.Deprecated()
-cons public init(java.lang.String)
-cons public init(java.net.URL)
- anno 0 java.lang.Deprecated()
-fld public final static org.openide.util.HelpCtx DEFAULT_HELP
-innr public abstract interface static Displayer
-innr public abstract interface static Provider
-meth public boolean display()
-meth public boolean equals(java.lang.Object)
-meth public int hashCode()
-meth public java.lang.String getHelpID()
-meth public java.lang.String toString()
-meth public java.net.URL getHelp()
-meth public static org.openide.util.HelpCtx findHelp(java.awt.Component)
-meth public static org.openide.util.HelpCtx findHelp(java.lang.Object)
-meth public static void setHelpIDString(javax.swing.JComponent,java.lang.String)
-supr java.lang.Object
-hfds err,helpCtx,helpID
-
-CLSS public abstract interface static org.openide.util.HelpCtx$Provider
- outer org.openide.util.HelpCtx
-meth public abstract org.openide.util.HelpCtx getHelpCtx()
-
-CLSS public abstract org.openide.util.Lookup
-cons public init()
-fld public final static org.openide.util.Lookup EMPTY
-innr public abstract interface static Provider
-innr public abstract static Item
-innr public abstract static Result
-innr public final static Template
-meth public <%0 extends java.lang.Object> java.util.Collection<? extends {%%0}> lookupAll(java.lang.Class<{%%0}>)
-meth public <%0 extends java.lang.Object> org.openide.util.Lookup$Item<{%%0}> lookupItem(org.openide.util.Lookup$Template<{%%0}>)
-meth public <%0 extends java.lang.Object> org.openide.util.Lookup$Result<{%%0}> lookupResult(java.lang.Class<{%%0}>)
-meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Result<{%%0}> lookup(org.openide.util.Lookup$Template<{%%0}>)
-meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
-meth public static org.openide.util.Lookup getDefault()
-supr java.lang.Object
-hfds LOG,defaultLookup
-hcls DefLookup,Empty
-
-CLSS public abstract interface static org.openide.util.Lookup$Provider
- outer org.openide.util.Lookup
-meth public abstract org.openide.util.Lookup getLookup()
-
-CLSS public abstract interface !annotation org.openide.util.lookup.NamedServiceDefinition
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
-intf java.lang.annotation.Annotation
-meth public abstract !hasdefault java.lang.String position()
-meth public abstract java.lang.Class<?>[] serviceType()
-meth public abstract java.lang.String path()
-
-CLSS public abstract org.openide.windows.CloneableOpenSupport
-cons public init(org.openide.windows.CloneableOpenSupport$Env)
-fld protected org.openide.windows.CloneableOpenSupport$Env env
-fld protected org.openide.windows.CloneableTopComponent$Ref allEditors
-innr public abstract interface static Env
-meth protected abstract java.lang.String messageOpened()
-meth protected abstract java.lang.String messageOpening()
-meth protected abstract org.openide.windows.CloneableTopComponent createCloneableTopComponent()
-meth protected boolean canClose()
-meth protected boolean close(boolean)
-meth protected final org.openide.windows.CloneableTopComponent openCloneableTopComponent()
-meth protected void afterRedirect(org.openide.windows.CloneableOpenSupport)
-meth public boolean close()
-meth public void edit()
-meth public void open()
-meth public void view()
-supr java.lang.Object
-hfds container
-hcls Listener
-
-CLSS public abstract interface static org.openide.windows.CloneableOpenSupport$Env
- outer org.openide.windows.CloneableOpenSupport
-fld public final static java.lang.String PROP_MODIFIED = "modified"
-fld public final static java.lang.String PROP_VALID = "valid"
-intf java.io.Serializable
-meth public abstract boolean isModified()
-meth public abstract boolean isValid()
-meth public abstract org.openide.windows.CloneableOpenSupport findCloneableOpenSupport()
-meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public abstract void addVetoableChangeListener(java.beans.VetoableChangeListener)
-meth public abstract void markModified() throws java.io.IOException
-meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public abstract void removeVetoableChangeListener(java.beans.VetoableChangeListener)
-meth public abstract void unmarkModified()
-
-CLSS public abstract org.openide.windows.CloneableOpenSupportRedirector
-cons public init()
-meth protected abstract org.openide.windows.CloneableOpenSupport redirect(org.openide.windows.CloneableOpenSupport$Env)
-meth protected abstract void closed(org.openide.windows.CloneableOpenSupport$Env)
-meth protected abstract void opened(org.openide.windows.CloneableOpenSupport$Env)
-supr java.lang.Object
-hfds listener,lkp,redirectors
-
-CLSS public abstract org.openide.windows.CloneableTopComponent
-cons public init()
-fld public final static org.openide.windows.CloneableTopComponent$Ref EMPTY
-innr public static Ref
-intf java.io.Externalizable
-intf org.openide.windows.TopComponent$Cloneable
-meth protected boolean closeLast()
-meth protected org.openide.windows.CloneableTopComponent createClonedObject()
-meth protected void componentClosed()
-meth protected void componentOpened()
-meth public boolean canClose()
-meth public boolean canClose(org.openide.windows.Workspace,boolean)
-meth public final java.lang.Object clone()
-meth public final org.openide.windows.CloneableTopComponent cloneTopComponent()
-meth public final org.openide.windows.CloneableTopComponent$Ref getReference()
-meth public final org.openide.windows.TopComponent cloneComponent()
-meth public final void setReference(org.openide.windows.CloneableTopComponent$Ref)
-meth public void readExternal(java.io.ObjectInput) throws java.io.IOException,java.lang.ClassNotFoundException
-meth public void writeExternal(java.io.ObjectOutput) throws java.io.IOException
-supr org.openide.windows.TopComponent
-hfds isLastActivated,ref,serialVersionUID
-
-CLSS public static org.openide.windows.CloneableTopComponent$Ref
- outer org.openide.windows.CloneableTopComponent
-cons protected init()
-intf java.io.Serializable
-meth public boolean isEmpty()
-meth public java.util.Enumeration<org.openide.windows.CloneableTopComponent> getComponents()
-meth public org.openide.windows.CloneableTopComponent getAnyComponent()
-meth public org.openide.windows.CloneableTopComponent getArbitraryComponent()
-supr java.lang.Object
-hfds LOCK,componentSet,myComponentSetListener,serialVersionUID
-
-CLSS public abstract org.openide.windows.ExternalDropHandler
-cons public init()
-meth public abstract boolean canDrop(java.awt.dnd.DropTargetDragEvent)
-meth public abstract boolean canDrop(java.awt.dnd.DropTargetDropEvent)
-meth public abstract boolean handleDrop(java.awt.dnd.DropTargetDropEvent)
-supr java.lang.Object
-
-CLSS public abstract interface org.openide.windows.Mode
-fld public final static java.lang.String PROP_BOUNDS = "bounds"
-fld public final static java.lang.String PROP_DISPLAY_NAME = "displayName"
-fld public final static java.lang.String PROP_NAME = "name"
-fld public final static long serialVersionUID = -2650968323666215654
-intf java.io.Serializable
-meth public abstract boolean canDock(org.openide.windows.TopComponent)
-meth public abstract boolean dockInto(org.openide.windows.TopComponent)
-meth public abstract java.awt.Image getIcon()
-meth public abstract java.awt.Rectangle getBounds()
-meth public abstract java.lang.String getDisplayName()
-meth public abstract java.lang.String getName()
-meth public abstract org.openide.windows.TopComponent getSelectedTopComponent()
-meth public abstract org.openide.windows.TopComponent[] getTopComponents()
-meth public abstract org.openide.windows.Workspace getWorkspace()
-meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public abstract void setBounds(java.awt.Rectangle)
-
-CLSS public abstract interface !annotation org.openide.windows.OnShowing
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
-intf java.lang.annotation.Annotation
-meth public abstract !hasdefault int position()
-
-CLSS public abstract interface !annotation org.openide.windows.RetainLocation
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
-intf java.lang.annotation.Annotation
-meth public abstract java.lang.String value()
-
-CLSS public org.openide.windows.TopComponent
-cons public init()
-cons public init(org.openide.util.Lookup)
-fld public final static int CLOSE_EACH = 0
- anno 0 java.lang.Deprecated()
-fld public final static int CLOSE_LAST = 1
- anno 0 java.lang.Deprecated()
-fld public final static int PERSISTENCE_ALWAYS = 0
-fld public final static int PERSISTENCE_NEVER = 2
-fld public final static int PERSISTENCE_ONLY_OPENED = 1
-fld public final static java.lang.String PROP_CLOSING_DISABLED = "netbeans.winsys.tc.closing_disabled"
-fld public final static java.lang.String PROP_DND_COPY_DISABLED = "netbeans.winsys.tc.draganddrop_copy_disabled"
-fld public final static java.lang.String PROP_DRAGGING_DISABLED = "netbeans.winsys.tc.dragging_disabled"
-fld public final static java.lang.String PROP_KEEP_PREFERRED_SIZE_WHEN_SLIDED_IN = "netbeans.winsys.tc.keep_preferred_size_when_slided_in"
-fld public final static java.lang.String PROP_MAXIMIZATION_DISABLED = "netbeans.winsys.tc.maximization_disabled"
-fld public final static java.lang.String PROP_SLIDING_DISABLED = "netbeans.winsys.tc.sliding_disabled"
-fld public final static java.lang.String PROP_UNDOCKING_DISABLED = "netbeans.winsys.tc.undocking_disabled"
-innr public abstract interface static !annotation Description
-innr public abstract interface static !annotation OpenActionRegistration
-innr public abstract interface static !annotation Registration
-innr public abstract interface static Cloneable
-innr public abstract interface static Registry
-innr public final static SubComponent
-innr public static NodeName
-intf java.io.Externalizable
+cons public init(boolean)
+cons public init(java.awt.LayoutManager)
+cons public init(java.awt.LayoutManager,boolean)
+innr protected AccessibleJPanel
 intf javax.accessibility.Accessible
-intf org.openide.util.HelpCtx$Provider
-intf org.openide.util.Lookup$Provider
-meth protected boolean processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
-meth protected final void associateLookup(org.openide.util.Lookup)
-meth protected java.lang.Object writeReplace() throws java.io.ObjectStreamException
-meth protected java.lang.String preferredID()
-meth protected void closeNotify()
- anno 0 java.lang.Deprecated()
-meth protected void componentActivated()
-meth protected void componentClosed()
-meth protected void componentDeactivated()
-meth protected void componentHidden()
-meth protected void componentOpened()
-meth protected void componentShowing()
-meth protected void openNotify()
- anno 0 java.lang.Deprecated()
-meth public boolean canClose()
-meth public boolean canClose(org.openide.windows.Workspace,boolean)
- anno 0 java.lang.Deprecated()
-meth public boolean requestFocusInWindow()
-meth public final boolean close()
-meth public final boolean close(org.openide.windows.Workspace)
- anno 0 java.lang.Deprecated()
-meth public final boolean isOpened()
-meth public final boolean isOpened(org.openide.windows.Workspace)
- anno 0 java.lang.Deprecated()
-meth public final int getCloseOperation()
- anno 0 java.lang.Deprecated()
-meth public final int getTabPosition()
-meth public final org.openide.nodes.Node[] getActivatedNodes()
-meth public final static org.openide.windows.TopComponent$Registry getRegistry()
-meth public final void cancelRequestAttention()
-meth public final void makeBusy(boolean)
-meth public final void openAtTabPosition(int)
-meth public final void requestAttention(boolean)
-meth public final void setActivatedNodes(org.openide.nodes.Node[])
-meth public final void setAttentionHighlight(boolean)
-meth public final void setCloseOperation(int)
- anno 0 java.lang.Deprecated()
-meth public int getPersistenceType()
-meth public java.awt.Image getIcon()
-meth public java.lang.String getDisplayName()
-meth public java.lang.String getHtmlDisplayName()
-meth public java.lang.String getShortName()
-meth public java.util.List<org.openide.windows.Mode> availableModes(java.util.List<org.openide.windows.Mode>)
+meth protected java.lang.String paramString()
+meth public java.lang.String getUIClassID()
 meth public javax.accessibility.AccessibleContext getAccessibleContext()
-meth public javax.swing.Action[] getActions()
-meth public org.openide.awt.UndoRedo getUndoRedo()
-meth public org.openide.util.HelpCtx getHelpCtx()
-meth public org.openide.util.Lookup getLookup()
-meth public org.openide.util.actions.SystemAction[] getSystemActions()
- anno 0 java.lang.Deprecated()
-meth public org.openide.windows.TopComponent$SubComponent[] getSubComponents()
-meth public static javax.swing.Action openAction(org.openide.windows.TopComponent,java.lang.String,java.lang.String,boolean)
-meth public void addNotify()
-meth public void open()
-meth public void open(org.openide.windows.Workspace)
- anno 0 java.lang.Deprecated()
-meth public void readExternal(java.io.ObjectInput) throws java.io.IOException,java.lang.ClassNotFoundException
-meth public void requestActive()
-meth public void requestFocus()
-meth public void requestVisible()
-meth public void setDisplayName(java.lang.String)
-meth public void setHtmlDisplayName(java.lang.String)
-meth public void setIcon(java.awt.Image)
-meth public void setName(java.lang.String)
-meth public void setToolTipText(java.lang.String)
-meth public void toFront()
-meth public void writeExternal(java.io.ObjectOutput) throws java.io.IOException
+meth public javax.swing.plaf.PanelUI getUI()
+meth public void setUI(javax.swing.plaf.PanelUI)
+meth public void updateUI()
 supr javax.swing.JComponent
-hfds LOG,MODE_ID_PREFERENCES_KEY_INFIX,UILOG,activatedNodes,attentionGetter,closeOperation,defaultLookupLock,defaultLookupRef,displayName,htmlDisplayName,icon,modeName,nodeName,serialVersion,serialVersionUID,warnedClasses,warnedTCPIClasses
-hcls AttentionGetter,CloneWindowAction,CloseWindowAction,Replacer,SynchronizeNodes
+hfds uiClassID
 
-CLSS public abstract interface static org.openide.windows.TopComponent$Cloneable
- outer org.openide.windows.TopComponent
-meth public abstract org.openide.windows.TopComponent cloneComponent()
-
-CLSS public abstract interface static !annotation org.openide.windows.TopComponent$Description
- outer org.openide.windows.TopComponent
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
-intf java.lang.annotation.Annotation
-meth public abstract !hasdefault int persistenceType()
-meth public abstract !hasdefault java.lang.String iconBase()
-meth public abstract java.lang.String preferredID()
-
-CLSS public static org.openide.windows.TopComponent$NodeName
- outer org.openide.windows.TopComponent
- anno 0 java.lang.Deprecated()
-cons public init(org.openide.windows.TopComponent)
- anno 0 java.lang.Deprecated()
-meth public static void connect(org.openide.windows.TopComponent,org.openide.nodes.Node)
-meth public void propertyChange(java.beans.PropertyChangeEvent)
- anno 0 java.lang.Deprecated()
-supr org.openide.nodes.NodeAdapter
-hfds node,nodeL,top
-
-CLSS public abstract interface static !annotation org.openide.windows.TopComponent$OpenActionRegistration
- outer org.openide.windows.TopComponent
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
-intf java.lang.annotation.Annotation
-meth public abstract !hasdefault java.lang.String preferredID()
-meth public abstract java.lang.String displayName()
-
-CLSS public abstract interface static !annotation org.openide.windows.TopComponent$Registration
- outer org.openide.windows.TopComponent
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
-intf java.lang.annotation.Annotation
-meth public abstract !hasdefault int position()
-meth public abstract !hasdefault java.lang.String[] roles()
-meth public abstract boolean openAtStartup()
-meth public abstract java.lang.String mode()
-
-CLSS public abstract interface static org.openide.windows.TopComponent$Registry
- outer org.openide.windows.TopComponent
-fld public final static java.lang.String PROP_ACTIVATED = "activated"
-fld public final static java.lang.String PROP_ACTIVATED_NODES = "activatedNodes"
-fld public final static java.lang.String PROP_CURRENT_NODES = "currentNodes"
-fld public final static java.lang.String PROP_OPENED = "opened"
-fld public final static java.lang.String PROP_TC_CLOSED = "tcClosed"
-fld public final static java.lang.String PROP_TC_OPENED = "tcOpened"
-meth public abstract java.util.Set<org.openide.windows.TopComponent> getOpened()
-meth public abstract org.openide.nodes.Node[] getActivatedNodes()
-meth public abstract org.openide.nodes.Node[] getCurrentNodes()
-meth public abstract org.openide.windows.TopComponent getActivated()
-meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
-
-CLSS public final static org.openide.windows.TopComponent$SubComponent
- outer org.openide.windows.TopComponent
-cons public init(java.lang.String,java.awt.event.ActionListener,boolean)
-cons public init(java.lang.String,java.lang.String,java.awt.event.ActionListener,boolean)
-cons public init(java.lang.String,java.lang.String,java.awt.event.ActionListener,boolean,org.openide.util.Lookup,boolean)
-meth public boolean isShowing()
-meth public final boolean isActive()
-meth public final java.lang.String getDescription()
-meth public final java.lang.String getDisplayName()
-meth public final void activate()
-meth public org.openide.util.Lookup getLookup()
-supr java.lang.Object
-hfds activator,active,description,displayName,lookup,showing
-
-CLSS public abstract interface org.openide.windows.TopComponentGroup
-meth public abstract void close()
-meth public abstract void open()
-
-CLSS public abstract org.openide.windows.WindowManager
-cons public init()
-fld public final static java.lang.String PROP_CURRENT_WORKSPACE = "currentWorkspace"
- anno 0 java.lang.Deprecated()
-fld public final static java.lang.String PROP_MODES = "modes"
-fld public final static java.lang.String PROP_WORKSPACES = "workspaces"
- anno 0 java.lang.Deprecated()
-innr protected abstract interface static Component
-intf java.io.Serializable
-meth protected abstract boolean topComponentIsOpened(org.openide.windows.TopComponent)
-meth protected abstract java.lang.String topComponentID(org.openide.windows.TopComponent,java.lang.String)
-meth protected abstract javax.swing.Action[] topComponentDefaultActions(org.openide.windows.TopComponent)
-meth protected abstract org.openide.windows.WindowManager$Component createTopComponentManager(org.openide.windows.TopComponent)
-meth protected abstract void topComponentActivatedNodesChanged(org.openide.windows.TopComponent,org.openide.nodes.Node[])
-meth protected abstract void topComponentClose(org.openide.windows.TopComponent)
-meth protected abstract void topComponentDisplayNameChanged(org.openide.windows.TopComponent,java.lang.String)
-meth protected abstract void topComponentHtmlDisplayNameChanged(org.openide.windows.TopComponent,java.lang.String)
-meth protected abstract void topComponentIconChanged(org.openide.windows.TopComponent,java.awt.Image)
-meth protected abstract void topComponentOpen(org.openide.windows.TopComponent)
-meth protected abstract void topComponentRequestActive(org.openide.windows.TopComponent)
-meth protected abstract void topComponentRequestVisible(org.openide.windows.TopComponent)
-meth protected abstract void topComponentToolTipChanged(org.openide.windows.TopComponent,java.lang.String)
-meth protected final static org.openide.windows.WindowManager$Component findComponentManager(org.openide.windows.TopComponent)
- anno 0 java.lang.Deprecated()
-meth protected int topComponentGetTabPosition(org.openide.windows.TopComponent)
-meth protected org.openide.windows.TopComponent$Registry componentRegistry()
-meth protected void activateComponent(org.openide.windows.TopComponent)
-meth protected void componentCloseNotify(org.openide.windows.TopComponent)
-meth protected void componentHidden(org.openide.windows.TopComponent)
-meth protected void componentOpenNotify(org.openide.windows.TopComponent)
-meth protected void componentShowing(org.openide.windows.TopComponent)
-meth protected void topComponentAttentionHighlight(org.openide.windows.TopComponent,boolean)
-meth protected void topComponentCancelRequestAttention(org.openide.windows.TopComponent)
-meth protected void topComponentMakeBusy(org.openide.windows.TopComponent,boolean)
-meth protected void topComponentOpenAtTabPosition(org.openide.windows.TopComponent,int)
-meth protected void topComponentRequestAttention(org.openide.windows.TopComponent)
-meth protected void topComponentToFront(org.openide.windows.TopComponent)
-meth public abstract java.awt.Frame getMainWindow()
-meth public abstract java.util.Set<? extends org.openide.windows.Mode> getModes()
-meth public abstract org.openide.windows.Mode findMode(java.lang.String)
-meth public abstract org.openide.windows.Mode findMode(org.openide.windows.TopComponent)
-meth public abstract org.openide.windows.TopComponent findTopComponent(java.lang.String)
-meth public abstract org.openide.windows.TopComponentGroup findTopComponentGroup(java.lang.String)
-meth public abstract org.openide.windows.Workspace createWorkspace(java.lang.String,java.lang.String)
- anno 0 java.lang.Deprecated()
-meth public abstract org.openide.windows.Workspace findWorkspace(java.lang.String)
- anno 0 java.lang.Deprecated()
-meth public abstract org.openide.windows.Workspace getCurrentWorkspace()
- anno 0 java.lang.Deprecated()
-meth public abstract org.openide.windows.Workspace[] getWorkspaces()
- anno 0 java.lang.Deprecated()
-meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public abstract void setWorkspaces(org.openide.windows.Workspace[])
- anno 0 java.lang.Deprecated()
-meth public abstract void updateUI()
-meth public boolean isEditorMode(org.openide.windows.Mode)
-meth public boolean isEditorTopComponent(org.openide.windows.TopComponent)
-meth public boolean isOpenedEditorTopComponent(org.openide.windows.TopComponent)
-meth public boolean isTopComponentFloating(org.openide.windows.TopComponent)
-meth public boolean isTopComponentMinimized(org.openide.windows.TopComponent)
-meth public final org.openide.windows.Workspace createWorkspace(java.lang.String)
- anno 0 java.lang.Deprecated()
-meth public final static org.openide.windows.WindowManager getDefault()
-meth public java.lang.String findTopComponentID(org.openide.windows.TopComponent)
-meth public java.lang.String getRole()
-meth public org.openide.windows.TopComponent$Registry getRegistry()
-meth public org.openide.windows.TopComponent[] getOpenedTopComponents(org.openide.windows.Mode)
-meth public void addWindowSystemListener(org.openide.windows.WindowSystemListener)
-meth public void invokeWhenUIReady(java.lang.Runnable)
-meth public void removeWindowSystemListener(org.openide.windows.WindowSystemListener)
-meth public void setRole(java.lang.String)
-meth public void setTopComponentFloating(org.openide.windows.TopComponent,boolean)
-meth public void setTopComponentMinimized(org.openide.windows.TopComponent,boolean)
-supr java.lang.Object
-hfds activeComponent,dummyInstance,onShowing,registry,serialVersionUID
-
-CLSS protected abstract interface static org.openide.windows.WindowManager$Component
- outer org.openide.windows.WindowManager
- anno 0 java.lang.Deprecated()
-fld public final static long serialVersionUID = 0
- anno 0 java.lang.Deprecated()
-intf java.io.Serializable
-meth public abstract java.awt.Image getIcon()
-meth public abstract java.util.Set<org.openide.windows.Workspace> whereOpened()
-meth public abstract org.openide.nodes.Node[] getActivatedNodes()
-meth public abstract void close(org.openide.windows.Workspace)
-meth public abstract void nameChanged()
-meth public abstract void open()
-meth public abstract void open(org.openide.windows.Workspace)
-meth public abstract void requestFocus()
-meth public abstract void requestVisible()
-meth public abstract void setActivatedNodes(org.openide.nodes.Node[])
-meth public abstract void setIcon(java.awt.Image)
-
-CLSS public final org.openide.windows.WindowSystemEvent
-cons public init(java.lang.Object)
-supr java.util.EventObject
-
-CLSS public abstract interface org.openide.windows.WindowSystemListener
+CLSS public abstract interface javax.swing.event.ChangeListener
 intf java.util.EventListener
-meth public abstract void afterLoad(org.openide.windows.WindowSystemEvent)
-meth public abstract void afterSave(org.openide.windows.WindowSystemEvent)
-meth public abstract void beforeLoad(org.openide.windows.WindowSystemEvent)
-meth public abstract void beforeSave(org.openide.windows.WindowSystemEvent)
+meth public abstract void stateChanged(javax.swing.event.ChangeEvent)
 
-CLSS public abstract interface org.openide.windows.Workspace
-fld public final static java.lang.String PROP_DISPLAY_NAME = "displayName"
-fld public final static java.lang.String PROP_MODES = "modes"
-fld public final static java.lang.String PROP_NAME = "name"
-fld public final static long serialVersionUID = 2987897537843190271
-intf java.io.Serializable
-meth public abstract java.awt.Rectangle getBounds()
-meth public abstract java.lang.String getDisplayName()
-meth public abstract java.lang.String getName()
-meth public abstract java.util.Set<? extends org.openide.windows.Mode> getModes()
-meth public abstract org.openide.windows.Mode createMode(java.lang.String,java.lang.String,java.net.URL)
-meth public abstract org.openide.windows.Mode findMode(java.lang.String)
-meth public abstract org.openide.windows.Mode findMode(org.openide.windows.TopComponent)
-meth public abstract void activate()
-meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public abstract void remove()
-meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
+CLSS public final org.netbeans.core.multitabs.ButtonFactory
+cons public init()
+meth public static javax.swing.JButton createDropDownButton(org.netbeans.core.multitabs.Controller)
+meth public static javax.swing.JButton createMaximizeButton(org.netbeans.core.multitabs.Controller)
+meth public static javax.swing.JButton createScrollLeftButton(javax.swing.Action)
+meth public static javax.swing.JButton createScrollRightButton(javax.swing.Action)
+supr java.lang.Object
+hcls TimerButton
+
+CLSS public final org.netbeans.core.multitabs.Controller
+cons public init(org.netbeans.core.multitabs.TabDisplayer)
+intf java.awt.event.MouseListener
+meth public int getSelectedIndex()
+meth public org.netbeans.swing.tabcontrol.TabDataModel getTabModel()
+meth public void addSelectionChangeListener(javax.swing.event.ChangeListener)
+meth public void mouseClicked(java.awt.event.MouseEvent)
+meth public void mouseEntered(java.awt.event.MouseEvent)
+meth public void mouseExited(java.awt.event.MouseEvent)
+meth public void mousePressed(java.awt.event.MouseEvent)
+meth public void mouseReleased(java.awt.event.MouseEvent)
+meth public void postActionEvent(org.netbeans.swing.tabcontrol.event.TabActionEvent)
+meth public void removeSelectionChangeListener(javax.swing.event.ChangeListener)
+meth public void setSelectedIndex(int)
+supr java.lang.Object
+hfds actionListenerList,displayer,selectionModel,tabModel
+
+CLSS public final org.netbeans.core.multitabs.Settings
+meth public boolean isEnabled()
+meth public boolean isSameProjectSameColor()
+meth public boolean isShowFullPath()
+meth public boolean isSortDocumentListByProject()
+meth public boolean isTabRowPerProject()
+meth public int getRowCount()
+meth public int getTabsLocation()
+meth public static org.netbeans.core.multitabs.Settings getDefault()
+supr java.lang.Object
+hfds impl,theInstance
+
+CLSS public final org.netbeans.core.multitabs.TabContainer
+intf javax.swing.event.ChangeListener
+intf org.netbeans.swing.tabcontrol.customtabs.Tabbed$Accessor
+meth public final org.netbeans.swing.tabcontrol.customtabs.Tabbed getTabbed()
+meth public void addNotify()
+meth public void removeNotify()
+meth public void stateChanged(javax.swing.event.ChangeEvent)
+supr javax.swing.JPanel
+hfds displayer,layout,tabbedImpl,tcPanel
+
+CLSS public abstract org.netbeans.core.multitabs.TabDecorator
+cons public init()
+meth public java.awt.Color getBackground(org.netbeans.swing.tabcontrol.TabData,boolean)
+meth public java.awt.Color getForeground(org.netbeans.swing.tabcontrol.TabData,boolean)
+meth public java.lang.String getText(org.netbeans.swing.tabcontrol.TabData)
+meth public javax.swing.Icon getIcon(org.netbeans.swing.tabcontrol.TabData)
+meth public void paintAfter(org.netbeans.swing.tabcontrol.TabData,java.awt.Graphics,java.awt.Rectangle,boolean)
+supr java.lang.Object
+
+CLSS public abstract org.netbeans.core.multitabs.TabDisplayer
+cons public init(org.netbeans.swing.tabcontrol.TabDataModel)
+fld protected final org.netbeans.swing.tabcontrol.TabDataModel tabModel
+meth public abstract int dropIndexOfPoint(java.awt.Point)
+meth public abstract java.awt.Rectangle dropIndication(org.openide.windows.TopComponent,java.awt.Point)
+meth public abstract java.awt.Rectangle getTabBounds(int)
+meth public abstract java.awt.Rectangle getTabsArea()
+meth public abstract org.netbeans.swing.tabcontrol.TabData getTabAt(java.awt.Point)
+meth public abstract void attach(org.netbeans.core.multitabs.Controller)
+meth public abstract void setSelectedIndex(int)
+meth public final org.netbeans.swing.tabcontrol.TabDataModel getModel()
+supr javax.swing.JPanel
+
+CLSS public abstract org.netbeans.core.multitabs.TabDisplayerFactory
+cons public init()
+meth public abstract org.netbeans.core.multitabs.TabDisplayer createTabDisplayer(org.netbeans.swing.tabcontrol.TabDataModel,int)
+meth public static org.netbeans.core.multitabs.TabDisplayerFactory getDefault()
+supr java.lang.Object
+hcls DefaultTabDisplayerFactory
+
+CLSS public final org.netbeans.core.multitabs.TabbedComponentFactoryImpl
+cons public init()
+intf org.netbeans.swing.tabcontrol.customtabs.TabbedComponentFactory
+meth public org.netbeans.swing.tabcontrol.customtabs.Tabbed createTabbedComponent(org.netbeans.swing.tabcontrol.customtabs.TabbedType,org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer)
+supr java.lang.Object
+
+CLSS public final org.netbeans.core.multitabs.TabbedImpl
+cons public init(org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer,int)
+meth protected final javax.swing.SingleSelectionModel getSelectionModel()
+meth protected final org.netbeans.swing.tabcontrol.TabDataModel getTabModel()
+meth protected int dropIndexOfPoint(java.awt.Point)
+meth protected java.awt.Shape getDropIndication(org.openide.windows.TopComponent,java.awt.Point)
+meth protected org.netbeans.swing.tabcontrol.ComponentConverter getComponentConverter()
+meth protected void cancelRequestAttention(int)
+meth protected void requestAttention(int)
+meth protected void setAttentionHighlight(int,boolean)
+meth public boolean isTransparent()
+meth public int getTabCount()
+meth public int indexOf(java.awt.Component)
+meth public int tabForCoordinate(java.awt.Point)
+meth public java.awt.Component getComponent()
+meth public java.awt.Image createImageOfTab(int)
+meth public java.awt.Rectangle getTabBounds(int)
+meth public java.awt.Rectangle getTabsArea()
+meth public void addActionListener(java.awt.event.ActionListener)
+meth public void makeBusy(org.openide.windows.TopComponent,boolean)
+meth public void removeActionListener(java.awt.event.ActionListener)
+meth public void setActive(boolean)
+meth public void setIconAt(int,javax.swing.Icon)
+meth public void setTitleAt(int,java.lang.String)
+meth public void setToolTipTextAt(int,java.lang.String)
+meth public void setTransparent(boolean)
+supr org.netbeans.core.windows.view.ui.tabcontrol.AbstractTabbedImpl
+hfds componentConverter,container,controller,tabModel
+
+CLSS public abstract org.netbeans.core.windows.view.ui.tabcontrol.AbstractTabbedImpl
+cons public init()
+meth protected abstract int dropIndexOfPoint(java.awt.Point)
+meth protected abstract java.awt.Shape getDropIndication(org.openide.windows.TopComponent,java.awt.Point)
+meth protected abstract javax.swing.SingleSelectionModel getSelectionModel()
+meth protected abstract org.netbeans.swing.tabcontrol.ComponentConverter getComponentConverter()
+meth protected abstract org.netbeans.swing.tabcontrol.TabDataModel getTabModel()
+meth protected abstract void cancelRequestAttention(int)
+meth protected abstract void requestAttention(int)
+meth protected abstract void setAttentionHighlight(int,boolean)
+meth protected final void fireStateChanged()
+meth public boolean isBusy(org.openide.windows.TopComponent)
+meth public final java.awt.Shape getIndicationForLocation(java.awt.Point,org.openide.windows.TopComponent,java.awt.Point,boolean)
+meth public final java.lang.Object getConstraintForLocation(java.awt.Point,boolean)
+meth public final javax.swing.Action[] getPopupActions(javax.swing.Action[],int)
+meth public final org.openide.windows.TopComponent getSelectedTopComponent()
+meth public final org.openide.windows.TopComponent getTopComponentAt(int)
+meth public final org.openide.windows.TopComponent[] getTopComponents()
+meth public final void addChangeListener(javax.swing.event.ChangeListener)
+meth public final void addTopComponent(java.lang.String,javax.swing.Icon,org.openide.windows.TopComponent,java.lang.String)
+meth public final void cancelRequestAttention(org.openide.windows.TopComponent)
+meth public final void insertComponent(java.lang.String,javax.swing.Icon,java.awt.Component,java.lang.String,int)
+meth public final void removeChangeListener(javax.swing.event.ChangeListener)
+meth public final void removeComponent(java.awt.Component)
+meth public final void requestAttention(org.openide.windows.TopComponent)
+meth public final void setAttentionHighlight(org.openide.windows.TopComponent,boolean)
+meth public final void setSelectedComponent(java.awt.Component)
+meth public final void setTopComponents(org.openide.windows.TopComponent[],org.openide.windows.TopComponent)
+supr org.netbeans.swing.tabcontrol.customtabs.Tabbed
+hfds DEBUG,cs,tooltipListener,weakTooltipListener
+hcls ToolTipListener
+
+CLSS public abstract org.netbeans.swing.tabcontrol.customtabs.Tabbed
+cons public init()
+innr public abstract interface static Accessor
+meth public abstract boolean isTransparent()
+meth public abstract int getTabCount()
+meth public abstract int indexOf(java.awt.Component)
+meth public abstract int tabForCoordinate(java.awt.Point)
+meth public abstract java.awt.Component getComponent()
+meth public abstract java.awt.Image createImageOfTab(int)
+meth public abstract java.awt.Rectangle getTabBounds(int)
+meth public abstract java.awt.Rectangle getTabsArea()
+meth public abstract java.awt.Shape getIndicationForLocation(java.awt.Point,org.openide.windows.TopComponent,java.awt.Point,boolean)
+meth public abstract java.lang.Object getConstraintForLocation(java.awt.Point,boolean)
+meth public abstract javax.swing.Action[] getPopupActions(javax.swing.Action[],int)
+meth public abstract org.openide.windows.TopComponent getSelectedTopComponent()
+meth public abstract org.openide.windows.TopComponent getTopComponentAt(int)
+meth public abstract org.openide.windows.TopComponent[] getTopComponents()
+meth public abstract void addActionListener(java.awt.event.ActionListener)
+meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void addTopComponent(java.lang.String,javax.swing.Icon,org.openide.windows.TopComponent,java.lang.String)
+meth public abstract void cancelRequestAttention(org.openide.windows.TopComponent)
+meth public abstract void insertComponent(java.lang.String,javax.swing.Icon,java.awt.Component,java.lang.String,int)
+meth public abstract void removeActionListener(java.awt.event.ActionListener)
+meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void removeComponent(java.awt.Component)
+meth public abstract void requestAttention(org.openide.windows.TopComponent)
+meth public abstract void setActive(boolean)
+meth public abstract void setIconAt(int,javax.swing.Icon)
+meth public abstract void setSelectedComponent(java.awt.Component)
+meth public abstract void setTitleAt(int,java.lang.String)
+meth public abstract void setToolTipTextAt(int,java.lang.String)
+meth public abstract void setTopComponents(org.openide.windows.TopComponent[],org.openide.windows.TopComponent)
+meth public abstract void setTransparent(boolean)
+meth public boolean isBusy(org.openide.windows.TopComponent)
+meth public void makeBusy(org.openide.windows.TopComponent,boolean)
+meth public void setAttentionHighlight(org.openide.windows.TopComponent,boolean)
+supr java.lang.Object
+
+CLSS public abstract interface static org.netbeans.swing.tabcontrol.customtabs.Tabbed$Accessor
+ outer org.netbeans.swing.tabcontrol.customtabs.Tabbed
+meth public abstract org.netbeans.swing.tabcontrol.customtabs.Tabbed getTabbed()
+
+CLSS public abstract interface org.netbeans.swing.tabcontrol.customtabs.TabbedComponentFactory
+meth public abstract org.netbeans.swing.tabcontrol.customtabs.Tabbed createTabbedComponent(org.netbeans.swing.tabcontrol.customtabs.TabbedType,org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer)
 

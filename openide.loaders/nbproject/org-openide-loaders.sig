@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.51.1
+#Version 7.56.2
 
 CLSS public java.awt.Canvas
 cons public init()
@@ -1748,6 +1748,7 @@ meth public abstract !hasdefault java.lang.String displayName()
 meth public abstract !hasdefault java.lang.String iconBase()
 meth public abstract !hasdefault java.lang.String id()
 meth public abstract !hasdefault java.lang.String scriptEngine()
+meth public abstract !hasdefault java.lang.String targetName()
 meth public abstract !hasdefault java.lang.String[] category()
 meth public abstract !hasdefault java.lang.String[] content()
 meth public abstract java.lang.String folder()
@@ -1811,6 +1812,7 @@ fld public final static java.lang.String PROP_ERROR_NOTIFICATION = "errorNotific
 fld public final static java.lang.String PROP_INFO_NOTIFICATION = "infoNotification"
 fld public final static java.lang.String PROP_MESSAGE = "message"
 fld public final static java.lang.String PROP_MESSAGE_TYPE = "messageType"
+fld public final static java.lang.String PROP_NO_DEFAULT_CLOSE = "noDefaultClose"
 fld public final static java.lang.String PROP_OPTIONS = "options"
 fld public final static java.lang.String PROP_OPTION_TYPE = "optionType"
 fld public final static java.lang.String PROP_TITLE = "title"
@@ -1824,6 +1826,7 @@ innr public static Message
 meth protected static java.lang.String getTitleForType(int)
 meth protected void firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
 meth protected void initialize()
+meth public boolean isNoDefaultClose()
 meth public final boolean isValid()
 meth public final org.openide.NotificationLineSupport createNotificationLineSupport()
 meth public final org.openide.NotificationLineSupport getNotificationLineSupport()
@@ -1841,12 +1844,13 @@ meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void setAdditionalOptions(java.lang.Object[])
 meth public void setMessage(java.lang.Object)
 meth public void setMessageType(int)
+meth public void setNoDefaultClose(boolean)
 meth public void setOptionType(int)
 meth public void setOptions(java.lang.Object[])
 meth public void setTitle(java.lang.String)
 meth public void setValue(java.lang.Object)
 supr java.lang.Object
-hfds MAXIMUM_TEXT_WIDTH,SIZE_PREFERRED_HEIGHT,SIZE_PREFERRED_WIDTH,adOptions,changeSupport,defaultValue,errMsg,infoMsg,message,messageType,notificationLineSupport,optionType,options,title,valid,value,warnMsg
+hfds MAXIMUM_TEXT_WIDTH,SIZE_PREFERRED_HEIGHT,SIZE_PREFERRED_WIDTH,adOptions,changeSupport,defaultValue,errMsg,infoMsg,message,messageType,noDefaultClose,notificationLineSupport,optionType,options,title,valid,value,warnMsg
 
 CLSS public abstract org.openide.ServiceType
  anno 0 java.lang.Deprecated()
@@ -2742,7 +2746,6 @@ CLSS public org.openide.awt.MenuBar
 cons public init()
 cons public init(org.openide.loaders.DataFolder)
 intf java.io.Externalizable
-meth protected boolean processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
 meth public boolean isOpaque()
 meth public int getMenuCount()
 meth public void addImpl(java.awt.Component,java.lang.Object,int)
@@ -2751,7 +2754,7 @@ meth public void updateUI()
 meth public void waitFinished()
 meth public void writeExternal(java.io.ObjectOutput) throws java.io.IOException
 supr javax.swing.JMenuBar
-hfds menuBarFolder,serialVersionUID
+hfds LOG,menuBarFolder,serialVersionUID
 hcls LazyMenu,LazySeparator,MarkedKeyEvent,MenuBarFolder
 
 CLSS public final org.openide.awt.Mnemonics
@@ -3168,6 +3171,7 @@ meth public void updateUI()
 meth public void validate()
 supr javax.swing.JToolBar
 hfds PROP_DRAGGER,PROP_JDEV_DISABLE_OVERFLOW,PROP_PREF_ICON_SIZE,awtEventListener,componentAdapter,displayOverflowOnHover,overflowButton,overflowToolbar,popup,showingPopup,toolbarArrowHorizontal,toolbarArrowVertical
+hcls SafePopupMenu,SafeToolBar
 
 CLSS public abstract interface org.openide.awt.UndoRedo
 fld public final static org.openide.awt.UndoRedo NONE
@@ -3413,6 +3417,7 @@ CLSS public abstract static org.openide.loaders.DataFolder$SortMode
  outer org.openide.loaders.DataFolder
 cons public init()
 fld public final static org.openide.loaders.DataFolder$SortMode CLASS
+fld public final static org.openide.loaders.DataFolder$SortMode EXTENSIONS
 fld public final static org.openide.loaders.DataFolder$SortMode FOLDER_NAMES
 fld public final static org.openide.loaders.DataFolder$SortMode LAST_MODIFIED
 fld public final static org.openide.loaders.DataFolder$SortMode NAMES
@@ -4322,7 +4327,7 @@ meth public void setName(java.lang.String)
 meth public void setShortDescription(java.lang.String)
 meth public void setValue(java.lang.String,java.lang.Object)
 supr org.openide.nodes.Node
-hfds DELEGATE_ALL,LOGGER,childrenProvided,delegateMask,hashCodeDepth,nodeL,original,overridesGetDisplayNameCache,pchlAttached,propL,replaceProvidedLookupCache
+hfds DELEGATE_ALL,LISTENER_LOCK,LOGGER,childrenProvided,delegateMask,hashCodeDepth,lookupProvided,nodeL,original,overridesGetDisplayNameCache,pchlAttached,propL,replaceProvidedLookupCache
 hcls ChildrenAdapter,FilterHandle,FilterLookup,StackError
 
 CLSS public abstract interface org.openide.nodes.Index
@@ -4441,7 +4446,7 @@ meth public void setHidden(boolean)
 meth public void setName(java.lang.String)
 meth public void setShortDescription(java.lang.String)
 supr java.beans.FeatureDescriptor
-hfds INIT_LOCK,LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBadProperties
+hfds BLOCK_EVENTS,INIT_LOCK,LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBadProperties
 hcls LookupEventList,PropertyEditorRef
 
 CLSS public abstract interface static org.openide.nodes.Node$Cookie
@@ -4605,6 +4610,7 @@ meth protected org.openide.text.CloneableEditor createCloneableEditor()
 meth protected org.openide.text.CloneableEditorSupport$Pane createPane()
 meth protected org.openide.util.Task reloadDocument()
 meth protected org.openide.windows.CloneableTopComponent createCloneableTopComponent()
+meth protected void afterRedirect(org.openide.windows.CloneableOpenSupport)
 meth protected void initializeCloneableEditor(org.openide.text.CloneableEditor)
 meth protected void loadFromStreamToKit(javax.swing.text.StyledDocument,java.io.InputStream,javax.swing.text.EditorKit) throws java.io.IOException,javax.swing.text.BadLocationException
 meth protected void notifyClosed()
@@ -5354,6 +5360,7 @@ meth protected abstract org.openide.windows.CloneableTopComponent createCloneabl
 meth protected boolean canClose()
 meth protected boolean close(boolean)
 meth protected final org.openide.windows.CloneableTopComponent openCloneableTopComponent()
+meth protected void afterRedirect(org.openide.windows.CloneableOpenSupport)
 meth public boolean close()
 meth public void edit()
 meth public void open()

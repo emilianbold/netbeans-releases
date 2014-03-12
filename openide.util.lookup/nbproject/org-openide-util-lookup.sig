@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 8.22.1
+#Version 8.24.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -278,7 +278,7 @@ meth public static <%0 extends java.lang.Object> {%%0} getConfigObject(java.lang
 meth public static org.openide.util.Lookup createLookupFor(java.lang.Object)
 meth public static org.openide.util.Lookup forPath(java.lang.String)
 supr java.lang.Object
-hfds namedServicesProviders
+hfds IN,namedServicesProviders
 
 CLSS public abstract org.openide.util.lookup.implspi.SharedClassObjectBridge
 cons protected init()
