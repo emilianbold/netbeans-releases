@@ -61,11 +61,11 @@ import javax.swing.text.Position.Bias;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -302,28 +302,97 @@ public class GeneratorUtils {
 //            wc.rewrite(path.getLeaf(), decl);
 //        }
 //    }
-//
-//    public static void generateConstructor(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> initFields, ExecutableElement inheritedConstructor, int index) {
-//        TreeMaker make = wc.getTreeMaker();
-//        ClassTree clazz = (ClassTree)path.getLeaf();
-//        TypeElement te = (TypeElement) wc.getTrees().getElement(path);
-//        GeneratorUtilities gu = GeneratorUtilities.get(wc);
-//        ClassTree decl = make.insertClassMember(clazz, index, gu.createConstructor(te, initFields, inheritedConstructor)); //NOI18N
-//        wc.rewrite(path.getLeaf(), decl);
-//    }
-//
-//    public static void generateConstructors(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> initFields, List<? extends ExecutableElement> inheritedConstructors, int index) {
-//        TreeMaker make = wc.getTreeMaker();
-//        ClassTree clazz = (ClassTree)path.getLeaf();
-//        TypeElement te = (TypeElement) wc.getTrees().getElement(path);
-//        GeneratorUtilities gu = GeneratorUtilities.get(wc);
-//        ClassTree decl = clazz;
-//        for (ExecutableElement inheritedConstructor : inheritedConstructors) {
-//            decl = make.insertClassMember(decl, index, gu.createConstructor(te, initFields, inheritedConstructor)); //NOI18N
-//        }
-//        wc.rewrite(clazz, decl);
-//    }
-//
+
+    public static void generateConstructor(CsmContext path, CsmClass enclosingClass, List<CsmConstructor> inheritedConstructors, List<CsmField> fields) {
+        boolean inlineConstructor = true;
+        if (inlineConstructor) {
+            InsertInfo[] ins = getInsertPositons(path, enclosingClass, InsertPoint.DEFAULT);
+            final InsertInfo def = ins[0];
+            final StringBuilder result = new StringBuilder();
+            final StringBuilder init = new StringBuilder();
+            final StringBuilder superInit = new StringBuilder();
+            final Document doc = path.getDocument();
+            result.append('\n'); // NOI18N
+            result.append(enclosingClass.getName());
+            result.append('('); // NOI18N
+            boolean first = true;
+            for(CsmField field : fields) {
+                if (!first) {
+                    result.append(", "); // NOI18N
+                }
+                result.append(field.getType().getCanonicalText());
+                result.append(' ');
+                result.append(field.getName());
+                if (!first) {
+                    init.append(", "); // NOI18N
+                }
+                init.append(field.getName());
+                init.append('('); // NOI18N
+                init.append(field.getName());
+                init.append(')'); // NOI18N
+                first = false;
+            }
+            for(CsmConstructor constructor : inheritedConstructors) {
+                CsmFunctionParameterList parameterList = constructor.getParameterList();
+                final StringBuilder args = new StringBuilder();
+                for(CsmParameter parameter : parameterList.getParameters()) {
+                    if (!first) {
+                        result.append(", "); // NOI18N
+                    }
+                    result.append(parameter.getType().getCanonicalText());
+                    result.append(' ');
+                    result.append(parameter.getName());
+                    if (args.length()>0) {
+                        args.append(", "); // NOI18N
+                    }
+                    args.append(parameter.getName());
+                    first = false;
+                }
+                if (superInit.length()>0) {
+                    superInit.append(", "); // NOI18N
+                }
+                superInit.append(constructor.getContainingClass().getName());
+                superInit.append('('); // NOI18N
+                superInit.append(args);
+                superInit.append(')'); // NOI18N
+            }
+            result.append(')'); // NOI18N
+            if (init.length()>0) {
+                result.append(':');  // NOI18N
+                result.append('\n');  // NOI18N
+                result.append(superInit);
+                if (superInit.length()>0 &&init.length()>0) {
+                    result.append(", "); // NOI18N
+                }
+                result.append(init);
+            }
+            result.append("{}\n"); // NOI18N
+            Runnable update = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        doc.insertString(def.dot, result.toString(), null);
+                        Reformat format = Reformat.get(doc);
+                        format.lock();
+                        try {
+                            int start = def.start.getOffset();
+                            int end = def.end.getOffset();
+                            format.reformat(start, end);
+                        } finally {
+                            format.unlock();
+                        }
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            };
+            if (doc instanceof BaseDocument) {
+                ((BaseDocument)doc).runAtomicAsUser(update);
+            } else {
+                update.run();
+            }
+        }
+    }
 
     public static final class InsertInfo {
         public final CloneableEditorSupport ces;
@@ -418,7 +487,7 @@ public class GeneratorUtils {
                             declPos = enclClass.getLeftBracketOffset() + 1;
                         }
                     } else {
-                        if (CsmKindUtilities.isOffsetableDeclaration(csmObject)) {
+                        if (CsmKindUtilities.isClassMember(csmObject)) {
                             decl = (CsmOffsetable)csmObject;
                         }
                     }

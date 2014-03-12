@@ -96,7 +96,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
-import org.netbeans.modules.cnd.modelutil.AntiLoop;
+import org.netbeans.modules.cnd.modelutil.ClassifiersAntiLoop;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
@@ -1069,7 +1069,7 @@ public final class CsmProjectContentResolver {
             minVisibility = CsmInheritanceUtilities.getContextVisibility(clazz, contextDeclaration, CsmVisibility.PUBLIC, true);
         }
 
-        Map<CharSequence, CsmClass> set = getBaseClasses(clazz, contextDeclaration, strPrefix, match, new AntiLoop(), minVisibility, INIT_INHERITANCE_LEVEL);
+        Map<CharSequence, CsmClass> set = getBaseClasses(clazz, contextDeclaration, strPrefix, match, new ClassifiersAntiLoop(), minVisibility, INIT_INHERITANCE_LEVEL);
         List<CsmClass> res;
         if (set != null && set.size() > 0) {
             res = new ArrayList<CsmClass>(set.values());
@@ -1154,7 +1154,7 @@ public final class CsmProjectContentResolver {
         }
 
         Map<CharSequence, CsmMember> set = getClassMembers(clazz, contextDeclaration, kinds, strPrefix, staticOnly, match,
-                new AntiLoop(), minVisibility, INIT_INHERITANCE_LEVEL, inspectParentClasses, inspectOuterClasses, returnBaseClasses, returnUnnamedMembers);
+                new ClassifiersAntiLoop(), minVisibility, INIT_INHERITANCE_LEVEL, inspectParentClasses, inspectOuterClasses, returnBaseClasses, returnUnnamedMembers);
         List<CsmMember> res;
         if (set != null && set.size() > 0) {
             res = new ArrayList<CsmMember>(set.values());
@@ -1167,7 +1167,7 @@ public final class CsmProjectContentResolver {
     @SuppressWarnings("unchecked")
     private Map<CharSequence, CsmMember> getClassMembers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmDeclaration.Kind kinds[],
             String strPrefix, boolean staticOnly, boolean match,
-            AntiLoop handledClasses, CsmVisibility minVisibility, int inheritanceLevel, boolean inspectParentClasses, boolean inspectOuterClasses,
+            ClassifiersAntiLoop handledClasses, CsmVisibility minVisibility, int inheritanceLevel, boolean inspectParentClasses, boolean inspectOuterClasses,
             boolean returnBaseClasses,
             boolean returnUnnamedMembers) {
         assert (clazz != null);
@@ -1347,7 +1347,7 @@ public final class CsmProjectContentResolver {
 
     @SuppressWarnings("unchecked")
     private Map<CharSequence, CsmClass> getBaseClasses(CsmClass csmClass, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean match,
-            AntiLoop handledClasses, CsmVisibility minVisibility, int inheritanceLevel) {
+            ClassifiersAntiLoop handledClasses, CsmVisibility minVisibility, int inheritanceLevel) {
         assert (csmClass != null);
 
         if (handledClasses.contains(csmClass)) {

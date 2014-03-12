@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,53 +37,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.trace;
+package org.netbeans.modules.cnd.utils;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public class FileModelTest3 extends TraceModelTestBase {
-
-    public FileModelTest3(String testName) {
-        super(testName);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        System.setProperty("parser.report.errors", "true");
-        System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
-//        System.setProperty("cnd.modelimpl.trace.registration", "true");
-//        System.setProperty("cnd.modelimpl.parser.threads", "1");
-        super.setUp();
-    }
-
-    @Override
-    protected void postSetUp() {
-        // init flags needed for file model tests
-        getTraceModel().setDumpModel(true);
-        getTraceModel().setDumpPPState(true);
-    }
-
-    // it behaved differently on 1-st and subsequent runs
-    public void testResolverClassString_01() throws Exception {
-        performTest("resolver_class_string.cc"); // NOI18N
-    }
-
-    // it behaved differently on 1-st and subsequent runs
-    public void testResolverClassString_02() throws Exception {
-        performTest("resolver_class_string.cc"); // NOI18N
+public final class Antiloop<T> {
+    
+    private final Set<T> objects = new HashSet<T>();
+    
+    /**
+     * Enters antiloop.
+     * @param obj - obj to add to the set of objects
+     * @return true if success, false otherwise
+     */
+    public boolean enter(T obj) {
+        if (objects.contains(obj)) {
+            return false;
+        }
+        objects.add(obj);
+        return true;
     }
     
-    public void testBug242674() throws Exception {
-        performTest("bug242674.cpp"); // NOI18N
+    /**
+     * Exists antiloop
+     * @param obj to remove from the set of objects
+     */
+    public void exit(T obj) {
+        objects.remove(obj);
     }    
-
-    @Override
-    protected Class<?> getTestCaseDataClass() {
-        return FileModelTest.class;
-    }
 }

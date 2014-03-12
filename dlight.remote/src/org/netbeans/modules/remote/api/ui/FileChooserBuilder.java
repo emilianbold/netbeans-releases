@@ -49,6 +49,7 @@ import java.awt.HeadlessException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -64,6 +65,8 @@ import javax.swing.filechooser.FileView;
 import javax.swing.plaf.FileChooserUI;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
@@ -96,7 +99,25 @@ public final class FileChooserBuilder {
         public abstract void setCurrentDirectory(FileObject dir);
         public abstract FileObject getSelectedFileObject();
         public abstract FileObject[] getSelectedFileObjects();
+        
+        /** 
+         * Very close to getHomeDirectory, but isn't quite the same:
+         * getHomePath()
+         * - does not create file object, 
+         * - does not fire event,
+         * - is fast (in the case remote host info isn't avaliable, just returns  "/")
+         * @return user home
+         */
+        /*package*/ abstract String getHomePath();
 
+        /**
+         * Used to determine whether "~" should be expanded to home directory
+         * @return 
+         */
+        /*package*/ abstract boolean isUnix();
+
+        /*package*/ abstract char getFileSeparatorChar();
+        
         @Override
         public final File getCurrentDirectory() {
             return curFile;
@@ -228,6 +249,21 @@ public final class FileChooserBuilder {
         }
 
         @Override
+        public String getHomePath() {
+            return System.getProperty("user.home");
+        }
+
+        @Override
+        public boolean isUnix() {
+            return Utilities.isUnix();
+        }
+
+        @Override
+        public char getFileSeparatorChar() {
+            return File.separatorChar;
+        }
+
+        @Override
         public void setCurrentDirectory(FileObject dir) {
             if (dir != null && dir.isFolder()) {
                 File file = FileUtil.toFile(dir);
@@ -348,6 +384,29 @@ public final class FileChooserBuilder {
                 }
                 return result.toArray(new FileObject[result.size()]);
             }
+        }
+        
+        @Override
+        public String getHomePath() {
+            if (HostInfoUtils.isHostInfoAvailable(env)) {
+                try {
+                    return HostInfoUtils.getHostInfo(env).getUserDir();
+                } catch (IOException ex) {
+                    RemoteLogger.finest(ex);
+                } catch (ConnectionManager.CancellationException ex) {
+                }
+            }
+            return "/"; //NOI18N
+        }        
+
+        @Override
+        public boolean isUnix() {
+            return true;
+        }
+
+        @Override
+        public char getFileSeparatorChar() {
+            return '/';
         }
 
         @Override

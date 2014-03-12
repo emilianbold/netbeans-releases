@@ -79,11 +79,11 @@ import javax.swing.text.JTextComponent;
  */
 class FileCompletionPopup extends JPopupMenu implements KeyListener {
     
-    private JList list;
-    private JTextField textField;
-    private JFileChooser chooser;
+    private final JList list;
+    private final JTextField textField;
+    private final FileChooserBuilder.JFileChooserEx chooser;
     
-    public FileCompletionPopup(JFileChooser chooser, JTextField textField, Vector<File> files) {
+    public FileCompletionPopup(FileChooserBuilder.JFileChooserEx chooser, JTextField textField, Vector<File> files) {
         this.list = new JList(files);
         this.textField = textField;
         this.chooser = chooser;
@@ -255,7 +255,7 @@ class FileCompletionPopup extends JPopupMenu implements KeyListener {
                 if (file.isDirectory()) {
                     try {
                         Document doc = textField.getDocument();
-                        doc.insertString(doc.getLength(), File.separator, null);
+                        doc.insertString(doc.getLength(), String.valueOf(chooser.getFileSeparatorChar()), null);
                     } catch (BadLocationException ex) {
                         Logger.getLogger(getClass().getName()).log(
                                 Level.FINE, "Cannot append directory separator.", ex);//NOI18N

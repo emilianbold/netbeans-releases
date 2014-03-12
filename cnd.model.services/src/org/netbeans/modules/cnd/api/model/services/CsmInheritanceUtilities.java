@@ -44,31 +44,44 @@
 
 package org.netbeans.modules.cnd.api.model.services;
 
-import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmInheritance;
-import org.netbeans.modules.cnd.api.model.CsmMember;
-import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.*;
-import org.netbeans.modules.cnd.modelutil.AntiLoop;
+import org.netbeans.modules.cnd.modelutil.ClassifiersAntiLoop;
+import org.netbeans.modules.cnd.utils.Antiloop;
 
 /**
  * utilities to merge/get inheritance information
  * @author Vladimir Voskresensky
  */
 public final class CsmInheritanceUtilities {
+    
+        private static final ThreadLocal<Antiloop<CsmInheritance>> threadLocalInheritanceAntiloop = new ThreadLocal<Antiloop<CsmInheritance>>() {
+
+            @Override
+            protected Antiloop<CsmInheritance> initialValue() {
+                return new Antiloop<CsmInheritance>();
+            }
+
+        };   
+    
     /* 
      * visibility is ordered:
      * NONE < PUBLIC < PROTECTED < PRIVATE
@@ -368,7 +381,7 @@ public final class CsmInheritanceUtilities {
             if (res == null) {
                 long resolveTime = System.currentTimeMillis();
                 res = new ArrayList<CsmInheritance>();
-                AntiLoop handledClasses = new AntiLoop();
+                ClassifiersAntiLoop handledClasses = new ClassifiersAntiLoop();
                 if (!findInheritanceChain(child, parent, res, handledClasses)) {
                     res = Collections.emptyList();
                 }
@@ -409,7 +422,7 @@ public final class CsmInheritanceUtilities {
     
     private static boolean findInheritanceChain(CsmClass child, CsmClass parent, 
                                         List<CsmInheritance> res, 
-                                        AntiLoop handledClasses) {
+                                        ClassifiersAntiLoop handledClasses) {
         // remember visited childs
         // quick exit, if already handled before
         if (child == null || !handledClasses.add(child)) {
@@ -452,11 +465,17 @@ public final class CsmInheritanceUtilities {
 
     public static CsmClass getCsmClass(CsmInheritance inh) {
         CsmClass out = null;
-        CsmClassifier classifier = inh.getClassifier();
-        classifier = CsmBaseUtilities.getOriginalClassifier(classifier, inh.getContainingFile());
-        if (CsmKindUtilities.isClass(classifier)) {
-            out = (CsmClass)classifier;
-        }
+        if (threadLocalInheritanceAntiloop.get().enter(inh)) {
+            try {
+                CsmClassifier classifier = inh.getClassifier();
+                classifier = CsmBaseUtilities.getOriginalClassifier(classifier, inh.getContainingFile());
+                if (CsmKindUtilities.isClass(classifier)) {
+                    out = (CsmClass)classifier;
+                }
+            } finally {
+                threadLocalInheritanceAntiloop.get().exit(inh);
+            }
+        }         
         LOG.log(Level.FINE, "getCsmClass for\n{0}\n=>getCsmClass=>\n{1}", new Object[] {inh, out});
         return out;
     }
