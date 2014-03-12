@@ -287,10 +287,13 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
     private FileFilter actualFileFilter = null;
     private GlobFilter globFilter = null;
 
+    private final char fileSeparatorChar;
+    
     public FileChooserUIImpl(FileChooserBuilder.JFileChooserEx filechooser) {
         super(filechooser);
         approveSelectionAction = new ApproveSelectionAction();
         cancelSelectionAction = new CancelSelectionAction();
+        fileSeparatorChar = filechooser.getFileSeparatorChar();
     }
 
     @Override
@@ -1140,7 +1143,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
     private void updateCompletions() {
         if (showPopupCompletion) {
             final String name = normalizeFile(getFileName());
-            int slash = name.lastIndexOf(File.separatorChar);
+            int slash = name.lastIndexOf(fileSeparatorChar);
             if (slash != -1) {
                 String prefix = name.substring(0, slash + 1);
                 File[] children;
@@ -1238,7 +1241,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
     }
     
     
-    private static String normalizeFile(String text) {
+    private String normalizeFile(String text) {
         // See #21690 for background.
         // XXX what are legal chars for var names? bash manual says only:
         // "The braces are required when PARAMETER [...] is followed by a
@@ -1257,9 +1260,9 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
             text = text.substring(0, m.end(1)) + var + text.substring(m.end(2));
         }
         if (text.equals("~")) {//NOI18N
-            return System.getProperty("user.home");//NOI18N
-        } else if (text.startsWith("~" + File.separatorChar)) {//NOI18N
-            return System.getProperty("user.home") + text.substring(1);//NOI18N
+            return fileChooser.getHomePath(); //NOI18N
+        } else if (text.startsWith("~" + fileSeparatorChar)) {//NOI18N
+            return fileChooser.getHomePath() + text.substring(1);//NOI18N
         } else {
             int i = text.lastIndexOf("//");//NOI18N
             if (i != -1) {
@@ -1267,10 +1270,10 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
                 // (so that you can use "//" to start a new path, without selecting & deleting)
                 return text.substring(i + 1);
             }
-            i = text.lastIndexOf(File.separatorChar + "~" + File.separatorChar);//NOI18N
+            i = text.lastIndexOf(fileSeparatorChar + "~" + fileSeparatorChar);//NOI18N
             if (i != -1) {
                 // Treat /usr/local/~/stuff as /home/me/stuff
-                return System.getProperty("user.home") + text.substring(i + 2);//NOI18N
+                return fileChooser.getHomePath() + text.substring(i + 2);//NOI18N
             }
             return text;
         }
@@ -2521,7 +2524,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
         }
         
         private void changeTreeDirectory(File dir) {
-            if (File.separatorChar == '\\' && dir.getPath().endsWith(".lnk")) {//NOI18N
+            if (fileSeparatorChar == '\\' && dir.getPath().endsWith(".lnk")) {//NOI18N
                 File linkLocation = getShellFolderForFileLinkLoc(dir);
                 if (linkLocation != null && fileChooser.isTraversable(linkLocation)) {
                     dir = linkLocation;
@@ -3415,10 +3418,10 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
         }
     }    
     
-    private static boolean isGlobPattern(String filename) {
-        return ((File.separatorChar == '\\' && (filename.indexOf('*') >= 0
+    private boolean isGlobPattern(String filename) {
+        return ((fileSeparatorChar == '\\' && (filename.indexOf('*') >= 0
                                                   || filename.indexOf('?') >= 0))
-                || (File.separatorChar == '/' && (filename.indexOf('*') >= 0
+                || (fileSeparatorChar == '/' && (filename.indexOf('*') >= 0
                                                   || filename.indexOf('?') >= 0
                                                   || filename.indexOf('[') >= 0)));
     }
@@ -3434,7 +3437,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
         public void setPattern(String globPattern) {
             char[] gPat = globPattern.toCharArray();
             char[] rPat = new char[gPat.length * 2];
-            boolean isWin32 = (File.separatorChar == '\\');
+            boolean isWin32 = (fileSeparatorChar == '\\');
             boolean inBrackets = false;
             int j = 0;
 
