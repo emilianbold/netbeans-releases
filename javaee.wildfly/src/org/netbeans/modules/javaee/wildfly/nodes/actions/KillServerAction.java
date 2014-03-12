@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.javaee.wildfly.nodes.actions;
 
-import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.javaee.wildfly.ide.WildflyKiller;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -69,10 +68,10 @@ public class KillServerAction extends CookieAction {
         }
         if (killer.killServers()) {
             for (Node node : nodes) {
-                ServerInstance si = (ServerInstance) node.getCookie(ServerInstance.class);
-                if (si != null) {
-                    si.refresh();
-                }
+//                ServerInstance si = (ServerInstance) node.getCookie(ServerInstance.class);
+//                if (si != null) {
+//                    si.refresh();
+//                }
             }
         }
     }
