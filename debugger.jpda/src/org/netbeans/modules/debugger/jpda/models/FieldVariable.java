@@ -72,8 +72,6 @@ import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
-import org.openide.util.Exceptions;
 
 
 /**
@@ -187,16 +185,10 @@ org.netbeans.api.debugger.jpda.Field, Refreshable {
     static ReferenceType getTheDeclaringClassType(ObjectReference objectReference, Field field) {
         ReferenceType type;
         try {
-            if (objectReference != null) {
-                type = (ReferenceType) ValueWrapper.type(objectReference);
-            } else {
-                type = TypeComponentWrapper.declaringType(field);
-            }
+            type = TypeComponentWrapper.declaringType(field);
         } catch (InternalExceptionWrapper ex) {
             throw ex.getCause();
         } catch (VMDisconnectedExceptionWrapper ex) {
-            throw ex.getCause();
-        } catch (ObjectCollectedExceptionWrapper ex) {
             throw ex.getCause();
         }
         return type;

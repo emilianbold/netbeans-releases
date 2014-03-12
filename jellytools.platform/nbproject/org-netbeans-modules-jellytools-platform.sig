@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 3.19.1
+#Version 3.23.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -99,6 +99,7 @@ CLSS public org.netbeans.jellytools.FavoritesOperator
 cons public init()
 meth public org.netbeans.jemmy.operators.JTreeOperator tree()
 meth public static org.netbeans.jellytools.FavoritesOperator invoke()
+meth public void collapseAll()
 meth public void verify()
 supr org.netbeans.jellytools.TopComponentOperator
 hfds FAVORITES_CAPTION,_tree,viewAction

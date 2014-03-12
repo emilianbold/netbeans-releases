@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.18.1
+#Version 1.20.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -216,7 +216,7 @@ meth public static org.netbeans.spi.editor.hints.Fix removeFromParent(org.netbea
 meth public static org.netbeans.spi.editor.hints.Fix rewriteFix(org.netbeans.spi.java.hints.HintContext,java.lang.String,com.sun.source.util.TreePath,java.lang.String)
 supr java.lang.Object
 hfds NUMBER_LITERAL_KINDS,OPERATOR_PRIORITIES,SPEC_VERSION
-hcls JavaFixRealImpl,MoveFile,RemoveFromParent,ReplaceParameters
+hcls IK,JavaFixRealImpl,MoveFile,RemoveFromParent,ReplaceParameters
 
 CLSS public org.netbeans.spi.java.hints.MatcherUtilities
 cons public init()

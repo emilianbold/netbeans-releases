@@ -2231,9 +2231,17 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
             return null;
         }
+        object = findOuterObject(object);
+        if (object == null) {
+            return null;
+        }
+        return findEnclosingObject(arg0, object, type, fieldName, methodName);
+    }
+    
+    private static ObjectReference findOuterObject(ObjectReference object) {
         Field outerRef = null;
-        for (int i = 0; i < 9; i++) {
-            outerRef = object.referenceType().fieldByName("this$"+i);
+        for (int i = 0; i < 10; i++) {
+            outerRef = object.referenceType().fieldByName("this$"+i);           // NOI18N
             if (outerRef != null) {
                 break;
             }
@@ -2241,11 +2249,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (outerRef == null) {
             return null;
         }
-        object = (ObjectReference) object.getValue(outerRef);
-        if (object == null) {
-            return null;
-        }
-        return findEnclosingObject(arg0, object, type, fieldName, methodName);
+        ObjectReference outerObject = (ObjectReference) object.getValue(outerRef);
+        return outerObject;
     }
 
     @Override
@@ -2813,13 +2818,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 if (name.equals("this")) {
                     ObjectReference thisObject = evaluationContext.getContextObject();
                     while (thisObject != null && !((ReferenceType) thisObject.type()).equals(clazz)) {
-                        ReferenceType thisClass = (ReferenceType) thisObject.type();
-                        Field outerThisField = thisClass.fieldByName("this$0");
-                        if (outerThisField != null) {
-                            thisObject = (ObjectReference) thisObject.getValue(outerThisField);
-                        } else {
-                            thisObject = null;
-                        }
+                        thisObject = findOuterObject(thisObject);
                     }
                     if (thisObject == null) {
                         Assert.error(arg0, "unknownOuterClass", clazz.name());
@@ -2897,13 +2896,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         ObjectReference thisObject = evaluationContext.getContextObject();
                         // Need to check sub-classes also (clazz equal or sub-class of thisObject.type()
                         while (thisObject != null && !instanceOf((ReferenceType) thisObject.type(), clazz)) {
-                            ReferenceType thisClass = (ReferenceType) thisObject.type();
-                            Field outerThisField = thisClass.fieldByName("this$0");
-                            if (outerThisField != null) {
-                                thisObject = (ObjectReference) thisObject.getValue(outerThisField);
-                            } else {
-                                thisObject = null;
-                            }
+                            thisObject = findOuterObject(thisObject);
                         }
                         if (thisObject == null) {
                             Assert.error(arg0, "unknownOuterClass", clazz.name());

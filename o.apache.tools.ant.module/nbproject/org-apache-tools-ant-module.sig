@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 3.70.1
+#Version 3.74.1
 
 CLSS public java.beans.FeatureDescriptor
 cons public init()
@@ -118,12 +118,16 @@ cons public init()
 meth public int getVerbosity()
 meth public java.io.OutputStream getLogger()
 meth public java.util.Properties getProperties()
+meth public java.util.Set<java.lang.String> getConcealedProperties()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public void setConcealedProperties(java.util.Set<? extends java.lang.String>)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public void setLogger(java.io.OutputStream)
  anno 0 java.lang.Deprecated()
 meth public void setProperties(java.util.Properties)
 meth public void setVerbosity(int)
 supr java.lang.Object
-hfds outputStream,properties,verbosity
+hfds concealedProperties,outputStream,properties,verbosity
 
 CLSS public abstract interface org.apache.tools.ant.module.api.ElementCookie
  anno 0 java.lang.Deprecated()
@@ -159,6 +163,16 @@ CLSS public final org.apache.tools.ant.module.api.support.ActionUtils
 meth public static java.lang.String antIncludesList(org.openide.filesystems.FileObject[],org.openide.filesystems.FileObject)
 meth public static java.lang.String antIncludesList(org.openide.filesystems.FileObject[],org.openide.filesystems.FileObject,boolean)
 meth public static org.openide.execution.ExecutorTask runTarget(org.openide.filesystems.FileObject,java.lang.String[],java.util.Properties) throws java.io.IOException
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
+ anno 3 org.netbeans.api.annotations.common.NullAllowed()
+meth public static org.openide.execution.ExecutorTask runTarget(org.openide.filesystems.FileObject,java.lang.String[],java.util.Properties,java.util.Set<java.lang.String>) throws java.io.IOException
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
+ anno 3 org.netbeans.api.annotations.common.NullAllowed()
+ anno 4 org.netbeans.api.annotations.common.NullAllowed()
 meth public static org.openide.filesystems.FileObject[] findSelectedFiles(org.openide.util.Lookup,org.openide.filesystems.FileObject,java.lang.String,boolean)
 meth public static org.openide.filesystems.FileObject[] regexpMapFiles(org.openide.filesystems.FileObject[],org.openide.filesystems.FileObject,java.util.regex.Pattern,org.openide.filesystems.FileObject,java.lang.String,boolean)
 supr java.lang.Object
@@ -257,6 +271,7 @@ supr java.io.OutputStream
 hfds buffer,hadFirst
 
 CLSS public final org.apache.tools.ant.module.spi.AntSession
+meth public boolean isConcealed(java.lang.String)
 meth public boolean isExceptionConsumed(java.lang.Throwable)
 meth public int getVerbosity()
 meth public java.io.File getOriginatingScript()
@@ -366,7 +381,7 @@ meth public void setHidden(boolean)
 meth public void setName(java.lang.String)
 meth public void setShortDescription(java.lang.String)
 supr java.beans.FeatureDescriptor
-hfds INIT_LOCK,LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBadProperties
+hfds BLOCK_EVENTS,INIT_LOCK,LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBadProperties
 hcls LookupEventList,PropertyEditorRef
 
 CLSS public abstract interface static org.openide.nodes.Node$Cookie

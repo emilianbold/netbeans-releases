@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.34.1
+#Version 1.36.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -53,6 +53,7 @@ meth public static org.netbeans.modules.editor.indent.spi.CodeStylePreferences g
 meth public static org.netbeans.modules.editor.indent.spi.CodeStylePreferences get(org.openide.filesystems.FileObject,java.lang.String)
 supr java.lang.Object
 hfds LOG,defaultProvider,docOrFile,mimeType
+hcls CachingPreferences
 
 CLSS public abstract interface static org.netbeans.modules.editor.indent.spi.CodeStylePreferences$Provider
  outer org.netbeans.modules.editor.indent.spi.CodeStylePreferences
