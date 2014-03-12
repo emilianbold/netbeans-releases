@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
 public class ConstructorPanel extends JPanel {
 
     private JLabel constructorSelectorLabel;
-    private ElementSelectorPanel constructorSelector;
+    private SuperConstructorSelectorPanel constructorSelector;
     private JLabel fieldSelectorLabel;
     private ElementSelectorPanel fieldSelector;
 
@@ -73,14 +73,13 @@ public class ConstructorPanel extends JPanel {
         if (constructorDescription != null) {
             constructorSelectorLabel = new javax.swing.JLabel();
             GridBagConstraints gridBagConstraints = new GridBagConstraints();
-            gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = 0;
             gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
             gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 12);
             add(constructorSelectorLabel, gridBagConstraints);
-            constructorSelector = new ElementSelectorPanel(constructorDescription, false, true);
+            constructorSelector = new SuperConstructorSelectorPanel(constructorDescription);
             gridBagConstraints.gridy = 1;
             gridBagConstraints.weightx = 0.5;
             gridBagConstraints.weighty = 1.0;
@@ -92,7 +91,6 @@ public class ConstructorPanel extends JPanel {
         if (fieldsDescription != null) {
             fieldSelectorLabel = new javax.swing.JLabel();
             GridBagConstraints gridBagConstraints = new GridBagConstraints();
-            gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 1;
             gridBagConstraints.gridy = 0;
             gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
