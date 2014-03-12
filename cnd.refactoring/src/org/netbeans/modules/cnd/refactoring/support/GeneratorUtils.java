@@ -487,13 +487,13 @@ public class GeneratorUtils {
                             declPos = enclClass.getLeftBracketOffset() + 1;
                         }
                     } else {
-                        if (CsmKindUtilities.isClassMember(csmObject)) {
+                        if (CsmKindUtilities.isOffsetableDeclaration(csmObject)) {
                             decl = (CsmOffsetable)csmObject;
                         }
                     }
                 }
             }
-            if (decl != null) {
+            if (decl != null && declPos == -1) {
                 declPos = decl.getEndOffset();
             }
             if (CsmKindUtilities.isClassMember(decl)) {
