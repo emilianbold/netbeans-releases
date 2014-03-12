@@ -56,6 +56,7 @@ import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -116,15 +117,17 @@ public class JsIndexer extends EmbeddingIndexer {
                 IndexDocument document = IndexedElement.createDocument(object, fqn, support, indexable);
                 support.addDocument(document);
             }
-            // look for all other properties. Even if the object doesn't have to be delcared in the file
-            // there can be declared it's properties or methods
-            for (JsObject property : object.getProperties().values()) {
-                storeObject(property, fqn + '.' + property.getName(), support, indexable);
-            }
-            if (object instanceof JsFunction) {
-                // store parameters
-                for (JsObject parameter : ((JsFunction)object).getParameters()) {
-                    storeObject(parameter, fqn + '.' + parameter.getName(), support, indexable);
+            if (!(object instanceof JsObjectReference)) {
+                // look for all other properties. Even if the object doesn't have to be delcared in the file
+                // there can be declared it's properties or methods
+                for (JsObject property : object.getProperties().values()) {
+                    storeObject(property, fqn + '.' + property.getName(), support, indexable);
+                }
+                if (object instanceof JsFunction) {
+                    // store parameters
+                    for (JsObject parameter : ((JsFunction)object).getParameters()) {
+                        storeObject(parameter, fqn + '.' + parameter.getName(), support, indexable);
+                    }
                 }
             }
         }
@@ -147,7 +150,8 @@ public class JsIndexer extends EmbeddingIndexer {
 
         public static final String NAME = "js"; // NOI18N
         public static final int VERSION = 11;
-
+        private static final int PRIORITY = 100;
+        
         private static final ThreadLocal<Collection<Runnable>> postScanTasks = new ThreadLocal<Collection<Runnable>>();
 
         @Override
@@ -232,5 +236,10 @@ public class JsIndexer extends EmbeddingIndexer {
             tasks.add(task);
         }
 
+        @Override
+        public int getPriority() {
+            return PRIORITY;
+        }
+        
     } // End of Factory class
 }

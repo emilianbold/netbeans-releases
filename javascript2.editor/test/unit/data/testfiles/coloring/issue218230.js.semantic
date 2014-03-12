@@ -60,7 +60,7 @@
         |>FIELD:width<|       : 50,
         |>FIELD:resizable<|   : false,
         |>FIELD:hidden<|      : true,
-        |>FIELD:renderer<|    : colorTextBlue
+        |>METHOD:renderer<|    : colorTextBlue
     },
     {
         |>FIELD:header<|      : 'Display Name',
@@ -69,7 +69,7 @@
         |>FIELD:hideable<|    : false,
         |>FIELD:width<|       : 75,
         |>FIELD:id<|          : 'displaynameCol',
-        |>FIELD:renderer<|    : stylizeDisplayName
+        |>METHOD:renderer<|    : stylizeDisplayName
     },
     {
         |>FIELD:header<|      : 'Check Command Arguments',

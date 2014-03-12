@@ -221,14 +221,33 @@ public class RevertDeletedAction extends NodeAction {
         InputStream is = null;
         OutputStream os = null;
         try {               
-            if(!storeFile.isFile()) {
-                FileUtil.createFolder(file.getParentFile().toFileObject(), file.getName());             
-            } else {            
-                FileObject fo = FileUtil.createData(file.getParentFile().toFileObject(), file.getName());                
+            FileObject parentFO = file.getParentFile().toFileObject();             
+            if(parentFO != null) {
+                if(!storeFile.isFile()) {
+                    FileUtil.createFolder(parentFO, file.getName());             
+                } else {            
+                    FileObject fo = FileUtil.createData(parentFO, file.getName());                
 
-                os = getOutputStream(fo);     
-                is = se.getStoreFileInputStream();                    
-                FileUtil.copy(is, os);            
+                    os = getOutputStream(fo);     
+                    is = se.getStoreFileInputStream();                    
+                    FileUtil.copy(is, os);            
+                }
+            } else {
+                VCSFileProxy parentFile = file.getParentFile();
+                if(parentFile.toFile() != null) {
+                    LocalHistory.LOG.log(Level.WARNING, "FileObject for local file {0} is null.", file.getParentFile().getPath());
+                    
+                    // fallback on io.File
+                    if(!storeFile.isFile()) {
+                        file.toFile().mkdirs();
+                    } else {            
+                        is = se.getStoreFileInputStream();                    
+                        FileUtils.copy(is, file.toFile());
+                    }
+                    
+                } else {
+                    LocalHistory.LOG.log(Level.WARNING, "FileObject for remote file {0} is null. Can''t revert.", file.getParentFile().getPath());
+                }
             }
         } catch (Exception e) {            
             LocalHistory.LOG.log(Level.SEVERE, null, e);

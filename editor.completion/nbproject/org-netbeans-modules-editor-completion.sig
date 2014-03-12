@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.36.1
+#Version 1.39.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -108,6 +108,10 @@ CLSS public abstract interface org.netbeans.spi.editor.completion.CompletionTask
 meth public abstract void cancel()
 meth public abstract void query(org.netbeans.spi.editor.completion.CompletionResultSet)
 meth public abstract void refresh(org.netbeans.spi.editor.completion.CompletionResultSet)
+
+CLSS public abstract interface org.netbeans.spi.editor.completion.CompositeCompletionItem
+intf org.netbeans.spi.editor.completion.CompletionItem
+meth public abstract java.util.List<? extends org.netbeans.spi.editor.completion.CompletionItem> getSubItems()
 
 CLSS public abstract interface org.netbeans.spi.editor.completion.LazyCompletionItem
 intf org.netbeans.spi.editor.completion.CompletionItem

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.12.1
+#Version 1.19.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -103,6 +103,9 @@ meth public java.util.Map<java.io.File,org.netbeans.libs.git.GitRevisionInfo$Git
 meth public java.util.Map<java.io.File,org.netbeans.libs.git.GitStatus> getConflicts(java.io.File[],org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public java.util.Map<java.io.File,org.netbeans.libs.git.GitStatus> getStatus(java.io.File[],java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public java.util.Map<java.io.File,org.netbeans.libs.git.GitStatus> getStatus(java.io.File[],org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
+meth public java.util.Map<java.io.File,org.netbeans.libs.git.GitSubmoduleStatus> getSubmoduleStatus(java.io.File[],org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
+meth public java.util.Map<java.io.File,org.netbeans.libs.git.GitSubmoduleStatus> initializeSubmodules(java.io.File[],org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
+meth public java.util.Map<java.io.File,org.netbeans.libs.git.GitSubmoduleStatus> updateSubmodules(java.io.File[],org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public java.util.Map<java.lang.String,java.lang.String> listRemoteTags(java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public java.util.Map<java.lang.String,org.netbeans.libs.git.GitBranch> getBranches(boolean,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public java.util.Map<java.lang.String,org.netbeans.libs.git.GitBranch> listRemoteBranches(java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
@@ -125,6 +128,7 @@ meth public org.netbeans.libs.git.GitRevisionInfo commit(java.io.File[],java.lan
 meth public org.netbeans.libs.git.GitRevisionInfo getCommonAncestor(java.lang.String[],org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitRevisionInfo getPreviousRevision(java.io.File,java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitRevisionInfo log(java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
+meth public org.netbeans.libs.git.GitRevisionInfo[] log(org.netbeans.libs.git.SearchCriteria,boolean,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitRevisionInfo[] log(org.netbeans.libs.git.SearchCriteria,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitTag createTag(java.lang.String,java.lang.String,java.lang.String,boolean,boolean,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitUser getUser() throws org.netbeans.libs.git.GitException
@@ -421,11 +425,12 @@ meth public java.lang.String getRevision()
 meth public java.lang.String getShortMessage()
 meth public java.lang.String[] getParents()
 meth public java.util.Map<java.io.File,org.netbeans.libs.git.GitRevisionInfo$GitFileInfo> getModifiedFiles() throws org.netbeans.libs.git.GitException
+meth public java.util.Map<java.lang.String,org.netbeans.libs.git.GitBranch> getBranches()
 meth public long getCommitTime()
 meth public org.netbeans.libs.git.GitUser getAuthor()
 meth public org.netbeans.libs.git.GitUser getCommitter()
 supr java.lang.Object
-hfds LOG,modifiedFiles,repository,revCommit
+hfds LOG,branches,modifiedFiles,repository,revCommit,shortMessage
 
 CLSS public final static org.netbeans.libs.git.GitRevisionInfo$GitFileInfo
  outer org.netbeans.libs.git.GitRevisionInfo
@@ -460,12 +465,13 @@ meth public boolean isTracked()
 meth public java.io.File getFile()
 meth public java.io.File getOldPath()
 meth public java.lang.String getRelativePath()
+meth public long getIndexEntryModificationDate()
 meth public org.netbeans.libs.git.GitConflictDescriptor getConflictDescriptor()
 meth public org.netbeans.libs.git.GitStatus$Status getStatusHeadIndex()
 meth public org.netbeans.libs.git.GitStatus$Status getStatusHeadWC()
 meth public org.netbeans.libs.git.GitStatus$Status getStatusIndexWC()
 supr java.lang.Object
-hfds conflictDescriptor,diffEntry,file,isFolder,relativePath,statusHeadIndex,statusHeadWC,statusIndexWC,tracked,workTreePath
+hfds conflictDescriptor,diffEntry,file,indexEntryModificationDate,isFolder,relativePath,statusHeadIndex,statusHeadWC,statusIndexWC,tracked,workTreePath
 
 CLSS public final static !enum org.netbeans.libs.git.GitStatus$Status
  outer org.netbeans.libs.git.GitStatus
@@ -477,6 +483,25 @@ fld public final static org.netbeans.libs.git.GitStatus$Status STATUS_REMOVED
 meth public static org.netbeans.libs.git.GitStatus$Status valueOf(java.lang.String)
 meth public static org.netbeans.libs.git.GitStatus$Status[] values()
 supr java.lang.Enum<org.netbeans.libs.git.GitStatus$Status>
+
+CLSS public final org.netbeans.libs.git.GitSubmoduleStatus
+innr public final static !enum StatusType
+meth public java.io.File getSubmoduleFolder()
+meth public java.lang.String getHeadId()
+meth public java.lang.String getReferencedCommitId()
+meth public org.netbeans.libs.git.GitSubmoduleStatus$StatusType getStatus()
+supr java.lang.Object
+hfds delegate,folder,statusType
+
+CLSS public final static !enum org.netbeans.libs.git.GitSubmoduleStatus$StatusType
+ outer org.netbeans.libs.git.GitSubmoduleStatus
+fld public final static org.netbeans.libs.git.GitSubmoduleStatus$StatusType INITIALIZED
+fld public final static org.netbeans.libs.git.GitSubmoduleStatus$StatusType MISSING
+fld public final static org.netbeans.libs.git.GitSubmoduleStatus$StatusType REV_CHECKED_OUT
+fld public final static org.netbeans.libs.git.GitSubmoduleStatus$StatusType UNINITIALIZED
+meth public static org.netbeans.libs.git.GitSubmoduleStatus$StatusType valueOf(java.lang.String)
+meth public static org.netbeans.libs.git.GitSubmoduleStatus$StatusType[] values()
+supr java.lang.Enum<org.netbeans.libs.git.GitSubmoduleStatus$StatusType>
 
 CLSS public final org.netbeans.libs.git.GitTag
 meth public boolean isLightWeight()

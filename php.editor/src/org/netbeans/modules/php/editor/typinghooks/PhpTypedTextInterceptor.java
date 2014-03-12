@@ -126,7 +126,7 @@ public class PhpTypedTextInterceptor implements TypedTextInterceptor {
                                 String original = ts.token().text().toString();
                                 if (original.length() > 1) {
                                     String text = ch + original.substring(1, original.length() - 1) + ch;
-                                    doc.remove(caretOffset, text.length());
+                                    doc.remove(ts.offset(), text.length());
                                     context.setText(text, text.length() - 1);
                                 } else {
                                     return;

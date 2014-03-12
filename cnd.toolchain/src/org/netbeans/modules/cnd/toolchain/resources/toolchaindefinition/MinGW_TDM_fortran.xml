@@ -47,6 +47,6 @@ made subject to such option by the copyright holder.
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <fortran>
         <compiler name="gfortran,g95,g90,g77"/>
-        <recognizer pattern=".*[\\/]mingw[\\/]bin[\\/]?$"/>
+        <recognizer pattern=".*[\\/]TDM.*[\\/]bin[\\/]?$"/>
     </fortran>
 </toolchaindefinition>

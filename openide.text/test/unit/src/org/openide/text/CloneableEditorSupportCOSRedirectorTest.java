@@ -173,16 +173,6 @@ implements CloneableEditorSupport.Env {
         compareStreamWithString(red.slave.getInputStream(), added + content);
     }
     
-    public void testGetInputStreamWhenClosed () throws Exception {
-        content.append("basic\ncontent");
-        red.master.open();
-        red.slave.open();
-        compareStreamWithString(red.master.getInputStream(), content);
-        compareStreamWithString(red.slave.getInputStream(), content);
-        // we should be doing this with the document still closed 
-        assertNull("The document is supposed to be still closed", red.master.getDocument ());
-    }
-    
     public void testDocumentCanBeGarbageCollectedWhenClosed () throws Exception {
         content.append("Ahoj\nMyDoc");
         red.master.open();

@@ -1345,6 +1345,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         VariableNameImpl varInstance = (VariableNameImpl) ModelUtils.getFirst(ModelUtils.filter(varScope.getDeclaredVariables(), name));
         if (varInstance == null) {
             varInstance = new VariableNameImpl(varScope, name, varScope.getFile(), phpDocTypeTagInfo.getRange(), varScope instanceof NamespaceScopeImpl);
+        } else {
+            varInstance.setTypeResolutionKind(VariableNameImpl.TypeResolutionKind.MERGE_ASSIGNMENTS);
         }
         ASTNode conditionalNode = findConditionalStatement(getPath());
         VarAssignmentImpl varAssignment = varInstance.createAssignment(

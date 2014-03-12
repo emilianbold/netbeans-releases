@@ -951,7 +951,12 @@ public class IssuePanel extends javax.swing.JPanel {
                     || "com.atlassian.jira.plugin.system.customfieldtypes:textfield".equals(type)) { //NOI18N
                 JTextField field = (JTextField)customFieldComponents.get(cField.getId());
                 if (field != null) {
-                    field.setText(cField.getValues().get(0));
+                    List<String> values = cField.getValues();
+                    if(values == null || values.isEmpty()) {
+                        Jira.LOG.log(Level.WARNING, "custom field {0} : {1} contains no values", new Object[]{cField.getId(), cField.getType()});
+                    } else {
+                        field.setText(values.get(0));
+                    }
                 }
             }
         }

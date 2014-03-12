@@ -338,14 +338,18 @@ public class RepositoryInfo {
             info = cache.get(repositoryRoot);
         }
         if (info != null) {
-            boolean start = false;
-            synchronized (repositoriesToRefresh) {
-                start = repositoriesToRefresh.add(info);
-            }
-            if (start) {
-                LOG.log(Level.FINE, "Planning refresh for {0}", repositoryRoot); //NOI18N
-                refreshTask.schedule(3000);
-            }
+            info.refreshAsync();
+        }
+    }
+
+    private void refreshAsync () {
+        boolean start = false;
+        synchronized (repositoriesToRefresh) {
+            start = repositoriesToRefresh.add(this);
+        }
+        if (start) {
+            LOG.log(Level.FINE, "Planning refresh for {0}", rootRef.get()); //NOI18N
+            refreshTask.schedule(3000);
         }
     }
 
@@ -418,12 +422,29 @@ public class RepositoryInfo {
         setRemotes(newRemotes);
     }
 
+    private boolean refreshIfNotLocked () {
+        File root = rootRef.get();
+        if (root != null && GitUtils.isRepositoryLocked(root)) {
+            return false;
+        } else {
+            refresh();
+            return true;
+        }
+    }
+
     private static class RepositoryRefreshTask implements Runnable {
         @Override
         public void run() {
             RepositoryInfo info;
+            Set<RepositoryInfo> delayed = new HashSet<>();
             while ((info = getNextRepositoryInfo()) != null) {
-                info.refresh();
+                if (!info.refreshIfNotLocked()) {
+                    LOG.log(Level.FINE, "RepositoryRefreshTask: Repository {0} locked, info refresh delayed", info.getName()); //NOI18N
+                    delayed.add(info);
+                }
+            }
+            for (RepositoryInfo toRefresh : delayed) {
+                toRefresh.refreshAsync();
             }
         }
 

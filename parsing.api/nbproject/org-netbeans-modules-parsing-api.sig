@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.69.1
+#Version 1.73.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -155,7 +155,7 @@ meth public org.netbeans.modules.parsing.api.Embedding create(int,int,java.lang.
 meth public org.netbeans.modules.parsing.api.Embedding create(java.lang.CharSequence,java.lang.String)
 meth public org.netbeans.modules.parsing.api.Source getSource()
 supr java.lang.Object
-hfds currentToOriginal,lineStartOffsets,mimePath,originalToCurrent,source,text,tokenHierarchy
+hfds LOG,currentToOriginal,lineStartOffsets,mimePath,originalToCurrent,source,text,tokenHierarchy
 
 CLSS public final org.netbeans.modules.parsing.api.Source
 meth public java.lang.String getMimeType()
@@ -470,6 +470,7 @@ meth public abstract java.lang.String getIndexerName()
 meth public abstract void filesDeleted(java.lang.Iterable<? extends org.netbeans.modules.parsing.spi.indexing.Indexable>,org.netbeans.modules.parsing.spi.indexing.Context)
 meth public abstract void filesDirty(java.lang.Iterable<? extends org.netbeans.modules.parsing.spi.indexing.Indexable>,org.netbeans.modules.parsing.spi.indexing.Context)
 meth public boolean scanStarted(org.netbeans.modules.parsing.spi.indexing.Context)
+meth public int getPriority()
 meth public void rootsRemoved(java.lang.Iterable<? extends java.net.URL>)
 meth public void scanFinished(org.netbeans.modules.parsing.spi.indexing.Context)
 supr java.lang.Object

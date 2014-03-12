@@ -1183,7 +1183,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             resolveTypes |= RESOLVE_CLASS_ENUMERATORS;
             resolveTypes |= RESOLVE_LIB_ENUMERATORS;
         }
-        if (CsmContextUtilities.isInFunctionBodyOrInitializerList(context, offset)) {
+        if (CsmContextUtilities.isInFunctionBodyOrInitializerListOrCastOperatorType(context, offset)) {
             if (!isInType || !match) {
                 resolveTypes |= RESOLVE_LIB_VARIABLES;
                 resolveTypes |= RESOLVE_GLOB_FUNCTIONS;

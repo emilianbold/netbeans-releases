@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -103,6 +104,15 @@ import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
     
     @Override
     public Collection<CsmClass> getHierarchy(CsmClass cls) {
+        CsmCacheManager.enter();
+        try {
+            return getHierarchyImpl(cls);
+        } finally {
+            CsmCacheManager.leave();
+        }
+    }
+    
+    private Collection<CsmClass> getHierarchyImpl(CsmClass cls) {
         if (subDirection) {
             Collection<CsmReference> subRefs = Collections.<CsmReference>emptyList();
             if (plain && recursive) {
@@ -151,9 +161,14 @@ import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
     }
 
     private Map<CsmClass,Set<CsmClass>> buildSuperHierarchy(CsmClass cls){
-        HashMap<CsmClass,Set<CsmClass>> aMap = new HashMap<CsmClass,Set<CsmClass>>();
-        buildSuperHierarchy(cls, aMap);
-        return aMap;
+        CsmCacheManager.enter();
+        try {
+            HashMap<CsmClass,Set<CsmClass>> aMap = new HashMap<CsmClass,Set<CsmClass>>();
+            buildSuperHierarchy(cls, aMap);
+            return aMap;
+        } finally {
+            CsmCacheManager.leave();
+        }
     }
     
     private CsmClass getClassDeclaration(CsmInheritance inh){

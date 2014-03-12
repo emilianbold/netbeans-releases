@@ -74,7 +74,8 @@ public final class Util {
 
 
     /*tests*/ static Set<String> allMimeTypes;
-    private static volatile boolean hadCycles;
+    private static volatile boolean hadCycles =
+        Boolean.getBoolean("disable.reversedeps.fastpath"); //NOI18N
 
     public static Set<String> getAllMimeTypes () {
         return allMimeTypes != null ? allMimeTypes : EditorSettings.getDefault().getAllMimeTypes();
@@ -250,7 +251,7 @@ public final class Util {
             @NonNull final Map<URL, List<URL>> deps,
             @NonNull final Map<URL, List<URL>> peers) {
         //Create inverse dependencies
-        final Map<URL, List<URL>> inverseDeps = findReverseDependencies(deps);
+        final Map<URL, Collection<URL>> inverseDeps = findReverseDependencies(deps);
         //Collect dependencies
         final Set<URL> result = new HashSet<URL>();
         final LinkedList<URL> todo = new LinkedList<URL> ();
@@ -259,7 +260,7 @@ public final class Util {
             final URL u = todo.removeFirst();
             if (!result.contains(u)) {
                 result.add (u);
-                List<URL> ideps = inverseDeps.get(u);
+                Collection<URL> ideps = inverseDeps.get(u);
                 if (ideps != null) {
                     todo.addAll (ideps);
                 }
@@ -278,7 +279,7 @@ public final class Util {
             @NonNull final Map<URL, List<URL>> deps,
             @NonNull final Map<URL, List<URL>> peers) {
         //Create inverse dependencies
-        final Map<URL, List<URL>> inverseDeps = findReverseDependencies(deps);
+        final Map<URL, Collection<URL>> inverseDeps = findReverseDependencies(deps);
         //Collect dependencies
         if (!hadCycles) {
             try {
@@ -360,18 +361,18 @@ public final class Util {
 
     @NonNull
     @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}, justification="URLs have never host part")
-    private static Map<URL,List<URL>> findReverseDependencies(@NonNull final Map<URL, List<URL>> deps) {
-        final Map<URL, List<URL>> inverseDeps = new HashMap<URL, List<URL>> ();
+    private static Map<URL,Collection<URL>> findReverseDependencies(@NonNull final Map<URL, List<URL>> deps) {
+        final Map<URL, Collection<URL>> inverseDeps = new HashMap<URL, Collection<URL>> ();
         for (Map.Entry<URL,List<URL>> entry : deps.entrySet()) {
             final URL u1 = entry.getKey();
             if (inverseDeps.get(u1) == null) {
-                inverseDeps.put(u1, new ArrayList<URL>());
+                inverseDeps.put(u1, new HashSet<URL>());
             }
             final List<URL> l1 = entry.getValue();
             for (URL u2 : l1) {
-                List<URL> l2 = inverseDeps.get(u2);
+                Collection<URL> l2 = inverseDeps.get(u2);
                 if (l2 == null) {
-                    l2 = new ArrayList<URL>();
+                    l2 = new HashSet<URL>();
                     inverseDeps.put (u2,l2);
                 }
                 l2.add (u1);

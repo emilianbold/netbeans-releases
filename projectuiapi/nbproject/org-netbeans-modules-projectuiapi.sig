@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.72.1
+#Version 1.76.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -177,6 +177,7 @@ meth public abstract void removePropertyChangeListener(java.beans.PropertyChange
 CLSS public final static org.netbeans.spi.project.ui.ProjectProblemsProvider$ProjectProblem
  outer org.netbeans.spi.project.ui.ProjectProblemsProvider
 meth public boolean equals(java.lang.Object)
+meth public boolean isResolvable()
 meth public int hashCode()
 meth public java.lang.String getDescription()
  anno 0 org.netbeans.api.annotations.common.NonNull()
@@ -186,11 +187,19 @@ meth public java.lang.String toString()
 meth public java.util.concurrent.Future<org.netbeans.spi.project.ui.ProjectProblemsProvider$Result> resolve()
 meth public org.netbeans.spi.project.ui.ProjectProblemsProvider$Severity getSeverity()
  anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public static org.netbeans.spi.project.ui.ProjectProblemsProvider$ProjectProblem createError(java.lang.String,java.lang.String)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.spi.project.ui.ProjectProblemsProvider$ProjectProblem createError(java.lang.String,java.lang.String,org.netbeans.spi.project.ui.ProjectProblemResolver)
  anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 2 org.netbeans.api.annotations.common.NonNull()
  anno 3 org.netbeans.api.annotations.common.NonNull()
+meth public static org.netbeans.spi.project.ui.ProjectProblemsProvider$ProjectProblem createWarning(java.lang.String,java.lang.String)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.spi.project.ui.ProjectProblemsProvider$ProjectProblem createWarning(java.lang.String,java.lang.String,org.netbeans.spi.project.ui.ProjectProblemResolver)
  anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()

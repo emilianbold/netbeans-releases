@@ -85,7 +85,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmTryCatchStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
-import org.netbeans.modules.cnd.api.model.services.CsmTypeResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmEntityResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.actions.InstantRenamePerformer;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -493,7 +493,7 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<CndParserResu
         if (isSingleID.get()) {
             return false;
         }
-        CsmType resolveType = CsmTypeResolver.resolveType(expression, null);
+        CsmType resolveType = CsmEntityResolver.resolveType(expression, null);
         if (resolveType == null) {
             return false;
         }
@@ -681,7 +681,7 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<CndParserResu
             CsmCacheManager.enter();
             try {
                 CharSequence typeText;
-                CsmType resolveType = CsmTypeResolver.resolveType(expression, null);
+                CsmType resolveType = CsmEntityResolver.resolveType(expression, null);
                 if (resolveType == null) {
                     return null;
                 }

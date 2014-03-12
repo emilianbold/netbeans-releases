@@ -150,12 +150,12 @@ public final class Report {
     public Status getStatus() {
         if (abortedNum > 0){
             return Status.ABORTED;
-        } else if (skippedNum > 0) {
-            return Status.SKIPPED;
         } else if (errors > 0) {
             return Status.ERROR;
         } else if (failures > 0) {
             return Status.FAILED;
+        } else if (skippedNum > 0) {
+            return Status.SKIPPED;
         } else if (pending > 0) {
             return Status.PENDING;
         } else if (passedWithErrors > 0) {

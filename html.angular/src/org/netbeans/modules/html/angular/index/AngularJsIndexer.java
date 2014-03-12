@@ -215,6 +215,7 @@ public class AngularJsIndexer extends EmbeddingIndexer{
     public static final class Factory extends EmbeddingIndexerFactory {
         public static final String NAME = "angular"; // NOI18N
         public static final int VERSION = 3;
+        private static final int PRIORITY = 200;
         
         private static final ThreadLocal<Collection<Runnable>> postScanTasks = new ThreadLocal<Collection<Runnable>>();
         
@@ -291,6 +292,13 @@ public class AngularJsIndexer extends EmbeddingIndexer{
             }                        
             tasks.add(task);
         }
+
+        @Override
+        public int getPriority() {
+            return PRIORITY;
+        }
+        
+        
     }
     
     private static class SaveToIndex implements Runnable {

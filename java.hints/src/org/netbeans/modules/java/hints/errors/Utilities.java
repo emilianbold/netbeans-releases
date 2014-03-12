@@ -604,6 +604,9 @@ public class Utilities {
     }
     
     public static TypeMirror resolveCapturedType(CompilationInfo info, TypeMirror tm) {
+        if (tm == null) {
+            return tm;
+        }
         TypeMirror type = resolveCapturedTypeInt(info, tm);
         if (type == null) {
             return tm;

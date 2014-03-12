@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.49.1
+#Version 1.52.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -71,6 +71,7 @@ fld public final static java.lang.String DOCUMENTATION_POPUP_COLORING = "documen
 fld public final static java.lang.String GUARDED_COLORING = "guarded"
 fld public final static java.lang.String HIGHLIGHT_SEARCH_COLORING = "highlight-search"
 fld public final static java.lang.String INC_SEARCH_COLORING = "inc-search"
+fld public final static java.lang.String INDENT_GUIDE_LINES = "indent-guide-lines"
 fld public final static java.lang.String LINE_NUMBER_COLORING = "line-number"
 fld public final static java.lang.String SELECTION_COLORING = "selection"
 fld public final static java.lang.String STATUS_BAR_BOLD_COLORING = "status-bar-bold"

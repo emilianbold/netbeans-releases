@@ -174,6 +174,7 @@ public class ModulesNode extends AbstractNode {
                             MavenProject mp = wr.proj.getOriginalMavenProject();
                             wr.isAggregator = NbMavenProject.TYPE_POM.equals(mp.getPackaging()) && !mp.getModules().isEmpty();
                             wr.provider = prj.getLookup().lookup(LogicalViewProvider.class);
+                            assert wr.provider != null;
                             modules.add(wr);
                         }
                     } catch (IllegalArgumentException ex) {

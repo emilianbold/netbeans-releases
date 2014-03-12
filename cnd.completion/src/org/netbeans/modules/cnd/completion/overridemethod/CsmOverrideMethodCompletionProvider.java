@@ -234,7 +234,7 @@ public class CsmOverrideMethodCompletionProvider implements CompletionProvider {
                             boolean addDestructor = !hasDestructor;
                             for(CsmMethod m : virtual) {
                                 if (CsmKindUtilities.isDestructor(m)) {
-                                    if (!hasDestructor) {
+                                    if (!hasDestructor && addDestructor) {
                                         items.add(CsmOverrideMethodCompletionItem.createImplementItem(queryAnchorOffset, caretOffset, cls, m));
                                         addDestructor = false;
                                     }

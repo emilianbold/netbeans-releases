@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.spi.model;
 
 import java.util.Collection;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -64,6 +65,8 @@ public abstract class CsmBaseUtilitiesProvider {
     public abstract CsmNamespace getFunctionNamespace(CsmFunction fun);
 
     public abstract CsmNamespace getClassNamespace(CsmClassifier cls);
+    
+    public abstract CsmClass getFunctionClass(CsmFunction fun);
     
     /**
      * Implementation of the compound provider
@@ -100,6 +103,17 @@ public abstract class CsmBaseUtilitiesProvider {
         public CsmNamespace getClassNamespace(CsmClassifier cls) {
             for (CsmBaseUtilitiesProvider provider : svcs) {
                 CsmNamespace out = provider.getClassNamespace(cls);
+                if (out != null) {
+                    return out;
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public CsmClass getFunctionClass(CsmFunction fun) {
+            for (CsmBaseUtilitiesProvider provider : svcs) {
+                CsmClass out = provider.getFunctionClass(fun);
                 if (out != null) {
                     return out;
                 }

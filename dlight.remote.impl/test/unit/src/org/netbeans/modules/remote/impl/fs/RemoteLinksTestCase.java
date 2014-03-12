@@ -42,14 +42,18 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 import junit.framework.Test;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.test.RemoteApiTest;
 import org.openide.filesystems.FileObject;
 
@@ -186,6 +190,62 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
         } finally {
             removeRemoteDirIfNotNull(baseDir);
         }
+    }
+
+    private static void doTestIZ_242509(ExecutionEnvironment env) throws Exception {
+        String baseDir = null;
+        try {
+            baseDir = NativeExecutionTestSupport.mkTemp(env, true);
+            FileObject granpaFO = FileSystemProvider.getFileObject(env, PathUtilities.getDirName(baseDir));
+            assertNotNull(granpaFO);
+            granpaFO.refresh();
+            
+            String script =
+                    "cd " + baseDir + ";"
+                    + "mkdir real_dir;" 
+                    + "ln -s real_dir link_dir;" 
+                    + "cd real_dir;" 
+                    + "mkdir -p intel-S2/lib;"
+                    + "cd intel-S2/lib;"                    
+                    + "mkdir -p ../LEGAL;"
+                    + "echo \"Oracle Solaris Studio 13\" > ../LEGAL/ProductName;"
+                    + "ln -s ../LEGAL/ProductName SolarisStudio;";
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(env, "sh", "-c", script);
+            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+
+            final String parentPath = baseDir + "/link_dir/intel-S2/lib";
+            final FileObject parentFO = FileSystemProvider.getFileObject(env, parentPath);
+            final String refText = "Oracle Solaris Studio 13\n";
+            
+            for (String childPath : new String[] { "../LEGAL/ProductName", "SolarisStudio"}) {
+                FileObject childFO = parentFO.getFileObject(childPath);
+                String actualText = childFO.asText();
+                assertEquals("Content for " + childPath, refText, actualText);
+                
+//                FileObject parentFO2 = childFO.getParent();
+//                System.out.printf("%s\n", childPath);
+//                System.out.printf("parent1: %s\n", parentFO);
+//                System.out.printf("parent1: %s\n", parentFO);
+//                System.out.printf("child:   %s\n", childFO);
+//                System.out.printf("parent2: %s\n", parentFO2);                
+//                System.out.printf("text: %s\n", actualText);
+//                System.out.printf("size: %d\n", childFO.getSize());
+//                System.out.printf("readFile: %s\n", readFile(childFO));
+//                System.out.printf("readFile: %s\n", childFO.asLines().get(0));
+            }            
+        } finally {
+            if (baseDir != null) {
+                CommonTasksSupport.rmDir(env, baseDir, true, new OutputStreamWriter(System.err)).get();
+            }
+        }        
+    }
+    
+    @ForAllEnvironments
+    public void testIZ_242509() throws Exception {
+//        if (Utilities.isUnix()) {
+//            doTestIZ_242509(ExecutionEnvironmentFactory.getLocal());
+//        }
+        doTestIZ_242509(execEnv);
     }
     
     @ForAllEnvironments

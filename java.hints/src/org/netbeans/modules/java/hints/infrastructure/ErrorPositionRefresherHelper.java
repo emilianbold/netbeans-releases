@@ -83,7 +83,10 @@ public class ErrorPositionRefresherHelper extends PositionRefresherHelper<Docume
         if (errors == null) {
             errors = new ErrorHintsProvider().computeErrors(info, doc, context.getPosition(), org.netbeans.modules.java.hints.errors.Utilities.JAVA_MIME_TYPE);
         }
-
+        // see #242116; the ErrorHintsProvider might call cancel on itself when doc is closed or changes in some ways and then returns null
+        if (errors == null) {
+            return null;
+        }
         for (ErrorDescription ed : errors) {
             if (ed.getRange().getBegin().getOffset() <= context.getPosition() && context.getPosition() <= ed.getRange().getEnd().getOffset()) {
                 if (!ed.getFixes().isComputed()) {

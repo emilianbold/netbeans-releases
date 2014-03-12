@@ -62,6 +62,7 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.hints.SideEffectVisitor;
 import org.netbeans.modules.java.hints.StopProcessing;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -113,6 +114,8 @@ public class SuspiciousToArray {
         if (arrType == null || arrType.getKind() != TypeKind.ARRAY) {
             return null;
         }
+        // possible method call result ?
+        arrType = Utilities.resolveCapturedType(ci, arrType);
         TypeMirror compType = ((ArrayType)arrType).getComponentType();
         
         DeclaredType declColType = (DeclaredType)colType;
@@ -151,6 +154,7 @@ public class SuspiciousToArray {
         if (resType == null || resType.getKind() == TypeKind.ERROR || resType.getKind() == TypeKind.OTHER) {
             return null;
         }
+        resType = Utilities.resolveCapturedType(ci, resType);
         String msg = argType == null ? Bundle.TEXT_SuspiciousToArrayCast(compType, resType) : 
                 Bundle.TEXT_SuspiciousToArrayCol(compType, argType);
         Fix fix;

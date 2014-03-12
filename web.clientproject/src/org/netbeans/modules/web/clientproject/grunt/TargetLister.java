@@ -133,8 +133,9 @@ public class TargetLister {
 
             String l = line.trim();
             int right = l.indexOf(" ");
+            int left = line.indexOf(l);
             
-            if (right > 0) {
+            if (right > 0 && left < 16) {
                 l = l.substring(0, right);
                 col.add(new Target(l, gruntFile));
             }
