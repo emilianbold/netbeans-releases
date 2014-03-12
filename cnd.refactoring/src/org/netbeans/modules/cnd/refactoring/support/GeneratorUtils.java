@@ -487,7 +487,7 @@ public class GeneratorUtils {
                             declPos = enclClass.getLeftBracketOffset() + 1;
                         }
                     } else {
-                        if (CsmKindUtilities.isOffsetableDeclaration(csmObject)) {
+                        if (CsmKindUtilities.isClassMember(csmObject)) {
                             decl = (CsmOffsetable)csmObject;
                         }
                     }
