@@ -116,6 +116,8 @@ public final class FileChooserBuilder {
          */
         /*package*/ public abstract boolean isUnix();
 
+        /*package*/ public abstract char getFileSeparatorChar();
+        
         @Override
         public final File getCurrentDirectory() {
             return curFile;
@@ -257,6 +259,11 @@ public final class FileChooserBuilder {
         }
 
         @Override
+        public char getFileSeparatorChar() {
+            return File.separatorChar;
+        }
+
+        @Override
         public void setCurrentDirectory(FileObject dir) {
             if (dir != null && dir.isFolder()) {
                 File file = FileUtil.toFile(dir);
@@ -395,6 +402,11 @@ public final class FileChooserBuilder {
         @Override
         public boolean isUnix() {
             return true;
+        }
+
+        @Override
+        public char getFileSeparatorChar() {
+            return '/';
         }
 
         @Override
