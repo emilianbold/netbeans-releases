@@ -114,9 +114,9 @@ public final class FileChooserBuilder {
          * Used to determine whether "~" should be expanded to home directory
          * @return 
          */
-        /*package*/ public abstract boolean isUnix();
+        /*package*/ abstract boolean isUnix();
 
-        /*package*/ public abstract char getFileSeparatorChar();
+        /*package*/ abstract char getFileSeparatorChar();
         
         @Override
         public final File getCurrentDirectory() {
