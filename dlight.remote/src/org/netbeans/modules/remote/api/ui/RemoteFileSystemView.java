@@ -51,9 +51,9 @@ import java.text.MessageFormat;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import java.util.logging.Level;
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileSystemView;
-import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -62,7 +62,6 @@ import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -95,6 +94,13 @@ import org.openide.util.Exceptions;
 
     @Override
     public File createFileObject(String path) {
+        if (RemoteLogger.getInstance().isLoggable(Level.FINEST)) {
+            if (SwingUtilities.isEventDispatchThread()) {
+                RemoteLogger.finest(new IllegalStateException("RFSV: creating file in EDT " + path)); //NOI18N
+            } else {
+                RemoteLogger.getInstance().log(Level.FINEST, "RFSV: creating file for {0}", path);
+            }
+        }
         RemoteLogger.getInstance().log(Level.FINEST, "RFSV: creating file for {0}", path);
         if (!path.isEmpty() && path.charAt(0) != '/') {
             return factory.create(env, path);
@@ -152,9 +158,9 @@ import org.openide.util.Exceptions;
             HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
             return factory.create(env, fs.findResource(hostInfo.getUserDir()));
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            RemoteLogger.finest(ex);
         } catch (CancellationException ex) {
-            Exceptions.printStackTrace(ex);
+            // never report cancellation exception
         } finally {
             changeSupport.firePropertyChange(LOADING_STATUS, "${HOME}", null); // NOI18N
         }
