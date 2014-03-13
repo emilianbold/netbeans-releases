@@ -81,6 +81,10 @@ public class FileModelTest3 extends TraceModelTestBase {
     public void testBug242674() throws Exception {
         performTest("bug242674.cpp"); // NOI18N
     }    
+    
+    public void testBug242861() throws Exception {
+        performTest("bug242861.cpp");
+    }
 
     @Override
     protected Class<?> getTestCaseDataClass() {
