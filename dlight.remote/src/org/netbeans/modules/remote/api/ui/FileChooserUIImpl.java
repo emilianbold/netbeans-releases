@@ -3178,9 +3178,9 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
 
             // Unix: Resolve '~' to user's home directory
             if (fileChooser.isUnix()) {
-                if (filename.startsWith("~/")) {
+                if (filename.startsWith("~/")) { // NOI18N
                     filename = fileChooser.getHomePath() + filename.substring(1);
-                } else if (filename.equals("~")) {
+                } else if (filename.equals("~")) { // NOI18N
                     filename = fileChooser.getHomePath();
                 }
             }
@@ -3227,10 +3227,10 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
         public void run() {
             try {
                 if (multySelection && filename.length() > 1 &&
-                        filename.charAt(0) == '"' && filename.charAt(filename.length() - 1) == '"') {
+                        filename.charAt(0) == '"' && filename.charAt(filename.length() - 1) == '"') { // NOI18N
 
                     // VK: double space between \" breaks this?! 
-                    String[] files = filename.substring(1, filename.length() - 1).split("\" \"");
+                    String[] files = filename.substring(1, filename.length() - 1).split("\" \""); // NOI18N
                     // Optimize searching files by names in "children" array
                     Arrays.sort(files);
 
@@ -3446,7 +3446,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
             if (isWin32) {
                 // On windows, a pattern ending with *.* is equal to ending with *
                 int len = gPat.length;
-                if (globPattern.endsWith("*.*")) {
+                if (globPattern.endsWith("*.*")) { // NOI18N
                     len -= 2;
                 }
                 for (int i = 0; i < len; i++) {
@@ -3466,7 +3466,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
                         break;
 
                       default:
-                        if ("+()^$.{}[]".indexOf(gPat[i]) >= 0) {
+                        if ("+()^$.{}[]".indexOf(gPat[i]) >= 0) { // NOI18N
                             rPat[j++] = '\\';
                         }
                         rPat[j++] = gPat[i];
@@ -3516,7 +3516,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
                             rPat[j++] = gPat[++i];
                         } else {
                             rPat[j++] = '\\';
-                            if (i < gPat.length - 1 && "*?[]".indexOf(gPat[i+1]) >= 0) {
+                            if (i < gPat.length - 1 && "*?[]".indexOf(gPat[i+1]) >= 0) { // NOI18N
                                 rPat[j++] = gPat[++i];
                             } else {
                                 rPat[j++] = '\\';
