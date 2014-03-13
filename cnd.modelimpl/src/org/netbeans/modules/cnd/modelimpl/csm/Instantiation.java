@@ -257,6 +257,10 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
 
     public static CsmObject create(CsmTemplate template, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
 //        System.err.println("Instantiation.create for " + template + " with mapping " + mapping);
+        if (canSkipInstantiation(template, mapping)) {
+            return template;
+        }
+        
         if (template instanceof CsmClass) {
             Class newClass = new Class((CsmClass)template, mapping);
             if(UIDProviderIml.isPersistable(newClass.getUID())) {
@@ -281,7 +285,61 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         }
         return template;
     }
-
+    
+    /**
+     * Method ensures that instantiating template with the given mapping makes sense.
+     * Most likely, it shouldn't be used in future when we'll instantiate 
+     * objects with the right mappings (now there could be duplicates).
+     * 
+     * @param template
+     * @param mapping
+     * @return true if template shouldn't be instantiated, false otherwise
+     */
+    private static boolean canSkipInstantiation(CsmObject template, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        for (Map.Entry<CsmTemplateParameter, CsmSpecializationParameter> entry : mapping.entrySet()) {
+            if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(entry.getValue())) {
+                // in case of expression parameter we should be able to have same mappings multiple times
+                return false; 
+            }
+        }
+        
+        Map<CsmTemplateParameter, CsmSpecializationParameter> origMapping = null;
+        
+        if (CsmKindUtilities.isInstantiation(template)) {
+            origMapping = ((CsmInstantiation) template).getMapping();
+        } else if (template instanceof Type) {
+            origMapping = ((Type) template).getInstantiation().getMapping();
+        }
+         
+        if (origMapping != null) {
+            if (mapping.size() == origMapping.size()) {
+                boolean areEqual = true;
+                
+                for (Map.Entry<CsmTemplateParameter, CsmSpecializationParameter> entry : origMapping.entrySet()) {
+                    CsmSpecializationParameter ourParam = entry.getValue();
+                    CsmSpecializationParameter otherParam = mapping.get(entry.getKey());                    
+                    if (!ourParam.equals(otherParam)) {
+                        areEqual = false;
+                        break;
+                    }
+                }
+                
+                if (areEqual) {
+                    LOG.log(Level.FINE, "REFUSE TO INSTANTITATE:\n{0}\n", new Object[] {template}); //NOI18N
+                    return true;
+                }
+            }
+        }
+        
+        if (CsmKindUtilities.isInstantiation(template)) {
+            return canSkipInstantiation(((CsmInstantiation) template).getTemplateDeclaration(), mapping);
+        } else if (template instanceof Type) {
+            return canSkipInstantiation(((Type) template).originalType, mapping);
+        }
+        
+        return false;
+    }
+    
     @Override
     public CsmFile getContainingFile() {
         return getTemplateDeclaration().getContainingFile();
@@ -1227,6 +1285,9 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
     public static CsmType createType(CsmType type, CsmInstantiation instantiation) {
         if (type == null) {
             throw new NullPointerException("no type for " + instantiation); // NOI18N
+        }
+        if (canSkipInstantiation(type, instantiation.getMapping())) {
+            return type;
         }
         LOG.log(Level.FINE, "Instantiation.createType {0}; inst:{1}\n", new Object[]{type.getText(), instantiation.getTemplateDeclaration().getName()});
 //        System.err.println("Instantiation.createType for " + type + " with instantiation " + instantiation);
