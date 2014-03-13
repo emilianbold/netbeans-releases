@@ -105,7 +105,7 @@
           <linkerLibItems>
             <linkerOptionItem>netbeans64.res</linkerOptionItem>
           </linkerLibItems>
-          <commandLine>-mwindows</commandLine>
+          <commandLine>-mwindows -Wl,--nxcompat -Wl,--dynamicbase</commandLine>
         </linkerTool>
       </compileType>
       <item path="../../../o.n.bootstrap/launcher/windows/utilsfuncs.cpp"

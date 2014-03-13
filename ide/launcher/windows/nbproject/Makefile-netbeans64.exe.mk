@@ -61,7 +61,7 @@ LDLIBSOPTIONS=netbeans64.res
 	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk netbeans64.exe
 
 netbeans64.exe: ${OBJECTFILES}
-	${LINK.cc} -o netbeans64.exe ${OBJECTFILES} ${LDLIBSOPTIONS} -mwindows
+	${LINK.cc} -o netbeans64.exe ${OBJECTFILES} ${LDLIBSOPTIONS} -mwindows -Wl,--nxcompat -Wl,--dynamicbase
 
 ${OBJECTDIR}/_ext/1413142467/utilsfuncs.o: ../../../o.n.bootstrap/launcher/windows/utilsfuncs.cpp 
 	${MKDIR} -p ${OBJECTDIR}/_ext/1413142467
