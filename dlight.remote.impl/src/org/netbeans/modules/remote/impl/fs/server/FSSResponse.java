@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.impl.fs.server;
 
 import java.util.LinkedList;
 import java.util.concurrent.ExecutionException;
+import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
 import org.openide.util.NotImplementedException;
 
 /**
@@ -113,6 +114,14 @@ import org.openide.util.NotImplementedException;
     }
 
     public Package getNextPackage() throws InterruptedException, ExecutionException {
+        if (RemoteFileSystemUtils.isUnitTestMode()) {
+            long timeout = 20000;
+            Package pkg = getNextPackage(timeout);
+            if (pkg == null) {
+                throw new IllegalStateException("Timeout: can't get package in " + timeout + " ms"); //NOI18N
+            }
+            return pkg;
+        }
         return getNextPackage(0);
     }
     
