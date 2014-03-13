@@ -377,6 +377,7 @@
 
             <echo message="Property jdk.version.number: ${jdk.version.number}"/>
             <echo message="Property jdk.update.number: ${jdk.update.number}"/>
+            <echo message="Property jdk.update.number.long: ${jdk.update.number.long}"/>
             <echo message="Property jdk.build.number: ${jdk.build.number}"/>
             <echo message="Property jdk.ea.text: ${jdk.ea.text}"/>
         </if>
@@ -389,6 +390,7 @@
 
             <echo message="Property jdk.version.number: ${jdk.version.number}"/>
             <echo message="Property jdk.update.number: ${jdk.update.number}"/>
+            <echo message="Property jdk.update.number.long: ${jdk.update.number.long}"/>
             <echo message="Property jdk.build.number: ${jdk.build.number}"/>
             <echo message="Property jdk.ea.text: ${jdk.ea.text}"/>
         </if>
