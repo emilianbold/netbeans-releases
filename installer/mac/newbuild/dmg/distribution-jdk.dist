@@ -153,7 +153,7 @@ function pm_choice1_enabled() {
     </choices-outline>
     <choice id="netbeans" title="netbeans-title" description="netbeans-description" start_selected="true" start_enabled="true" start_visible="true"></choice>
     <choice id="choice0" title="JDK_VERSION">
-        <pkg-ref id="com.oracle.jdk@JDK_VERSION_NUMBER@u@JDK_UPDATE_NUMBER@"/>
+        <pkg-ref id="com.oracle.jdk@JDK_VERSION_NUMBER@u@JDK_UPDATE_NUMBER_SHORT@"/>
     </choice>
     <choice id="choice1" title="plugin" selected="pm_choice1_selected()" enabled="pm_choice1_enabled()">
         <pkg-ref id="com.oracle.jre"/>
@@ -167,8 +167,8 @@ function pm_choice1_enabled() {
     <choice id="extide" title="extide-title" description="extide-description" start_selected="true" start_enabled="true" start_visible="false" selected="choices.extide.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.extide"/>
     </choice>
-    <pkg-ref id="com.oracle.jdk@JDK_VERSION_NUMBER@u@JDK_UPDATE_NUMBER@" installKBytes="317428" version="1.1" auth="Root">file:./Contents/Packages/JDK%20@JDK_VERSION_NUMBER@%20Update%20@JDK_UPDATE_NUMBER@.pkg#jdk1@JDK_VERSION_NUMBER@0@JDK_UPDATE_NUMBER@.pkg</pkg-ref>
-    <pkg-ref id="com.oracle.jdk@JDK_VERSION_NUMBER@u@JDK_UPDATE_NUMBER@">
+    <pkg-ref id="com.oracle.jdk@JDK_VERSION_NUMBER@u@JDK_UPDATE_NUMBER_SHORT@" installKBytes="317428" version="1.1" auth="Root">file:./Contents/Packages/JDK%20@JDK_VERSION_NUMBER@%20Update%20@JDK_UPDATE_NUMBER@.pkg#jdk1@JDK_VERSION_NUMBER@0@JDK_UPDATE_NUMBER@.pkg</pkg-ref>
+    <pkg-ref id="com.oracle.jdk@JDK_VERSION_NUMBER@u@JDK_UPDATE_NUMBER_SHORT@">
         <relocate search-id="pkmktoken6">
             <bundle id="com.oracle.jmc"/>
         </relocate>

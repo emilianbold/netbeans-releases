@@ -413,11 +413,14 @@
                 <equals arg1="${jdk.update.number}" arg2="0"/>
             </and>
         </condition>
+        <condition property="jdk.update.number.long" value="0${jdk.update.number}" else="${jdk.update.number}">
+            <length string="${jdk.update.number}" length="1"/>  
+        </condition>
         <copy file="${resources.full.dir}/Welcome${bundle.type}${bundle.type.suffix}${locale.suffix}.html"
               tofile="${mpkg.file}/Contents/Resources/${locale.dir}.lproj/Welcome.html" failonerror="false">
             <filterset>
                 <filter token="JDK_VERSION_NUMBER" value="${jdk.version.number}"/>
-                <filter token="JDK_UPDATE_NUMBER" value="${jdk.update.number}"/>
+                <filter token="JDK_UPDATE_NUMBER" value="${jdk.update.number.long}"/>
             </filterset>
         </copy>
 
@@ -467,12 +470,18 @@
                 <equals arg1="${jdk.update.number}" arg2="0"/>
             </and>
         </condition>
+        
+        <condition property="jdk.update.number.long" value="0${jdk.update.number}" else="${jdk.update.number}">
+            <length string="${jdk.update.number}" length="1"/>  
+        </condition>
+                
         <copy file="dmg/distribution${bundle.type}${bundle.type.suffix}.dist" tofile="${mpkg.file}/Contents/distribution.dist">                                    
             <filterset>
                 <filter token="NB_ID" value="${nb.id}"/>
                 <filter token="GLASSFISH_ID" value="${glassfish.id}"/>
-                <filter token="JDK_VERSION_NUMBER" value="${jdk.version.number}"/>
-                <filter token="JDK_UPDATE_NUMBER" value="${jdk.update.number}"/>
+                <filter token="JDK_VERSION_NUMBER" value="${jdk.version.number}"/>                
+                <filter token="JDK_UPDATE_NUMBER" value="${jdk.update.number.long}"/>                       
+                <filter token="JDK_UPDATE_NUMBER_SHORT" value="${jdk.update.number}"/>
                 <filter token="JDK_BUILD_NUMBER" value="${jdk.build.number}"/>
                 <filter token="TOMCAT_ID" value="${tomcat.id}"/>
                 <filter token="SIZE_CPP" value="${sizeof.cpp}"/>                

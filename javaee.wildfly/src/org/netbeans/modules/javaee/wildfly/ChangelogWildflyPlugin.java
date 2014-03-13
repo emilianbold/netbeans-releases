@@ -42,6 +42,7 @@
 package org.netbeans.modules.javaee.wildfly;
 
 import java.util.MissingResourceException;
+import java.util.prefs.Preferences;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import org.openide.awt.NotificationDisplayer;
@@ -50,21 +51,30 @@ import org.openide.modules.ModuleInstall;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
- * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2013 Red Hat, inc.
+ * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2013
+ * Red Hat, inc.
  */
 public class ChangelogWildflyPlugin extends ModuleInstall {
+
+    private static final String VERSION_PREF = "version";
 
     @Override
     public void restored() {
         try {
-            NotificationDisplayer.getDefault().notify(NbBundle.getMessage(getClass(), "MSG_CHANGES_TITLE"),
-                    new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javaee/wildfly/resources/wildfly.png")),
-                    new JLabel(NbBundle.getMessage(getClass(), "MSG_CHANGES_SUMMARY")), 
-                    new JLabel(NbBundle.getMessage(getClass(), "MSG_CHANGES_DESC")),
-                    NotificationDisplayer.Priority.NORMAL, Category.INFO);
+            Preferences prefs = NbPreferences.forModule(ChangelogWildflyPlugin.class);
+            int version = Integer.parseInt(NbBundle.getMessage(getClass(), VERSION_PREF));
+            if (prefs.getInt(VERSION_PREF, 5) < version) {
+                NotificationDisplayer.getDefault().notify(NbBundle.getMessage(getClass(), "MSG_CHANGES_TITLE"),
+                        new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javaee/wildfly/resources/wildfly.png")),
+                        new JLabel(NbBundle.getMessage(getClass(), "MSG_CHANGES_SUMMARY")),
+                        new JLabel(NbBundle.getMessage(getClass(), "MSG_CHANGES_DESC")),
+                        NotificationDisplayer.Priority.NORMAL, Category.INFO);
+            }
+            prefs.putInt(VERSION_PREF, version);
             super.restored();
         } catch (MissingResourceException ex) {
             Exceptions.printStackTrace(ex);
