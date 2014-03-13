@@ -44,7 +44,12 @@
 package org.netbeans.modules.cnd.refactoring.codegen;
 
 import java.awt.Dialog;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -56,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
@@ -90,8 +96,10 @@ public class ConstructorGenerator implements CodeGenerator {
             if (typeElement == null) {
                 return ret;
             }
-            final Set<CsmField> initializedFields = new LinkedHashSet<>();
-            final Set<CsmField> uninitializedFields = new LinkedHashSet<>();
+            CsmObject objectUnderOffset = path.getObjectUnderOffset();
+            final Set<CsmField> shouldBeInitializedFields = new LinkedHashSet<>();
+            final Set<CsmField> mayBeIninitializedFields = new LinkedHashSet<>();
+            final Set<CsmField> cannotBeInitializedFields = new LinkedHashSet<>();
             final List<CsmConstructor> constructors = new ArrayList<>();
             final Map<CsmClass,List<CsmConstructor>> inheritedConstructors = new HashMap<>();
             // check base class
@@ -109,7 +117,7 @@ public class ConstructorGenerator implements CodeGenerator {
                     }
                 }
             }
-            GeneratorUtils.scanForFieldsAndConstructors(typeElement, initializedFields, uninitializedFields, constructors);
+            GeneratorUtils.scanForFieldsAndConstructors(typeElement, shouldBeInitializedFields, mayBeIninitializedFields, cannotBeInitializedFields, constructors);
             ElementNode.Description constructorDescription = null;
             if (!inheritedConstructors.isEmpty()) {
                 List<ElementNode.Description> baseClassesDescriptions = new ArrayList<>();
@@ -123,12 +131,18 @@ public class ConstructorGenerator implements CodeGenerator {
                 constructorDescription = ElementNode.Description.create(typeElement, baseClassesDescriptions, false, false);
             }
             ElementNode.Description fieldsDescription = null;
-            if (!uninitializedFields.isEmpty()) {
+            if (!mayBeIninitializedFields.isEmpty() || !shouldBeInitializedFields.isEmpty() || !cannotBeInitializedFields.isEmpty()) {
                 List<ElementNode.Description> fieldDescriptions = new ArrayList<>();
-                for (CsmField variableElement : uninitializedFields) {
-                    fieldDescriptions.add(ElementNode.Description.create(variableElement, null, true, false));
+                for (CsmField variableElement : mayBeIninitializedFields) {
+                    fieldDescriptions.add(ElementNode.Description.create(variableElement, null, true, variableElement.equals(objectUnderOffset)));
                 }
-                fieldsDescription = ElementNode.Description.create(typeElement, fieldDescriptions, false, false);
+                for (CsmField variableElement : shouldBeInitializedFields) {
+                    fieldDescriptions.add(ElementNode.Description.create(variableElement, null, true, true));
+                }
+                for (CsmField variableElement : cannotBeInitializedFields) {
+                    fieldDescriptions.add(ElementNode.Description.create(variableElement, null, false, false));
+                }
+                fieldsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, fieldDescriptions, false, false)), false, false);
             }
             if (constructorDescription != null || fieldsDescription != null) {
                 ret.add(new ConstructorGenerator(component, path, typeElement, constructorDescription, fieldsDescription));
@@ -160,9 +174,20 @@ public class ConstructorGenerator implements CodeGenerator {
     public void invoke() {
         UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, CsmRefactoringUtils.GENERATE_TRACKING, "CONSTRUCTOR"); // NOI18N
         if (constructorDescription != null || fieldsDescription != null) {
-            ConstructorPanel panel = new ConstructorPanel(constructorDescription, fieldsDescription);
+            final ConstructorPanel panel = new ConstructorPanel(constructorDescription, fieldsDescription);
             DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_constructor")); //NOI18N
             Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
+            dialog.addHierarchyListener(new HierarchyListener() {
+
+                @Override
+                public void hierarchyChanged(HierarchyEvent e) {
+                    if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) {
+                        if (e.getChanged().isShowing()){
+                            panel.requestFocusInWindow();
+                        }
+                    }
+                }
+            });
             try {
                 dialog.setVisible(true);
             } catch (Throwable th) {

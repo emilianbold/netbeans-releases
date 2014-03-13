@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.refactoring.codegen.ui;
 
-import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import java.awt.GridBagConstraints;
 import java.util.Collections;
 import java.util.List;
@@ -52,7 +51,9 @@ import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmField;
+import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import org.netbeans.modules.cnd.refactoring.codegen.ConstructorGenerator;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 /**
@@ -85,7 +86,7 @@ public class ConstructorPanel extends JPanel {
             gridBagConstraints.weighty = 1.0;
             gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
             add(constructorSelector, gridBagConstraints);
-            constructorSelectorLabel.setText(NbBundle.getMessage(ConstructorGenerator.class, "LBL_super_constructor_select")); //NOI18N
+            Mnemonics.setLocalizedText(constructorSelectorLabel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_super_constructor_select")); //NOI18N
             constructorSelectorLabel.setLabelFor(constructorSelector);
         }
         if (fieldsDescription != null) {
@@ -103,11 +104,21 @@ public class ConstructorPanel extends JPanel {
             gridBagConstraints.weighty = 1.0;
             gridBagConstraints.insets = new java.awt.Insets(0, constructorDescription != null ? 0 : 12, 0, 12);
             add(fieldSelector, gridBagConstraints);
-            fieldSelectorLabel.setText(NbBundle.getMessage(ConstructorGenerator.class, "LBL_constructor_select")); //NOI18N
+            Mnemonics.setLocalizedText(fieldSelectorLabel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_constructor_select")); //NOI18N
             fieldSelectorLabel.setLabelFor(fieldSelector);
+            fieldSelector.doInitialExpansion(1);
         }
 
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConstructorGenerator.class, "A11Y_Generate_Constructor"));
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        if (fieldSelector != null) {
+            return fieldSelector.requestFocusInWindow();
+        } else {
+            return constructorSelector.requestFocusInWindow();
+        }
     }
 
     public CsmConstructor getInheritedConstructor() {

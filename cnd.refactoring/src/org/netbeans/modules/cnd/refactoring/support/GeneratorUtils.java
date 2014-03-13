@@ -218,21 +218,24 @@ public class GeneratorUtils {
 //        return result;
 //    }
 //
-    public static void scanForFieldsAndConstructors(final CsmClass clsPath, final Set<CsmField> initializedFields, final Set<CsmField> uninitializedFields, final List<CsmConstructor> constructors) {
+    public static void scanForFieldsAndConstructors(final CsmClass clsPath, final Set<CsmField> shouldBeInitializedFields, final Set<CsmField> mayBeIninitializedFields,
+            final Set<CsmField> cannotBeInitializedFields, final List<CsmConstructor> constructors) {
         for (CsmMember member : clsPath.getMembers()) {
             if (CsmKindUtilities.isField(member)) {
                 CsmField field = (CsmField) member;
-                if (!field.isStatic()) {
-                    if (field.getInitialValue() == null) {
-                        if (!initializedFields.remove(field)) {
-                            uninitializedFields.add(field);
-                        }
-                    } else {
-                        if (!initializedFields.remove(field)) {
-                            uninitializedFields.add(field);
-                        }
-                    }
+                if (field.isStatic()) {
+                    continue;
                 }
+                CsmType type = field.getType();
+                if (type.getArrayDepth() > 0) {
+                    cannotBeInitializedFields.add(field);
+                    continue;
+                }
+                if (type.isConst() || type.isReference()) {
+                    shouldBeInitializedFields.add(field);
+                    continue;
+                }
+                mayBeIninitializedFields.add(field);
             } else if (CsmKindUtilities.isConstructor(member)) {
                 constructors.add((CsmConstructor)member);
             }
@@ -316,22 +319,6 @@ public class GeneratorUtils {
             result.append(enclosingClass.getName());
             result.append('('); // NOI18N
             boolean first = true;
-            for(CsmField field : fields) {
-                if (!first) {
-                    result.append(", "); // NOI18N
-                }
-                result.append(field.getType().getCanonicalText());
-                result.append(' ');
-                result.append(field.getName());
-                if (!first) {
-                    init.append(", "); // NOI18N
-                }
-                init.append(field.getName());
-                init.append('('); // NOI18N
-                init.append(field.getName());
-                init.append(')'); // NOI18N
-                first = false;
-            }
             for(CsmConstructor constructor : inheritedConstructors) {
                 CsmFunctionParameterList parameterList = constructor.getParameterList();
                 final StringBuilder args = new StringBuilder();
@@ -355,6 +342,22 @@ public class GeneratorUtils {
                 superInit.append('('); // NOI18N
                 superInit.append(args);
                 superInit.append(')'); // NOI18N
+            }
+            for(CsmField field : fields) {
+                if (!first) {
+                    result.append(", "); // NOI18N
+                }
+                result.append(field.getType().getCanonicalText());
+                result.append(' ');
+                result.append(field.getName());
+                if (init.length() > 0) {
+                    init.append(", "); // NOI18N
+                }
+                init.append(field.getName());
+                init.append('('); // NOI18N
+                init.append(field.getName());
+                init.append(')'); // NOI18N
+                first = false;
             }
             result.append(')'); // NOI18N
             if (init.length()>0) {
