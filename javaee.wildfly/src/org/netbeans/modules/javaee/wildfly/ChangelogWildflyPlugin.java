@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,57 +37,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javaee.wildfly;
 
-package org.netbeans.modules.cnd.modelimpl.trace;
+import java.util.MissingResourceException;
+import java.util.prefs.Preferences;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import org.openide.awt.NotificationDisplayer;
+import org.openide.awt.NotificationDisplayer.Category;
+import org.openide.modules.ModuleInstall;
+import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2013
+ * Red Hat, inc.
  */
-public class FileModelTest3 extends TraceModelTestBase {
+public class ChangelogWildflyPlugin extends ModuleInstall {
 
-    public FileModelTest3(String testName) {
-        super(testName);
-    }
+    private static final String VERSION_PREF = "version";
 
     @Override
-    protected void setUp() throws Exception {
-        System.setProperty("parser.report.errors", "true");
-        System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
-//        System.setProperty("cnd.modelimpl.trace.registration", "true");
-//        System.setProperty("cnd.modelimpl.parser.threads", "1");
-        super.setUp();
-    }
-
-    @Override
-    protected void postSetUp() {
-        // init flags needed for file model tests
-        getTraceModel().setDumpModel(true);
-        getTraceModel().setDumpPPState(true);
-    }
-
-    // it behaved differently on 1-st and subsequent runs
-    public void testResolverClassString_01() throws Exception {
-        performTest("resolver_class_string.cc"); // NOI18N
-    }
-
-    // it behaved differently on 1-st and subsequent runs
-    public void testResolverClassString_02() throws Exception {
-        performTest("resolver_class_string.cc"); // NOI18N
-    }
-    
-    public void testBug242674() throws Exception {
-        performTest("bug242674.cpp"); // NOI18N
-    }    
-    
-    public void testBug242861() throws Exception {
-        performTest("bug242861.cpp");
-    }
-
-    @Override
-    protected Class<?> getTestCaseDataClass() {
-        return FileModelTest.class;
+    public void restored() {
+        try {
+            Preferences prefs = NbPreferences.forModule(ChangelogWildflyPlugin.class);
+            int version = Integer.parseInt(NbBundle.getMessage(getClass(), VERSION_PREF));
+            if (prefs.getInt(VERSION_PREF, 5) < version) {
+                NotificationDisplayer.getDefault().notify(NbBundle.getMessage(getClass(), "MSG_CHANGES_TITLE"),
+                        new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javaee/wildfly/resources/wildfly.png")),
+                        new JLabel(NbBundle.getMessage(getClass(), "MSG_CHANGES_SUMMARY")),
+                        new JLabel(NbBundle.getMessage(getClass(), "MSG_CHANGES_DESC")),
+                        NotificationDisplayer.Priority.NORMAL, Category.INFO);
+            }
+            prefs.putInt(VERSION_PREF, version);
+            super.restored();
+        } catch (MissingResourceException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 }

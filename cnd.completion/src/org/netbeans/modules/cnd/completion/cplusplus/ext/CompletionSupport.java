@@ -1243,6 +1243,8 @@ public final class CompletionSupport implements DocumentListener {
                     if (renderedParam != null && renderedToken != null) {
                         if (renderedParam.startOffset < renderedToken.startOffset) {
                             chosenExpression = renderedParam;
+                        } else if (renderedParam.startOffset == renderedToken.startOffset) {
+                            chosenExpression = (renderedParam.endOffset < renderedToken.endOffset) ? renderedParam : renderedToken;
                         } else {
                             chosenExpression = renderedToken;
                         }
