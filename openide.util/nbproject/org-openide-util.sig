@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 8.33.1
+#Version 8.37.1
 
 CLSS public java.awt.datatransfer.Clipboard
 cons public init(java.lang.String)
@@ -736,7 +736,7 @@ meth public final static javax.swing.ImageIcon loadImageIcon(java.lang.String,bo
 meth public static java.awt.Image createDisabledImage(java.awt.Image)
 meth public static javax.swing.Icon createDisabledIcon(javax.swing.Icon)
 supr java.lang.Object
-hfds ERR,NO_ICON,PNG_READER,TOOLTIP_SEPAR,cache,component,compositeCache,currentLoader,extraInitialSlashes,imageIconFilter,imageToolTipCache,loaderQuery,localizedCache,mediaTrackerID,noLoaderWarned,tracker
+hfds DARK_LAF_SUFFIX,ERR,NO_ICON,PNG_READER,TOOLTIP_SEPAR,cache,component,compositeCache,currentLoader,extraInitialSlashes,imageIconFilter,imageToolTipCache,loaderQuery,localizedCache,mediaTrackerID,noLoaderWarned,tracker
 hcls ActiveRef,CompositeImageKey,DisabledButtonFilter,LazyDisabledIcon,ToolTipImage,ToolTipImageKey
 
 CLSS public abstract org.openide.util.Lookup
@@ -860,6 +860,8 @@ meth public abstract {org.openide.util.Mutex$ExceptionAction%0} run() throws jav
 CLSS public final static org.openide.util.Mutex$Privileged
  outer org.openide.util.Mutex
 cons public init()
+meth public boolean tryReadAccess(long)
+meth public boolean tryWriteAccess(long)
 meth public void enterReadAccess()
 meth public void enterWriteAccess()
 meth public void exitReadAccess()
@@ -1044,7 +1046,7 @@ meth public void execute(java.lang.Runnable)
 meth public void shutdown()
 meth public void stop()
 supr java.lang.Object
-hfds DEFAULT,SLOW,TOP_GROUP,UNLIMITED,counter,enableStackTraces,finishAwaitingTasks,inParallel,interruptThread,logger,name,processorLock,processors,queue,running,stopped,throughput,warnParallel
+hfds DEFAULT,SLOW,TOP_GROUP,UNLIMITED,counter,enableStackTraces,finishAwaitingTasks,inParallel,interruptThread,logger,name,processorLock,processors,queue,stopped,throughput,warnParallel
 hcls CreatedItem,FastItem,FixedDelayTask,FixedRateTask,Item,Processor,RPFutureTask,RunnableWrapper,ScheduledRPFutureTask,SlowItem,TaskFutureWrapper,TickTac,TopLevelThreadGroup,WaitableCallable
 
 CLSS public final org.openide.util.RequestProcessor$Task

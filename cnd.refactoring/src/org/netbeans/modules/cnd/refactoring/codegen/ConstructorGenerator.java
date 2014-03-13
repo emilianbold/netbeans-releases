@@ -43,24 +43,26 @@
  */
 package org.netbeans.modules.cnd.refactoring.codegen;
 
-import org.netbeans.modules.cnd.refactoring.api.CsmContext;
-import org.netbeans.modules.cnd.api.model.CsmInheritance;
-import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import java.awt.Dialog;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmField;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.refactoring.codegen.ui.ConstructorPanel;
 import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
+import org.netbeans.modules.cnd.refactoring.api.CsmContext;
+import org.netbeans.modules.cnd.refactoring.codegen.ui.ConstructorPanel;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
@@ -78,10 +80,7 @@ public class ConstructorGenerator implements CodeGenerator {
 
         @Override
         public List<? extends CodeGenerator> create(Lookup context) {
-            ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
-            if (!CsmRefactoringUtils.REFACTORING_EXTRA) {
-                return ret;
-            }
+            ArrayList<CodeGenerator> ret = new ArrayList<>();
             JTextComponent component = context.lookup(JTextComponent.class);
             CsmContext path = context.lookup(CsmContext.class);
             if (component == null || path == null) {
@@ -91,62 +90,65 @@ public class ConstructorGenerator implements CodeGenerator {
             if (typeElement == null) {
                 return ret;
             }
-            final Set<CsmField> initializedFields = new LinkedHashSet<CsmField>();
-            final Set<CsmField> uninitializedFields = new LinkedHashSet<CsmField>();
-            final List<CsmConstructor> constructors = new ArrayList<CsmConstructor>();
-            final List<CsmConstructor> inheritedConstructors = new ArrayList<CsmConstructor>();
-            CsmClass superClass = null;
+            final Set<CsmField> initializedFields = new LinkedHashSet<>();
+            final Set<CsmField> uninitializedFields = new LinkedHashSet<>();
+            final List<CsmConstructor> constructors = new ArrayList<>();
+            final Map<CsmClass,List<CsmConstructor>> inheritedConstructors = new HashMap<>();
             // check base class
             for (CsmInheritance csmInheritance : typeElement.getBaseClasses()) {
                 CsmClass baseClass = CsmInheritanceUtilities.getCsmClass(csmInheritance);
                 if (baseClass != null) {
-                    superClass = baseClass;
+                    List<CsmConstructor> list = new ArrayList<>();
                     for (CsmMember member : baseClass.getMembers()) {
                         if (CsmKindUtilities.isConstructor(member) && CsmInheritanceUtilities.matchVisibility(member, csmInheritance.getVisibility())) {
-                            inheritedConstructors.add((CsmConstructor)member);
+                            list.add((CsmConstructor)member);
                         }
                     }
-                    // TODO: for now we stop on the first base class
-                    break;
+                    if (!list.isEmpty()) {
+                        inheritedConstructors.put(baseClass, list);
+                    }
                 }
             }
             GeneratorUtils.scanForFieldsAndConstructors(typeElement, initializedFields, uninitializedFields, constructors);
-            CsmConstructor constructorHandle = null;
             ElementNode.Description constructorDescription = null;
-            if (inheritedConstructors.size() == 1) {
-                constructorHandle = inheritedConstructors.get(0);
-            } else if (inheritedConstructors.size() > 1) {
-                List<ElementNode.Description> constructorDescriptions = new ArrayList<ElementNode.Description>();
-                for (CsmConstructor constructorElement : inheritedConstructors) {
-                    constructorDescriptions.add(ElementNode.Description.create(constructorElement, null, true, false));
+            if (!inheritedConstructors.isEmpty()) {
+                List<ElementNode.Description> baseClassesDescriptions = new ArrayList<>();
+                for (Map.Entry<CsmClass,List<CsmConstructor>> entry : inheritedConstructors.entrySet()) {
+                    List<ElementNode.Description> constructorDescriptions = new ArrayList<>();
+                    for(CsmConstructor c : entry.getValue()) {
+                        constructorDescriptions.add(ElementNode.Description.create(c, null, true, false));
+                    }
+                    baseClassesDescriptions.add(ElementNode.Description.create(entry.getKey(), constructorDescriptions, false, false));
                 }
-                constructorDescription = ElementNode.Description.create(superClass, constructorDescriptions, false, false);
+                constructorDescription = ElementNode.Description.create(typeElement, baseClassesDescriptions, false, false);
             }
             ElementNode.Description fieldsDescription = null;
             if (!uninitializedFields.isEmpty()) {
-                List<ElementNode.Description> fieldDescriptions = new ArrayList<ElementNode.Description>();
+                List<ElementNode.Description> fieldDescriptions = new ArrayList<>();
                 for (CsmField variableElement : uninitializedFields) {
                     fieldDescriptions.add(ElementNode.Description.create(variableElement, null, true, false));
                 }
                 fieldsDescription = ElementNode.Description.create(typeElement, fieldDescriptions, false, false);
             }
-            if (constructorHandle != null || constructorDescription != null || fieldsDescription != null) {
-                ret.add(new ConstructorGenerator(component, constructorHandle, constructorDescription, fieldsDescription));
+            if (constructorDescription != null || fieldsDescription != null) {
+                ret.add(new ConstructorGenerator(component, path, typeElement, constructorDescription, fieldsDescription));
             }
             return ret;
         }
     }
-    private JTextComponent component;
-    private CsmConstructor constructorHandle;
-    private ElementNode.Description constructorDescription;
-    private ElementNode.Description fieldsDescription;
+    private final JTextComponent component;
+    private final ElementNode.Description constructorDescription;
+    private final ElementNode.Description fieldsDescription;
+    private final CsmContext contextPath;
+    private final CsmClass type;
 
     /** Creates a new instance of ConstructorGenerator */
-    private ConstructorGenerator(JTextComponent component, CsmConstructor constructorHandle, ElementNode.Description constructorDescription, ElementNode.Description fieldsDescription) {
+    private ConstructorGenerator(JTextComponent component, CsmContext path, CsmClass type, ElementNode.Description constructorDescription, ElementNode.Description fieldsDescription) {
         this.component = component;
-        this.constructorHandle = constructorHandle;
         this.constructorDescription = constructorDescription;
         this.fieldsDescription = fieldsDescription;
+        this.contextPath = path;
+        this.type = type;
     }
 
     @Override
@@ -157,8 +159,6 @@ public class ConstructorGenerator implements CodeGenerator {
     @Override
     public void invoke() {
         UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, CsmRefactoringUtils.GENERATE_TRACKING, "CONSTRUCTOR"); // NOI18N
-        final List<CsmField> fieldHandles;
-        final List<CsmConstructor> constrHandles;
         if (constructorDescription != null || fieldsDescription != null) {
             ConstructorPanel panel = new ConstructorPanel(constructorDescription, fieldsDescription);
             DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_constructor")); //NOI18N
@@ -176,48 +176,7 @@ public class ConstructorGenerator implements CodeGenerator {
             if (dialogDescriptor.getValue() != dialogDescriptor.getDefaultValue()) {
                 return;
             }
-            if (constructorHandle == null) {
-                constrHandles = panel.getInheritedConstructors();
-            } else {
-                constrHandles = null;
-            }
-            fieldHandles = panel.getVariablesToInitialize();
-        } else {
-            fieldHandles = null;
-            constrHandles = null;
+            GeneratorUtils.generateConstructor(contextPath,  type, panel.getInheritedConstructors(), panel.getVariablesToInitialize());
         }
-//        JavaSource js = JavaSource.forDocument(component.getDocument());
-//        if (js != null) {
-//            try {
-//                final int caretOffset = component.getCaretPosition();
-//                ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
-//
-//                    public void run(WorkingCopy copy) throws IOException {
-//                        copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-//                        TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
-//                        path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
-//                        int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree) path.getLeaf(), caretOffset);
-//                        ArrayList<VariableElement> variableElements = new ArrayList<VariableElement>();
-//                        if (fieldHandles != null) {
-//                            for (ElementHandle<? extends Element> elementHandle : fieldHandles) {
-//                                variableElements.add((VariableElement) elementHandle.resolve(copy));
-//                            }
-//                        }
-//                        if (constrHandles != null && !constrHandles.isEmpty()) {
-//                            ArrayList<ExecutableElement> constrElements = new ArrayList<ExecutableElement>();
-//                            for (ElementHandle<? extends Element> elementHandle : constrHandles) {
-//                                constrElements.add((ExecutableElement) elementHandle.resolve(copy));
-//                            }
-//                            GeneratorUtils.generateConstructors(copy, path, variableElements, constrElements, idx);
-//                        } else {
-//                            GeneratorUtils.generateConstructor(copy, path, variableElements, constructorHandle != null ? (ExecutableElement) constructorHandle.resolve(copy) : null, idx);
-//                        }
-//                    }
-//                });
-//                GeneratorUtils.guardedCommit(component, mr);
-//            } catch (IOException ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-//        }
     }
 }

@@ -106,6 +106,12 @@ public class BeansTestCase extends JellyTestCase {
         EditorOperator operator = new EditorOperator(className);
         return operator;
     }
+    
+    protected EditorOperator openEditor(String packageName, String className) {
+        openFile(packageName, className);
+        EditorOperator operator = new EditorOperator(className);
+        return operator;
+    }
 
     protected void checkEditorContent(EditorOperator operator) {
         ref(operator.getText());

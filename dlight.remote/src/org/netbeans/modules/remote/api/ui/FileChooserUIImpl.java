@@ -68,6 +68,7 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
@@ -95,6 +96,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractListModel;
 import javax.swing.Action;
@@ -136,7 +138,6 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.filechooser.FileView;
 import javax.swing.plaf.ActionMapUIResource;
-import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.UIResource;
 import javax.swing.plaf.basic.BasicFileChooserUI;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -157,13 +158,15 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import sun.awt.shell.ShellFolder;
+import sun.swing.FilePane;
 
 /**
  * An implementation of a customized filechooser.
  *
  * @author Soot Phengsy, inspired by Jeff Dinkins' Swing version
  */
-class FileChooserUIImpl extends BasicFileChooserUI{
+final class FileChooserUIImpl extends BasicFileChooserUI{
     
     static final String USE_SHELL_FOLDER = "FileChooser.useShellFolder";//NOI18N
     static final String NB_USE_SHELL_FOLDER = "nb.FileChooser.useShellFolder";//NOI18N
@@ -184,6 +187,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
 
     private static final RequestProcessor COMMON_RP = new RequestProcessor("Cnd File Chooser Common Worker", 16); // NOI18N
     private static final RequestProcessor UPDATE_RP = new RequestProcessor("Cnd File Chooser Update Worker"); // NOI18N
+    private static final RequestProcessor APPROVE_RP = new RequestProcessor("Cnd File Chooser Update Worker"); // NOI18N
 
     private static final String TIMEOUT_KEY="nb.fileChooser.timeout"; // NOI18N
 
@@ -276,17 +280,26 @@ class FileChooserUIImpl extends BasicFileChooserUI{
     private final RequestProcessor.Task listFilesTask = UPDATE_RP.create(listFilesWorker);
     private volatile File curDir;
 
-    public static ComponentUI createUI(JComponent c) {
-        return new FileChooserUIImpl((JFileChooserEx) c);
-    }
+    private final Action approveSelectionAction;
+    private final Action cancelSelectionAction;
+    private final AtomicBoolean cancelled = new AtomicBoolean(false);    
 
+    private FileFilter actualFileFilter = null;
+    private GlobFilter globFilter = null;
+
+    private final char fileSeparatorChar;
+    
     public FileChooserUIImpl(FileChooserBuilder.JFileChooserEx filechooser) {
         super(filechooser);
+        approveSelectionAction = new ApproveSelectionAction();
+        cancelSelectionAction = new CancelSelectionAction();
+        fileSeparatorChar = filechooser.getFileSeparatorChar();
     }
-    
+
     @Override
     public void installUI(JComponent c) {
         super.installUI(c);
+        fileChooser = (JFileChooserEx) c;
     }   
     
     @Override
@@ -1130,7 +1143,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
     private void updateCompletions() {
         if (showPopupCompletion) {
             final String name = normalizeFile(getFileName());
-            int slash = name.lastIndexOf(File.separatorChar);
+            int slash = name.lastIndexOf(fileSeparatorChar);
             if (slash != -1) {
                 String prefix = name.substring(0, slash + 1);
                 File[] children;
@@ -1228,7 +1241,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
     }
     
     
-    private static String normalizeFile(String text) {
+    private String normalizeFile(String text) {
         // See #21690 for background.
         // XXX what are legal chars for var names? bash manual says only:
         // "The braces are required when PARAMETER [...] is followed by a
@@ -1247,9 +1260,9 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             text = text.substring(0, m.end(1)) + var + text.substring(m.end(2));
         }
         if (text.equals("~")) {//NOI18N
-            return System.getProperty("user.home");//NOI18N
-        } else if (text.startsWith("~" + File.separatorChar)) {//NOI18N
-            return System.getProperty("user.home") + text.substring(1);//NOI18N
+            return fileChooser.getHomePath(); //NOI18N
+        } else if (text.startsWith("~" + fileSeparatorChar)) {//NOI18N
+            return fileChooser.getHomePath() + text.substring(1);//NOI18N
         } else {
             int i = text.lastIndexOf("//");//NOI18N
             if (i != -1) {
@@ -1257,10 +1270,10 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                 // (so that you can use "//" to start a new path, without selecting & deleting)
                 return text.substring(i + 1);
             }
-            i = text.lastIndexOf(File.separatorChar + "~" + File.separatorChar);//NOI18N
+            i = text.lastIndexOf(fileSeparatorChar + "~" + fileSeparatorChar);//NOI18N
             if (i != -1) {
                 // Treat /usr/local/~/stuff as /home/me/stuff
-                return System.getProperty("user.home") + text.substring(i + 2);//NOI18N
+                return fileChooser.getHomePath() + text.substring(i + 2);//NOI18N
             }
             return text;
         }
@@ -1409,7 +1422,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         AbstractAction escAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                getFileChooser().cancelSelection();
+                getCancelSelectionAction().actionPerformed(e);
             }
             @Override
             public boolean isEnabled(){
@@ -2329,17 +2342,9 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             // #105801: completionPopup might not be ready when updateCompletions not called (empty text field)
             if (completionPopup != null && !completionPopup.isVisible()) {
                 if (keyCode == KeyEvent.VK_ENTER) {
-                    File file = getFileChooser().getFileSystemView().createFileObject(filenameTextField.getText());
-                    if(file.exists() && file.isDirectory()) {
-                        setSelected(new File[] {file});
-                        fileChooser.approveSelection();
-                        if (file.getParentFile() == null) {
-                            // this will hopefully prevent popup to take inappropriate action
-                            evt.consume();
-                        }
-                    }
-                }
-                
+                    getApproveSelectionAction().actionPerformed(new ActionEvent(evt.getSource(), evt.getID(), "")); //NOI18N
+                    evt.consume();
+                }               
                 if ((keyCode == KeyEvent.VK_TAB || keyCode == KeyEvent.VK_DOWN) ||
                     (keyCode == KeyEvent.VK_RIGHT && 
                     (filenameTextField.getCaretPosition() >= (filenameTextField.getDocument().getLength() - 1)))) {
@@ -2519,7 +2524,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         }
         
         private void changeTreeDirectory(File dir) {
-            if (File.separatorChar == '\\' && dir.getPath().endsWith(".lnk")) {//NOI18N
+            if (fileSeparatorChar == '\\' && dir.getPath().endsWith(".lnk")) {//NOI18N
                 File linkLocation = getShellFolderForFileLinkLoc(dir);
                 if (linkLocation != null && fileChooser.isTraversable(linkLocation)) {
                     dir = linkLocation;
@@ -3109,5 +3114,444 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         }
 
     } // end of UpdateWorker
+
+    @Override
+    public Action getApproveSelectionAction() {
+        return approveSelectionAction;
+    }
+
+    @Override
+    public Action getCancelSelectionAction() {
+        return cancelSelectionAction;
+    }
+
+    private class CancelSelectionAction extends AbstractAction {
+        public void actionPerformed(ActionEvent e) {
+            cancelled.set(true);
+            getFileChooser().cancelSelection();
+        }
+    }
+
+    private class ApproveSelectionAction extends AbstractAction {
+
+        protected ApproveSelectionAction() {
+            super(FilePane.ACTION_APPROVE_SELECTION);
+        }
+
+        @Override
+        public void actionPerformed(final ActionEvent e) {
+            // most code here (and the following "if" is copied from
+            // BasicFileChoooserUI.ApproveSelectionAction.actionPerformed
+            // and adapted for our case
+            if (isDirectorySelected()) {
+                // exactly from BasicFileChoooserUI.ApproveSelectionAction.actionPerformed
+                File dir = getDirectory();
+                if (dir != null) {
+                    try {
+                        // Strip trailing ".."
+                        dir = ShellFolder.getNormalizedFile(dir);
+                    } catch (IOException ex) {
+                        // Ok, use f as is
+                    }
+                    changeDirectory(dir);
+                    return;
+                }
+            }
+
+            String filename = getFileName();
+
+            if (filename != null) {
+                // VK: why isn't it just trim() ? - do we really need leading spaces??
+                // Remove whitespaces from end of filename
+                int i = filename.length() - 1;
+                while (i >=0 && filename.charAt(i) <= ' ') {
+                    i--;
+                }
+                filename = filename.substring(0, i + 1);
+            }
+
+            if (filename == null || filename.length() == 0) {
+                // no file selected, multiple selection off, therefore cancel the approve action
+                resetGlobFilter();
+                return;
+            }
+
+            // Unix: Resolve '~' to user's home directory
+            if (fileChooser.isUnix()) {
+                if (filename.startsWith("~/")) {
+                    filename = fileChooser.getHomePath() + filename.substring(1);
+                } else if (filename.equals("~")) {
+                    filename = fileChooser.getHomePath();
+                }
+            }
+
+            // in the case of single selectiom, use selectedFiles.get(0)
+            final List<File> selectedFiles = new ArrayList<>();
+
+            enableAllButCancel(false);
+            ApproveSelectionFinisher finisher = new ApproveSelectionFinisher(e, filename, selectedFiles, cancelled);
+            ApproveSelectionThreadWorker worker = new ApproveSelectionThreadWorker(
+                    e, filename, fileChooser.isMultiSelectionEnabled(), 
+                    fileChooser.getCurrentDirectory(), fileChooser.getFileSystemView(), 
+                    selectedFiles, finisher);
+            APPROVE_RP.post(worker);
+        }
+    }
+    
+    /**
+     * To be called OUT of EDT to perform long selection approval tasks.
+     * Upon finishing its work, calls ApproveSelectionFinisher in EDT
+     */
+    
+    private static class ApproveSelectionThreadWorker implements Runnable {
+
+        private final ActionEvent e;
+        private final String filename;
+        private final boolean multySelection;
+        private final File currentDir;        
+        private final FileSystemView fs;
+        private final List<File> selectedFiles;
+        private final ApproveSelectionFinisher finisher;
+
+        public ApproveSelectionThreadWorker(ActionEvent e, String filename, boolean multySelection, File currentDir, FileSystemView fs, List<File> selectedFiles, ApproveSelectionFinisher finisher) {
+            this.e = e;
+            this.filename = filename;
+            this.multySelection = multySelection;
+            this.currentDir = currentDir;
+            this.fs = fs;
+            this.selectedFiles = selectedFiles;
+            this.finisher = finisher;
+        }
+
+        @Override
+        public void run() {
+            try {
+                if (multySelection && filename.length() > 1 &&
+                        filename.charAt(0) == '"' && filename.charAt(filename.length() - 1) == '"') {
+
+                    // VK: double space between \" breaks this?! 
+                    String[] files = filename.substring(1, filename.length() - 1).split("\" \"");
+                    // Optimize searching files by names in "children" array
+                    Arrays.sort(files);
+
+                    File[] children = null;
+                    int childIndex = 0;
+
+                    for (String str : files) {
+                        File file = fs.createFileObject(str);
+                        if (!file.isAbsolute()) {
+                            if (children == null) {
+                                children = fs.getFiles(currentDir, false);
+                                Arrays.sort(children);
+                            }
+                            for (int k = 0; k < children.length; k++) {
+                                int l = (childIndex + k) % children.length;
+                                if (children[l].getName().equals(str)) {
+                                    file = children[l];
+                                    childIndex = l + 1;
+                                    break;
+                                }
+                            }
+                        }
+                        selectedFiles.add(file);
+                    }
+                } else {
+                    File selectedFile = fs.createFileObject(filename);
+                    if (!selectedFile.isAbsolute()) {
+                        selectedFile = fs.getChild(currentDir, filename);
+                    }
+                    selectedFiles.add(selectedFile);
+                }
+            } finally {
+                SwingUtilities.invokeLater(finisher);
+            }
+        }        
+    }
+    
+    /**
+     * To be called in EDT to complete selection approval
+     */
+    private class ApproveSelectionFinisher implements Runnable {
+
+        private final String filename;
+        private final List<File> selectedFiles;
+        private final ActionEvent e;
+        private final AtomicBoolean cancelled;
+
+        public ApproveSelectionFinisher(ActionEvent e, String filename, List<File> selectedFiles, AtomicBoolean cancelled) {
+            this.e = e;
+            this.selectedFiles = selectedFiles;
+            this.filename = filename;
+            this.cancelled = cancelled;
+        }
+        
+        @Override
+        public void run() {
+            
+            if (cancelled.get()) {
+                return; 
+            }
+
+            enableAllButCancel(true);
+            
+            JFileChooser chooser = getFileChooser();
+            resetGlobFilter();
+            
+            if (selectedFiles.size() == 1) {
+
+                File selectedFile = selectedFiles.get(0);
+
+                // check for wildcard pattern
+                FileFilter currentFilter = chooser.getFileFilter();
+                if (!selectedFile.exists() && isGlobPattern(filename)) {
+                    changeDirectory(selectedFile.getParentFile());
+                    if (globFilter == null) {
+                        globFilter = new GlobFilter();
+                    }
+                    try {
+                        globFilter.setPattern(selectedFile.getName());
+                        if (!(currentFilter instanceof GlobFilter)) {
+                            actualFileFilter = currentFilter;
+                        }
+                        chooser.setFileFilter(null);
+                        chooser.setFileFilter(globFilter);
+                        return;
+                    } catch (PatternSyntaxException pse) {
+                        // Not a valid glob pattern. Abandon filter.
+                    }
+                }
+                
+                // Check for directory change action
+                boolean isDir = (selectedFile != null && selectedFile.isDirectory());
+                boolean isTrav = (selectedFile != null && chooser.isTraversable(selectedFile));
+                boolean isDirSelEnabled = chooser.isDirectorySelectionEnabled();
+                boolean isFileSelEnabled = chooser.isFileSelectionEnabled();
+                boolean isCtrl = (e != null && (e.getModifiers() & 
+                        Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) != 0);
+
+                if (isDir && isTrav && (isCtrl || !isDirSelEnabled)) {
+                    changeDirectory(selectedFile);
+                    return;
+                } else if ((isDir || !isFileSelEnabled)
+                        && (!isDir || !isDirSelEnabled)
+                        && (!isDirSelEnabled || selectedFile.exists())) {
+                    selectedFiles.clear();
+                }
+            }
+                
+            
+            if (!selectedFiles.isEmpty()) {
+                if (chooser.isMultiSelectionEnabled()) {
+                    final File[] selectedFilesArray = selectedFiles.toArray(new File[selectedFiles.size()]);
+                    chooser.setSelectedFiles(selectedFilesArray);
+                    // Do it again. This is a fix for bug 4949273 to force the
+                    // selected value in case the ListSelectionModel clears it
+                    // for non-existing file names.
+                    chooser.setSelectedFiles(selectedFilesArray);
+                } else {
+                    chooser.setSelectedFile(selectedFiles.get(0));
+                }
+                chooser.approveSelection();
+            } else {
+                if (chooser.isMultiSelectionEnabled()) {
+                    chooser.setSelectedFiles(null);
+                } else {
+                    chooser.setSelectedFile(null);
+                }
+                chooser.cancelSelection();
+            }
+        }        
+    }
+    
+    private void enableAllButCancel(boolean enable) {
+        FileChooserUIImpl.this.newFolderButton.setEnabled(enable);
+        FileChooserUIImpl.this.approveButton.setEnabled(enable);        
+//        FileChooserUIImpl.this.topCombo.setEnabled(enable);
+//        FileChooserUIImpl.this.filenameTextField.setEditable(enable);
+//        FileChooserUIImpl.this.filenameTextField.setEnabled(enable);
+//        FileChooserUIImpl.this.filterTypeComboBox.setEnabled(enable);
+//        FileChooserUIImpl.this.tree.setEnabled(enable);
+    }
+
+    private void changeDirectory(File dir) {
+        JFileChooser fc = getFileChooser();
+        // Traverse shortcuts on Windows
+        if (dir != null && FilePane.usesShellFolder(fc)) {
+            try {
+                ShellFolder shellFolder = ShellFolder.getShellFolder(dir);
+
+                if (shellFolder.isLink()) {
+                    File linkedTo = shellFolder.getLinkLocation();
+
+                    // If linkedTo is null we try to use dir
+                    if (linkedTo != null) {
+                        if (fc.isTraversable(linkedTo)) {
+                            dir = linkedTo;
+                        } else {
+                            return;
+                        }
+                    } else {
+                        dir = shellFolder;
+                    }
+                }
+            } catch (FileNotFoundException ex) {
+                return;
+            }
+        }
+        fc.setCurrentDirectory(dir);
+        if (fc.getFileSelectionMode() == JFileChooser.FILES_AND_DIRECTORIES &&
+            fc.getFileSystemView().isFileSystem(dir)) {
+
+            setFileName(dir.getAbsolutePath());
+        }
+    }
+
+    private void resetGlobFilter() {
+        if (actualFileFilter != null) {
+            JFileChooser chooser = getFileChooser();
+            FileFilter currentFilter = chooser.getFileFilter();
+            if (currentFilter != null && currentFilter.equals(globFilter)) {
+                chooser.setFileFilter(actualFileFilter);
+                chooser.removeChoosableFileFilter(globFilter);
+            }
+            actualFileFilter = null;
+        }
+    }    
+    
+    private boolean isGlobPattern(String filename) {
+        return ((fileSeparatorChar == '\\' && (filename.indexOf('*') >= 0
+                                                  || filename.indexOf('?') >= 0))
+                || (fileSeparatorChar == '/' && (filename.indexOf('*') >= 0
+                                                  || filename.indexOf('?') >= 0
+                                                  || filename.indexOf('[') >= 0)));
+    }
+
+
+    /* A file filter which accepts file patterns containing
+     * the special wildcards *? on Windows and *?[] on Unix.
+     */
+    class GlobFilter extends FileFilter {
+        Pattern pattern;
+        String globPattern;
+
+        public void setPattern(String globPattern) {
+            char[] gPat = globPattern.toCharArray();
+            char[] rPat = new char[gPat.length * 2];
+            boolean isWin32 = (fileSeparatorChar == '\\');
+            boolean inBrackets = false;
+            int j = 0;
+
+            this.globPattern = globPattern;
+
+            if (isWin32) {
+                // On windows, a pattern ending with *.* is equal to ending with *
+                int len = gPat.length;
+                if (globPattern.endsWith("*.*")) {
+                    len -= 2;
+                }
+                for (int i = 0; i < len; i++) {
+                    switch(gPat[i]) {
+                      case '*':
+                        rPat[j++] = '.';
+                        rPat[j++] = '*';
+                        break;
+
+                      case '?':
+                        rPat[j++] = '.';
+                        break;
+
+                      case '\\':
+                        rPat[j++] = '\\';
+                        rPat[j++] = '\\';
+                        break;
+
+                      default:
+                        if ("+()^$.{}[]".indexOf(gPat[i]) >= 0) {
+                            rPat[j++] = '\\';
+                        }
+                        rPat[j++] = gPat[i];
+                        break;
+                    }
+                }
+            } else {
+                for (int i = 0; i < gPat.length; i++) {
+                    switch(gPat[i]) {
+                      case '*':
+                        if (!inBrackets) {
+                            rPat[j++] = '.';
+                        }
+                        rPat[j++] = '*';
+                        break;
+
+                      case '?':
+                        rPat[j++] = inBrackets ? '?' : '.';
+                        break;
+
+                      case '[':
+                        inBrackets = true;
+                        rPat[j++] = gPat[i];
+
+                        if (i < gPat.length - 1) {
+                            switch (gPat[i+1]) {
+                              case '!':
+                              case '^':
+                                rPat[j++] = '^';
+                                i++;
+                                break;
+
+                              case ']':
+                                rPat[j++] = gPat[++i];
+                                break;
+                            }
+                        }
+                        break;
+
+                      case ']':
+                        rPat[j++] = gPat[i];
+                        inBrackets = false;
+                        break;
+
+                      case '\\':
+                        if (i == 0 && gPat.length > 1 && gPat[1] == '~') {
+                            rPat[j++] = gPat[++i];
+                        } else {
+                            rPat[j++] = '\\';
+                            if (i < gPat.length - 1 && "*?[]".indexOf(gPat[i+1]) >= 0) {
+                                rPat[j++] = gPat[++i];
+                            } else {
+                                rPat[j++] = '\\';
+                            }
+                        }
+                        break;
+
+                      default:
+                        //if ("+()|^$.{}<>".indexOf(gPat[i]) >= 0) {
+                        if (!Character.isLetterOrDigit(gPat[i])) {
+                            rPat[j++] = '\\';
+                        }
+                        rPat[j++] = gPat[i];
+                        break;
+                    }
+                }
+            }
+            this.pattern = Pattern.compile(new String(rPat, 0, j), Pattern.CASE_INSENSITIVE);
+        }
+
+        @Override
+        public boolean accept(File f) {
+            if (f == null) {
+                return false;
+            }
+            if (f.isDirectory()) {
+                return true;
+            }
+            return pattern.matcher(f.getName()).matches();
+        }
+
+        @Override
+        public String getDescription() {
+            return globPattern;
+        }
+    }
     
 }

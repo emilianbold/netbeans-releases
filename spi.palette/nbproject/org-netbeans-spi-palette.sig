@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.38.1
+#Version 1.41.1
 
 CLSS public abstract interface java.io.Externalizable
 intf java.io.Serializable
@@ -115,6 +115,25 @@ cons public init()
 meth public abstract boolean isValidCategory(org.openide.util.Lookup)
 meth public abstract boolean isValidItem(org.openide.util.Lookup)
 supr java.lang.Object
+
+CLSS public abstract interface !annotation org.netbeans.spi.palette.PaletteItemRegistration
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, PACKAGE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.String body()
+meth public abstract java.lang.String category()
+meth public abstract java.lang.String icon16()
+meth public abstract java.lang.String icon32()
+meth public abstract java.lang.String itemid()
+meth public abstract java.lang.String name()
+meth public abstract java.lang.String paletteid()
+meth public abstract java.lang.String tooltip()
+
+CLSS public abstract interface !annotation org.netbeans.spi.palette.PaletteItemRegistrations
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[PACKAGE])
+intf java.lang.annotation.Annotation
+meth public abstract org.netbeans.spi.palette.PaletteItemRegistration[] value()
 
 CLSS public org.netbeans.spi.palette.PaletteModule
  anno 0 java.lang.Deprecated()

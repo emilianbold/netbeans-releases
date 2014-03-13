@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.nodes;
 
-import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -77,7 +76,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
@@ -130,7 +128,7 @@ public class ModulesNode extends AbstractNode {
         return getIcon(true);
     }
 
-    static class Wrapper {
+    private static class Wrapper {
         boolean isAggregator;
         LogicalViewProvider provider;
         NbMavenProjectImpl proj;
@@ -138,7 +136,7 @@ public class ModulesNode extends AbstractNode {
     
    
     
-    static class ModulesChildFactory extends ChildFactory<Wrapper>{
+    private static class ModulesChildFactory extends ChildFactory<Wrapper>{
         private final NbMavenProjectImpl project;
         private final PropertyChangeListener listener;
         
@@ -174,6 +172,7 @@ public class ModulesNode extends AbstractNode {
                             MavenProject mp = wr.proj.getOriginalMavenProject();
                             wr.isAggregator = NbMavenProject.TYPE_POM.equals(mp.getPackaging()) && !mp.getModules().isEmpty();
                             wr.provider = prj.getLookup().lookup(LogicalViewProvider.class);
+                            assert wr.provider != null;
                             modules.add(wr);
                         }
                     } catch (IllegalArgumentException ex) {
@@ -281,8 +280,8 @@ public class ModulesNode extends AbstractNode {
             return new AbstractAction(BTN_Open_Project()) {
                 public @Override void actionPerformed(ActionEvent e) {
                     Collection<? extends NbMavenProjectImpl> projects = context.lookupAll(NbMavenProjectImpl.class);
-                    final NbMavenProjectImpl [] projectsArray = new NbMavenProjectImpl[projects.size()];
-                    OpenProjects.getDefault().open(projects.toArray(projectsArray), false, true);
+                    final NbMavenProjectImpl[] projectsArray = projects.toArray(new NbMavenProjectImpl[0]);
+                    OpenProjects.getDefault().open(projectsArray, false, true);
                     if(projectsArray.length > 0) {
                         RequestProcessor.getDefault().post(new Runnable() {
                             public @Override void run() {

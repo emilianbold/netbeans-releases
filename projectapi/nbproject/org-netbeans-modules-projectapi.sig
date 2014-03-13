@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.54.1
+#Version 1.57.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -93,6 +93,10 @@ hfds icon
 
 CLSS public org.netbeans.api.project.ProjectUtils
 meth public static boolean hasSubprojectCycles(org.netbeans.api.project.Project,org.netbeans.api.project.Project)
+meth public static java.util.Set<org.netbeans.api.project.Project> getContainedProjects(org.netbeans.api.project.Project,boolean)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static java.util.Set<org.netbeans.api.project.Project> getDependencyProjects(org.netbeans.api.project.Project,boolean)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static java.util.prefs.Preferences getPreferences(org.netbeans.api.project.Project,java.lang.Class,boolean)
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 2 org.netbeans.api.annotations.common.NonNull()
@@ -199,6 +203,25 @@ intf org.netbeans.spi.project.DataFilesProviderImplementation
 meth public abstract void notifyDeleted() throws java.io.IOException
 meth public abstract void notifyDeleting() throws java.io.IOException
 
+CLSS public abstract interface org.netbeans.spi.project.DependencyProjectProvider
+innr public final static Result
+meth public abstract org.netbeans.spi.project.DependencyProjectProvider$Result getDependencyProjects()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+
+CLSS public final static org.netbeans.spi.project.DependencyProjectProvider$Result
+ outer org.netbeans.spi.project.DependencyProjectProvider
+cons public init(java.util.Set<? extends org.netbeans.api.project.Project>,boolean)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public boolean isRecursive()
+meth public java.util.Set<? extends org.netbeans.api.project.Project> getProjects()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+supr java.lang.Object
+hfds projects,recursive
+
 CLSS public abstract interface org.netbeans.spi.project.FileOwnerQueryImplementation
 meth public abstract org.netbeans.api.project.Project getOwner(java.net.URI)
 meth public abstract org.netbeans.api.project.Project getOwner(org.openide.filesystems.FileObject)
@@ -262,6 +285,25 @@ meth public abstract void removePropertyChangeListener(java.beans.PropertyChange
 meth public abstract void setActiveConfiguration({org.netbeans.spi.project.ProjectConfigurationProvider%0}) throws java.io.IOException
 meth public abstract {org.netbeans.spi.project.ProjectConfigurationProvider%0} getActiveConfiguration()
  anno 0 org.netbeans.api.annotations.common.CheckForNull()
+
+CLSS public abstract interface org.netbeans.spi.project.ProjectContainerProvider
+innr public final static Result
+meth public abstract org.netbeans.spi.project.ProjectContainerProvider$Result getContainedProjects()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+
+CLSS public final static org.netbeans.spi.project.ProjectContainerProvider$Result
+ outer org.netbeans.spi.project.ProjectContainerProvider
+cons public init(java.util.Set<? extends org.netbeans.api.project.Project>,boolean)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public boolean isRecursive()
+meth public java.util.Set<? extends org.netbeans.api.project.Project> getProjects()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+supr java.lang.Object
+hfds projects,recursive
 
 CLSS public abstract interface org.netbeans.spi.project.ProjectFactory
 meth public abstract boolean isProject(org.openide.filesystems.FileObject)

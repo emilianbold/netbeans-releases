@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.37.1
+#Version 1.39.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -69,7 +69,7 @@ meth public org.netbeans.api.editor.fold.Fold getParent()
 meth public org.netbeans.api.editor.fold.FoldHierarchy getHierarchy()
 meth public org.netbeans.api.editor.fold.FoldType getType()
 supr java.lang.Object
-hfds DEFAULT_DESCRIPTION,EMPTY_FOLD_ARRAY,FLAG_COLLAPSED,FLAG_END_DAMAGED,FLAG_START_DAMAGED,children,description,endGuardedLength,endPos,extraInfo,flags,operation,parent,rawIndex,startGuardedLength,startPos,type
+hfds DEFAULT_DESCRIPTION,EMPTY_FOLD_ARRAY,FLAG_COLLAPSED,FLAG_END_DAMAGED,FLAG_START_DAMAGED,LOG,children,description,endGuardedLength,endPos,extraInfo,flags,operation,parent,rawIndex,startGuardedLength,startPos,type
 
 CLSS public final org.netbeans.api.editor.fold.FoldHierarchy
 fld public final static org.netbeans.api.editor.fold.FoldType ROOT_FOLD_TYPE

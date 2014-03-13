@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.56.1
+#Version 1.59.1
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -821,6 +821,11 @@ CLSS public abstract interface org.netbeans.spi.project.ant.AntBuildExtenderImpl
 meth public abstract java.util.List<java.lang.String> getExtensibleTargets()
 meth public abstract org.netbeans.api.project.Project getOwningProject()
 
+CLSS public abstract interface org.netbeans.spi.project.ant.GeneratedFilesInterceptor
+meth public abstract void fileGenerated(org.netbeans.api.project.Project,java.lang.String)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+
 CLSS public abstract interface !annotation org.netbeans.spi.project.support.ant.AntBasedProjectRegistration
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
@@ -887,7 +892,7 @@ meth public void putProperties(java.lang.String,org.netbeans.spi.project.support
 meth public void removeAntProjectListener(org.netbeans.spi.project.support.ant.AntProjectListener)
 meth public void setLibrariesLocation(java.lang.String)
 supr java.lang.Object
-hfds LOG,NONEXISTENT,PRIVATE_NS,PROJECT_NS,QUIETLY_SWALLOW_XML_LOAD_ERRORS,RP,addedProjectXmlPath,db,dir,fileListener,listeners,modifiedMetadataPaths,pendingHook,pendingHookCount,privateXml,privateXmlValid,projectXml,projectXmlValid,properties,saveActions,state,type
+hfds LOG,NONEXISTENT,PRIVATE_NS,PROJECT_NS,QUIETLY_SWALLOW_XML_LOAD_ERRORS,RP,addedProjectXmlPath,db,dir,fileListener,fileListenerSet,listeners,modifiedMetadataPaths,pendingHook,pendingHookCount,privateXml,privateXmlValid,projectXml,projectXmlValid,properties,saveActions,state,type
 hcls ActionImpl,FileListener,RunnableImpl
 
 CLSS public abstract interface org.netbeans.spi.project.support.ant.AntProjectListener

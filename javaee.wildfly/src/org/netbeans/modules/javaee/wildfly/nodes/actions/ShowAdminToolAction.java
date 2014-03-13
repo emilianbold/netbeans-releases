@@ -45,36 +45,33 @@
 package org.netbeans.modules.javaee.wildfly.nodes.actions;
 
 
-import org.netbeans.modules.javaee.wildfly.nodes.WildflyManagerNode;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.javaee.wildfly.nodes.WildflyManagerNode;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
-import org.openide.awt.HtmlBrowser.URLDisplayer;
 
 /** Action that can always be invoked and work procedurally.
  * This action will display the URL for the given admin server node in the runtime explorer
  * Copied from appsrv81 server plugin.
  */
 public class ShowAdminToolAction extends CookieAction {
-    
-    protected Class[] cookieClasses() {
-        return new Class[] {/* SourceCookie.class */};
-    }
-    
+
+    @Override
     protected int mode() {
         return MODE_EXACTLY_ONE;
-        // return MODE_ALL;
     }
-    
+
+    @Override
     protected void performAction(Node[] nodes) {
         if( (nodes == null) || (nodes.length < 1) )
             return;
-        
+
         for (int i = 0; i < nodes.length; i++) {
             Object node = nodes[i].getLookup().lookup(WildflyManagerNode.class);
             if (node instanceof WildflyManagerNode) {
@@ -87,22 +84,31 @@ public class ShowAdminToolAction extends CookieAction {
             }
         }
     }
-    
+
+    @Override
     public String getName() {
         return NbBundle.getMessage(ShowAdminToolAction.class, "LBL_ShowAdminGUIAction");
     }
-    
+
+    @Override
     public HelpCtx getHelpCtx() {
         return null; // HelpCtx.DEFAULT_HELP;
         // If you will provide context help then use:
         // return new HelpCtx(RefreshAction.class);
     }
-    
+
+    @Override
     protected boolean enable(Node[] nodes) {
         return true;
     }
-    
+
+    @Override
     protected boolean asynchronous() {
         return false;
+    }
+
+    @Override
+    protected Class<?>[] cookieClasses() {
+        return new Class<?>[]{};
     }
 }

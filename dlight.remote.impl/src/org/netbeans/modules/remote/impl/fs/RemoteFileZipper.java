@@ -221,7 +221,7 @@ public class RemoteFileZipper {
             } finally {
                 // Remove temp. zip file from remote host
                 time = System.currentTimeMillis();
-                Future<Integer> task = CommonTasksSupport.rmFile(execEnv, path, new PrintWriter(System.err));
+                Future<Integer> task = CommonTasksSupport.rmFile(execEnv, remoteZipPath, new PrintWriter(System.err));
                 rc = -1;
                 try {
                     rc = task.get();

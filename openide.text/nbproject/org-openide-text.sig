@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 6.58.1
+#Version 6.61.1
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -946,7 +946,7 @@ meth public void setHidden(boolean)
 meth public void setName(java.lang.String)
 meth public void setShortDescription(java.lang.String)
 supr java.beans.FeatureDescriptor
-hfds INIT_LOCK,LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBadProperties
+hfds BLOCK_EVENTS,INIT_LOCK,LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBadProperties
 hcls LookupEventList,PropertyEditorRef
 
 CLSS public abstract interface static org.openide.nodes.Node$Cookie
@@ -1110,6 +1110,7 @@ meth protected org.openide.text.CloneableEditor createCloneableEditor()
 meth protected org.openide.text.CloneableEditorSupport$Pane createPane()
 meth protected org.openide.util.Task reloadDocument()
 meth protected org.openide.windows.CloneableTopComponent createCloneableTopComponent()
+meth protected void afterRedirect(org.openide.windows.CloneableOpenSupport)
 meth protected void initializeCloneableEditor(org.openide.text.CloneableEditor)
 meth protected void loadFromStreamToKit(javax.swing.text.StyledDocument,java.io.InputStream,javax.swing.text.EditorKit) throws java.io.IOException,javax.swing.text.BadLocationException
 meth protected void notifyClosed()
@@ -1578,6 +1579,7 @@ meth protected abstract org.openide.windows.CloneableTopComponent createCloneabl
 meth protected boolean canClose()
 meth protected boolean close(boolean)
 meth protected final org.openide.windows.CloneableTopComponent openCloneableTopComponent()
+meth protected void afterRedirect(org.openide.windows.CloneableOpenSupport)
 meth public boolean close()
 meth public void edit()
 meth public void open()

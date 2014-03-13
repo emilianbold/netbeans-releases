@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.35.1
+#Version 1.37.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -59,7 +59,7 @@ meth public static void showProgressDialogAndRun(java.lang.Runnable,java.lang.St
 meth public static void showProgressDialogAndRun(java.lang.Runnable,org.netbeans.api.progress.ProgressHandle,boolean)
 supr java.lang.Object
 hfds DISPLAY_DIALOG_MS,DISPLAY_WAIT_CURSOR_MS,PROVIDER
-hcls RunnableWrapper,Trivial
+hcls CancellableRunnableWrapper,RunnableWrapper,Trivial
 
 CLSS public final org.netbeans.api.progress.aggregate.AggregateProgressFactory
 meth public static javax.swing.JComponent createProgressComponent(org.netbeans.api.progress.aggregate.AggregateProgressHandle)
