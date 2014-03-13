@@ -257,7 +257,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
 
     public static CsmObject create(CsmTemplate template, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
 //        System.err.println("Instantiation.create for " + template + " with mapping " + mapping);
-        if (checkMeaninglessInstantiation(template, mapping)) {
+        if (canSkipInstantiation(template, mapping)) {
             return template;
         }
         
@@ -295,7 +295,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
      * @param mapping
      * @return true if template shouldn't be instantiated, false otherwise
      */
-    private static boolean checkMeaninglessInstantiation(CsmObject template, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+    private static boolean canSkipInstantiation(CsmObject template, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
         for (Map.Entry<CsmTemplateParameter, CsmSpecializationParameter> entry : mapping.entrySet()) {
             if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(entry.getValue())) {
                 // in case of expression parameter we should be able to have same mappings multiple times
@@ -332,9 +332,9 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         }
         
         if (CsmKindUtilities.isInstantiation(template)) {
-            return checkMeaninglessInstantiation(((CsmInstantiation) template).getTemplateDeclaration(), mapping);
+            return canSkipInstantiation(((CsmInstantiation) template).getTemplateDeclaration(), mapping);
         } else if (template instanceof Type) {
-            return checkMeaninglessInstantiation(((Type) template).originalType, mapping);
+            return canSkipInstantiation(((Type) template).originalType, mapping);
         }
         
         return false;
@@ -1286,7 +1286,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         if (type == null) {
             throw new NullPointerException("no type for " + instantiation); // NOI18N
         }
-        if (checkMeaninglessInstantiation(type, instantiation.getMapping())) {
+        if (canSkipInstantiation(type, instantiation.getMapping())) {
             return type;
         }
         LOG.log(Level.FINE, "Instantiation.createType {0}; inst:{1}\n", new Object[]{type.getText(), instantiation.getTemplateDeclaration().getName()});
