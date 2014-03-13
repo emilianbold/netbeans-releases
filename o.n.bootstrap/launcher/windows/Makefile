@@ -27,7 +27,7 @@ build: .build-post-$(CONF)
 
 .build-post-nbexec: .build-impl nbexecexe.cpp nbexecloader.h utilsfuncs.cpp nbexec_exe.rc
 	windres.exe -Ocoff nbexec_exe.rc nbexec_exe.res
-	g++ -s -mno-cygwin -Wl,--nxcompat -Wl,--dynamicbase -DNBEXEC_DLL=\"nbexec.dll\" nbexecexe.cpp utilsfuncs.cpp nbexec_exe.res -o nbexec.exe
+	g++ -s -mno-cygwin -Wl,--nxcompat -Wl,--dynamicbase -Wl,--no-seh -DNBEXEC_DLL=\"nbexec.dll\" nbexecexe.cpp utilsfuncs.cpp nbexec_exe.res -o nbexec.exe
 	cp nbexec.exe ../../../nbbuild/netbeans/platform/lib/
 	cp nbexec.dll ../../../nbbuild/netbeans/platform/lib/
 	
