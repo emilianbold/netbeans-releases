@@ -152,7 +152,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         return cfdi;
     }
 
-    private static int getClassForwardStartOffset(AST ast) {        
+    /*package*/ static int getClassForwardStartOffset(AST ast) {        
         AST firstChild = ast.getFirstChild();
         if (firstChild != null && firstChild.getType() == CPPTokenTypes.LITERAL_typedef) {
             AST secondChild = firstChild.getNextSibling();
@@ -166,7 +166,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         return getStartOffset(ast);        
     }
     
-    private static int getClassForwardEndOffset(AST ast) {
+    /*package*/ static int getClassForwardEndOffset(AST ast) {
         AST firstChild = AstRenderer.getFirstChildSkipQualifiers(ast);
         if (firstChild != null) {
             if(firstChild.getType() == CPPTokenTypes.LITERAL_typedef) {
@@ -174,18 +174,25 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
                 if(qid != null) {
                     return getEndOffset(qid);
                 }
-            } else if(firstChild.getType() == CPPTokenTypes.LITERAL_class ||
-                firstChild.getType() == CPPTokenTypes.LITERAL_struct ||
-                firstChild.getType() == CPPTokenTypes.LITERAL_union) {
-                AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
-                if(qid != null) {
-                    AST nextSibling = qid.getNextSibling();
-                    if(nextSibling != null && nextSibling.getType() == CPPTokenTypes.SEMICOLON) {
-                        return getEndOffset(nextSibling);
-                    } else {
-                        return getEndOffset(qid);
+            } else {
+                if (firstChild.getType() == CPPTokenTypes.LITERAL_friend) {
+                    if (firstChild.getNextSibling() != null) {
+                        firstChild = firstChild.getNextSibling();
                     }
-                }                
+                }
+                if (firstChild.getType() == CPPTokenTypes.LITERAL_class ||
+                    firstChild.getType() == CPPTokenTypes.LITERAL_struct ||
+                    firstChild.getType() == CPPTokenTypes.LITERAL_union) {
+                    AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
+                    if(qid != null) {
+                        AST nextSibling = qid.getNextSibling();
+                        if(nextSibling != null && nextSibling.getType() == CPPTokenTypes.SEMICOLON) {
+                            return getEndOffset(nextSibling);
+                        } else {
+                            return getEndOffset(qid);
+                        }
+                    }                
+                }
             }
         }
         return getEndOffset(ast);        
