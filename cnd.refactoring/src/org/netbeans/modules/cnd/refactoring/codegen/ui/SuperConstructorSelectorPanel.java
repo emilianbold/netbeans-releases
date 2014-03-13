@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
  */
 public class SuperConstructorSelectorPanel extends JPanel {
     private final Map<JRadioButton,ElementNode.Description> buttons = new HashMap<>();
+    private JRadioButton firstButton;
 
     public SuperConstructorSelectorPanel(ElementNode.Description elementDescription) {
         setLayout(new GridBagLayout());
@@ -83,6 +84,9 @@ public class SuperConstructorSelectorPanel extends JPanel {
                     displayName = displayName.substring(0, 50)+"...)"; //NOI18N
                 }
                 JRadioButton button = new JRadioButton(displayName, first);
+                if (firstButton == null) {
+                    firstButton = button;
+                }
                 group.add(button);
                 gridBagConstraints = new GridBagConstraints();
                 gridBagConstraints.gridx = 0;
@@ -104,6 +108,11 @@ public class SuperConstructorSelectorPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 12);
         add(panel, gridBagConstraints);
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        return firstButton.requestFocusInWindow();
     }
 
     public List<CsmDeclaration> getSelectedElements() {
