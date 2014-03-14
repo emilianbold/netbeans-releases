@@ -397,6 +397,107 @@ public class GeneratorUtils {
         }
     }
 
+    public static void generateCopyConstructor(CsmContext path, CsmClass enclosingClass, List<CsmConstructor> inheritedConstructors, List<CsmField> fields) {
+        boolean inlineConstructor = true;
+        if (inlineConstructor) {
+            InsertInfo[] ins = getInsertPositons(path, enclosingClass, InsertPoint.DEFAULT);
+            final InsertInfo def = ins[0];
+            final StringBuilder result = new StringBuilder();
+            final Document doc = path.getDocument();
+            result.append('\n'); // NOI18N
+            result.append(enclosingClass.getName());
+            result.append("(const "); // NOI18N
+            result.append(enclosingClass.getName());
+            result.append("& other) :"); // NOI18N
+            result.append('\n'); // NOI18N
+            boolean first = true;
+            for(CsmConstructor constructor : inheritedConstructors) {
+                if (!first) {
+                    result.append(", "); // NOI18N
+                }
+                result.append(constructor.getContainingClass().getName());
+                result.append("(other)"); // NOI18N
+                first = false;
+            }
+            for(CsmField field : fields) {
+                if (!first) {
+                    result.append(", "); // NOI18N
+                }
+                result.append(field.getName());
+                result.append("(other."); // NOI18N
+                result.append(field.getName());
+                result.append(')'); // NOI18N
+                first = false;
+            }
+            result.append("{}\n"); // NOI18N
+            Runnable update = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        doc.insertString(def.dot, result.toString(), null);
+                        Reformat format = Reformat.get(doc);
+                        format.lock();
+                        try {
+                            int start = def.start.getOffset();
+                            int end = def.end.getOffset();
+                            format.reformat(start, end);
+                        } finally {
+                            format.unlock();
+                        }
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            };
+            if (doc instanceof BaseDocument) {
+                ((BaseDocument)doc).runAtomicAsUser(update);
+            } else {
+                update.run();
+            }
+        }
+    }
+
+    
+    
+    public static void generateOperators(CsmContext path, CsmClass enclosingClass, List<CsmMethod> fields) {
+        boolean inlineConstructor = true;
+        if (inlineConstructor) {
+            InsertInfo[] ins = getInsertPositons(path, enclosingClass, InsertPoint.DEFAULT);
+            final InsertInfo def = ins[0];
+            final StringBuilder result = new StringBuilder();
+            final Document doc = path.getDocument();
+            for(CsmMethod m : fields) {
+                result.append('\n'); // NOI18N
+                result.append(m.getText());
+            }
+            result.append('\n'); // NOI18N
+            Runnable update = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        doc.insertString(def.dot, result.toString(), null);
+                        Reformat format = Reformat.get(doc);
+                        format.lock();
+                        try {
+                            int start = def.start.getOffset();
+                            int end = def.end.getOffset();
+                            format.reformat(start, end);
+                        } finally {
+                            format.unlock();
+                        }
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            };
+            if (doc instanceof BaseDocument) {
+                ((BaseDocument)doc).runAtomicAsUser(update);
+            } else {
+                update.run();
+            }
+        }
+    }
+    
     public static final class InsertInfo {
         public final CloneableEditorSupport ces;
         public final PositionRef start;
