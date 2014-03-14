@@ -432,6 +432,7 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
     
     public void testBug235102() throws Exception {
         performTest("bug235102_ns.cpp", 17, 20, "bug235102_ns.cpp", 4, 13);
+        performTest("bug235102_ns.cpp", 37, 20, "bug235102_ns.cpp", 24, 13);
     }
 
     public void testBug235102_2() throws Exception {
