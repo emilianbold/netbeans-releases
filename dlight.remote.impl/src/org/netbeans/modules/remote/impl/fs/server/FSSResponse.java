@@ -119,7 +119,7 @@ import org.openide.util.NotImplementedException;
 
     public Package getNextPackage() throws InterruptedException, ExecutionException {
         if (RemoteFileSystemUtils.isUnitTestMode()) {
-            long timeout = Integer.getInteger("remote.fs_server.timeout", 60000);
+            long timeout = Integer.getInteger("remote.fs_server.timeout", 60000); //NOI18N
             if (HangupEnvList.isHung(env)) {
                 throw new IllegalStateException("Rejected: timeout on previous attempt get package from " + env); //NOI18N
             }            
