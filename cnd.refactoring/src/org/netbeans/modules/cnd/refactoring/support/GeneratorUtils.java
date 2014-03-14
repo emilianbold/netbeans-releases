@@ -459,14 +459,14 @@ public class GeneratorUtils {
 
     
     
-    public static void generateOperators(CsmContext path, CsmClass enclosingClass, List<CsmMethod> fields) {
+    public static void generateOperators(CsmContext path, CsmClass enclosingClass, List<CsmFunction> operators) {
         boolean inlineConstructor = true;
         if (inlineConstructor) {
             InsertInfo[] ins = getInsertPositons(path, enclosingClass, InsertPoint.DEFAULT);
             final InsertInfo def = ins[0];
             final StringBuilder result = new StringBuilder();
             final Document doc = path.getDocument();
-            for(CsmMethod m : fields) {
+            for(CsmFunction m : operators) {
                 result.append('\n'); // NOI18N
                 result.append(m.getText());
             }
