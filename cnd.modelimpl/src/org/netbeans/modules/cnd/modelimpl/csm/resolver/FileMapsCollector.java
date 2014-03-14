@@ -421,8 +421,9 @@ public final class FileMapsCollector {
                             NamespaceImpl namespace = (NamespaceImpl) nsd.getNamespace();
                             for (CsmUID<CsmUsingDirective> directiveUID : namespace.getUsingDirectives()) {
                                 CsmUsingDirective directive = directiveUID.getObject();
-                                if (directive != null) {
-                                    gatherMaps(directive, directive.getEndOffset(), inLocalContext, stopAtOffset, out);
+                                if (directive != null && directive.getContainingFile() != null) {
+                                    int stopAtOffsetDirective = directive.getContainingFile().equals(nsd.getContainingFile()) ? stopAtOffset : Integer.MAX_VALUE;
+                                    gatherMaps(directive, directive.getEndOffset(), inLocalContext, stopAtOffsetDirective, out);
                                 }
                             }
                         } else {
