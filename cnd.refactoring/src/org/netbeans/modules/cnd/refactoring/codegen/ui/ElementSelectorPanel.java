@@ -99,11 +99,6 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
         }
     }
 
-    @Override
-    public boolean requestFocusInWindow() {
-        return elementView.requestFocusInWindow();
-    }
-
     public boolean isMethodInline() {
         inlineMethod = inline.isSelected();
         NbPreferences.forModule(DeclarationGenerator.class).putBoolean(DeclarationGenerator.INSERT_CODE_INLINE_PROPERTY, inlineMethod);

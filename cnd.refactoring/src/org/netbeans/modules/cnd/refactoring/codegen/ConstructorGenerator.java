@@ -44,10 +44,6 @@
 package org.netbeans.modules.cnd.refactoring.codegen;
 
 import java.awt.Dialog;
-import java.awt.event.HierarchyEvent;
-import java.awt.event.HierarchyListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -177,17 +173,6 @@ public class ConstructorGenerator implements CodeGenerator {
             final ConstructorPanel panel = new ConstructorPanel(constructorDescription, fieldsDescription);
             DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_constructor")); //NOI18N
             Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-            dialog.addHierarchyListener(new HierarchyListener() {
-
-                @Override
-                public void hierarchyChanged(HierarchyEvent e) {
-                    if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) {
-                        if (e.getChanged().isShowing()){
-                            panel.requestFocusInWindow();
-                        }
-                    }
-                }
-            });
             try {
                 dialog.setVisible(true);
             } catch (Throwable th) {

@@ -71,54 +71,44 @@ public class ConstructorPanel extends JPanel {
     /** Creates new form ConstructorPanel */
     public ConstructorPanel(ElementNode.Description constructorDescription, ElementNode.Description fieldsDescription) {
         initComponents();
-        if (constructorDescription != null) {
-            constructorSelectorLabel = new javax.swing.JLabel();
+        if (fieldsDescription != null) {
+            fieldSelectorLabel = new javax.swing.JLabel();
             GridBagConstraints gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = 0;
             gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
             gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 12);
-            add(constructorSelectorLabel, gridBagConstraints);
-            constructorSelector = new SuperConstructorSelectorPanel(constructorDescription);
-            gridBagConstraints.gridy = 1;
-            gridBagConstraints.weightx = 0.5;
-            gridBagConstraints.weighty = 1.0;
-            gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
-            add(constructorSelector, gridBagConstraints);
-            Mnemonics.setLocalizedText(constructorSelectorLabel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_super_constructor_select")); //NOI18N
-            constructorSelectorLabel.setLabelFor(constructorSelector);
-        }
-        if (fieldsDescription != null) {
-            fieldSelectorLabel = new javax.swing.JLabel();
-            GridBagConstraints gridBagConstraints = new GridBagConstraints();
-            gridBagConstraints.gridx = 1;
-            gridBagConstraints.gridy = 0;
-            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-            gridBagConstraints.insets = new java.awt.Insets(12, constructorDescription != null ? 0 : 12, 6, 12);
             add(fieldSelectorLabel, gridBagConstraints);
             fieldSelector = new ElementSelectorPanel(fieldsDescription, false, true);
             gridBagConstraints.gridy = 1;
             gridBagConstraints.weightx = 0.5;
             gridBagConstraints.weighty = 1.0;
-            gridBagConstraints.insets = new java.awt.Insets(0, constructorDescription != null ? 0 : 12, 0, 12);
+            gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
             add(fieldSelector, gridBagConstraints);
             Mnemonics.setLocalizedText(fieldSelectorLabel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_constructor_select")); //NOI18N
             fieldSelectorLabel.setLabelFor(fieldSelector);
             fieldSelector.doInitialExpansion(1);
         }
-
-        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConstructorGenerator.class, "A11Y_Generate_Constructor"));
-    }
-
-    @Override
-    public boolean requestFocusInWindow() {
-        if (fieldSelector != null) {
-            return fieldSelector.requestFocusInWindow();
-        } else {
-            return constructorSelector.requestFocusInWindow();
+        if (constructorDescription != null) {
+            constructorSelectorLabel = new javax.swing.JLabel();
+            GridBagConstraints gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.gridx = 1;
+            gridBagConstraints.gridy = 0;
+            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+            gridBagConstraints.insets = new java.awt.Insets(12, fieldsDescription != null ? 0 : 12, 6, 12);
+            add(constructorSelectorLabel, gridBagConstraints);
+            constructorSelector = new SuperConstructorSelectorPanel(constructorDescription);
+            gridBagConstraints.gridy = 1;
+            gridBagConstraints.weightx = 0.5;
+            gridBagConstraints.weighty = 1.0;
+            gridBagConstraints.insets = new java.awt.Insets(0, fieldsDescription != null ? 0 : 12, 0, 12);
+            add(constructorSelector, gridBagConstraints);
+            Mnemonics.setLocalizedText(constructorSelectorLabel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_super_constructor_select")); //NOI18N
+            constructorSelectorLabel.setLabelFor(constructorSelector);
         }
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConstructorGenerator.class, "A11Y_Generate_Constructor"));
     }
 
     public CsmConstructor getInheritedConstructor() {
