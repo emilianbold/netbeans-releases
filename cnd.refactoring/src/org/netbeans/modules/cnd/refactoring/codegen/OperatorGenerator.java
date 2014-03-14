@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
@@ -158,13 +159,15 @@ public class OperatorGenerator implements CodeGenerator {
             }
             
             List<ElementNode.Description> operators = new ArrayList<>();
-            operators.add(ElementNode.Description.create(new CsmDeclarationImpl(typeElement, CsmFunction.OperatorKind.EQ), null, true, false));
-            operators.add(ElementNode.Description.create(new CsmDeclarationImpl(typeElement, CsmFunction.OperatorKind.PLUS_EQ), null, true, false));
-            operators.add(ElementNode.Description.create(new CsmDeclarationImpl(typeElement, CsmFunction.OperatorKind.PLUS), null, true, false));
-            operators.add(ElementNode.Description.create(new CsmDeclarationImpl(typeElement, CsmFunction.OperatorKind.MINUS_EQ), null, true, false));
-            operators.add(ElementNode.Description.create(new CsmDeclarationImpl(typeElement, CsmFunction.OperatorKind.MINUS), null, true, false));
-            operators.add(ElementNode.Description.create(new CsmDeclarationImpl(typeElement, CsmFunction.OperatorKind.EQ_EQ), null, true, false));
-            operators.add(ElementNode.Description.create(new CsmDeclarationImpl(typeElement, CsmFunction.OperatorKind.NOT_EQ), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.EQ), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.PLUS_EQ), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.PLUS), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.MINUS_EQ), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.MINUS), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.EQ_EQ), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.NOT_EQ), null, true, false));
+            operators.add(ElementNode.Description.create(new StubFriendImpl(typeElement, CsmFunction.OperatorKind.LEFT_SHIFT), null, true, false));
+            operators.add(ElementNode.Description.create(new StubFriendImpl(typeElement, CsmFunction.OperatorKind.RIGHT_SHIFT), null, true, false));
             ElementNode.Description operatorsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, operators, false, false)), false, false);
             if (constructorDescription != null || fieldsDescription != null) {
                 ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription));
@@ -229,16 +232,16 @@ public class OperatorGenerator implements CodeGenerator {
         }
     }
 
-    private static final class CsmDeclarationImpl implements CsmMethod {
-
-        private final CsmClass parent;
+    private static abstract class StubFunctionImpl implements CsmFunction {
+        protected final CsmClass parent;
         private final CsmFunction.OperatorKind kind;
         private String name;
         private String parameters;
+        private String specifiers;
         private String returns;
         private String body;
 
-        public CsmDeclarationImpl(CsmClass parent, CsmFunction.OperatorKind kind) {
+        public StubFunctionImpl(CsmClass parent, CsmFunction.OperatorKind kind) {
             this.parent = parent;
             this.kind = kind;
             init();
@@ -289,37 +292,21 @@ public class OperatorGenerator implements CodeGenerator {
                     returns = parent.getName()+"&"; // NOI18N
                     body = NbBundle.getMessage(ConstructorGenerator.class, "ASSIGNMENT", parent.getName()); // NOI18N
                     break;
+                case LEFT_SHIFT:
+                    specifiers="friend";// NOI18N
+                    name = "operator <<"; // NOI18N
+                    parameters = "std::ostream& os, const " + parent.getName() + "& obj"; // NOI18N
+                    returns = "std::ostream&"; // NOI18N
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "LEFT_SHIFT", parent.getName()); // NOI18N
+                    break;
+                case RIGHT_SHIFT:
+                    specifiers="friend";// NOI18N
+                    name = "operator >>"; // NOI18N
+                    parameters = "std::ostream& is, const " + parent.getName() + "& obj"; // NOI18N
+                    returns = "std::ostream&"; // NOI18N
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "RIGHT_SHIFT", parent.getName()); // NOI18N
+                    break;
             }
-        }
-
-        @Override
-        public boolean isAbstract() {
-            return false;
-        }
-
-        @Override
-        public boolean isVirtual() {
-            return false;
-        }
-
-        @Override
-        public boolean isExplicit() {
-            return false;
-        }
-
-        @Override
-        public boolean isConst() {
-            return false;
-        }
-
-        @Override
-        public CsmClass getContainingClass() {
-            return parent;
-        }
-
-        @Override
-        public CsmVisibility getVisibility() {
-            return CsmVisibility.NONE;
         }
 
         @Override
@@ -385,6 +372,10 @@ public class OperatorGenerator implements CodeGenerator {
         @Override
         public CharSequence getText() {
             StringBuilder buf = new StringBuilder();
+            if (specifiers!=null) {
+                buf.append(specifiers);
+                buf.append(' '); // NOI18N
+            }
             buf.append(returns);
             buf.append(' '); // NOI18N
             buf.append(name);
@@ -550,6 +541,69 @@ public class OperatorGenerator implements CodeGenerator {
         @Override
         public Collection<CsmScopeElement> getScopeElements() {
             return Collections.emptyList();
+        }
+    }
+
+    private static final class StubMethodImpl extends StubFunctionImpl implements CsmMethod {
+
+        public StubMethodImpl(CsmClass parent, CsmFunction.OperatorKind kind) {
+            super(parent, kind);
+        }
+
+        @Override
+        public CsmDeclaration.Kind getKind() {
+            return CsmDeclaration.Kind.FUNCTION_FRIEND;
+        }
+
+        @Override
+        public boolean isAbstract() {
+            return false;
+        }
+
+        @Override
+        public boolean isVirtual() {
+            return false;
+        }
+
+        @Override
+        public boolean isExplicit() {
+            return false;
+        }
+
+        @Override
+        public boolean isConst() {
+            return false;
+        }
+
+        @Override
+        public CsmClass getContainingClass() {
+            return parent;
+        }
+
+        @Override
+        public CsmVisibility getVisibility() {
+            return CsmVisibility.NONE;
+        }
+
+        @Override
+        public boolean isStatic() {
+            return false;
+        }
+    }
+    private static final class StubFriendImpl extends StubFunctionImpl implements CsmFriendFunction {
+
+        public StubFriendImpl(CsmClass parent, OperatorKind kind) {
+            super(parent, kind);
+        }
+
+        @Override
+        public CsmFunction getReferencedFunction() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public CsmClass getContainingClass() {
+            return parent;
         }
     }
 }

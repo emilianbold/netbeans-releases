@@ -48,7 +48,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import org.netbeans.modules.cnd.refactoring.codegen.ConstructorGenerator;
 import org.openide.awt.Mnemonics;
@@ -88,14 +88,14 @@ public class OperatorsPanel extends JPanel {
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConstructorGenerator.class, "A11Y_Generate_Operators"));
     }
 
-    public List<CsmMethod> getOperatorsToGenerate() {
+    public List<CsmFunction> getOperatorsToGenerate() {
         if (operatorsSelector == null) {
-            return Collections.<CsmMethod>emptyList();
+            return Collections.<CsmFunction>emptyList();
         }
         List<?> decls = operatorsSelector.getSelectedElements();
         // we know that list contains only fields
         @SuppressWarnings("unchecked")
-        List<CsmMethod> fields = (List<CsmMethod>) decls;
+        List<CsmFunction> fields = (List<CsmFunction>) decls;
         return fields;
     }
 
