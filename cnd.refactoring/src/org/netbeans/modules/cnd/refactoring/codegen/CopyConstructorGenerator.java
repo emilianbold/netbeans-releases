@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,13 +34,16 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.cnd.refactoring.codegen;
 
-import java.awt.Dialog;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -63,23 +60,19 @@ import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import org.netbeans.modules.cnd.refactoring.api.CsmContext;
-import org.netbeans.modules.cnd.refactoring.codegen.ui.ConstructorPanel;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author Alexander Simon
  */
-public class ConstructorGenerator implements CodeGenerator {
+public class CopyConstructorGenerator implements CodeGenerator {
 
     public static class Factory implements CodeGenerator.Factory {
 
@@ -100,7 +93,13 @@ public class ConstructorGenerator implements CodeGenerator {
             final Set<CsmField> mayBeIninitializedFields = new LinkedHashSet<>();
             final Set<CsmField> cannotBeInitializedFields = new LinkedHashSet<>();
             final List<CsmConstructor> constructors = new ArrayList<>();
-            final Map<CsmClass,List<CsmConstructor>> inheritedConstructors = new HashMap<>();
+            GeneratorUtils.scanForFieldsAndConstructors(typeElement, shouldBeInitializedFields, mayBeIninitializedFields, cannotBeInitializedFields, constructors);
+            for(CsmConstructor c : constructors) {
+                if (isCopyConstructor(typeElement, c)) {
+                    return ret;
+                }
+            }
+            final Map<CsmClass,CsmConstructor> inheritedConstructors = new HashMap<>();
             // check base class
             for (CsmInheritance csmInheritance : typeElement.getBaseClasses()) {
                 CsmClass baseClass = CsmInheritanceUtilities.getCsmClass(csmInheritance);
@@ -109,44 +108,15 @@ public class ConstructorGenerator implements CodeGenerator {
                     for (CsmMember member : baseClass.getMembers()) {
                         if (CsmKindUtilities.isConstructor(member) &&
                             CsmInheritanceUtilities.matchVisibility(member, csmInheritance.getVisibility()) &&
-                            !isCopyConstructor(baseClass, (CsmConstructor)member)) {
-                            list.add((CsmConstructor)member);
+                            isCopyConstructor(baseClass, (CsmConstructor) member)) {
+                            inheritedConstructors.put(baseClass, (CsmConstructor)member);
+                            break;
                         }
                     }
-                    if (!list.isEmpty()) {
-                        inheritedConstructors.put(baseClass, list);
-                    }
                 }
             }
-            GeneratorUtils.scanForFieldsAndConstructors(typeElement, shouldBeInitializedFields, mayBeIninitializedFields, cannotBeInitializedFields, constructors);
-            ElementNode.Description constructorDescription = null;
-            if (!inheritedConstructors.isEmpty()) {
-                List<ElementNode.Description> baseClassesDescriptions = new ArrayList<>();
-                for (Map.Entry<CsmClass,List<CsmConstructor>> entry : inheritedConstructors.entrySet()) {
-                    List<ElementNode.Description> constructorDescriptions = new ArrayList<>();
-                    for(CsmConstructor c : entry.getValue()) {
-                        constructorDescriptions.add(ElementNode.Description.create(c, null, true, false));
-                    }
-                    baseClassesDescriptions.add(ElementNode.Description.create(entry.getKey(), constructorDescriptions, false, false));
-                }
-                constructorDescription = ElementNode.Description.create(typeElement, baseClassesDescriptions, false, false);
-            }
-            ElementNode.Description fieldsDescription = null;
-            if (!mayBeIninitializedFields.isEmpty() || !shouldBeInitializedFields.isEmpty() || !cannotBeInitializedFields.isEmpty()) {
-                List<ElementNode.Description> fieldDescriptions = new ArrayList<>();
-                for (CsmField variableElement : mayBeIninitializedFields) {
-                    fieldDescriptions.add(ElementNode.Description.create(variableElement, null, true, variableElement.equals(objectUnderOffset)));
-                }
-                for (CsmField variableElement : shouldBeInitializedFields) {
-                    fieldDescriptions.add(ElementNode.Description.create(variableElement, null, true, true));
-                }
-                for (CsmField variableElement : cannotBeInitializedFields) {
-                    fieldDescriptions.add(ElementNode.Description.create(variableElement, null, false, false));
-                }
-                fieldsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, fieldDescriptions, false, false)), false, false);
-            }
-            if (constructorDescription != null || fieldsDescription != null) {
-                ret.add(new ConstructorGenerator(component, path, typeElement, constructorDescription, fieldsDescription));
+            if (shouldBeInitializedFields.size() + mayBeIninitializedFields.size() + inheritedConstructors.size() > 0) {
+                ret.add(new CopyConstructorGenerator(component, path, typeElement, shouldBeInitializedFields, mayBeIninitializedFields, inheritedConstructors));
             }
             return ret;
         }
@@ -167,46 +137,35 @@ public class ConstructorGenerator implements CodeGenerator {
     }
     
     private final JTextComponent component;
-    private final ElementNode.Description constructorDescription;
-    private final ElementNode.Description fieldsDescription;
     private final CsmContext contextPath;
     private final CsmClass type;
+    private final Set<CsmField> shouldBeInitializedFields;
+    private final Set<CsmField> mayBeIninitializedFields;
+    private final Map<CsmClass,CsmConstructor> inheritedConstructors;
 
-    /** Creates a new instance of ConstructorGenerator */
-    private ConstructorGenerator(JTextComponent component, CsmContext path, CsmClass type, ElementNode.Description constructorDescription, ElementNode.Description fieldsDescription) {
+    public CopyConstructorGenerator(JTextComponent component, CsmContext contextPath, CsmClass type, Set<CsmField> shouldBeInitializedFields, Set<CsmField> mayBeIninitializedFields, Map<CsmClass,CsmConstructor> inheritedConstructors) {
         this.component = component;
-        this.constructorDescription = constructorDescription;
-        this.fieldsDescription = fieldsDescription;
-        this.contextPath = path;
+        this.contextPath = contextPath;
         this.type = type;
+        this.shouldBeInitializedFields = shouldBeInitializedFields;
+        this.mayBeIninitializedFields = mayBeIninitializedFields;
+        this.inheritedConstructors = inheritedConstructors;
     }
 
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(ConstructorGenerator.class, "LBL_constructor"); //NOI18N
+        return NbBundle.getMessage(ConstructorGenerator.class, "LBL_copy_constructor"); //NOI18N
     }
 
     @Override
     public void invoke() {
         UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, CsmRefactoringUtils.GENERATE_TRACKING, "CONSTRUCTOR"); // NOI18N
-        if (constructorDescription != null || fieldsDescription != null) {
-            final ConstructorPanel panel = new ConstructorPanel(constructorDescription, fieldsDescription);
-            DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_constructor")); //NOI18N
-            Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-            try {
-                dialog.setVisible(true);
-            } catch (Throwable th) {
-                if (!(th.getCause() instanceof InterruptedException)) {
-                    throw new RuntimeException(th);
-                }
-                dialogDescriptor.setValue(DialogDescriptor.CANCEL_OPTION);
-            } finally {
-                dialog.dispose();
-            }
-            if (dialogDescriptor.getValue() != dialogDescriptor.getDefaultValue()) {
-                return;
-            }
-            GeneratorUtils.generateConstructor(contextPath,  type, panel.getInheritedConstructors(), panel.getVariablesToInitialize());
+        if (shouldBeInitializedFields.size() + mayBeIninitializedFields.size() + inheritedConstructors.size() > 0) {
+            ArrayList<CsmField> fields = new ArrayList<>();
+            fields.addAll(shouldBeInitializedFields);
+            fields.addAll(mayBeIninitializedFields);
+            ArrayList<CsmConstructor> constructors = new ArrayList<>(inheritedConstructors.values());
+            GeneratorUtils.generateCopyConstructor(contextPath,  type, constructors, fields);
         }
     }
 }
