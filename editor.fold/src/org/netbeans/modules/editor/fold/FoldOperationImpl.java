@@ -742,7 +742,9 @@ public final class FoldOperationImpl {
                 }
                 for (FoldInfo info : toAdd) {
                     try {
-                        if (info.getStart() > len || info.getEnd() > len) {
+                        int s = info.getStart();
+                        int e = info.getEnd();
+                        if (s > len || e > (len + 1) || s  >= e) {
                             // invalid fold info; possibly document has changed from the time FoldInfo was created.
                             continue;
                         }
@@ -886,14 +888,21 @@ public final class FoldOperationImpl {
             int origStart = soffs;
             ApiPackageAccessor acc = getAccessor();
             int len = getDocument().getLength();
-            if (info.getStart() > len || info.getEnd() > len) {
+            if (info.getStart() > len || info.getEnd() > (len + 1)) {
                 // no update done, new values are not valid
                 return f;
-            } 
+            }
+            if (info.getStart() >= info.getEnd()) {
+                // the fold would become invalid after update. Should never happen as FoldInfo asserts
+                // on creation
+                LOG.warning("FoldInfo: " + info + ", invalid start and end offsets");
+                return f;
+            }
             if (info.getStart() != soffs) {
                 acc.foldSetStartOffset(f, getDocument(), info.getStart());
                 FoldStateChange state = getFSCH(f);
                 if (state.getOriginalEndOffset() >= 0 && state.getOriginalEndOffset() < soffs) {
+                    execution.markDamaged();
                     LOG.warning("Original start offset > end offset, dumping fold hierarchy: " + execution);
                     LOG.warning("FoldInfo: " + info + ", fold: " + f);
                 }
@@ -905,6 +914,7 @@ public final class FoldOperationImpl {
             if (info.getEnd() != eoffs) {
                 FoldStateChange state = getFSCH(f);
                 if (state.getOriginalStartOffset()>= 0 && state.getOriginalStartOffset() > eoffs) {
+                    execution.markDamaged();
                     LOG.warning("Original end offset < start offset, dumping fold hierarchy: " + execution);
                     LOG.warning("FoldInfo: " + info + ", fold: " + f);
                 }
@@ -913,6 +923,7 @@ public final class FoldOperationImpl {
                 eoffs = info.getEnd();
             }
             if (soffs > eoffs) {
+                execution.markDamaged();
                 LOG.warning("Updated end offset < start offset, dumping fold hierarchy: " + execution);
                 LOG.warning("FoldInfo: " + info + ", fold: " + f);
             }
@@ -925,6 +936,7 @@ public final class FoldOperationImpl {
                     if (index > 0) {
                         Fold prev = p.getFold(index - 1);
                         if (prev.getEndOffset() > f.getStartOffset()) {
+                            execution.markDamaged();
                             LOG.warning("Wrong fold nesting after update, hierarchy: " + execution);
                             LOG.warning("FoldInfo: " + info + ", fold: " + f + " origStart-End" + origStart + "-" + origEnd);
                         }
@@ -932,6 +944,7 @@ public final class FoldOperationImpl {
                     if (index < p.getFoldCount() - 1) {
                         Fold next = p.getFold(index + 1);
                         if (next.getStartOffset() < f.getEndOffset()) {
+                            execution.markDamaged();
                             LOG.warning("Wrong fold nesting after update, hierarchy: " + execution);
                             LOG.warning("FoldInfo: " + info + ", fold: " + f + " origStart-End" + origStart + "-" + origEnd);
                         }
