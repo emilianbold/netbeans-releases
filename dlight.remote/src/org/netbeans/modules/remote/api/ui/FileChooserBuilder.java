@@ -108,15 +108,15 @@ public final class FileChooserBuilder {
          * - is fast (in the case remote host info isn't avaliable, just returns  "/")
          * @return user home
          */
-        /*package*/ abstract String getHomePath();
+        protected abstract String getHomePath();
 
         /**
          * Used to determine whether "~" should be expanded to home directory
          * @return 
          */
-        /*package*/ abstract boolean isUnix();
+        protected abstract boolean isUnix();
 
-        /*package*/ abstract char getFileSeparatorChar();
+        protected abstract char getFileSeparatorChar();
         
         @Override
         public final File getCurrentDirectory() {
