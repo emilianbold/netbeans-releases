@@ -58,6 +58,8 @@ import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFriend;
+import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
@@ -247,10 +249,25 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
                                         CsmFunction method = (CsmFunction) member;
                                         CsmFunctionDefinition definition = method.getDefinition();
                                         if (definition == null) {
-                                            items.add(CsmImplementsMethodCompletionItem.createImplementItem(queryAnchorOffset, caretOffset, cls, member));
+                                            items.add(CsmImplementsMethodCompletionItem.createImplementItem(queryAnchorOffset, caretOffset, cls, method));
                                         } else if (method == definition){
                                             final CsmImplementsMethodCompletionItem item =
-                                                    CsmImplementsMethodCompletionItem.createExtractBodyItem(queryAnchorOffset, caretOffset, cls, member);
+                                                    CsmImplementsMethodCompletionItem.createExtractBodyItem(queryAnchorOffset, caretOffset, cls, method);
+                                            if (item != null) {
+                                                items.add(item);
+                                            }
+                                        }
+                                    }
+                                }
+                                for(CsmFriend member : cls.getFriends()) {
+                                    if (CsmKindUtilities.isFriendMethod(member)) {
+                                        CsmFriendFunction method = (CsmFriendFunction) member;
+                                        CsmFunctionDefinition definition = method.getDefinition();
+                                        if (definition == null) {
+                                            items.add(CsmImplementsMethodCompletionItem.createImplementItem(queryAnchorOffset, caretOffset, cls, method));
+                                        } else if (method == definition){
+                                            final CsmImplementsMethodCompletionItem item =
+                                                    CsmImplementsMethodCompletionItem.createExtractBodyItem(queryAnchorOffset, caretOffset, cls, method);
                                             if (item != null) {
                                                 items.add(item);
                                             }
