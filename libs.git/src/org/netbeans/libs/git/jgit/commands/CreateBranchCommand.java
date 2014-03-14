@@ -47,6 +47,7 @@ import java.util.Map;
 import org.eclipse.jgit.api.CreateBranchCommand.SetupUpstreamMode;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.eclipse.jgit.api.errors.RefNotFoundException;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
@@ -93,7 +94,7 @@ public class CreateBranchCommand extends GitCommand {
             if (!createBranchInEmptyRepository(repository)) {
                 throw new GitException(ex);
             }
-        } catch (GitAPIException ex) {
+        } catch (JGitInternalException | GitAPIException ex) {
             throw new GitException(ex);
         }
         ListBranchCommand branchCmd = new ListBranchCommand(repository, getClassFactory(), false, new DelegatingGitProgressMonitor(monitor));

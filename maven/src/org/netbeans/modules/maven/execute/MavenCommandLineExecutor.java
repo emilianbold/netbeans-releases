@@ -526,7 +526,9 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             }
             // TODO: do we really put *all* the env vars there? maybe filter, M2_HOME and JDK_HOME?
             builder.environment().put(env, val);
-            display.append(Utilities.escapeParameters(new String[] {env + "=" + val})).append(' '); // NOI18N
+            if (!env.equals(CosChecker.NETBEANS_PROJECT_MAPPINGS)) { //don't show to user
+                display.append(Utilities.escapeParameters(new String[] {env + "=" + val})).append(' '); // NOI18N
+            }
         }
        
         //#195039
@@ -540,7 +542,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         List<String> command = new ArrayList<String>(builder.command());
         for (Iterator<String> it = command.iterator(); it.hasNext();) {
             String s = it.next();
-            if (s.startsWith("-D" + CosChecker.MAVENEXTCLASSPATH + "=") || s.startsWith("-D" + CosChecker.NETBEANS_PROJECT_MAPPINGS + "=")) {
+            if (s.startsWith("-D" + CosChecker.MAVENEXTCLASSPATH + "=")) {
                 it.remove();
             }
         }
@@ -601,7 +603,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     }
 
     private void printCoSWarning(BeanRunConfig clonedConfig, InputOutput ioput) {
-        if (clonedConfig.getProperties().containsKey(CosChecker.NETBEANS_PROJECT_MAPPINGS)) {
+        if (clonedConfig.getProperties().containsKey(CosChecker.ENV_NETBEANS_PROJECT_MAPPINGS)) {
             printGray(ioput, "Running NetBeans Compile On Save execution. Phase execution is skipped and output directories of dependency projects (with Compile on Save turned on) will be used instead of their jar artifacts.");
             if (isMaven2()) {
                 printGray(ioput, "WARNING: Using Maven 2.x for execution, NetBeans cannot establish links between current project and output directories of dependency projects with Compile on Save turned on. Only works with Maven 3.0+.");

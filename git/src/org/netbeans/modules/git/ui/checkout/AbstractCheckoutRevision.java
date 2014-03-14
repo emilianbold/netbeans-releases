@@ -73,7 +73,7 @@ public abstract class AbstractCheckoutRevision implements DocumentListener, Acti
     private JButton okButton;
     private DialogDescriptor dd;
     private boolean revisionValid = true;
-    private boolean nameValid;
+    private String msgInvalidName;
     private boolean branchNameRecommended = true;
     private String branchName;
     private final Map<String, GitBranch> branches;
@@ -136,12 +136,8 @@ public abstract class AbstractCheckoutRevision implements DocumentListener, Acti
         boolean flag = revisionValid;
         boolean messageSet = false;
         if (flag) {
-            if (panel.cbCheckoutAsNewBranch.isSelected() && !nameValid) {
-                if (panel.branchNameField.getText().isEmpty()) {
-                    setErrorMessage(NbBundle.getMessage(AbstractCheckoutRevision.class, "MSG_CheckoutRevision.errorBranchNameEmpty")); //NOI18N
-                } else {
-                    setErrorMessage(NbBundle.getMessage(AbstractCheckoutRevision.class, "MSG_CheckoutRevision.errorBranchExists")); //NOI18N
-                }
+            if (panel.cbCheckoutAsNewBranch.isSelected() && msgInvalidName != null) {
+                setErrorMessage(msgInvalidName);
                 flag = false;
                 messageSet = true;
             } else if (!panel.cbCheckoutAsNewBranch.isSelected() && branchNameRecommended) {
@@ -179,11 +175,26 @@ public abstract class AbstractCheckoutRevision implements DocumentListener, Acti
         }
     }
 
+    @NbBundle.Messages({
+        "MSG_CheckoutRevision.errorBranchNameEmpty=No branch name entered",
+        "MSG_CheckoutRevision.errorBranchExists=A branch with the given name already exists",
+        "# {0} - branch name",
+        "MSG_CheckoutRevision.errorParentExists=Cannot create branch under already existing \"{0}\""
+    })
     private void validateName () {
-        nameValid = true;
+        msgInvalidName = null;
         branchName = panel.branchNameField.getText();
-        if (branchName.isEmpty() || branches.containsKey(branchName)) {
-            nameValid = false;
+        if (branchName.isEmpty()) {
+            msgInvalidName = Bundle.MSG_CheckoutRevision_errorBranchNameEmpty();
+        } else if (branches.containsKey(branchName)) {
+            msgInvalidName = Bundle.MSG_CheckoutRevision_errorBranchExists();
+        } else {
+            for (String branch : branches.keySet()) {
+                if (branchName.startsWith(branch + "/") || branch.startsWith(branchName + "/")) {
+                    msgInvalidName = Bundle.MSG_CheckoutRevision_errorParentExists(branch);
+                    break;
+                }
+            }
         }
         validate();
     }
