@@ -71,7 +71,7 @@ public class CreateBranch implements DocumentListener {
     private JButton okButton;
     private DialogDescriptor dd;
     private boolean revisionValid = true;
-    private Boolean nameValid = false;
+    private String msgInvalidName;
     private String branchName;
     private final Icon ICON_ERROR = new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/info.png")); //NOI18N
     private final Map<String, GitBranch> existingBranches;
@@ -129,13 +129,9 @@ public class CreateBranch implements DocumentListener {
     }
 
     private void validate () {
-        boolean flag = revisionValid & Boolean.TRUE.equals(nameValid);
-        if (revisionValid && Boolean.FALSE.equals(nameValid)) {
-            if (getBranchName().isEmpty()) {
-                setErrorMessage(NbBundle.getMessage(CreateBranch.class, "MSG_CreateBranch.errorBranchNameEmpty")); //NOI18N
-            } else {
-                setErrorMessage(NbBundle.getMessage(CreateBranch.class, "MSG_CreateBranch.errorBranchExists")); //NOI18N
-            }
+        boolean flag = revisionValid && msgInvalidName == null;
+        if (revisionValid && msgInvalidName != null) {
+            setErrorMessage(msgInvalidName);
         }
         if (flag) {
             setErrorMessage(null);
@@ -157,15 +153,29 @@ public class CreateBranch implements DocumentListener {
     @Override
     public void changedUpdate (DocumentEvent e) { }
 
+    @NbBundle.Messages({
+        "MSG_CreateBranch.errorBranchNameEmpty=Invalid branch name",
+        "MSG_CreateBranch.errorBranchExists=A branch with the given name already exists.",
+        "# {0} - branch name",
+        "MSG_CreateBranch.errorParentExists=Cannot create branch under already existing \"{0}\""
+    })
     private void validateName () {
         if (!internalChange) {
             nameModifiedByUser = true;
         }
-        nameValid = false;
+        msgInvalidName = null;
         branchName = getBranchName();
-        if (!branchName.isEmpty()) {
-            nameValid = !localBranchNames.contains(branchName);
-            validate();
+        if (branchName.isEmpty()) {
+            msgInvalidName = Bundle.MSG_CreateBranch_errorBranchNameEmpty();
+        } else if (localBranchNames.contains(branchName)) {
+            msgInvalidName = Bundle.MSG_CreateBranch_errorBranchExists();
+        } else {
+            for (String branch : localBranchNames) {
+                if (branchName.startsWith(branch + "/") || branch.startsWith(branchName + "/")) {
+                    msgInvalidName = Bundle.MSG_CreateBranch_errorParentExists(branch);
+                    break;
+                }
+            }
         }
         validate();
     }
