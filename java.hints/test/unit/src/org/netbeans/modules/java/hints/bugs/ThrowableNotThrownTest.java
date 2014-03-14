@@ -225,4 +225,88 @@ public class ThrowableNotThrownTest extends NbTestCase {
                 .run(ThrowableNotThrown.class)
                 .assertWarnings("4:8-4:11:verifier:Throwable method result is ignored");
     }
+    
+    /**
+     * Checks that a call to getCause that stands alone is reported
+     */
+    public void testGetCauseAloneReported() throws Exception {
+        HintTest.create()
+                .input(
+                "package test;\n" +
+                "import java.lang.reflect.InvocationTargetException;\n" +
+                "public final class Test\n" +
+                "{\n" +
+                "  public static Object bar (java.lang.reflect.Method m) {\n" +
+                "    try {\n" +
+                "      return m.invoke(null);\n" +
+                "    }\n" +
+                "    catch (InvocationTargetException t) {\n" +
+                "        t.getCause(); \n" +
+                "      return null;\n" +
+                "    }\n" +
+                "    catch (IllegalAccessException t) {\n" +
+                "      return null;\n" +
+                "    }\n" +
+                "  } " +
+                "}"
+                )
+                .run(ThrowableNotThrown.class)
+                .assertWarnings("9:8-9:20:verifier:Throwable method result is ignored");
+    }
+
+
+    /**
+     * Checks that a call to getCause that is passed somewhere is OK
+     */
+    public void testGetCausePassedOn() throws Exception {
+        HintTest.create()
+                .input(
+                "package test;\n" +
+                "import java.lang.reflect.InvocationTargetException;\n" +
+                "public final class Test\n" +
+                "{\n" +
+                "  public static Object bar (java.lang.reflect.Method m) {\n" +
+                "    try {\n" +
+                "      return m.invoke(null);\n" +
+                "    }\n" +
+                "    catch (InvocationTargetException t) {\n" +
+                "      System.err.println(t.getCause()); // <-- No hint\n" +
+                "      return null;\n" +
+                "    }\n" +
+                "    catch (IllegalAccessException t) {\n" +
+                "      return null;\n" +
+                "    }\n" +
+                "  } " +
+                "}"
+                )
+                .run(ThrowableNotThrown.class)
+                .assertWarnings();
+    }
+
+
+    public void testMethodInvokedOnThrowable() throws Exception {
+        HintTest.create()
+                .input(
+                "package test;\n" +
+                "import java.lang.reflect.InvocationTargetException;\n" +
+                "public final class Test\n" +
+                "{\n" +
+                "  public static Object foo (java.lang.reflect.Method m) {\n" +
+                "    try {\n" +
+                "      return m.invoke(null);\n" +
+                "    }\n" +
+                "    catch (InvocationTargetException t) {\n" +
+                "      System.err.println(t.getCause().toString());\n" +
+                "      return null;\n" +
+                "    }\n" +
+                "    catch (IllegalAccessException t) {\n" +
+                "      return null;\n" +
+                "    } \n" +
+                "  }" +
+                "}"
+                )
+                .run(ThrowableNotThrown.class)
+                .assertWarnings();
+    }
+
 }

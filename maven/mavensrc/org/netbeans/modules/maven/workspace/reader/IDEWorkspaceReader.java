@@ -65,7 +65,7 @@ public class IDEWorkspaceReader implements WorkspaceReader {
 
     public IDEWorkspaceReader() {
         mappings = new HashMap<String, File>();
-        String mapp = System.getProperty("netbeansProjectMappings");
+        String mapp = System.getenv("netbeansProjectMappings");
         if (mapp != null) {
             StringTokenizer st = new StringTokenizer(mapp, ",");
             while (st.hasMoreTokens()) {

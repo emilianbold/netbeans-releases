@@ -44,6 +44,7 @@ package org.netbeans.modules.java.hints.bugs;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -59,6 +60,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.introduce.Flow;
 import org.netbeans.modules.java.hints.introduce.Flow.FlowResult;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -302,6 +304,24 @@ public class ThrowableNotThrown {
                         process = true;
                         break;
                     }
+                    case MEMBER_SELECT: {
+                        Element el = info.getTrees().getElement(excPath);
+                        if (el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR) {
+                            ExecutableElement xel = (ExecutableElement)el;
+                            TypeMirror tm = xel.getReturnType();
+                            if (!Utilities.isValidType(tm) || tm.getKind() == TypeKind.VOID) {
+                                return true;
+                            }
+                            // probably method invocation, skip the parent
+                            Tree.Kind k = excPath.getParentPath().getLeaf().getKind();
+                            if (k == Tree.Kind.NEW_CLASS || k == Tree.Kind.METHOD_INVOCATION) {
+                                return true;
+                            }
+                        }
+                        process = true;
+                        break;
+                    }
+                    
                     case METHOD_INVOCATION: {
                         // might be OK, instance passed to a method 
                         MethodInvocationTree invTree = (MethodInvocationTree)leaf;
@@ -309,6 +329,12 @@ public class ThrowableNotThrown {
                         // should be considered OK ???
                         return invTree.getArguments().contains(prevLeaf);
                     }
+                    // the same for ctor invocation
+                    case NEW_CLASS: {
+                        NewClassTree nct = (NewClassTree)leaf;
+                        return nct.getArguments().contains(prevLeaf);
+                    }
+                        
 
                     case PARENTHESIZED:
                     case TYPE_CAST: 
@@ -324,7 +350,7 @@ public class ThrowableNotThrown {
                     }
 
                 }
-                
+                prevLeaf = excPath.getLeaf();
             } while (process);
             return varAssignments.isEmpty() ? Boolean.FALSE : null;
         }

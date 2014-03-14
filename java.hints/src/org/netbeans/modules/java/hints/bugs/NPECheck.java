@@ -49,12 +49,11 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.UnionType;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -407,7 +406,17 @@ public class NPECheck {
         private final CompilationInfo info;
         private final AtomicBoolean cancelFlag;
         
-        private Map<VariableElement, State> variable2State = new HashMap<VariableElement, NPECheck.State>();
+        /**
+         * Tracks variables which are in scope. When a variable goes out of scope, its state (if any) moves
+         * to {@link #variable2StateFinal}.
+         */
+        private Map<VariableElement, State> variable2State = new HashMap<VariableElement, State>();
+
+        /**
+         * Finalized state of variables. Records for variables, which go out of scope is collected here.
+         */
+        private Map<VariableElement, State> variable2StateFinal = new HashMap<VariableElement, State>();
+        
         private final Map<Tree, Collection<Map<VariableElement, State>>> resumeBefore = new IdentityHashMap<Tree, Collection<Map<VariableElement, State>>>();
         private final Map<Tree, Collection<Map<VariableElement, State>>> resumeAfter = new IdentityHashMap<Tree, Collection<Map<VariableElement, State>>>();
         private       Map<TypeMirror, Map<VariableElement, State>> resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Map<VariableElement, State>>();
@@ -415,15 +424,40 @@ public class NPECheck {
         private final List<TreePath> pendingFinally = new LinkedList<TreePath>();
         private boolean not;
         private boolean doNotRecord;
-
-        public VisitorImpl(HintContext ctx, CompilationInfo info, AtomicBoolean cancel) {
+        private final TypeElement throwableEl;
+        private final TypeMirror runtimeExceptionType;
+        private final TypeMirror errorType;
+ 
+        /**
+         * For a Tree, collects variables scoped into that tree. The Map is used
+         * when the traversal exits the tree, to clean up variables that go out of scope from
+         * variable2State, so state cloning takes less memory
+         */
+        private final Map<Tree, Collection<VariableElement>> scopedVariables = new IdentityHashMap<Tree, Collection<VariableElement>>();
+                
+        public VisitorImpl(HintContext ctx, CompilationInfo aInfo, AtomicBoolean cancel) {
             this.ctx = ctx;
             if (ctx != null) {
                 this.info = ctx.getInfo();
                 this.cancelFlag = null;
             } else {
-                this.info = info;
+                this.info = aInfo;
                 this.cancelFlag = cancel != null ? cancel : new AtomicBoolean(false);
+            }
+
+            
+            this.throwableEl = this.info.getElements().getTypeElement("java.lang.Throwable"); // NOI18N
+            TypeElement tel =  this.info.getElements().getTypeElement("java.lang.RuntimeException"); // NOI18N
+            if (tel != null) {
+                runtimeExceptionType = tel.asType();
+            } else {
+                runtimeExceptionType = null;
+            }
+            tel =  this.info.getElements().getTypeElement("java.lang.Error"); // NOI18N
+            if (tel != null) {
+                errorType = tel.asType();
+            } else {
+                errorType = null;
             }
         }
         
@@ -460,6 +494,16 @@ public class NPECheck {
             
             resume(tree, resumeAfter);
             
+            Collection<VariableElement> varsOutScope = scopedVariables.get(tree);
+            if (varsOutScope != null) {
+                for (VariableElement ve : varsOutScope) {
+                    State s = variable2State.get(ve);
+                    if (s != null) {
+                        variable2StateFinal.put(ve, s);
+                    }
+                }
+                variable2State.keySet().removeAll(varsOutScope);
+            }
             return r;
         }
 
@@ -502,6 +546,15 @@ public class NPECheck {
             return null;
         }
 
+        private void addScopedVariable(Tree t, VariableElement ve) {
+            Collection<VariableElement> c = scopedVariables.get(t);
+            if (c == null) {
+                c = new ArrayList<VariableElement>(3);
+                scopedVariables.put(t, c);
+            }
+            c.add(ve);
+        }
+
         @Override
         public State visitVariable(VariableTree node, Void p) {
             Element e = info.getTrees().getElement(getCurrentPath());
@@ -512,6 +565,10 @@ public class NPECheck {
             
             if (e != null) {
                 variable2State.put((VariableElement) e, r);
+                TreePath pp = getCurrentPath().getParentPath();
+                if (pp != null) {
+                    addScopedVariable(pp.getLeaf(), (VariableElement)e);
+                }
             }
             
             return r;
@@ -1004,37 +1061,62 @@ public class NPECheck {
 
             variable2State = new HashMap<VariableElement, State>(oldVariable2State);
 
+            // resumeOnEx will save states from potential exceptions thrown by try siblings
+            // or outer blocks. 
+            // resumeOnEx will be later reused for recorded handlers from the try block.
+            Map<TypeMirror, Map<VariableElement, State>> resumeOnEx = null;
+            List<TypeMirror> caughtTypes = null;
+            if (node.getCatches() != null && !node.getCatches().isEmpty()) {
+                caughtTypes = new ArrayList<TypeMirror>(node.getCatches().size());
+                resumeOnEx = new IdentityHashMap<TypeMirror, Map<VariableElement, State>>(caughtTypes.size());
+                for (CatchTree ct : node.getCatches()) {
+                    for (TypeMirror exT : Utilities.getUnionExceptions(info, getCurrentPath(), ct)) {
+                        Map<VariableElement, State> data = resumeOnExceptionHandler.get(exT);
+                        if (data != null) {
+                            resumeOnEx.put(exT, data);
+                        }
+                        resumeOnExceptionHandler.put(exT, new HashMap<VariableElement, State>());
+                        caughtTypes.add(exT);
+                    }
+                }
+                // make an implicit transition since Error can happen on any allocation and RTE on virtually any
+                // arithmetic/dereference
+                recordResumeOnExceptionHandler(runtimeExceptionType);
+                recordResumeOnExceptionHandler(errorType);
+            }
+
             scan(node.getBlock(), null);
 
+            if (caughtTypes != null) {
+                recordResumeOnExceptionHandler(runtimeExceptionType);
+                recordResumeOnExceptionHandler(errorType);
+            }
             HashMap<VariableElement, State> afterBlockVariable2State = new HashMap<VariableElement, State>(variable2State);
+
+            // catch handlers and finally block will report exception to outer catches, restore
+            // masked exception types
+            if (caughtTypes != null) {
+                for (TypeMirror exT : caughtTypes) {
+                    Map<VariableElement, State> oldData = resumeOnEx.remove(exT);
+                    Map<VariableElement, State> data = resumeOnExceptionHandler.remove(exT);
+                    if (data != null) {
+                        resumeOnEx.put(exT, data);
+                    }
+                    if (oldData != null) {
+                        resumeOnExceptionHandler.put(exT, oldData);
+                    }
+                }
+            }
 
             for (CatchTree ct : node.getCatches()) {
                 Map<VariableElement, State> variable2StateBeforeCatch = variable2State;
 
                 variable2State = new HashMap<VariableElement, State>(oldVariable2State);
 
-                if (ct.getParameter() != null) {
-                    TypeMirror caught = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), ct.getParameter()));
-                    List<TypeMirror> caughtExceptions = new ArrayList<TypeMirror>();
-
-                    if (caught != null && caught.getKind() != TypeKind.ERROR) {
-                        if (caught.getKind() == TypeKind.UNION) {
-                            caughtExceptions.addAll(((UnionType) caught).getAlternatives());
-                        } else {
-                            caughtExceptions.add(caught);
-                        }
-                    }
-                    
-                    for (TypeMirror caughtException : caughtExceptions) {
-                        for (Iterator<Entry<TypeMirror, Map<VariableElement, State>>> it = resumeOnExceptionHandler.entrySet().iterator(); it.hasNext();) {
-                            Entry<TypeMirror, Map<VariableElement, State>> e = it.next();
-
-                            if (info.getTypes().isSubtype(e.getKey(), caughtException)) {
-                                mergeIntoVariable2State(e.getValue());
-
-                                it.remove();
-                            }
-                        }
+                for (TypeMirror cc : Utilities.getUnionExceptions(info, getCurrentPath(), ct)) {
+                    Map<VariableElement, State> data = resumeOnEx.get(cc);
+                    if (data != null) {
+                        mergeIntoVariable2State(data);
                     }
                 }
                 
@@ -1086,16 +1168,32 @@ public class NPECheck {
             recordResumeOnExceptionHandler(thrown, variable2State);
         }
         
+        /**
+         * Records continuation to the exception handler if a throwable is raised.
+         * Optimization: the resumeOnExceptionHandler must contain an entry for the
+         * throwable and/or its superclass. If not, then no enclosing catch handler
+         * is interested in the Throwable and no state snapshot is necessary.
+         * 
+         * @param thrown thrown exception type
+         */
         private void recordResumeOnExceptionHandler(TypeMirror thrown, Map<VariableElement, State> variable2State) {
-            if (thrown == null || thrown.getKind() == TypeKind.ERROR) return;
+            if (thrown == null || thrown.getKind() != TypeKind.DECLARED) return;
+            DeclaredType dtt = (DeclaredType)thrown;
             
-            Map<VariableElement, State> r = resumeOnExceptionHandler.get(thrown);
-
-            if (r == null) {
-                resumeOnExceptionHandler.put(thrown, r = new HashMap<>());
-            }
-
-            mergeInto(r, variable2State);
+            do {
+                // hack; getSuperclass may provide different type instance for the same element.
+                thrown = dtt.asElement().asType();
+                Map<VariableElement, State> r = resumeOnExceptionHandler.get(thrown);
+                if (r != null) {
+                    mergeInto(r, variable2State);
+                    break;
+                }
+                TypeElement tel = (TypeElement)dtt.asElement();
+                if (tel == throwableEl) {
+                    break;
+                }
+                dtt = (DeclaredType)tel.getSuperclass();
+            } while (dtt != null);
         }
         
         private void resumeAfter(Tree target, Map<VariableElement, State> state) {

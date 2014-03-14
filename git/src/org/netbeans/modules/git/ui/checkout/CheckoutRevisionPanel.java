@@ -83,7 +83,6 @@ public class CheckoutRevisionPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(cbCheckoutAsNewBranch, org.openide.util.NbBundle.getMessage(CheckoutRevisionPanel.class, "CheckoutRevisionPanel.cbCheckoutAsNewBranch.text")); // NOI18N
 
         lblError.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/info.png"))); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(lblError, org.openide.util.NbBundle.getMessage(CheckoutRevisionPanel.class, "MSG_CheckoutRevision.errorBranchExists")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
