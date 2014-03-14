@@ -110,11 +110,6 @@ public class SuperConstructorSelectorPanel extends JPanel {
         add(panel, gridBagConstraints);
     }
 
-    @Override
-    public boolean requestFocusInWindow() {
-        return firstButton.requestFocusInWindow();
-    }
-
     public List<CsmDeclaration> getSelectedElements() {
         ArrayList<CsmDeclaration> handles = new ArrayList<>();
         for(Map.Entry<JRadioButton,ElementNode.Description> entry : buttons.entrySet()) {

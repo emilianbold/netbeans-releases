@@ -254,7 +254,7 @@ public final class Fold {
      */
     public int getEndOffset() {
         return isRootFold()
-            ? operation.getHierarchy().getComponent().getDocument().getLength()
+            ? operation.getHierarchy().getComponent().getDocument().getLength() + 1
             : endPos.getOffset();
     }
     
