@@ -339,6 +339,9 @@ public class ToolbarWithOverflow extends JToolBar {
     }
     
     private void displayOverflow() {
+        if( !overflowButton.isShowing() ) {
+            return;
+        }
         int x = getOrientation() == HORIZONTAL ? overflowButton.getLocationOnScreen().x : overflowButton.getLocationOnScreen().x + overflowButton.getWidth();
         int y = getOrientation() == HORIZONTAL ? overflowButton.getLocationOnScreen().y + overflowButton.getHeight() : overflowButton.getLocationOnScreen().y;
         popup.setLocation(x, y);
