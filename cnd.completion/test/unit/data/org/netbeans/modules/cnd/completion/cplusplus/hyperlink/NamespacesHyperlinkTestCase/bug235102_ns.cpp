@@ -18,4 +18,24 @@ namespace bug235102_ns {
             }
         } 
     }
+    
+    namespace UD_A_235102 {
+        struct Test235102 {
+            int foo();
+        };
+    }
+    
+    namespace UD_B_235102 {
+        using UD_A_235102::Test235102;
+    }
+    
+    namespace UD_B_235102 {
+        namespace UD_C_235102 {
+            Test235102 x;
+
+            int ud_func_235102() {
+                x.foo(); // foo is unresolved
+            }
+        }         
+    }
 }
