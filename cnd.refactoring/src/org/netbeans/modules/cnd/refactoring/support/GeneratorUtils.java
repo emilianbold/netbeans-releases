@@ -71,6 +71,8 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
@@ -339,6 +341,22 @@ public class GeneratorUtils {
                     superInit.append(", "); // NOI18N
                 }
                 superInit.append(constructor.getContainingClass().getName());
+                if (CsmKindUtilities.isTemplate(constructor.getContainingClass())) {
+                    final CsmTemplate template = (CsmTemplate)constructor.getContainingClass();
+                    List<CsmTemplateParameter> templateParameters = template.getTemplateParameters();
+                    if (templateParameters.size() > 0) {
+                        superInit.append("<");//NOI18N
+                        boolean afirst = true;
+                        for(CsmTemplateParameter param : templateParameters) {
+                            if (!afirst) {
+                                superInit.append(", "); //NOI18N
+                            }
+                            afirst = false;
+                            superInit.append(param.getName());
+                        }
+                        superInit.append(">");//NOI18N
+                    }
+                }
                 superInit.append('('); // NOI18N
                 superInit.append(args);
                 superInit.append(')'); // NOI18N
@@ -408,6 +426,22 @@ public class GeneratorUtils {
             result.append(enclosingClass.getName());
             result.append("(const "); // NOI18N
             result.append(enclosingClass.getName());
+            if (CsmKindUtilities.isTemplate(enclosingClass)) {
+                final CsmTemplate template = (CsmTemplate)enclosingClass;
+                List<CsmTemplateParameter> templateParameters = template.getTemplateParameters();
+                if (templateParameters.size() > 0) {
+                    result.append("<");//NOI18N
+                    boolean afirst = true;
+                    for(CsmTemplateParameter param : templateParameters) {
+                        if (!afirst) {
+                            result.append(", "); //NOI18N
+                        }
+                        afirst = false;
+                        result.append(param.getName());
+                    }
+                    result.append(">");//NOI18N
+                }
+            }
             result.append("& other) :"); // NOI18N
             result.append('\n'); // NOI18N
             boolean first = true;
