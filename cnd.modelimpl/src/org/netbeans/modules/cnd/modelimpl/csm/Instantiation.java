@@ -495,6 +495,8 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         private CsmMember createMember(CsmMember member) {
             if (member instanceof CsmField) {
                 return new Field((CsmField)member, this);
+            } else if (member instanceof CsmConstructor) {
+                return new Constructor((CsmConstructor)member, this);
             } else if (member instanceof CsmMethod) {
                 return new Method((CsmMethod)member, this);
             } else if (member instanceof CsmTypeAlias) {
@@ -1238,6 +1240,17 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         }
     }
 
+    private static class Constructor extends Method implements CsmConstructor {
+        public Constructor(CsmConstructor method, CsmInstantiation instantiation) {
+            super((CsmMethod)method, instantiation);
+        }
+
+        @Override
+        public Collection<CsmExpression> getInitializerList() {
+            return ((CsmConstructor) declaration).getInitializerList();
+        }
+    }
+    
     private static class Parameter extends Instantiation<CsmParameter> implements CsmParameter {
         private final CsmType type;
 
