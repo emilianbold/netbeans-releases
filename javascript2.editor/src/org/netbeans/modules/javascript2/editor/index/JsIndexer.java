@@ -117,7 +117,7 @@ public class JsIndexer extends EmbeddingIndexer {
                 IndexDocument document = IndexedElement.createDocument(object, fqn, support, indexable);
                 support.addDocument(document);
             }
-            if (!(object instanceof JsObjectReference)) {
+            if (!(object instanceof JsObjectReference && ModelUtils.isDescendant(object, ((JsObjectReference)object).getOriginal()))) {
                 // look for all other properties. Even if the object doesn't have to be delcared in the file
                 // there can be declared it's properties or methods
                 for (JsObject property : object.getProperties().values()) {

@@ -249,7 +249,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                 highlights = null;
                 break;
             }
-            if (!(object instanceof JsObjectReference)) {
+            if (!(object instanceof JsObjectReference && ModelUtils.isDescendant(object, ((JsObjectReference)object).getOriginal()))) {
                 highlights = count(result, object, highlights);
             }
         }
