@@ -55,6 +55,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
+import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.openide.util.ImageUtilities;
@@ -119,7 +120,9 @@ public class JsStructureScanner implements StructureScanner {
                 // don't count children for functions and methods and anonyms
                 continue;
             }
-            children = getEmbededItems(result, child, children);
+            if (!(child instanceof JsObjectReference && ModelUtils.isDescendant(child, ((JsObjectReference)child).getOriginal()))) {
+                children = getEmbededItems(result, child, children);
+            }
             if ((child.hasExactName() || child.isAnonymous()) && child.getJSKind().isFunction()) {
                 JsFunction function = (JsFunction)child;
                 if (function.isAnonymous()) {
@@ -144,7 +147,7 @@ public class JsStructureScanner implements StructureScanner {
         
         if (jsObject instanceof JsFunction) {
             for (JsObject param: ((JsFunction)jsObject).getParameters()) {
-                if (hasDeclaredProperty(param) && !(jsObject instanceof JsObjectReference && !((JsObjectReference)jsObject).getOriginal().isAnonymous())) { 
+                if (hasDeclaredProperty(param)) { 
                     final List<StructureItem> items = new ArrayList<StructureItem>();
                     getEmbededItems(result, param, items);
                     collectedItems.add(new JsObjectStructureItem(param, items, result));
