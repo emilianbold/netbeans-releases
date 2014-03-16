@@ -150,6 +150,14 @@ public class ModelUtils {
         return object != null && object.getJSKind() == JsElement.Kind.FILE;
     }
 
+    public static boolean isDescendant(JsObject possibleDescendant, JsObject possibleAncestor) {
+        JsObject parent = possibleDescendant;
+        while (parent != null && !parent.equals(possibleAncestor)) {
+            parent = parent.getParent();
+        }
+        return parent != null;
+    }
+    
     public static JsObject findJsObject(Model model, int offset) {
         JsObject result = null;
         JsObject global = model.getGlobalObject();
