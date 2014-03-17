@@ -159,21 +159,37 @@ public class OperatorGenerator implements CodeGenerator {
                 }
                 fieldsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, fieldDescriptions, false, false)), false, false);
             }
+            if (constructorDescription == null && fieldsDescription == null) {
+                return ret;
+            }
+            List<ElementNode.Description> operators;
+            ElementNode.Description operatorsDescription;
             
-            List<ElementNode.Description> operators = new ArrayList<>();
+            operators = new ArrayList<>();
             operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.EQ), null, true, false));
+            operatorsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, operators, false, false)), false, false);
+            ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorAssignment"));
+            
+            operators = new ArrayList<>();
             operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.PLUS_EQ), null, true, false));
             operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.PLUS), null, true, false));
             operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.MINUS_EQ), null, true, false));
             operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.MINUS), null, true, false));
+            operatorsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, operators, false, false)), false, false);
+            ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorBinaryArithmetic"));
+            
+            operators = new ArrayList<>();
             operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.EQ_EQ), null, true, false));
             operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.NOT_EQ), null, true, false));
+            operatorsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, operators, false, false)), false, false);
+            ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorRelational"));
+            
+            operators = new ArrayList<>();
             operators.add(ElementNode.Description.create(new StubFriendImpl(typeElement, CsmFunction.OperatorKind.LEFT_SHIFT), null, true, false));
             operators.add(ElementNode.Description.create(new StubFriendImpl(typeElement, CsmFunction.OperatorKind.RIGHT_SHIFT), null, true, false));
-            ElementNode.Description operatorsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, operators, false, false)), false, false);
-            if (constructorDescription != null || fieldsDescription != null) {
-                ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription));
-            }
+            operatorsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, operators, false, false)), false, false);
+            ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorFriendStream"));
+            
             return ret;
         }
         
@@ -196,18 +212,20 @@ public class OperatorGenerator implements CodeGenerator {
     private final ElementNode.Description operators;
     private final CsmContext contextPath;
     private final CsmClass type;
+    private final String id;
 
     /** Creates a new instance of ConstructorGenerator */
-    private OperatorGenerator(JTextComponent component, CsmContext path, CsmClass type, ElementNode.Description operators) {
+    private OperatorGenerator(JTextComponent component, CsmContext path, CsmClass type, ElementNode.Description operators, String id) {
         this.component = component;
         this.operators = operators;
         this.contextPath = path;
         this.type = type;
+        this.id=id;
     }
 
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(ConstructorGenerator.class, "LBL_operator"); //NOI18N
+        return NbBundle.getMessage(ConstructorGenerator.class, id); //NOI18N
     }
 
     @Override
@@ -255,7 +273,7 @@ public class OperatorGenerator implements CodeGenerator {
                 case PLUS_EQ:
                     name = "operator +="; // NOI18N
                     parameters = "const " + getTemplateType() + "& right"; // NOI18N
-                    returns = parent.getName()+"&"; // NOI18N
+                    returns = getTemplateType()+"&"; // NOI18N
                     body = NbBundle.getMessage(ConstructorGenerator.class, "PLUS_EQ", getTemplateType()); // NOI18N
                     break;
                 case PLUS:
