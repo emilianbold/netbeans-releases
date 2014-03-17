@@ -336,20 +336,22 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
                 sb.append(">\n");//NOI18N
             }
         }
-        if (CsmKindUtilities.isTemplate(item)) {
-            final CsmTemplate template = (CsmTemplate)item;
-            List<CsmTemplateParameter> templateParameters = template.getTemplateParameters();
-            if (templateParameters.size() > 0) {
-                sb.append("template<");//NOI18N
-                boolean first = true;
-                for(CsmTemplateParameter param : templateParameters) {
-                    if (!first) {
-                        sb.append(", "); //NOI18N
+        if (!CsmKindUtilities.isFriendMethod(item)) {
+            if (CsmKindUtilities.isTemplate(item)) {
+                final CsmTemplate template = (CsmTemplate)item;
+                List<CsmTemplateParameter> templateParameters = template.getTemplateParameters();
+                if (templateParameters.size() > 0) {
+                    sb.append("template<");//NOI18N
+                    boolean first = true;
+                    for(CsmTemplateParameter param : templateParameters) {
+                        if (!first) {
+                            sb.append(", "); //NOI18N
+                        }
+                        first = false;
+                        sb.append(param.getText());
                     }
-                    first = false;
-                    sb.append(param.getText());
+                    sb.append(">\n");//NOI18N
                 }
-                sb.append(">\n");//NOI18N
             }
         }
     }

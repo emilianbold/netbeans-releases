@@ -71,6 +71,8 @@ import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
@@ -252,63 +254,108 @@ public class OperatorGenerator implements CodeGenerator {
             switch (kind) {
                 case PLUS_EQ:
                     name = "operator +="; // NOI18N
-                    parameters = "const " + parent.getName() + "& right"; // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
                     returns = parent.getName()+"&"; // NOI18N
-                    body = NbBundle.getMessage(ConstructorGenerator.class, "PLUS_EQ", parent.getName()); // NOI18N
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "PLUS_EQ", getTemplateType()); // NOI18N
                     break;
                 case PLUS:
                     name = "operator +"; // NOI18N
-                    parameters = "const " + parent.getName() + "& right"; // NOI18N
-                    returns = parent.getName().toString();
-                    body = NbBundle.getMessage(ConstructorGenerator.class, "PLUS", parent.getName()); // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
+                    returns = getTemplateType();
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "PLUS", getTemplateType()); // NOI18N
                     break;
                 case MINUS_EQ:
                     name = "operator -="; // NOI18N
-                    parameters = "const " + parent.getName() + "& right"; // NOI18N
-                    returns = parent.getName()+"&"; // NOI18N
-                    body = NbBundle.getMessage(ConstructorGenerator.class, "MINUS_EQ", parent.getName()); // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
+                    returns = getTemplateType()+"&"; // NOI18N
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "MINUS_EQ", getTemplateType()); // NOI18N
                     break;
                 case MINUS:
                     name = "operator -"; // NOI18N
-                    parameters = "const " + parent.getName() + "& right"; // NOI18N
-                    returns = parent.getName().toString();
-                    body = NbBundle.getMessage(ConstructorGenerator.class, "MINUS", parent.getName()); // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
+                    returns = getTemplateType();
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "MINUS", getTemplateType()); // NOI18N
                     break;
                 case EQ_EQ:
                     name = "operator =="; // NOI18N
-                    parameters = "const " + parent.getName() + "& right"; // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
                     returns = "bool"; // NOI18N
-                    body = NbBundle.getMessage(ConstructorGenerator.class, "EQ_EQ", parent.getName()); // NOI18N
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "EQ_EQ", getTemplateType()); // NOI18N
                     break;
                 case NOT_EQ:
                     name = "operator !="; // NOI18N
-                    parameters = "const " + parent.getName() + "& right"; // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
                     returns = "bool"; // NOI18N
-                    body = NbBundle.getMessage(ConstructorGenerator.class, "NOT_EQ", parent.getName()); // NOI18N
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "NOT_EQ", getTemplateType()); // NOI18N
                     break;
                 case EQ:
                     name = "operator ="; // NOI18N
-                    parameters = "const " + parent.getName() + "& right"; // NOI18N
-                    returns = parent.getName()+"&"; // NOI18N
-                    body = NbBundle.getMessage(ConstructorGenerator.class, "ASSIGNMENT", parent.getName()); // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
+                    returns = getTemplateType()+"&"; // NOI18N
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "ASSIGNMENT", getTemplateType()); // NOI18N
                     break;
                 case LEFT_SHIFT:
-                    specifiers="friend";// NOI18N
+                    specifiers=getTemplatePrefix("friend");// NOI18N
                     name = "operator <<"; // NOI18N
-                    parameters = "std::ostream& os, const " + parent.getName() + "& obj"; // NOI18N
+                    parameters = "std::ostream& os, const " + getTemplateType() + "& obj"; // NOI18N
                     returns = "std::ostream&"; // NOI18N
-                    body = NbBundle.getMessage(ConstructorGenerator.class, "LEFT_SHIFT", parent.getName()); // NOI18N
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "LEFT_SHIFT", getTemplateType()); // NOI18N
                     break;
                 case RIGHT_SHIFT:
-                    specifiers="friend";// NOI18N
+                    specifiers=getTemplatePrefix("friend");// NOI18N
                     name = "operator >>"; // NOI18N
-                    parameters = "std::ostream& is, const " + parent.getName() + "& obj"; // NOI18N
+                    parameters = "std::ostream& is, const " + getTemplateType() + "& obj"; // NOI18N
                     returns = "std::ostream&"; // NOI18N
-                    body = NbBundle.getMessage(ConstructorGenerator.class, "RIGHT_SHIFT", parent.getName()); // NOI18N
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "RIGHT_SHIFT", getTemplateType()); // NOI18N
                     break;
             }
         }
 
+        private String getTemplatePrefix(String prefix) {
+            StringBuilder res = new StringBuilder();
+            if (CsmKindUtilities.isTemplate(parent)) {
+                final CsmTemplate template = (CsmTemplate)parent;
+                List<CsmTemplateParameter> templateParameters = template.getTemplateParameters();
+                if (templateParameters.size() > 0) {
+                    res.append("template<");//NOI18N
+                    boolean first = true;
+                    for(CsmTemplateParameter param : templateParameters) {
+                        if (!first) {
+                            res.append(", "); //NOI18N
+                        }
+                        first = false;
+                        res.append(param.getName());
+                    }
+                    res.append(">");//NOI18N
+                    res.append('\n');//NOI18N
+                }
+            }
+            res.append(prefix);
+            return res.toString();
+        }
+
+        private String getTemplateType() {
+            StringBuilder res = new StringBuilder();
+            res.append(parent.getName());
+            if (CsmKindUtilities.isTemplate(parent)) {
+                final CsmTemplate template = (CsmTemplate)parent;
+                List<CsmTemplateParameter> templateParameters = template.getTemplateParameters();
+                if (templateParameters.size() > 0) {
+                    res.append("<");//NOI18N
+                    boolean first = true;
+                    for(CsmTemplateParameter param : templateParameters) {
+                        if (!first) {
+                            res.append(", "); //NOI18N
+                        }
+                        first = false;
+                        res.append(param.getName());
+                    }
+                    res.append(">");//NOI18N
+                }
+            }
+            return res.toString();
+        }
+        
         @Override
         public boolean isStatic() {
             return false;
