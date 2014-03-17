@@ -168,7 +168,7 @@ public class OperatorGenerator implements CodeGenerator {
             operators = new ArrayList<>();
             operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.EQ), null, true, false));
             operatorsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, operators, false, false)), false, false);
-            ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorAssignment"));
+            ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorAssignment")); //NOI18N
             
             operators = new ArrayList<>();
             operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.PLUS_EQ), null, true, false));
@@ -176,19 +176,19 @@ public class OperatorGenerator implements CodeGenerator {
             operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.MINUS_EQ), null, true, false));
             operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.MINUS), null, true, false));
             operatorsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, operators, false, false)), false, false);
-            ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorBinaryArithmetic"));
+            ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorBinaryArithmetic")); //NOI18N
             
             operators = new ArrayList<>();
             operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.EQ_EQ), null, true, false));
             operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.NOT_EQ), null, true, false));
             operatorsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, operators, false, false)), false, false);
-            ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorRelational"));
+            ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorRelational")); //NOI18N
             
             operators = new ArrayList<>();
             operators.add(ElementNode.Description.create(new StubFriendImpl(typeElement, CsmFunction.OperatorKind.LEFT_SHIFT), null, true, false));
             operators.add(ElementNode.Description.create(new StubFriendImpl(typeElement, CsmFunction.OperatorKind.RIGHT_SHIFT), null, true, false));
             operatorsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, operators, false, false)), false, false);
-            ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorFriendStream"));
+            ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorFriendStream")); //NOI18N
             
             return ret;
         }
@@ -225,7 +225,7 @@ public class OperatorGenerator implements CodeGenerator {
 
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(ConstructorGenerator.class, id); //NOI18N
+        return NbBundle.getMessage(ConstructorGenerator.class, id);
     }
 
     @Override
