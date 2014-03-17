@@ -166,27 +166,39 @@ public class OperatorGenerator implements CodeGenerator {
             ElementNode.Description operatorsDescription;
             
             operators = new ArrayList<>();
-            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.EQ), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.EQ, false), null, true, false));
             operatorsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, operators, false, false)), false, false);
             ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorAssignment")); //NOI18N
             
             operators = new ArrayList<>();
-            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.PLUS_EQ), null, true, false));
-            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.PLUS), null, true, false));
-            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.MINUS_EQ), null, true, false));
-            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.MINUS), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.PLUS_EQ, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.PLUS, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.MINUS_EQ, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.MINUS, false), null, true, false));
             operatorsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, operators, false, false)), false, false);
             ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorBinaryArithmetic")); //NOI18N
             
             operators = new ArrayList<>();
-            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.EQ_EQ), null, true, false));
-            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.NOT_EQ), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.ARROW, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.ARROW, true), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.ARRAY, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.ARRAY, true), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.POINTER, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.POINTER, true), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.ADDRESS, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.ADDRESS, true), null, true, false));
+            operatorsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, operators, false, false)), false, false);
+            ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorPointer")); //NOI18N
+            
+            operators = new ArrayList<>();
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.EQ_EQ, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.NOT_EQ, false), null, true, false));
             operatorsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, operators, false, false)), false, false);
             ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorRelational")); //NOI18N
             
             operators = new ArrayList<>();
-            operators.add(ElementNode.Description.create(new StubFriendImpl(typeElement, CsmFunction.OperatorKind.LEFT_SHIFT), null, true, false));
-            operators.add(ElementNode.Description.create(new StubFriendImpl(typeElement, CsmFunction.OperatorKind.RIGHT_SHIFT), null, true, false));
+            operators.add(ElementNode.Description.create(new StubFriendImpl(typeElement, CsmFunction.OperatorKind.LEFT_SHIFT, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubFriendImpl(typeElement, CsmFunction.OperatorKind.RIGHT_SHIFT, false), null, true, false));
             operatorsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, operators, false, false)), false, false);
             ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorFriendStream")); //NOI18N
             
@@ -255,15 +267,17 @@ public class OperatorGenerator implements CodeGenerator {
     private static abstract class StubFunctionImpl implements CsmFunction {
         protected final CsmClass parent;
         private final CsmFunction.OperatorKind kind;
+        private final boolean isConst;
         private String name;
         private String parameters;
         private String specifiers;
         private String returns;
         private String body;
 
-        public StubFunctionImpl(CsmClass parent, CsmFunction.OperatorKind kind) {
+        public StubFunctionImpl(CsmClass parent, CsmFunction.OperatorKind kind, boolean isConst) {
             this.parent = parent;
             this.kind = kind;
+            this.isConst = isConst;
             init();
         }
 
@@ -325,6 +339,46 @@ public class OperatorGenerator implements CodeGenerator {
                     parameters = "std::ostream& is, const " + getTemplateType() + "& obj"; // NOI18N
                     returns = "std::ostream&"; // NOI18N
                     body = NbBundle.getMessage(ConstructorGenerator.class, "RIGHT_SHIFT", getTemplateType()); // NOI18N
+                    break;
+                case ARROW:
+                    name = "operator ->"; // NOI18N
+                    parameters = ""; // NOI18N
+                    returns = "value_t*"; // NOI18N
+                    if (isConst) {
+                        body = NbBundle.getMessage(ConstructorGenerator.class, "ARROW_CONST", getTemplateType()); // NOI18N
+                    } else {
+                        body = NbBundle.getMessage(ConstructorGenerator.class, "ARROW", getTemplateType()); // NOI18N
+                    }
+                    break;
+                case POINTER:
+                    name = "operator *"; // NOI18N
+                    parameters = ""; // NOI18N
+                    returns = "value_t&"; // NOI18N
+                    if (isConst) {
+                        body = NbBundle.getMessage(ConstructorGenerator.class, "POINTER_CONST", getTemplateType()); // NOI18N
+                    } else {
+                        body = NbBundle.getMessage(ConstructorGenerator.class, "POINTER", getTemplateType()); // NOI18N
+                    }
+                    break;
+                case ARRAY:
+                    name = "operator []"; // NOI18N
+                    parameters = "std::size_t index"; // NOI18N
+                    returns = "value_t&"; // NOI18N
+                    if (isConst) {
+                        body = NbBundle.getMessage(ConstructorGenerator.class, "ARRAY_CONST", getTemplateType()); // NOI18N
+                    } else {
+                        body = NbBundle.getMessage(ConstructorGenerator.class, "ARRAY", getTemplateType()); // NOI18N
+                    }    
+                    break;
+                case ADDRESS:
+                    name = "operator &"; // NOI18N
+                    parameters = ""; // NOI18N
+                    returns = "value_t"; // NOI18N
+                    if (isConst) {
+                        body = NbBundle.getMessage(ConstructorGenerator.class, "ADDRESS_CONST", getTemplateType()); // NOI18N
+                    } else {
+                        body = NbBundle.getMessage(ConstructorGenerator.class, "ADDRESS", getTemplateType()); // NOI18N
+                    }    
                     break;
             }
         }
@@ -441,12 +495,19 @@ public class OperatorGenerator implements CodeGenerator {
                 buf.append(specifiers);
                 buf.append(' '); // NOI18N
             }
+            if (isConst) {
+                buf.append("const "); // NOI18N
+            }
             buf.append(returns);
             buf.append(' '); // NOI18N
             buf.append(name);
             buf.append('('); // NOI18N
             buf.append(parameters);
-            buf.append(") {\n"); // NOI18N
+            buf.append(")"); // NOI18N
+            if (isConst) {
+                buf.append(" const"); // NOI18N
+            }
+            buf.append(" {\n"); // NOI18N
             buf.append(body);
             buf.append("\n}"); // NOI18N
             return buf.toString();
@@ -600,6 +661,9 @@ public class OperatorGenerator implements CodeGenerator {
             buf.append('('); // NOI18N
             buf.append(parameters);
             buf.append(")"); // NOI18N
+            if (isConst) {
+                buf.append(" const"); // NOI18N
+            }
             return buf.toString();
         }
 
@@ -611,8 +675,8 @@ public class OperatorGenerator implements CodeGenerator {
 
     private static final class StubMethodImpl extends StubFunctionImpl implements CsmMethod {
 
-        public StubMethodImpl(CsmClass parent, CsmFunction.OperatorKind kind) {
-            super(parent, kind);
+        public StubMethodImpl(CsmClass parent, CsmFunction.OperatorKind kind, boolean isConst) {
+            super(parent, kind, isConst);
         }
 
         @Override
@@ -657,8 +721,8 @@ public class OperatorGenerator implements CodeGenerator {
     }
     private static final class StubFriendImpl extends StubFunctionImpl implements CsmFriendFunction {
 
-        public StubFriendImpl(CsmClass parent, OperatorKind kind) {
-            super(parent, kind);
+        public StubFriendImpl(CsmClass parent, OperatorKind kind, boolean isConst) {
+            super(parent, kind, isConst);
         }
 
         @Override
