@@ -44,6 +44,7 @@ package org.netbeans.test.beans.suites;
 
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.test.beans.BeanInfoEditorTest;
 import org.netbeans.test.beans.PatternsTest;
 import org.netbeans.test.beans.PropertyGeneration;
 
@@ -57,6 +58,7 @@ public class StableSuite {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(PatternsTest.class)
                 .addTest(PropertyGeneration.class)
+                .addTest(BeanInfoEditorTest.class)
                 .enableModules(".*")
                 .clusters(".*"));
     }
