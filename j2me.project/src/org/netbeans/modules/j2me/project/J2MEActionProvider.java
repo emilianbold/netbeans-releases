@@ -357,7 +357,7 @@ final class J2MEActionProvider extends BaseActionProvider {
         @Override
         public Map<String, String> createAdditionalProperties(String command, Lookup context) {
             final Map<String, String> result = new HashMap<>();
-            if (command.equals(COMMAND_RUN) || command.equals(COMMAND_DEBUG)) {
+            if (command.equals(COMMAND_RUN)) {
                 PropertyEvaluator pe = project.evaluator();
                 final String runMethod = pe.getProperty(J2MEProjectProperties.PROP_RUN_METHOD);
                 if (runMethod != null && runMethod.equals("OTA")) { //NOI18N
