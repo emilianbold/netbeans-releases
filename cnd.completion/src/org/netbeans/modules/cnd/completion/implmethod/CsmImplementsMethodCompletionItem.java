@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
+import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.editor.indent.api.Reformat;
@@ -240,14 +241,14 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
 
     private static String createDisplayName(CsmFunction item,  CsmClass parent, String operation) {
         StringBuilder displayName = new StringBuilder();
-        displayName.append(parent.getName());
+        displayName.append(CsmDisplayUtilities.htmlize(parent.getName()));
         displayName.append("::"); //NOI18N
         displayName.append("<b>"); //NOI18N
-        displayName.append(((CsmFunction)item).getSignature());
+        displayName.append(CsmDisplayUtilities.htmlize(((CsmFunction)item).getSignature()));
         displayName.append("</b>"); //NOI18N
         if (operation != null) {
             displayName.append(" - "); //NOI18N
-            displayName.append(operation);
+            displayName.append(CsmDisplayUtilities.htmlize(operation));
         }
         return displayName.toString();
         //return CsmDisplayUtilities.addHTMLColor(displayName.toString(), 
@@ -335,20 +336,22 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
                 sb.append(">\n");//NOI18N
             }
         }
-        if (CsmKindUtilities.isTemplate(item)) {
-            final CsmTemplate template = (CsmTemplate)item;
-            List<CsmTemplateParameter> templateParameters = template.getTemplateParameters();
-            if (templateParameters.size() > 0) {
-                sb.append("template<");//NOI18N
-                boolean first = true;
-                for(CsmTemplateParameter param : templateParameters) {
-                    if (!first) {
-                        sb.append(", "); //NOI18N
+        if (!CsmKindUtilities.isFriendMethod(item)) {
+            if (CsmKindUtilities.isTemplate(item)) {
+                final CsmTemplate template = (CsmTemplate)item;
+                List<CsmTemplateParameter> templateParameters = template.getTemplateParameters();
+                if (templateParameters.size() > 0) {
+                    sb.append("template<");//NOI18N
+                    boolean first = true;
+                    for(CsmTemplateParameter param : templateParameters) {
+                        if (!first) {
+                            sb.append(", "); //NOI18N
+                        }
+                        first = false;
+                        sb.append(param.getText());
                     }
-                    first = false;
-                    sb.append(param.getText());
+                    sb.append(">\n");//NOI18N
                 }
-                sb.append(">\n");//NOI18N
             }
         }
     }

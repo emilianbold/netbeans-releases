@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
+import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.editor.indent.api.Reformat;
@@ -136,15 +137,15 @@ public class CsmOverrideMethodCompletionItem implements CompletionItem {
         displayName.append("<b>"); //NOI18N
         if (item == null || CsmKindUtilities.isDestructor(item)) {
             displayName.append('~');
-            displayName.append(parent.getName());
+            displayName.append(CsmDisplayUtilities.htmlize(parent.getName()));
             displayName.append("()"); //NOI18N
         } else {
-            displayName.append(((CsmFunction)item).getSignature());
+            displayName.append(CsmDisplayUtilities.htmlize(((CsmFunction)item).getSignature()));
         }
         displayName.append("</b>"); //NOI18N
         if (operation != null) {
             displayName.append(" - "); //NOI18N
-            displayName.append(operation);
+            displayName.append(CsmDisplayUtilities.htmlize(operation));
         }
         return displayName.toString();
     }
