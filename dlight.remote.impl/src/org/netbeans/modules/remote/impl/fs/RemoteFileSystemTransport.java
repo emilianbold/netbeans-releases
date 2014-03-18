@@ -116,6 +116,10 @@ public abstract class RemoteFileSystemTransport {
             }
         }
         if (entries == null) {
+            if (RemoteFileSystemUtils.isUnitTestMode()) {
+                // no fallback for unit tests!
+                throw new ExecutionException("Can not get valid transport for " + execEnv, null); //NOI18N
+            }            
             RemoteFileSystemTransport directoryReader = SftpTransport.getInstance(execEnv);
             entries = directoryReader.readDirectory(path);
         }            

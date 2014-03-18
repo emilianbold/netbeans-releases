@@ -108,6 +108,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
     // a maven property name denoting that the old, javarunner based execution is to be used.    
     public static final String USE_OLD_COS_EXECUTION = "use.old.cos.execution";
     public static final String NETBEANS_PROJECT_MAPPINGS = "netbeansProjectMappings";
+    public static final String ENV_NETBEANS_PROJECT_MAPPINGS = "Env." + NETBEANS_PROJECT_MAPPINGS;
     public static final String MAVENEXTCLASSPATH = "maven.ext.class.path";
     
     @Override
@@ -627,7 +628,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             mavenPath = mavenPath + jar.getAbsolutePath();
             brc.setProperty(MAVENEXTCLASSPATH, mavenPath);
         }
-        brc.setProperty(NETBEANS_PROJECT_MAPPINGS, value.toString()); //always put ti recognize later and print warnings
+        brc.setProperty(ENV_NETBEANS_PROJECT_MAPPINGS, value.toString()); //always put ti recognize later and print warnings
     }
 
     

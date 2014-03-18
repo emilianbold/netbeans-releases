@@ -44,11 +44,8 @@
 package org.netbeans.modules.cnd.refactoring.codegen;
 
 import java.awt.Dialog;
-import java.awt.event.HierarchyEvent;
-import java.awt.event.HierarchyListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -62,6 +59,8 @@ import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
@@ -108,7 +107,9 @@ public class ConstructorGenerator implements CodeGenerator {
                 if (baseClass != null) {
                     List<CsmConstructor> list = new ArrayList<>();
                     for (CsmMember member : baseClass.getMembers()) {
-                        if (CsmKindUtilities.isConstructor(member) && CsmInheritanceUtilities.matchVisibility(member, csmInheritance.getVisibility())) {
+                        if (CsmKindUtilities.isConstructor(member) &&
+                            CsmInheritanceUtilities.matchVisibility(member, csmInheritance.getVisibility()) &&
+                            !isCopyConstructor(baseClass, (CsmConstructor)member)) {
                             list.add((CsmConstructor)member);
                         }
                     }
@@ -149,7 +150,22 @@ public class ConstructorGenerator implements CodeGenerator {
             }
             return ret;
         }
+        
+        private boolean isCopyConstructor(CsmClass cls, CsmConstructor constructor) {
+            Collection<CsmParameter> parameters = constructor.getParameters();
+            if (parameters.size() == 1) {
+                CsmParameter p = parameters.iterator().next();
+                CsmType paramType = p.getType();
+                if (paramType.isReference()) {
+                    if (cls.equals(paramType.getClassifier())) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
     }
+    
     private final JTextComponent component;
     private final ElementNode.Description constructorDescription;
     private final ElementNode.Description fieldsDescription;
@@ -177,17 +193,6 @@ public class ConstructorGenerator implements CodeGenerator {
             final ConstructorPanel panel = new ConstructorPanel(constructorDescription, fieldsDescription);
             DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_constructor")); //NOI18N
             Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-            dialog.addHierarchyListener(new HierarchyListener() {
-
-                @Override
-                public void hierarchyChanged(HierarchyEvent e) {
-                    if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) {
-                        if (e.getChanged().isShowing()){
-                            panel.requestFocusInWindow();
-                        }
-                    }
-                }
-            });
             try {
                 dialog.setVisible(true);
             } catch (Throwable th) {

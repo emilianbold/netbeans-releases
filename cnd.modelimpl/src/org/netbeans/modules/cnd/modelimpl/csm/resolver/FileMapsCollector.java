@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.resolver;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -421,9 +422,17 @@ public final class FileMapsCollector {
                             NamespaceImpl namespace = (NamespaceImpl) nsd.getNamespace();
                             for (CsmUID<CsmUsingDirective> directiveUID : namespace.getUsingDirectives()) {
                                 CsmUsingDirective directive = directiveUID.getObject();
-                                if (directive != null) {
-                                    gatherMaps(directive, directive.getEndOffset(), inLocalContext, stopAtOffset, out);
+                                if (directive != null && directive.getContainingFile() != null) {
+                                    int stopAtOffsetDirective = directive.getContainingFile().equals(nsd.getContainingFile()) ? stopAtOffset : Integer.MAX_VALUE;
+                                    gatherMaps(directive, directive.getEndOffset(), inLocalContext, stopAtOffsetDirective, out);
                                 }
+                            }
+                            // TODO: this could be rewritten in the way as it is done with using directives to get better performance
+                            Iterator<CsmOffsetableDeclaration> udecls = CsmSelect.getDeclarations(namespace, CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.USING_DECLARATION));
+                            while (udecls.hasNext()) {
+                                final CsmUsingDeclaration usingDecl = (CsmUsingDeclaration) udecls.next();
+                                int stopAtOffsetDecl = usingDecl.getContainingFile().equals(nsd.getContainingFile()) ? stopAtOffset : Integer.MAX_VALUE;
+                                gatherMaps(usingDecl, usingDecl.getEndOffset(), inLocalContext, stopAtOffsetDecl, out);
                             }
                         } else {
                             Resolver3.LOGGER.log(Level.WARNING, "Unexpected implementation of logical namespace: {0}", nsd.getNamespace().getClass()); //NOI18N

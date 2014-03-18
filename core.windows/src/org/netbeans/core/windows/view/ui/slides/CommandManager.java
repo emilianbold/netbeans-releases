@@ -256,6 +256,10 @@ final class CommandManager implements ActionListener {
         } else {
             // convert event - fix index, local tabbed container index isn't right in slide bar context
             TabActionEvent tae = (TabActionEvent)e;
+            if( TabbedContainer.COMMAND_CLOSE.equals(tae.getActionCommand()) && curSlidedIndex < 0 ) {
+                //#242321
+                return;
+            }
             TabActionEvent newEvt = new TabActionEvent(
                 tae.getSource(), tae.getActionCommand(), curSlidedIndex, tae.getMouseEvent());
             

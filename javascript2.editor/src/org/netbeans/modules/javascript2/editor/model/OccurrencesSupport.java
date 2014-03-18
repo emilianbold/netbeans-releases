@@ -94,7 +94,7 @@ public class OccurrencesSupport {
                     return result;
                 }
             }
-            if (!(object instanceof JsObjectReference)) {
+            if (!(object instanceof JsObjectReference && ModelUtils.isDescendant(object, ((JsObjectReference)object).getOriginal()))) {
                 for(JsObject property: object.getProperties().values()) {
                     result = findOccurrence(property, offset);
                     if (result != null) {

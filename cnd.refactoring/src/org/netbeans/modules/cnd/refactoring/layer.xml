@@ -159,6 +159,12 @@
                     <file name="org-netbeans-modules-cnd-refactoring-codegen-ConstructorGenerator$Factory.instance">
                         <attr name="position" intvalue="100"/>
                     </file>
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-CopyConstructorGenerator$Factory.instance">
+                        <attr name="position" intvalue="150"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-OperatorGenerator$Factory.instance">
+                        <attr name="position" intvalue="160"/>
+                    </file>
                     <file name="org-netbeans-modules-cnd-refactoring-codegen-GetterSetterGenerator$Factory.instance">
                         <attr name="position" intvalue="200"/>
                     </file>
@@ -233,6 +239,12 @@
                 <folder name="CodeGenerators">
                     <file name="org-netbeans-modules-cnd-refactoring-codegen-ConstructorGenerator$Factory.instance">
                         <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-CopyConstructorGenerator$Factory.instance">
+                        <attr name="position" intvalue="150"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-OperatorGenerator$Factory.instance">
+                        <attr name="position" intvalue="160"/>
                     </file>
                     <file name="org-netbeans-modules-cnd-refactoring-codegen-GetterSetterGenerator$Factory.instance">
                         <attr name="position" intvalue="200"/>

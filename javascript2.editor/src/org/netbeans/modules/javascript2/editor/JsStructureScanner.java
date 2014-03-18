@@ -120,7 +120,7 @@ public class JsStructureScanner implements StructureScanner {
                 // don't count children for functions and methods and anonyms
                 continue;
             }
-            if (!(child instanceof JsObjectReference)) {
+            if (!(child instanceof JsObjectReference && ModelUtils.isDescendant(child, ((JsObjectReference)child).getOriginal()))) {
                 children = getEmbededItems(result, child, children);
             }
             if ((child.hasExactName() || child.isAnonymous()) && child.getJSKind().isFunction()) {

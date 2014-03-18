@@ -72,6 +72,7 @@ import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate.Type;
 import org.netbeans.libs.git.GitURI;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.client.CredentialsCallback;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.ContextHolder;
@@ -225,7 +226,12 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                                 
                                 List<String> refs = Arrays.asList(GitUtils.getGlobalRefSpec(remoteName));
                                 setDisplayName(Bundle.MSG_Clone_progress_settingRemote(remoteName), 2);
-                                client.setRemote(new CloneRemoteConfig(remoteName, remoteUri, refs).toGitRemote(), getProgressMonitor());
+                                String username = new CredentialsCallback().getUsername(remoteUri.toString(), "");
+                                GitURI uriToSave = remoteUri;
+                                if (username != null && !username.isEmpty()) {
+                                    uriToSave = uriToSave.setUser(username);
+                                }
+                                client.setRemote(new CloneRemoteConfig(remoteName, uriToSave, refs).toGitRemote(), getProgressMonitor());
                                 org.netbeans.modules.versioning.util.Utils.logVCSExternalRepository("GIT", remoteUri.getHost()); //NOI18N
                                 if (branch == null) {
                                     setDisplayName(Bundle.MSG_Clone_progress_creatingBranch(GitUtils.MASTER), 1);

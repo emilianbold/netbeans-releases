@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
-import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -77,6 +76,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
+import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.editor.indent.api.Reformat;
@@ -102,14 +102,14 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
     private static final int PRIORITY = 15;
     private final String appendItemText;
     private final String htmlItemText;
-    private final CsmMember item;
+    private final CsmFunction item;
     private final ImageIcon icon;
     private final String right;
     private final boolean isExtractBody;
     private final int startReplacement;
     private final int lengthReplacement;
 
-    private CsmImplementsMethodCompletionItem(CsmMember item, int substitutionOffset, int priority,
+    private CsmImplementsMethodCompletionItem(CsmFunction item, int substitutionOffset, int priority,
             String sortItemText, String appendItemText, String htmlItemText, boolean supportInstantSubst, String right,
             boolean isExtractBody, int startReplacement, int lengthReplacement) {
         this.substitutionOffset = substitutionOffset;
@@ -128,7 +128,7 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         this.lengthReplacement = lengthReplacement;
     }
 
-    public static CsmImplementsMethodCompletionItem createImplementItem(int substitutionOffset, int priority, CsmClass cls, CsmMember item) {
+    public static CsmImplementsMethodCompletionItem createImplementItem(int substitutionOffset, int priority, CsmClass cls, CsmFunction item) {
         String sortItemText = item.getName().toString();
         String appendItemText = createAppendText(item, cls, "{\n\n}"); //NOI18N
         String rightText = createRightName(item);
@@ -136,7 +136,7 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         return new CsmImplementsMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText, false, 0, 0);
     }
 
-    public static CsmImplementsMethodCompletionItem createExtractBodyItem(int substitutionOffset, int priority, CsmClass cls, CsmMember item) {
+    public static CsmImplementsMethodCompletionItem createExtractBodyItem(int substitutionOffset, int priority, CsmClass cls, CsmFunction item) {
         String sortItemText = item.getName().toString();
         String rightText = createRightName(item);
         String coloredItemText = createDisplayName(item, cls, NbBundle.getMessage(CsmImplementsMethodCompletionItem.class, "extract.txt")); //NOI18N
@@ -239,23 +239,23 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         return null;
     }
 
-    private static String createDisplayName(CsmMember item,  CsmClass parent, String operation) {
+    private static String createDisplayName(CsmFunction item,  CsmClass parent, String operation) {
         StringBuilder displayName = new StringBuilder();
-        displayName.append(parent.getName());
+        displayName.append(CsmDisplayUtilities.htmlize(parent.getName()));
         displayName.append("::"); //NOI18N
         displayName.append("<b>"); //NOI18N
-        displayName.append(((CsmFunction)item).getSignature());
+        displayName.append(CsmDisplayUtilities.htmlize(((CsmFunction)item).getSignature()));
         displayName.append("</b>"); //NOI18N
         if (operation != null) {
             displayName.append(" - "); //NOI18N
-            displayName.append(operation);
+            displayName.append(CsmDisplayUtilities.htmlize(operation));
         }
         return displayName.toString();
         //return CsmDisplayUtilities.addHTMLColor(displayName.toString(), 
         //       CsmFontColorManager.instance().getColorAttributes(MIMENames.CPLUSPLUS_MIME_TYPE, FontColorProvider.Entity.FUNCTION));
     }
     
-    private static String createRightName(CsmMember item) {
+    private static String createRightName(CsmFunction item) {
         if (CsmKindUtilities.isConstructor(item)) {
             return "";
         } else if (CsmKindUtilities.isDestructor(item)) {
@@ -265,7 +265,7 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         }
     }
     
-    private static String createAppendText(CsmMember item, CsmClass parent, String bodyText) {
+    private static String createAppendText(CsmFunction item, CsmClass parent, String bodyText) {
         StringBuilder appendItemText = new StringBuilder("\n"); //NOI18N
         addTemplate(item, parent, appendItemText);
         String type = "";
@@ -293,31 +293,33 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
             }
         }
         appendItemText.append(type);
-        appendItemText.append(parent.getName());
-        if (CsmKindUtilities.isTemplate(parent)) {
-            final CsmTemplate template = (CsmTemplate)parent;
-            List<CsmTemplateParameter> templateParameters = template.getTemplateParameters();
-            if (templateParameters.size() > 0) {
-                appendItemText.append("<");//NOI18N
-                boolean first = true;
-                for(CsmTemplateParameter param : templateParameters) {
-                    if (!first) {
-                        appendItemText.append(", "); //NOI18N
+        if (!CsmKindUtilities.isFriendMethod(item)) {
+            appendItemText.append(parent.getName());
+            if (CsmKindUtilities.isTemplate(parent)) {
+                final CsmTemplate template = (CsmTemplate)parent;
+                List<CsmTemplateParameter> templateParameters = template.getTemplateParameters();
+                if (templateParameters.size() > 0) {
+                    appendItemText.append("<");//NOI18N
+                    boolean first = true;
+                    for(CsmTemplateParameter param : templateParameters) {
+                        if (!first) {
+                            appendItemText.append(", "); //NOI18N
+                        }
+                        first = false;
+                        appendItemText.append(param.getName());
                     }
-                    first = false;
-                    appendItemText.append(param.getName());
+                    appendItemText.append(">");//NOI18N
                 }
-                appendItemText.append(">");//NOI18N
             }
+            appendItemText.append("::"); //NOI18N
         }
-        appendItemText.append("::"); //NOI18N
         addSignature(item, appendItemText);
         appendItemText.append(bodyText);
         appendItemText.append("\n"); //NOI18N
         return appendItemText.toString();
     }
 
-    private static void addTemplate(CsmMember item, CsmClass parent, StringBuilder sb) {
+    private static void addTemplate(CsmFunction item, CsmClass parent, StringBuilder sb) {
         if (CsmKindUtilities.isTemplate(parent)) {
             final CsmTemplate template = (CsmTemplate)parent;
             List<CsmTemplateParameter> templateParameters = template.getTemplateParameters();
@@ -334,25 +336,27 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
                 sb.append(">\n");//NOI18N
             }
         }
-        if (CsmKindUtilities.isTemplate(item)) {
-            final CsmTemplate template = (CsmTemplate)item;
-            List<CsmTemplateParameter> templateParameters = template.getTemplateParameters();
-            if (templateParameters.size() > 0) {
-                sb.append("template<");//NOI18N
-                boolean first = true;
-                for(CsmTemplateParameter param : templateParameters) {
-                    if (!first) {
-                        sb.append(", "); //NOI18N
+        if (!CsmKindUtilities.isFriendMethod(item)) {
+            if (CsmKindUtilities.isTemplate(item)) {
+                final CsmTemplate template = (CsmTemplate)item;
+                List<CsmTemplateParameter> templateParameters = template.getTemplateParameters();
+                if (templateParameters.size() > 0) {
+                    sb.append("template<");//NOI18N
+                    boolean first = true;
+                    for(CsmTemplateParameter param : templateParameters) {
+                        if (!first) {
+                            sb.append(", "); //NOI18N
+                        }
+                        first = false;
+                        sb.append(param.getText());
                     }
-                    first = false;
-                    sb.append(param.getText());
+                    sb.append(">\n");//NOI18N
                 }
-                sb.append(">\n");//NOI18N
             }
         }
     }
     
-    private static void addSignature(CsmMember item, StringBuilder sb) {
+    private static void addSignature(CsmFunction item, StringBuilder sb) {
         //sb.append(item.getSignature());
         sb.append(item.getName());
         //sb.append(parameterList.getText());

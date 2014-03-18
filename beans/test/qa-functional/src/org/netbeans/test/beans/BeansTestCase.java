@@ -42,19 +42,26 @@
 package org.netbeans.test.beans;
 
 import java.awt.event.KeyEvent;
+import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Stack;
 import javax.swing.ListModel;
-import junit.framework.Test;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.modules.beans.PatternNode;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
-import org.netbeans.test.beans.operators.AddProperty;
+import org.openide.explorer.view.Visualizer;
 
 /**
  *
@@ -117,5 +124,48 @@ public class BeansTestCase extends JellyTestCase {
         ref(operator.getText());
         compareReferenceFiles();
     }
+    
+    public static TreePath getTreePath(JTreeOperator treeOperator, String targetNode, NodeConverter converter) {
+        Stack<TreeNode> lifo = new Stack<TreeNode>();        
+        lifo.push((TreeNode) treeOperator.getRoot());
+        while(!lifo.isEmpty()) {
+            TreeNode actNode = lifo.pop();
+            if(targetNode.equals(converter.getDisplayName(actNode))) {
+                List<TreeNode> path = new LinkedList<TreeNode>();
+                path.add(actNode);
+                actNode = actNode.getParent();
+                while(actNode!=null) {
+                    path.add(0,actNode);
+                    actNode = actNode.getParent();
+                }
+                TreeNode[] res = path.toArray(new TreeNode[path.size()]);                
+                return new TreePath(res);
+            }
+            final Enumeration children = actNode.children();            
+            while(children.hasMoreElements()) {
+                lifo.add((TreeNode)children.nextElement());
+            }            
+        }
+        return null;
+    }
+    
+    
+    public static String getTree(JTreeOperator operator, NodeConverter converter) {
+        return (getTree((TreeNode) operator.getRoot(), "", new StringBuilder(), converter)).toString();
+    }
+
+    private static StringBuilder getTree(TreeNode root, String deep, StringBuilder accumulator, NodeConverter converter) {                        
+        String text = converter.getDisplayName(root);
+        accumulator.append(deep).append(text).append('\n');
+        for (int i = 0; i < root.getChildCount(); i++) {
+            getTree(root.getChildAt(i), deep + "__", accumulator, converter);
+        }
+        return accumulator;
+    }
+    
+    public interface NodeConverter {
+        String getDisplayName(TreeNode node);
+    }
+    
 
 }

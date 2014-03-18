@@ -87,7 +87,7 @@ static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
 #define FS_SERVER_MID_VERSION 1
-#define FS_SERVER_MINOR_VERSION 24
+#define FS_SERVER_MINOR_VERSION 25
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -1229,6 +1229,15 @@ static void startup() {
     sigaction_wrapper(SIGPIPE, &new_sigaction, NULL);    
 }
 
+static void *killer(void *data) {
+    pthread_t victim;
+    victim = (pthread_t) data;
+    sleep(2);
+    //pthread_kill(victim, SIGKILL);
+    pthread_kill(victim, SIGTERM);
+    return NULL;
+}
+
 static void shutdown() {
     state_set_proceed(false);
     blocking_queue_shutdown(&req_queue);
@@ -1236,6 +1245,10 @@ static void shutdown() {
     if (statistics) {
         my_fprintf(STDERR, "Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
     }
+    trace(TRACE_INFO, "Shutting down. Joining threads...\n");
+    pthread_t killer_thread;
+    pthread_create(&killer_thread, NULL, killer, (void*) pthread_self());
+    
     trace(TRACE_INFO, "Shutting down. Joining threads...\n");
     // NB: we aren't joining refresh thread; it's safe
     for (int i = 0; i < rp_thread_count; i++) {

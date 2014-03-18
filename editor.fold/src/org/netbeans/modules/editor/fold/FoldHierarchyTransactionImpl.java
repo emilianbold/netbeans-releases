@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.editor.fold;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -60,17 +58,14 @@ import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.fold.Fold;
-import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.editor.fold.FoldStateChange;
-import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldManager;
 import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
-
-import static org.netbeans.modules.editor.fold.FoldHierarchyExecution.OPERATION_EMPTY;
 
 /**
  * Class encapsulating a modification
@@ -175,6 +170,13 @@ public final class FoldHierarchyTransactionImpl {
      */
     private Set<Fold> reinsertSet;
     
+    /**
+     * If the hierarchy was damaged, the hierarchy will be dumped at transaction start, to provide
+     * context for additional logs.
+     */
+    private String initialSnapshot;
+    
+    private final int dmgCounter;
     
     public FoldHierarchyTransactionImpl(FoldHierarchyExecution execution) {
         this.execution = execution;
@@ -182,6 +184,22 @@ public final class FoldHierarchyTransactionImpl {
         this.affectedEndOffset = -1;
         
         this.transaction = SpiPackageAccessor.get().createFoldHierarchyTransaction(this);
+        this.dmgCounter = execution.getDamagedCount();
+        if (dmgCounter > 0) {
+            String t = null;
+            JTextComponent comp = execution.getComponent();
+            if (comp != null) {
+                Document doc = comp.getDocument();
+                try {
+                    t = doc.getText(0, doc.getLength());
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            initialSnapshot = execution.toString() + 
+                              "\nContent at previous commit:\n====\n" + execution.getCommittedContent() + "\n====\n" +
+                              "\nText content:\n====\n" + t + "\n====\n";
+        }
     }
     
     public FoldHierarchyTransaction getTransaction() {
@@ -207,84 +225,94 @@ public final class FoldHierarchyTransactionImpl {
     public void commit() {
         checkNotCommitted();
 
-        if (!isEmpty()) {
-            if (LOG.isLoggable(Level.FINEST)) {
-                LOG.finest("FoldHierarchy BEFORE transaction commit:\n" + execution);
-                execution.checkConsistency();
-            }
-            
-            int size;
-            Fold[] removedFolds;
-            if (removedFromHierarchySet != null && ((size = removedFromHierarchySet.size()) != 0)) {
-                removedFolds = new Fold[size];
-                removedFromHierarchySet.toArray(removedFolds);
+        try {
+            if (!isEmpty()) {
+                if (LOG.isLoggable(Level.FINEST)) {
+                    LOG.finest("FoldHierarchy BEFORE transaction commit:\n" + execution);
+                    execution.checkConsistency();
+                }
 
-            } else {
-                removedFolds = EMPTY_FOLDS;
-            }
-            
-            Fold[] addedFolds;
-            if (addedToHierarchySet != null && ((size = addedToHierarchySet.size()) != 0)) {
-                addedFolds = new Fold[size];
-                addedToHierarchySet.toArray(addedFolds);
+                int size;
+                Fold[] removedFolds;
+                if (removedFromHierarchySet != null && ((size = removedFromHierarchySet.size()) != 0)) {
+                    removedFolds = new Fold[size];
+                    removedFromHierarchySet.toArray(removedFolds);
 
-            } else {
-                addedFolds = EMPTY_FOLDS;
-            }
-            
-            // the following will generate some additions to addedToHierarchySet, but not important
-            if (reinsertSet != null) {
-                ApiPackageAccessor acc = ApiPackageAccessor.get();
-                for (Fold f : reinsertSet) {
-                    acc.foldSetParent(f, null);
-                    if (f.getFoldCount() <= 0) {
-                        addFold(f);
-                    } else {
-                        LOG.warning("Unexpected children for fold: " + f + ", dumping hierarchy: " + execution);
+                } else {
+                    removedFolds = EMPTY_FOLDS;
+                }
+
+                Fold[] addedFolds;
+                if (addedToHierarchySet != null && ((size = addedToHierarchySet.size()) != 0)) {
+                    addedFolds = new Fold[size];
+                    addedToHierarchySet.toArray(addedFolds);
+
+                } else {
+                    addedFolds = EMPTY_FOLDS;
+                }
+
+                // the following will generate some additions to addedToHierarchySet, but not important
+                if (reinsertSet != null) {
+                    ApiPackageAccessor acc = ApiPackageAccessor.get();
+                    for (Fold f : reinsertSet) {
+                        acc.foldSetParent(f, null);
+                        if (f.getFoldCount() <= 0) {
+                            addFold(f);
+                        } else {
+                            LOG.warning("Unexpected children for fold: " + f + ", dumping hierarchy: " + execution);
+                        }
                     }
                 }
-            }
 
-            FoldStateChange[] stateChanges;
-            if (fold2StateChange != null) {
-                stateChanges = new FoldStateChange[fold2StateChange.size()];
-                fold2StateChange.values().toArray(stateChanges);
-            } else { // no state changes => use empty array
-                stateChanges = EMPTY_FOLD_STATE_CHANGES;
-            }
-            
-            for (int i = stateChanges.length - 1; i >= 0; i--) {
-                FoldStateChange change = stateChanges[i];
-                Fold fold = change.getFold();
-                updateAffectedOffsets(fold);
-                int startOffset = change.getOriginalStartOffset();
-                int endOffset = change.getOriginalEndOffset();
-                assert (endOffset < 0 || startOffset <= endOffset) : "startOffset=" + startOffset + " > endOffset=" + endOffset; // NOI18N;
-                if (startOffset != -1) {
-                    updateAffectedStartOffset(startOffset);
+                FoldStateChange[] stateChanges;
+                if (fold2StateChange != null) {
+                    stateChanges = new FoldStateChange[fold2StateChange.size()];
+                    fold2StateChange.values().toArray(stateChanges);
+                } else { // no state changes => use empty array
+                    stateChanges = EMPTY_FOLD_STATE_CHANGES;
                 }
-                if (endOffset != -1) {
-                    updateAffectedEndOffset(endOffset);
+
+                for (int i = stateChanges.length - 1; i >= 0; i--) {
+                    FoldStateChange change = stateChanges[i];
+                    Fold fold = change.getFold();
+                    updateAffectedOffsets(fold);
+                    int startOffset = change.getOriginalStartOffset();
+                    int endOffset = change.getOriginalEndOffset();
+                    assert (endOffset < 0 || startOffset <= endOffset) : "startOffset=" + startOffset + " > endOffset=" + endOffset; // NOI18N;
+                    if (startOffset != -1) {
+                        updateAffectedStartOffset(startOffset);
+                    }
+                    if (endOffset != -1) {
+                        updateAffectedEndOffset(endOffset);
+                    }
                 }
-            }
-            
-            if (LOG.isLoggable(Level.FINER)) {
-                LOG.finer("FoldHierarchy AFTER transaction commit:\n" + execution);
-                execution.checkConsistency();
-            }
 
-            committed = true;
-            execution.clearActiveTransaction();
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.finer("FoldHierarchy AFTER transaction commit:\n" + execution);
+                    execution.checkConsistency();
+                }
 
-            int so = Math.max(0, affectedStartOffset);
-            execution.createAndFireFoldHierarchyEvent(
-                removedFolds, addedFolds, stateChanges,
-                so, 
-                Math.max(affectedEndOffset, so));
-        } else {
-            committed = true;
-            execution.clearActiveTransaction();
-            
+                committed = true;
+                execution.clearActiveTransaction();
+
+                int so = Math.max(0, affectedStartOffset);
+                execution.createAndFireFoldHierarchyEvent(
+                    removedFolds, addedFolds, stateChanges,
+                    so, 
+                    Math.max(affectedEndOffset, so));
+            } else {
+                committed = true;
+                execution.clearActiveTransaction();
+
+            }
+        } finally {
+            execution.transactionCommitted();
+            if (execution.getDamagedCount() > dmgCounter && dmgCounter > 0) {
+                LOG.warning("Fold Hierarchy damaged. Dumping initial state:\n----------------------");
+                LOG.warning(initialSnapshot);
+                LOG.warning("\n----------------------\nCurrent state:");
+                LOG.warning(execution.toString());
+            }
         }
     }
 
@@ -394,6 +422,13 @@ public final class FoldHierarchyTransactionImpl {
                 childFold = fold.getFold(childIndex);
             }
             
+            int childFoldStartOffset = childFold.getStartOffset();
+            if (childFoldStartOffset >= insertOffset) {
+                // should never happen, but the following code relies on that the fold contains insertion point
+                // and the end mark has moved.
+                return;
+            }
+            
             int childFoldEndOffset = childFold.getEndOffset();
             // Check whether the child fold "contains" the insert
             // i.e. the children of the child must be checked as well
@@ -406,11 +441,19 @@ public final class FoldHierarchyTransactionImpl {
                 // Inform the fold about insertion
                 ApiPackageAccessor api = ApiPackageAccessor.get();
                 api.foldInsertUpdate(childFold, evt);
+                
+                if (childFoldEndOffset < childFoldStartOffset) {
+                        LOG.warning("Child start offset > end offset, dumping fold hierarchy: " + execution);
+                        LOG.warning("Document event was: " + evt + " offset: " + insertOffset + ", len: " + evt.getLength());
+                        execution.markDamaged();
+                        execution.remove(childFold, this);
+                        api.foldMarkDamaged(childFold, FoldUtilitiesImpl.FLAG_START_DAMAGED | FoldUtilitiesImpl.FLAG_END_DAMAGED);
+                        removeDamagedNotify(childFold);
+                        return;
+                }
 
                 if (childFoldEndOffset == insertEndOffset) {
                     Document doc = evt.getDocument();
-                    int childFoldStartOffset = childFold.getStartOffset();
-                    assert (childFoldStartOffset <= childFoldEndOffset);
                     if (childFoldStartOffset == childFoldEndOffset) {
                         // Reset start-position of the fold since otherwise
                         // the subsequent resetting of end-position produces a new position
@@ -418,6 +461,7 @@ public final class FoldHierarchyTransactionImpl {
                         api.foldSetStartOffset(childFold, doc, insertOffset);
                         FoldStateChange state = getFoldStateChange(childFold);
                         if (state.getOriginalEndOffset() >= 0 && state.getOriginalEndOffset() < childFoldStartOffset) {
+                            execution.markDamaged();
                             LOG.warning("Original start offset > end offset, dumping fold hierarchy: " + execution);
                             LOG.warning("Document event was: " + evt + " offset: " + insertOffset + ", len: " + evt.getLength());
                         } 
@@ -427,11 +471,13 @@ public final class FoldHierarchyTransactionImpl {
                     api.foldSetEndOffset(childFold, doc, insertOffset);
                     FoldStateChange state = getFoldStateChange(childFold);
                     if (state.getOriginalEndOffset() >= 0 && state.getOriginalStartOffset() > childFoldEndOffset) {
+                        execution.markDamaged();
                         LOG.warning("Original start offset > end offset, dumping fold hierarchy: " + execution);
                         LOG.warning("Document event was: " + evt + " offset: " + insertOffset + ", len: " + evt.getLength());
                     }
                     api.foldStateChangeEndOffsetChanged(state, childFoldEndOffset);
                     if (childFold.getStartOffset() > childFold.getEndOffset()) {
+                        execution.markDamaged();
                         LOG.warning("Updated fold " + childFold + " is inconsistent, dumping fold hierarchy: " + execution);
                         LOG.warning("The original offsets were: " + childFoldStartOffset + "-" + childFoldEndOffset);
                         LOG.warning("Document event was: " + evt + " offset: " + insertOffset + ", len: " + evt.getLength());
@@ -1109,12 +1155,20 @@ public final class FoldHierarchyTransactionImpl {
      * state variables.
      */
     private void removeFoldFromHierarchy(Fold parentFold, int index, Fold block) {
-        Fold removedFold = ApiPackageAccessor.get().foldReplaceByChildren(parentFold, index);
+        Fold removedFold = parentFold.getFold(index);
         updateAffectedOffsets(removedFold);
+        ApiPackageAccessor.get().foldReplaceByChildren(parentFold, index);
         markFoldRemovedFromHierarchy(removedFold);
         unblockBlocked(removedFold);
+        // only retain in blocked if the fold is valid:
         if (block != null) {
-            execution.markBlocked(removedFold, block);
+            int so = removedFold.getStartOffset();
+            int eo = removedFold.getEndOffset();
+            if (so < eo) {
+                execution.markBlocked(removedFold, block);
+            } else {
+                execution.markDamaged();
+            }
         }
     }
     
@@ -1266,8 +1320,15 @@ public final class FoldHierarchyTransactionImpl {
     private void updateAffectedOffsets(Fold fold) {
         int startOffset = fold.getStartOffset();
         int endOffset = fold.getEndOffset();
-        assert (startOffset <= endOffset) : "startOffset=" + startOffset + // NOI18N
-                " > endOffset=" + endOffset + ", fold=" + fold; // NOI18N
+        if (startOffset > endOffset) {
+            execution.markDamaged();
+            LOG.warning("Invalid fold range: " + fold + ". Dumping hierarchy");
+            LOG.warning(execution.toString());
+            // take the damaged area from the parent
+            Fold f = fold.getParent();
+            startOffset = f.getStartOffset();
+            endOffset = f.getEndOffset();
+        }
         updateAffectedStartOffset(startOffset);
         updateAffectedEndOffset(endOffset);
     }

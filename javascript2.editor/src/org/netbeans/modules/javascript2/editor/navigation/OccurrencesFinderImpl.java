@@ -142,7 +142,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
                 }
             }
         }
-        if (!(object instanceof JsObjectReference)) {
+        if (!(object instanceof JsObjectReference && ModelUtils.isDescendant(object, ((JsObjectReference)object).getOriginal()))) {
             for(JsObject child : object.getProperties().values()) {
                 result.addAll(findMemberUsage(child, fqn, property, offset));
             }

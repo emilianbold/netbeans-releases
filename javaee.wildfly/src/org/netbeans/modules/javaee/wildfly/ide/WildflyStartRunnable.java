@@ -207,7 +207,9 @@ class WildflyStartRunnable implements Runnable {
 
         // get Java platform that will run the server
         JavaPlatform platform = properties.getJavaPlatform();
-        javaOptsBuilder.append(" -server -XX:+UseCompressedOops");
+        if ("64".equals(platform.getSystemProperties().get("sun.arch.data.model"))) {
+            javaOptsBuilder.append(" -server -XX:+UseCompressedOops");
+        }
         if (startServer.getMode() == WildflyStartServer.MODE.DEBUG && javaOptsBuilder.toString().indexOf("-Xdebug") == -1
                 && javaOptsBuilder.toString().indexOf("-agentlib:jdwp") == -1) { // NOI18N
             // if in debug mode and the debug options not specified manually
@@ -215,8 +217,6 @@ class WildflyStartRunnable implements Runnable {
 
         }
         javaOptsBuilder.append(" -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true");
-
-
 
         for (StartupExtender args : StartupExtender.getExtenders(
                 Lookups.singleton(CommonServerBridge.getCommonInstance(ip.getProperty("url"))), getMode(startServer.getMode()))) {

@@ -121,6 +121,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -344,6 +345,9 @@ public class Flow {
             }
 
             State s = v.variable2State.get(var);
+            if (s == null) {
+                s = v.variable2StateFinal.get(var);
+            }
             if (s != null && !s.assignments.contains(null)) {
                 return reassignAllowed || !s.reassigned;
             }
@@ -351,7 +355,7 @@ public class Flow {
 
         return false;
     }
-
+    
     public static boolean definitellyAssigned(CompilationInfo info, VariableElement var, Iterable<? extends TreePath> trees, Cancel cancel) {
         return definitellyAssignedImpl(info, var, null, trees, true, cancel);
     }
@@ -385,11 +389,21 @@ public class Flow {
          * for undefined variables in other scopes.
          */
         private Map<Name, Element> undefinedVariables = new HashMap<Name, Element>();
+
+        /**
+         * Tracks variables which are in scope. When a variable goes out of scope, its state (if any) moves
+         * to {@link #variable2StateFinal}.
+         */
         private Map<Element, State> variable2State = new HashMap<Element, Flow.State>();
+
+        /**
+         * Finalized state of variables. Records for variables, which go out of scope is collected here.
+         */
+        private Map<Element, State> variable2StateFinal = new HashMap<Element, Flow.State>();
         private Map<Tree, State> use2Values = new IdentityHashMap<Tree, State>();
         private Map<Tree, Collection<Map<Element, State>>> resumeBefore = new IdentityHashMap<Tree, Collection<Map<Element, State>>>();
         private Map<Tree, Collection<Map<Element, State>>> resumeAfter = new IdentityHashMap<Tree, Collection<Map<Element, State>>>();
-        private Map<TypeMirror, Collection<Map<Element, State>>> resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Collection<Map<Element, State>>>();
+        private Map<TypeMirror, Map<Element, State>> resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Map<Element, State>>();
         private boolean inParameters;
         private Tree nearestMethod;
         private Set<Element> currentMethodVariables = Collections.newSetFromMap(new IdentityHashMap<Element, Boolean>());
@@ -416,12 +430,38 @@ public class Flow {
          */
         private boolean lValueDereference;
 
+        private final TypeElement throwableEl;
+        private final TypeMirror runtimeExceptionType;
+        private final TypeMirror errorType;
+        
+        /**
+         * For a Tree, collects variables scoped into that tree. The Map is used
+         * when the traversal exits the tree, to clean up variables that go out of scope from
+         * variable2State, so state cloning takes less memory
+         */
+        private final Map<Tree, Collection<Element>> scopedVariables = new IdentityHashMap<Tree, Collection<Element>>();
+                
+
         public VisitorImpl(CompilationInfo info, TypeElement undefinedSymbolScope, Cancel cancel) {
             super();
             this.info = info;
             this.cancel = cancel;
             this.undefinedSymbolScope = undefinedSymbolScope;
             this.thisName = info.getElements().getName("this");
+
+            this.throwableEl = info.getElements().getTypeElement("java.lang.Throwable"); // NOI18N
+            TypeElement tel =  info.getElements().getTypeElement("java.lang.RuntimeException"); // NOI18N
+            if (tel != null) {
+                runtimeExceptionType = tel.asType();
+            } else {
+                runtimeExceptionType = null;
+            }
+            tel =  info.getElements().getTypeElement("java.lang.Error"); // NOI18N
+            if (tel != null) {
+                errorType = tel.asType();
+            } else {
+                errorType = null;
+            }
         }
 
         @Override
@@ -436,7 +476,17 @@ public class Flow {
             Boolean result = super.scan(tree, p);
 
             resume(tree, resumeAfter);
-
+            
+            Collection<Element> varsOutScope = scopedVariables.get(tree);
+            if (varsOutScope != null) {
+                for (Element ve : varsOutScope) {
+                    State s = variable2State.get(ve);
+                    if (s != null) {
+                        variable2StateFinal.put(ve, s);
+                    }
+                }
+                variable2State.keySet().removeAll(varsOutScope);
+            }
             return result;
         }
 
@@ -465,16 +515,22 @@ public class Flow {
             
             if (e != null) {
                 if (SUPPORTED_VARIABLES.contains(e.getKind())) {
-                    variable2State.put(e, State.create(new TreePath(getCurrentPath(), node.getExpression()), variable2State.get(e)));
+                    recordVariableState(e, new TreePath(getCurrentPath(), node.getExpression()));
                 } else if (shouldProcessUndefined(e)) {
                     Element cv = canonicalUndefined(e);
-                    variable2State.put(cv, State.create(new TreePath(getCurrentPath(), node.getExpression()), variable2State.get(cv)));
+                    recordVariableState(e, new TreePath(getCurrentPath(), node.getExpression()));
                 }
             }
             this.referenceTarget = oldQName;
             return constVal;
         }
         
+        
+        private void recordVariableState(Element ve, TreePath tp) {
+             State prevState = variable2State.get(ve);
+             variable2State.put(ve, State.create(tp, prevState));
+        }
+ 
         /**
          * Returns an alias for the Element, if the undefined name was already found. Returns e
          * and causes further names like 'e' to be aliased to e instance. This cannonicalization is
@@ -546,11 +602,10 @@ public class Flow {
                     } else if (e.getKind() == ElementKind.FIELD && prevState != null && prevState.hasUnassigned() && !finalCandidates.contains(ve)) {
                         usedWhileUndefined.add(ve);
                     }
-                    variable2State.put(ve, State.create(getCurrentPath(), prevState));
+                    recordVariableState(ve, getCurrentPath());
                 } else if (shouldProcessUndefined(e)) {
                     Element cv = canonicalUndefined(e);
-                    State prevState = variable2State.get(cv);
-                    variable2State.put(cv, State.create(getCurrentPath(), prevState));
+                    recordVariableState(cv, getCurrentPath());
                 }
             }
 
@@ -558,6 +613,16 @@ public class Flow {
             return constVal;
         }
 
+        
+        private void addScopedVariable(Tree t, Element ve) {
+            Collection<Element> c = scopedVariables.get(t);
+            if (c == null) {
+                c = new ArrayList<Element>(3);
+                scopedVariables.put(t, c);
+            }
+            c.add(ve);
+        }
+ 
         @Override
         public Boolean visitVariable(VariableTree node, ConstructorData p) {
             super.visitVariable(node, p);
@@ -567,8 +632,16 @@ public class Flow {
             if (e != null && SUPPORTED_VARIABLES.contains(e.getKind())) {
                 // note: if the variable does not have an initializer and is not a parameter (inParameters = true),
                 // the State will receive null as an assignment to indicate an uninitializer
-                variable2State.put((Element) e, State.create(node.getInitializer() != null ? new TreePath(getCurrentPath(), node.getInitializer()) : inParameters ? getCurrentPath() : null, variable2State.get(e)));
+                TreePath tp = 
+                            node.getInitializer() != null ? 
+                                    new TreePath(getCurrentPath(), node.getInitializer()) : 
+                                    inParameters ? getCurrentPath() : null;
+                recordVariableState(e, tp);
                 currentMethodVariables.add((Element) e);
+                TreePath pp = getCurrentPath().getParentPath();
+                if (pp != null) {
+                    addScopedVariable(pp.getLeaf(), e);
+                }
             }
             
             return null;
@@ -815,12 +888,12 @@ public class Flow {
         public Boolean visitMethod(MethodTree node, ConstructorData p) {
             Tree oldNearestMethod = nearestMethod;
             Set<Element> oldCurrentMethodVariables = currentMethodVariables;
-            Map<TypeMirror, Collection<Map<Element, State>>> oldResumeOnExceptionHandler = resumeOnExceptionHandler;
+            Map<TypeMirror, Map<Element, State>> oldResumeOnExceptionHandler = resumeOnExceptionHandler;
             Map<Element, State> oldVariable2State = variable2State;
 
             nearestMethod = node;
             currentMethodVariables = Collections.newSetFromMap(new IdentityHashMap<Element, Boolean>());
-            resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Collection<Map<Element, State>>>();
+            resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Map<Element, State>>();
             variable2State = new HashMap<>(variable2State);
             
             for (Iterator<Entry<Element, State>> it = variable2State.entrySet().iterator(); it.hasNext();) {
@@ -991,7 +1064,7 @@ public class Flow {
 
             return null;
         }
-
+        
         public Boolean visitTry(TryTree node, ConstructorData p) {
             if (node.getFinallyBlock() != null) {
                 pendingFinally.add(0, new TreePath(getCurrentPath(), node.getFinallyBlock()));
@@ -1003,30 +1076,63 @@ public class Flow {
 
             variable2State = new HashMap< Element, Flow.State>(oldVariable2State);
 
+            // resumeOnEx will save states from potential exceptions thrown by try siblings
+            // or outer blocks. 
+            // resumeOnEx will be later reused for recorded handlers from the try block.
+            Map<TypeMirror, Map<Element, State>> resumeOnEx = null;
+            List<TypeMirror> caughtTypes = null;
+            if (node.getCatches() != null && !node.getCatches().isEmpty()) {
+                caughtTypes = new ArrayList<TypeMirror>(node.getCatches().size());
+                resumeOnEx = new IdentityHashMap<TypeMirror, Map<Element, State>>(caughtTypes.size());
+                for (CatchTree ct : node.getCatches()) {
+                    for (TypeMirror caught : Utilities.getUnionExceptions(info, getCurrentPath(), ct)) {
+                        Map<Element, State> data = resumeOnExceptionHandler.get(caught);
+                        if (data != null) {
+                            resumeOnEx.put(caught, data);
+                        }
+                        resumeOnExceptionHandler.put(caught, new HashMap<Element, State>());
+                        caughtTypes.add(caught);
+                    }
+                }
+                // make an implicit transition since Error can happen on any allocation and RTE on virtually any
+                // arithmetic/dereference
+                recordResumeOnExceptionHandler(runtimeExceptionType);
+                recordResumeOnExceptionHandler(errorType);
+            }
+
             scan(node.getBlock(), null);
 
+            if (caughtTypes != null) {
+                recordResumeOnExceptionHandler(runtimeExceptionType);
+                recordResumeOnExceptionHandler(errorType);
+            }
+
             HashMap< Element, State> afterBlockVariable2State = new HashMap< Element, Flow.State>(variable2State);
+
+            // catch handlers and finally block will report exception to outer catches, restore
+            // masked exception types
+            if (caughtTypes != null) {
+                for (TypeMirror exT : caughtTypes) {
+                    Map<Element, State> oldData = resumeOnEx.remove(exT);
+                    Map<Element, State> data = resumeOnExceptionHandler.remove(exT);
+                    if (data != null) {
+                        resumeOnEx.put(exT, data);
+                    }
+                    if (oldData != null) {
+                        resumeOnExceptionHandler.put(exT, oldData);
+                    }
+                }
+            }
 
             for (CatchTree ct : node.getCatches()) {
                 Map< Element, State> variable2StateBeforeCatch = variable2State;
 
                 variable2State = new HashMap< Element, Flow.State>(oldVariable2State);
 
-                if (ct.getParameter() != null) {
-                    TypeMirror caught = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), ct.getParameter()));
-
-                    if (caught != null && caught.getKind() != TypeKind.ERROR) {
-                        for (Iterator<Entry<TypeMirror, Collection<Map< Element, State>>>> it = resumeOnExceptionHandler.entrySet().iterator(); it.hasNext();) {
-                            Entry<TypeMirror, Collection<Map< Element, State>>> e = it.next();
-
-                            if (info.getTypes().isSubtype(e.getKey(), caught)) {
-                                for (Map< Element, State> s : e.getValue()) {
-                                    variable2State = mergeOr(variable2State, s);
-                                }
-
-                                it.remove();
-                            }
-                        }
+                for (TypeMirror cc : Utilities.getUnionExceptions(info, getCurrentPath(), ct)) {
+                    Map<Element, State> data = resumeOnEx.get(cc);
+                    if (data != null) {
+                        variable2State = mergeOr(variable2State, data);
                     }
                 }
                 
@@ -1231,12 +1337,12 @@ public class Flow {
 
             Tree oldNearestMethod = nearestMethod;
             Set<Element> oldCurrentMethodVariables = currentMethodVariables;
-            Map<TypeMirror, Collection<Map<Element, State>>> oldResumeOnExceptionHandler = resumeOnExceptionHandler;
+            Map<TypeMirror, Map<Element, State>> oldResumeOnExceptionHandler = resumeOnExceptionHandler;
             Map<Element, State> oldVariable2State = variable2State;
 
             nearestMethod = node;
             currentMethodVariables = Collections.newSetFromMap(new IdentityHashMap<Element, Boolean>());
-            resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Collection<Map<Element, State>>>();
+            resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Map<Element, State>>();
             variable2State = new HashMap<>(variable2State);
             
             for (Iterator<Entry<Element, State>> it = variable2State.entrySet().iterator(); it.hasNext();) {
@@ -1391,8 +1497,8 @@ public class Flow {
                 recordResumeOnExceptionHandler(tt);
             }
 
-            recordResumeOnExceptionHandler("java.lang.RuntimeException");
-            recordResumeOnExceptionHandler("java.lang.Error");
+//            recordResumeOnExceptionHandler(runtimeExceptionType);
+//            recordResumeOnExceptionHandler(errorType);
         }
 
         private void recordResumeOnExceptionHandler(String exceptionTypeFQN) {
@@ -1403,16 +1509,31 @@ public class Flow {
             recordResumeOnExceptionHandler(exc.asType());
         }
 
+        /**
+         * Records continuation to the exception handler if a throwable is raised.
+         * Optimization: the resumeOnExceptionHandler must contain an entry for the
+         * throwable and/or its superclass. If not, then no enclosing catch handler
+         * is interested in the Throwable and no state snapshot is necessary.
+         * 
+         * @param thrown thrown exception type
+         */
         private void recordResumeOnExceptionHandler(TypeMirror thrown) {
-            if (thrown == null || thrown.getKind() == TypeKind.ERROR) return;
-            
-            Collection<Map< Element, State>> r = resumeOnExceptionHandler.get(thrown);
-
-            if (r == null) {
-                resumeOnExceptionHandler.put(thrown, r = new ArrayList<Map< Element, State>>());
-            }
-
-            r.add(new HashMap< Element, State>(variable2State));
+            if (thrown == null || thrown.getKind() != TypeKind.DECLARED) return;
+            DeclaredType dtt = (DeclaredType)thrown;
+            do {
+                // hack; getSuperclass may provide different type instance for the same element.
+                thrown = dtt.asElement().asType();
+                Map<Element, State> r = resumeOnExceptionHandler.get(thrown);
+                if (r != null) {
+                    mergeOr(r, variable2State);
+                    break;
+                }
+                TypeElement tel = (TypeElement)dtt.asElement();
+                if (tel == throwableEl) {
+                    break;
+                }
+                dtt = (DeclaredType)tel.getSuperclass();
+            } while (dtt != null);
         }
 
         public Boolean visitParenthesized(ParenthesizedTree node, ConstructorData p) {
@@ -1598,11 +1719,11 @@ public class Flow {
                     case BLOCK:
                         Tree oldNearestMethod = nearestMethod;
                         Set< Element> oldCurrentMethodVariables = currentMethodVariables;
-                        Map<TypeMirror, Collection<Map< Element, State>>> oldResumeOnExceptionHandler = resumeOnExceptionHandler;
+                        Map<TypeMirror, Map<Element, State>> oldResumeOnExceptionHandler = resumeOnExceptionHandler;
 
                         nearestMethod = additionalTree;
                         currentMethodVariables = Collections.newSetFromMap(new IdentityHashMap< Element, Boolean>());
-                        resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Collection<Map< Element, State>>>();
+                        resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Map<Element, State>>();
 
                         try {
                             scan(((BlockTree) additionalTree).getStatements(), null);

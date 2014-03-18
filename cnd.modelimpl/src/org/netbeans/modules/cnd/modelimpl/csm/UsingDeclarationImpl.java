@@ -180,7 +180,10 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
                     while (it.hasNext()) {
                         CsmDeclaration elem = it.next();
                         if (CharSequences.comparator().compare(lastName,elem.getName())==0) {
-                            if (!CsmKindUtilities.isExternVariable(elem)) {
+                            if (!CsmKindUtilities.isExternVariable(elem) 
+                                 && !CsmKindUtilities.isClassForwardDeclaration(elem) 
+                                 && !ForwardClass.isForwardClass(elem)) 
+                            {
                                 referencedDeclaration = elem;
                                 break outer;
                             } else {
