@@ -166,10 +166,15 @@ public final class QuickFilterPanel extends JPanel implements HelpCtx.Provider {
         this.quickFilter = quickFilter;
 
         if ((filterTypeExclusiveRadio != null) && (filterTypeInclusiveRadio != null)) {
-            if (quickFilter.getFilterType() == SimpleFilter.SIMPLE_FILTER_EXCLUSIVE) {
-                filterTypeExclusiveRadio.setSelected(true);
-            } else {
-                filterTypeInclusiveRadio.setSelected(true);
+            switch (quickFilter.getFilterType()) {
+                case SimpleFilter.SIMPLE_FILTER_EXCLUSIVE:
+                    filterTypeExclusiveRadio.setSelected(true);
+                    break;
+                case SimpleFilter.SIMPLE_FILTER_INCLUSIVE:
+                    filterTypeInclusiveRadio.setSelected(true);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Illegal Quick filter type:"+quickFilter.getFilterType());
             }
         }
 
