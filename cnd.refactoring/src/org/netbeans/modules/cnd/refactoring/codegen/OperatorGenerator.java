@@ -522,7 +522,7 @@ public class OperatorGenerator implements CodeGenerator {
                     name = "operator <<"; // NOI18N
                     parameters = "std::ostream& os, const " + getTemplateType() + "& obj"; // NOI18N
                     returns = "std::ostream&"; // NOI18N
-                    body = NbBundle.getMessage(ConstructorGenerator.class, "LESS_EQ", getTemplateType()); // NOI18N
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "LEFT_SHIFT", getTemplateType()); // NOI18N
                     break;
                 case RIGHT_SHIFT:
                     specifiers=getTemplatePrefix("friend");// NOI18N
