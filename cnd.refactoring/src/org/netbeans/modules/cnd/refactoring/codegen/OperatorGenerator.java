@@ -166,39 +166,73 @@ public class OperatorGenerator implements CodeGenerator {
             ElementNode.Description operatorsDescription;
             
             operators = new ArrayList<>();
-            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.EQ, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.EQ, false, false), null, true, false));
             operatorsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, operators, false, false)), false, false);
             ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorAssignment")); //NOI18N
             
             operators = new ArrayList<>();
-            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.PLUS_EQ, false), null, true, false));
-            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.PLUS, false), null, true, false));
-            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.MINUS_EQ, false), null, true, false));
-            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.MINUS, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.MOD_EQ, false, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.MOD, false, true), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.DIV_EQ, false, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.DIV, false, true), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.MUL_EQ, false, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.MUL, false, true), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.PLUS_EQ, false, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.PLUS, false, true), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.MINUS_EQ, false, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.MINUS, false, true), null, true, false));
+            
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.PLUS_PLUS, false, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.PLUS_PLUS, false, false, 1), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.MINUS_MINUS, false, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.MINUS_MINUS, false, false, 1), null, true, false));
+
             operatorsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, operators, false, false)), false, false);
-            ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorBinaryArithmetic")); //NOI18N
+            ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorArithmetic")); //NOI18N
+
+            operators = new ArrayList<>();
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.TILDE, false, true), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.AND_EQ, false, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.AND, false, true), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.OR_EQ, false, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.OR, false, true), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.XOR_EQ, false, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.XOR, false, true), null, true, false));
+            operatorsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, operators, false, false)), false, false);
+            ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorBitwise")); //NOI18N
             
             operators = new ArrayList<>();
-            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.ARROW, false), null, true, false));
-            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.ARROW, true), null, true, false));
-            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.ARRAY, false), null, true, false));
-            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.ARRAY, true), null, true, false));
-            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.POINTER, false), null, true, false));
-            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.POINTER, true), null, true, false));
-            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.ADDRESS, false), null, true, false));
-            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.ADDRESS, true), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.ARROW, false, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.ARROW, true, true), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.ARRAY, false, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.ARRAY, true, true), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.POINTER, false, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.POINTER, true, true), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.ADDRESS, false, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.ADDRESS, true, true), null, true, false));
             operatorsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, operators, false, false)), false, false);
             ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorPointer")); //NOI18N
             
             operators = new ArrayList<>();
-            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.EQ_EQ, false), null, true, false));
-            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.NOT_EQ, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.EQ_EQ, false, true), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.NOT_EQ, false, true), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.GREATER, false, true), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.GREATER_EQ, false, true), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.LESS, false, true), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.LESS_EQ, false, true), null, true, false));
             operatorsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, operators, false, false)), false, false);
             ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorRelational")); //NOI18N
             
             operators = new ArrayList<>();
-            operators.add(ElementNode.Description.create(new StubFriendImpl(typeElement, CsmFunction.OperatorKind.LEFT_SHIFT, false), null, true, false));
-            operators.add(ElementNode.Description.create(new StubFriendImpl(typeElement, CsmFunction.OperatorKind.RIGHT_SHIFT, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.NOT, false, true), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.AND_AND, false, true), null, true, false));
+            operators.add(ElementNode.Description.create(new StubMethodImpl(typeElement, CsmFunction.OperatorKind.OR_OR, false, true), null, true, false));
+            operatorsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, operators, false, false)), false, false);
+            ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorLogical")); //NOI18N
+
+            operators = new ArrayList<>();
+            operators.add(ElementNode.Description.create(new StubFriendImpl(typeElement, CsmFunction.OperatorKind.LEFT_SHIFT, false, false), null, true, false));
+            operators.add(ElementNode.Description.create(new StubFriendImpl(typeElement, CsmFunction.OperatorKind.RIGHT_SHIFT, false, false), null, true, false));
             operatorsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, operators, false, false)), false, false);
             ret.add(new OperatorGenerator(component, path, typeElement, operatorsDescription, "LBL_operatorFriendStream")); //NOI18N
             
@@ -267,23 +301,72 @@ public class OperatorGenerator implements CodeGenerator {
     private static abstract class StubFunctionImpl implements CsmFunction {
         protected final CsmClass parent;
         private final CsmFunction.OperatorKind kind;
-        private final boolean isConst;
+        private final boolean constResult;
+        private final boolean constOperator;
+        private final int posfix;
         private String name;
         private String parameters;
         private String specifiers;
         private String returns;
         private String body;
 
-        public StubFunctionImpl(CsmClass parent, CsmFunction.OperatorKind kind, boolean isConst) {
+        public StubFunctionImpl(CsmClass parent, CsmFunction.OperatorKind kind, boolean constResult, boolean constOperator) {
             this.parent = parent;
             this.kind = kind;
-            this.isConst = isConst;
+            this.constResult = constResult;
+            this.constOperator = constOperator;
+            this.posfix = 0;
+            init();
+        }
+
+        public StubFunctionImpl(CsmClass parent, CsmFunction.OperatorKind kind, boolean constResult, boolean constOperator, int postfix) {
+            this.parent = parent;
+            this.kind = kind;
+            this.constResult = constResult;
+            this.constOperator = constOperator;
+            this.posfix = 1;
             init();
         }
 
         private void init() {
             StringBuilder buf = new StringBuilder();
             switch (kind) {
+                case MOD_EQ:
+                    name = "operator %="; // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
+                    returns = getTemplateType()+"&"; // NOI18N
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "MOD_EQ", getTemplateType()); // NOI18N
+                    break;
+                case MOD:
+                    name = "operator %"; // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
+                    returns = getTemplateType();
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "MOD", getTemplateType()); // NOI18N
+                    break;
+                case DIV_EQ:
+                    name = "operator /="; // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
+                    returns = getTemplateType()+"&"; // NOI18N
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "DIV_EQ", getTemplateType()); // NOI18N
+                    break;
+                case DIV:
+                    name = "operator /"; // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
+                    returns = getTemplateType();
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "DIV", getTemplateType()); // NOI18N
+                    break;
+                case MUL_EQ:
+                    name = "operator *="; // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
+                    returns = getTemplateType()+"&"; // NOI18N
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "MUL_EQ", getTemplateType()); // NOI18N
+                    break;
+                case MUL:
+                    name = "operator *"; // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
+                    returns = getTemplateType();
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "MUL", getTemplateType()); // NOI18N
+                    break;
                 case PLUS_EQ:
                     name = "operator +="; // NOI18N
                     parameters = "const " + getTemplateType() + "& right"; // NOI18N
@@ -308,6 +391,72 @@ public class OperatorGenerator implements CodeGenerator {
                     returns = getTemplateType();
                     body = NbBundle.getMessage(ConstructorGenerator.class, "MINUS", getTemplateType()); // NOI18N
                     break;
+                case PLUS_PLUS:
+                    name = "operator ++"; // NOI18N
+                    if (posfix == 0) {
+                        parameters = ""; // NOI18N
+                        returns = getTemplateType()+"&"; // NOI18N
+                        body = NbBundle.getMessage(ConstructorGenerator.class, "PLUS_PLUS", getTemplateType()); // NOI18N
+                    } else {
+                        parameters = "int"; // NOI18N
+                        returns = getTemplateType();
+                        body = NbBundle.getMessage(ConstructorGenerator.class, "PLUS_PLUS_POSTFIX", getTemplateType()); // NOI18N
+                    }
+                    break;
+                case MINUS_MINUS:
+                    name = "operator --"; // NOI18N
+                    if (posfix == 0) {
+                        parameters = ""; // NOI18N
+                        returns = getTemplateType()+"&"; // NOI18N
+                        body = NbBundle.getMessage(ConstructorGenerator.class, "MINUS_MINUS", getTemplateType()); // NOI18N
+                    } else {
+                        parameters = "int"; // NOI18N
+                        returns = getTemplateType();
+                        body = NbBundle.getMessage(ConstructorGenerator.class, "MINUS_MINUS_POSTFIX", getTemplateType()); // NOI18N
+                    }
+                    break;
+                case TILDE:
+                    name = "operator ~"; // NOI18N
+                    parameters = ""; // NOI18N
+                    returns = getTemplateType();
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "TILDE", getTemplateType()); // NOI18N
+                    break;
+                case AND_EQ:
+                    name = "operator &="; // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
+                    returns = getTemplateType()+"&"; // NOI18N
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "AND_EQ", getTemplateType()); // NOI18N
+                    break;
+                case AND:
+                    name = "operator &"; // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
+                    returns = getTemplateType();
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "AND", getTemplateType()); // NOI18N
+                    break;
+                case OR_EQ:
+                    name = "operator |="; // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
+                    returns = getTemplateType()+"&"; // NOI18N
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "OR_EQ", getTemplateType()); // NOI18N
+                    break;
+                case OR:
+                    name = "operator |"; // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
+                    returns = getTemplateType();
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "OR", getTemplateType()); // NOI18N
+                    break;
+                case XOR_EQ:
+                    name = "operator ^="; // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
+                    returns = getTemplateType()+"&"; // NOI18N
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "XOR_EQ", getTemplateType()); // NOI18N
+                    break;
+                case XOR:
+                    name = "operator ^"; // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
+                    returns = getTemplateType();
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "XOR", getTemplateType()); // NOI18N
+                    break;
                 case EQ_EQ:
                     name = "operator =="; // NOI18N
                     parameters = "const " + getTemplateType() + "& right"; // NOI18N
@@ -325,6 +474,48 @@ public class OperatorGenerator implements CodeGenerator {
                     parameters = "const " + getTemplateType() + "& right"; // NOI18N
                     returns = getTemplateType()+"&"; // NOI18N
                     body = NbBundle.getMessage(ConstructorGenerator.class, "ASSIGNMENT", getTemplateType()); // NOI18N
+                    break;
+                case GREATER:
+                    name = "operator >"; // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
+                    returns = "bool"; // NOI18N
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "GREATER", getTemplateType()); // NOI18N
+                    break;
+                case GREATER_EQ:
+                    name = "operator >="; // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
+                    returns = "bool"; // NOI18N
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "GREATER_EQ", getTemplateType()); // NOI18N
+                    break;
+                case LESS:
+                    name = "operator <"; // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
+                    returns = "bool"; // NOI18N
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "LESS", getTemplateType()); // NOI18N
+                    break;
+                case LESS_EQ:
+                    name = "operator <="; // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
+                    returns = "bool"; // NOI18N
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "LESS_EQ", getTemplateType()); // NOI18N
+                    break;
+                case NOT:
+                    name = "operator !"; // NOI18N
+                    parameters = ""; // NOI18N
+                    returns = "bool"; // NOI18N
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "NOT", getTemplateType()); // NOI18N
+                    break;
+                case OR_OR:
+                    name = "operator ||"; // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
+                    returns = "bool"; // NOI18N
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "OR_OR", getTemplateType()); // NOI18N
+                    break;
+                case AND_AND:
+                    name = "operator &&"; // NOI18N
+                    parameters = "const " + getTemplateType() + "& right"; // NOI18N
+                    returns = "bool"; // NOI18N
+                    body = NbBundle.getMessage(ConstructorGenerator.class, "AND_AND", getTemplateType()); // NOI18N
                     break;
                 case LEFT_SHIFT:
                     specifiers=getTemplatePrefix("friend");// NOI18N
@@ -344,7 +535,7 @@ public class OperatorGenerator implements CodeGenerator {
                     name = "operator ->"; // NOI18N
                     parameters = ""; // NOI18N
                     returns = "value_t*"; // NOI18N
-                    if (isConst) {
+                    if (constOperator) {
                         body = NbBundle.getMessage(ConstructorGenerator.class, "ARROW_CONST", getTemplateType()); // NOI18N
                     } else {
                         body = NbBundle.getMessage(ConstructorGenerator.class, "ARROW", getTemplateType()); // NOI18N
@@ -354,7 +545,7 @@ public class OperatorGenerator implements CodeGenerator {
                     name = "operator *"; // NOI18N
                     parameters = ""; // NOI18N
                     returns = "value_t&"; // NOI18N
-                    if (isConst) {
+                    if (constOperator) {
                         body = NbBundle.getMessage(ConstructorGenerator.class, "POINTER_CONST", getTemplateType()); // NOI18N
                     } else {
                         body = NbBundle.getMessage(ConstructorGenerator.class, "POINTER", getTemplateType()); // NOI18N
@@ -364,7 +555,7 @@ public class OperatorGenerator implements CodeGenerator {
                     name = "operator []"; // NOI18N
                     parameters = "std::size_t index"; // NOI18N
                     returns = "value_t&"; // NOI18N
-                    if (isConst) {
+                    if (constOperator) {
                         body = NbBundle.getMessage(ConstructorGenerator.class, "ARRAY_CONST", getTemplateType()); // NOI18N
                     } else {
                         body = NbBundle.getMessage(ConstructorGenerator.class, "ARRAY", getTemplateType()); // NOI18N
@@ -374,7 +565,7 @@ public class OperatorGenerator implements CodeGenerator {
                     name = "operator &"; // NOI18N
                     parameters = ""; // NOI18N
                     returns = "value_t"; // NOI18N
-                    if (isConst) {
+                    if (constOperator) {
                         body = NbBundle.getMessage(ConstructorGenerator.class, "ADDRESS_CONST", getTemplateType()); // NOI18N
                     } else {
                         body = NbBundle.getMessage(ConstructorGenerator.class, "ADDRESS", getTemplateType()); // NOI18N
@@ -495,7 +686,7 @@ public class OperatorGenerator implements CodeGenerator {
                 buf.append(specifiers);
                 buf.append(' '); // NOI18N
             }
-            if (isConst) {
+            if (constResult) {
                 buf.append("const "); // NOI18N
             }
             buf.append(returns);
@@ -504,7 +695,7 @@ public class OperatorGenerator implements CodeGenerator {
             buf.append('('); // NOI18N
             buf.append(parameters);
             buf.append(")"); // NOI18N
-            if (isConst) {
+            if (constOperator) {
                 buf.append(" const"); // NOI18N
             }
             buf.append(" {\n"); // NOI18N
@@ -661,7 +852,7 @@ public class OperatorGenerator implements CodeGenerator {
             buf.append('('); // NOI18N
             buf.append(parameters);
             buf.append(")"); // NOI18N
-            if (isConst) {
+            if (constOperator) {
                 buf.append(" const"); // NOI18N
             }
             return buf.toString();
@@ -675,8 +866,12 @@ public class OperatorGenerator implements CodeGenerator {
 
     private static final class StubMethodImpl extends StubFunctionImpl implements CsmMethod {
 
-        public StubMethodImpl(CsmClass parent, CsmFunction.OperatorKind kind, boolean isConst) {
-            super(parent, kind, isConst);
+        public StubMethodImpl(CsmClass parent, CsmFunction.OperatorKind kind, boolean constResult, boolean constOperator) {
+            super(parent, kind, constResult, constOperator);
+        }
+
+        public StubMethodImpl(CsmClass parent, CsmFunction.OperatorKind kind, boolean constResult, boolean constOperator, int postfix) {
+            super(parent, kind, constResult, constOperator, postfix);
         }
 
         @Override
@@ -721,8 +916,8 @@ public class OperatorGenerator implements CodeGenerator {
     }
     private static final class StubFriendImpl extends StubFunctionImpl implements CsmFriendFunction {
 
-        public StubFriendImpl(CsmClass parent, OperatorKind kind, boolean isConst) {
-            super(parent, kind, isConst);
+        public StubFriendImpl(CsmClass parent, OperatorKind kind, boolean isConst, boolean constOperator) {
+            super(parent, kind, isConst, constOperator);
         }
 
         @Override
