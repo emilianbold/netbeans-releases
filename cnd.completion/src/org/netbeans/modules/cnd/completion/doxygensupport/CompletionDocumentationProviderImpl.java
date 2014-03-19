@@ -52,27 +52,22 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.doxygensupport.DoxygenDocumentation.CompletionDocumentationImpl;
-import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
 import org.netbeans.modules.cnd.spi.model.services.CsmDocProvider;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
-import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author thp
  */
-@ServiceProviders({@ServiceProvider(service = CompletionDocumentationProvider.class),
-                   @ServiceProvider(service = CsmDocProvider.class)})
-public class CompletionDocumentationProviderImpl implements CompletionDocumentationProvider, CsmDocProvider {
+@ServiceProvider(service = CsmDocProvider.class)
+public class CompletionDocumentationProviderImpl implements CsmDocProvider {
 
     @Override
     public CompletionDocumentation createDocumentation(CsmObject csmObject, CsmFile csmFile) {
@@ -89,12 +84,11 @@ public class CompletionDocumentationProviderImpl implements CompletionDocumentat
     }
 
     @Override
-    public CompletionTask createDocumentationTask(CompletionItem item) {
-        if (!(item instanceof CsmResultItem)) {
+    public CompletionTask createDocumentationTask(CsmObject csmObject) {
+        if (csmObject == null) {
             return null;
         }
 
-        CsmObject csmObject = (CsmObject) ((CsmResultItem) item).getAssociatedObject();
         CsmFile csmFile = getCsmFile(csmObject);
         return csmFile == null? null : new AsyncCompletionTask(new DocQuery(csmObject, csmFile));
     }
