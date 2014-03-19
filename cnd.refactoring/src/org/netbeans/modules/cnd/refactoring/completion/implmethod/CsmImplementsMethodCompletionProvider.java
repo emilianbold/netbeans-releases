@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.completion.implmethod;
+package org.netbeans.modules.cnd.refactoring.completion.implmethod;
 
 import java.util.ArrayList;
 import java.util.Collection;

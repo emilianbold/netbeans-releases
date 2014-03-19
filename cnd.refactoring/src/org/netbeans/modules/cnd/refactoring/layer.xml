@@ -175,6 +175,16 @@
                         <attr name="position" intvalue="500"/>
                     </file>
                 </folder>
+
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-cnd-refactoring-completion-implmethod-CsmImplementsMethodCompletionProvider.instance">
+                        <attr name="position" intvalue="160"/>
+                    </file>
+
+                    <file name="org-netbeans-modules-cnd-refactoring--completion-overridemethod-CsmOverrideMethodCompletionProvider.instance">
+                        <attr name="position" intvalue="170"/>
+                    </file>
+                </folder>
             </folder>            
             <folder name="x-h">
                 <file name="org-netbeans-modules-cnd-refactoring-editor-HighlightsLayerFactoryImpl.instance"/>
@@ -256,6 +266,12 @@
                         <attr name="position" intvalue="500"/>
                     </file>
                 </folder>
+
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-cnd-refactoring-completion-overridemethod-CsmOverrideMethodCompletionProvider.instance">
+                        <attr name="position" intvalue="170"/>
+                    </file>
+                </folder>                
             </folder>
         </folder>
     </folder>
