@@ -180,9 +180,11 @@
                     <file name="org-netbeans-modules-cnd-refactoring-completion-implmethod-CsmImplementsMethodCompletionProvider.instance">
                         <attr name="position" intvalue="160"/>
                     </file>
-
-                    <file name="org-netbeans-modules-cnd-refactoring--completion-overridemethod-CsmOverrideMethodCompletionProvider.instance">
+                    <file name="org-netbeans-modules-cnd-refactoring-completion-overridemethod-CsmOverrideMethodCompletionProvider.instance">
                         <attr name="position" intvalue="170"/>
+                    </file>                   
+                    <file name="org-netbeans-modules-cnd-refactoring-completion-delegate-PopupDelegateCompletionProvider.instance">
+                        <attr name="position" intvalue="1000"/>
                     </file>
                 </folder>
             </folder>            
@@ -270,6 +272,9 @@
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-cnd-refactoring-completion-overridemethod-CsmOverrideMethodCompletionProvider.instance">
                         <attr name="position" intvalue="170"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-refactoring-completion-delegate-PopupDelegateCompletionProvider.instance">
+                        <attr name="position" intvalue="1000"/>
                     </file>
                 </folder>                
             </folder>
