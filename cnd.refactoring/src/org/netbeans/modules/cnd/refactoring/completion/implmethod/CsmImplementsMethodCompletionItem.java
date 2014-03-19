@@ -120,7 +120,7 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         this.htmlItemText = htmlItemText;
         this.item = item;
         icon = (ImageIcon) ImageUtilities.image2Icon((ImageUtilities.mergeImages(ImageUtilities.icon2Image(CsmImageLoader.getIcon(item)),
-                                                      ImageUtilities.loadImage("org/netbeans/modules/cnd/completion/resources/generate.png"),  // NOI18N
+                                                      ImageUtilities.loadImage("org/netbeans/modules/cnd/refactoring/resources/generate.png"),  // NOI18N
                                                       0, 7)));
         this.right = right;
         this.isExtractBody = isExtractBody;

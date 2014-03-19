@@ -109,7 +109,7 @@ public class CsmOverrideMethodCompletionItem implements CompletionItem {
             anIicon = CsmImageLoader.getIcon(CsmDeclaration.Kind.FUNCTION, CsmUtilities.DESTRUCTOR);
         }
         icon = (ImageIcon) ImageUtilities.image2Icon((ImageUtilities.mergeImages(ImageUtilities.icon2Image(anIicon),
-                                                      ImageUtilities.loadImage("org/netbeans/modules/cnd/completion/resources/generate.png"),  // NOI18N
+                                                      ImageUtilities.loadImage("org/netbeans/modules/cnd/refactoring/resources/generate.png"),  // NOI18N
                                                       0, 7)));
         this.right = right;
     }
