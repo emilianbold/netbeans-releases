@@ -81,21 +81,23 @@ public class PopupDelegateCompletionProvider implements CompletionProvider {
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
             final int dot = component.getCaret().getDot();
-            return new AsyncCompletionTask(new Query(dot), component);
+            return new AsyncCompletionTask(new Query(dot, component), component);
         }
         return null;
     }
 
     private static final class Query extends AsyncCompletionQuery {
 
-        private Collection<CompletionItem> results;
         private final int creationCaretOffset;
+        private final JTextComponent component;
+        private Collection<CompletionItem> results;
         private int queryAnchorOffset;
         private String filterPrefix;
 
-        /*package*/ Query(int caretOffset) {
+        /*package*/ Query(int caretOffset, JTextComponent component) {
             this.creationCaretOffset = caretOffset;
             this.queryAnchorOffset = -1;
+            this.component = component;
         }
 
         @Override
@@ -146,7 +148,10 @@ public class PopupDelegateCompletionProvider implements CompletionProvider {
         private Collection<CompletionItem> getItems(final BaseDocument doc, final int caretOffset) {
             List<CompletionItem> items = new ArrayList<>();
             if (init(doc, caretOffset)) {
-                items.add(PopupDelegateCompletionItem.createImplementItem(caretOffset));
+                PopupDelegateCompletionItem item = PopupDelegateCompletionItem.createImplementItem(caretOffset, component);
+                if (item != null) {
+                    items.add(item);
+                }
             }
             return items;
         }

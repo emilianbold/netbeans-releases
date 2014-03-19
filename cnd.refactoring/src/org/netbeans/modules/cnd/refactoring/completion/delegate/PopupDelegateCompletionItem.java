@@ -49,9 +49,12 @@ import java.awt.event.KeyEvent;
 import java.net.URL;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
+import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.MultiKeymap;
+import org.netbeans.editor.Utilities;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -69,13 +72,39 @@ public class PopupDelegateCompletionItem implements CompletionItem {
 
     private static final int PRIORITY = 15;
     private final int substitutionOffset;
+    private final Action action;
+    private final String rightText;
 
-    private PopupDelegateCompletionItem(int substitutionOffset) {
+    private PopupDelegateCompletionItem(int substitutionOffset, Action action, String rightText) {
         this.substitutionOffset = substitutionOffset;
+        this.action = action;
+        this.rightText = rightText;
     }
 
-    public static PopupDelegateCompletionItem createImplementItem(int substitutionOffset) {
-        return new PopupDelegateCompletionItem(substitutionOffset);
+    public static PopupDelegateCompletionItem createImplementItem(int substitutionOffset, JTextComponent component) {
+        Action action = FileUtil.getConfigObject("Editors/Actions/generate-code.instance", Action.class); // NOI18N
+        if (action != null) {
+            String rightText = "";
+            BaseKit kit = Utilities.getKit(component);
+            if (kit != null) {
+                Action a = kit.getActionByName((String)action.getValue(Action.NAME));
+                MultiKeymap keymap = kit.getKeymap();
+                if (keymap != null) {
+                    KeyStroke[] keys = keymap.getKeyStrokesForAction(a);
+                    if (keys != null && keys.length > 0) {
+                        KeyStroke ks = keys[0];
+                        String keyModifiersText = KeyEvent.getKeyModifiersText(ks.getModifiers());
+                        if (keyModifiersText.length() > 0) {
+                            rightText = keyModifiersText + "+" + KeyEvent.getKeyText(ks.getKeyCode()); // NOI18N
+                        } else {
+                            rightText = KeyEvent.getKeyText(ks.getKeyCode());
+                        }
+                    }
+                }
+            }
+            return new PopupDelegateCompletionItem(substitutionOffset, action, rightText);
+        }
+        return null;
     }
 
     public String getItemText() {
@@ -179,15 +208,11 @@ public class PopupDelegateCompletionItem implements CompletionItem {
     }
 
     protected String getRightHtmlText(boolean html) {
-        return NbBundle.getMessage(PopupDelegateCompletionItem.class, "GENERATE_KEY"); //NOI18N
+        return rightText;
     }
 
     protected void substituteText(final JTextComponent c, final int offset, final int origLen) {
-        final BaseDocument doc = (BaseDocument) c.getDocument();
-        Action action = FileUtil.getConfigObject("Editors/Actions/generate-code.instance", Action.class); // NOI18N
-        if (action != null) {
-            action.actionPerformed(null);
-        }
+        action.actionPerformed(null);
     }
 
     private static final class CompletionDocumentationImpl implements CompletionDocumentation {
