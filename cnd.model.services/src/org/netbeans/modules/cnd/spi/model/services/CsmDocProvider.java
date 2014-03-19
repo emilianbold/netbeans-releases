@@ -43,11 +43,27 @@ package org.netbeans.modules.cnd.spi.model.services;
 
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.spi.editor.completion.CompletionDocumentation;
+import org.netbeans.spi.editor.completion.CompletionTask;
 
 /**
  *
  * @author Alexander Simon
  */
 public interface CsmDocProvider {
+    /**
+     * Retrieves documentation synchronously.
+     */
     CharSequence getDocumentation(CsmObject obj, CsmFile file);
+
+    /**
+     * Retrieves documentation synchronously.
+     */
+    CompletionDocumentation createDocumentation(CsmObject obj, CsmFile file);
+
+    /**
+     * Retrieves documentation asynchronously.
+     */
+    CompletionTask createDocumentationTask(CsmObject csmObject);  
+    
 }
