@@ -109,6 +109,11 @@ public class OperatorGenerator implements CodeGenerator {
             if (typeElement == null) {
                 return ret;
             }
+            List<CsmObject> pathList = path.getPath();
+            CsmObject last = pathList.get(pathList.size()-1);
+            if (!(CsmKindUtilities.isClass(last) || CsmKindUtilities.isField(last))) {
+                return ret;
+            }
             CsmObject objectUnderOffset = path.getObjectUnderOffset();
             final Set<CsmField> shouldBeInitializedFields = new LinkedHashSet<>();
             final Set<CsmField> mayBeIninitializedFields = new LinkedHashSet<>();

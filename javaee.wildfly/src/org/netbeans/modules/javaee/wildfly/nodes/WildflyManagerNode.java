@@ -82,12 +82,14 @@ import org.openide.util.actions.SystemAction;
 public class WildflyManagerNode extends AbstractNode implements Node.Cookie {
 
     private final Lookup lookup;
+    private final boolean isWidlfy;
     private static final String ADMIN_URL_WILDFLY = "/console"; //NOI18N
     private static final String HTTP_HEADER = "http://";
 
-    public WildflyManagerNode(Children children, Lookup lookup) {
+    public WildflyManagerNode( Children children, Lookup lookup) {
         super(children);
         this.lookup = lookup;
+        this.isWidlfy = getDeploymentManager().getProperties().isWildfly();
         getCookieSet().add(this);
         getCookieSet().add(new EditCookieImpl(getDeploymentManager().getProperties().getServerProfile()));
     }
@@ -205,7 +207,10 @@ public class WildflyManagerNode extends AbstractNode implements Node.Cookie {
     @Override
     public Image getIcon(int type) {
         if (type == BeanInfo.ICON_COLOR_16x16) {
-            return ImageUtilities.loadImage("org/netbeans/modules/javaee/wildfly/resources/wildfly.png"); // NOI18N
+            if(isWidlfy) {
+                return ImageUtilities.loadImage("org/netbeans/modules/javaee/wildfly/resources/wildfly.png"); // NOI18N
+            }
+            return ImageUtilities.loadImage("org/netbeans/modules/javaee/wildfly/resources/eap.gif"); // NOI18N
         }
         return super.getIcon(type);
     }

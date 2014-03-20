@@ -131,7 +131,7 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         this.lengthReplacement = lengthReplacement;
     }
 
-    public static CsmImplementsMethodCompletionItem createImplementItem(int substitutionOffset, int priority, CsmClass cls, CsmFunction item) {
+    public static CsmImplementsMethodCompletionItem createImplementItem(int substitutionOffset, int caretOffset, CsmClass cls, CsmFunction item) {
         String sortItemText = item.getName().toString();
         String appendItemText = createAppendText(item, cls, "{\n\n}"); //NOI18N
         String rightText = createRightName(item);
@@ -139,7 +139,7 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         return new CsmImplementsMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText, false, 0, 0);
     }
 
-    public static CsmImplementsMethodCompletionItem createExtractBodyItem(int substitutionOffset, int priority, CsmClass cls, CsmFunction item) {
+    public static CsmImplementsMethodCompletionItem createExtractBodyItem(int substitutionOffset, int caretOffset, CsmClass cls, CsmFunction item) {
         String sortItemText = item.getName().toString();
         String rightText = createRightName(item);
         String coloredItemText = createDisplayName(item, cls, NbBundle.getMessage(CsmImplementsMethodCompletionItem.class, "extract.txt")); //NOI18N

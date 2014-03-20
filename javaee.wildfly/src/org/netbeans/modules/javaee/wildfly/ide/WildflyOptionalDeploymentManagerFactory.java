@@ -45,19 +45,19 @@ package org.netbeans.modules.javaee.wildfly.ide;
 
 import java.util.Map;
 import java.util.WeakHashMap;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
-import org.netbeans.modules.javaee.wildfly.config.WildflyDatasourceManager;
-import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyInstantiatingIterator;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.config.WildflyDatasourceManager;
 import org.netbeans.modules.javaee.wildfly.config.WildflyMessageDestinationManager;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyInstantiatingIterator;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 
 /**
@@ -65,22 +65,28 @@ import org.openide.WizardDescriptor.InstantiatingIterator;
  * @author Martin Adamek
  */
 public class WildflyOptionalDeploymentManagerFactory extends OptionalDeploymentManagerFactory {
-    private final Map<InstanceProperties, StartServer> serverCache =
-            new WeakHashMap<InstanceProperties, StartServer>();
+
+    private final Map<InstanceProperties, StartServer> serverCache
+            = new WeakHashMap<InstanceProperties, StartServer>();
+
     @Override
     public synchronized StartServer getStartServer(DeploymentManager dm) {
-        InstanceProperties ip = InstanceProperties.getInstanceProperties(((WildflyDeploymentManager)dm).getUrl());
-        if(serverCache.containsKey(ip)) {
-           return serverCache.get(ip);
+        InstanceProperties ip = InstanceProperties.getInstanceProperties(((WildflyDeploymentManager) dm).getUrl());
+        if (serverCache.containsKey(ip)) {
+            return serverCache.get(ip);
         }
-        StartServer startServer =  new WildflyStartServer(dm);
+        StartServer startServer = new WildflyStartServer(dm);
         serverCache.put(ip, startServer);
         return startServer;
     }
 
     @Override
     public IncrementalDeployment getIncrementalDeployment(DeploymentManager dm) {
-        return new WildflyIncrementalDeployment((WildflyDeploymentManager) dm);
+        WildflyDeploymentManager wdm = (WildflyDeploymentManager) dm;
+        if (wdm.isWildfly()) {
+            return new WildflyIncrementalDeployment((WildflyDeploymentManager) dm);
+        }
+        return null;
     }
 
     @Override
@@ -117,7 +123,5 @@ public class WildflyOptionalDeploymentManagerFactory extends OptionalDeploymentM
     public ServerInstanceDescriptor getServerInstanceDescriptor(DeploymentManager dm) {
         return new WildFlyInstanceDescriptor((WildflyDeploymentManager) dm);
     }
-
-    
 
 }

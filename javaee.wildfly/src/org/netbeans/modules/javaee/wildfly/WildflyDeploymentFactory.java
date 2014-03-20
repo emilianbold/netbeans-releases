@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.javaee.wildfly;
 
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -64,12 +62,14 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
-import org.openide.util.NbBundle;
+import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
-import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -78,7 +78,7 @@ import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
 public class WildflyDeploymentFactory implements DeploymentFactory {
 
     public static final String URI_PREFIX = "wildfly-deployer:"; // NOI18N
-    
+
     private static final String DISCONNECTED_URI = URI_PREFIX + "http://localhost:8080&"; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(WildflyDeploymentFactory.class.getName());
@@ -190,8 +190,11 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
             addUrl(urlList, jboss, "sals" + sep + "main", Pattern.compile("jboss-sasl-.*.jar"));
             addUrl(urlList, jboss, "threads" + sep + "main", Pattern.compile("jboss-threads-.*.jar"));
             addUrl(urlList, as, "controller" + sep + "main", Pattern.compile("wildfly-controller-.*.jar"));
+            addUrl(urlList, as, "controller" + sep + "main", Pattern.compile("jboss-as-controller-.*.jar"));
+            addUrl(urlList, as, "controller-client" + sep + "main", Pattern.compile("jboss-as-controller-client-.*.jar"));
             addUrl(urlList, as, "controller-client" + sep + "main", Pattern.compile("wildfly-controller-client-.*.jar"));
             addUrl(urlList, as, "protocol" + sep + "main", Pattern.compile("wildfly-protocol-.*.jar"));
+            addUrl(urlList, as, "protocol" + sep + "main", Pattern.compile("jboss-as-protocol-.*.jar"));
             addUrl(urlList, jboss, "xnio" + sep + "main", Pattern.compile("xnio-api-.*.jar"));
             addUrl(urlList, jboss, "xnio" + sep + "nio" + sep + "main", Pattern.compile("xnio-nio-.*.jar"));
 
@@ -311,7 +314,7 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
                     throw new DeploymentManagerCreationException("Non existent domain root " + server); // NOI18N
                 }
             }
-            
+
             return new WildflyDeploymentManager(null, uri, null, null, null);
         } catch (NoClassDefFoundError e) {
             DeploymentManagerCreationException dmce = new DeploymentManagerCreationException("Classpath is incomplete"); // NOI18N
@@ -320,6 +323,7 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
         }
     }
 
+    @Override
     public String getProductVersion() {
         return NbBundle.getMessage (WildflyDeploymentFactory.class, "LBL_JBossFactoryVersion");
     }
@@ -338,17 +342,6 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
                     jbossFactory = (DeploymentFactory) factoryCache.get(ip);
                 }
                if (jbossFactory == null) {
-                    /*Version version = WildflyPluginUtils.getServerVersion(new File(jbossRoot));
-                    URLClassLoader loader = (ip != null) ? getWildFlyClassLoader(ip) : createWildFlyClassLoader(jbossRoot, domainRoot);
-                    if(version!= null && "7".equals(version.getMajorNumber())) {
-                        Class<?> c = loader.loadClass("org.jboss.as.ee.deployment.spi.factories.DeploymentFactoryImpl");
-                        c.getMethod("register").invoke(null);
-                        jbossFactory = (DeploymentFactory) c.newInstance();//NOI18N
-                    } else {
-                        jbossFactory = (DeploymentFactory) loader.loadClass("org.jboss.deployment.spi.factories.DeploymentFactoryImpl").newInstance();//NOI18N
-                    }*/
-
-                    // XXX is this ok ?
                     jbossFactory = this;
                     if (ip != null) {
                         factoryCache.put(ip, jbossFactory);
