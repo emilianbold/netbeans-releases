@@ -55,6 +55,10 @@ import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.refactoring.api.CsmContext;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -64,7 +68,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 
 /**
  *
- * @author alsimon
+ * @author Alexander Simon
  */
 public class PopupDelegateCompletionProvider implements CompletionProvider {
 
@@ -148,9 +152,19 @@ public class PopupDelegateCompletionProvider implements CompletionProvider {
         private Collection<CompletionItem> getItems(final BaseDocument doc, final int caretOffset) {
             List<CompletionItem> items = new ArrayList<>();
             if (init(doc, caretOffset)) {
-                PopupDelegateCompletionItem item = PopupDelegateCompletionItem.createImplementItem(caretOffset, component);
-                if (item != null) {
-                    items.add(item);
+                CsmContext context = CsmContext.create(doc, caretOffset, caretOffset, caretOffset);
+                if (context != null) {
+                    CsmClass enclosingClass = context.getEnclosingClass();
+                    if (enclosingClass != null) {
+                        List<CsmObject> path = context.getPath();
+                        CsmObject last = path.get(path.size()-1);
+                        if (CsmKindUtilities.isClass(last) || CsmKindUtilities.isField(last)) {
+                            PopupDelegateCompletionItem item = PopupDelegateCompletionItem.createImplementItem(caretOffset, component);
+                            if (item != null) {
+                                items.add(item);
+                            }
+                        }
+                    }
                 }
             }
             return items;

@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -97,6 +98,7 @@ public class WildflyJ2eePlatformFactory extends J2eePlatformFactory {
 
     private static final WeakHashMap<InstanceProperties, J2eePlatformImplImpl> instanceCache = new WeakHashMap<InstanceProperties, J2eePlatformImplImpl>();
 
+    @Override
     public synchronized J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
         WildflyDeploymentManager manager = (WildflyDeploymentManager) dm;
         InstanceProperties ip = manager.getInstanceProperties();
@@ -123,13 +125,20 @@ public class WildflyJ2eePlatformFactory extends J2eePlatformFactory {
             MODULE_TYPES.add(Type.CAR);
         }
 
-        private static final Set<Profile> PROFILES = new HashSet<Profile>();
+        private static final Set<Profile> WILDFLY_PROFILES = new HashSet<Profile>();
 
         static {
-            PROFILES.add(Profile.JAVA_EE_6_WEB);
-            PROFILES.add(Profile.JAVA_EE_6_FULL);
-            PROFILES.add(Profile.JAVA_EE_7_WEB);
-            PROFILES.add(Profile.JAVA_EE_7_FULL);
+            WILDFLY_PROFILES.add(Profile.JAVA_EE_6_WEB);
+            WILDFLY_PROFILES.add(Profile.JAVA_EE_6_FULL);
+            WILDFLY_PROFILES.add(Profile.JAVA_EE_7_WEB);
+            WILDFLY_PROFILES.add(Profile.JAVA_EE_7_FULL);
+        }
+
+        private static final Set<Profile> EAP6_PROFILES = new HashSet<Profile>();
+
+        static {
+            EAP6_PROFILES.add(Profile.JAVA_EE_6_WEB);
+            EAP6_PROFILES.add(Profile.JAVA_EE_6_FULL);
         }
 
         private LibraryImplementation[] libraries;
@@ -142,17 +151,23 @@ public class WildflyJ2eePlatformFactory extends J2eePlatformFactory {
 
         @Override
         public Set<org.netbeans.api.j2ee.core.Profile> getSupportedProfiles() {
-            return PROFILES;
+            if (this.properties.isWildfly()) {
+                return Collections.unmodifiableSet(WILDFLY_PROFILES);
+            }
+            return Collections.unmodifiableSet(EAP6_PROFILES);
         }
 
         @Override
         public Set<org.netbeans.api.j2ee.core.Profile> getSupportedProfiles(Type moduleType) {
-            return PROFILES;
+            if (this.properties.isWildfly()) {
+                return Collections.unmodifiableSet(WILDFLY_PROFILES);
+            }
+            return Collections.unmodifiableSet(EAP6_PROFILES);
         }
 
         @Override
         public Set<Type> getSupportedTypes() {
-            return MODULE_TYPES;
+            return Collections.unmodifiableSet(MODULE_TYPES);
         }
 
         @Override
@@ -268,7 +283,7 @@ public class WildflyJ2eePlatformFactory extends J2eePlatformFactory {
                 return true;
             }
             if ("jpa2.1".equals(toolName)) { // NOI18N
-                return true;
+                return this.properties.isWildfly();
             }
 
             if ("hibernatePersistenceProviderIsDefault2.0".equals(toolName)) {
@@ -306,8 +321,6 @@ public class WildflyJ2eePlatformFactory extends J2eePlatformFactory {
             }
             return false;
         }
-
-
 
         boolean containsPersistenceProvider(String providerName) {
             return containsService(libraries, "javax.persistence.spi.PersistenceProvider", providerName);

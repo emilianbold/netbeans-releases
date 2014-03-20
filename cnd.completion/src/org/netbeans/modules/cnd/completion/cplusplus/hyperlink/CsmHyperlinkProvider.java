@@ -158,7 +158,7 @@ public class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 primary = null;
                 String deleteExpr = getRestExpression(doc, offset);
                 CsmType resolvedType = CsmEntityResolver.resolveType(deleteExpr, csmFile, offset, null);
-                if (type != null) {
+                if (resolvedType != null) {
                     CsmClassifier classifier = CsmClassifierResolver.getDefault().getTypeClassifier(resolvedType, csmFile, offset, true);
                     if (CsmKindUtilities.isClass(classifier)) {
                         primary = CsmVirtualInfoQuery.getDefault().getFirstDestructor((CsmClass)classifier);
