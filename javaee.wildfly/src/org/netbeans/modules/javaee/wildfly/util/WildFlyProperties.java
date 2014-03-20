@@ -130,6 +130,10 @@ public class WildFlyProperties {
         version = WildflyPluginUtils.getServerVersion(new File(ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR)));
     }
 
+    public boolean isWildfly() {
+         return version != null && WildflyPluginUtils.WILDFLY_8_0_0.compareTo(version) <= 0;
+    }
+
     public String getServerProfile() {
         if (this.ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE) == null) {
             return getDefaultConfigurationFile(ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR));
@@ -233,7 +237,10 @@ public class WildFlyProperties {
 
     public List<URL> getClasses() {
         List<URL> list = selectJars(FileUtil.toFileObject(new File(getModulePath("javax"))));
-        list.addAll(selectJars(FileUtil.toFileObject(new File(getModulePath("org/glassfish/javax")))));
+        File glassfish = new File(getModulePath("org/glassfish/javax"));
+        if(glassfish.exists()) {
+        list.addAll(selectJars(FileUtil.toFileObject(glassfish)));
+        }
         return list;
     }
 
