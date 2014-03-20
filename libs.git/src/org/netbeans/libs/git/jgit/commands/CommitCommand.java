@@ -45,6 +45,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
@@ -153,12 +155,15 @@ public class CommitCommand extends GitCommand {
                 RevCommit rev = commit.call();
                 revision = getClassFactory().createRevisionInfo(rev, repository);
             } finally {
-                backup.lock();
-                try {
-                    backup.write();
-                    backup.commit();
-                } finally {
-                    backup.unlock();
+                if (backup.lock()) {
+                    try {
+                        backup.write();
+                        backup.commit();
+                    } catch (IOException ex) {
+                        Logger.getLogger(CommitCommand.class.getName()).log(Level.INFO, null, ex);
+                    } finally {
+                        backup.unlock();
+                    }
                 }
             }
         } catch (GitAPIException ex) {

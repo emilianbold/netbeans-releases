@@ -563,6 +563,29 @@ public class AddTest extends AbstractGitTestCase {
         assertEquals(path, RawParseUtils.decode(bytes));
         reader.release();
     }
+    
+    public void testAdd_243092 () throws Exception {
+        File folder1 = new File(workDir, "folder1");
+        File file1 = new File(folder1, "file1");
+        File folder2 = new File(workDir, "folder2");
+        File file2 = new File(folder2, "file2");
+        folder1.mkdirs();
+        folder2.mkdirs();
+        
+        write(file1, "init");
+        add();
+        commit();
+        
+        file1.delete();
+        folder1.delete();
+        assertFalse(folder1.exists());
+        
+        write(file2, "init");
+        getClient(workDir).add(new File[0], NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = getClient(workDir).getStatus(new File[0], NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file1, true, Status.STATUS_NORMAL, Status.STATUS_REMOVED, Status.STATUS_REMOVED, false);
+        assertStatus(statuses, workDir, file2, true, Status.STATUS_ADDED, Status.STATUS_NORMAL, Status.STATUS_ADDED, false);
+    }
 
     private void assertDirCacheEntry (Collection<File> files) throws IOException {
         DirCache cache = repository.lockDirCache();
