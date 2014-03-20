@@ -99,6 +99,7 @@ public class BuildNumberJDK extends Task {
 
                 getProject().setProperty("jdk.version.number", jdkVersion); // NOI18N
                 getProject().setProperty("jdk.update.number", jdkUpdate); // NOI18N
+                getProject().setProperty("jdk.update.number.long", jdkUpdate.length() == 1 ? "0" + jdkUpdate : jdkUpdate); // NOI18N
                 getProject().setProperty("jdk.ea.text", jdkEaText); // NOI18N
                 getProject().setProperty("jdk.build.number", jdkBuildNumber); // NOI18N                
             } else {

@@ -178,8 +178,11 @@
                                            else="${jdk_builds_host}/${jdk_builds_path}/all/b${jdk.build.number}/bundles/macosx-x64/jdk-${jdk.version.number}u${jdk.update.number}-${jdk.ea.text}macosx-x64.dmg">
         <equals arg1="${jdk.update.number}" arg2="0"/>
     </condition>
+    <condition property="jdk.update.number.long" value="0${jdk.update.number}" else="${jdk.update.number}">
+        <length string="${jdk.update.number}" length="1"/>  
+    </condition>
     <condition property="jdk.package.name" value="JDK\ ${jdk.version.number}"
-                                           else="JDK\ ${jdk.version.number}\ Update\ ${jdk.update.number}">
+                                           else="JDK\ ${jdk.version.number}\ Update\ ${jdk.update.number.long}">
         <equals arg1="${jdk.update.number}" arg2="0"/>
     </condition>
 
