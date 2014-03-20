@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author alsimon
+ * @author Alexander Simon
  */
 public class PopupDelegateCompletionItem implements CompletionItem {
 
