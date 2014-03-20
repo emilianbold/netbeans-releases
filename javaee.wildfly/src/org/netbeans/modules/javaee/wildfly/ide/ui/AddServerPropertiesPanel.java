@@ -158,6 +158,7 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
 
         instantiatingIterator.setHost(host);
         instantiatingIterator.setPort(port);
+        instantiatingIterator.setAdminPort("" + WildflyPluginProperties.getInstance().getAdminPort());
         instantiatingIterator.setServer(panel.getDomain());
         instantiatingIterator.setServerPath(panel.getDomainPath());
         instantiatingIterator.setDeployDir(WildflyPluginUtils.getDeployDir( panel.getDomainPath()));

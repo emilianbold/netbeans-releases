@@ -72,9 +72,11 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
 import org.netbeans.modules.javaee.wildfly.config.WildflyMessageDestination;
 import org.netbeans.modules.javaee.wildfly.deploy.WildflyDeploymentStatus;
 import org.netbeans.modules.javaee.wildfly.deploy.WildflyProgressObject;
-import org.netbeans.modules.javaee.wildfly.ide.commands.WildflyModule;
 import org.netbeans.modules.javaee.wildfly.ide.commands.WildflyClient;
+import org.netbeans.modules.javaee.wildfly.ide.commands.WildflyModule;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
+import static org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties.PROPERTY_ADMIN_PORT;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
 import org.netbeans.modules.javaee.wildfly.util.WildFlyProperties;
 import org.openide.util.Exceptions;
@@ -85,11 +87,11 @@ import org.openide.util.Exceptions;
  */
 public class WildflyDeploymentManager implements DeploymentManager2 {
 
-    private static final Version JBOSS_8_0_0 = new Version("8.0.0"); // NOI18N
-
     private static final int DEBUGGING_PORT = 8787;
     private static final int CONTROLLER_PORT = 9990;
 
+    private final Version version;
+    private final boolean isWildfly;
     private final WildflyClient client;
 
     /**
@@ -118,10 +120,17 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
         this.df = df;
         this.realUri = realUri;
         this.instanceProperties = InstanceProperties.getInstanceProperties(realUri);
+        version = WildflyPluginUtils.getServerVersion(new File(this.instanceProperties.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR)));
+        isWildfly = (version != null && WildflyPluginUtils.WILDFLY_8_0_0.compareTo(version) <= 0);
+        int controllerPort = CONTROLLER_PORT;
+        String adminPort = this.instanceProperties.getProperty(PROPERTY_ADMIN_PORT);
+        if(adminPort != null) {
+            controllerPort = Integer.parseInt(this.instanceProperties.getProperty(PROPERTY_ADMIN_PORT));
+        }
         if (username != null && password != null) {
-            this.client = new WildflyClient(instanceProperties, getHost(), CONTROLLER_PORT, username, password);
+            this.client = new WildflyClient(instanceProperties, getHost(), controllerPort, username, password);
         } else {
-            this.client = new WildflyClient(instanceProperties, getHost(), CONTROLLER_PORT);
+            this.client = new WildflyClient(instanceProperties, getHost(), controllerPort);
         }
     }
 
@@ -372,7 +381,7 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
     }
 
     public Version getServerVersion() {
-        return JBOSS_8_0_0;
+        return version;
     }
 
     public int getDebuggingPort() {
@@ -389,6 +398,9 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
 
     public WildFlyProperties getProperties() {
         return new WildFlyProperties(this);
+    }
+    public boolean isWildfly() {
+        return isWildfly;
     }
 
     /**
