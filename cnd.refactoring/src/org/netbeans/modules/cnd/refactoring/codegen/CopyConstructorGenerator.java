@@ -88,7 +88,11 @@ public class CopyConstructorGenerator implements CodeGenerator {
             if (typeElement == null) {
                 return ret;
             }
-            CsmObject objectUnderOffset = path.getObjectUnderOffset();
+            List<CsmObject> pathList = path.getPath();
+            CsmObject last = pathList.get(pathList.size()-1);
+            if (!(CsmKindUtilities.isClass(last) || CsmKindUtilities.isField(last))) {
+                return ret;
+            }
             final Set<CsmField> shouldBeInitializedFields = new LinkedHashSet<>();
             final Set<CsmField> mayBeIninitializedFields = new LinkedHashSet<>();
             final Set<CsmField> cannotBeInitializedFields = new LinkedHashSet<>();

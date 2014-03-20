@@ -39,7 +39,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmFontColorManager;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
@@ -50,7 +49,6 @@ import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -141,9 +139,7 @@ public class CsmPreprocessorDirectiveCompletionItem implements CompletionItem {
 
     @Override
     public CompletionTask createDocumentationTask() {
-        CompletionDocumentationProvider p = Lookup.getDefault().lookup(CompletionDocumentationProvider.class);
-
-        return p != null ? p.createDocumentationTask(this) : null;
+        return null;
     }
 
     @Override

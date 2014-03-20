@@ -43,15 +43,15 @@
  */
 package org.netbeans.modules.javaee.wildfly.ide.ui;
 
-import java.io.File;
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
 import java.awt.Component;
+import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -121,6 +121,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
         WildflyPluginProperties.getInstance().setDomainLocation(component.getConfigurationLocation());
         WildflyPluginProperties.getInstance().saveProperties();
         instantiatingIterator.setInstallLocation(locationStr);
+        instantiatingIterator.setAdminPort(""+ WildflyPluginProperties.getInstance().getAdminPort());
         return true;
     }
 
@@ -154,7 +155,8 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
         instantiatingIterator.setServer("standalone");
         String serverPath = ((AddServerLocationVisualPanel) getComponent()).getInstallLocation() + File.separatorChar + "standalone";
         instantiatingIterator.setServerPath(serverPath);
-        instantiatingIterator.setDeployDir(WildflyPluginUtils.getDeployDir(serverPath)); 
+        instantiatingIterator.setDeployDir(WildflyPluginUtils.getDeployDir(serverPath));
+        instantiatingIterator.setAdminPort("" + WildflyPluginProperties.getInstance().getAdminPort());
         instantiatingIterator.setHost("localhost");
         instantiatingIterator.setPort("8080");
     }

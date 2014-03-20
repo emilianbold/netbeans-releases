@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.completion.implmethod;
+package org.netbeans.modules.cnd.refactoring.completion.implmethod;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -75,10 +75,10 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.spi.model.services.CsmDocProvider;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -120,7 +120,7 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         this.htmlItemText = htmlItemText;
         this.item = item;
         icon = (ImageIcon) ImageUtilities.image2Icon((ImageUtilities.mergeImages(ImageUtilities.icon2Image(CsmImageLoader.getIcon(item)),
-                                                      ImageUtilities.loadImage("org/netbeans/modules/cnd/completion/resources/generate.png"),  // NOI18N
+                                                      ImageUtilities.loadImage("org/netbeans/modules/cnd/refactoring/resources/generate.png"),  // NOI18N
                                                       0, 7)));
         this.right = right;
         this.isExtractBody = isExtractBody;
@@ -128,7 +128,7 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         this.lengthReplacement = lengthReplacement;
     }
 
-    public static CsmImplementsMethodCompletionItem createImplementItem(int substitutionOffset, int priority, CsmClass cls, CsmFunction item) {
+    public static CsmImplementsMethodCompletionItem createImplementItem(int substitutionOffset, int caretOffset, CsmClass cls, CsmFunction item) {
         String sortItemText = item.getName().toString();
         String appendItemText = createAppendText(item, cls, "{\n\n}"); //NOI18N
         String rightText = createRightName(item);
@@ -136,7 +136,7 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         return new CsmImplementsMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText, false, 0, 0);
     }
 
-    public static CsmImplementsMethodCompletionItem createExtractBodyItem(int substitutionOffset, int priority, CsmClass cls, CsmFunction item) {
+    public static CsmImplementsMethodCompletionItem createExtractBodyItem(int substitutionOffset, int caretOffset, CsmClass cls, CsmFunction item) {
         String sortItemText = item.getName().toString();
         String rightText = createRightName(item);
         String coloredItemText = createDisplayName(item, cls, NbBundle.getMessage(CsmImplementsMethodCompletionItem.class, "extract.txt")); //NOI18N
@@ -426,9 +426,11 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
 
     @Override
     public CompletionTask createDocumentationTask() {
-        CompletionDocumentationProvider p = Lookup.getDefault().lookup(CompletionDocumentationProvider.class);
-
-        return p != null ? p.createDocumentationTask(this) : null;
+        CsmDocProvider p = Lookup.getDefault().lookup(CsmDocProvider.class);
+        if (p != null) {
+            return p.createDocumentationTask(item);
+        }
+        return null;
     }
 
     @Override

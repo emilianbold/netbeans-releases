@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.completion.overridemethod;
+package org.netbeans.modules.cnd.refactoring.completion.overridemethod;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -64,10 +64,10 @@ import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.spi.model.services.CsmDocProvider;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -109,12 +109,12 @@ public class CsmOverrideMethodCompletionItem implements CompletionItem {
             anIicon = CsmImageLoader.getIcon(CsmDeclaration.Kind.FUNCTION, CsmUtilities.DESTRUCTOR);
         }
         icon = (ImageIcon) ImageUtilities.image2Icon((ImageUtilities.mergeImages(ImageUtilities.icon2Image(anIicon),
-                                                      ImageUtilities.loadImage("org/netbeans/modules/cnd/completion/resources/generate.png"),  // NOI18N
+                                                      ImageUtilities.loadImage("org/netbeans/modules/cnd/refactoring/resources/generate.png"),  // NOI18N
                                                       0, 7)));
         this.right = right;
     }
 
-    public static CsmOverrideMethodCompletionItem createImplementItem(int substitutionOffset, int priority, CsmClass cls, CsmMember item) {
+    public static CsmOverrideMethodCompletionItem createImplementItem(int substitutionOffset, int caretOffset, CsmClass cls, CsmMember item) {
         String sortItemText;
         if (item == null || CsmKindUtilities.isDestructor(item)) {
             sortItemText = "~"+cls.getName(); //NOI18N
@@ -274,9 +274,11 @@ public class CsmOverrideMethodCompletionItem implements CompletionItem {
 
     @Override
     public CompletionTask createDocumentationTask() {
-        CompletionDocumentationProvider p = Lookup.getDefault().lookup(CompletionDocumentationProvider.class);
-
-        return p != null ? p.createDocumentationTask(this) : null;
+        CsmDocProvider p = Lookup.getDefault().lookup(CsmDocProvider.class);
+        if (p != null) {
+            return p.createDocumentationTask(item);
+        }
+        return null;
     }
 
     @Override
