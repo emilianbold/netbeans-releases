@@ -88,21 +88,13 @@ class WildflyStartRunnable implements Runnable {
 
     private static final int START_TIMEOUT = 300000;
 
-    private final static String CONF_FILE_NAME
-            = "run.conf.bat";                             // NOI18N
+    private final static String CONF_FILE_NAME = "standalone.conf.bat"; // NOI18N
 
-    private final static String RUN_FILE_NAME
-            = "run.bat";                                  // NOI18N
+    private final static String RUN_FILE_NAME = "run.bat";  // NOI18N
 
-    private final static String JBOSS_HOME
-            = "JBOSS_HOME";                             // NOI18N
-
-    private final static String STARTUP_SH = File.separator
-            + "bin" + File.separator + "run.sh";          // NOI18N
+    private final static String JBOSS_HOME = "JBOSS_HOME";// NOI18N
     private final static String STANDALONE_SH = File.separator
             + "bin" + File.separator + "standalone.sh";          // NOI18N
-    private final static String STARTUP_BAT = File.separator
-            + "bin" + File.separator + RUN_FILE_NAME;     // NOI18N
     private final static String STANDALONE_BAT = File.separator
             + "bin" + File.separator + "standalone.bat";     // NOI18N
 
