@@ -114,7 +114,7 @@ public class CsmOverrideMethodCompletionItem implements CompletionItem {
         this.right = right;
     }
 
-    public static CsmOverrideMethodCompletionItem createImplementItem(int substitutionOffset, int priority, CsmClass cls, CsmMember item) {
+    public static CsmOverrideMethodCompletionItem createImplementItem(int substitutionOffset, int caretOffset, CsmClass cls, CsmMember item) {
         String sortItemText;
         if (item == null || CsmKindUtilities.isDestructor(item)) {
             sortItemText = "~"+cls.getName(); //NOI18N
