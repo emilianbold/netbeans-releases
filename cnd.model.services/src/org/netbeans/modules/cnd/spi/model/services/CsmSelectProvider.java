@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.spi.model.services;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -75,6 +76,7 @@ public interface CsmSelectProvider {
     public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmNamespace namespace, CsmFilter filter);
     public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmNamespaceDefinition namespace, CsmFilter filter);
     public Iterator<CsmMember> getClassMembers(CsmClass cls, CsmFilter filter);
+    public Iterator<CsmFriend> getClassFriends(CsmClass cls, CsmFilter filter);
 
     public Iterator<CsmUID<CsmFile>> getFileUIDs(CsmProject csmProject, NameAcceptor nameFilter);
 
