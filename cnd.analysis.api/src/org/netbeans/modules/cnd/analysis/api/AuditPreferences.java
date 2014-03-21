@@ -13,7 +13,7 @@ import org.openide.util.NbPreferences;
  * @author Alexander Simon
  */
 public final class AuditPreferences {
-    public static final Preferences AUDIT_PREFERENCES_ROOT = NbPreferences.root().node("com/sun/tools/ide/analysis"); // NOI18N
+    public static final Preferences AUDIT_PREFERENCES_ROOT = NbPreferences.root().node("org/netbeans/modules/cnd/analysis"); // NOI18N
     private final Preferences preferences;
 
 
