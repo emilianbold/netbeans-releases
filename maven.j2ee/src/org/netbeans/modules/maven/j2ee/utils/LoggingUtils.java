@@ -128,7 +128,9 @@ public class LoggingUtils {
     private static void logUsingSourceClass(Logger logger, Class srcClass, String message, Object[] params) {
         LogRecord logRecord = createLogRecord(logger, message, params);
         logRecord.setResourceBundle(NbBundle.getBundle(srcClass));
-        logRecord.setResourceBundleName(srcClass.getPackage().getName() + ".Bundle"); // NOI18N
+        if (srcClass != null && srcClass.getPackage() != null) {
+            logRecord.setResourceBundleName(srcClass.getPackage().getName() + ".Bundle"); // NOI18N
+        }
         
         logger.log(logRecord);
     }
