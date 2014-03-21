@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -230,6 +231,14 @@ public final class CsmContext {
         if (path != null) {
             return;
         }
+        CsmCacheManager.enter();
+        try {
+            initPathImpl();
+        } finally {
+        CsmCacheManager.leave();
+        }
+    }
+    private void initPathImpl() {
         path = new ArrayList<CsmObject>(5);
         path.add(file);
         CsmFilter offsetFilter = CsmSelect.getFilterBuilder().createOffsetFilter(startOffset);
