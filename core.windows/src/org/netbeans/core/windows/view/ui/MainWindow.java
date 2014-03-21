@@ -423,9 +423,6 @@ public final class MainWindow {
        JRootPane root = frame.getRootPane();
        if( null == root )
            return;
-       if( "Aqua".equals(UIManager.getLookAndFeel().getID())
-               && null == System.getProperty("apple.awt.brushMetalLook") ) //NOI18N
-           root.putClientProperty("apple.awt.brushMetalLook", Boolean.TRUE); //NOI18N
        HelpCtx.setHelpIDString(
                root, new HelpCtx(MainWindow.class).getHelpID());
        if (Utilities.isWindows()) {
