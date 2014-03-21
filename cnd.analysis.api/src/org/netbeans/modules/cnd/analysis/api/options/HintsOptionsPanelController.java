@@ -93,7 +93,7 @@ public class HintsOptionsPanelController extends OptionsPanelController {
     @Override
     public synchronized JComponent getComponent(Lookup masterLookup) {
         if ( panel == null ) {
-            panel = new HintsPanel(null);
+            panel = new HintsPanel(masterLookup, null);
         }
         return panel;
     }

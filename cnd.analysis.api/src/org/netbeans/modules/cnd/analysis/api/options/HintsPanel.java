@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JCheckBox;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -61,6 +62,9 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
+import org.netbeans.modules.options.editor.spi.OptionsFilter;
+import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 
@@ -70,8 +74,23 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
     private final JCheckBox renderer = new JCheckBox();
     private HintsPanelLogic logic;
     private Preferences preferences;
+    
+    private final static RequestProcessor WORKER = new RequestProcessor(HintsPanel.class.getName(), 1, false, false);
+    private final RequestProcessor.Task expandTask = WORKER.create(new Runnable() {
+        @Override public void run() {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override public void run() {
+                    JTree tree = HintsPanel.this.errorTree;
+                    for (int r = 0; r < tree.getRowCount(); r++) {
+                        tree.expandRow(r);
+                    }
+                }
+            });
+            
+        }
+    });
 
-    public HintsPanel(CodeAuditProvider selection) {        
+    public HintsPanel(Lookup masterLookup, CodeAuditProvider selection) {        
         initComponents();
         if (selection != null) {
             this.preferences = selection.getPreferences().getPreferences();
@@ -83,10 +102,14 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
         errorTree.setRootVisible( false );
         errorTree.setShowsRootHandles( true );
         errorTree.getSelectionModel().setSelectionMode( TreeSelectionModel.SINGLE_TREE_SELECTION );
-        
         update();
-
-        errorTree.setModel(new ExtendedModel(selection));
+        ExtendedModel model = new ExtendedModel(selection);
+        OptionsFilter filter = masterLookup.lookup(OptionsFilter.class);
+        if (filter != null) {
+             ((OptionsFilter) filter).installFilteringModel(errorTree, model, new AcceptorImpl());
+        } else {
+            errorTree.setModel(model);
+        }
     }
     
     @Override
@@ -114,22 +137,24 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
         severityLabel = new javax.swing.JLabel();
         severityComboBox = new javax.swing.JComboBox();
         customizerPanel = new javax.swing.JPanel();
-        confidence = new javax.swing.JComboBox();
-        confidenceLabel = new javax.swing.JLabel();
         descriptionPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         descriptionTextArea = new javax.swing.JEditorPane();
         descriptionLabel = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        setLayout(new java.awt.GridBagLayout());
+        setPreferredSize(new java.awt.Dimension(400, 400));
+        setLayout(new java.awt.BorderLayout());
 
         jSplitPane1.setBorder(null);
-        jSplitPane1.setDividerLocation(320);
+        jSplitPane1.setDividerLocation(200);
+        jSplitPane1.setPreferredSize(new java.awt.Dimension(400, 400));
 
         treePanel.setOpaque(false);
+        treePanel.setPreferredSize(new java.awt.Dimension(200, 400));
         treePanel.setLayout(new java.awt.BorderLayout());
 
+        jScrollPane1.setPreferredSize(new java.awt.Dimension(100, 200));
         jScrollPane1.setViewportView(errorTree);
         errorTree.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.errorTree.AccessibleContext.accessibleName")); // NOI18N
         errorTree.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.errorTree.AccessibleContext.accessibleDescription")); // NOI18N
@@ -140,112 +165,88 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
 
         detailsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 6, 0, 0));
         detailsPanel.setOpaque(false);
-        detailsPanel.setLayout(new java.awt.GridBagLayout());
+        detailsPanel.setPreferredSize(new java.awt.Dimension(200, 400));
+        detailsPanel.setLayout(new java.awt.BorderLayout());
 
         optionsPanel.setOpaque(false);
-        optionsPanel.setLayout(new java.awt.GridBagLayout());
+        optionsPanel.setPreferredSize(new java.awt.Dimension(200, 200));
 
         severityLabel.setLabelFor(severityComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(severityLabel, org.openide.util.NbBundle.getMessage(HintsPanel.class, "CTL_ShowAs_Label")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
-        optionsPanel.add(severityLabel, gridBagConstraints);
-        severityLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.severityLabel.AccessibleContext.accessibleDescription")); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        optionsPanel.add(severityComboBox, gridBagConstraints);
-        severityComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HintsPanel.class, "AN_Show_As_Combo")); // NOI18N
-        severityComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HintsPanel.class, "AD_Show_As_Combo")); // NOI18N
 
         customizerPanel.setOpaque(false);
         customizerPanel.setLayout(new java.awt.BorderLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
-        optionsPanel.add(customizerPanel, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        optionsPanel.add(confidence, gridBagConstraints);
+        org.jdesktop.layout.GroupLayout optionsPanelLayout = new org.jdesktop.layout.GroupLayout(optionsPanel);
+        optionsPanel.setLayout(optionsPanelLayout);
+        optionsPanelLayout.setHorizontalGroup(
+            optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(optionsPanelLayout.createSequentialGroup()
+                .add(0, 0, 0)
+                .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(optionsPanelLayout.createSequentialGroup()
+                        .add(customizerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .add(optionsPanelLayout.createSequentialGroup()
+                        .add(severityLabel)
+                        .add(18, 18, 18)
+                        .add(severityComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 249, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(103, Short.MAX_VALUE))))
+        );
+        optionsPanelLayout.setVerticalGroup(
+            optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(optionsPanelLayout.createSequentialGroup()
+                .add(4, 4, 4)
+                .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(severityLabel)
+                    .add(severityComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(8, 8, 8)
+                .add(customizerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
+                .addContainerGap())
+        );
 
-        confidenceLabel.setLabelFor(confidence);
-        org.openide.awt.Mnemonics.setLocalizedText(confidenceLabel, org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.Confidence.Text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
-        optionsPanel.add(confidenceLabel, gridBagConstraints);
+        severityLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.severityLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        severityComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HintsPanel.class, "AN_Show_As_Combo")); // NOI18N
+        severityComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HintsPanel.class, "AD_Show_As_Combo")); // NOI18N
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 0.7;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        detailsPanel.add(optionsPanel, gridBagConstraints);
+        detailsPanel.add(optionsPanel, java.awt.BorderLayout.CENTER);
 
         descriptionPanel.setOpaque(false);
-        descriptionPanel.setLayout(new java.awt.GridBagLayout());
+        descriptionPanel.setPreferredSize(new java.awt.Dimension(200, 200));
+
+        jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         descriptionTextArea.setEditable(false);
+        descriptionTextArea.setPreferredSize(new java.awt.Dimension(100, 50));
         jScrollPane2.setViewportView(descriptionTextArea);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        descriptionPanel.add(jScrollPane2, gridBagConstraints);
 
         descriptionLabel.setLabelFor(descriptionTextArea);
         org.openide.awt.Mnemonics.setLocalizedText(descriptionLabel, org.openide.util.NbBundle.getMessage(HintsPanel.class, "CTL_Description_Border")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        descriptionPanel.add(descriptionLabel, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 0.3;
-        detailsPanel.add(descriptionPanel, gridBagConstraints);
+        org.jdesktop.layout.GroupLayout descriptionPanelLayout = new org.jdesktop.layout.GroupLayout(descriptionPanel);
+        descriptionPanel.setLayout(descriptionPanelLayout);
+        descriptionPanelLayout.setHorizontalGroup(
+            descriptionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(descriptionPanelLayout.createSequentialGroup()
+                .add(descriptionLabel)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE)
+        );
+        descriptionPanelLayout.setVerticalGroup(
+            descriptionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(descriptionPanelLayout.createSequentialGroup()
+                .add(descriptionLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE))
+        );
+
+        jScrollPane2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.jScrollPane2.AccessibleContext.accessibleName")); // NOI18N
+
+        detailsPanel.add(descriptionPanel, java.awt.BorderLayout.SOUTH);
 
         jSplitPane1.setRightComponent(detailsPanel);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(jSplitPane1, gridBagConstraints);
+        add(jSplitPane1, java.awt.BorderLayout.CENTER);
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.AccessibleContext.accessibleDescription")); // NOI18N
@@ -258,7 +259,6 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
         }
         logic = new HintsPanelLogic();
         logic.connect(errorTree, severityLabel, severityComboBox,
-                confidenceLabel, confidence,
                 customizerPanel, descriptionTextArea,
                 preferences);
     }
@@ -331,8 +331,6 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
     // Variables declaration - do not modify                     
         
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox confidence;
-    private javax.swing.JLabel confidenceLabel;
     private javax.swing.JPanel customizerPanel;
     private javax.swing.JLabel descriptionLabel;
     private javax.swing.JPanel descriptionPanel;
@@ -444,5 +442,32 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
             }
         }
     }
+    
+    private final class AcceptorImpl implements OptionsFilter.Acceptor {
+
+        public boolean accept(Object originalTreeNode, String filterText) {
+            if (filterText.isEmpty()) {
+                return true;
+            }
+            expandTask.schedule(100);
+            if (!(originalTreeNode instanceof DefaultMutableTreeNode)) {
+                return true;
+            }
+            DefaultMutableTreeNode n = (DefaultMutableTreeNode) originalTreeNode;
+            Object uo = n.getUserObject();
+
+            if (!(uo instanceof CodeAudit)) {
+                return false;
+            }
+            CodeAudit audit = (CodeAudit) uo;
+            filterText = filterText.toLowerCase();
+            if (audit.getName().toLowerCase().contains(filterText)) {
+                return true;
+            }
+
+            return false;
+        }
+    }
+
 }
 
