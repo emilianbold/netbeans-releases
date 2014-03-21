@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.api.CsmContext;
@@ -97,11 +98,16 @@ public class CopyConstructorGenerator implements CodeGenerator {
             final Set<CsmField> mayBeIninitializedFields = new LinkedHashSet<>();
             final Set<CsmField> cannotBeInitializedFields = new LinkedHashSet<>();
             final List<CsmConstructor> constructors = new ArrayList<>();
-            GeneratorUtils.scanForFieldsAndConstructors(typeElement, shouldBeInitializedFields, mayBeIninitializedFields, cannotBeInitializedFields, constructors);
-            for(CsmConstructor c : constructors) {
-                if (isCopyConstructor(typeElement, c)) {
-                    return ret;
+            CsmCacheManager.enter();
+            try {
+                GeneratorUtils.scanForFieldsAndConstructors(typeElement, shouldBeInitializedFields, mayBeIninitializedFields, cannotBeInitializedFields, constructors);
+                for(CsmConstructor c : constructors) {
+                    if (isCopyConstructor(typeElement, c)) {
+                        return ret;
+                    }
                 }
+            } finally {
+            CsmCacheManager.leave();
             }
             final Map<CsmClass,CsmConstructor> inheritedConstructors = new HashMap<>();
             // check base class
