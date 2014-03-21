@@ -129,6 +129,11 @@ public final class UncaughtException implements ErrorRule<Void> {
             
             Tree currentTree = path.getLeaf();
             
+            if (currentTree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+                // no checked exceptions can be thrown out of Lambda, #243106
+                break;
+            }
+            
             if (currentTree.getKind() == Kind.TRY) {
                 TryTree tt = (TryTree) currentTree;
                 
