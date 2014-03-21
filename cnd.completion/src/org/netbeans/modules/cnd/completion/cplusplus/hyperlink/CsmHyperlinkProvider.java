@@ -365,8 +365,8 @@ public class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                     type2 = aType;
                 }
             }
-            String canonicalText1 = type1.getCanonicalText().toString().replace("const const", "const");
-            String canonicalText2 = type2.getCanonicalText().toString().replace("const const", "const");
+            String canonicalText1 = type1.getCanonicalText().toString().replace("const const", "const"); //NOI18N
+            String canonicalText2 = type2.getCanonicalText().toString().replace("const const", "const"); //NOI18N
             return canonicalText1.equals(canonicalText2);
         }
         return false;
