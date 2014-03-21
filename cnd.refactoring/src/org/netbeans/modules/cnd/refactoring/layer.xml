@@ -159,20 +159,20 @@
                     <file name="org-netbeans-modules-cnd-refactoring-codegen-ConstructorGenerator$Factory.instance">
                         <attr name="position" intvalue="100"/>
                     </file>
-                    <file name="org-netbeans-modules-cnd-refactoring-codegen-CopyConstructorGenerator$Factory.instance">
-                        <attr name="position" intvalue="150"/>
-                    </file>
-                    <file name="org-netbeans-modules-cnd-refactoring-codegen-OperatorGenerator$Factory.instance">
-                        <attr name="position" intvalue="160"/>
-                    </file>
                     <file name="org-netbeans-modules-cnd-refactoring-codegen-GetterSetterGenerator$Factory.instance">
                         <attr name="position" intvalue="200"/>
                     </file>
-                    <file name="org-netbeans-modules-cnd-refactoring-codegen-DelegateMethodGenerator$Factory.instance">
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-CopyConstructorGenerator$Factory.instance">
+                        <attr name="position" intvalue="300"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-OperatorGenerator$Factory.instance">
                         <attr name="position" intvalue="400"/>
                     </file>
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-DelegateMethodGenerator$Factory.instance">
+                        <attr name="position" intvalue="1100"/>
+                    </file>
                     <file name="org-netbeans-modules-cnd-refactoring-codegen-ImplementOverrideMethodGenerator$Factory.instance">
-                        <attr name="position" intvalue="500"/>
+                        <attr name="position" intvalue="1200"/>
                     </file>
                 </folder>
 
@@ -252,20 +252,20 @@
                     <file name="org-netbeans-modules-cnd-refactoring-codegen-ConstructorGenerator$Factory.instance">
                         <attr name="position" intvalue="100"/>
                     </file>
-                    <file name="org-netbeans-modules-cnd-refactoring-codegen-CopyConstructorGenerator$Factory.instance">
-                        <attr name="position" intvalue="150"/>
-                    </file>
-                    <file name="org-netbeans-modules-cnd-refactoring-codegen-OperatorGenerator$Factory.instance">
-                        <attr name="position" intvalue="160"/>
-                    </file>
                     <file name="org-netbeans-modules-cnd-refactoring-codegen-GetterSetterGenerator$Factory.instance">
                         <attr name="position" intvalue="200"/>
                     </file>
-                    <file name="org-netbeans-modules-cnd-refactoring-codegen-DelegateMethodGenerator$Factory.instance">
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-CopyConstructorGenerator$Factory.instance">
+                        <attr name="position" intvalue="300"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-OperatorGenerator$Factory.instance">
                         <attr name="position" intvalue="400"/>
                     </file>
+                    <file name="org-netbeans-modules-cnd-refactoring-codegen-DelegateMethodGenerator$Factory.instance">
+                        <attr name="position" intvalue="1100"/>
+                    </file>
                     <file name="org-netbeans-modules-cnd-refactoring-codegen-ImplementOverrideMethodGenerator$Factory.instance">
-                        <attr name="position" intvalue="500"/>
+                        <attr name="position" intvalue="1200"/>
                     </file>
                 </folder>
 
