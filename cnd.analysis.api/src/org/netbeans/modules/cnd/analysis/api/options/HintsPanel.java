@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JCheckBox;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -61,6 +62,9 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
+import org.netbeans.modules.options.editor.spi.OptionsFilter;
+import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 
@@ -70,8 +74,23 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
     private final JCheckBox renderer = new JCheckBox();
     private HintsPanelLogic logic;
     private Preferences preferences;
+    
+    private final static RequestProcessor WORKER = new RequestProcessor(HintsPanel.class.getName(), 1, false, false);
+    private final RequestProcessor.Task expandTask = WORKER.create(new Runnable() {
+        @Override public void run() {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override public void run() {
+                    JTree tree = HintsPanel.this.errorTree;
+                    for (int r = 0; r < tree.getRowCount(); r++) {
+                        tree.expandRow(r);
+                    }
+                }
+            });
+            
+        }
+    });
 
-    public HintsPanel(CodeAuditProvider selection) {        
+    public HintsPanel(Lookup masterLookup, CodeAuditProvider selection) {        
         initComponents();
         if (selection != null) {
             this.preferences = selection.getPreferences().getPreferences();
@@ -83,10 +102,14 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
         errorTree.setRootVisible( false );
         errorTree.setShowsRootHandles( true );
         errorTree.getSelectionModel().setSelectionMode( TreeSelectionModel.SINGLE_TREE_SELECTION );
-        
         update();
-
-        errorTree.setModel(new ExtendedModel(selection));
+        ExtendedModel model = new ExtendedModel(selection);
+        OptionsFilter filter = masterLookup.lookup(OptionsFilter.class);
+        if (filter != null) {
+             ((OptionsFilter) filter).installFilteringModel(errorTree, model, new AcceptorImpl());
+        } else {
+            errorTree.setModel(model);
+        }
     }
     
     @Override
@@ -419,5 +442,32 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
             }
         }
     }
+    
+    private final class AcceptorImpl implements OptionsFilter.Acceptor {
+
+        public boolean accept(Object originalTreeNode, String filterText) {
+            if (filterText.isEmpty()) {
+                return true;
+            }
+            expandTask.schedule(100);
+            if (!(originalTreeNode instanceof DefaultMutableTreeNode)) {
+                return true;
+            }
+            DefaultMutableTreeNode n = (DefaultMutableTreeNode) originalTreeNode;
+            Object uo = n.getUserObject();
+
+            if (!(uo instanceof CodeAudit)) {
+                return false;
+            }
+            CodeAudit audit = (CodeAudit) uo;
+            filterText = filterText.toLowerCase();
+            if (audit.getName().toLowerCase().contains(filterText)) {
+                return true;
+            }
+
+            return false;
+        }
+    }
+
 }
 
