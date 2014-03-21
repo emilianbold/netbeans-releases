@@ -121,6 +121,9 @@ public class SimpleTabDisplayer extends AbstractTabDisplayer implements ListSele
 
     @Override
     public void setSelectedIndex( int index ) {
+        if( index >= getModel().size() ) {
+            return;
+        }
         TabTableModel model = ( TabTableModel ) table.getModel();
         int selRow = model.toRowIndex( index );
         int selCol = model.toColumnIndex( index );

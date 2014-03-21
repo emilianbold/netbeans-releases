@@ -401,11 +401,25 @@ public class CordovaPerformer implements BuildPerformer {
     }
     
     private static String getConfigPath(Project project) {
-        if (CordovaPlatform.getDefault().getVersion().getCliVersion().compareTo(new CordovaPlatform.Version.SubVersion("0.2.0")) >= 0) {
-            return "/" + NAME_CONFIG_XML;
-        }
         final FileObject siteRoot = ClientProjectUtilities.getSiteRoot(project);
-        return (siteRoot==null?WWW_NB_TEMP:siteRoot.getNameExt()) + "/" + NAME_CONFIG_XML; // NOI18N
+        String configPath = (siteRoot==null?WWW_NB_TEMP:siteRoot.getNameExt()) + "/" + NAME_CONFIG_XML; // NOI18N
+        boolean configExists = project.getProjectDirectory().getFileObject(configPath) != null;
+
+        if (CordovaPlatform.getDefault().getVersion().getApiVersion().compareTo(new CordovaPlatform.Version.SubVersion("3.4.0")) >= 0) {
+            String newConfigPath = "/" + NAME_CONFIG_XML;
+            boolean newConfigPathExists = project.getProjectDirectory().getFileObject(newConfigPath) !=null;
+            if (newConfigPathExists) {
+                return newConfigPath;
+            } else {
+                if (configExists) {
+                    return configPath;
+                } else {
+                    return newConfigPath;
+                }
+            }
+        } else {
+            return configPath;
+        }
     }
     
     public static SourceConfig getConfig(Project project)  {
