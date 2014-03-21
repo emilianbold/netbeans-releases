@@ -221,6 +221,8 @@ public class Jira {
                             for (int i = 0; i < priorities.length; i++) {
                                 infos[i] = new IssuePriorityInfo(priorities[i].getId(), priorities[i].getName());
                             }
+                        } else {
+                            infos = new IssuePriorityInfo[0];
                         }
                     }
                     return infos;

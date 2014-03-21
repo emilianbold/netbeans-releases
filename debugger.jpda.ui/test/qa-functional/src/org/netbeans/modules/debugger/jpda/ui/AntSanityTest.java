@@ -53,10 +53,11 @@ import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.BuildJavaProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.actions.SaveAction;
-import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.modules.debugger.actions.ApplyCodeChangesAction;
 import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import org.netbeans.jellytools.modules.debugger.actions.DebugJavaFileAction;
 import org.netbeans.jellytools.modules.debugger.actions.FinishDebuggerAction;
@@ -66,12 +67,12 @@ import org.netbeans.jellytools.modules.debugger.actions.StepIntoAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepOutAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepOverAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepOverExpressionAction;
-import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
-import org.netbeans.jellytools.modules.debugger.actions.ApplyCodeChangesAction;
 import org.netbeans.jellytools.modules.debugger.actions.TakeGUISnapshotAction;
+import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
@@ -168,9 +169,7 @@ public class AntSanityTest extends JellyTestCase {
      */
     public void pause() {
         new PauseAction().perform();
-        TopComponentOperator debuggingView = new TopComponentOperator("Debugging");
-        JTreeOperator threads = new JTreeOperator(debuggingView);
-        new Node(threads, "'Finalizer' suspended at 'Object.wait'");
+        waitThreadsNode("'Finalizer' suspended at 'Object.wait'");
     }
 
     /**
@@ -216,9 +215,7 @@ public class AntSanityTest extends JellyTestCase {
         new StepIntoAction().perform();
         EditorOperator eo = new EditorOperator("Window.java");
         int lineNumber = eo.getLineNumber();
-        TopComponentOperator debuggingView = new TopComponentOperator("Debugging");
-        JTreeOperator threads = new JTreeOperator(debuggingView);
-        new Node(threads, "'main' suspended at 'Window.setLocation:" + lineNumber + "'");
+        waitThreadsNode("'main' suspended at 'Window.setLocation:" + lineNumber + "'");
         assertEquals(eo.getText(lineNumber).trim(), "super.setLocation(x, y);");
     }
 
@@ -229,9 +226,7 @@ public class AntSanityTest extends JellyTestCase {
         new StepOutAction().perform();
         EditorOperator eo = new EditorOperator("MemoryView.java");
         int lineNumber = eo.getLineNumber();
-        TopComponentOperator debuggingView = new TopComponentOperator("Debugging");
-        JTreeOperator threads = new JTreeOperator(debuggingView);
-        new Node(threads, "'main' suspended at 'MemoryView.main:" + lineNumber + "'");
+        waitThreadsNode("'main' suspended at 'MemoryView.main:" + lineNumber + "'");
         assertEquals(eo.getText(lineNumber).trim(), "mv.setVisible(true);");
     }
 
@@ -243,11 +238,9 @@ public class AntSanityTest extends JellyTestCase {
         eo.setCaretPositionToLine(141);
         new ToggleBreakpointAction().perform();
         new ContinueAction().perform();
-        TopComponentOperator debuggingView = new TopComponentOperator("Debugging");
-        JTreeOperator threads = new JTreeOperator(debuggingView);
-        new Node(threads, "'AWT-EventQueue-0' at line breakpoint MemoryView.java : 141");
+        waitThreadsNode("'AWT-EventQueue-0' at line breakpoint MemoryView.java : 141");
         new StepOverAction().perform();
-        new Node(threads, "'AWT-EventQueue-0' suspended at 'MemoryView.updateStatus:143'");
+        waitThreadsNode("'AWT-EventQueue-0' suspended at 'MemoryView.updateStatus:143'");
         JTableOperator breakpoints = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
         new JPopupMenuOperator(breakpoints.callPopupOnCell(1, 0)).pushMenu("Delete All");
     }
@@ -324,8 +317,9 @@ public class AntSanityTest extends JellyTestCase {
     /**
      * Takes GUI snapshot of debugged application.
      */
-    public void takeGUISnapshot() {
+    public void takeGUISnapshot() throws InterruptedException {
         new Action("Debug|Debug Project (debugTestProjectAnt)", null).perform();
+        Thread.sleep(3000); // Wait 3 seconds. Sometimes starting debugging session was slow.
         OutputTabOperator op = new OutputTabOperator(debuggerConsoleTitle);
         assertEquals("User program running", op.getLine(op.getLineCount() - 2));
         new TakeGUISnapshotAction().perform();
@@ -333,8 +327,9 @@ public class AntSanityTest extends JellyTestCase {
         assertEquals(guiSnapshot.getComponent(1).getName(), "Snapshot Zoom Toolbar");
         JViewport viewPort = (JViewport) guiSnapshot.getComponent(0).getComponentAt(10, 10);
         assertTrue(viewPort.getComponent(0).toString().startsWith("org.netbeans.modules.debugger.jpda.visual.ui.ScreenshotComponent$ScreenshotCanvas"));
+        new FinishDebuggerAction().perform();
     }
-
+    
     /**
      * Using AWT robot presses and immediately releases certain key.
      * @param code Code of the key to be pressed.
@@ -346,6 +341,21 @@ public class AntSanityTest extends JellyTestCase {
             robot.keyRelease(code);
         } catch (AWTException ex) {
             Exceptions.printStackTrace(ex);
+        }
+    }
+
+    /**
+     * Waits until given threads node shows up in Debugging view.
+     * @param name Full display name of the required thread node to be found.
+     */
+    private void waitThreadsNode(String name) {
+        TopComponentOperator debuggingView = new TopComponentOperator("Debugging");
+        JTreeOperator threads = new JTreeOperator(debuggingView);
+        try {
+            Node node = new Node(threads, name);
+        } catch (TimeoutExpiredException tee) {
+            // if fails try second time because sometimes it fails for unknown reason
+            Node node = new Node(threads, name);
         }
     }
 }

@@ -140,6 +140,12 @@ final class ViewHierarchy {
                 mainFrame = new JFrame();
                 mainFrame.setName( "NbMainWindow" ); //NOI18N
             }
+            if( "Aqua".equals(UIManager.getLookAndFeel().getID())
+                    && null == System.getProperty("apple.awt.brushMetalLook") ) {//NOI18N 
+                JRootPane root = mainFrame.getRootPane();
+                if( null != root )
+                    root.putClientProperty("apple.awt.brushMetalLook", Boolean.TRUE); //NOI18N
+            }
             Logger.getLogger(MainWindow.class.getName()).log(Level.FINE, "Installing MainWindow into " + mainFrame); //NOI18N
             mainWindow = MainWindow.install(mainFrame);
         }
