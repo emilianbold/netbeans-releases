@@ -807,16 +807,20 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     }
 
     Comment[] getComments() {
-        NbTaskDataModel m = getModel();
-        List<TaskAttribute> attrs = m == null ? null : m.getLocalTaskData()
-                .getAttributeMapper().getAttributesByType(m.getLocalTaskData(), TaskAttribute.TYPE_COMMENT);
-        if (attrs == null) {
-            return new Comment[0];
-        }
-        List<Comment> comments = new ArrayList<Comment>();
-        for (TaskAttribute taskAttribute : attrs) {
-            comments.add(new Comment(taskAttribute));
-        }
+        final List<Comment> comments = new ArrayList<>();
+        runWithModelLoaded(new Runnable() {
+            @Override
+            public void run() {
+                NbTaskDataModel m = getModel();
+                List<TaskAttribute> attrs = m == null ? null : m.getLocalTaskData()
+                        .getAttributeMapper().getAttributesByType(m.getLocalTaskData(), TaskAttribute.TYPE_COMMENT);
+                if (attrs != null) {
+                    for (TaskAttribute taskAttribute : attrs) {
+                        comments.add(new Comment(taskAttribute));
+                    }
+                }
+            }
+        });
         return comments.toArray(new Comment[comments.size()]);
     }
 
