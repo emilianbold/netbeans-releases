@@ -84,7 +84,9 @@ public final class CsmCacheMap implements CsmCacheManager.CsmClientCache {
         if (res instanceof TraceValue) {
             TraceValue out = (TraceValue)res;
             out.onCacheHit();
-            LOGGER.log(Level.FINE, "HIT {0} (Hits {1}) {2}=>{3}\n", new Object[]{this.name, out.getHitsCount(), key, out.getResult()});
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "HIT {0} (Hits {1}) {2}=>{3}\n", new Object[]{this.name, out.getHitsCount(), key, out.getResult()});
+            }
         }
         return res;
     }

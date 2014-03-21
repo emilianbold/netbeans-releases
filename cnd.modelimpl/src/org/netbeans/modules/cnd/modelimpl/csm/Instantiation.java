@@ -325,7 +325,9 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                 }
                 
                 if (areEqual) {
-                    LOG.log(Level.FINE, "REFUSE TO INSTANTITATE:\n{0}\n", new Object[] {template}); //NOI18N
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "REFUSE TO INSTANTITATE:\n{0}\n", new Object[] {template}); //NOI18N
+                    }
                     return true;
                 }
             }
@@ -615,7 +617,9 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         public Inheritance(CsmInheritance inheritance, Instantiation instantiation) {
             this.inheritance = inheritance;
             this.type = createType(inheritance.getAncestorType(), instantiation);
-            LOG.log(Level.FINE, "Inheritance for\n{0}\n=>INHERITANCE TYPE=>\n{1}", new Object[] {this, type});
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Inheritance for\n{0}\n=>INHERITANCE TYPE=>\n{1}", new Object[] {this, type});
+            }
         }
 
         @Override
@@ -1302,7 +1306,9 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         if (canSkipInstantiation(type, instantiation.getMapping())) {
             return type;
         }
-        LOG.log(Level.FINE, "Instantiation.createType {0}; inst:{1}\n", new Object[]{type.getText(), instantiation.getTemplateDeclaration().getName()});
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Instantiation.createType {0}; inst:{1}\n", new Object[]{type.getText(), instantiation.getTemplateDeclaration().getName()});
+        }
 //        System.err.println("Instantiation.createType for " + type + " with instantiation " + instantiation);
         if (CsmKindUtilities.isTemplateParameterType(type)) {
             CsmType instantiatedType = resolveTemplateParameterType(type, instantiation);
@@ -1343,7 +1349,9 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
     
     public static CsmType resolveTemplateParameterType(CsmType type, CsmInstantiation instantiation) {
         if (CsmKindUtilities.isTemplateParameterType(type)) {
-            LOG.log(Level.FINE, "Instantiation.resolveTemplateParameter {0}; mapping={1}\n", new Object[]{type.getText(), instantiation.getTemplateDeclaration().getName()});
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Instantiation.resolveTemplateParameter {0}; mapping={1}\n", new Object[]{type.getText(), instantiation.getTemplateDeclaration().getName()});
+            }
             MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping = new MapHierarchy<>(instantiation.getMapping());
             CsmTemplateParameter param = ((CsmTemplateParameterType) type).getParameter();
             if (param != null) {
@@ -1371,7 +1379,9 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
     }
     
     public static CsmSpecializationParameter resolveTemplateParameter(CsmTemplateParameter templateParameter, MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
-        LOG.log(Level.FINE, "Instantiation.resolveTemplateParameter {0}; mapping={1}\n", new Object[]{templateParameter.getName(), mapping.size()});
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Instantiation.resolveTemplateParameter {0}; mapping={1}\n", new Object[]{templateParameter.getName(), mapping.size()});
+        }
         CsmSpecializationParameter instantiatedType = mapping.get(templateParameter);
         int iteration = MAX_INHERITANCE_DEPTH;
         while (CsmKindUtilities.isTypeBasedSpecalizationParameter(instantiatedType) &&

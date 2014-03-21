@@ -353,8 +353,10 @@ public final class CsmInheritanceUtilities {
                 return new ContextVisibilityInfo(defVisibilityValue, false);
             }
         } finally {
-            time = System.currentTimeMillis() - time;
-            LOG.log(Level.FINE, "getContextVisibilityInfo took {0}ms\n", new Object[]{time}); // NOI18N
+            if (LOG.isLoggable(Level.FINE)) {
+                time = System.currentTimeMillis() - time;
+                LOG.log(Level.FINE, "getContextVisibilityInfo took {0}ms\n", new Object[]{time}); // NOI18N
+            }
         }
     }
     
@@ -395,8 +397,8 @@ public final class CsmInheritanceUtilities {
             }
             return res;
         } finally {
-            time = System.currentTimeMillis() - time;
             if (LOG.isLoggable(Level.FINE)) {
+                time = System.currentTimeMillis() - time;
                 LOG.log(Level.FINE, "findInheritanceChain took {0}ms:\n\tchild={1}\n\tparent={2}\n", new Object[]{time, getPosition(child), getPosition(parent)});
             }
         }
@@ -476,7 +478,9 @@ public final class CsmInheritanceUtilities {
                 threadLocalInheritanceAntiloop.get().exit(inh);
             }
         }         
-        LOG.log(Level.FINE, "getCsmClass for\n{0}\n=>getCsmClass=>\n{1}", new Object[] {inh, out});
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "getCsmClass for\n{0}\n=>getCsmClass=>\n{1}", new Object[] {inh, out});
+        }
         return out;
     }
 

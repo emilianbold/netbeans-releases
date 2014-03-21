@@ -101,7 +101,9 @@ public class VariableProvider {
     
     public VariableProvider(int level) {
         this.level = level;
-        LOG.log(Level.FINE, "\nVARIABLE PROVIDER CREATED WITHOUT MAP HIERARCHY\n"); // NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "\nVARIABLE PROVIDER CREATED WITHOUT MAP HIERARCHY\n"); // NOI18N
+        }
     }
     
     public VariableProvider(CsmOffsetableDeclaration decl, MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping, CsmFile variableFile, int variableStartOffset, int variableEndOffset, int level) {
@@ -111,7 +113,9 @@ public class VariableProvider {
         this.variableStartOffset = variableStartOffset;
         this.variableEndOffset = variableEndOffset;
         this.level = level;
-        LOG.log(Level.FINE, "\nVARIABLE PROVIDER CREATED WITH MAP HIERARCHY:\n{0}\n", mapping); // NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "\nVARIABLE PROVIDER CREATED WITH MAP HIERARCHY:\n{0}\n", mapping); // NOI18N
+        }
     }    
 
     public int getValue(String variableName) {
@@ -120,7 +124,9 @@ public class VariableProvider {
         }
         long time = System.currentTimeMillis();
         try {
-            LOG.log(Level.FINE, "GetValue for {0}:{1}\n", new Object[]{variableName, decl});
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "GetValue for {0}:{1}\n", new Object[]{variableName, decl});
+            }
             if(variableName.equals("true")) { // NOI18N
                 return 1;
             }
@@ -336,8 +342,10 @@ public class VariableProvider {
 
             return Integer.MAX_VALUE;
         } finally {
-            time = System.currentTimeMillis() - time;
-            LOG.log(Level.FINE, "getValue {0} took {1}ms\n", new Object[]{variableName, time}); // NOI18N
+            if (LOG.isLoggable(Level.FINE)) {
+                time = System.currentTimeMillis() - time;
+                LOG.log(Level.FINE, "getValue {0} took {1}ms\n", new Object[]{variableName, time}); // NOI18N
+            }
         }
     }
     
