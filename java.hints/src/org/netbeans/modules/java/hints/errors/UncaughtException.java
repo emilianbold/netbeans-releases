@@ -232,7 +232,6 @@ public final class UncaughtException implements ErrorRule<Void> {
 			else
 			    uncaught = ((ExecutableElement) el).getThrownTypes();
                     }
-                    path = path.getParentPath();
                     break OUTTER;
                 case THROW:
                     TypeMirror uncaughtException = info.getTrees().getTypeMirror(new TreePath(path, ((ThrowTree) leaf).getExpression()));
@@ -267,7 +266,7 @@ public final class UncaughtException implements ErrorRule<Void> {
                             inResourceSection = true;
                         }
                     case METHOD: case ANNOTATION_TYPE: case CLASS:
-                    case ENUM: case INTERFACE:
+                    case ENUM: case INTERFACE: case LAMBDA_EXPRESSION:
                         break LOOK_FOR_TWR;
                 }
                 inLast = in.getLeaf();
