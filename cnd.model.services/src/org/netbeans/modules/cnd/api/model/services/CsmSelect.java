@@ -176,7 +176,7 @@ public class CsmSelect {
             return out;
         } finally {
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINE, "getClassMembers took {0}ms:\n\tcls={1}\n\tfilter={2}\n", new Object[]{time, getPosition(cls), filter});
+                LOG.log(Level.FINE, "getClassFrirends took {0}ms:\n\tcls={1}\n\tfilter={2}\n", new Object[]{time, getPosition(cls), filter});
             }
         }
     }
