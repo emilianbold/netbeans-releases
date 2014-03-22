@@ -83,7 +83,6 @@ import org.openide.util.NbBundle;
 class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListener, ChangeListener, ActionListener {
 
     private static final Map<Severity,Integer> severity2index;
-    private static final Map<String,Integer> confidence2index;
     
     private static final String DESCRIPTION_HEADER = 
         "<html><head>" + // NOI18N
@@ -98,45 +97,29 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         severity2index = new HashMap<Severity, Integer>();
         severity2index.put( Severity.ERROR, 0  );
         severity2index.put( Severity.WARNING, 1  );
-        confidence2index = new HashMap<String, Integer>();
-        confidence2index.put("3", 0); //NOI18N
-        confidence2index.put("2", 1); //NOI18N
-        confidence2index.put("1", 2); //NOI18N
-        confidence2index.put("0", 3); //NOI18N
     }
     
     private JTree errorTree;
     private JLabel severityLabel;
     private JComboBox severityComboBox;
-    private JLabel confidenceLabel;
-    private JComboBox confidence;
     private JPanel customizerPanel;
     private JEditorPane descriptionTextArea;
     private Preferences preferences;
     private final DefaultComboBoxModel defModel = new DefaultComboBoxModel();
-    private final DefaultComboBoxModel confidenceModel = new DefaultComboBoxModel();
     private final String defLabel = NbBundle.getMessage(HintsPanel.class, "CTL_ShowAs_Label"); //NOI18N
-    private final String confDefLabel = NbBundle.getMessage(HintsPanel.class, "CTL_Confidence_Label"); //NOI18N
     
     HintsPanelLogic() {
         defModel.addElement(NbBundle.getMessage(HintsPanel.class, "CTL_AsError")); //NOI18N
         defModel.addElement(NbBundle.getMessage(HintsPanel.class, "CTL_AsWarning")); //NOI18N
-        confidenceModel.addElement(new Confidence(3, NbBundle.getMessage(HintsPanel.class, "SURE_CONFIDENCE"))); //NOI18N
-        confidenceModel.addElement(new Confidence(2, NbBundle.getMessage(HintsPanel.class, "HIGH_CONFIDENCE"))); //NOI18N
-        confidenceModel.addElement(new Confidence(1, NbBundle.getMessage(HintsPanel.class, "MEDIUM_CONFIDENCE"))); //NOI18N
-        confidenceModel.addElement(new Confidence(0, NbBundle.getMessage(HintsPanel.class, "LOW_CONFIDENCE"))); //NOI18N
     }
     
     void connect( JTree errorTree, JLabel severityLabel, JComboBox severityComboBox,
-                  JLabel confidenceLabel, JComboBox confidence,
                   JPanel customizerPanel, JEditorPane descriptionTextArea,
                   Preferences preferences) {
         this.preferences = preferences;
         this.errorTree = errorTree;
         this.severityLabel = severityLabel;
         this.severityComboBox = severityComboBox;
-        this.confidenceLabel = confidenceLabel;
-        this.confidence = confidence;
         this.customizerPanel = customizerPanel;
         this.descriptionTextArea = descriptionTextArea;        
         
@@ -147,7 +130,6 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         errorTree.getSelectionModel().addTreeSelectionListener(this);
             
         severityComboBox.addActionListener(this);
-        confidence.addActionListener(this);
     }
     
     void disconnect() {
@@ -157,7 +139,6 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         errorTree.getSelectionModel().removeTreeSelectionListener(this);
             
         severityComboBox.removeActionListener(this);
-        confidence.removeActionListener(this);
                 
         componentsSetEnabled( false, ROOT );
     }
@@ -293,20 +274,9 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             ((JComponent)customizerPanel.getParent()).revalidate();
             customizerPanel.getParent().repaint();
         } else if ( o instanceof CodeAuditProvider ) {
-            if (confidenceModel != confidence.getModel()) {
-                confidence.setModel(confidenceModel);
-                Mnemonics.setLocalizedText(confidenceLabel, confDefLabel);
-            }
-
             CodeAuditProvider hint = (CodeAuditProvider) o;
             String description = hint.getDescription();
             componentsSetEnabled(true, PROVIDER);
-            Integer i = confidence2index.get(hint.getConfidence());
-            if (i != null) {
-                confidence.setSelectedIndex(i);
-            } else {
-                confidence.setSelectedIndex(1);
-            }
             descriptionTextArea.setText( description == null ? "" : wrapDescription(description)); // NOI18N
             // Optionally show the customizer
             customizerPanel.removeAll();
@@ -325,10 +295,6 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             if (defModel != severityComboBox.getModel()) {
                 severityComboBox.setModel(defModel);
                 Mnemonics.setLocalizedText(severityLabel, defLabel);
-            }
-            if (confidenceModel != confidence.getModel()) {
-                confidence.setModel(confidenceModel);
-                Mnemonics.setLocalizedText(confidenceLabel, confDefLabel);
             }
             componentsSetEnabled(true, OPTION);
             String description = option.getDescription();
@@ -350,10 +316,6 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
                 severityComboBox.setModel(defModel);
                 Mnemonics.setLocalizedText(severityLabel, defLabel);
             }
-            if (confidenceModel != confidence.getModel()) {
-                confidence.setModel(confidenceModel);
-                Mnemonics.setLocalizedText(confidenceLabel, confDefLabel);
-            }
             componentsSetEnabled(false, ROOT);
         }
     }
@@ -373,16 +335,6 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
                     hint.getPreferences().put(hint.getID(), "severity", "error"); //NOI18N
                 } else {
                     hint.getPreferences().put(hint.getID(), "severity", "warning"); //NOI18N
-                }
-            }
-        } else if (confidence.equals(e.getSource())) {
-            Object o = getUserObject(errorTree.getSelectionPath());
-            if ( o instanceof CodeAuditProvider ) {
-                CodeAuditProvider hint = (CodeAuditProvider) o;
-                Object selectedItem = confidence.getSelectedItem();
-                if (selectedItem instanceof Confidence) {
-                    int v = ((Confidence)selectedItem).getValue();
-                    hint.getPreferences().put(hint.getName(), "confidence", ""+v); //NOI18N
                 }
             }
         }
@@ -491,21 +443,16 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             ((JComponent)customizerPanel.getParent()).revalidate();
             customizerPanel.getParent().repaint();
             severityComboBox.setSelectedIndex(0);
-            confidence.setSelectedIndex(0);
             descriptionTextArea.setText(""); // NOI18N
         }
         if (component == ROOT) {
             severityComboBox.setEnabled(false);
-            confidence.setEnabled(false);
         } else if (component == AUDIT) {
             severityComboBox.setEnabled(enabled);
-            confidence.setEnabled(false);
         } else  if (component == PROVIDER) {
             severityComboBox.setEnabled(false);
-            confidence.setEnabled(enabled);
         } else  if (component == OPTION) {
             severityComboBox.setEnabled(false);
-            confidence.setEnabled(false);
         }
         descriptionTextArea.setEnabled(enabled);
     }

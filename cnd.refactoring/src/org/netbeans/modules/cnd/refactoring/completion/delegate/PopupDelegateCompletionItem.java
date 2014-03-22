@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
  */
 public class PopupDelegateCompletionItem implements CompletionItem {
 
-    private static final int PRIORITY = 15;
+    private static final int PRIORITY = 10;
     private final int substitutionOffset;
     private final Action action;
     private final String rightText;

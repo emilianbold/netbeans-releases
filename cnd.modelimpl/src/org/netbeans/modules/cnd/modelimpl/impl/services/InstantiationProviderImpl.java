@@ -204,7 +204,9 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         } else {
             time = System.currentTimeMillis() - time;
         }
-        LOG.log(Level.FINE, "Instantiate 1 took {0}ms ({1})\n", new Object[]{time, cached ? "CACHE HIT" : "calculated"});
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Instantiate 1 took {0}ms ({1})\n", new Object[]{time, cached ? "CACHE HIT" : "calculated"});
+        }
         return result;
     }    
     
@@ -266,7 +268,9 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         } else {
             time = System.currentTimeMillis() - time;
         }
-        LOG.log(Level.FINE, "Instantiate 2 took {0}ms ({1})\n", new Object[]{time, cached ? "CACHE HIT" : "calculated"});
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Instantiate 2 took {0}ms ({1})\n", new Object[]{time, cached ? "CACHE HIT" : "calculated"});
+        }
         return result;
     }
     
@@ -286,8 +290,10 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         try {
             return Instantiation.getInstantiatedText(type);
         } finally {
-            time = System.currentTimeMillis() - time;
-            LOG.log(Level.FINE, "getInstantiatedText took {0}ms\n", new Object[]{time}); // NOI18N
+            if (LOG.isLoggable(Level.FINE)) {
+                time = System.currentTimeMillis() - time;
+                LOG.log(Level.FINE, "getInstantiatedText took {0}ms\n", new Object[]{time}); // NOI18N
+            }
         }
     }
 
@@ -304,8 +310,10 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             System.err.println("uknown template object " + template);
         }
         appendTemplateParamsSignature(template.getTemplateParameters(), sb);
-        time = System.currentTimeMillis() - time;
-        LOG.log(Level.FINE, "getTemplateSignature took {0}ms\n", new Object[]{time}); // NOI18N        
+        if (LOG.isLoggable(Level.FINE)) {
+            time = System.currentTimeMillis() - time;
+            LOG.log(Level.FINE, "getTemplateSignature took {0}ms\n", new Object[]{time}); // NOI18N        
+        }
         return sb;
     }
 
@@ -367,7 +375,9 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             }
             time = System.currentTimeMillis() - time;
         }
-        LOG.log(Level.FINE, "getSpecializations took {0}ms ({1})\n", new Object[]{time, cached ? "CACHE HIT" : "calculated"});
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "getSpecializations took {0}ms ({1})\n", new Object[]{time, cached ? "CACHE HIT" : "calculated"});
+        }
         
         return specs;
     }
@@ -420,7 +430,9 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             }
             time = System.currentTimeMillis() - time;
         }
-        LOG.log(Level.FINE, "getBaseTemplate took {0}ms ({1})\n", new Object[]{time, cached ? "CACHE HIT" : "calculated"});
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "getBaseTemplate took {0}ms ({1})\n", new Object[]{time, cached ? "CACHE HIT" : "calculated"});
+        }
         return result;
     }
     
@@ -624,7 +636,9 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 specialization = (CsmClassifier) obj ;
             }
         }
-        LOG.log(Level.FINE, "CLASSIFIER\n{0}\nSPECIALIZED as {1}", new Object[] {classifier, specialization});
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "CLASSIFIER\n{0}\nSPECIALIZED as {1}", new Object[] {classifier, specialization});
+        }
 
         return specialization != null ? specialization : classifier;
     }
@@ -1100,8 +1114,10 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 instantiations.add(i);
             }
         }
-        time = System.currentTimeMillis() - time;
-        LOG.log(Level.FINE, "getInstantiationParams took {0}ms\n", new Object[]{time});// NOI18N        
+        if (LOG.isLoggable(Level.FINE)) {
+            time = System.currentTimeMillis() - time;
+            LOG.log(Level.FINE, "getInstantiationParams took {0}ms\n", new Object[]{time});// NOI18N
+        }
         return res;
     }    
     
