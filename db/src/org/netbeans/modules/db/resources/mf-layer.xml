@@ -62,18 +62,18 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
                 <folder name="Actions">
-                    <file name="org-netbeans-modules-db-explorer-action-AddConnectionAction.instance">  
-                        <attr name="position" intvalue="100"/>  
+                    <file name="org-netbeans-modules-db-explorer-action-AddConnectionAction.instance">
+                        <attr name="position" intvalue="100"/>
                     </file>
-                    <file name="Separator1.instance">  
+                    <file name="Separator1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="150"/>  
-                    </file> 
-                    <file name="org-netbeans-modules-db-explorer-action-EnableDebugAction.instance">  
-                        <attr name="position" intvalue="175"/>  
+                        <attr name="position" intvalue="150"/>
                     </file>
-                    <file name="org-netbeans-modules-db-explorer-action-DisableDebugAction.instance">  
-                        <attr name="position" intvalue="200"/>  
+                    <file name="org-netbeans-modules-db-explorer-action-EnableDebugAction.instance">
+                        <attr name="position" intvalue="175"/>
+                    </file>
+                    <file name="org-netbeans-modules-db-explorer-action-DisableDebugAction.instance">
+                        <attr name="position" intvalue="200"/>
                     </file>
                 </folder>
             </folder>
@@ -86,8 +86,8 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
                 <folder name="Actions">
-                    <file name="org-netbeans-modules-db-explorer-action-AddDriverAction.instance">  
-                        <attr name="position" intvalue="100"/>  
+                    <file name="org-netbeans-modules-db-explorer-action-AddDriverAction.instance">
+                        <attr name="position" intvalue="100"/>
                     </file>
                 </folder>
             </folder>
@@ -95,8 +95,8 @@ made subject to such option by the copyright holder.
                 <folder name="NodeProviders">
                 </folder>
                 <folder name="Actions">
-                    <file name="org-netbeans-modules-db-explorer-action-ConnectUsingDriverAction.instance">  
-                        <attr name="position" intvalue="100"/>  
+                    <file name="org-netbeans-modules-db-explorer-action-ConnectUsingDriverAction.instance">
+                        <attr name="position" intvalue="100"/>
                     </file>
                     <file name="Separator1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
@@ -124,11 +124,11 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
                 <folder name="Actions">
-                    <file name="org-netbeans-modules-db-explorer-action-ConnectAction.instance">  
-                        <attr name="position" intvalue="100"/>  
+                    <file name="org-netbeans-modules-db-explorer-action-ConnectAction.instance">
+                        <attr name="position" intvalue="100"/>
                     </file>
-                    <file name="org-netbeans-modules-db-explorer-action-DisconnectAction.instance">  
-                        <attr name="position" intvalue="150"/>  
+                    <file name="org-netbeans-modules-db-explorer-action-DisconnectAction.instance">
+                        <attr name="position" intvalue="150"/>
                     </file>
                     <file name="Separator1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
@@ -629,7 +629,7 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
         </folder>
-        
+
         <folder name="lookups">
             <folder name="NetBeans">
                 <file name="DTD_JDBC_Driver_1_0.instance">
