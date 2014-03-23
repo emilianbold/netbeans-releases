@@ -126,7 +126,6 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         jSplitPane1 = new javax.swing.JSplitPane();
         treePanel = new javax.swing.JPanel();
@@ -177,31 +176,30 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
         customizerPanel.setOpaque(false);
         customizerPanel.setLayout(new java.awt.BorderLayout());
 
-        org.jdesktop.layout.GroupLayout optionsPanelLayout = new org.jdesktop.layout.GroupLayout(optionsPanel);
+        javax.swing.GroupLayout optionsPanelLayout = new javax.swing.GroupLayout(optionsPanel);
         optionsPanel.setLayout(optionsPanelLayout);
         optionsPanelLayout.setHorizontalGroup(
-            optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(optionsPanelLayout.createSequentialGroup()
-                .add(0, 0, 0)
-                .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(optionsPanelLayout.createSequentialGroup()
-                        .add(customizerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .add(optionsPanelLayout.createSequentialGroup()
-                        .add(severityLabel)
-                        .add(18, 18, 18)
-                        .add(severityComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 249, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(103, Short.MAX_VALUE))))
+            optionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(optionsPanelLayout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(optionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(customizerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(optionsPanelLayout.createSequentialGroup()
+                        .addComponent(severityLabel)
+                        .addGap(18, 18, 18)
+                        .addComponent(severityComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 249, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 91, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         optionsPanelLayout.setVerticalGroup(
-            optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(optionsPanelLayout.createSequentialGroup()
-                .add(4, 4, 4)
-                .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(severityLabel)
-                    .add(severityComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(8, 8, 8)
-                .add(customizerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
+            optionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(optionsPanelLayout.createSequentialGroup()
+                .addGap(4, 4, 4)
+                .addGroup(optionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(severityLabel)
+                    .addComponent(severityComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(8, 8, 8)
+                .addComponent(customizerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -223,21 +221,21 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
         descriptionLabel.setLabelFor(descriptionTextArea);
         org.openide.awt.Mnemonics.setLocalizedText(descriptionLabel, org.openide.util.NbBundle.getMessage(HintsPanel.class, "CTL_Description_Border")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout descriptionPanelLayout = new org.jdesktop.layout.GroupLayout(descriptionPanel);
+        javax.swing.GroupLayout descriptionPanelLayout = new javax.swing.GroupLayout(descriptionPanel);
         descriptionPanel.setLayout(descriptionPanelLayout);
         descriptionPanelLayout.setHorizontalGroup(
-            descriptionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(descriptionPanelLayout.createSequentialGroup()
-                .add(descriptionLabel)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE)
+            descriptionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(descriptionPanelLayout.createSequentialGroup()
+                .addComponent(descriptionLabel)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE)
         );
         descriptionPanelLayout.setVerticalGroup(
-            descriptionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(descriptionPanelLayout.createSequentialGroup()
-                .add(descriptionLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE))
+            descriptionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(descriptionPanelLayout.createSequentialGroup()
+                .addComponent(descriptionLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE))
         );
 
         jScrollPane2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.jScrollPane2.AccessibleContext.accessibleName")); // NOI18N
