@@ -104,6 +104,9 @@ public class WildflyIncrementalDeployment extends IncrementalDeployment implemen
         String baseName = app.getUrl();
         try {
             if(app.getArchive()!= null) {
+                if(baseName.isEmpty()) {
+                    baseName = app.getArchive().getNameExt();
+                }
                 String extension = app.getArchive().getExt();
                 if(!baseName.endsWith(extension)) {
                     baseName = baseName + '.' + extension;
@@ -111,7 +114,7 @@ public class WildflyIncrementalDeployment extends IncrementalDeployment implemen
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-        }        
+        }
         return new File(this.deploymentDir, baseName);
     }
 
@@ -131,7 +134,7 @@ public class WildflyIncrementalDeployment extends IncrementalDeployment implemen
     public File getDirectoryForModule(TargetModuleID module) {
         return new File(this.deploymentDir, appendModuleToPath("", module));
     }
-    
+
     private String appendModuleToPath(String path, TargetModuleID module) {
         String relPath = module.getModuleID() + File.separatorChar + path;
         if(module.getParentTargetModuleID() == null) {
@@ -155,7 +158,7 @@ public class WildflyIncrementalDeployment extends IncrementalDeployment implemen
             Exceptions.printStackTrace(ex);
         }
         return null;
-       
+
     }
 
     @Override
