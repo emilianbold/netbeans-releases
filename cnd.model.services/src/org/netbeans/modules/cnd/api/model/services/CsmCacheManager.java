@@ -132,7 +132,9 @@ public final class CsmCacheManager {
             return null;
         }
         CsmCacheMap.Value value = map.get(key);
-        LOGGER.log(Level.FINE, "getValue {1}->{2}\n", new Object[]{key, value});
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "getValue {1}->{2}\n", new Object[]{key, value});
+        }
         return value != null ? value.getResult() : null;
     }
 
@@ -154,7 +156,9 @@ public final class CsmCacheManager {
             return null;
         }
         CsmCacheMap.Value prev = map.put(key, CsmCacheMap.toValue(value, Integer.MAX_VALUE));
-        LOGGER.log(Level.FINE, "putValue {1}->{2} (replaced {3})\n", new Object[] {key, value, prev});
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "putValue {1}->{2} (replaced {3})\n", new Object[] {key, value, prev});
+        }
         return prev != null ? prev.getResult() : null;
     }
 
@@ -233,7 +237,9 @@ public final class CsmCacheManager {
         }
 
         void enterImpl() {
-            LOGGER.log(Level.FINE, "CsmCacheStorage: Enter {0}:[{1}]{2}\n", new Object[] {activeReferences, Thread.currentThread().getId(), Thread.currentThread().getName()});
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "CsmCacheStorage: Enter {0}:[{1}]{2}\n", new Object[] {activeReferences, Thread.currentThread().getId(), Thread.currentThread().getName()});
+            }
             if (activeReferences == 0) {
                 initTime = System.currentTimeMillis();
                 if (CndUtils.isDebugMode() || CndUtils.isUnitTestMode()) {
@@ -244,7 +250,9 @@ public final class CsmCacheManager {
         }
 
         void leaveImpl() {
-            LOGGER.log(Level.FINE, "CsmCacheStorage: Leave {0}:[{1}]{3}\n", new Object[]{activeReferences, Thread.currentThread().getId(), Thread.currentThread().getName()});
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "CsmCacheStorage: Leave {0}:[{1}]{3}\n", new Object[]{activeReferences, Thread.currentThread().getId(), Thread.currentThread().getName()});
+            }
             if (activeReferences == 0) {
                 traceError();
                 return;
@@ -254,7 +262,9 @@ public final class CsmCacheManager {
                 if (CndUtils.isDebugMode() || CndUtils.isUnitTestMode()) {
                     releasedStack = new Exception("Released for " + Thread.currentThread().getName()); // NOI18N
                 }
-                LOGGER.log(Level.FINE, "CsmCacheStorage: Used {0}ms; Dispose {1}:[{2}]{3}\n", new Object[]{initTime, cacheEntries.size(), Thread.currentThread().getId(), Thread.currentThread().getName()});
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "CsmCacheStorage: Used {0}ms; Dispose {1}:[{2}]{3}\n", new Object[]{initTime, cacheEntries.size(), Thread.currentThread().getId(), Thread.currentThread().getName()});
+                }
                 // release all entries
                 for (CsmClientCache entry : cacheEntries.values()) {
                     entry.cleanup();

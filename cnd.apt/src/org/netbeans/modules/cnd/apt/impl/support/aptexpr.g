@@ -202,10 +202,12 @@ options {
             }
         } else {
             // for now just use the first char as well
-            APTUtils.LOG.log(Level.INFO, "use fallback when convert character [%s] to long\n", str); // NOI18N
+            APTUtils.LOG.log(Level.INFO, "use fallback when convert character [{0}] to long\n", str); // NOI18N
             val = str.charAt(1);
         }
-        APTUtils.LOG.log(Level.FINE, "convert char [%s] to long %d\n", new Object[] { str, val}); // NOI18N
+        if (APTUtils.LOG.isLoggable(Level.FINE)) {
+            APTUtils.LOG.log(Level.FINE, "convert char [{0}] to long {1}\n", new Object[] { str, val}); // NOI18N
+        }
         return val;
     }
 

@@ -61,6 +61,7 @@ public class JsDocumentationPrinter {
     private static final String PARAGRAPH_BEGIN = "<p style=\"margin: 0px 14px 0px 14px;\">"; //NOI18N
 
     private static final String OPTIONAL_PARAMETER = "[optional]"; //NOI18N
+    private static final String OPTIONAL_PARAMETER_DEFAULT = "[optional, default=%s]"; //NOI18N
 
     @Messages({
         "# T13Y: All following words are section headers of the documentation window. Mostly ends with colon.",
@@ -173,7 +174,11 @@ public class JsDocumentationPrinter {
                 sb.append("<td valign=\"top\" style=\"margin-right:5px;\"><b>").append(paramName).append("</b></td>\n"); //NOI18N
                 String description = docParam.getParamDescription();
                 if (docParam.isOptional()) {
-                    description = OPTIONAL_PARAMETER + "<br>" + description; //NOI18N
+                    if (docParam.getDefaultValue() == null || docParam.getDefaultValue().isEmpty()) {
+                        description = OPTIONAL_PARAMETER + "<br>" + description; //NOI18N
+                    } else {
+                        description = String.format(OPTIONAL_PARAMETER_DEFAULT, docParam.getDefaultValue()) + "<br>" + description; //NOI18N
+                    }
                 }
                 sb.append("<td>").append(description).append("</td>\n"); //NOI18N
                 sb.append("</tr>\n"); //NOI18N

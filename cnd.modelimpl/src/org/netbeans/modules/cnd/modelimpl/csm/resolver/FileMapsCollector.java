@@ -202,7 +202,9 @@ public final class FileMapsCollector {
                         int incOffset = inc.getStartOffset();
                         gatherMaps(includedFrom, incOffset, out);
                     }
-                    Resolver3.LOGGER.log(Level.FINE, "{0}ms initMapsFromIncludeStack for {1}\n\twith start file {2}\n", new Object[]{System.currentTimeMillis() - allTime, currentFile.getAbsolutePath(), this.startFile.getAbsolutePath()});
+                    if (Resolver3.LOGGER.isLoggable(Level.FINE)) {
+                        Resolver3.LOGGER.log(Level.FINE, "{0}ms initMapsFromIncludeStack for {1}\n\twith start file {2}\n", new Object[]{System.currentTimeMillis() - allTime, currentFile.getAbsolutePath(), this.startFile.getAbsolutePath()});
+                    }
                     // gather all visible by #include directives in this file till offset
                     long incTime = System.currentTimeMillis();
                     for (CsmInclude inc : incBeforeOffset) {
@@ -212,10 +214,14 @@ public final class FileMapsCollector {
                         }
                     }
                     // cache 
-                    Resolver3.LOGGER.log(Level.FINE, "{0}ms initMapsFromIncludes for {1}\n\twith start file {2}\n", new Object[]{System.currentTimeMillis() - incTime, currentFile.getAbsolutePath(), this.startFile.getAbsolutePath()});
+                    if (Resolver3.LOGGER.isLoggable(Level.FINE)) {
+                        Resolver3.LOGGER.log(Level.FINE, "{0}ms initMapsFromIncludes for {1}\n\twith start file {2}\n", new Object[]{System.currentTimeMillis() - incTime, currentFile.getAbsolutePath(), this.startFile.getAbsolutePath()});
+                    }
                     allTime = System.currentTimeMillis() - allTime;
                     if (filesCollectorCache != null) {
-                        LOGGER.log(Level.FINE, "KEEP INCLUDE STACK {0}=>{1} ({2}) Took {3}ms\n", new Object[]{startFile, currentFile, out.needClassifiers(), allTime});
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.log(Level.FINE, "KEEP INCLUDE STACK {0}=>{1} ({2}) Took {3}ms\n", new Object[]{startFile, currentFile, out.needClassifiers(), allTime});
+                        }
                         filesCollectorCache.put(incKey, new FileMapsCacheValue(out, allTime));
                     }                    
                 }
@@ -241,7 +247,9 @@ public final class FileMapsCollector {
             cacheValue.copyTo(maps);
             cacheValue.hits++;
             String kind = (cacheKey.lastSearchedIncudeOffset == INCLUDE_STACK_MARKER) ? "STACK" : "INCLUDE";// NOI18N
-            LOGGER.log(Level.FINE, "HIT {4} {0}=>{1} ({2}) Hits {3}\n", new Object[]{startFile, currentFile, maps.needClassifiers(), cacheValue.hits, kind});
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "HIT {4} {0}=>{1} ({2}) Hits {3}\n", new Object[]{startFile, currentFile, maps.needClassifiers(), cacheValue.hits, kind});
+            }
             return true;
         }        
         return false;

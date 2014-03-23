@@ -198,7 +198,7 @@ public final class CodeStyleUtils {
     @NonNull
     public static String computeGetterName(CharSequence fieldName, boolean isBoolean, boolean isStatic, CodeStyle cs) {
         StringBuilder sb = new StringBuilder(getCapitalizedName(removeFieldPrefixSuffix(fieldName, isStatic, cs)));
-        sb.insert(0, isBoolean && cs.useIsForBooleanGetters() ? "is" : "get"); //NOI18N
+        sb.insert(0, isBoolean ? "is" : "get"); //NOI18N
         String getterName = sb.toString();
         return getterName;
     }

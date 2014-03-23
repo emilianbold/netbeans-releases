@@ -75,6 +75,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
@@ -120,6 +121,8 @@ public class OperatorGenerator implements CodeGenerator {
             final Set<CsmField> cannotBeInitializedFields = new LinkedHashSet<>();
             final List<CsmConstructor> constructors = new ArrayList<>();
             final Map<CsmClass,List<CsmConstructor>> inheritedConstructors = new HashMap<>();
+            CsmCacheManager.enter();
+            try {
             // check base class
             for (CsmInheritance csmInheritance : typeElement.getBaseClasses()) {
                 CsmClass baseClass = CsmInheritanceUtilities.getCsmClass(csmInheritance);
@@ -138,6 +141,9 @@ public class OperatorGenerator implements CodeGenerator {
                 }
             }
             GeneratorUtils.scanForFieldsAndConstructors(typeElement, shouldBeInitializedFields, mayBeIninitializedFields, cannotBeInitializedFields, constructors);
+            } finally {
+                CsmCacheManager.leave();
+            }
             ElementNode.Description constructorDescription = null;
             if (!inheritedConstructors.isEmpty()) {
                 List<ElementNode.Description> baseClassesDescriptions = new ArrayList<>();

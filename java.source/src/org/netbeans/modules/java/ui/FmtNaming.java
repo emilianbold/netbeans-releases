@@ -86,7 +86,6 @@ public class FmtNaming extends javax.swing.JPanel implements Runnable {
         initComponents();
         preferLongerNamesCheckBox.putClientProperty(OPTION_ID, preferLongerNames);
         preferLongerNamesCheckBox.setVisible(false);
-        isForBooleanGettersCheckBox.putClientProperty(OPTION_ID, useIsForBooleanGetters);
         fieldPrefixField.putClientProperty(OPTION_ID, fieldNamePrefix);
         fieldSuffixField.putClientProperty(OPTION_ID, fieldNameSuffix);
         staticFieldPrefixField.putClientProperty(OPTION_ID, staticFieldNamePrefix);
@@ -118,7 +117,6 @@ public class FmtNaming extends javax.swing.JPanel implements Runnable {
 
         namingConventionsLabel = new javax.swing.JLabel();
         preferLongerNamesCheckBox = new javax.swing.JCheckBox();
-        isForBooleanGettersCheckBox = new javax.swing.JCheckBox();
         jPanel1 = new javax.swing.JPanel();
         prefixLabel = new javax.swing.JLabel();
         suffixLabel = new javax.swing.JLabel();
@@ -144,11 +142,6 @@ public class FmtNaming extends javax.swing.JPanel implements Runnable {
         preferLongerNamesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         preferLongerNamesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         preferLongerNamesCheckBox.setOpaque(false);
-
-        org.openide.awt.Mnemonics.setLocalizedText(isForBooleanGettersCheckBox, org.openide.util.NbBundle.getMessage(FmtNaming.class, "LBL_gen_UseIsForBooleanGetters")); // NOI18N
-        isForBooleanGettersCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        isForBooleanGettersCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        isForBooleanGettersCheckBox.setOpaque(false);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -283,7 +276,6 @@ public class FmtNaming extends javax.swing.JPanel implements Runnable {
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(isForBooleanGettersCheckBox)
                             .addComponent(preferLongerNamesCheckBox)
                             .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -295,9 +287,7 @@ public class FmtNaming extends javax.swing.JPanel implements Runnable {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(preferLongerNamesCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(isForBooleanGettersCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -305,7 +295,6 @@ public class FmtNaming extends javax.swing.JPanel implements Runnable {
     private javax.swing.JLabel fieldLabel;
     private javax.swing.JTextField fieldPrefixField;
     private javax.swing.JTextField fieldSuffixField;
-    private javax.swing.JCheckBox isForBooleanGettersCheckBox;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel localVarLabel;
     private javax.swing.JTextField localVarPrefixField;

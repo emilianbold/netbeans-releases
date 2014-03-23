@@ -112,7 +112,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                 if (object.isDeclared()) {
                     
                     if (fo != null) {
-                        if (fo.equals(snapshot.getSource().getFileObject())) {
+                        if (fo.equals(snapshot.getSource().getFileObject()) && object.getDeclarationName() != null) {
                             int docOffset = LexUtilities.getLexerOffset(jsResult, object.getDeclarationName().getOffsetRange().getStart());
                             if (docOffset > -1) {
                                 return new DeclarationLocation(fo, docOffset);
