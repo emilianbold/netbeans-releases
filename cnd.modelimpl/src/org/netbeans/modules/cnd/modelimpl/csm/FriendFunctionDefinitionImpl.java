@@ -96,7 +96,7 @@ public final class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<C
 
         FriendFunctionDefinitionImpl friendFunctionDefinitionImpl = new FriendFunctionDefinitionImpl(name, rawName, scope, cls, _static, _const, file, startOffset, endOffset, global);        
         
-        temporaryRepositoryRegistration(global, friendFunctionDefinitionImpl);
+        temporaryRepositoryRegistration(ast, global, friendFunctionDefinitionImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, friendFunctionDefinitionImpl, clsTemplateSuffix, global);

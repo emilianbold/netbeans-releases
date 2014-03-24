@@ -129,7 +129,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
 
         MethodImpl<T> methodImpl = new MethodImpl<>(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, _abstract, file, startOffset, endOffset, global);
-        temporaryRepositoryRegistration(global, methodImpl);
+        temporaryRepositoryRegistration(ast, global, methodImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, methodImpl, clsTemplateSuffix, global);

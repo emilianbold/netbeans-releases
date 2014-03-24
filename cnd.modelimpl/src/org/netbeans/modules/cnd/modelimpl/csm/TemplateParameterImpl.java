@@ -84,20 +84,24 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
     private final CharSequence name;
     private final CsmUID<CsmScope> scope;
     private final TemplateDescriptor templateDescriptor;
+    private final boolean typeBased;
         
     private CsmSpecializationParameter defaultValue;
 
         
     public TemplateParameterImpl(AST ast, CharSequence name, CsmFile file, CsmScope scope, boolean variadic, boolean global) {
         super(file, getStartOffset(ast), getEndOffset(ast));
-        
+                
         CsmSpecializationParameter value = null;
         if (checkExplicitType(ast)) {
+            this.typeBased = false;
             AST expressionAst = AstUtil.findSiblingOfType(ast.getFirstChild(), CPPTokenTypes.CSM_EXPRESSION);
             if (expressionAst != null) {
                 CsmExpression expr = ExpressionsFactory.create(expressionAst, file, scope);
                 value = ExpressionBasedSpecializationParameterImpl.create(expr.getText(), file, expr.getStartOffset(), expr.getEndOffset(), true);
             }
+        } else {
+            this.typeBased = true;
         }
         
         this.name = NameCache.getManager().getString(name);
@@ -118,10 +122,11 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
         }
     }
     
-    private TemplateParameterImpl(CharSequence name, TemplateDescriptor templateDescriptor, TypeBasedSpecializationParameterImpl defaultValue,  boolean variadic, CsmScope scope, CsmFile file, int startOffset, int endOffset) {
+    private TemplateParameterImpl(CharSequence name, TemplateDescriptor templateDescriptor, TypeBasedSpecializationParameterImpl defaultValue,  boolean variadic, CsmScope scope, CsmFile file, int startOffset, int endOffset, boolean typeBased) {
         super(file, startOffset, endOffset);
         this.name = NameCache.getManager().getString(name);
         this.templateDescriptor = templateDescriptor;
+        this.typeBased = typeBased;
         if ((scope instanceof CsmIdentifiable)) {
             this.scope = UIDCsmConverter.scopeToUID(scope);
         } else {
@@ -185,7 +190,7 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
         }
         return true;
     }
-    
+        
     @Override
     public boolean isTemplate() {
         return templateDescriptor != null;
@@ -216,7 +221,12 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
     public CharSequence getDisplayName() {
         return (templateDescriptor != null) ? CharSequences.create(CharSequenceUtils.concatenate(getName(), templateDescriptor.getTemplateSuffix())) : getName();
     }
-    
+
+    @Override
+    public boolean isTypeBased() {
+        return typeBased;
+    }
+   
     
     public static class TemplateParameterBuilder extends SimpleDeclarationBuilder {
 
@@ -243,7 +253,7 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
                 defaultValue.setScope(getScope());
                 value = defaultValue.create();
             }
-            TemplateParameterImpl param = new TemplateParameterImpl(getName(), td, value, variadic, getScope(), getFile(), getStartOffset(), getEndOffset());
+            TemplateParameterImpl param = new TemplateParameterImpl(getName(), td, value, variadic, getScope(), getFile(), getStartOffset(), getEndOffset(), true);
             return param;
         }
     }      
@@ -262,6 +272,7 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
             PersistentUtils.writeSpecializationParameter(defaultValue, output);
         }       
         PersistentUtils.writeTemplateDescriptor(templateDescriptor, output);
+        output.writeBoolean(typeBased);
     }
     
     public TemplateParameterImpl(RepositoryDataInput input) throws IOException {
@@ -275,6 +286,7 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
             this.defaultValue = VARIADIC;
         }
         this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
+        this.typeBased = input.readBoolean();
     }
     
     @Override

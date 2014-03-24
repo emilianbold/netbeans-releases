@@ -90,7 +90,7 @@ public final class DestructorDefinitionImpl extends FunctionDefinitionImpl<CsmFu
 
         DestructorDefinitionImpl res = new DestructorDefinitionImpl(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
         
-        temporaryRepositoryRegistration(global, res);
+        temporaryRepositoryRegistration(ast, global, res);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, res, clsTemplateSuffix, global);
