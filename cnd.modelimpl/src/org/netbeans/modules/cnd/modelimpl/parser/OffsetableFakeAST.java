@@ -48,7 +48,7 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
  *
  * @author petrk
  */
-public final class OffsetableFakeAST extends FakeAST implements OffsetableAST {
+public class OffsetableFakeAST extends FakeAST implements OffsetableAST {
     
     private int line = 1;
     

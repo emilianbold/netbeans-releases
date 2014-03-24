@@ -136,6 +136,10 @@ public final class MapHierarchy<K, V> {
         return result;
     }
     
+    public boolean isEmpty() {
+        return size() == 0;
+    }
+    
     public Iterable<Map.Entry<K, V>> entries() {
         return new Iterable<Map.Entry<K, V>>() {
 

@@ -45,17 +45,17 @@ package org.netbeans.modules.cnd.completion.cplusplus;
 
 import java.util.*;
 import javax.swing.JToolTip;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
-
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
@@ -142,7 +142,7 @@ public class CsmCompletionProvider implements CompletionProvider {
     public static CsmCompletionQuery createCompletionResolver(CsmFile csmFile, CompletionResolver.QueryScope queryScope, FileReferencesContext fileReferencesContext) {
         return new NbCsmCompletionQuery(csmFile, queryScope, fileReferencesContext, true);
     }
-
+    
     static final class Query extends AsyncCompletionQuery {
 
         private JTextComponent component;

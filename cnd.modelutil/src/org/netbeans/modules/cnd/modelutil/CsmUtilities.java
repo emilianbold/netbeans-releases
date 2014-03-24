@@ -1287,6 +1287,40 @@ public class CsmUtilities {
         }
         
     }   
+    
+    public static final class TypeInfoCollector implements Predicate<CsmType> {
+        
+        public enum Qualificator {
+            POINTER,
+            REFERENCE,
+            RVALUE_REFERENCE,
+            CONST,
+            ARRAY
+        }
+
+        public final List<Qualificator> qualificators = new ArrayList<>();
+
+        @Override
+        public boolean check(CsmType value) {
+            for (int i = 0; i < value.getPointerDepth(); i++) {
+                qualificators.add(Qualificator.POINTER);
+            }
+            for (int i = 0; i < value.getArrayDepth(); i++) {
+                qualificators.add(Qualificator.ARRAY);
+            }
+            if (value.isConst()) {
+                qualificators.add(Qualificator.CONST);
+            }
+            if (value.isReference()) {
+                if (value.isRValueReference()) {
+                    qualificators.add(Qualificator.RVALUE_REFERENCE);
+                } else {
+                    qualificators.add(Qualificator.REFERENCE);
+                }
+            }
+            return false;
+        }
+    }
 
     private CsmUtilities() {
     }
