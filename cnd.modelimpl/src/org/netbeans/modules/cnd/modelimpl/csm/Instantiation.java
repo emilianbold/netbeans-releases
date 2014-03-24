@@ -1109,14 +1109,13 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
 
     private static class Method extends Instantiation<CsmMethod> implements CsmMethod, CsmFunctionDefinition {
         private final CsmInstantiation instantiation;
-        private final CsmType retType;
+        private CsmType retType;
         private CsmFunctionDefinition definition = null;
         private CsmClass containingClass = null;
 
         public Method(CsmMethod method, CsmInstantiation instantiation) {
             super(method, instantiation.getMapping());
             this.instantiation = instantiation;
-            this.retType = createType(method.getReturnType(), instantiation);
         }
 
         @Override
@@ -1172,6 +1171,9 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
 
         @Override
         public CsmType getReturnType() {
+            if (retType == null) {
+                retType = createType(declaration.getReturnType(), instantiation);
+            }
             return retType;
         }
 
