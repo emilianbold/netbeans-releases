@@ -165,6 +165,7 @@
                 <friend>com.sun.tools.ide.analysis.parfait</friend>
                 <friend>com.sun.tools.ide.analysis.previse</friend>
                 <friend>com.sun.tools.java.analysis.parfait</friend>
+                <friend>org.netbeans.modules.cnd.highlight</friend>
                 <package>org.netbeans.modules.cnd.analysis.api</package>
                 <package>org.netbeans.modules.cnd.analysis.api.options</package>
             </friend-packages>
