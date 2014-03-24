@@ -81,6 +81,8 @@ public class FakeAST extends BaseAST implements Serializable {
     
     int ttype = Token.INVALID_TYPE;
     
+    String text = null;
+    
     public FakeAST() {
     }
     
@@ -113,13 +115,18 @@ public class FakeAST extends BaseAST implements Serializable {
     public void setType(int ttype_) {
         ttype = ttype_;
     }
-    
+
+    @Override
+    public void setText(String text) {
+        this.text = text;
+    }
+
     @Override
     public String getText() {
-        return tokenText[getType()].toString();
+        return text != null ? text : tokenText[getType()].toString();
     }
 
     public CharSequence getTextID() {
-        return tokenText[getType()];
+        return text != null ? text : tokenText[getType()].toString();
     }
 }

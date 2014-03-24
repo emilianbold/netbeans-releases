@@ -48,10 +48,14 @@ import java.io.PrintStream;
 import org.netbeans.modules.cnd.antlr.ASTVisitor;
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.DeepUtil;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.parser.OffsetableAST;
 import org.netbeans.modules.cnd.modelimpl.parser.OffsetableFakeAST;
+import org.netbeans.modules.cnd.modelimpl.parser.TokenBasedAST;
+import org.netbeans.modules.cnd.modelimpl.parser.TokenBasedFakeAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.openide.util.CharSequences;
@@ -448,6 +452,35 @@ public class AstUtil {
         return "<no csm nodes>"; // NOI18N
     }
     
+    public static boolean visitAST(ASTTokenVisitor visitor, AST ast) {
+        if (ast != null) {
+            switch (visitor.visit(ast)) {
+                case ABORT:
+                    return false;
+                case SKIP_SUBTREE:
+                    return true;
+                case CONTINUE:
+                    for (AST insideToken = ast.getFirstChild(); insideToken != null; insideToken = insideToken.getNextSibling()) {
+                        if (!visitAST(visitor, insideToken)) {
+                            return false;
+                        }
+                    }                        
+            }
+        }
+        return true;
+    }       
+    
+    /**
+     * 
+     * @param ast
+     * @return true if ast has macro expanded tokens
+     */
+    public static boolean hasExpandedTokens(AST ast) {
+        ASTExpandedTokensChecker checker = new ASTExpandedTokensChecker();
+        visitAST(checker, ast);
+        return checker.HasExpanded();
+    }    
+    
     /**
      * Clones AST until stop node is reached
      * @param source
@@ -480,9 +513,69 @@ public class AstUtil {
         return firstClonedNode;
     }
     
-    private static AST createFakeClone(AST ast) {
-        return ast instanceof OffsetableAST ? new OffsetableFakeAST() : new FakeAST();
-    }
+    public static AST createFakeClone(AST ast) {
+        if (ast instanceof TokenBasedAST) {
+            return new TokenBasedFakeAST();
+        } else if (ast instanceof OffsetableAST) {
+            return new OffsetableFakeAST();
+        }
+        return new FakeAST();
+    }       
+    
+    public static interface ASTTokenVisitor {
+        
+        public static enum Action {
+            CONTINUE,
+            SKIP_SUBTREE,
+            ABORT
+        }
+        
+        /**
+         * Called on enter
+         * @param token 
+         * @return what action to perform
+         */
+        Action visit(AST token);
+        
+    }                 
+    
+    public static class ASTExpandedTokensChecker implements ASTTokenVisitor {
+    
+        private boolean expanded;
+
+        @Override
+        public Action visit(AST token) {
+            if (token instanceof TokenBasedAST) {
+                TokenBasedAST tokenBasedAST = (TokenBasedAST) token;
+                if (APTUtils.isMacroExpandedToken(tokenBasedAST.getToken())) {
+                    expanded = true;
+                    return Action.ABORT;
+                }
+            }
+            return Action.CONTINUE;
+        }        
+
+        public boolean HasExpanded() {
+            return expanded;
+        }
+    }    
+    
+    public static class ASTTokensStringizer implements ASTTokenVisitor {
+    
+        private final StringBuilder sb = new StringBuilder();
+
+        @Override
+        public Action visit(AST token) {
+            if (token.getFirstChild() == null) {
+                sb.append(token.getText());
+            }
+            return Action.CONTINUE;
+        }
+        
+        public String getText() {
+            return sb.toString();
+        }
+    }        
 }
 
  

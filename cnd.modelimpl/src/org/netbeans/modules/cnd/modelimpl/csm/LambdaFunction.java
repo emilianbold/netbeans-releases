@@ -78,7 +78,7 @@ public final class LambdaFunction<T> extends FunctionDDImpl<T> {
 
         LambdaFunction<T> functionDDImpl;
         functionDDImpl = new LambdaFunction<>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
-        temporaryRepositoryRegistration(global, functionDDImpl);
+        temporaryRepositoryRegistration(ast, global, functionDDImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionDDImpl, clsTemplateSuffix, global);

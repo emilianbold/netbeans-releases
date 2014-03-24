@@ -46,8 +46,11 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -194,7 +197,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
     
     
     private OffsetableDeclarationKey(OffsetableDeclarationBase<?> obj) {
-	super((FileImpl) obj.getContainingFile(), getSmartStartOffset(obj), getSmartEndOffset(obj), obj.getName());
+	super((FileImpl) obj.getContainingFile(), getSmartStartOffset(obj), getSmartEndOffset(obj), getName(obj));
 	// we use name, because all other (FQN and UniqueName) could change
 	// and name is fixed value
     }
@@ -207,6 +210,19 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
     private OffsetableDeclarationKey(KeyDataPresentation presentation) {
         super(presentation);
     }
+    
+    private static CharSequence getName(OffsetableDeclarationBase<?> obj) {
+        if (CsmKindUtilities.isFunction(obj) && obj instanceof FunctionImpl) {
+            FunctionImpl fun = (FunctionImpl) obj;
+            StringBuilder sb = new StringBuilder(fun.getName()); 
+            CharSequence signature = fun.getSignatureForUID();
+            if (signature != null) {
+                sb.append(signature);
+            }
+            return sb.toString();
+        } 
+        return obj.getName();
+    }       
     
     private static int getSmartEndOffset(OffsetableDeclarationBase<?> obj) {
          return obj.getEndOffset();
