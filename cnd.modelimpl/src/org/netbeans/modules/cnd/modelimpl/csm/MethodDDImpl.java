@@ -125,7 +125,7 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
 
         MethodDDImpl<T> methodDDImpl = new MethodDDImpl<>(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);        
-        temporaryRepositoryRegistration(global, methodDDImpl);
+        temporaryRepositoryRegistration(ast, global, methodDDImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, methodDDImpl, clsTemplateSuffix, global);

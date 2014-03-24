@@ -102,7 +102,7 @@ public final class FriendFunctionDDImpl  extends FunctionDDImpl<CsmFriendFunctio
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
 
         FriendFunctionDDImpl friendFunctionDDImpl = new FriendFunctionDDImpl(name, rawName, scope, cls, _static, _const, file, startOffset, endOffset, global);        
-        temporaryRepositoryRegistration(global, friendFunctionDDImpl);
+        temporaryRepositoryRegistration(ast, global, friendFunctionDDImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, friendFunctionDDImpl, clsTemplateSuffix, global);

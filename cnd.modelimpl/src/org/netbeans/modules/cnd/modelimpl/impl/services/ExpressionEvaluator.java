@@ -215,7 +215,14 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
                     Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<>();
                     CsmSpecializationParameter spec = inst.getMapping().get(param);
                     if(CsmKindUtilities.isExpressionBasedSpecalizationParameter(spec)) {
-                        Object o = eval(((CsmExpressionBasedSpecializationParameter) spec).getText().toString(), inst.getTemplateDeclaration(), mapHierarchy);
+                        Object o = eval(
+                                ((CsmExpressionBasedSpecializationParameter) spec).getText().toString(), 
+                                inst.getTemplateDeclaration(), 
+                                spec.getContainingFile(),
+                                spec.getStartOffset(),
+                                spec.getEndOffset(),
+                                mapHierarchy
+                        );
                         CsmSpecializationParameter newSpec = ExpressionBasedSpecializationParameterImpl.create(o.toString(),
                                 spec.getContainingFile(), spec.getStartOffset(), spec.getEndOffset());
                         newMapping.put(param, newSpec);

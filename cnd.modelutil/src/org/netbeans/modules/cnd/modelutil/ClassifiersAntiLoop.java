@@ -78,6 +78,10 @@ public class ClassifiersAntiLoop {
         }
         return set.add(cls);
     }
+    
+    public void remove(CsmClassifier cls) {
+        set.remove(cls);
+    }
 
     public boolean contains(CsmClassifier cls) {
         if(recursion) {

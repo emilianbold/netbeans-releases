@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import java.util.Set;
-import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,11 +51,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
-import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
@@ -66,6 +65,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
@@ -74,12 +74,12 @@ import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
-import org.netbeans.modules.cnd.modelimpl.util.MapHierarchy;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.modelimpl.util.MapHierarchy;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
@@ -705,7 +705,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         }
     }
 
-    private static class Function extends Instantiation<CsmFunction> implements CsmFunction {
+    private static class Function extends Instantiation<CsmFunction> implements CsmFunction, CsmTemplate {
         private final CsmType retType;
 
         public Function(CsmFunction function, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
@@ -786,6 +786,26 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         @Override
         public boolean isStatic() {
             return false;
+        }
+
+        @Override
+        public boolean isSpecialization() {
+            return ((CsmTemplate)declaration).isSpecialization();
+        }
+
+        @Override
+        public boolean isExplicitSpecialization() {
+            return ((CsmTemplate)declaration).isExplicitSpecialization();
+        }
+
+        @Override
+        public List<CsmTemplateParameter> getTemplateParameters() {
+            return ((CsmTemplate)declaration).getTemplateParameters();
+        }
+
+        @Override
+        public CharSequence getDisplayName() {
+            return ((CsmTemplate)declaration).getDisplayName();
         }
     }
     
@@ -1089,14 +1109,13 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
 
     private static class Method extends Instantiation<CsmMethod> implements CsmMethod, CsmFunctionDefinition {
         private final CsmInstantiation instantiation;
-        private final CsmType retType;
+        private CsmType retType;
         private CsmFunctionDefinition definition = null;
         private CsmClass containingClass = null;
 
         public Method(CsmMethod method, CsmInstantiation instantiation) {
             super(method, instantiation.getMapping());
             this.instantiation = instantiation;
-            this.retType = createType(method.getReturnType(), instantiation);
         }
 
         @Override
@@ -1152,6 +1171,9 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
 
         @Override
         public CsmType getReturnType() {
+            if (retType == null) {
+                retType = createType(declaration.getReturnType(), instantiation);
+            }
             return retType;
         }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,57 +34,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
-import java.util.*;
+package org.netbeans.modules.cnd.modelimpl.parser;
+
+import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import org.netbeans.modules.cnd.api.model.CsmScopeElement;
-import org.netbeans.modules.cnd.api.model.CsmVariable;
-import org.netbeans.modules.cnd.api.model.deep.CsmCondition;
-import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.apt.support.APTBaseToken;
 
 /**
- * Misc static methods used by deep impls
- * @author Vladimir Kvashin
+ *
+ * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public class DeepUtil {    
+public final class TokenBasedFakeAST extends OffsetableFakeAST implements TokenBasedAST {
+    
+    private Token token = new APTBaseToken();
 
-    public static List<CsmScopeElement> merge(CsmVariable var, List<CsmStatement> statements) {
-        if (var == null) {
-            @SuppressWarnings("unchecked")
-            List<CsmScopeElement> out = (List) statements;
-            return out;
-        } else {
-            List<CsmScopeElement> l = new ArrayList<>();
-            l.add(var);
-            l.addAll(statements);
-            return l;
+    public TokenBasedFakeAST() {
+        this.token = new APTBaseToken();
+    }
+    
+    public void initialize(AST ast) {
+        super.initialize(ast);
+        if (ast instanceof TokenBasedAST) {
+            this.token = ((TokenBasedAST) ast).getToken();
         }
     }
 
-    public static List<CsmScopeElement> merge(CsmCondition condition, CsmStatement statement) {
-        return merge(condition == null ? null : condition.getDeclaration(), statement);
-    }
-
-    public static List<CsmScopeElement> merge(CsmCondition condition, CsmStatement statement1, CsmStatement statement2) {
-        CsmVariable var = (condition == null) ? (CsmVariable) null : condition.getDeclaration();
-        List<CsmScopeElement> l = merge(var, statement1);
-        if (statement2 != null) {
-            l.add(statement2);
-        }
-        return l;
-    }
-
-    public static List<CsmScopeElement> merge(CsmVariable var, CsmStatement statement) {
-        List<CsmScopeElement> l = new ArrayList<>();
-        if (var != null) {
-            l.add(var);
-        }
-        if (statement != null) {
-            l.add(statement);
-        }
-        return l;
-    }       
+    @Override
+    public Token getToken() {
+        return token;
+    }    
 }
-

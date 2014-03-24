@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -94,6 +95,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.RawNamable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -103,6 +105,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
+import static org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities.UID_SIGNATURE_PREFIX;
 
 /**
  *
@@ -111,7 +114,7 @@ import org.openide.util.CharSequences;
  */
 public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         implements CsmFunction, Disposable, RawNamable, CsmTemplate {
-
+     
     protected static final String OPERATOR = "operator"; // NOI18N;
 
     private final CharSequence name;
@@ -136,7 +139,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private static final byte FLAGS_INVALID = 1 << 4;
     protected static final int LAST_USED_FLAG_INDEX = 4;
     private byte flags;
-
+    
     protected FunctionImpl(CharSequence name, CharSequence rawName, CsmScope scope, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
         super(file, startOffset, endOffset);
 
@@ -170,7 +173,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
 
         FunctionImpl<T> functionImpl = new FunctionImpl<>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
-        temporaryRepositoryRegistration(global, functionImpl);
+        temporaryRepositoryRegistration(ast, global, functionImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionImpl, clsTemplateSuffix, global);
@@ -184,6 +187,53 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         postObjectCreateRegistration(global, functionImpl);
         nameHolder.addReference(fileContent, functionImpl);
         return functionImpl;
+    }
+    
+    /**
+     * Method is used to get temporary signature for UID
+     * @return signature field
+     */
+    public CharSequence getSignatureForUID() {
+        return signature != null && signature.toString().startsWith(UID_SIGNATURE_PREFIX) ? signature : null;
+    }    
+    
+    protected static String createSignatureForUID(AST ast) {
+        // Do it only if needed
+        if (AstUtil.hasExpandedTokens(ast)) {
+            AST params = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_PARMLIST);
+            if (params != null) {
+                boolean first = true;
+                StringBuilder sb = new StringBuilder(UID_SIGNATURE_PREFIX); 
+                sb.append("("); // NOI18N
+                AST param = AstUtil.findChildOfType(params, CPPTokenTypes.CSM_PARAMETER_DECLARATION);
+                do {
+                    AST stopAt = AstUtil.findChildOfType(param, CPPTokenTypes.CSM_VARIABLE_DECLARATION);
+                    if (stopAt == null) {
+                        stopAt = AstUtil.findChildOfType(param, CPPTokenTypes.CSM_PARMLIST);
+                    }
+                    ASTSignatureStringizer stringizer = new ASTSignatureStringizer(stopAt);
+                    AstUtil.visitAST(stringizer, param);                    
+                    if (!first) {
+                        sb.append(","); // NOI18N
+                    }
+                    sb.append(stringizer.getText());
+                    first = false;
+                } while ((param = AstUtil.findSiblingOfType(param.getNextSibling(), CPPTokenTypes.CSM_PARAMETER_DECLARATION)) != null);
+                sb.append(")"); // NOI18N
+                return sb.toString();
+            }
+        }
+        return null;
+    }
+    
+    protected static<T> void temporaryRepositoryRegistration(AST ast, boolean global, FunctionImpl<T> fun) {
+        if (fun.signature == null) {
+            fun.signature = createSignatureForUID(ast);
+        }
+        temporaryRepositoryRegistration(global, fun);
+        if (fun.signature != null && fun.signature.toString().startsWith(UID_SIGNATURE_PREFIX)) {
+            fun.signature = null;
+        }
     }
 
     protected void setTemplateDescriptor(TemplateDescriptor templateDescriptor, CharSequence classTemplateSuffix) {
@@ -707,12 +757,13 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
 
     @Override
-    public CharSequence getSignature() {
+    public CharSequence getSignature() {         
         if( signature == null ) {
             signature = QualifiedNameCache.getManager().getString(createSignature(getName(), getParameters(), getOwnTemplateParameters(), isConst()));
         }
+        assert !signature.toString().startsWith(UID_SIGNATURE_PREFIX) : "Signature requested when object is not fully constructed!"; // NOI18N
         return signature;
-    }
+    }   
 
     @Override
     public CsmFunction getDeclaration() {
@@ -876,6 +927,25 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         return out;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = super.hashCode();
+        hash = 47 * hash + Objects.hashCode(this.signature);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) {
+            return false;
+        }
+        final FunctionImpl<?> other = (FunctionImpl<?>) obj;
+        if (!Objects.equals(this.signature, other.signature)) {
+            return false;
+        }
+        return true;
+    }
     
     public static class FunctionBuilder extends SimpleDeclarationBuilder {
 
@@ -929,6 +999,24 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     }          
     
+    public static class ASTSignatureStringizer extends AstUtil.ASTTokensStringizer {
+        
+        private final AST stopAt;
+
+        public ASTSignatureStringizer(AST stopAt) {
+            this.stopAt = stopAt;
+        }
+
+        @Override
+        public Action visit(AST token) {
+            if (token == stopAt) {
+                return Action.ABORT;
+            } else if (token.getType() == CPPTokenTypes.LPAREN || token.getType() == CPPTokenTypes.RPAREN) {
+                return Action.CONTINUE;
+            }
+            return super.visit(token);
+        }
+    }
     
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
