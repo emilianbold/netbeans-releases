@@ -74,6 +74,7 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
     private final JCheckBox renderer = new JCheckBox();
     private HintsPanelLogic logic;
     private Preferences preferences;
+    private ExtendedModel model;
     
     private final static RequestProcessor WORKER = new RequestProcessor(HintsPanel.class.getName(), 1, false, false);
     private final RequestProcessor.Task expandTask = WORKER.create(new Runnable() {
@@ -103,7 +104,7 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
         errorTree.setShowsRootHandles( true );
         errorTree.getSelectionModel().setSelectionMode( TreeSelectionModel.SINGLE_TREE_SELECTION );
         update();
-        ExtendedModel model = new ExtendedModel(selection);
+        model = new ExtendedModel(selection);
         OptionsFilter filter = masterLookup.lookup(OptionsFilter.class);
         if (filter != null) {
              ((OptionsFilter) filter).installFilteringModel(errorTree, model, new AcceptorImpl());
@@ -256,7 +257,7 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
             logic.disconnect();
         }
         logic = new HintsPanelLogic();
-        logic.connect(errorTree, severityLabel, severityComboBox,
+        logic.connect(errorTree, model, severityLabel, severityComboBox,
                 customizerPanel, descriptionTextArea,
                 preferences);
     }
@@ -291,7 +292,7 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
                 } else {
                     renderer.setText( audit.getName()+ ": " + audit.getDescription()); // NOI18N
                 }
-                renderer.setSelected(audit.isEnabled());
+                 renderer.setSelected(audit.isEnabled());
             } else if (data instanceof CodeAuditProvider) {
                 CodeAuditProvider provider = (CodeAuditProvider)data;
                 renderer.setText( provider.getDisplayName());
