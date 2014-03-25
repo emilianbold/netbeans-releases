@@ -287,10 +287,10 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
             Object data = ((DefaultMutableTreeNode)value).getUserObject();
             if ( data instanceof CodeAudit ) {
                 CodeAudit audit = (CodeAudit)data;
-                if (audit.getName().equals(audit.getDescription())) {
+                if (audit.getID().equals(audit.getName())) {
                     renderer.setText(audit.getName());
                 } else {
-                    renderer.setText( audit.getName()+ ": " + audit.getDescription()); // NOI18N
+                    renderer.setText( audit.getID()+ ": " + audit.getName()); // NOI18N
                 }
                  renderer.setSelected(audit.isEnabled());
             } else if (data instanceof CodeAuditProvider) {

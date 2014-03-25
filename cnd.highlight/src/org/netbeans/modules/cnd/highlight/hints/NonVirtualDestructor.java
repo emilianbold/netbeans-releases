@@ -99,7 +99,6 @@ class NonVirtualDestructor extends CodeAuditInfo {
     }
     
     private void visit(CsmMember csmMember, CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
-        int qq;
         if (CsmKindUtilities.isDestructor(csmMember)) {
             CsmMethod method = (CsmMethod)csmMember;
             if (!CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
