@@ -253,9 +253,8 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-    
-        
-    synchronized void update() {
+       
+    public synchronized void update() {
         if ( logic != null ) {
             logic.disconnect();
         }
@@ -265,16 +264,16 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
                 preferences);
     }
     
-    void cancel() {
+    public void cancel() {
         logic.disconnect();
         logic = null;
     }
     
-    boolean isChanged() {
+    public boolean isChanged() {
         return logic != null ? logic.isChanged() : false;
     }
     
-    void applyChanges() {
+    public void applyChanges() {
         logic.applyChanges();
         logic.disconnect();
         logic = null;
