@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.avatar_js.project;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,7 +56,13 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectState;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -100,7 +107,7 @@ public final class AvatarJSProjectFactory implements ProjectFactory2 {
     }
     
     private static final class PackageJSONPrj implements Project, 
-    ActionProvider {
+    ActionProvider, FileChangeListener {
         private final FileObject dir;
         private final Lookup lkp;
         private JSONObject pckg;
@@ -108,6 +115,7 @@ public final class AvatarJSProjectFactory implements ProjectFactory2 {
         public PackageJSONPrj(FileObject dir) {
             this.dir = dir;
             this.lkp = Lookups.singleton(this);
+            dir.addFileChangeListener(FileUtil.weakFileChangeListener(this, dir));
         }
         
         @Override
@@ -132,12 +140,36 @@ public final class AvatarJSProjectFactory implements ProjectFactory2 {
 
         @Override
         public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            if (ActionProvider.COMMAND_RUN.equals(command)) {
+                Object main = getPackage().get("main");
+                if (main instanceof String) {
+                    FileObject toRun = dir.getFileObject((String)main);
+                    if (toRun != null) {
+                        try {
+                            File drf = FileUtil.toFile(dir);
+                            File trf = FileUtil.toFile(toRun);
+                            new ProcessBuilder().
+                                    command("nodejs", trf.getAbsolutePath()).
+                                    directory(drf).start();
+                            return;
+                        } catch (IOException ex) {
+                            LOG.log(Level.WARNING, "Cannot execute " + toRun, ex);
+                        }
+                    }
+                }
+            }
+            throw new IllegalArgumentException(command);
         }
 
         @Override
         public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-            return getPackage().get("main") != null;
+            if (
+                ActionProvider.COMMAND_RUN.equals(command) ||
+                ActionProvider.COMMAND_DEBUG.equals(command)
+            ) {
+                return getPackage().get("main") != null;
+            }
+            return false;
         }
         
         private JSONObject getPackage() {
@@ -156,6 +188,40 @@ public final class AvatarJSProjectFactory implements ProjectFactory2 {
                 pckg = new JSONObject();
             }
             return pckg;
+        }
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            reset();
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            reset();
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            reset();
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            reset();
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            reset();
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            reset();
+        }
+        
+        private void reset() {
+            pckg = null;
         }
     }
 }

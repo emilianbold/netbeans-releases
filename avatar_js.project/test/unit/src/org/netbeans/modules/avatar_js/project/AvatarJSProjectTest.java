@@ -44,6 +44,9 @@ package org.netbeans.modules.avatar_js.project;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.api.project.Project;
@@ -102,6 +105,33 @@ public class AvatarJSProjectTest extends NbTestCase {
         assertTrue(arr.contains(ActionProvider.COMMAND_RUN));
         
         assertFalse("Not enabled, no main file", ap.isActionEnabled(ActionProvider.COMMAND_RUN, prj.getLookup()));
+    }
+    
+    public void testRunCanBeEnabled() throws Exception {
+        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        FileObject pd = fo.getFileObject("pd");
+        Project prj = ProjectManager.getDefault().findProject(pd);
+        assertNotNull("Project found as there is package.json", prj);
+        
+        ActionProvider ap = prj.getLookup().lookup(ActionProvider.class);
+        assertFalse("Not enabled, no main file", ap.isActionEnabled(ActionProvider.COMMAND_RUN, prj.getLookup()));
+        
+        FileObject json = pd.getFileObject("package.json");
+        OutputStream os = json.getOutputStream();
+        Writer w = new OutputStreamWriter(os);
+        w.write("{\n"
+                + "  \"name\": \"chatrooms\",\n"
+                + "  \"main\": \"run.js\",\n"
+                + "  \"version\": \"0.0.1\",\n"
+                + "  \"description\": \"Minimalist multiroom chat server\",\n"
+                + "  \"dependencies\": {\n"
+                + "    \"socket.io\": \"~0.9.6\",\n"
+                + "    \"mime\": \"~1.2.7\"\n"
+                + "  }\n"
+                + "}\n");
+        w.close();
+        
+        assertTrue("Now enabled, main file added", ap.isActionEnabled(ActionProvider.COMMAND_RUN, prj.getLookup()));
     }
     
 }
