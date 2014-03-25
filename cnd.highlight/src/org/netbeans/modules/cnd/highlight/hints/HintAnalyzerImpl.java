@@ -71,7 +71,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Alexander Simon
  */
 public class HintAnalyzerImpl extends AbstractAnalyzer {
-    private static final String PREFIX = "previse-"; //NOI18N
+    private static final String PREFIX = "cnd-"; //NOI18N
 
     private HintAnalyzerImpl(Context ctx) {
         super(ctx);
@@ -108,30 +108,21 @@ public class HintAnalyzerImpl extends AbstractAnalyzer {
         @Override
         protected ErrorDescription addErrorImpl(CsmErrorInfo errorInfo, FileObject fo) {
             String messages[] = errorInfo.getMessage().split("\n");
-            if (messages.length > 0) {
+            if (messages.length >=2 ) {
                 String abbr = messages[0];
-                int i = abbr.indexOf(' ');
-                if (i > 0) {
-                    abbr = abbr.substring(0, i);
-                }
                 LazyFixList list = new AbstractAnalyzer.LazyFixListImpl();
                 StringBuilder buf = new StringBuilder("<pre>"); //NOI18N
                 boolean first = true;
-                for(String s : messages) {
+                for(int i = 1; i < messages.length; i++) {
                     if (first) {
                         first = false;
                     } else {
                         buf.append("<br>"); //NOI18N
                     }
-                    buf.append(s);
+                    buf.append(messages[i]);
                 }
                 buf.append("</pre>"); //NOI18N
-                String message;
-                if (messages.length >= 2) {
-                    message = messages[0]+" "+ messages[1]; //NOI18N
-                } else {
-                    message = messages[0];
-                }
+                String message = messages[1];
                 return ErrorDescriptionFactory.createErrorDescription(PREFIX+abbr, Severity.ERROR,
                         message, buf.toString(), list, fo, errorInfo.getStartOffset(), errorInfo.getStartOffset());
             }

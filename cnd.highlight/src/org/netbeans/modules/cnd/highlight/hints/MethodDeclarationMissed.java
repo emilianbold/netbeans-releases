@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.highlight.hints;
 
 import java.util.EnumSet;
+import org.netbeans.modules.cnd.analysis.api.AnalyzerResponse;
 import org.netbeans.modules.cnd.analysis.api.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
@@ -111,7 +112,12 @@ public class MethodDeclarationMissed extends CodeAuditInfo {
                                 severity = CsmErrorInfo.Severity.WARNING;
                             }
                             String message = NbBundle.getMessage(MethodDeclarationMissed.class, "MethodDeclarationMissed.message", def.getName()); // NOI18N
-                            response.addError(new ErrorInfoImpl(message, severity, ref.getStartOffset(), ref.getEndOffset()));
+                            if (response instanceof AnalyzerResponse) {
+                                ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, ref.getContainingFile().getFileObject(),
+                                        new ErrorInfoImpl(getID()+"\n"+message, severity, ref.getStartOffset(), ref.getEndOffset())); // NOI18N
+                            } else {
+                                response.addError(new ErrorInfoImpl(message, severity, ref.getStartOffset(), ref.getEndOffset()));
+                            }
                         }
                     }
                 }
