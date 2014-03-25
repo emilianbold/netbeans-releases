@@ -198,18 +198,6 @@ public final class IdentifierErrorProvider extends CsmErrorProvider {
                     response.addError(new ErrorInfoImpl(
                             ref.getStartOffset(), ref.getEndOffset(),
                             ref.getText().toString(), severity, "HighlightProvider_IdentifierMissed")); //NOI18N
-                } else if (CsmKindUtilities.isFunctionDefinition(referencedObject)) {
-                    // check function definition without declaration
-                    if (CsmReferenceResolver.getDefault().isKindOf(ref, EnumSet.of(CsmReferenceKind.DEFINITION))) {
-                        if (((CsmFunction)referencedObject).getDeclaration() == null) {
-                            Severity severity = Severity.ERROR;
-                            foundError++;
-                            //TODO: we can be more clever here and provide user with hint to create declaration
-                            response.addError(new ErrorInfoImpl(
-                                    ref.getStartOffset(), ref.getEndOffset(),
-                                    ref.getText().toString(), severity, "HighlightProvider_FunDeclarationMissed")); //NOI18N
-                        }
-                    }
                 } else if (false && referencedObject instanceof CsmFunction) {
                     // Check for function usages befor it's declaration
                     if (CsmReferenceResolver.getDefault().isKindOf(ref, EnumSet.of(CsmReferenceKind.DEFINITION,
