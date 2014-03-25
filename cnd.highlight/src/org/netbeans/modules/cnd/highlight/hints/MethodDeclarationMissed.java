@@ -42,33 +42,33 @@
 
 package org.netbeans.modules.cnd.highlight.hints;
 
-import java.util.Collection;
+import java.util.EnumSet;
 import org.netbeans.modules.cnd.analysis.api.AuditPreferences;
-import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmMember;
-import org.netbeans.modules.cnd.api.model.CsmMethod;
-import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
+import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Alexander Simon
  */
-class NonVirtualDestructor extends CodeAuditInfo {
-    private NonVirtualDestructor(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
+public class MethodDeclarationMissed extends CodeAuditInfo {
+    private MethodDeclarationMissed(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
         super(id, name, description, defaultSeverity, defaultEnabled, myPreferences);
     }
-    static NonVirtualDestructor create(AuditPreferences myPreferences) {
-        String id = NbBundle.getMessage(NonVirtualDestructor.class, "NonVirtualDestructor.name"); // NOI18N
-        String description = NbBundle.getMessage(NonVirtualDestructor.class, "NonVirtualDestructor.description"); // NOI18N
-        return new NonVirtualDestructor(id, id, description, "warning", true, myPreferences); // NOI18N
+    static MethodDeclarationMissed create(AuditPreferences myPreferences) {
+        String id = NbBundle.getMessage(MethodDeclarationMissed.class, "MethodDeclarationMissed.name"); // NOI18N
+        String description = NbBundle.getMessage(MethodDeclarationMissed.class, "MethodDeclarationMissed.description"); // NOI18N
+        return new MethodDeclarationMissed(id, id, description, "error", true, myPreferences); // NOI18N
     }
     
     @Override
@@ -78,43 +78,44 @@ class NonVirtualDestructor extends CodeAuditInfo {
             if (request.isCancelled()) {
                 return;
             }
-            visit(file.getDeclarations(), request, response);
+            CsmFileReferences.getDefault().accept(
+                    request.getFile(), new ReferenceVisitor(request, response),
+                    CsmReferenceKind.FUNCTION_DECLARATION_KINDS);
         }
     }
 
-    private void visit(Collection<? extends CsmOffsetableDeclaration> decls, CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
-        for(CsmOffsetableDeclaration decl : decls) {
-            if (request.isCancelled()) {
-                return;
-            }
-            if (CsmKindUtilities.isClassMember(decl)) {
-                visit((CsmMember) decl, request, response);
-            } else if (CsmKindUtilities.isClass(decl)) {
-                visit((CsmClass) decl, request, response);
-            } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
-                visit(((CsmNamespaceDefinition) decl).getDeclarations(), request, response);
-            }
+    private class ReferenceVisitor implements CsmFileReferences.Visitor {
+
+        private final CsmErrorProvider.Request request;
+        private final CsmErrorProvider.Response response;
+
+
+        public ReferenceVisitor(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+            this.request = request;
+            this.response = response;
         }
-    }
-    
-    private void visit(CsmMember csmMember, CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
-        if (CsmKindUtilities.isDestructor(csmMember)) {
-            CsmMethod method = (CsmMethod)csmMember;
-            if (!CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
-                if (!CsmTypeHierarchyResolver.getDefault().getSubTypes(method.getContainingClass(), true).isEmpty()) {
-                    String message = NbBundle.getMessage(NonVirtualDestructor.class, "NonVirtualDestructor.message"); // NOI18N
-                    CsmErrorInfo.Severity severity;
-                    if ("error".equals(minimalSeverity())) {
-                        severity = CsmErrorInfo.Severity.ERROR;
-                    } else {
-                        severity = CsmErrorInfo.Severity.WARNING;
+
+        @Override
+        public void visit(CsmReferenceContext context) {
+            if (!request.isCancelled()) {
+                CsmReference ref = context.getReference();
+                if (CsmReferenceResolver.getDefault().isKindOf(ref, EnumSet.of(CsmReferenceKind.DEFINITION))) {
+                    CsmObject referencedObject = ref.getReferencedObject();
+                    if (CsmKindUtilities.isFunctionDefinition(referencedObject)) {
+                        CsmFunctionDefinition def = (CsmFunctionDefinition) referencedObject;
+                        if (def.getDeclaration() == null) {
+                            CsmErrorInfo.Severity severity;
+                            if ("error".equals(minimalSeverity())) {
+                                severity = CsmErrorInfo.Severity.ERROR;
+                            } else {
+                                severity = CsmErrorInfo.Severity.WARNING;
+                            }
+                            String message = NbBundle.getMessage(MethodDeclarationMissed.class, "MethodDeclarationMissed.message", def.getName()); // NOI18N
+                            response.addError(new ErrorInfoImpl(message, severity, ref.getStartOffset(), ref.getEndOffset()));
+                        }
                     }
-                    response.addError(new ErrorInfoImpl(message, severity, method.getStartOffset(), method.getEndOffset()));
                 }
             }
         }
-    }
-    private void visit(CsmClass csmClass, CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
-        visit(csmClass.getMembers(), request, response);
     }
 }

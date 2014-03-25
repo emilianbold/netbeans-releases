@@ -177,6 +177,7 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
         if (audits == null) {
             List<CodeAudit> res = new ArrayList<CodeAudit>();
             res.add(NonVirtualDestructor.create(myPreferences));
+            res.add(MethodDeclarationMissed.create(myPreferences));
             audits = res;
         }
         return audits;
