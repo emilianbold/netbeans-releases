@@ -609,7 +609,6 @@ public class AutoupdateInfoParser extends DefaultHandler {
         }
 
         String ip = attr.getValue(BUNDLE_IMPORT_PACKAGE);
-        StringBuilder requires = new StringBuilder();
         StringBuilder recommends = new StringBuilder();
         if (ip != null) {
             for (String p : ip.replaceAll("\"[^\"]*\"", "").split(",")) {
@@ -617,21 +616,11 @@ public class AutoupdateInfoParser extends DefaultHandler {
                 if (JAVA_PLATFORM_PACKAGES.contains(pkg)) {
                     continue;
                 }
-                if (p.matches(".*; *resolution *:= *optional.*")) {
-                    if (recommends.length() > 0) {
-                        recommends.append(',');
-                    }
-                    recommends.append(p.replaceAll(";.*$", "").trim());
-                } else {
-                    if (requires.length() > 0) {
-                        requires.append(',');
-                    }
-                    requires.append(p.replaceAll(";.*$", "").trim());
+                if (recommends.length() > 0) {
+                    recommends.append(',');
                 }
+                recommends.append(p.replaceAll(";.*$", "").trim());
             }
-        }
-        if (requires.length() > 0) {
-            manifest.setAttribute("OpenIDE-Module-Requires", requires.toString().replace('-', '_'));
         }
         if (recommends.length() > 0) {
             manifest.setAttribute("OpenIDE-Module-Recommends", recommends.toString().replace('-', '_'));
