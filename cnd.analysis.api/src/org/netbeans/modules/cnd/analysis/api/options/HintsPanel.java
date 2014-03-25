@@ -103,14 +103,17 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
         errorTree.setRootVisible( false );
         errorTree.setShowsRootHandles( true );
         errorTree.getSelectionModel().setSelectionMode( TreeSelectionModel.SINGLE_TREE_SELECTION );
-        update();
         model = new ExtendedModel(selection);
-        OptionsFilter filter = masterLookup.lookup(OptionsFilter.class);
+        OptionsFilter filter = null;
+        if (masterLookup != null) {
+            filter = masterLookup.lookup(OptionsFilter.class);
+        }
         if (filter != null) {
              ((OptionsFilter) filter).installFilteringModel(errorTree, model, new AcceptorImpl());
         } else {
             errorTree.setModel(model);
         }
+        update();
     }
     
     @Override
@@ -287,10 +290,10 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
             Object data = ((DefaultMutableTreeNode)value).getUserObject();
             if ( data instanceof CodeAudit ) {
                 CodeAudit audit = (CodeAudit)data;
-                if (audit.getName().equals(audit.getDescription())) {
+                if (audit.getID().equals(audit.getName())) {
                     renderer.setText(audit.getName());
                 } else {
-                    renderer.setText( audit.getName()+ ": " + audit.getDescription()); // NOI18N
+                    renderer.setText( audit.getID()+ ": " + audit.getName()); // NOI18N
                 }
                  renderer.setSelected(audit.isEnabled());
             } else if (data instanceof CodeAuditProvider) {

@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.highlight.hints;
 
 import java.util.Collection;
+import org.netbeans.modules.cnd.analysis.api.AnalyzerResponse;
 import org.netbeans.modules.cnd.analysis.api.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -103,7 +104,18 @@ class NonVirtualDestructor extends CodeAuditInfo {
             if (!CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
                 if (!CsmTypeHierarchyResolver.getDefault().getSubTypes(method.getContainingClass(), true).isEmpty()) {
                     String message = NbBundle.getMessage(NonVirtualDestructor.class, "NonVirtualDestructor.message"); // NOI18N
-                    response.addError(new ErrorInfoImpl(message, CsmErrorInfo.Severity.WARNING, method.getStartOffset(), method.getEndOffset()));
+                    CsmErrorInfo.Severity severity;
+                    if ("error".equals(minimalSeverity())) { // NOI18N
+                        severity = CsmErrorInfo.Severity.ERROR;
+                    } else {
+                        severity = CsmErrorInfo.Severity.WARNING;
+                    }
+                    if (response instanceof AnalyzerResponse) {
+                        ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, method.getContainingFile().getFileObject(),
+                                new ErrorInfoImpl(getID()+"\n"+message, severity, method.getStartOffset(), method.getParameterList().getEndOffset())); // NOI18N
+                    } else {
+                        response.addError(new ErrorInfoImpl(message, severity, method.getStartOffset(), method.getParameterList().getEndOffset()));
+                    }
                 }
             }
         }
