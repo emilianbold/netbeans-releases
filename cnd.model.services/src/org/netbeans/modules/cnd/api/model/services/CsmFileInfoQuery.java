@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.util.CharSequences;
 import org.openide.util.Lookup;
 
@@ -193,6 +194,8 @@ public abstract class CsmFileInfoQuery {
     public abstract CharSequence getName(CsmUID<CsmFile> fileUID);
     
     public abstract CharSequence getAbsolutePath(CsmUID<CsmFile> fileUID);
+    
+    public abstract CsmFile getCsmFile(Parser.Result parseResult);
     //
     // Implementation of the default query
     //
@@ -301,6 +304,11 @@ public abstract class CsmFileInfoQuery {
         @Override
         public boolean isDocumentBasedFile(CsmFile file) {
             return false;
+        }
+
+        @Override
+        public CsmFile getCsmFile(Parser.Result parseResult) {
+            return null;
         }
     }
 }

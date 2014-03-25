@@ -49,11 +49,11 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
-import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
@@ -64,7 +64,7 @@ import org.netbeans.modules.parsing.spi.TaskIndexingMode;
  *
  * @author Alexander Simon
  */
-public class NavigatorSourceFactoryTask extends IndexingAwareParserResultTask<CndParserResult> {
+public class NavigatorSourceFactoryTask extends IndexingAwareParserResultTask<Parser.Result> {
     private AtomicBoolean canceled = new AtomicBoolean(false);
     
     public NavigatorSourceFactoryTask() {
@@ -72,7 +72,7 @@ public class NavigatorSourceFactoryTask extends IndexingAwareParserResultTask<Cn
     }
 
     @Override
-    public void run(CndParserResult result, SchedulerEvent event) {
+    public void run(Parser.Result result, SchedulerEvent event) {
         synchronized (this) {
             canceled.set(true);
             canceled = new AtomicBoolean(false);

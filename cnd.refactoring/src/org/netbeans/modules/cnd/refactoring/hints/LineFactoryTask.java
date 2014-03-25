@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.cnd.refactoring.hints;
 
-import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -94,6 +93,7 @@ import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
@@ -114,7 +114,7 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class LineFactoryTask extends IndexingAwareParserResultTask<CndParserResult> {
+public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result> {
     private AtomicBoolean canceled = new AtomicBoolean(false);
     
     public LineFactoryTask() {
@@ -122,14 +122,14 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<CndParserResu
     }
 
     @Override
-    public void run(CndParserResult result, SchedulerEvent event) {
+    public void run(Parser.Result result, SchedulerEvent event) {
         synchronized (this) {
             canceled.set(true);
             canceled = new AtomicBoolean(false);
         }
         final Document doc = result.getSnapshot().getSource().getDocument(false);
         final FileObject fileObject = result.getSnapshot().getSource().getFileObject();
-        final CsmFile file = result.getCsmFile();
+        final CsmFile file = CsmFileInfoQuery.getDefault().getCsmFile(result);
         if (file != null && doc != null) {
             if (event instanceof CursorMovedSchedulerEvent) {
                 process(doc, fileObject, (CursorMovedSchedulerEvent)event, file, canceled);
