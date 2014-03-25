@@ -264,7 +264,16 @@ public final class OperationContainerImpl<Support> {
                         // adds affectedEager into list of elements for the operation
                         OperationInfo<Support> i = null;
                         try {
-                            i = add (eagerEl.getUpdateUnit (), eagerEl);
+                            if(impl instanceof ModuleUpdateElementImpl) {
+                                i = add (eagerEl.getUpdateUnit (), eagerEl);
+                            } else if (impl instanceof FeatureUpdateElementImpl) {
+                                FeatureUpdateElementImpl eagerImpl = (FeatureUpdateElementImpl) impl;
+                                for (UpdateElementImpl contained : eagerImpl.getContainedModuleElements()) {
+                                    if (contained.isEager()) {
+                                        i = add (contained.getUpdateUnit (), contained.getUpdateElement());
+                                    }
+                                }
+                            }
                         } catch (IllegalArgumentException e) {
                             //investigate the reason of 172220, 171975, 169588
                             boolean firstCondition = (! reqs.isEmpty() && all.containsAll (reqs) && ! all.contains (eagerEl));
