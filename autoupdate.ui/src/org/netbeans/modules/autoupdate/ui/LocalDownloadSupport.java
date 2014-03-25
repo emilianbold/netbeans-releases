@@ -393,7 +393,7 @@ public class LocalDownloadSupport {
             for (File f : files) {
                 names.add (f.getAbsolutePath ());
             }
-            allFiles = stripNoNBMs (stripNotExistingFiles (getAllFiles ()));
+            allFiles = stripNoNBMsNorOSGi(stripNotExistingFiles(getAllFiles()));
             makePersistent (allFiles);
             makePersistentCheckedNames (names);
         }
@@ -404,7 +404,7 @@ public class LocalDownloadSupport {
 
         void removeFiles (Collection<File> files) {
             getAllFiles ().removeAll (files);
-            allFiles = stripNoNBMs (stripNotExistingFiles (getAllFiles ()));
+            allFiles = stripNoNBMsNorOSGi(stripNotExistingFiles(getAllFiles()));
             makePersistent (allFiles);
             for (File f : files) {
                 makePersistentUncheckedFile (f);
@@ -501,11 +501,13 @@ public class LocalDownloadSupport {
             return retval;
         }
 
-        private static Set<File> stripNoNBMs (Set<File> files) {
+        private static Set<File> stripNoNBMsNorOSGi(Set<File> files) {
             Set<File> retval = new HashSet<File> ();
             for (File file : files) {
                 if (NBM_FILE_FILTER.accept (file)) {
                     retval.add (file);
+                } else if (OSGI_BUNDLE_FILTER.accept(file)) {
+                    retval.add(file);
                 }
             }
             return retval;
