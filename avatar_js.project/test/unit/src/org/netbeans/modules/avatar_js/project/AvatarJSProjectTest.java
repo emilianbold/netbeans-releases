@@ -44,9 +44,12 @@ package org.netbeans.modules.avatar_js.project;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.util.Arrays;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -93,6 +96,12 @@ public class AvatarJSProjectTest extends NbTestCase {
         
         Project prj = ProjectManager.getDefault().findProject(pd);
         assertNotNull("Project found as there is package.json", prj);
+        
+        ActionProvider ap = prj.getLookup().lookup(ActionProvider.class);
+        List<String> arr = Arrays.asList(ap.getSupportedActions());
+        assertTrue(arr.contains(ActionProvider.COMMAND_RUN));
+        
+        assertFalse("Not enabled, no main file", ap.isActionEnabled(ActionProvider.COMMAND_RUN, prj.getLookup()));
     }
     
 }

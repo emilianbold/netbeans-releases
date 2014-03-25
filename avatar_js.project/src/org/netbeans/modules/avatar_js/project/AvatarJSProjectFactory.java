@@ -43,10 +43,15 @@
 package org.netbeans.modules.avatar_js.project;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectState;
@@ -62,8 +67,10 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = ProjectFactory.class)
 public final class AvatarJSProjectFactory implements ProjectFactory2 {
+    private static final Logger LOG = Logger.getLogger(AvatarJSProjectFactory.class.getName());
     @StaticResource
-    private final String ICON = "org/netbeans/modules/avatar_js/project/resources/nodejs.png";
+    private static final String ICON = "org/netbeans/modules/avatar_js/project/resources/nodejs.png";
+    
     
     @Override
     public ProjectManager.Result isProject2(FileObject projectDirectory) {
@@ -92,9 +99,11 @@ public final class AvatarJSProjectFactory implements ProjectFactory2 {
         }
     }
     
-    private static final class PackageJSONPrj implements Project {
+    private static final class PackageJSONPrj implements Project, 
+    ActionProvider {
         private final FileObject dir;
         private final Lookup lkp;
+        private JSONObject pckg;
 
         public PackageJSONPrj(FileObject dir) {
             this.dir = dir;
@@ -112,6 +121,41 @@ public final class AvatarJSProjectFactory implements ProjectFactory2 {
         }
         
         public void save() throws IOException {
+        }
+        
+        @Override
+        public String[] getSupportedActions() {
+            return new String[] {
+                ActionProvider.COMMAND_RUN
+            };
+        }
+
+        @Override
+        public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
+            return getPackage().get("main") != null;
+        }
+        
+        private JSONObject getPackage() {
+            if (pckg != null) {
+                return pckg;
+            }
+            FileObject fo = dir.getFileObject("package.json");
+            if (fo != null) {
+                try {
+                    pckg = (JSONObject) new JSONParser().parse(fo.asText("UTF-8"));
+                } catch (Exception ex) {
+                    LOG.log(Level.WARNING, "Error parsing " + fo, ex);
+                }
+            }
+            if (pckg == null) {
+                pckg = new JSONObject();
+            }
+            return pckg;
         }
     }
 }
