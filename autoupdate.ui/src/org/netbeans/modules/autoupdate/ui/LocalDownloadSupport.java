@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -88,10 +88,10 @@ public class LocalDownloadSupport {
 
     private static final FileFilter NBM_FILE_FILTER = new NbmFileFilter ();
     private static final FileFilter OSGI_BUNDLE_FILTER = new OsgiBundleFilter ();
-    private static String LOCAL_DOWNLOAD_DIRECTORY_KEY = "local-download-directory"; // NOI18N
-    private static String LOCAL_DOWNLOAD_FILES = "local-download-files"; // NOI18N    
-    private static String LOCAL_DOWNLOAD_CHECKED_FILES = "local-download-checked-files"; // NOI18N    
-    private FileList fileList = new FileList ();
+    private static final String LOCAL_DOWNLOAD_DIRECTORY_KEY = "local-download-directory"; // NOI18N
+    private static final String LOCAL_DOWNLOAD_FILES = "local-download-files"; // NOI18N    
+    private static final String LOCAL_DOWNLOAD_CHECKED_FILES = "local-download-checked-files"; // NOI18N    
+    private final FileList fileList = new FileList ();
     private static final Logger err = Logger.getLogger (LocalDownloadSupport.class.getName ());
     private Map<File, String> nbm2unitCodeName = null;
     private Map<String, UpdateUnit> codeName2unit = null;
