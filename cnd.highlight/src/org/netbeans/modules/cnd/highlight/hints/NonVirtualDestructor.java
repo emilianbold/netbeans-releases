@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.highlight.hints;
 
 import java.util.Collection;
+import org.netbeans.modules.cnd.analysis.api.AnalyzerResponse;
 import org.netbeans.modules.cnd.analysis.api.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -110,7 +111,12 @@ class NonVirtualDestructor extends CodeAuditInfo {
                     } else {
                         severity = CsmErrorInfo.Severity.WARNING;
                     }
-                    response.addError(new ErrorInfoImpl(message, severity, method.getStartOffset(), method.getParameterList().getEndOffset()));
+                    if (response instanceof AnalyzerResponse) {
+                        ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, method.getContainingFile().getFileObject(),
+                                new ErrorInfoImpl(getID()+"\n"+message, severity, method.getStartOffset(), method.getParameterList().getEndOffset())); // NOI18N
+                    } else {
+                        response.addError(new ErrorInfoImpl(message, severity, method.getStartOffset(), method.getParameterList().getEndOffset()));
+                    }
                 }
             }
         }

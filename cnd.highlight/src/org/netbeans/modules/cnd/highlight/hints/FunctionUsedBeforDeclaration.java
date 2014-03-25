@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.highlight.hints;
 
 import java.util.EnumSet;
+import org.netbeans.modules.cnd.analysis.api.AnalyzerResponse;
 import org.netbeans.modules.cnd.analysis.api.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -129,7 +130,13 @@ public class FunctionUsedBeforDeclaration extends CodeAuditInfo {
                             severity = CsmErrorInfo.Severity.WARNING;
                         }
                         String message = NbBundle.getMessage(FunctionUsedBeforDeclaration.class, "FunctionUsedBeforDeclaration.message", fun.getName()); // NOI18N
-                        response.addError(new ErrorInfoImpl(message, severity, ref.getStartOffset(), ref.getEndOffset()));
+                        if (response instanceof AnalyzerResponse) {
+                            ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, ref.getContainingFile().getFileObject(),
+                                    new ErrorInfoImpl(getID()+"\n"+message, severity, ref.getStartOffset(), ref.getEndOffset())); // NOI18N
+                        } else {
+                            response.addError(new ErrorInfoImpl(message, severity, ref.getStartOffset(), ref.getEndOffset()));
+                        }
+                        
                     }
                 }
             }
