@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 2.45.1
+#Version 2.48.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -146,7 +146,7 @@ meth public static org.netbeans.api.debugger.jpda.AttachingDICookie create(com.s
 meth public static org.netbeans.api.debugger.jpda.AttachingDICookie create(java.lang.String)
 meth public static org.netbeans.api.debugger.jpda.AttachingDICookie create(java.lang.String,int)
 supr org.netbeans.api.debugger.jpda.AbstractDICookie
-hfds args,attachingConnector
+hfds args,attachingConnector,logger
 
 CLSS public abstract interface org.netbeans.api.debugger.jpda.CallStackFrame
 meth public abstract boolean isObsolete()
@@ -322,6 +322,7 @@ meth public abstract long getInstanceCount()
 meth public abstract org.netbeans.api.debugger.jpda.ClassVariable classObject()
 meth public abstract org.netbeans.api.debugger.jpda.ObjectVariable getClassLoader()
 meth public abstract org.netbeans.api.debugger.jpda.Super getSuperClass()
+meth public abstract org.netbeans.api.debugger.jpda.Variable invokeMethod(java.lang.String,java.lang.String,org.netbeans.api.debugger.jpda.Variable[]) throws java.lang.NoSuchMethodException,org.netbeans.api.debugger.jpda.InvalidExpressionException
 
 CLSS public abstract org.netbeans.api.debugger.jpda.JPDADebugger
 cons public init()
@@ -367,6 +368,8 @@ meth public java.util.List<org.netbeans.api.debugger.jpda.JPDAClassType> getClas
 meth public long[] getInstanceCounts(java.util.List<org.netbeans.api.debugger.jpda.JPDAClassType>)
 meth public org.netbeans.api.debugger.jpda.JPDAStep createJPDAStep(int,int)
 meth public org.netbeans.api.debugger.jpda.ThreadsCollector getThreadsCollector()
+meth public org.netbeans.api.debugger.jpda.Variable createMirrorVar(java.lang.Object) throws java.io.InvalidObjectException
+meth public org.netbeans.api.debugger.jpda.Variable createMirrorVar(java.lang.Object,boolean) throws java.io.InvalidObjectException
 meth public static org.netbeans.api.debugger.DebuggerEngine[] startListeningAndGetEngines(com.sun.jdi.connect.ListeningConnector,java.util.Map<java.lang.String,? extends com.sun.jdi.connect.Connector$Argument>,java.lang.Object[]) throws org.netbeans.api.debugger.jpda.DebuggerStartException
 meth public static org.netbeans.api.debugger.jpda.JPDADebugger attach(java.lang.String,int,java.lang.Object[]) throws org.netbeans.api.debugger.jpda.DebuggerStartException
 meth public static org.netbeans.api.debugger.jpda.JPDADebugger attach(java.lang.String,java.lang.Object[]) throws org.netbeans.api.debugger.jpda.DebuggerStartException

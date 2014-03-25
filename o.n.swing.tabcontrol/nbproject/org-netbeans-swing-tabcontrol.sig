@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.46.1
+#Version 1.50.1
 
 CLSS public abstract java.awt.AWTEvent
 cons public init(java.awt.Event)
@@ -514,6 +514,10 @@ meth public abstract java.awt.Rectangle getBounds()
 meth public abstract java.awt.geom.PathIterator getPathIterator(java.awt.geom.AffineTransform)
 meth public abstract java.awt.geom.PathIterator getPathIterator(java.awt.geom.AffineTransform,double)
 meth public abstract java.awt.geom.Rectangle2D getBounds2D()
+
+CLSS public abstract interface java.awt.dnd.Autoscroll
+meth public abstract java.awt.Insets getAutoscrollInsets()
+meth public abstract void autoscroll(java.awt.Point)
 
 CLSS public java.awt.event.ActionEvent
 cons public init(java.lang.Object,int,java.lang.String)
@@ -1657,6 +1661,7 @@ meth public void setTab(int,org.netbeans.swing.tabcontrol.TabData)
 meth public void setTabs(org.netbeans.swing.tabcontrol.TabData[])
 meth public void setText(int,java.lang.String)
 meth public void setText(int[],java.lang.String[])
+meth public void setToolTipTextAt(int,java.lang.String)
 supr java.lang.Object
 hfds LOCK,cs,list,listenerList
 hcls L
@@ -1788,6 +1793,7 @@ fld public final static java.lang.String SLIDING_TAB_DISPLAYER_UI_CLASS_ID = "Sl
 fld public final static java.lang.String TOOLBAR_TAB_DISPLAYER_UI_CLASS_ID = "ToolbarTabDisplayerUI"
 fld public final static java.lang.String VIEW_TAB_DISPLAYER_UI_CLASS_ID = "ViewTabDisplayerUI"
 innr protected AccessibleTabDisplayer
+intf java.awt.dnd.Autoscroll
 intf javax.accessibility.Accessible
 meth protected final void postActionEvent(org.netbeans.swing.tabcontrol.event.TabActionEvent)
 meth public final boolean isActive()
@@ -1813,6 +1819,7 @@ meth public final void setAttentionHighlight(int,boolean)
 meth public final void setShowCloseButton(boolean)
 meth public final void updateUI()
 meth public int tabForCoordinate(java.awt.Point)
+meth public java.awt.Insets getAutoscrollInsets()
 meth public java.lang.String getUIClassID()
 meth public javax.accessibility.AccessibleContext getAccessibleContext()
 meth public javax.swing.SingleSelectionModel getSelectionModel()
@@ -1822,6 +1829,7 @@ meth public org.netbeans.swing.tabcontrol.LocationInformer getLocationInformer()
 meth public org.netbeans.swing.tabcontrol.WinsysInfoForTabbed getWinsysInfo()
  anno 0 java.lang.Deprecated()
 meth public org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer getContainerWinsysInfo()
+meth public void autoscroll(java.awt.Point)
 meth public void registerShortcuts(javax.swing.JComponent)
 meth public void setComponentConverter(org.netbeans.swing.tabcontrol.ComponentConverter)
 meth public void unregisterShortcuts(javax.swing.JComponent)
@@ -1868,7 +1876,9 @@ meth public abstract void registerShortcuts(javax.swing.JComponent)
 meth public abstract void unregisterShortcuts(javax.swing.JComponent)
 meth public final boolean isTabBusy(int)
 meth public java.awt.Image createImageOfTab(int)
+meth public java.awt.Insets getAutoscrollInsets()
 meth public javax.swing.Icon getButtonIcon(int,int)
+meth public void autoscroll(java.awt.Point)
 meth public void installUI(javax.swing.JComponent)
 meth public void makeTabVisible(int)
 meth public void postTabAction(org.netbeans.swing.tabcontrol.event.TabActionEvent)
@@ -2362,12 +2372,14 @@ meth protected void modelChanged()
 meth protected void processMouseWheelEvent(java.awt.event.MouseWheelEvent)
 meth protected void uninstall()
 meth public java.awt.Dimension getMinimumSize(javax.swing.JComponent)
+meth public java.awt.Insets getAutoscrollInsets()
 meth public java.awt.Insets getTabAreaInsets()
 meth public static java.awt.Graphics2D getOffscreenGraphics()
+meth public void autoscroll(java.awt.Point)
 meth public void makeTabVisible(int)
 supr org.netbeans.swing.tabcontrol.plaf.BasicTabDisplayerUI
-hfds btnDropDown,btnMaximizeRestore,btnScrollLeft,btnScrollRight,controlButtons,ctx,lastKnownModelSize,scratch
-hcls WCLayout
+hfds autoscroll,btnDropDown,btnMaximizeRestore,btnScrollLeft,btnScrollRight,controlButtons,ctx,lastKnownModelSize,scratch
+hcls Autoscroller,WCLayout
 
 CLSS protected org.netbeans.swing.tabcontrol.plaf.BasicScrollingTabDisplayerUI$ScrollingDisplayerComponentListener
  outer org.netbeans.swing.tabcontrol.plaf.BasicScrollingTabDisplayerUI

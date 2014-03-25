@@ -175,8 +175,13 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
      */
     private Map block2blockedSet = new HashMap(4);
     
-    /** Whether hierarchy is initialized (root fold etc.) */
-    private boolean inited;
+    /** True, if the hierarchy has been damaged, will log more information during updates */
+    private int damaged;
+    
+    /**
+     * Content when the last transaction was committed.
+     */
+    private String committedContent;
     
     private AbstractDocument lastDocument;
     
@@ -565,7 +570,7 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
         if (!blockedSet.remove(blocked)) {
             throw new IllegalStateException("Not blocker for " + blocked); // NOI18N
         }
-        if (blockedSet.size() == 0) { // Remove the blocker as well
+        if (blockedSet.isEmpty()) { // Remove the blocker as well
             block2blockedSet.remove(block);
         }
         return block;
@@ -843,6 +848,7 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
             }
             ok = true;
         } finally {
+            this.damaged = 0;
             if (!ok) {
                 operations = EMPTY_FOLD_OPERTAION_IMPL_ARRAY;
             }
@@ -1468,6 +1474,29 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
             m.invoke(doc, l);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    int getDamagedCount() {
+        return this.damaged;
+    }
+    
+    void markDamaged() {
+        this.damaged++;
+    }
+    
+    String getCommittedContent() {
+        return committedContent;
+    }
+    
+    void transactionCommitted() {
+        if (damaged > 0) {
+            Document d = component.getDocument();
+            try {
+                committedContent = d.getText(0, d.getLength());
+            } catch (BadLocationException ex) {
+                // no op
+            }
         }
     }
 }

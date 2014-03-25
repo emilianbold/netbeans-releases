@@ -50,6 +50,7 @@ import java.util.Iterator;
 import java.util.Map;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -60,11 +61,14 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
@@ -114,7 +118,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 
         FunctionDefinitionImpl<T> functionDefinitionImpl = new FunctionDefinitionImpl<>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
         
-        temporaryRepositoryRegistration(global, functionDefinitionImpl);
+        temporaryRepositoryRegistration(ast, global, functionDefinitionImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionDefinitionImpl, clsTemplateSuffix, global);
@@ -190,21 +194,42 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     // method try to find declaration in case class have exactly one cast operator with desired name
     private CsmDeclaration fixCastOperator(CsmClass owner) {
         CsmDeclaration candidate = null;
+        CsmClassifier ourClassifier = null;
         String s1 = getName().toString();
-        int i1 = s1.lastIndexOf("::"); // NOI18N
+        int i1 = s1.lastIndexOf(APTUtils.SCOPE); 
         if (i1 > 0) {
-            s1 = "operator  " + s1.substring(i1 + 2); // NOI18N
+            s1 = OPERATOR + " " + s1.substring(i1 + 2); // NOI18N
         }
         Iterator<CsmMember> it = CsmSelect.getClassMembers(owner,
-                CsmSelect.getFilterBuilder().createNameFilter("operator", false, true, false)); // NOI18N
+                CsmSelect.getFilterBuilder().createNameFilter(OPERATOR, false, true, false));
         while (it.hasNext()) {
             CsmMember m = it.next();
             String s2 = m.getName().toString();
-            int i2 = s2.lastIndexOf("::"); // NOI18N
+            int i2 = s2.lastIndexOf(APTUtils.SCOPE); 
             if (i2 > 0) {
-                s2 = "operator  " + s2.substring(i2 + 2); // NOI18N
+                s2 = OPERATOR + " " + s2.substring(i2 + 2); // NOI18N
             }
-            if (s1.equals(s2)) {
+            boolean candidateMatch = s1.equals(s2);
+            if (!candidateMatch) {              
+                if (CsmKindUtilities.isFunctionDeclaration(m) && CsmKindUtilities.isCastOperator(m)) {
+                    // First initialize our type
+                    if (ourClassifier == null) {
+                        ourClassifier = getCastOperatorCastEntity(this);
+                        if (!checkResolvedClassifier(ourClassifier)) {
+                            break;
+                        }
+                    }
+                    CsmClassifier memberClassifier = getCastOperatorCastEntity((CsmFunction) m);
+                    if (checkResolvedClassifier(memberClassifier)) {
+                        if (ourClassifier.getQualifiedName().toString().equals(memberClassifier.getQualifiedName().toString())) {
+                            candidateMatch = true;
+                        } else if (CsmKindUtilities.isTemplateParameter(ourClassifier) && CsmKindUtilities.isTemplateParameter(memberClassifier)) {
+                            candidateMatch = true;
+                        }
+                    }
+                }
+            }
+            if (candidateMatch) {
                 if (candidate == null) {
                     candidate = m;
                 } else {
@@ -236,7 +261,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
                 Iterator<CsmMember> it = CsmSelect.getClassMembers((CsmClass) owner,
                         CsmSelect.getFilterBuilder().createNameFilter(getName(), true, true, false));
                 decls = findByNameAndParamsNumber(it, getName(), getParameters().size());
-                if (decls.isEmpty() && isOperator()) {
+                if (decls.isEmpty() && CsmKindUtilities.isCastOperator(this)) {
                     CsmDeclaration cast = fixCastOperator((CsmClass)owner);
                     if (cast != null) {
                         decls.add(cast);

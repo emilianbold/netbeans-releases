@@ -332,7 +332,7 @@ import org.openide.util.RequestProcessor;
             CancellationException, InterruptedException, ExecutionException {
         FSSResponse response = null;
         if (request.needsResponse()) {
-            response = new FSSResponse(request, this, listener);
+            response = new FSSResponse(request, this, listener, env);
             synchronized (responseLock) {
                 RemoteLogger.assertNull(responses.get(request.getId()),
                         "response should be null for id {0}", request.getId()); // NOI18N
@@ -495,6 +495,7 @@ import org.openide.util.RequestProcessor;
                 try {
                     handShake();
                 } catch (InitializationException ex) {
+                    server = null;
                     setInvalid(true);
                     throw ex;
                 }

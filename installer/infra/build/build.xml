@@ -264,7 +264,7 @@
         -->
 
 	<set property="nb.full.version"
-             value="8.0.0.0.${nb.build.number}"/>
+             value="8.0.1.0.${nb.build.number}"/>
 
         <set property="nb.zip.files.prefix"
              value="${nb.files.prefix}-${build.number}"/>
@@ -377,6 +377,7 @@
 
             <echo message="Property jdk.version.number: ${jdk.version.number}"/>
             <echo message="Property jdk.update.number: ${jdk.update.number}"/>
+            <echo message="Property jdk.update.number.long: ${jdk.update.number.long}"/>
             <echo message="Property jdk.build.number: ${jdk.build.number}"/>
             <echo message="Property jdk.ea.text: ${jdk.ea.text}"/>
         </if>
@@ -389,6 +390,7 @@
 
             <echo message="Property jdk.version.number: ${jdk.version.number}"/>
             <echo message="Property jdk.update.number: ${jdk.update.number}"/>
+            <echo message="Property jdk.update.number.long: ${jdk.update.number.long}"/>
             <echo message="Property jdk.build.number: ${jdk.build.number}"/>
             <echo message="Property jdk.ea.text: ${jdk.ea.text}"/>
         </if>
@@ -1810,7 +1812,7 @@ jarsigner.storepass=${jarsigner.storepass}
         <!-- JavaSE + JDK8 bundles -->
 	<antcall target="generate-jdk-bundle-single">
 	    <param name="jdk.full.version"            value="1.${jdk.version.number}.0.${jdk.update.number}.${jdk.build.number}"/>
-            <param name="jdk.bundle.files.prefix"     value="jdk-${jdk.version.number}"/>
+            <param name="jdk.bundle.files.prefix"     value="jdk-${jdk.version.number}u${jdk.update.number}"/>
             <param name="bundled.jvm.file.prefix"     value="jre-7u4"/>
 	    <param name="license.resource"            value="$S{nbi.overall.license.jdk7.resource}"/>
 	</antcall>

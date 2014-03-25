@@ -116,4 +116,9 @@ public class FileModelCpp11Test extends TraceModelTestBase {
         // Bug 241017 - False error on C++11 operator new 
         performTest("bug241017.cpp");
     }
+    
+    public void test242729() throws Exception {
+        // Bug 242729 - Some c++11 features not recognized by code assistance engine
+        performTest("bug242729.cpp");
+    }    
 }

@@ -71,27 +71,25 @@ import org.openide.util.NbBundle;
  * @author Ivan Sidorkin
  */
 public class WildflyInstantiatingIterator implements WizardDescriptor.InstantiatingIterator, ChangeListener {
-    
+
     private static final String PROP_DISPLAY_NAME = "ServInstWizard_displayName"; // NOI18N
 
-    private static final String JBOSS_5_JAVA_OPTS = "-Xms128m -Xmx512m"; // NOI18N
-    
-    private static final String JBOSS_6_JAVA_OPTS = "-Xms128m -Xmx512m -XX:MaxPermSize=256m"; // NOI18N
+    private static final String WILDFLY_JAVA_OPTS = "-Xms128m -Xmx512m -XX:MaxPermSize=256m"; // NOI18N
 
     /**
      * skipServerLocationStep allow to skip Select Location step in New Instance Wizard
      * if this step allready was passed
      */
     public final boolean skipServerLocationStep = false;
-    
+
     private transient AddServerLocationPanel locationPanel = null;
     private transient AddServerPropertiesPanel propertiesPanel = null;
-    
+
     private WizardDescriptor wizard;
     private transient int index = 0;
     private transient WizardDescriptor.Panel[] panels = null;
-    
-    
+
+
     // private InstallPanel panel;
     private final transient Set listeners = new HashSet(1);
     @Override
@@ -100,60 +98,60 @@ public class WildflyInstantiatingIterator implements WizardDescriptor.Instantiat
             listeners.remove(l);
         }
     }
-    
+
     @Override
     public void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
-    
+
     @Override
     public void uninitialize(WizardDescriptor wizard) {
     }
-    
+
     @Override
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
     }
-    
+
     @Override
     public void previousPanel() {
         index--;
     }
-    
+
     @Override
     public void nextPanel() {
         if (!hasNext()) throw new NoSuchElementException();
         index++;
     }
-    
+
     @Override
     public String name() {
         return "JBoss Server AddInstanceIterator";  // NOI18N
     }
-    
+
     public static void showInformation(final String msg,  final String title) {
         Runnable info = new Runnable() {
             @Override
             public void run() {
                 NotifyDescriptor d = new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
                 d.setTitle(title);
-                DialogDisplayer.getDefault().notify(d); 
+                DialogDisplayer.getDefault().notify(d);
             }
         };
-        
+
         if (SwingUtilities.isEventDispatchThread()) {
             info.run();
         } else {
             SwingUtilities.invokeLater(info);
         }
     }
-    
+
     @Override
     public Set instantiate() throws IOException {
         Set result = new HashSet();
-        
+
         String displayName =  (String)wizard.getProperty(PROP_DISPLAY_NAME);
         WildflyPluginUtils.Version version = WildflyPluginUtils.getServerVersion(new File(installLocation));
         String url = WildflyDeploymentFactory.URI_PREFIX;
@@ -165,7 +163,7 @@ public class WildflyInstantiatingIterator implements WizardDescriptor.Instantiat
         if (server != null && !server.equals(""))                           // NOI18N
             url += "#" + server;                                            // NOI18N
         url += "&"+ installLocation;                                        // NOI18N
-      
+
         try {
             Map<String, String> initialProperties = new HashMap<String, String>();
             initialProperties.put(WildflyPluginProperties.PROPERTY_SERVER, server);
@@ -175,12 +173,8 @@ public class WildflyInstantiatingIterator implements WizardDescriptor.Instantiat
             initialProperties.put(WildflyPluginProperties.PROPERTY_HOST, host);
             initialProperties.put(WildflyPluginProperties.PROPERTY_PORT, port);
             initialProperties.put(WildflyPluginProperties.PROPERTY_CONFIG_FILE, configFile);
-
-            if (version != null && version.compareToIgnoreUpdate(WildflyPluginUtils.JBOSS_6_0_0) >= 0) {
-                initialProperties.put(WildflyPluginProperties.PROPERTY_JAVA_OPTS, JBOSS_6_JAVA_OPTS);
-            } else if (version != null && version.compareToIgnoreUpdate(WildflyPluginUtils.JBOSS_5_0_0) >= 0) {
-                initialProperties.put(WildflyPluginProperties.PROPERTY_JAVA_OPTS, JBOSS_5_JAVA_OPTS);
-            }
+            initialProperties.put(WildflyPluginProperties.PROPERTY_ADMIN_PORT, adminPort);
+            initialProperties.put(WildflyPluginProperties.PROPERTY_JAVA_OPTS, WILDFLY_JAVA_OPTS);
 
             InstanceProperties ip = InstanceProperties.createInstanceProperties(url,
                     userName, password, displayName, initialProperties);
@@ -190,20 +184,20 @@ public class WildflyInstantiatingIterator implements WizardDescriptor.Instantiat
             showInformation(e.getLocalizedMessage(), NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "MSG_INSTANCE_REGISTRATION_FAILED")); //NOI18N
             Logger.getLogger("global").log(Level.SEVERE, e.getMessage());
         }
-        
+
         return result;
     }
-    
+
     @Override
     public boolean hasPrevious() {
         return index > 0;
     }
-    
+
     @Override
     public boolean hasNext() {
         return index < getPanels().length - 1;
     }
-    
+
     protected String[] createSteps() {
         if(!skipServerLocationStep){
             return new String[] { NbBundle.getMessage(WildflyInstantiatingIterator.class, "STEP_ServerLocation"),  NbBundle.getMessage(WildflyInstantiatingIterator.class, "STEP_Properties") };    // NOI18N
@@ -215,31 +209,31 @@ public class WildflyInstantiatingIterator implements WizardDescriptor.Instantiat
             }
         }
     }
-    
+
     protected final String[] getSteps() {
         if (steps == null) {
             steps = createSteps();
         }
         return steps;
     }
-    
+
     protected final WizardDescriptor.Panel[] getPanels() {
         if (panels == null) {
             panels = createPanels();
         }
         return panels;
     }
-    
+
     protected WizardDescriptor.Panel[] createPanels() {
         if (locationPanel == null) {
-            locationPanel = new AddServerLocationPanel(this);            
+            locationPanel = new AddServerLocationPanel(this);
             locationPanel.addChangeListener(this);
         }
         if (propertiesPanel == null) {
-            propertiesPanel = new AddServerPropertiesPanel(this);            
+            propertiesPanel = new AddServerPropertiesPanel(this);
             propertiesPanel.addChangeListener(this);
         }
-        
+
         if (skipServerLocationStep){
             if (!WildflyPluginProperties.getInstance().isCurrentServerLocationValid()){
                 return new WizardDescriptor.Panel[] {
@@ -258,13 +252,13 @@ public class WildflyInstantiatingIterator implements WizardDescriptor.Instantiat
             };
         }
     }
-    
+
     private transient String[] steps = null;
-    
+
     protected final int getIndex() {
         return index;
     }
-    
+
     @Override
     public WizardDescriptor.Panel current() {
         WizardDescriptor.Panel result = getPanels()[index];
@@ -273,12 +267,12 @@ public class WildflyInstantiatingIterator implements WizardDescriptor.Instantiat
         component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(getIndex()));// NOI18N
         return result;
     }
-    
+
     @Override
     public void stateChanged(javax.swing.event.ChangeEvent changeEvent) {
         fireChangeEvent();
     }
-    
+
     protected final void fireChangeEvent() {
         Iterator it;
         synchronized (listeners) {
@@ -289,9 +283,10 @@ public class WildflyInstantiatingIterator implements WizardDescriptor.Instantiat
             ((ChangeListener) it.next()).stateChanged(ev);
         }
     }
-    
+
     private String host;
     private String port;
+    private String adminPort;
     private String userName="";
     private String password="";
     private String server;
@@ -299,11 +294,11 @@ public class WildflyInstantiatingIterator implements WizardDescriptor.Instantiat
     private String deployDir;
     private String serverPath;
     private String configFile="standalone-full.xml";
-    
+
      public void setConfigFile(String configFile){
         this.configFile = configFile.trim();
     }
-    
+
     public void setPassword(String password) {
         this.password = password;
     }
@@ -311,30 +306,34 @@ public class WildflyInstantiatingIterator implements WizardDescriptor.Instantiat
     public void setUserName(String userName) {
         this.userName = userName;
     }
-    
+
     public void setHost(String host){
         this.host = host.trim();
     }
-    
+
     public void setPort(String port){
         this.port = port.trim();
     }
-    
+
+    public void setAdminPort(String port){
+        this.adminPort = port.trim();
+    }
+
     public void setServer(String server){
         this.server = server;
     }
-    
+
     public void setServerPath(String serverPath){
         this.serverPath = serverPath;
     }
-    
+
     public void setDeployDir(String deployDir){
         this.deployDir = deployDir;
     }
-    
+
     public void setInstallLocation(String installLocation){
         this.installLocation = installLocation;
         propertiesPanel.installLocationChanged();
     }
-    
+
 }

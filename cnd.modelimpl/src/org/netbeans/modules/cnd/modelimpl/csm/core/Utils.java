@@ -46,24 +46,41 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import static org.netbeans.modules.cnd.api.model.CsmClassifier.SIZEOF_UNKNOWN;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import static org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind.*;
+import org.netbeans.modules.cnd.api.model.CsmEnum;
+import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFile.FileType;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFileLanguageProvider;
+import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
@@ -73,7 +90,10 @@ import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelutil.ClassifiersAntiLoop;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.utils.Antiloop;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.lookup.Lookups;
 
@@ -99,6 +119,32 @@ public class Utils {
             }
         }
     }
+    
+    private static final int SIZEOF_SIMPLE_POINTER = 4;
+    
+    private static final int SIZEOF_SIMPLE_REFERENCE = 4;     
+    
+    private static final int SIZEOF_SIMPLE_ENUM = 4;    
+    
+    private static final Map<String, Integer> builtInSizes = new HashMap<String, Integer>();
+    
+    static {
+        builtInSizes.put("char", 1);     // NOI18N
+        builtInSizes.put("short", 2);    // NOI18N
+        builtInSizes.put("int", 4);      // NOI18N
+        builtInSizes.put("unsigned", 4); // NOI18N
+        builtInSizes.put("float", 4);    // NOI18N
+        builtInSizes.put("double", 8);   // NOI18N
+    }        
+    
+    private static final ThreadLocal<ClassifiersAntiLoop> threadLocalClassifiersAntiloop = new ThreadLocal<ClassifiersAntiLoop>() {
+
+        @Override
+        protected ClassifiersAntiLoop initialValue() {
+            return new ClassifiersAntiLoop();        
+        }
+        
+    };   
 
     /**
      * Constructor is private to prevent instantiation.
@@ -467,8 +513,8 @@ public class Utils {
             default:
                 return FileImpl.FileType.UNDEFINED_FILE;
         }
-    }
-
+    }    
+    
     public static boolean acceptNativeItem(NativeFileItem item) {
         if (item.getFileObject() == null || !item.getFileObject().isValid()) {
             return false;
@@ -480,5 +526,94 @@ public class Utils {
                 language == NativeFileItem.Language.C_HEADER) &&
                 !item.isExcluded();
     }
+    
+    public static int getSizeOfType(CsmType type, CsmFile context) {
+        if (!CsmBaseUtilities.isValid(type)) {
+            return SIZEOF_UNKNOWN;
+        }
+        
+        if (type.isReference()) {
+            return getSizeOfReference(type.getContainingFile());
+        } else if (type.isPointer()) {
+            return getSizeOfPointer(type.getContainingFile());
+        } else if (type.getArrayDepth() > 0) {
+            // TODO: all arrays have size of classifier*2 until TypeImpl will store its array definition expression
+            CsmClassifier cls = type.getClassifier();
+            return getSizeOfClassifier(cls, type.getContainingFile());
+        } else {
+            CsmClassifier cls = type.getClassifier();
+            return getSizeOfClassifier(cls, type.getContainingFile());
+        }
+    }      
+    
+    public static int getSizeOfClassifier(CsmClassifier classifier, CsmFile context) {
+        if (!CsmBaseUtilities.isValid(classifier)) {
+            return SIZEOF_UNKNOWN;
+        }
+        
+        if (threadLocalClassifiersAntiloop.get().add(classifier)) {
+            try {
+                if (CsmKindUtilities.isClass(classifier)) {
+                    int size = 0;
 
+                    CsmClass cls = (CsmClass) classifier;
+                    // TODO: what about vtable and virtual inheritance?
+
+                    Collection<CsmInheritance> baseClasses = cls.getBaseClasses();
+                    for (CsmInheritance inheritance : baseClasses) {
+                        CsmClass baseClass = CsmInheritanceUtilities.getCsmClass(inheritance);
+                        int baseClassSize = getSizeOfClassifier(baseClass, context);
+                        if (baseClassSize == SIZEOF_UNKNOWN) {
+                            return SIZEOF_UNKNOWN;
+                        }
+                        size += baseClassSize;
+                    }
+
+                    for (CsmMember member : cls.getMembers()) {
+                        if (CsmKindUtilities.isField(member)) {
+                            CsmField field = (CsmField) member;
+                            if (!field.isStatic()) {
+                                CsmType fieldType = field.getType();
+                                int fieldSize = getSizeOfType(fieldType, context);
+                                if (fieldSize == SIZEOF_UNKNOWN) {
+                                    return SIZEOF_UNKNOWN;
+                                }
+                                size += fieldSize;
+                            }
+                        }
+                    }
+
+                    return Math.max(size, 1);
+                } else if (CsmKindUtilities.isEnum(classifier)) {
+                    return getSizeOfEnum(context);
+                } else if (CsmKindUtilities.isBuiltIn(classifier)) {
+                    return getSizeofBuiltIn(classifier.getName(), context);
+                } else if (CsmKindUtilities.isTypedef(classifier)) {
+                    return getSizeOfType(((CsmTypedef) classifier).getType(), context);
+                }
+            } finally {
+                threadLocalClassifiersAntiloop.get().remove(classifier);
+            }
+        }
+        
+        return CsmClassifier.SIZEOF_UNKNOWN;
+    }    
+
+    private static int getSizeOfPointer(CsmFile contextFile) {
+        return SIZEOF_SIMPLE_POINTER;
+    }
+    
+    private static int getSizeOfReference(CsmFile contextFile) {
+        return SIZEOF_SIMPLE_REFERENCE;
+    }
+    
+    private static int getSizeOfEnum(CsmFile contextFile) {
+        return SIZEOF_SIMPLE_ENUM;
+    }    
+    
+    private static int getSizeofBuiltIn(CharSequence _name, CsmFile contextFile) {
+        String name = _name.toString();
+        Integer size = builtInSizes.get(name);
+        return size != null ? size : CsmClassifier.SIZEOF_UNKNOWN;
+    }
 }

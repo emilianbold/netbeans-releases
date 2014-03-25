@@ -49,6 +49,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -77,6 +78,7 @@ import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.GitURI;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Status;
@@ -89,6 +91,7 @@ import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.ignore.IgnoreAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.GitStatusNode;
+import org.netbeans.modules.git.client.CredentialsCallback;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.ui.status.StatusAction;
 import org.netbeans.modules.versioning.diff.DiffUtils;
@@ -109,6 +112,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.Line;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -952,10 +956,31 @@ public final class GitUtils {
 
     public static GitRemoteConfig prepareConfig(GitRemoteConfig original, String remoteName, String remoteUri, List<String> fetchRefSpecs) {
         List<String> remoteUris;
+        String username = new CredentialsCallback().getUsername(remoteUri, "");
+        GitURI uriToSave = null;
+        try {
+            uriToSave = new GitURI(remoteUri);
+            if (username != null && !username.isEmpty()) {
+                uriToSave = uriToSave.setUser(username);
+            }
+            remoteUri = uriToSave.toPrivateString();
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(GitUtils.class.getName()).log(Level.INFO, null, ex);
+        }
         if (original != null) {
-            remoteUris = new LinkedList<String>(original.getUris());
-            if (!remoteUris.contains(remoteUri)) {
-                remoteUris.add(remoteUri);
+            remoteUris = new ArrayList<>(original.getUris());
+            boolean added = false;
+            for (ListIterator<String> it = remoteUris.listIterator(); it.hasNext(); ) {
+                String oldUri = it.next();
+                // check the urls are the same, ommit username and password
+                if (equal(uriToSave, remoteUri, oldUri)) {
+                    it.set(remoteUri);
+                    added = true;
+                    break;
+                }
+            }
+            if (!added) {
+                remoteUris.add(0, remoteUri);
             }
         } else {
             remoteUris = Arrays.asList(remoteUri);
@@ -977,6 +1002,19 @@ public final class GitUtils {
                 original == null ? Collections.<String>emptyList() : original.getPushUris(),
                 refSpecs,
                 original == null ? Collections.<String>emptyList() : original.getPushRefSpecs());
+    }
+    
+    private static boolean equal (GitURI uri, String uriString, String otherUriString) {
+        if (uri != null) {
+            try {
+                GitURI otherUri = new GitURI(otherUriString);
+                return otherUri.setUser(null).toString().equals(uri.setUser(null).toString());
+            } catch (URISyntaxException ex) {
+                Logger.getLogger(GitUtils.class.getName()).log(Level.INFO, null, ex);
+            }
+            return uri.toString().equals(otherUriString) || uriString.equals(otherUriString);
+        }
+        return uriString.equals(otherUriString);
     }
 
     /**

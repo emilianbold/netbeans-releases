@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.36.1
+#Version 1.38.1
 
 CLSS public java.beans.FeatureDescriptor
 cons public init()
@@ -246,7 +246,7 @@ meth public void setHidden(boolean)
 meth public void setName(java.lang.String)
 meth public void setShortDescription(java.lang.String)
 supr java.beans.FeatureDescriptor
-hfds INIT_LOCK,LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBadProperties
+hfds BLOCK_EVENTS,INIT_LOCK,LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBadProperties
 hcls LookupEventList,PropertyEditorRef
 
 CLSS public abstract interface static org.openide.nodes.Node$Cookie

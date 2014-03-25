@@ -389,6 +389,14 @@ public class CasualDiff {
         int end = td.diffList(originalJC, nueJC, start, est, Measure.DEFAULT, td.printer);
 
         String resultSrc = td.printer.toString();
+        if (start > end) {
+            // diagnostic for the purpose of #200152
+            LOG.log(INFO, "Illegal values: start = " + start + "; end = " + end + "." +
+                "Please attach your messages.log to issue #200152 (https://netbeans.org/bugzilla/show_bug.cgi?id=200152)");
+            LOG.log(INFO, "-----\n" + td.diffContext.origText + "-----\n");
+            LOG.log(INFO, "Orig imports: " + original);
+            LOG.log(INFO, "New imports: " + nue);
+        }
         String originalText = td.diffContext.origText.substring(start, end);
         userInfo.putAll(td.diffInfo);
 
@@ -1615,7 +1623,7 @@ public class CasualDiff {
         copyTo(localPointer, localPointer = condBounds[1]);
         int[] partBounds = new int[] { localPointer, endPos(oldT.thenpart) };
         printer.conditionStartHack = start;
-        localPointer = diffTree(oldT.thenpart, newT.thenpart, partBounds, oldT.getKind());
+        localPointer = diffTree(oldT.thenpart, newT.thenpart, partBounds, oldT.getKind(), newT.elsepart == null);
         printer.conditionStartHack = (-1);
         if (oldT.elsepart == null && newT.elsepart != null) {
             copyTo(localPointer, localPointer = partBounds[1]);
@@ -5128,6 +5136,23 @@ public class CasualDiff {
 
     // temporary method
     private int diffTree(JCTree oldT, JCTree newT, int[] elementBounds, Kind parentKind) {
+        return diffTree(oldT, newT, elementBounds, parentKind, true);
+    }
+    
+    /**
+     * This form contains a special hack for if, so that `else' can be placed on the same
+     * line as the statement block end.
+     * If a block statement is generated instead of a single stat, a newline is appended unless `retainNewline'
+     * is false. If statement print passes false when else part of the if is present.
+     * 
+     * @param oldT old tree
+     * @param newT new tree
+     * @param elementBounds the old element bounds
+     * @param parentKind parent statement's kind
+     * @param retainNewline retain newline if block is generated
+     * @return localpointer value
+     */
+    private int diffTree(JCTree oldT, JCTree newT, int[] elementBounds, Kind parentKind, boolean retainNewline) {
         if (oldT.getKind() != newT.getKind() && newT.getKind() == Kind.BLOCK) {
             tokenSequence.move(getOldPos(oldT));
             moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
@@ -5135,7 +5160,12 @@ public class CasualDiff {
             if (elementBounds[0] < tokenSequence.offset())
                 copyTo(elementBounds[0], tokenSequence.offset());
             printer.printBlock(oldT, newT, parentKind);
-            return getCommentCorrectedEndPos(oldT);
+            // ensure there's a newline if the replaced command ended with one.
+            int localpointer = getCommentCorrectedEndPos(oldT);
+            if (retainNewline && localpointer > 0 && origText.charAt(localpointer - 1) == '\n') { // NOI18N
+                printer.newline();
+            }
+            return localpointer;
         } else {
             // next statement can to seem redundant, but is not, see 117774
             copyTo(elementBounds[0], elementBounds[0] = getBounds(oldT)[0]);

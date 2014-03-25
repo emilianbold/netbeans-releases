@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 6.65.1
+#Version 6.70.1
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -693,6 +693,7 @@ meth protected abstract org.openide.windows.CloneableTopComponent createCloneabl
 meth protected boolean canClose()
 meth protected boolean close(boolean)
 meth protected final org.openide.windows.CloneableTopComponent openCloneableTopComponent()
+meth protected void afterRedirect(org.openide.windows.CloneableOpenSupport)
 meth public boolean close()
 meth public void edit()
 meth public void open()

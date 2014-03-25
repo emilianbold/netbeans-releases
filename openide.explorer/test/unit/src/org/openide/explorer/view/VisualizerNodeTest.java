@@ -246,6 +246,24 @@ public class VisualizerNodeTest extends NbTestCase {
         assertEquals(vn.getShortDescription(), "<html><br>test</html>");
     }
 
+    public void testNodeHtmlDescription() {
+        AbstractNode n = new AbstractNode(Children.LEAF) {
+
+            @Override
+            public Image getIcon(int type) {
+                return ImageUtilities.assignToolTipToImage(super.getIcon(type), "test");
+            }
+
+            @Override
+            public String getShortDescription () {
+                return "<html><strong>my description</strong><br>another description</html>";
+            }
+
+        };
+        VisualizerNode vn = (VisualizerNode) Visualizer.findVisualizer(n);
+        assertEquals(vn.getShortDescription(), "<html><strong>my description</strong><br>another description<br>test</html>");
+    }
+
     static boolean isDummyNode(TreeNode visNode) {
         Node node = ((VisualizerNode)(visNode)).node;
         return node.getClass().getName().endsWith("EntrySupportLazy$DummyNode");

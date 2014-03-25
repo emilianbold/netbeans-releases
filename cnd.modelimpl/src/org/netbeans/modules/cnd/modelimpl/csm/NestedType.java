@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver.SafeTemplateBasedProvider;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
@@ -132,6 +133,10 @@ public final class NestedType extends TypeImpl {
                     validParentClassifierExamined = true;
                     MemberResolverImpl memberResolver = new MemberResolverImpl();
                     classifier = getNestedClassifier(memberResolver, parentClassifier, getOwnText());
+                    if (classifier == null) {
+                        List<CharSequence> fqn = getFullQName();
+                        classifier = ProjectBase.getDummyForUnresolved(fqn.toArray(new CharSequence[fqn.size()]), this);
+                    }
                 }
             }
             if (!CsmBaseUtilities.isValid(classifier) && !validParentClassifierExamined) {

@@ -72,6 +72,7 @@ import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate.Type;
 import org.netbeans.libs.git.GitURI;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.client.CredentialsCallback;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.ContextHolder;
@@ -167,8 +168,17 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
         "LBL_Clone.confirmSubmoduleInit.title=Initialize Submodules",
         "MSG_Clone.confirmSubmoduleInit.text=Uninitialized submodules found in the cloned repository.\n\n"
                 + "Do you want to automatically initialize and clone them?",
-        "MSG_Clone.progress.initializingSubmodules=Initializing Submodules",
-        "# {0} - submodule folder", "MSG_Clone.progress.updatingingSubmodules=Cloning into Submodule {0}"
+        "MSG_Clone.progress.initializingRepository=Initializing repository",
+        "MSG_Clone.progress.fetchingCommits=Fetching commits",
+        "# {0} - remote name", "MSG_Clone.progress.settingRemote=Setting up \"{0}\" remote",
+        "# {0} - branch name", "MSG_Clone.progress.creatingBranch=Creating \"{0}\" branch",
+        "# {0} - branch name", "MSG_Clone.progress.checkingoutBranch=Checking-out \"{0}\" branch",
+        "MSG_Clone.progress.refreshingFiles=Refreshing files",
+        "MSG_Clone.progress.scanningForProjects=Scanning for NetBeans projects",
+        "MSG_Clone.progress.checkingForSubmodules=Checking for submodules",
+        "MSG_Clone.progress.initializingSubmodules=Initializing submodules",
+        "MSG_Clone.progress.updatingSubmodules=Updating submodules",
+        "# {0} - submodule folder", "MSG_Clone.progress.updatingSubmodule=Submodule {0}"
     })
     public static File performClone(String url, PasswordAuthentication pa, boolean waitFinished) throws MissingResourceException {
         final CloneWizard wiz = new CloneWizard(pa, url);
@@ -196,7 +206,7 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
             final GitBranch branch = wiz.getBranch();
             final boolean scan = wiz.scanForProjects();
             
-            GitProgressSupport supp = new GitProgressSupport() {
+            GitProgressSupport supp = new GitProgressSupport(10) {
                 @Override
                 protected void perform () {
                     try {
@@ -204,7 +214,9 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                             @Override
                             public Void call () throws Exception {
                                 GitClient client = getClient();
+                                setDisplayName(Bundle.MSG_Clone_progress_initializingRepository());
                                 client.init(getProgressMonitor());
+                                setDisplayName(Bundle.MSG_Clone_progress_fetchingCommits(), 1);
                                 Map<String, GitTransportUpdate> updates = client.fetch(remoteUri.toPrivateString(), refSpecs, getProgressMonitor());
                                 log(updates);
 
@@ -213,16 +225,25 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                                 }
                                 
                                 List<String> refs = Arrays.asList(GitUtils.getGlobalRefSpec(remoteName));
-                                client.setRemote(new CloneRemoteConfig(remoteName, remoteUri, refs).toGitRemote(), getProgressMonitor());
+                                setDisplayName(Bundle.MSG_Clone_progress_settingRemote(remoteName), 2);
+                                String username = new CredentialsCallback().getUsername(remoteUri.toString(), "");
+                                GitURI uriToSave = remoteUri;
+                                if (username != null && !username.isEmpty()) {
+                                    uriToSave = uriToSave.setUser(username);
+                                }
+                                client.setRemote(new CloneRemoteConfig(remoteName, uriToSave, refs).toGitRemote(), getProgressMonitor());
                                 org.netbeans.modules.versioning.util.Utils.logVCSExternalRepository("GIT", remoteUri.getHost()); //NOI18N
                                 if (branch == null) {
+                                    setDisplayName(Bundle.MSG_Clone_progress_creatingBranch(GitUtils.MASTER), 1);
                                     client.createBranch(GitUtils.MASTER, GitUtils.PREFIX_R_REMOTES + remoteName + "/" + GitUtils.MASTER, getProgressMonitor());
                                 } else {
+                                    setDisplayName(Bundle.MSG_Clone_progress_checkingoutBranch(branch.getName()), 1);
                                     client.createBranch(branch.getName(), remoteName + "/" + branch.getName(), getProgressMonitor());
                                     client.checkoutRevision(branch.getName(), true, getProgressMonitor());
                                     client.reset(branch.getName(), org.netbeans.libs.git.GitClient.ResetType.HARD, getProgressMonitor());
                                 }
 
+                                setDisplayName(Bundle.MSG_Clone_progress_refreshingFiles(), 2);
                                 Git.getInstance().getFileStatusCache().refreshAllRoots(destination);
                                 
                                 if (!isCanceled()) {
@@ -232,6 +253,7 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                                 Git.getInstance().versionedFilesChanged();                       
 
                                 if(scan && !isCanceled()) {
+                                    setDisplayName(Bundle.MSG_Clone_progress_scanningForProjects(), 1);
                                     scanForProjects(destination);
                                 }
                                 return null;
@@ -240,6 +262,7 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                             private void initSubmodules () {
                                 try {
                                     GitClient client = getClient();
+                                    setDisplayName(Bundle.MSG_Clone_progress_checkingForSubmodules(), 1);
                                     Map<File, GitSubmoduleStatus> statuses = client.getSubmoduleStatus(new File[0], getProgressMonitor());
                                     List<File> toInit = new ArrayList<>(statuses.size());
                                     for (Map.Entry<File, GitSubmoduleStatus> e : statuses.entrySet()) {
@@ -248,19 +271,22 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                                         }
                                     }
                                     if (!isCanceled() && !toInit.isEmpty() && confirmSubmoduleInit(toInit)) {
-                                        setProgress(Bundle.MSG_Clone_progress_initializingSubmodules());
+                                        setDisplayName(Bundle.MSG_Clone_progress_initializingSubmodules(), 1);
                                         client.initializeSubmodules(toInit.toArray(new File[toInit.size()]), getProgressMonitor());
+                                        setDisplayName(Bundle.MSG_Clone_progress_updatingSubmodules(), 1);
                                         for (File submoduleRoot : toInit) {
                                             if (isCanceled()) {
                                                 return;
                                             }
                                             try {
-                                                setProgress(Bundle.MSG_Clone_progress_updatingingSubmodules(submoduleRoot.getName()));
+                                                setProgress(Bundle.MSG_Clone_progress_updatingSubmodule(submoduleRoot.getName()));
                                                 client.updateSubmodules(new File[] { submoduleRoot }, getProgressMonitor());
                                             } catch (GitException ex) {
                                                 LOG.log(Level.INFO, null, ex);
                                             }
                                         }
+                                    } else {
+                                        updateProgress(2);
                                     }
                                 } catch (GitException ex) {
                                     LOG.log(Level.INFO, null, ex);

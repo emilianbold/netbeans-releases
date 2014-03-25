@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.32.1
+#Version 7.36.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -201,6 +201,7 @@ fld public final static java.lang.String PROP_ERROR_NOTIFICATION = "errorNotific
 fld public final static java.lang.String PROP_INFO_NOTIFICATION = "infoNotification"
 fld public final static java.lang.String PROP_MESSAGE = "message"
 fld public final static java.lang.String PROP_MESSAGE_TYPE = "messageType"
+fld public final static java.lang.String PROP_NO_DEFAULT_CLOSE = "noDefaultClose"
 fld public final static java.lang.String PROP_OPTIONS = "options"
 fld public final static java.lang.String PROP_OPTION_TYPE = "optionType"
 fld public final static java.lang.String PROP_TITLE = "title"
@@ -214,6 +215,7 @@ innr public static Message
 meth protected static java.lang.String getTitleForType(int)
 meth protected void firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
 meth protected void initialize()
+meth public boolean isNoDefaultClose()
 meth public final boolean isValid()
 meth public final org.openide.NotificationLineSupport createNotificationLineSupport()
 meth public final org.openide.NotificationLineSupport getNotificationLineSupport()
@@ -231,12 +233,13 @@ meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void setAdditionalOptions(java.lang.Object[])
 meth public void setMessage(java.lang.Object)
 meth public void setMessageType(int)
+meth public void setNoDefaultClose(boolean)
 meth public void setOptionType(int)
 meth public void setOptions(java.lang.Object[])
 meth public void setTitle(java.lang.String)
 meth public void setValue(java.lang.Object)
 supr java.lang.Object
-hfds MAXIMUM_TEXT_WIDTH,SIZE_PREFERRED_HEIGHT,SIZE_PREFERRED_WIDTH,adOptions,changeSupport,defaultValue,errMsg,infoMsg,message,messageType,notificationLineSupport,optionType,options,title,valid,value,warnMsg
+hfds MAXIMUM_TEXT_WIDTH,SIZE_PREFERRED_HEIGHT,SIZE_PREFERRED_WIDTH,adOptions,changeSupport,defaultValue,errMsg,infoMsg,message,messageType,noDefaultClose,notificationLineSupport,optionType,options,title,valid,value,warnMsg
 
 CLSS public static org.openide.NotifyDescriptor$Confirmation
  outer org.openide.NotifyDescriptor

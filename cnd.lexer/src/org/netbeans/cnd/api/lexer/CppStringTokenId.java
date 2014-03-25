@@ -88,6 +88,7 @@ public enum CppStringTokenId implements TokenId {
     END_DELIMETER_PAREN(")", "string-escape"), // NOI18N
     END_DELIMETER(null, "string-escape"), // NOI18N
     LAST_QUOTE("\"", "string-escape"), // NOI18N
+    BELL("\\a", "string-escape"), //NOI18N
     BACKSPACE("\\b", "string-escape"), //NOI18N
     ANSI_COLOR(null, "string-escape"), //NOI18N
     FORM_FEED("\\f","string-escape"), //NOI18N

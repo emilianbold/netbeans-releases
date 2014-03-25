@@ -109,7 +109,7 @@ public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
 
         DestructorDDImpl destructorDDImpl = new DestructorDDImpl(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);        
-        temporaryRepositoryRegistration(global, destructorDDImpl);
+        temporaryRepositoryRegistration(ast, global, destructorDDImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, destructorDDImpl, clsTemplateSuffix, global);

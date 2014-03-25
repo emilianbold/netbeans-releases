@@ -1011,6 +1011,30 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue230974.js", "WidgetManager.prototype.nextP2 = da^ta[0].p2limit; // place cursor inside p2limit", true); 
     }
     
+    public void testIssue242408_01() throws Exception {
+        checkOccurrences("testfiles/model/issue242408.js", "function te^st(name) {", true);
+    }
+    
+    public void testIssue242408_02() throws Exception {
+        checkOccurrences("testfiles/model/issue242408.js", "var f^oo = {};", true);
+    }
+    
+    public void testIssue242408_03() throws Exception {
+        checkOccurrences("testfiles/model/issue242408.js", "foo.b^ar();", true);
+    }
+    
+    public void testIssue242408_04() throws Exception {
+        checkOccurrences("testfiles/model/issue242408.js", "Cub^e.prototype.foo = test;", true);
+    }
+    
+    public void testIssue242408_05() throws Exception {
+        checkOccurrences("testfiles/model/issue242408.js", "Cube.prototype.f^oo = test;", true);
+    }
+    
+    public void testIssue242454_01() throws Exception {
+        checkOccurrences("testfiles/model/issue242454.js", "this.publicInnerFunc = PublicAndPriv^ateUsageFunc;", true);
+    }
+    
    private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

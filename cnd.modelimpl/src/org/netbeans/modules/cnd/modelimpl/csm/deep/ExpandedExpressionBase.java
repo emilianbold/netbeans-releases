@@ -46,8 +46,13 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil.ASTExpandedTokensChecker;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil.ASTTokensStringizer;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.parser.TokenBasedAST;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -65,7 +70,7 @@ public class ExpandedExpressionBase extends ExpressionBase {
     ExpandedExpressionBase(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
         ASTTokensStringizer stringizer = new ASTTokensStringizer();
-        DeepUtil.visitAST(stringizer, ast);
+        AstUtil.visitAST(stringizer, ast);
         expandedText = DefaultCache.getManager().getString(stringizer.getText());
     }
 
@@ -76,47 +81,9 @@ public class ExpandedExpressionBase extends ExpressionBase {
 
     public static boolean hasExpandedTokens(AST ast) {
         ASTExpandedTokensChecker checker = new ASTExpandedTokensChecker();
-        DeepUtil.visitAST(checker, ast);
+        AstUtil.visitAST(checker, ast);
         return checker.HasExpanded();
     }
-    
-    private static class ASTExpandedTokensChecker implements DeepUtil.ASTTokenVisitor {
-    
-        private boolean expanded;
-
-        @Override
-        public boolean visit(AST token) {
-            if (token instanceof CsmAST) {
-                CsmAST csmAst = (CsmAST) token;
-                if (APTUtils.isMacroExpandedToken(csmAst.getToken())) {
-                    expanded = true;
-                    return false;
-                }
-            }
-            return true;
-        }        
-
-        public boolean HasExpanded() {
-            return expanded;
-        }
-    }    
-    
-    private static class ASTTokensStringizer implements DeepUtil.ASTTokenVisitor {
-    
-        private final StringBuilder sb = new StringBuilder();
-
-        @Override
-        public boolean visit(AST token) {
-            if (token.getFirstChild() == null) {
-                sb.append(token.getText());
-            }
-            return true;
-        }
-        
-        public String getText() {
-            return sb.toString();
-        }
-    }    
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent    

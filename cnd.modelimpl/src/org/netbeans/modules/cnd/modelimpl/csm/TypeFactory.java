@@ -734,14 +734,14 @@ public class TypeFactory {
 
     }        
     
-    private static class ASTPointerDepthCounter implements DeepUtil.ASTTokenVisitor {
+    private static class ASTPointerDepthCounter implements AstUtil.ASTTokenVisitor {
     
         private int pointerDepth;
         
         private int reference;
 
         @Override
-        public boolean visit(AST token) {
+        public Action visit(AST token) {
             switch( token.getType() ) {
                 case CPPTokenTypes.STAR:
                     ++pointerDepth;
@@ -758,11 +758,11 @@ public class TypeFactory {
                         // Original code looked only on first token, 
                         // now we will break if token isn't pointer/reference
                         // or const qualifier
-                        return false; 
+                        return Action.ABORT; 
                     }
                 }
             }
-            return true;
+            return Action.CONTINUE;
         }        
 
         public int getPointerDepth() {

@@ -338,7 +338,7 @@ public class ConnectionAction extends SQLExecutionBaseAction {
             Collections.sort(connectionList, new Comparator<DatabaseConnection>() {
                 @Override
                 public int compare(DatabaseConnection o1, DatabaseConnection o2) {
-                    return o1.getDisplayName().compareTo(o2.getDisplayName());
+                    return o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
                 }
             });
         }

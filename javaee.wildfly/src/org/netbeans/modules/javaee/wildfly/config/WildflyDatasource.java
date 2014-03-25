@@ -41,23 +41,25 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.javaee.wildfly.config;
 
+import java.sql.SQLException;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
-
 /**
- * 
+ *
  * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
 public final class WildflyDatasource implements Datasource {
-    
+
     public static final String PREFIX = "java:/";
     public static final String SHORT_PREFIX = "java:";
-    
+
     private String rawName;
     private String url;
     private String username;
@@ -68,9 +70,9 @@ public final class WildflyDatasource implements Datasource {
     private String idleTimeoutMinutes = "5"; // NOI18N
     private String description;
     private String name;
-    
+
     private volatile int hash = -1;
-    
+
     public WildflyDatasource(String name, String jndiName, String url, String username, String password,
             String driverClassName) {
         this.name = name;
@@ -78,9 +80,27 @@ public final class WildflyDatasource implements Datasource {
         this.url = url;
         this.username = username;
         this.password = password;
-        this.driverClassName = driverClassName;
+        if (driverClassName.isEmpty()) {
+            this.driverClassName = guessDriverClassname();
+        } else {
+            this.driverClassName = driverClassName;
+        }
     }
-    
+
+    private final String guessDriverClassname() {
+        JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers();
+        for (JDBCDriver jdbcDriver : drivers) {
+            try {
+                if (jdbcDriver.getDriver().acceptsURL(url)) {
+                    return jdbcDriver.getClassName();
+                }
+            } catch (DatabaseException ex) {
+            } catch (SQLException ex) {
+            }
+        }
+        return "";
+    }
+
     public WildflyDatasource(String jndiName, String url, String username, String password,
             String driverClassName) {
         this.name = jndiName;
@@ -104,50 +124,37 @@ public final class WildflyDatasource implements Datasource {
      * Returns JNDI name in the correct run-time format, i.e. "java:/..."
      */
     public static String getJndiName(String rawName) {
-        
         Parameters.notNull("rawName", rawName);
-        
         if (rawName.startsWith(PREFIX)) {
             return rawName;
         }
-        
         if (rawName.startsWith(SHORT_PREFIX)) {
             return PREFIX + rawName.substring(5); // SHORT_PREFIX.length() == 5
         }
-        
         if (rawName.startsWith("/")) {
             return SHORT_PREFIX + rawName;
         }
-        
         // TODO check other formats
-        
         return PREFIX + rawName;
     }
-    
+
     /**
      * Returns DS name in the 'resource-file' format
      */
     public static String getRawName(String jndiName) {
-
         Parameters.notNull("jndiName", jndiName);
-        
         if (jndiName.startsWith(PREFIX)) {
             return jndiName.substring(PREFIX.length());
-        }
-        else
-        if (jndiName.startsWith(SHORT_PREFIX)) {
+        } else if (jndiName.startsWith(SHORT_PREFIX)) {
             return jndiName.substring(SHORT_PREFIX.length());
-        }
-        else
-        if (jndiName.startsWith("/")) {
+        } else if (jndiName.startsWith("/")) {
             return jndiName.substring(1);
         }
-        
-        // TODO check other formats
 
+        // TODO check other formats
         return jndiName;
     }
-    
+
     @Override
     public String getUrl() {
         return url;
@@ -179,7 +186,7 @@ public final class WildflyDatasource implements Datasource {
     public String getIdleTimeoutMinutes() {
         return idleTimeoutMinutes;
     }
-    
+
     @Override
     public String getDisplayName() {
         if (description == null) {
@@ -190,32 +197,42 @@ public final class WildflyDatasource implements Datasource {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (!(obj instanceof WildflyDatasource))
+        }
+        if (!(obj instanceof WildflyDatasource)) {
             return false;
-        
-        WildflyDatasource ds = (WildflyDatasource)obj;
-        if (getJndiName() == null && ds.getJndiName() != null || getJndiName() != null && !getJndiName().equals(ds.getJndiName()))
+        }
+
+        WildflyDatasource ds = (WildflyDatasource) obj;
+        if (getJndiName() == null && ds.getJndiName() != null || getJndiName() != null && !getJndiName().equals(ds.getJndiName())) {
             return false;
-        if (url == null && ds.getUrl() != null || url != null && !url.equals(ds.getUrl()))
+        }
+        if (url == null && ds.getUrl() != null || url != null && !url.equals(ds.getUrl())) {
             return false;
-        if (username == null && ds.getUsername() != null || username != null && !username.equals(ds.getUsername()))
+        }
+        if (username == null && ds.getUsername() != null || username != null && !username.equals(ds.getUsername())) {
             return false;
-        if (password == null && ds.getPassword() != null || password != null && !password.equals(ds.getPassword()))
+        }
+        if (password == null && ds.getPassword() != null || password != null && !password.equals(ds.getPassword())) {
             return false;
-        if (driverClassName == null && ds.getDriverClassName() != null || driverClassName != null && !driverClassName.equals(ds.getDriverClassName()))
+        }
+        if (driverClassName == null && ds.getDriverClassName() != null || driverClassName != null && !driverClassName.equals(ds.getDriverClassName())) {
             return false;
-        if (minPoolSize == null && ds.getMinPoolSize() != null ||  minPoolSize != null && !minPoolSize.equals(ds.getMinPoolSize()))
+        }
+        if (minPoolSize == null && ds.getMinPoolSize() != null || minPoolSize != null && !minPoolSize.equals(ds.getMinPoolSize())) {
             return false;
-        if (maxPoolSize == null && ds.getMaxPoolSize() != null || maxPoolSize != null && !maxPoolSize.equals(ds.getMaxPoolSize()))
+        }
+        if (maxPoolSize == null && ds.getMaxPoolSize() != null || maxPoolSize != null && !maxPoolSize.equals(ds.getMaxPoolSize())) {
             return false;
-        if (idleTimeoutMinutes == null && ds.getIdleTimeoutMinutes() != null || idleTimeoutMinutes != null && !idleTimeoutMinutes.equals(ds.getIdleTimeoutMinutes()))
+        }
+        if (idleTimeoutMinutes == null && ds.getIdleTimeoutMinutes() != null || idleTimeoutMinutes != null && !idleTimeoutMinutes.equals(ds.getIdleTimeoutMinutes())) {
             return false;
-        
+        }
+
         return true;
     }
-    
+
     public int hashCode() {
         if (hash == -1) {
             int result = 17;
@@ -227,22 +244,23 @@ public final class WildflyDatasource implements Datasource {
             result += 37 * result + (minPoolSize == null ? 0 : minPoolSize.hashCode());
             result += 37 * result + (maxPoolSize == null ? 0 : maxPoolSize.hashCode());
             result += 37 * result + (idleTimeoutMinutes == null ? 0 : idleTimeoutMinutes.hashCode());
-            
+
             hash = result;
         }
-        
+
         return hash;
     }
-    
-    public String toString() {
+
+    public String
+            toString() {
         return "[ " + // NOI18N
                 NbBundle.getMessage(WildflyDatasource.class, "LBL_DS_JNDI") + ": '" + getJndiName() + "', " + // NOI18N
-                NbBundle.getMessage(WildflyDatasource.class, "LBL_DS_URL") + ": '" + url +  "', " + // NOI18N
-                NbBundle.getMessage(WildflyDatasource.class, "LBL_DS_USER") + ": '" +  username +  "', " + // NOI18N
-                NbBundle.getMessage(WildflyDatasource.class, "LBL_DS_PASS") + ": '" + password +  "', " + // NOI18N
-                NbBundle.getMessage(WildflyDatasource.class, "LBL_DS_DRV") + ": '" + driverClassName +  "', " + // NOI18N
-                NbBundle.getMessage(WildflyDatasource.class, "LBL_DS_MINPS") + ": '" + minPoolSize +  "', " + // NOI18N
-                NbBundle.getMessage(WildflyDatasource.class, "LBL_DS_MAXPS") + ": '" + maxPoolSize +  "', " + // NOI18N
-                NbBundle.getMessage(WildflyDatasource.class, "LBL_DS_IDLE") + ": '" + idleTimeoutMinutes +  "' ]"; // NOI18N
+                NbBundle.getMessage(WildflyDatasource.class, "LBL_DS_URL") + ": '" + url + "', " + // NOI18N
+                NbBundle.getMessage(WildflyDatasource.class, "LBL_DS_USER") + ": '" + username + "', " + // NOI18N
+                NbBundle.getMessage(WildflyDatasource.class, "LBL_DS_PASS") + ": '" + password + "', " + // NOI18N
+                NbBundle.getMessage(WildflyDatasource.class, "LBL_DS_DRV") + ": '" + driverClassName + "', " + // NOI18N
+                NbBundle.getMessage(WildflyDatasource.class, "LBL_DS_MINPS") + ": '" + minPoolSize + "', " + // NOI18N
+                NbBundle.getMessage(WildflyDatasource.class, "LBL_DS_MAXPS") + ": '" + maxPoolSize + "', " + // NOI18N
+                NbBundle.getMessage(WildflyDatasource.class, "LBL_DS_IDLE") + ": '" + idleTimeoutMinutes + "' ]"; // NOI18N
     }
 }

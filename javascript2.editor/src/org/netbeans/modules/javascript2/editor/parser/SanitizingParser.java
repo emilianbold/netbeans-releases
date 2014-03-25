@@ -135,15 +135,11 @@ public abstract class SanitizingParser extends Parser {
         Long size;
         CharSequence text = snapshot.getText();
         String scriptName;
-        if (fo != null) {
-            size = fo.getSize();
-            scriptName = snapshot.getSource().getFileObject().getNameExt();
-        } else {
-            size = (long)text.length();
-            scriptName = getDefaultScriptName();
-        }
+        scriptName = (fo != null) ? snapshot.getSource().getFileObject().getNameExt() : getDefaultScriptName();
+        size = (fo != null && !isEmbeded) ? fo.getSize() : (long)text.length();
+
         if (!PARSE_BIG_FILES) {
-            if (size > MAX_FILE_SIZE_TO_PARSE && !isEmbeded) {
+            if (size > MAX_FILE_SIZE_TO_PARSE) {
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.log(Level.FINE, "The file {0} was not parsed because the size is too big.", scriptName);
                 }

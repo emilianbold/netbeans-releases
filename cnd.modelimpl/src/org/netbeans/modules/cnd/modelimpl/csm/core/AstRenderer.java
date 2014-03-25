@@ -1845,6 +1845,9 @@ public class AstRenderer {
                         arrayDepth++;
                     }
                     break;
+                case CPPTokenTypes.CSM_EXPRESSION:
+                    // TODO: TypeImpl should store expression for array definitions
+                    break;
                 case CPPTokenTypes.LITERAL_struct:
                 case CPPTokenTypes.LITERAL_union:
                 case CPPTokenTypes.LITERAL_enum:

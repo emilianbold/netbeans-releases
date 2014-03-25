@@ -75,7 +75,7 @@ public class WildflyDatasourceHandler extends AbstractHierarchicalHandler {
             buffer = new StringBuilder();
         }
         else if ("security".equals(qName)) {
-            childHandler = new WildflySecurityHandler(parent, parser);
+            childHandler = new WildflySecurityHandler(this, parser);
             childHandler.start(uri, localName, qName, attributes);
         }
 

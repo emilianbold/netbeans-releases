@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -307,6 +308,14 @@ public class SelectImpl implements CsmSelectProvider {
         }
         return cls.getMembers().iterator();
     }
+    
+    @Override
+    public Iterator<CsmFriend> getClassFriends(CsmClass cls, CsmFilter filter) {
+        if (cls instanceof FilterableFriends){
+            return ((FilterableFriends)cls).getFriends(filter);
+        }
+        return cls.getFriends().iterator();
+    }
 
     @Override
     public boolean hasDeclarations(CsmFile file) {
@@ -323,12 +332,16 @@ public class SelectImpl implements CsmSelectProvider {
         }
         return UIDCsmConverter.objectsToUIDs(csmProject.getAllFiles()).iterator();
     }
-    
+
     private static interface Filter extends CsmFilter, UIDFilter {
     }
     
     public static interface FilterableMembers {
         Iterator<CsmMember> getMembers(CsmFilter filter);
+    }
+    
+    public static interface FilterableFriends {
+        Iterator<CsmFriend> getFriends(CsmFilter filter);
     }
     
     @SuppressWarnings("unchecked")

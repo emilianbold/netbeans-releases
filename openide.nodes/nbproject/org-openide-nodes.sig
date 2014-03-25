@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.36.1
+#Version 7.38.1
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -1177,7 +1177,7 @@ meth public void setName(java.lang.String)
 meth public void setShortDescription(java.lang.String)
 meth public void setValue(java.lang.String,java.lang.Object)
 supr org.openide.nodes.Node
-hfds DELEGATE_ALL,LOGGER,childrenProvided,delegateMask,hashCodeDepth,nodeL,original,overridesGetDisplayNameCache,pchlAttached,propL,replaceProvidedLookupCache
+hfds DELEGATE_ALL,LISTENER_LOCK,LOGGER,childrenProvided,delegateMask,hashCodeDepth,lookupProvided,nodeL,original,overridesGetDisplayNameCache,pchlAttached,propL,replaceProvidedLookupCache
 hcls ChildrenAdapter,FilterHandle,FilterLookup,StackError
 
 CLSS public static org.openide.nodes.FilterNode$Children
@@ -1414,7 +1414,7 @@ meth public void setHidden(boolean)
 meth public void setName(java.lang.String)
 meth public void setShortDescription(java.lang.String)
 supr java.beans.FeatureDescriptor
-hfds INIT_LOCK,LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBadProperties
+hfds BLOCK_EVENTS,INIT_LOCK,LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBadProperties
 hcls LookupEventList,PropertyEditorRef
 
 CLSS public abstract interface static org.openide.nodes.Node$Cookie

@@ -107,6 +107,9 @@ public class DebugPluginSourceAction extends AbstractAction {
                 //the urls are not normalized and can contain ../ path parts
                 try {
                     url = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(Utilities.toFile(url.toURI())));
+                    if (url == null) {
+                        continue; //#242324
+                    }
                     normalizedUrls.add(url);
                     List<? extends URL> ret = attacher.getSources(url, new Callable<Boolean>() {
                         @Override

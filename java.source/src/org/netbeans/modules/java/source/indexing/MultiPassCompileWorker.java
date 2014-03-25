@@ -440,6 +440,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                 final Types types = Types.instance(jti.getContext());
                 final Enter enter = Enter.instance(jti.getContext());
                 final Symtab syms = Symtab.instance(jti.getContext());
+                final HashMap<ClassSymbol, JCClassDecl> syms2trees = new HashMap<>();
                 class ScanNested extends TreeScanner {
                     private Env<AttrContext> env;
                     private Set<Env<AttrContext>> checked = new HashSet<Env<AttrContext>>();
@@ -458,7 +459,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                                 if (stEnv != null && env != stEnv) {
                                     if (checked.add(stEnv)) {
                                         scan(stEnv.tree);
-                                        if (TreeLoader.pruneTree(stEnv.tree, syms))
+                                        if (TreeLoader.pruneTree(stEnv.tree, syms, syms2trees))
                                             dependencies.add(stEnv);
                                     }
                                     envForSuperTypeFound = true;
@@ -477,11 +478,11 @@ final class MultiPassCompileWorker extends CompileWorker {
                         scanner.scan(env.tree);
                         for (Env<AttrContext> dep: scanner.dependencies) {
                             if (processedEnvs.add(dep)) {
-                                dumpSymFile(jfm, jti, dep.enclClass.sym, alreadyCreated, classes);
+                                dumpSymFile(jfm, jti, dep.enclClass.sym, alreadyCreated, classes, syms2trees);
                             }
                         }
-                        if (TreeLoader.pruneTree(env.tree, syms))
-                            dumpSymFile(jfm, jti, env.enclClass.sym, alreadyCreated, classes);
+                        if (TreeLoader.pruneTree(env.tree, syms, syms2trees))
+                            dumpSymFile(jfm, jti, env.enclClass.sym, alreadyCreated, classes, syms2trees);
                     }
                 }
             } finally {
@@ -495,7 +496,8 @@ final class MultiPassCompileWorker extends CompileWorker {
             @NonNull final JavacTaskImpl jti,
             @NullAllowed final ClassSymbol cs,
             @NonNull final Set<File> alreadyCreated,
-            @NonNull final File classes) throws IOException {
+            @NonNull final File classes,
+            @NonNull final HashMap<ClassSymbol, JCClassDecl> syms2trees) throws IOException {
         if (cs == null) {
             //ClassDecl has no symbol because compilation was cancelled
             //by low memory before ENTER done.
@@ -504,7 +506,7 @@ final class MultiPassCompileWorker extends CompileWorker {
         JavaFileObject file = jfm.getJavaFileForOutput(StandardLocation.CLASS_OUTPUT,
                 cs.flatname.toString(), JavaFileObject.Kind.CLASS, cs.sourcefile);
         if (file instanceof FileObjects.FileBase && !alreadyCreated.contains(((FileObjects.FileBase)file).getFile())) {
-            TreeLoader.dumpSymFile(jfm, jti, cs, classes);
+            TreeLoader.dumpSymFile(jfm, jti, cs, classes, syms2trees);
         }
     }
 }

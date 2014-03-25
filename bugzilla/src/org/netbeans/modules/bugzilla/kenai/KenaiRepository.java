@@ -404,8 +404,8 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     }
 
     @Override
-    protected RepositoryInfo createInfo(String id, String url, String name, String user, String httpUser, char[] password, char[] httpPassword) {
-        RepositoryInfo i = super.createInfo(id, url, name, user, httpUser, password, httpPassword); 
+    protected RepositoryInfo createInfo(String id, String url, String name, String user, String httpUser, char[] password, char[] httpPassword, boolean localUserEnabled) {
+        RepositoryInfo i = super.createInfo(id, url, name, user, httpUser, password, httpPassword, localUserEnabled); 
         i.putValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME, kenaiProject.getName());
         return i;
     }

@@ -382,7 +382,10 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
         
         String folderAnnotation = ""; //NOI18N
         Set<File> roots = context.getRootFiles();
-        if (annotationsVisible && (roots.size() > 1 || mostImportantFile.equals(repository))) {
+        if (repository == null) {
+            Git.STATUS_LOG.log(Level.WARNING, "annotateFolderNameHtml: null repository for {0} having status {1}", //NOI18N
+                    new Object[] { mostImportantFile, mostImportantInfo });
+        } else if (annotationsVisible && (roots.size() > 1 || mostImportantFile.equals(repository))) {
             // project node or repository root
             String branchLabel = ""; //NOI18N
             RepositoryInfo info = RepositoryInfo.getInstance(repository);

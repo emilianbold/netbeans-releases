@@ -1032,8 +1032,9 @@ is divided into following sections:
             </target>
 
             <target name="-debug-javame" depends="init,clean,jar">
+                <property name="run.method.debug" value="STANDARD"/>
                 <parallel>
-                    <nb-run debug="true" debugsuspend="true" debugserver="true" debuggeraddressproperty="jpda.port" platformtype="${{platform.type}}" platformhome="${{platform.home}}" device="${{platform.device}}" jadfile="${{dist.dir}}/${{dist.jad}}" jadurl="${{dist.jad.url}}" jarfile="${{dist.jar.file}}" execmethod="${{run.method}}" commandline="${{platform.debugcommandline}}" classpath="${{platform.bootclasspath}}:${{dist.dir}}/${{dist.jar}}" cmdoptions="${{run.cmd.options}}"/>
+                    <nb-run debug="true" debugsuspend="true" debugserver="true" debuggeraddressproperty="jpda.port" platformtype="${{platform.type}}" platformhome="${{platform.home}}" device="${{platform.device}}" jadfile="${{dist.dir}}/${{dist.jad}}" jadurl="${{dist.jad.url}}" jarfile="${{dist.jar.file}}" execmethod="${{run.method.debug}}" commandline="${{platform.debugcommandline}}" classpath="${{platform.bootclasspath}}:${{dist.dir}}/${{dist.jar}}" cmdoptions="${{run.cmd.options}}"/>
                     <sequential>
                         <waitfor maxwait="5" maxwaitunit="second">
                             <isset property="jpda.port"/>

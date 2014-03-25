@@ -331,7 +331,7 @@ public class WildflyManagementAPI {
     }
 
     static Object getClientConstant(WildflyDeploymentFactory.WildFlyClassLoader cl, String name) throws ClassNotFoundException, IllegalAccessException {
-        if (clientConstants == null) {
+        if (clientConstants == null || clientConstants.isEmpty()) {
             clientConstants = new HashMap<String, Object>();
             Class clazz = cl.loadClass("org.jboss.as.controller.client.helpers.ClientConstants"); // NOI18N
             Field[] fields = clazz.getDeclaredFields();

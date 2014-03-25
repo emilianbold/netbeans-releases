@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.36.1
+#Version 1.39.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -96,6 +96,7 @@ meth public abstract void removePropertyChangeListener(java.beans.PropertyChange
 meth public abstract void update()
 meth public final static org.netbeans.spi.options.OptionsPanelController createAdvanced(java.lang.String)
  anno 0 java.lang.Deprecated()
+meth public final void setSubcategory(java.lang.String)
 meth public org.openide.util.Lookup getLookup()
 meth public void handleSuccessfulSearch(java.lang.String,java.util.List<java.lang.String>)
 supr java.lang.Object

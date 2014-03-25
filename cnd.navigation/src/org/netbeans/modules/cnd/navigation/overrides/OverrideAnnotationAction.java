@@ -73,20 +73,24 @@ import org.openide.util.NbBundle;
 public class OverrideAnnotationAction extends AbstractAction {
 
     private static final Set<String> COMBINED_TYPES = new HashSet<String>(Arrays.asList(
-            "org-netbeans-modules-editor-annotations-override-is-overridden-combined" // NOI18N
-//            "org-netbeans-modules-editor-annotations-implements-is-overridden-combined",
-//            "org-netbeans-modules-editor-annotations-implements-has-implementations-combined"
+            "org-netbeans-modules-cnd-navigation-is_overridden_combined", // NOI18N
+            "org-netbeans-modules-cnd-navigation-is_overridden_combined_pseudo", // NOI18N
+            "org-netbeans-modules-cnd-navigation-is_overridden_pseudo", // NOI18N
+            "org-netbeans-modules-cnd-navigation-overrides_pseudo" // NOI18N
     ));
 
     public OverrideAnnotationAction() {
         putValue(NAME, NbBundle.getMessage(OverrideAnnotationAction.class,
                                           "CTL_IsOverriddenAnnotationAction")); //NOI18N
         putValue("supported-annotation-types", new String[] { // NOI18N
-            "org-netbeans-modules-editor-annotations-is_overridden", // NOI18N
-            "org-netbeans-modules-editor-annotations-overrides", // NOI18N
+            "org-netbeans-modules-cnd-navigation-is_overridden", // NOI18N
+            "org-netbeans-modules-cnd-navigation-is_overridden_pseudo", // NOI18N
+            "org-netbeans-modules-cnd-navigation-overrides", // NOI18N
+            "org-netbeans-modules-cnd-navigation-overrides_pseudo", // NOI18N
+            "org-netbeans-modules-cnd-navigation-is_overridden_combined", //NOI18N
+            "org-netbeans-modules-cnd-navigation-is_overridden_combined_pseudo", //NOI18N
             "org-netbeans-modules-cnd-navigation-specializes", // NOI18N
             "org-netbeans-modules-cnd-navigation-is_specialized", // NOI18N
-            "org-netbeans-modules-editor-annotations-override-is-overridden-combined", //NOI18N
             "org-netbeans-modules-cnd-navigation-extended_specializes", // NOI18N
             "org-netbeans-modules-cnd-navigation-extended_is_specialized" // NOI18N
         });

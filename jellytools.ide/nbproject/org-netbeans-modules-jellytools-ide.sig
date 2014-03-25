@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 3.22.1
+#Version 3.25.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -219,6 +219,7 @@ CLSS public org.netbeans.jellytools.FavoritesOperator
 cons public init()
 meth public org.netbeans.jemmy.operators.JTreeOperator tree()
 meth public static org.netbeans.jellytools.FavoritesOperator invoke()
+meth public void collapseAll()
 meth public void verify()
 supr org.netbeans.jellytools.TopComponentOperator
 hfds FAVORITES_CAPTION,_tree,viewAction
@@ -229,6 +230,7 @@ cons public init()
 meth public org.netbeans.jellytools.nodes.Node getProjectNode(java.lang.String)
 meth public org.netbeans.jemmy.operators.JTreeOperator tree()
 meth public static org.netbeans.jellytools.FilesTabOperator invoke()
+meth public void collapseAll()
 meth public void verify()
 supr org.netbeans.jellytools.TopComponentOperator
 hfds FILES_CAPTION,_tree,viewAction
@@ -602,6 +604,7 @@ fld protected final static org.netbeans.jellytools.actions.ProjectViewAction vie
 meth public org.netbeans.jellytools.nodes.ProjectRootNode getProjectRootNode(java.lang.String)
 meth public org.netbeans.jemmy.operators.JTreeOperator tree()
 meth public static org.netbeans.jellytools.ProjectsTabOperator invoke()
+meth public void collapseAll()
 meth public void verify()
 supr org.netbeans.jellytools.TopComponentOperator
 hfds PROJECT_CAPTION,_tree
@@ -620,6 +623,7 @@ cons public init()
 meth public org.netbeans.jellytools.nodes.Node getRootNode()
 meth public org.netbeans.jemmy.operators.JTreeOperator tree()
 meth public static org.netbeans.jellytools.RuntimeTabOperator invoke()
+meth public void collapseAll()
 meth public void verify()
 supr org.netbeans.jellytools.TopComponentOperator
 hfds RUNTIME_CAPTION,_tree,viewAction

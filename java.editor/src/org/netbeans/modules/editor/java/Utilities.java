@@ -660,9 +660,7 @@ public final class Utilities {
     }
 
     public static boolean isBoolean(TypeMirror type) {
-        return type.getKind() == TypeKind.BOOLEAN
-                || type.getKind() == TypeKind.DECLARED
-                && "java.lang.Boolean".contentEquals(((TypeElement)((DeclaredType)type).asElement()).getQualifiedName()); //NOI18N
+        return type.getKind() == TypeKind.BOOLEAN;
     }
 
     public static Set<Element> getUsedElements(final CompilationInfo info) {

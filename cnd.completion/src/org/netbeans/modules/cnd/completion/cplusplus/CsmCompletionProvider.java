@@ -45,17 +45,17 @@ package org.netbeans.modules.cnd.completion.cplusplus;
 
 import java.util.*;
 import javax.swing.JToolTip;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
-
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
@@ -63,10 +63,10 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
-import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.MethodParamsTipPaintComponent;
+import org.netbeans.modules.cnd.spi.model.services.CsmDocProvider;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
@@ -142,7 +142,7 @@ public class CsmCompletionProvider implements CompletionProvider {
     public static CsmCompletionQuery createCompletionResolver(CsmFile csmFile, CompletionResolver.QueryScope queryScope, FileReferencesContext fileReferencesContext) {
         return new NbCsmCompletionQuery(csmFile, queryScope, fileReferencesContext, true);
     }
-
+    
     static final class Query extends AsyncCompletionQuery {
 
         private JTextComponent component;
@@ -572,7 +572,7 @@ public class CsmCompletionProvider implements CompletionProvider {
             if (csmFile != null) {
                 CsmObject csmObject = ReferencesSupport.findDeclaration(csmFile, doc, null, caretOffset);
                 if (csmObject != null) {
-                    CompletionDocumentationProvider docProvider = Lookup.getDefault().lookup(CompletionDocumentationProvider.class);
+                    CsmDocProvider docProvider = Lookup.getDefault().lookup(CsmDocProvider.class);
                     if (docProvider != null) {
                         CompletionDocumentation documentation = docProvider.createDocumentation(csmObject, csmFile);
                         if (documentation != null) {

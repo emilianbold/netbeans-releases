@@ -142,23 +142,28 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
      */
     @Override
     public void setContextRoot(String contextPath) throws ConfigurationException {
-        // TODO: this contextPath fix code will be removed, as soon as it will 
+        // TODO: this contextPath fix code will be removed, as soon as it will
         // be moved to the web project
-        if (!isCorrectCP(contextPath)) {
-            String ctxRoot = contextPath;
-            java.util.StringTokenizer tok = new java.util.StringTokenizer(contextPath, "/"); //NOI18N
+
+        String currentCP = "";
+        if(contextPath != null) {
+            currentCP = contextPath;
+        }
+        if (!isCorrectCP(currentCP)) {
+            String ctxRoot = currentCP;
+            java.util.StringTokenizer tok = new java.util.StringTokenizer(currentCP, "/"); //NOI18N
             StringBuilder buf = new StringBuilder();
             while (tok.hasMoreTokens()) {
-                buf.append("/" + tok.nextToken()); //NOI18N
+                buf.append('/').append(tok.nextToken()); //NOI18N
             }
             ctxRoot = buf.toString();
             NotifyDescriptor desc = new NotifyDescriptor.Message(
-                    NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_invalidCP", contextPath),
+                    NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_invalidCP", currentCP),
                     NotifyDescriptor.Message.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
-            contextPath = ctxRoot;
+            currentCP = ctxRoot;
         }
-        final String newContextPath = contextPath;
+        final String newContextPath = currentCP;
         modifyJbossWeb(new JbossWebModifier() {
             @Override
             public void modify(JbossWeb jbossWeb) {
@@ -299,6 +304,7 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
         });
     }
 
+    @Override
     public void bindMessageDestinationReference(String referenceName, String connectionFactoryName,
             String destName, MessageDestination.Type type) throws ConfigurationException {
 
@@ -531,11 +537,11 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
         return jbossWeb;
     }
 
-    // TODO: this contextPath fix code will be removed, as soon as it will 
+    // TODO: this contextPath fix code will be removed, as soon as it will
     // be moved to the web project
     private boolean isCorrectCP(String contextPath) {
         boolean correct = true;
-        if (!contextPath.equals("") && !contextPath.startsWith("/")) {
+        if (!"".equals(contextPath) && !contextPath.startsWith("/")) {
             correct = false; //NOI18N
         } else if (contextPath.endsWith("/")) {
             correct = false; //NOI18N

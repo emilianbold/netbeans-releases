@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.javaee.wildfly.ide;
 
 import java.io.BufferedReader;
@@ -61,8 +60,8 @@ import java.util.regex.Pattern;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
-import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.extexecution.startup.StartupExtender;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.api.CommonServerBridge;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
@@ -86,44 +85,35 @@ import org.openide.windows.InputOutput;
  * @author Libor Kotouc
  */
 class WildflyStartRunnable implements Runnable {
-    
-    private static final int START_TIMEOUT = 300000;
-    
-    private final static String CONF_FILE_NAME = 
-            "run.conf.bat";                             // NOI18N
-    
-    private final static String RUN_FILE_NAME = 
-            "run.bat";                                  // NOI18N
-    
-    private final static String JBOSS_HOME 
-            = "JBOSS_HOME";                             // NOI18N
 
-    private final static String STARTUP_SH = File.separator + 
-            "bin" + File.separator + "run.sh";          // NOI18N
-    private final static String STANDALONE_SH = File.separator + 
-            "bin" + File.separator + "standalone.sh";          // NOI18N
-    private final static String STARTUP_BAT = File.separator + 
-            "bin" + File.separator + RUN_FILE_NAME;     // NOI18N
-    private final static String STANDALONE_BAT = File.separator + 
-            "bin" + File.separator + "standalone.bat";     // NOI18N
-                             
-    private final static String CONF_BAT = File.separator + 
-            "bin" + File.separator + CONF_FILE_NAME;    // NOI18N
-    
-    private final static String JAVA_OPTS = "JAVA_OPTS";// NOI18N   
-    
-    private final static Pattern IF_JAVA_OPTS_PATTERN =
-        Pattern.compile(".*if(\\s+not)?\\s+(\"x%"+JAVA_OPTS+
-                "%\"\\s+==\\s+\"x\")\\s+.*",            // NOI18N 
-                Pattern.DOTALL);
-    
-    private final static String NEW_IF_CONDITION_STRING = 
-                "\"xx\" == \"x\"";                      // NOI18N 
-    
-    private static final SpecificationVersion 
-        JDK_14 = new SpecificationVersion("1.4");       // NOI18N
+    private static final int START_TIMEOUT = 300000;
+
+    private final static String CONF_FILE_NAME = "standalone.conf.bat"; // NOI18N
+
+    private final static String RUN_FILE_NAME = "run.bat";  // NOI18N
+
+    private final static String JBOSS_HOME = "JBOSS_HOME";// NOI18N
+    private final static String STANDALONE_SH = File.separator
+            + "bin" + File.separator + "standalone.sh";          // NOI18N
+    private final static String STANDALONE_BAT = File.separator
+            + "bin" + File.separator + "standalone.bat";     // NOI18N
+
+    private final static String CONF_BAT = File.separator
+            + "bin" + File.separator + CONF_FILE_NAME;    // NOI18N
+
+    private final static String JAVA_OPTS = "JAVA_OPTS";// NOI18N
+
+    private final static Pattern IF_JAVA_OPTS_PATTERN
+            = Pattern.compile(".*if(\\s+not)?\\s+(\"x%" + JAVA_OPTS
+                    + "%\"\\s+==\\s+\"x\")\\s+.*", // NOI18N
+                    Pattern.DOTALL);
+
+    private final static String NEW_IF_CONDITION_STRING
+            = "\"xx\" == \"x\"";                      // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(WildflyStartRunnable.class.getName());
+
+    private static final SpecificationVersion JDK_18 = new SpecificationVersion("1.8");
 
     private WildflyDeploymentManager dm;
     private String instanceName;
@@ -151,61 +141,56 @@ class WildflyStartRunnable implements Runnable {
         }
 
         WildflyOutputSupport outputSupport = WildflyOutputSupport.getInstance(ip, true);
-        outputSupport.start(openConsole(), serverProcess, startServer.getMode() == WildflyStartServer.MODE.PROFILE);        
+        outputSupport.start(openConsole(), serverProcess, startServer.getMode() == WildflyStartServer.MODE.PROFILE);
         startServer.setConsoleConfigured(true);
-        
+
         waitForServerToStart(outputSupport);
     }
 
     private String[] createEnvironment(final InstanceProperties ip) {
-        
+
         WildFlyProperties properties = dm.getProperties();
 
         // set the JAVA_OPTS value
         String javaOpts = properties.getJavaOpts();
         StringBuilder javaOptsBuilder = new StringBuilder(javaOpts);
+        // if  JB version 4.x
+        // use the IDE proxy settings if the 'use proxy' checkbox is selected
+        // do not override a property if it was set manually by the user
+        if (properties.getProxyEnabled()) {
+            final String[] PROXY_PROPS = {
+                "http.proxyHost", // NOI18N
+                "http.proxyPort", // NOI18N
+                "http.nonProxyHosts", // NOI18N
+                "https.proxyHost", // NOI18N
+                "https.proxyPort", // NOI18N
+            };
 
-        boolean version5 = properties.isVersion(WildflyPluginUtils.JBOSS_5_0_0);
+            for (String prop : PROXY_PROPS) {
+                if (javaOpts.indexOf(prop) == -1) {
+                    String value = System.getProperty(prop);
+                    if (value != null) {
+                        if ("http.nonProxyHosts".equals(prop)) { // NOI18N
+                            try {
+                                // remove newline characters, as the value may contain them, see issue #81174
+                                BufferedReader br = new BufferedReader(new StringReader(value));
+                                String line = null;
+                                StringBuilder noNL = new StringBuilder();
+                                while ((line = br.readLine()) != null) {
+                                    noNL.append(line);
+                                }
+                                value = noNL.toString().replaceAll("<", "").replace(">", "").replace("\"", "").replace('|', ',').trim();
 
-        if (!version5) {   // if  JB version 4.x
-            // use the IDE proxy settings if the 'use proxy' checkbox is selected
-            // do not override a property if it was set manually by the user
-            if (properties.getProxyEnabled()) {
-                final String[] PROXY_PROPS = {
-                "http.proxyHost",       // NOI18N
-                "http.proxyPort",       // NOI18N
-                "http.nonProxyHosts",   // NOI18N
-                "https.proxyHost",      // NOI18N
-                "https.proxyPort",      // NOI18N
-                };
-
-                for (String prop : PROXY_PROPS) {
-                    if (javaOpts.indexOf(prop) == -1) {
-                        String value = System.getProperty(prop);
-                        if (value != null) {
-                            if ("http.nonProxyHosts".equals(prop)) { // NOI18N
-                                try {
-                                    // remove newline characters, as the value may contain them, see issue #81174
-                                    BufferedReader br = new BufferedReader(new StringReader(value));
-                                    String line = null;
-                                    StringBuilder noNL = new StringBuilder();
-                                    while ((line = br.readLine()) != null) {
-                                        noNL.append(line);
-                                    }
-                                    value = noNL.toString();
-
-                                    // enclose the host list in double quotes because it may contain spaces
-                                    value = "\"" + value + "\""; // NOI18N
-                            }
-                            catch (IOException ioe) {
+                                // enclose the host list in double quotes because it may contain spaces
+                                value = '\"' + value + '\"'; // NOI18N
+                            } catch (IOException ioe) {
                                 Exceptions.attachLocalizedMessage(ioe, NbBundle.getMessage(WildflyStartRunnable.class, "ERR_NonProxyHostParsingError"));
                                 Logger.getLogger("global").log(Level.WARNING, null, ioe);
-                                    value = null;
-                                }
+                                value = null;
                             }
-                            if (value != null) {
-                            javaOptsBuilder.append(" -D").append(prop).append("=").append(value); // NOI18N
-                            }
+                        }
+                        if (value != null) {
+                            javaOptsBuilder.append(" -D").append(prop).append('=').append(value); // NOI18N
                         }
                     }
                 }
@@ -214,24 +199,16 @@ class WildflyStartRunnable implements Runnable {
 
         // get Java platform that will run the server
         JavaPlatform platform = properties.getJavaPlatform();
-
-        if (startServer.getMode() == WildflyStartServer.MODE.DEBUG && javaOptsBuilder.toString().indexOf("-Xdebug") == -1) { // NOI18N
-            // if in debug mode and the debug options not specified manually
-            if (platform.getSpecification().getVersion().compareTo(JDK_14) <= 0) {
-                javaOptsBuilder.append(" -classic");
-            }
-            javaOptsBuilder.append(" -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address="). // NOI18N
-                            append(dm.getDebuggingPort()).
-                            append(",server=y,suspend=n"); // NOI18N
-
-        } else if (startServer.getMode() == WildflyStartServer.MODE.PROFILE) {
-            if (properties.isVersion(WildflyPluginUtils.JBOSS_7_0_0)) {
-                javaOptsBuilder.append(" ").append("-Djava.util.logging.manager=org.jboss.logmanager.LogManager");
-            } else if (properties.isVersion(WildflyPluginUtils.JBOSS_6_0_0)) {
-                javaOptsBuilder.append(" ").append("-Djboss.platform.mbeanserver")
-                        .append(" ").append("-Djavax.management.builder.initial=org.jboss.system.server.jmx.MBeanServerBuilderImpl");
-            }
+        if ("64".equals(platform.getSystemProperties().get("sun.arch.data.model"))) {
+            javaOptsBuilder.append(" -server -XX:+UseCompressedOops");
         }
+        if (startServer.getMode() == WildflyStartServer.MODE.DEBUG && javaOptsBuilder.toString().indexOf("-Xdebug") == -1
+                && javaOptsBuilder.toString().indexOf("-agentlib:jdwp") == -1) { // NOI18N
+            // if in debug mode and the debug options not specified manually
+            javaOptsBuilder.append(String.format(" -agentlib:jdwp=transport=dt_socket,address=%1s,server=y,suspend=n", dm.getDebuggingPort())); // NOI18N
+
+        }
+        javaOptsBuilder.append(" -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true");
 
         for (StartupExtender args : StartupExtender.getExtenders(
                 Lookups.singleton(CommonServerBridge.getCommonInstance(ip.getProperty("url"))), getMode(startServer.getMode()))) {
@@ -244,11 +221,11 @@ class WildflyStartRunnable implements Runnable {
         javaOpts = javaOptsBuilder.toString();
         String javaHome = getJavaHome(platform);
 
-        String envp[] = new String[] {
-            "JAVA=" + javaHome + File.separator +"bin" + File.separator + "java",   // NOI18N
-            "JAVA_HOME=" + javaHome,            // NOI18N
-            JBOSS_HOME+"="+ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR),    // NOI18N
-            JAVA_OPTS+"=" + javaOpts,            // NOI18N
+        String envp[] = new String[]{
+            "JAVA=" + javaHome + File.separator + "bin" + File.separator + "java", // NOI18N
+            "JAVA_HOME=" + javaHome, // NOI18N
+            JBOSS_HOME + "=" + ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR), // NOI18N
+            JAVA_OPTS + "=" + javaOpts, // NOI18N
         };
         return envp;
     }
@@ -278,48 +255,47 @@ class WildflyStartRunnable implements Runnable {
         } catch (NumberFormatException nfe) {
             // continue and let server to report the problem
         }
-        
+
         return true;
     }
 
-    private NbProcessDescriptor createProcessDescriptor(InstanceProperties ip, 
-            String[] envp ) 
-    {
+    private NbProcessDescriptor createProcessDescriptor(InstanceProperties ip,
+            String[] envp) {
         // fix for BZ#179961 -  [J2EE] No able to start profiling JBoss 5.1.0
         String serverRunFileName = getRunFileName(ip, envp);
-        if (!new File(serverRunFileName).exists()){
+        if (!new File(serverRunFileName).exists()) {
             fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_START_SERVER_FAILED_FNF"));//NOI18N
             return null;
         }
         String args = "";
-        if(ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE) != null && ! "".equals(ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE))) {
+        if (ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE) != null && !"".equals(ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE))) {
             String configFile = ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE);
             args = "-c " + configFile.substring(configFile.lastIndexOf(File.separatorChar) + 1);
         }
         return new NbProcessDescriptor(serverRunFileName, args);
     }
-    
-    private String getRunFileName( InstanceProperties ip, String[] envp ){
-        SpacesInPathFix fix = new SpacesInPathFix( ip , envp );
+
+    private String getRunFileName(InstanceProperties ip, String[] envp) {
+        SpacesInPathFix fix = new SpacesInPathFix(ip, envp);
         return fix.getRunFileName();
     }
 
     private static String getJavaHome(JavaPlatform platform) {
-        FileObject fo = (FileObject)platform.getInstallFolders().iterator().next();
+        FileObject fo = (FileObject) platform.getInstallFolders().iterator().next();
         return FileUtil.toFile(fo).getAbsolutePath();
     }
- 
+
     private String createProgressMessage(final String resName) {
         return createProgressMessage(resName, null);
     }
-    
+
     private String createProgressMessage(final String resName, final String param) {
         return NbBundle.getMessage(WildflyStartRunnable.class, resName, instanceName, param);
     }
 
     private Process createProcess(InstanceProperties ip) {
         String envp[] = createEnvironment(ip);
-        
+
         NbProcessDescriptor pd = createProcessDescriptor(ip, envp);
         if (pd == null) {
             return null;
@@ -345,7 +321,7 @@ class WildflyStartRunnable implements Runnable {
             return null;
         }
     }
-    
+
     private InputOutput openConsole() {
         InputOutput io = UISupport.getServerIO(dm.getUrl());
         if (io == null) {
@@ -361,17 +337,17 @@ class WildflyStartRunnable implements Runnable {
         io.select();
         startServer.setConsoleConfigured(true);
         return io;
-    }            
+    }
 
     private void fireStartProgressEvent(StateType stateType, String msg) {
         startServer.fireHandleProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.START, stateType, msg));
     }
-    
+
     private void waitForServerToStart(WildflyOutputSupport outputSupport) {
         fireStartProgressEvent(StateType.RUNNING, createProgressMessage("MSG_START_SERVER_IN_PROGRESS"));
 
         try {
-            boolean result = outputSupport.waitForStart(START_TIMEOUT); 
+            boolean result = outputSupport.waitForStart(START_TIMEOUT);
 
             // reset the need restart flag
             dm.setNeedsRestart(false);
@@ -387,30 +363,30 @@ class WildflyStartRunnable implements Runnable {
             fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_StartServerInterrupted"));
             Thread.currentThread().interrupt();
         }
-        
+
     }
-    
+
     // Fix for BZ#179961 -  [J2EE] No able to start profiling JBoss 5.1.0
     private class SpacesInPathFix {
-        
-        SpacesInPathFix( InstanceProperties ip, String[] envp ) {
+
+        SpacesInPathFix(InstanceProperties ip, String[] envp) {
             myProps = ip;
             needChange = runFileNeedChange(envp);
         }
-        
-        String getRunFileName(){
+
+        String getRunFileName() {
             String serverLocation = getProperties().getProperty(
                     WildflyPluginProperties.PROPERTY_ROOT_DIR);
-            String serverRunFileName = serverLocation + 
-                    (Utilities.isWindows() ? STANDALONE_BAT : STANDALONE_SH);
-            if ( needChange ){
+            String serverRunFileName = serverLocation
+                    + (Utilities.isWindows() ? STANDALONE_BAT : STANDALONE_SH);
+            if (needChange) {
                 String contentRun = readFile(serverRunFileName);
                 String contentConf = readFile(serverLocation + CONF_BAT);
                 Matcher matcherRun = IF_JAVA_OPTS_PATTERN.matcher(contentRun);
                 Matcher matcherConf = contentConf != null
                         ? IF_JAVA_OPTS_PATTERN.matcher(contentConf)
                         : null;
-                
+
                 boolean needChangeRun = matcherRun.matches();
                 boolean needChangeConf = matcherConf != null && matcherConf.matches();
                 try {
@@ -418,8 +394,8 @@ class WildflyStartRunnable implements Runnable {
                         File startBat = File.createTempFile(RUN_FILE_NAME, ".bat"); // NOI18N
                         File confBat = null;
                         if (contentConf != null) {
-                            confBat = File.createTempFile(CONF_FILE_NAME, ".bat",  // NOI18N
-                                startBat.getParentFile()); // NOI18N
+                            confBat = File.createTempFile(CONF_FILE_NAME, ".bat", // NOI18N
+                                    startBat.getParentFile()); // NOI18N
                         }
                         startBat.deleteOnExit();
                         contentRun = replaceJavaOpts(contentRun, matcherRun);
@@ -443,54 +419,50 @@ class WildflyStartRunnable implements Runnable {
             }
             return serverRunFileName;
         }
-        
-        private String replaceJavaOpts( String content, Matcher matcher ) {
+
+        private String replaceJavaOpts(String content, Matcher matcher) {
             String result = content;
             int start = 0;
             List<String> replacementString = new ArrayList<String>(1);
-            while( matcher.find(start)){
-                if ( matcher.groupCount() <=1 ){
+            while (matcher.find(start)) {
+                if (matcher.groupCount() <= 1) {
                     continue;
                 }
-                start = matcher.end( 2 );
-                replacementString.add( matcher.group(2));
+                start = matcher.end(2);
+                replacementString.add(matcher.group(2));
             }
-            for( String replace : replacementString ){
-                result = result.replace(replace, NEW_IF_CONDITION_STRING );
+            for (String replace : replacementString) {
+                result = result.replace(replace, NEW_IF_CONDITION_STRING);
             }
             return result;
         }
-        
-        private void writeFile(File file , String content ){
+
+        private void writeFile(File file, String content) {
             BufferedWriter writer = null;
             try {
-                writer = new BufferedWriter( new FileWriter( file ));
-                writer.write( content );
-            }
-            catch (IOException e ){
+                writer = new BufferedWriter(new FileWriter(file));
+                writer.write(content);
+            } catch (IOException e) {
                 Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(
-                    WildflyStartRunnable.class, "ERR_WriteError"));              // NOI18N
+                        WildflyStartRunnable.class, "ERR_WriteError"));              // NOI18N
                 Logger.getLogger("global").log(Level.WARNING, null, e);     // NOI18N
-            }
-            finally {
+            } finally {
                 try {
-                    if ( writer!= null ){
+                    if (writer != null) {
                         writer.close();
                     }
-                }
-                catch (IOException e ){
+                } catch (IOException e) {
                     Logger.getLogger("global").log(Level.WARNING, null, e); // NOI18N
                 }
             }
         }
 
-        private String readFile( String file ) 
-        {
+        private String readFile(String file) {
             StringBuilder builder = null;
             BufferedReader reader = null;
             try {
-                reader = new BufferedReader( 
-                    new FileReader(new File(file)));
+                reader = new BufferedReader(
+                        new FileReader(new File(file)));
                 builder = new StringBuilder();
 
                 String line = "";
@@ -498,51 +470,38 @@ class WildflyStartRunnable implements Runnable {
                     builder.append(line);
                     builder.append("\r\n");     // NOI18N
                     line = reader.readLine();
-                }
-                while ( line != null);
-            }
-            catch (IOException e ){
+                } while (line != null);
+            } catch (IOException e) {
                 Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(
                         WildflyStartRunnable.class, "ERR_ReadError"));       // NOI18N
                 Logger.getLogger("global").log(Level.WARNING, null, e); // NOI18N
                 return null;
-            }
-            finally {
+            } finally {
                 try {
-                    if ( reader!= null ){
+                    if (reader != null) {
                         reader.close();
                     }
-                }
-                catch (IOException e ){
+                } catch (IOException e) {
                     Logger.getLogger("global").log(Level.WARNING, null, e);// NOI18N
                 }
             }
             return builder.toString();
         }
-        
-        private InstanceProperties getProperties(){
+
+        private InstanceProperties getProperties() {
             return myProps;
         }
-        
-        private boolean runFileNeedChange( String[] envp ){
+
+        private boolean runFileNeedChange(String[] envp) {
             WildFlyProperties properties = dm.getProperties();
             if (properties.isVersion(WildflyPluginUtils.JBOSS_7_0_0)) {
                 return false;
             }
-            if ( properties.isVersion(WildflyPluginUtils.JBOSS_5_0_1) && 
-                    Utilities.isWindows()) {
-                for( String env : envp ){
-                    if ( env.startsWith(JAVA_OPTS+"=")){
-                        return env.indexOf('"')>=0;
-                    }
-                }
-            }
             return false;
         }
-        
+
         private InstanceProperties myProps;
         private boolean needChange;
     }
-    
+
 }
-    

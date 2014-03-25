@@ -2427,7 +2427,6 @@ init_declarator[int kind]
                 |
                         array_initializer
 		)?
-                (options {greedy=true;} : LITERAL_override | LITERAL_final | LITERAL_new)?
 	;
 
 initializer
@@ -2573,11 +2572,10 @@ member_declarator
 		((IDENT)? COLON constant_expression)=>(IDENT)? COLON constant_expression
         |
 		declarator[declOther, 0] 
-                (   LITERAL_override 
-                |   LITERAL_final 
-                |   LITERAL_new
-                |   ASSIGNEQUAL initializer
-                |   array_initializer
+                (
+                    ASSIGNEQUAL initializer
+                |   
+                    array_initializer
                 )?
 	;
 
@@ -2811,25 +2809,24 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
         // IZ#134182 : missed const in function parameter
         // we should add "const" to function only if it's not K&R style function
         (   ((cv_qualifier)* 
-             (LITERAL_override | LITERAL_final | LITERAL_new)*
-             (is_post_declarator_token | literal_try | LITERAL_throw | LITERAL_noexcept | literal_attribute | POINTERTO))
+             (is_post_declarator_token | literal_try | LITERAL_throw | LITERAL_noexcept | literal_attribute | POINTERTO | LITERAL_override | LITERAL_final | LITERAL_new))
             =>
             (options{warnWhenFollowAmbig = false;}: tq = cv_qualifier)* 
-            (options{greedy = true;}: LITERAL_noexcept)?
-            (options{greedy = true;}: LITERAL_override | LITERAL_final | LITERAL_new)?
-            (options{greedy = true;}: LITERAL_override | LITERAL_final | LITERAL_new)?
         )?
+
+        (exception_specification)?
 
         (trailing_type)?
 
+        (options {greedy = true;} : virt_specifiers)?
+
         //{functionEndParameterList(definition);}
-        (exception_specification)?
         (( ASSIGNEQUAL ~(LITERAL_default | LITERAL_delete)) => ASSIGNEQUAL OCTALINT)?	// The value of the octal must be 0
         (options {greedy=true;} :function_attribute_specification)?
         (asm_block!)?
         (options {greedy=true;} :function_attribute_specification)?
     ;
-        
+ 
 protected
 is_post_declarator_token
     :
@@ -3227,6 +3224,13 @@ exception_specification
         RPAREN
     |   
         LITERAL_noexcept (options {greedy=true;} : LPAREN constant_expression RPAREN )?
+    ;
+
+protected 
+virt_specifiers
+    :
+        (LITERAL_override | LITERAL_final) 
+        (options {greedy=true;} : LITERAL_override | LITERAL_final)*
     ;
 
 // simplified version of type_id that is used in exception specification

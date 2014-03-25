@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 0.129.1
+#Version 0.134.1
 
 CLSS public abstract interface com.sun.source.tree.TreeVisitor<%0 extends java.lang.Object, %1 extends java.lang.Object>
 meth public abstract {com.sun.source.tree.TreeVisitor%0} visitAnnotatedType(com.sun.source.tree.AnnotatedTypeTree,{com.sun.source.tree.TreeVisitor%1})
@@ -1104,6 +1104,13 @@ meth public static java.lang.String[] getJVMSignature(org.netbeans.api.java.sour
  anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static java.net.URL getJavadoc(javax.lang.model.element.Element,org.netbeans.api.java.source.ClasspathInfo)
+ anno 0 java.lang.Deprecated()
+meth public static java.net.URL getPreferredJavadoc(javax.lang.model.element.Element)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static java.util.Collection<? extends java.net.URL> getJavadoc(javax.lang.model.element.Element)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static java.util.Collection<org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement>> getMainClasses(org.openide.filesystems.FileObject)
  anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static java.util.Collection<org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement>> getMainClasses(org.openide.filesystems.FileObject[])
@@ -1125,7 +1132,7 @@ meth public static org.openide.filesystems.FileObject getFile(javax.lang.model.e
 meth public static org.openide.filesystems.FileObject getFile(org.netbeans.api.java.source.ElementHandle<? extends javax.lang.model.element.Element>,org.netbeans.api.java.source.ClasspathInfo)
 meth public static void waitScanFinished() throws java.lang.InterruptedException
 supr java.lang.Object
-hfds LOG,MAX_LEN,VOWELS
+hfds LOG,MAX_LEN,VOWELS,docLet1,docLet2,jdocCache
 hcls CaseInsensitiveMatch,CaseSensitiveMatch,Match
 
 CLSS public abstract interface org.netbeans.api.java.source.Task<%0 extends java.lang.Object>
@@ -1434,10 +1441,14 @@ meth public int[] findMethodParameterSpan(com.sun.source.tree.MethodTree)
  anno 0 org.netbeans.api.annotations.common.CheckForNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public int[] findNameSpan(com.sun.source.doctree.DocCommentTree,com.sun.source.doctree.ReferenceTree)
+meth public int[] findNameSpan(com.sun.source.tree.BreakTree)
 meth public int[] findNameSpan(com.sun.source.tree.ClassTree)
+meth public int[] findNameSpan(com.sun.source.tree.ContinueTree)
+meth public int[] findNameSpan(com.sun.source.tree.LabeledStatementTree)
 meth public int[] findNameSpan(com.sun.source.tree.MemberReferenceTree)
 meth public int[] findNameSpan(com.sun.source.tree.MemberSelectTree)
 meth public int[] findNameSpan(com.sun.source.tree.MethodTree)
+meth public int[] findNameSpan(com.sun.source.tree.TypeParameterTree)
 meth public int[] findNameSpan(com.sun.source.tree.VariableTree)
 meth public java.lang.CharSequence decodeIdentifier(java.lang.CharSequence)
  anno 0 org.netbeans.api.annotations.common.NonNull()
@@ -1564,8 +1575,8 @@ meth public void tag(com.sun.source.tree.Tree,java.lang.Object)
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 2 org.netbeans.api.annotations.common.NonNull()
 supr org.netbeans.api.java.source.CompilationController
-hfds REWRITE_WHOLE_FILE,afterCommit,changes,docChanges,externalChanges,instance,overlay,textualChanges,tree2Tag,treeMaker,userInfo
-hcls Translator
+hfds REWRITE_WHOLE_FILE,afterCommit,changes,docChanges,externalChanges,instance,introducedTrees,overlay,textualChanges,tree2Tag,treeMaker,userInfo
+hcls Translator,TreeCollector
 
 CLSS public org.netbeans.api.java.source.matching.Matcher
 intf org.openide.util.Cancellable

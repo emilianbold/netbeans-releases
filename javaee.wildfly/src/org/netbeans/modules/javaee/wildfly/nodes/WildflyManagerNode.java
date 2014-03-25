@@ -54,8 +54,7 @@ import org.netbeans.modules.javaee.wildfly.customizer.Customizer;
 import org.netbeans.modules.javaee.wildfly.customizer.CustomizerDataSupport;
 import org.netbeans.modules.javaee.wildfly.ide.WildflyJ2eePlatformFactory;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
-import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
-import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.KillServerAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.OpenServerLogAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.ShowAdminToolAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.WildflyEditConfigAction;
@@ -83,14 +82,14 @@ import org.openide.util.actions.SystemAction;
 public class WildflyManagerNode extends AbstractNode implements Node.Cookie {
 
     private final Lookup lookup;
-    private static final String ADMIN_URL = "/web-console/"; //NOI18N
-    private static final String ADMIN_URL_60 = "/admin-console/"; //NOI18N
-    private static final String ADMIN_URL_70 = "/console"; //NOI18N
+    private final boolean isWidlfy;
+    private static final String ADMIN_URL_WILDFLY = "/console"; //NOI18N
     private static final String HTTP_HEADER = "http://";
 
-    public WildflyManagerNode(Children children, Lookup lookup) {
+    public WildflyManagerNode( Children children, Lookup lookup) {
         super(children);
         this.lookup = lookup;
+        this.isWidlfy = getDeploymentManager().getProperties().isWildfly();
         getCookieSet().add(this);
         getCookieSet().add(new EditCookieImpl(getDeploymentManager().getProperties().getServerProfile()));
     }
@@ -113,22 +112,17 @@ public class WildflyManagerNode extends AbstractNode implements Node.Cookie {
     }
 
     public String getAdminURL() {
-        Version version = getDeploymentManager().getServerVersion();
-        if (version != null && WildflyPluginUtils.JBOSS_7_0_0.compareTo(version) <= 0) {
-            return HTTP_HEADER + getDeploymentManager().getHost() + ":" + getDeploymentManager().getPort() + ADMIN_URL_70;
-        } else if (version != null && WildflyPluginUtils.JBOSS_6_0_0.compareTo(version) <= 0) {
-            return HTTP_HEADER + getDeploymentManager().getHost() + ":" + getDeploymentManager().getPort() + ADMIN_URL_60;
-        }
-        return HTTP_HEADER + getDeploymentManager().getHost() + ":" + getDeploymentManager().getPort() + ADMIN_URL;
+        return HTTP_HEADER + getDeploymentManager().getHost() + ":" + getDeploymentManager().getPort() + ADMIN_URL_WILDFLY;
     }
 
     @Override
     public Action[] getActions(boolean context) {
-        Action[] newActions = new Action[4];
+        Action[] newActions = new Action[5];
         newActions[0] = null;
         newActions[1] = (SystemAction.get(ShowAdminToolAction.class));
         newActions[2] = (SystemAction.get(WildflyEditConfigAction.class));
         newActions[3] = (SystemAction.get(OpenServerLogAction.class));
+        newActions[4] = (SystemAction.get(KillServerAction.class));
         return newActions;
     }
 
@@ -213,7 +207,10 @@ public class WildflyManagerNode extends AbstractNode implements Node.Cookie {
     @Override
     public Image getIcon(int type) {
         if (type == BeanInfo.ICON_COLOR_16x16) {
-            return ImageUtilities.loadImage("org/netbeans/modules/javaee/wildfly/resources/wildfly.png"); // NOI18N
+            if(isWidlfy) {
+                return ImageUtilities.loadImage("org/netbeans/modules/javaee/wildfly/resources/wildfly.png"); // NOI18N
+            }
+            return ImageUtilities.loadImage("org/netbeans/modules/javaee/wildfly/resources/eap.gif"); // NOI18N
         }
         return super.getIcon(type);
     }
