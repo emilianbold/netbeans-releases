@@ -44,18 +44,27 @@ package org.netbeans.modules.avatar_js.project;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.ProcessBuilder;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectState;
+import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
+import org.openide.execution.ExecutionEngine;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -145,16 +154,8 @@ public final class AvatarJSProjectFactory implements ProjectFactory2 {
                 if (main instanceof String) {
                     FileObject toRun = dir.getFileObject((String)main);
                     if (toRun != null) {
-                        try {
-                            File drf = FileUtil.toFile(dir);
-                            File trf = FileUtil.toFile(toRun);
-                            new ProcessBuilder().
-                                    command("nodejs", trf.getAbsolutePath()).
-                                    directory(drf).start();
-                            return;
-                        } catch (IOException ex) {
-                            LOG.log(Level.WARNING, "Cannot execute " + toRun, ex);
-                        }
+                        ExecItem.executeJS(dir, toRun, "nodejs", command);
+                        return;
                     }
                 }
             }
@@ -222,6 +223,84 @@ public final class AvatarJSProjectFactory implements ProjectFactory2 {
         
         private void reset() {
             pckg = null;
+        }
+    }
+    
+    private static final class ExecItem 
+    implements BuildExecutionSupport.ActionItem, Runnable {
+        private final String action;
+        private final String name;
+        private final FileObject dir;
+        private final ProcessBuilder pb;
+        private Future<Integer> running;
+
+        ExecItem(
+            String action, String name,
+            FileObject dir, ProcessBuilder pb
+        ) {
+            this.action = action;
+            this.name = name;
+            this.dir = dir;
+            this.pb = pb;
+        }
+
+        static void executeJS(FileObject dir, FileObject toRun, final String prg, String command) {
+            File drf = FileUtil.toFile(dir);
+            File trf = FileUtil.toFile(toRun);
+            ProcessBuilder pb = ProcessBuilder.getLocal();
+            pb.setExecutable(prg);
+            pb.setArguments(Arrays.asList(trf.getAbsolutePath()));
+            pb.setWorkingDirectory(drf.getAbsolutePath());
+            final ExecItem ei = new ExecItem(command, toRun.getNameExt(), dir, pb);
+            ei.repeatExecution();
+        }
+        
+        @Override
+        public String getAction() {
+            return action;
+        }
+
+        @Override
+        public FileObject getProjectDirectory() {
+            return dir;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return name;
+        }
+
+        @Override
+        public void repeatExecution() {
+            if (isRunning()) {
+                return;
+            }
+            ExecutionDescriptor ed = new ExecutionDescriptor()
+                    .frontWindow(true).inputVisible(true).preExecution(this);
+            final ExecutionService serv = ExecutionService.newService(pb, ed, getDisplayName());
+            BuildExecutionSupport.registerRunningItem(this);
+            running = serv.run();
+        }
+        
+        @Override
+        public void run() {
+            System.err.println("running");
+        }
+
+        @Override
+        public boolean isRunning() {
+            return running != null && !running.isDone();
+        }
+
+        @Override
+        public void stopRunning() {
+            running.cancel(true);
+            try {
+                running.get();
+            } catch (Exception ex) {
+                LOG.log(Level.INFO, "Can''t wait for " + getDisplayName(), ex);
+            }
+            BuildExecutionSupport.registerFinishedItem(this);
         }
     }
 }
