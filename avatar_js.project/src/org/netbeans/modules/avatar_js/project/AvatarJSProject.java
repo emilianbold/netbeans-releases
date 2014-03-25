@@ -140,6 +140,7 @@ public class AvatarJSProject implements Project {
         defs.put(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, "${build.generated.sources.dir}/ap-source-output"); //NOI18N
         defs.put(ProjectProperties.JAVAC_PROCESSORPATH,"${" + ProjectProperties.JAVAC_CLASSPATH + "}"); //NOI18N
         defs.put("javac.test.processorpath", "${" + ProjectProperties.JAVAC_TEST_CLASSPATH + "}"); // NOI18N
+        defs.put(ProjectProperties.MAIN_CLASS, "N/A");
 
         UPDATE_PROPERTIES = PropertyUtils.fixedPropertyProvider(defs);
     }

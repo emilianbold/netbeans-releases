@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -76,6 +76,7 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -198,9 +199,9 @@ public class AutoupdateInfoParser extends DefaultHandler {
         return items;
     }
     
-    private Stack<ModuleDescriptor> currentModule = new Stack<ModuleDescriptor> ();
-    private Stack<String> currentLicense = new Stack<String> ();
-    private List<String> lines = new ArrayList<String> ();
+    private final Stack<ModuleDescriptor> currentModule = new Stack<ModuleDescriptor> ();
+    private final Stack<String> currentLicense = new Stack<String> ();
+    private final List<String> lines = new ArrayList<String> ();
 
     @Override
     public void characters (char[] ch, int start, int length) throws SAXException {
@@ -464,7 +465,9 @@ public class AutoupdateInfoParser extends DefaultHandler {
             
             
             return inputStream;
-        } catch (Exception ex) {
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (TransformerException ex) {
             Exceptions.printStackTrace(ex);
         }
         return null;
@@ -609,7 +612,6 @@ public class AutoupdateInfoParser extends DefaultHandler {
         }
 
         String ip = attr.getValue(BUNDLE_IMPORT_PACKAGE);
-        StringBuilder requires = new StringBuilder();
         StringBuilder recommends = new StringBuilder();
         if (ip != null) {
             for (String p : ip.replaceAll("\"[^\"]*\"", "").split(",")) {
@@ -617,21 +619,11 @@ public class AutoupdateInfoParser extends DefaultHandler {
                 if (JAVA_PLATFORM_PACKAGES.contains(pkg)) {
                     continue;
                 }
-                if (p.matches(".*; *resolution *:= *optional.*")) {
-                    if (recommends.length() > 0) {
-                        recommends.append(',');
-                    }
-                    recommends.append(p.replaceAll(";.*$", "").trim());
-                } else {
-                    if (requires.length() > 0) {
-                        requires.append(',');
-                    }
-                    requires.append(p.replaceAll(";.*$", "").trim());
+                if (recommends.length() > 0) {
+                    recommends.append(',');
                 }
+                recommends.append(p.replaceAll(";.*$", "").trim());
             }
-        }
-        if (requires.length() > 0) {
-            manifest.setAttribute("OpenIDE-Module-Requires", requires.toString().replace('-', '_'));
         }
         if (recommends.length() > 0) {
             manifest.setAttribute("OpenIDE-Module-Recommends", recommends.toString().replace('-', '_'));
