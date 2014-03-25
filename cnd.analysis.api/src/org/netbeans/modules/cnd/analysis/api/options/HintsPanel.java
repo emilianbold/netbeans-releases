@@ -103,14 +103,17 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
         errorTree.setRootVisible( false );
         errorTree.setShowsRootHandles( true );
         errorTree.getSelectionModel().setSelectionMode( TreeSelectionModel.SINGLE_TREE_SELECTION );
-        update();
         model = new ExtendedModel(selection);
-        OptionsFilter filter = masterLookup.lookup(OptionsFilter.class);
+        OptionsFilter filter = null;
+        if (masterLookup != null) {
+            filter = masterLookup.lookup(OptionsFilter.class);
+        }
         if (filter != null) {
              ((OptionsFilter) filter).installFilteringModel(errorTree, model, new AcceptorImpl());
         } else {
             errorTree.setModel(model);
         }
+        update();
     }
     
     @Override
