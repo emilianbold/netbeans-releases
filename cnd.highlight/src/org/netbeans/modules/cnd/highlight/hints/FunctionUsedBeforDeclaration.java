@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.highlight.hints;
 import java.util.EnumSet;
 import org.netbeans.modules.cnd.analysis.api.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
@@ -55,20 +56,21 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
+import org.netbeans.modules.cnd.highlight.error.IdentifierErrorProvider;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Alexander Simon
  */
-public class MethodDeclarationMissed extends CodeAuditInfo {
-    private MethodDeclarationMissed(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
+public class FunctionUsedBeforDeclaration extends CodeAuditInfo {
+    private FunctionUsedBeforDeclaration(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
         super(id, name, description, defaultSeverity, defaultEnabled, myPreferences);
     }
-    static MethodDeclarationMissed create(AuditPreferences myPreferences) {
-        String id = NbBundle.getMessage(MethodDeclarationMissed.class, "MethodDeclarationMissed.name"); // NOI18N
-        String description = NbBundle.getMessage(MethodDeclarationMissed.class, "MethodDeclarationMissed.description"); // NOI18N
-        return new MethodDeclarationMissed(id, id, description, "error", true, myPreferences); // NOI18N
+    static FunctionUsedBeforDeclaration create(AuditPreferences myPreferences) {
+        String id = NbBundle.getMessage(FunctionUsedBeforDeclaration.class, "FunctionUsedBeforDeclaration.name"); // NOI18N
+        String description = NbBundle.getMessage(FunctionUsedBeforDeclaration.class, "FunctionUsedBeforDeclaration.description"); // NOI18N
+        return new FunctionUsedBeforDeclaration(id, id, description, "warning", false, myPreferences); // NOI18N
     }
     
     @Override
@@ -80,7 +82,7 @@ public class MethodDeclarationMissed extends CodeAuditInfo {
             }
             CsmFileReferences.getDefault().accept(
                     request.getFile(), new ReferenceVisitor(request, response),
-                    CsmReferenceKind.FUNCTION_DECLARATION_KINDS);
+                    CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
         }
     }
 
@@ -99,20 +101,37 @@ public class MethodDeclarationMissed extends CodeAuditInfo {
         public void visit(CsmReferenceContext context) {
             if (!request.isCancelled()) {
                 CsmReference ref = context.getReference();
-                if (CsmReferenceResolver.getDefault().isKindOf(ref, EnumSet.of(CsmReferenceKind.DEFINITION))) {
+                if (CsmReferenceResolver.getDefault().isKindOf(ref, EnumSet.of(CsmReferenceKind.DIRECT_USAGE))) {
                     CsmObject referencedObject = ref.getReferencedObject();
-                    if (CsmKindUtilities.isFunctionDefinition(referencedObject)) {
-                        CsmFunctionDefinition def = (CsmFunctionDefinition) referencedObject;
-                        if (def.getDeclaration() == null) {
-                            CsmErrorInfo.Severity severity;
-                            if ("error".equals(minimalSeverity())) { // NOI18N
-                                severity = CsmErrorInfo.Severity.ERROR;
-                            } else {
-                                severity = CsmErrorInfo.Severity.WARNING;
-                            }
-                            String message = NbBundle.getMessage(MethodDeclarationMissed.class, "MethodDeclarationMissed.message", def.getName()); // NOI18N
-                            response.addError(new ErrorInfoImpl(message, severity, ref.getStartOffset(), ref.getEndOffset()));
+                    if (CsmKindUtilities.isFunction(referencedObject)) {
+                        CsmFunction fun = (CsmFunction) referencedObject;
+                        if (fun.getContainingFile() != ref.getContainingFile()) {
+                            return;
                         }
+                        if (fun.getStartOffset() <= ref.getStartOffset()) {
+                            return;
+                        }
+                        if (!CsmKindUtilities.isGlobalFunction(fun)) {
+                            return;
+                        }
+                        CsmFunction funDecl = fun.getDeclaration();
+                        if(funDecl == null) {
+                            return;
+                        }
+                        if (funDecl.getContainingFile() != ref.getContainingFile()) {
+                            return;
+                        }
+                        if (funDecl.getStartOffset() <= ref.getStartOffset()) {
+                            return;
+                        }
+                        CsmErrorInfo.Severity severity;
+                        if ("error".equals(minimalSeverity())) { // NOI18N
+                            severity = CsmErrorInfo.Severity.ERROR;
+                        } else {
+                            severity = CsmErrorInfo.Severity.WARNING;
+                        }
+                        String message = NbBundle.getMessage(FunctionUsedBeforDeclaration.class, "FunctionUsedBeforDeclaration.message", fun.getName()); // NOI18N
+                        response.addError(new ErrorInfoImpl(message, severity, ref.getStartOffset(), ref.getEndOffset()));
                     }
                 }
             }
