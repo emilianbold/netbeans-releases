@@ -104,7 +104,7 @@ class NonVirtualDestructor extends CodeAuditInfo {
                 if (!CsmTypeHierarchyResolver.getDefault().getSubTypes(method.getContainingClass(), true).isEmpty()) {
                     String message = NbBundle.getMessage(NonVirtualDestructor.class, "NonVirtualDestructor.message"); // NOI18N
                     CsmErrorInfo.Severity severity;
-                    if ("error".equals(minimalSeverity())) {
+                    if ("error".equals(minimalSeverity())) { // NOI18N
                         severity = CsmErrorInfo.Severity.ERROR;
                     } else {
                         severity = CsmErrorInfo.Severity.WARNING;
