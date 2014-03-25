@@ -98,6 +98,7 @@ class NonVirtualDestructor extends CodeAuditInfo {
     }
     
     private void visit(CsmMember csmMember, CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+        int qq;
         if (CsmKindUtilities.isDestructor(csmMember)) {
             CsmMethod method = (CsmMethod)csmMember;
             if (!CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
@@ -109,7 +110,7 @@ class NonVirtualDestructor extends CodeAuditInfo {
                     } else {
                         severity = CsmErrorInfo.Severity.WARNING;
                     }
-                    response.addError(new ErrorInfoImpl(message, severity, method.getStartOffset(), method.getEndOffset()));
+                    response.addError(new ErrorInfoImpl(message, severity, method.getStartOffset(), method.getParameterList().getEndOffset()));
                 }
             }
         }
