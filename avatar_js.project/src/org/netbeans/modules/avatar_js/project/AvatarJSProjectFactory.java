@@ -45,7 +45,6 @@ package org.netbeans.modules.avatar_js.project;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,15 +62,12 @@ import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
-import org.openide.execution.ExecutionEngine;
-import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -143,7 +139,8 @@ public final class AvatarJSProjectFactory implements ProjectFactory2 {
         @Override
         public String[] getSupportedActions() {
             return new String[] {
-                ActionProvider.COMMAND_RUN
+                ActionProvider.COMMAND_RUN,
+                ActionProvider.COMMAND_DEBUG
             };
         }
 
@@ -154,6 +151,17 @@ public final class AvatarJSProjectFactory implements ProjectFactory2 {
                 if (main instanceof String) {
                     FileObject toRun = dir.getFileObject((String)main);
                     if (toRun != null) {
+                        ExecItem.executeJS(dir, toRun, "nodejs", command);
+                        return;
+                    }
+                }
+            }
+            if (ActionProvider.COMMAND_RUN.equals(command)) {
+                Object main = getPackage().get("main");
+                if (main instanceof String) {
+                    FileObject toRun = dir.getFileObject((String)main);
+                    if (toRun != null) {
+                        // TODO: debug in avatarjs
                         ExecItem.executeJS(dir, toRun, "nodejs", command);
                         return;
                     }
@@ -276,7 +284,7 @@ public final class AvatarJSProjectFactory implements ProjectFactory2 {
                 return;
             }
             ExecutionDescriptor ed = new ExecutionDescriptor()
-                    .frontWindow(true).inputVisible(true).preExecution(this);
+                    .frontWindow(true).inputVisible(true).postExecution(this);
             final ExecutionService serv = ExecutionService.newService(pb, ed, getDisplayName());
             BuildExecutionSupport.registerRunningItem(this);
             running = serv.run();
@@ -284,7 +292,9 @@ public final class AvatarJSProjectFactory implements ProjectFactory2 {
         
         @Override
         public void run() {
-            System.err.println("running");
+            if (running.isDone()) {
+                BuildExecutionSupport.registerFinishedItem(this);
+            }
         }
 
         @Override
