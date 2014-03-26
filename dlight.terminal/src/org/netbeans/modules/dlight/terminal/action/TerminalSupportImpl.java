@@ -193,6 +193,10 @@ public final class TerminalSupportImpl {
                         term.setEmulation("xterm"); // NOI18N
 
                         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+                        // clear env modified by NB. Let it be initialized by started shell process
+                        npb.getEnvironment().put("LD_LIBRARY_PATH", "");// NOI18N
+                        npb.getEnvironment().put("DYLD_LIBRARY_PATH", "");// NOI18N
+                        
                         npb.addNativeProcessListener(new NativeProcessListener(ioRef.get(), destroyed));
 
                         if (pwdFlag) {
