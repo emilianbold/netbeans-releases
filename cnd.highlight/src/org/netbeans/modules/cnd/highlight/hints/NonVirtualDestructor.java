@@ -110,9 +110,9 @@ class NonVirtualDestructor extends AbstractCodeAudit {
                     CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
                     if (response instanceof AnalyzerResponse) {
                         ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, method.getContainingFile().getFileObject(),
-                                new ErrorInfoImpl(getID()+"\n"+message, severity, method.getStartOffset(), method.getParameterList().getEndOffset())); // NOI18N
+                                new ErrorInfoImpl(getID(), getName(), getID()+"\n"+message, severity, method.getStartOffset(), method.getParameterList().getEndOffset())); // NOI18N
                     } else {
-                        response.addError(new ErrorInfoImpl(message, severity, method.getStartOffset(), method.getParameterList().getEndOffset()));
+                        response.addError(new ErrorInfoImpl(getID(), getName(), message, severity, method.getStartOffset(), method.getParameterList().getEndOffset()));
                     }
                 }
             }

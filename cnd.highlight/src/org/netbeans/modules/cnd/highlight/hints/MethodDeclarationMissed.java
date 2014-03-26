@@ -112,9 +112,9 @@ public class MethodDeclarationMissed extends AbstractCodeAudit {
                             String message = NbBundle.getMessage(MethodDeclarationMissed.class, "MethodDeclarationMissed.message", def.getName()); // NOI18N
                             if (response instanceof AnalyzerResponse) {
                                 ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, ref.getContainingFile().getFileObject(),
-                                        new ErrorInfoImpl(getID()+"\n"+message, severity, ref.getStartOffset(), ref.getEndOffset())); // NOI18N
+                                        new ErrorInfoImpl(getID(), getName(), getID()+"\n"+message, severity, ref.getStartOffset(), ref.getEndOffset())); // NOI18N
                             } else {
-                                response.addError(new ErrorInfoImpl(message, severity, ref.getStartOffset(), ref.getEndOffset()));
+                                response.addError(new ErrorInfoImpl(getID(), getName(), message, severity, ref.getStartOffset(), ref.getEndOffset()));
                             }
                         }
                     }

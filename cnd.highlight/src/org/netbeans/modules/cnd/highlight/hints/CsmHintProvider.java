@@ -204,7 +204,7 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
         @Override
         protected List<Fix> doGetFixes(CsmErrorInfo info, List<Fix> alreadyFound) {
             if (info instanceof ErrorInfoImpl) {
-                alreadyFound.add(new DisableHintFix());
+                alreadyFound.add(new DisableHintFix((ErrorInfoImpl) info));
             }
             return alreadyFound;
         }
@@ -212,8 +212,10 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
     
     
     private static class DisableHintFix implements EnhancedFix {
+        private final ErrorInfoImpl error;
 
-        DisableHintFix() {
+        DisableHintFix(ErrorInfoImpl error) {
+            this.error = error;
         }
 
         @Override
@@ -223,7 +225,8 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
 
         @Override
         public ChangeInfo implement() throws Exception {
-            OptionsDisplayer.getDefault().open("Editor/Hints/text/x-cnd+sourcefile"); // NOI18N
+            String providerName = NbBundle.getMessage(CsmHintProvider.class, "General_NAME");
+            OptionsDisplayer.getDefault().open("Editor/Hints/text/x-cnd+sourcefile/"+providerName+"/"+error.getAuditName()); // NOI18N
             return null;
         }
 
