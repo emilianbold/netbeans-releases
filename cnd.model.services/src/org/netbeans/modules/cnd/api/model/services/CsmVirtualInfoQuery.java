@@ -213,26 +213,28 @@ public abstract class CsmVirtualInfoQuery {
             if (method.isVirtual()) {
                 return true;
             }
-            return processClass(method, method.getContainingClass(), new ClassifiersAntiLoop());
+            return processClass(method, getFilterFor(method), method.getContainingClass(), new ClassifiersAntiLoop());
         }
         
         @Override
         public CsmMethod getFirstDestructor(CsmClass cls) {
-            return processClass(cls, new ClassifiersAntiLoop());
+            return processClass(cls, getFilterDestructor(), new ClassifiersAntiLoop());
         }
 
-        private CsmMethod processClass(CsmClass cls, ClassifiersAntiLoop antilLoop) {
+        private CsmMethod processClass(CsmClass cls, CsmSelect.CsmFilter filter, ClassifiersAntiLoop antilLoop) {
             if (cls == null || antilLoop.contains(cls)) {
                 return null;
             }
             antilLoop.add(cls);
-            for(CsmMember m : cls.getMembers()){
+            Iterator<CsmMember> classMembers = CsmSelect.getClassMembers(cls, filter);
+            while(classMembers.hasNext()) {
+                CsmMember m = classMembers.next();
                 if (CsmKindUtilities.isDestructor(m)) {
                     return (CsmMethod)m;
                 }
             }
             for(CsmInheritance inh : cls.getBaseClasses()) {
-                CsmMethod res = processClass(CsmInheritanceUtilities.getCsmClass(inh), antilLoop);
+                CsmMethod res = processClass(CsmInheritanceUtilities.getCsmClass(inh), filter, antilLoop);
                 if (res != null) {
                     return res;
                 }
@@ -240,12 +242,14 @@ public abstract class CsmVirtualInfoQuery {
             return null;
         }
 
-        private boolean processClass(CsmMethod toSearch, CsmClass cls, ClassifiersAntiLoop antilLoop){
+        private boolean processClass(CsmMethod toSearch, CsmSelect.CsmFilter filter, CsmClass cls, ClassifiersAntiLoop antilLoop){
             if (cls == null || antilLoop.contains(cls)) {
                 return false;
             }
             antilLoop.add(cls);
-            for(CsmMember m : cls.getMembers()){
+            Iterator<CsmMember> classMembers = CsmSelect.getClassMembers(cls, filter);
+            while(classMembers.hasNext()) {
+                CsmMember m = classMembers.next();
                 if (CsmKindUtilities.isMethod(m)) {
                     CsmMethod met = (CsmMethod) m;
                     if (methodEquals(toSearch, met)) {
@@ -257,7 +261,7 @@ public abstract class CsmVirtualInfoQuery {
                 }
             }
             for(CsmInheritance inh : cls.getBaseClasses()){
-                if (processClass(toSearch, CsmInheritanceUtilities.getCsmClass(inh), antilLoop)){
+                if (processClass(toSearch, filter, CsmInheritanceUtilities.getCsmClass(inh), antilLoop)){
                     return true;
                 }
             }
@@ -304,13 +308,27 @@ public abstract class CsmVirtualInfoQuery {
             LinkedList<CharSequence> antilLoop = new LinkedList<CharSequence>();
             CsmClass cls = method.getContainingClass();
             boolean virtual = method.isVirtual();
+            
             if (cls != null) {
+                CsmSelect.CsmFilter filter = getFilterFor(method);
                 for(CsmInheritance inh : cls.getBaseClasses()) {
-                    virtual |= processMethod(method, CsmInheritanceUtilities.getCsmClass(inh), antilLoop,
+                    virtual |= processMethod(method, filter, CsmInheritanceUtilities.getCsmClass(inh), antilLoop,
                             null, null, result, overridden);
                 }
             }
             return virtual;
+        }
+        
+        private CsmSelect.CsmFilter getFilterFor(CsmMethod method) {
+            if (CsmKindUtilities.isDestructor(method)) {
+                return getFilterDestructor();
+            } else {
+                return CsmSelect.getFilterBuilder().createNameFilter(method.getName(), true, true, false);
+            }
+        }
+
+        private CsmSelect.CsmFilter getFilterDestructor() {
+            return CsmSelect.getFilterBuilder().createNameFilter("~", false, true, false); //NOI18N
         }
         
         /**
@@ -322,7 +340,7 @@ public abstract class CsmVirtualInfoQuery {
          * @param first if true, returns first found method, otherwise the topmost one
          * @return true if method found and it is virtual, otherwise false
          */
-        private boolean processMethod(CsmMethod toSearch, CsmClass cls, LinkedList<CharSequence> antilLoop,
+        private boolean processMethod(CsmMethod toSearch, CsmSelect.CsmFilter filter, CsmClass cls, LinkedList<CharSequence> antilLoop,
                 CsmMethod firstFound, CsmMethod lastFound,
                 Map<CsmMethod, CsmOverrideInfo> result, Overridden overridden) {
             
@@ -333,7 +351,9 @@ public abstract class CsmVirtualInfoQuery {
                 antilLoop.addLast(cls.getQualifiedName());
                 try {
                     boolean virtual = false;
-                    for(CsmMember member : cls.getMembers()) {
+                    Iterator<CsmMember> classMembers = CsmSelect.getClassMembers(cls, filter);
+                    while(classMembers.hasNext()) {
+                        CsmMember member = classMembers.next();
                         if (CsmKindUtilities.isMethod(member)) {
                             CsmMethod method = (CsmMethod) member;
                             if (methodEquals(toSearch, method)) {
@@ -355,7 +375,7 @@ public abstract class CsmVirtualInfoQuery {
                     }
                     theLastInHierarchy = cls.getBaseClasses().isEmpty();
                     for(CsmInheritance inh : cls.getBaseClasses()) {
-                        virtual |= processMethod(toSearch, CsmInheritanceUtilities.getCsmClass(inh), antilLoop, firstFound, lastFound, result, overridden);
+                        virtual |= processMethod(toSearch, filter, CsmInheritanceUtilities.getCsmClass(inh), antilLoop, firstFound, lastFound, result, overridden);
                     }
                     if (lastFound != null) {
                         switch (overridden) {
@@ -403,10 +423,13 @@ public abstract class CsmVirtualInfoQuery {
             }
             cls = method.getContainingClass();
             if (cls != null){
+                CsmSelect.CsmFilter filter = getFilterFor(method);
                 for(CsmReference ref :CsmTypeHierarchyResolver.getDefault().getSubTypes(cls, false)){
                     CsmClass c = (CsmClass) ref.getReferencedObject();
                     if (c != null) {
-                        for(CsmMember m : c.getMembers()){
+                        Iterator<CsmMember> classMembers = CsmSelect.getClassMembers(c, filter);
+                        while(classMembers.hasNext()) {
+                            CsmMember m = classMembers.next();
                             if (CsmKindUtilities.isMethod(m)) {
                                 CsmMethod met = (CsmMethod) m;
                                 if (methodEquals(met, method)){

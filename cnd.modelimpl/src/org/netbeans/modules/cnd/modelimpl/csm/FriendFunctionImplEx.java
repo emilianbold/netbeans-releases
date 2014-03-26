@@ -95,7 +95,7 @@ public final class FriendFunctionImplEx extends FunctionImplEx<CsmFriendFunction
 
         FriendFunctionImplEx friendFunctionImplEx = new FriendFunctionImplEx(name, rawName, scope, cls, _static, _const, file, startOffset, endOffset, global);        
         
-        temporaryRepositoryRegistration(global, friendFunctionImplEx);
+        temporaryRepositoryRegistration(ast, global, friendFunctionImplEx);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, friendFunctionImplEx, clsTemplateSuffix, global);

@@ -224,6 +224,7 @@ public class AvatarJSProjectGenerator {
         } else /*if (!isLibrary)*/ {
             ep.setProperty("main.file", ""); // NOI18N
         }
+        //ep.setProperty(ProjectProperties.MAIN_CLASS, "N/A"); // NOI18N
         ep.setProperty("javac.compilerargs", ""); // NOI18N
         ep.setComment("javac.compilerargs", new String[] {
             "# " + NbBundle.getMessage(AvatarJSProjectGenerator.class, "COMMENT_javac.compilerargs"), // NOI18N

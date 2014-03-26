@@ -100,6 +100,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     }
     
     private JTree errorTree;
+    private ExtendedModel extendedModel;
     private JLabel severityLabel;
     private JComboBox severityComboBox;
     private JPanel customizerPanel;
@@ -113,11 +114,12 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         defModel.addElement(NbBundle.getMessage(HintsPanel.class, "CTL_AsWarning")); //NOI18N
     }
     
-    void connect( JTree errorTree, JLabel severityLabel, JComboBox severityComboBox,
+    void connect( JTree errorTree, ExtendedModel model, JLabel severityLabel, JComboBox severityComboBox,
                   JPanel customizerPanel, JEditorPane descriptionTextArea,
                   Preferences preferences) {
         this.preferences = preferences;
         this.errorTree = errorTree;
+        this.extendedModel = model;
         this.severityLabel = severityLabel;
         this.severityComboBox = severityComboBox;
         this.customizerPanel = customizerPanel;
@@ -369,7 +371,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             return false;
         }
         Object o = getUserObject(treePath);
-        ExtendedModel model = (ExtendedModel) errorTree.getModel();
+        ExtendedModel model = extendedModel;
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) treePath.getLastPathComponent();
         if (o instanceof CodeAudit) {
             CodeAudit hint = (CodeAudit) o;
@@ -457,22 +459,4 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         descriptionTextArea.setEnabled(enabled);
     }
     
-    private static final class Confidence {
-        private final int value;
-        private final String displayName;
-        private Confidence(int value, String displayName) {
-            this.value = value;
-            this.displayName = displayName;
-        }
-
-        public int getValue() {
-           return value; 
-        }
-        
-        @Override
-        public String toString() {
-            return displayName;
-        }
-    }
-
 }

@@ -45,10 +45,10 @@ package org.netbeans.modules.cnd.modelimpl.util;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Stack;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceUtils;
 
 /**
@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceUtils;
  */
 public final class MapHierarchy<K, V> {
     
-    private final Stack<Map<K, V>> maps = new Stack<>();
+    private final LinkedList<Map<K, V>> maps = new LinkedList<>();
 
     public MapHierarchy() {
     }
@@ -73,15 +73,15 @@ public final class MapHierarchy<K, V> {
     }        
     
     public void push(Map<K, V> map) {
-        maps.push(map);
+        maps.addLast(map);
     }
     
     public Map<K, V> pop() {
-        return maps.pop();
+        return maps.removeLast();
     }
     
     public Map<K, V> peek() {
-        return maps.peek();
+        return maps.peekLast();
     }
     
     public List<Map<K, V>> getMaps() {
@@ -134,6 +134,10 @@ public final class MapHierarchy<K, V> {
             result += map.size();
         }
         return result;
+    }
+    
+    public boolean isEmpty() {
+        return size() == 0;
     }
     
     public Iterable<Map.Entry<K, V>> entries() {
@@ -196,7 +200,7 @@ public final class MapHierarchy<K, V> {
   
     private abstract static class BaseMapIterator<K, V, I> implements Iterator<I> {
         
-        private final Stack<Map<K, V>> maps;
+        private final LinkedList<Map<K, V>> maps;
         
         private final ListIterator<Map<K, V>> stackIter;
         
@@ -205,7 +209,7 @@ public final class MapHierarchy<K, V> {
         private I nextElem;
         
         
-        public BaseMapIterator(Stack<Map<K, V>> maps) {
+        public BaseMapIterator(LinkedList<Map<K, V>> maps) {
             this.maps = maps;
             this.stackIter = maps.listIterator(maps.size());
             this.mapIter = stackIter.hasPrevious() ? getMapIterator(stackIter.previous()) : null;
@@ -247,7 +251,7 @@ public final class MapHierarchy<K, V> {
     
     private static class EntrySetIterator<K, V> extends BaseMapIterator<K, V, Map.Entry<K, V>> {
 
-        public EntrySetIterator(Stack<Map<K, V>> maps) {
+        public EntrySetIterator(LinkedList<Map<K, V>> maps) {
             super(maps);
         }
 
@@ -259,7 +263,7 @@ public final class MapHierarchy<K, V> {
     
     private static class KeySetIterator<K, V> extends BaseMapIterator<K, V, K> {
 
-        public KeySetIterator(Stack<Map<K, V>> maps) {
+        public KeySetIterator(LinkedList<Map<K, V>> maps) {
             super(maps);
         }
 
@@ -271,7 +275,7 @@ public final class MapHierarchy<K, V> {
     
     private static class ValuesIterator<K, V> extends BaseMapIterator<K, V, V> {
 
-        public ValuesIterator(Stack<Map<K, V>> maps) {
+        public ValuesIterator(LinkedList<Map<K, V>> maps) {
             super(maps);
         }
 

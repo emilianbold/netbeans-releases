@@ -101,7 +101,7 @@ public final class ConstructorDefinitionImpl extends FunctionDefinitionImpl<CsmF
 
         ConstructorDefinitionImpl res = new ConstructorDefinitionImpl(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
         
-        temporaryRepositoryRegistration(global, res);
+        temporaryRepositoryRegistration(ast, global, res);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, res, clsTemplateSuffix, global);

@@ -54,17 +54,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
  * Misc static methods used by deep impls
  * @author Vladimir Kvashin
  */
-public class DeepUtil {
-    
-    public static interface ASTTokenVisitor {
-        
-        /**
-         * @param token 
-         * @return true to continue visiting, false to abort
-         */
-        boolean visit(AST token);
-        
-    }    
+public class DeepUtil {    
 
     public static List<CsmScopeElement> merge(CsmVariable var, List<CsmStatement> statements) {
         if (var == null) {
@@ -101,20 +91,6 @@ public class DeepUtil {
             l.add(statement);
         }
         return l;
-    }
-    
-    public static boolean visitAST(ASTTokenVisitor visitor, AST ast) {
-        if (ast != null) {
-            if (!visitor.visit(ast)) {
-                return false;
-            }
-            for (AST insideToken = ast.getFirstChild(); insideToken != null; insideToken = insideToken.getNextSibling()) {
-                if (!visitAST(visitor, insideToken)) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
+    }       
 }
 

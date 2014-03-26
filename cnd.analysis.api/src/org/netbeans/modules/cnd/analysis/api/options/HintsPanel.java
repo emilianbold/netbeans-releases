@@ -74,6 +74,7 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
     private final JCheckBox renderer = new JCheckBox();
     private HintsPanelLogic logic;
     private Preferences preferences;
+    private ExtendedModel model;
     
     private final static RequestProcessor WORKER = new RequestProcessor(HintsPanel.class.getName(), 1, false, false);
     private final RequestProcessor.Task expandTask = WORKER.create(new Runnable() {
@@ -102,14 +103,17 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
         errorTree.setRootVisible( false );
         errorTree.setShowsRootHandles( true );
         errorTree.getSelectionModel().setSelectionMode( TreeSelectionModel.SINGLE_TREE_SELECTION );
-        update();
-        ExtendedModel model = new ExtendedModel(selection);
-        OptionsFilter filter = masterLookup.lookup(OptionsFilter.class);
+        model = new ExtendedModel(selection);
+        OptionsFilter filter = null;
+        if (masterLookup != null) {
+            filter = masterLookup.lookup(OptionsFilter.class);
+        }
         if (filter != null) {
              ((OptionsFilter) filter).installFilteringModel(errorTree, model, new AcceptorImpl());
         } else {
             errorTree.setModel(model);
         }
+        update();
     }
     
     @Override
@@ -249,28 +253,27 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-    
-        
-    synchronized void update() {
+       
+    public synchronized void update() {
         if ( logic != null ) {
             logic.disconnect();
         }
         logic = new HintsPanelLogic();
-        logic.connect(errorTree, severityLabel, severityComboBox,
+        logic.connect(errorTree, model, severityLabel, severityComboBox,
                 customizerPanel, descriptionTextArea,
                 preferences);
     }
     
-    void cancel() {
+    public void cancel() {
         logic.disconnect();
         logic = null;
     }
     
-    boolean isChanged() {
+    public boolean isChanged() {
         return logic != null ? logic.isChanged() : false;
     }
     
-    void applyChanges() {
+    public void applyChanges() {
         logic.applyChanges();
         logic.disconnect();
         logic = null;
@@ -286,12 +289,12 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
             Object data = ((DefaultMutableTreeNode)value).getUserObject();
             if ( data instanceof CodeAudit ) {
                 CodeAudit audit = (CodeAudit)data;
-                if (audit.getName().equals(audit.getDescription())) {
+                if (audit.getID().equals(audit.getName())) {
                     renderer.setText(audit.getName());
                 } else {
-                    renderer.setText( audit.getName()+ ": " + audit.getDescription()); // NOI18N
+                    renderer.setText( audit.getID()+ ": " + audit.getName()); // NOI18N
                 }
-                renderer.setSelected(audit.isEnabled());
+                 renderer.setSelected(audit.isEnabled());
             } else if (data instanceof CodeAuditProvider) {
                 CodeAuditProvider provider = (CodeAuditProvider)data;
                 renderer.setText( provider.getDisplayName());

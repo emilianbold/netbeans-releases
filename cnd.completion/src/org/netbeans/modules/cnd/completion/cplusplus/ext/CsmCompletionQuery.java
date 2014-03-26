@@ -100,6 +100,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
@@ -133,6 +134,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.VariableR
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.QueryScope;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
+import org.netbeans.modules.cnd.completion.csm.CompletionResolverImpl;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.ClassifiersAntiLoop;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
@@ -184,7 +186,7 @@ abstract public class CsmCompletionQuery {
         return baseDocument;
     }
 
-    abstract protected CompletionResolver getCompletionResolver(boolean openingSource, boolean sort, boolean inIncludeDirective);
+    abstract protected CompletionResolver getCompletionResolver(CsmScope contextScope, boolean openingSource, boolean sort, boolean inIncludeDirective);
 
     abstract protected CsmFinder getFinder();
 
@@ -340,9 +342,9 @@ abstract public class CsmCompletionQuery {
                 final int startOffset = expression.getStartOffset();
                 final int endOffset = expression.getEndOffset();
 
-                if (!checkCondition(baseDocument, endOffset, true)) {
-                    return false;
-                }
+//                if (!checkCondition(baseDocument, endOffset, true)) {
+//                    return false;
+//                }
 
                 long docVersion = DocumentUtilities.getDocumentVersion(baseDocument);
 
@@ -360,7 +362,10 @@ abstract public class CsmCompletionQuery {
                 
                 CsmCompletionTokenProcessor tp;
                 
+                CsmScope passedScope = null;
+                
                 if (CsmKindUtilities.isExpression(expression)) {
+                    passedScope = ((CsmExpression) expression).getScope();
                     tp = processTokensInExpression((CsmExpression) expression);
                 } else {
                     tp = processTokensInFile(csmFile, startOffset, endOffset, baseDocument, docVersion);
@@ -382,7 +387,8 @@ abstract public class CsmCompletionQuery {
                                 false, 
                                 isInIncludeDirective(baseDocument, endOffset), 
                                 true, 
-                                true
+                                true,
+                                passedScope
                         );
                         
                         task.perform(ctx);
@@ -711,11 +717,13 @@ abstract public class CsmCompletionQuery {
     }
     
     private CsmCompletionTokenProcessor processTokensInExpression(CsmExpression expression) {
-        final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(expression.getEndOffset(), expression.getStartOffset());
-
         String expressionText = expression.getExpandedText().toString();        
+        int exprStartOffset = expression.getStartOffset();
+        int exprEndOffset = exprStartOffset + expressionText.length();
+        
+        final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(exprEndOffset, exprStartOffset);
         TokenHierarchy<String> hi = TokenHierarchy.create(expressionText, CndLexerUtilities.getLanguage(getBaseDocument()));
-        List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(expression.getEndOffset() - expression.getStartOffset(), true);
+        List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(exprEndOffset - exprStartOffset, true);
         // Go from inner to outer TSes
         TokenSequence<TokenId> cppts = null;
         for (int i = tsList.size() - 1; i >= 0; i--) {
@@ -741,7 +749,7 @@ abstract public class CsmCompletionQuery {
             }
             tp.enableTemplateSupport(enableTemplates);
             
-            CndTokenUtilities.processTokens(tp, cppTokenSequence, expression.getStartOffset(), expression.getEndOffset(), expression.getStartOffset());  
+            CndTokenUtilities.processTokens(tp, cppTokenSequence, exprStartOffset, exprEndOffset, exprStartOffset);  
         }
         
         return tp;
@@ -750,7 +758,7 @@ abstract public class CsmCompletionQuery {
     abstract protected boolean isProjectBeeingParsed(boolean openingSource);
 
     private CsmCompletionResult getResult(JTextComponent component, Document doc, boolean openingSource, int offset, CsmCompletionExpression exp, boolean sort, boolean inIncludeDirective, boolean instantiateTypes) {
-        Context ctx = getResolvedContext(component, doc, openingSource, offset, exp, null, sort, inIncludeDirective, instantiateTypes, false);
+        Context ctx = getResolvedContext(component, doc, openingSource, offset, exp, null, sort, inIncludeDirective, instantiateTypes, false, null);
         if (ctx != null) {
             return ctx.result;
         } else {
@@ -758,11 +766,6 @@ abstract public class CsmCompletionQuery {
             return new CsmCompletionResult(component, getBaseDocument(), Collections.EMPTY_LIST, "", exp, 0, isProjectBeeingParsed, null, instantiateTypes);
         }
     } 
-    
-    private CsmType getResultType(Document doc, CsmCompletionExpression expression, List<CsmInstantiation> instantiations, int offset, boolean openingSource, boolean instantiateTypes) {
-        Context ctx = getResolvedContext(null, doc, openingSource, offset, expression, instantiations, false, false, instantiateTypes, true);
-        return ctx != null ? ctx.lastType : null;
-    }
     
     private Context getResolvedContext(JTextComponent component, 
                                        Document doc, 
@@ -773,17 +776,29 @@ abstract public class CsmCompletionQuery {
                                        boolean sort, 
                                        boolean inIncludeDirective, 
                                        boolean instantiateTypes, 
-                                       boolean findType
+                                       boolean findType,
+                                       CsmScope contextScope
     ) {
-        CompletionResolver resolver = getCompletionResolver(openingSource, sort, inIncludeDirective);
+        CompletionResolver resolver = getCompletionResolver(contextScope, openingSource, sort, inIncludeDirective);
         if (resolver != null) {
+            if (CsmKindUtilities.isOffsetable(contextScope)) {
+                CsmOffsetable offsetableScope = (CsmOffsetable) contextScope;
+                if (offsetableScope.getEndOffset() < offset) {
+                    ((CompletionResolverImpl) resolver).setContextOffset(
+                            (offsetableScope.getStartOffset() + offsetableScope.getEndOffset()) / 2
+                    );
+                }
+            }
             CompletionSupport sup = CompletionSupport.get(doc);
-            CsmOffsetableDeclaration context = sup.getDefinition(getCsmFile(), offset, getFileReferencesContext());
+            CsmOffsetableDeclaration context = sup.getDefinition(contextScope);
+            if (context == null) {
+                context = sup.getDefinition(getCsmFile(), offset, getFileReferencesContext());
+            }
             if (!openingSource && context == null) {
                 instantiateTypes = false;
             }
             
-            Context ctx = new Context(component, sup, openingSource, offset, getFinder(), resolver, context, sort, instantiateTypes, instantiations);
+            Context ctx = new Context(component, sup, openingSource, offset, getFinder(), resolver, context, contextScope, sort, instantiateTypes, instantiations);
             ctx.setFindType(findType);
             
             ctx.resolveExp(exp, true);
@@ -1181,6 +1196,7 @@ abstract public class CsmCompletionQuery {
         /** Finder associated with this Context. */
         private final CsmFinder finder;
         private final CsmFile contextFile;
+        private final CsmScope contextScope;
         /** Completion resolver associated with this Context. */
         private CompletionResolver compResolver;
         /** function or class in context */
@@ -1192,7 +1208,8 @@ abstract public class CsmCompletionQuery {
         public Context(JTextComponent component,
                 CompletionSupport sup, boolean openingSource, int endOffset,
                 CsmFinder finder,
-                CompletionResolver compResolver, CsmOffsetableDeclaration contextElement, boolean sort, boolean instantiateTypes,
+                CompletionResolver compResolver, CsmOffsetableDeclaration contextElement, CsmScope contextScope,
+                boolean sort, boolean instantiateTypes,
                 List<CsmInstantiation> instantiations) {
             this.component = component;
             this.sup = sup;
@@ -1205,10 +1222,21 @@ abstract public class CsmCompletionQuery {
             this.sort = sort;
             this.instantiateTypes = instantiateTypes;
             this.instantiations = instantiations;
+            this.contextScope = contextScope;
         }
         
         CsmFile getContextFile() {
             return contextFile;
+        }
+        
+        CsmScope getContextScope() {
+            // is not null when scope cannot be calculated from offset 
+            // (when resolving was started from macros)
+            return contextScope; 
+        }
+        
+        List<CsmInstantiation> getContextInstantiations() {
+            return instantiations;
         }
         
         int getEndOffset() {
@@ -1429,7 +1457,7 @@ abstract public class CsmCompletionQuery {
 
         @Override
         protected Object clone() {
-            return new Context(component, sup, openingSource, endOffset, finder, compResolver, contextElement, sort, instantiateTypes, instantiations);
+            return new Context(component, sup, openingSource, endOffset, finder, compResolver, contextElement, contextScope, sort, instantiateTypes, instantiations);
         }
 
         private CsmClassifier extractLastTypeClassifier(ExprKind expKind) {
@@ -1784,7 +1812,7 @@ abstract public class CsmCompletionQuery {
                             0, isProjectBeeingParsed(), contextElement, instantiateTypes);
                     break;
                 }
-
+                
                 case CsmCompletionExpression.CASE:
                     // TODO: check with NbJavaJMICompletionQuery
                     // FIXUP: now just analyze expression after "case "
@@ -1804,7 +1832,7 @@ abstract public class CsmCompletionQuery {
             int startOffset = item.getTokenOffset(0);
             int lastInd = item.getTokenCount() - 1;
             int endtOffset = item.getTokenOffset(lastInd) + item.getTokenLength(lastInd);
-            return CsmCompletion.getPredefinedType(containingFile, startOffset, endtOffset, item.getType());
+            return CsmCompletion.getPredefinedType(containingFile, startOffset, endtOffset, item);
         }
         /** Resolve one item from the expression connected by dots.
          * @param item expression item to resolve
@@ -2481,6 +2509,19 @@ abstract public class CsmCompletionQuery {
                                 result = new CsmCompletionResult(component, getBaseDocument(), res, varName + '*', item, varPos, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes);
                             }
                         }
+                    }
+                    break;
+                    
+                case CsmCompletionExpression.TERNARY_OPERATOR:
+                    if (item.getParameterCount() > 1) {
+                        // first param - condition, second - colon operator
+                        lastType = resolveType(
+                                item.getParameter(1), 
+                                true, 
+                                new ContextCloneStrategy(new ContextPropertyChanger().setLastNamespace(lastNamespace).setLastType(lastType))
+                        );
+                    } else {
+                        lastType = null;
                     }
                     break;
 

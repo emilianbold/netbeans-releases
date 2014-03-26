@@ -285,11 +285,15 @@ public class UIDUtilities {
         }
         return null;
     }
-
+    
     public static CharSequence getName(CsmUID<?> uid) {
+        return getName(uid, false);
+    }
+
+    public static CharSequence getName(CsmUID<?> uid, boolean internalName) {
         if (uid instanceof KeyBasedUID<?>) {
             Key key = ((KeyBasedUID<?>) uid).getKey();
-            return KeyUtilities.getKeyName(key);
+            return KeyUtilities.getKeyName(key, internalName);
         } else if (UIDProviderIml.isSelfUID(uid)) {
             Object object = uid.getObject();
             if (CsmKindUtilities.isNamedElement(object)) {
@@ -354,8 +358,8 @@ public class UIDUtilities {
             return offset1 - offset2;
         }
         // by name
-        CharSequence name1 = getName(d1);
-        CharSequence name2 = getName(d2);
+        CharSequence name1 = getName(d1, true);
+        CharSequence name2 = getName(d2, true);
         if (name1 instanceof Comparable<?>) {
             @SuppressWarnings("unchecked")
             Comparable<CharSequence> o1 = (Comparable<CharSequence>) name1;
