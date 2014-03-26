@@ -44,9 +44,7 @@ package org.netbeans.modules.cnd.highlight.hints;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -148,8 +146,14 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
     }
 
     @Override
-    public Set<EditorEvent> supportedEvents() {
-        return EnumSet.<EditorEvent>of(EditorEvent.FileBased);
+    public boolean isSupportedEvent(EditorEvent kind) {
+        for(CodeAudit audit : getAudits()) {
+            AbstractCodeAudit engine = (AbstractCodeAudit)audit;
+            if (engine.isSupportedEvent(kind)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     @Override
@@ -165,7 +169,10 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
                     if (request.isCancelled()) {
                         return;
                     }
-                    ((AbstractCodeAudit)audit).doGetErrors(request, response);
+                    AbstractCodeAudit engine = (AbstractCodeAudit)audit;
+                    if (engine.isEnabled() && engine.isSupportedEvent(request.getEvent())) {
+                        engine.doGetErrors(request, response);
+                    }
                 }
             } finally {
                 CsmCacheManager.leave();
