@@ -49,16 +49,28 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
  * @author alsimon
  */
 final class ErrorInfoImpl implements CsmErrorInfo {
+    private final String audutID;
+    private final String audutName;
     private final String message;
     private final Severity severity;
     private final int startOffset;
     private final int endOffset;
 
-    ErrorInfoImpl(String message, Severity severity, int startOffset, int endOffset) {
+    ErrorInfoImpl(String audutID, String audutName, String message, Severity severity, int startOffset, int endOffset) {
+        this.audutID = audutID;
+        this.audutName = audutName;
         this.message = message;
         this.severity = severity;
         this.startOffset = startOffset;
         this.endOffset = endOffset;
+    }
+
+    public String getAuditID() {
+        return audutID;
+    }
+
+    public String getAuditName() {
+        return audutName;
     }
 
     @Override

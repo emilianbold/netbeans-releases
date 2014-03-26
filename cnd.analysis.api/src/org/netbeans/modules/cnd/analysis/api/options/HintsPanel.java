@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
 import org.netbeans.modules.cnd.analysis.api.CodeAuditProviderImpl;
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JCheckBox;
@@ -114,6 +115,43 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
             errorTree.setModel(model);
         }
         update();
+    }
+    
+    void selectPath(String path) {
+        TreePath treePath = null;
+        for(DefaultMutableTreeNode node : model.audits) {
+            Object provider = node.getUserObject();
+            if (provider instanceof CodeAuditProvider) {
+                String displayName = ((CodeAuditProvider)provider).getDisplayName();
+                if (path.startsWith(displayName)) {
+                    treePath = new TreePath(new Object[]{model.getRoot(),node});
+                    path = path.substring(displayName.length());
+                    if (path.length() > 1) {
+                        path = path.substring(1);
+                        Enumeration children = node.children();
+                        while(children.hasMoreElements()) {
+                            Object sub = children.nextElement();
+                            if (sub instanceof DefaultMutableTreeNode) {
+                                Object audit = ((DefaultMutableTreeNode)sub).getUserObject();
+                                if (audit instanceof CodeAudit) {
+                                    String name = ((CodeAudit)audit).getID();
+                                    if (path.startsWith(name)) {
+                                        treePath = new TreePath(new Object[]{model.getRoot(),node, sub});
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        if (treePath != null) {
+            errorTree.setSelectionPath(treePath);
+            errorTree.scrollPathToVisible(treePath);
+            errorTree.requestFocusInWindow();
+        }
     }
     
     @Override
