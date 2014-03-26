@@ -90,6 +90,12 @@ public final class AvatarJSProjectFactory implements ProjectFactory2 {
         if (pkgJson == null) {
             return null;
         }
+        if (
+            projectDirectory.getFileObject("nbproject") != null ||
+            projectDirectory.getParent().getFileObject("nbproject") != null
+        ) {
+            return null;
+        }
         ImageIcon img = ImageUtilities.loadImageIcon(ICON, false);
         return new ProjectManager.Result(img);
     }
@@ -101,7 +107,10 @@ public final class AvatarJSProjectFactory implements ProjectFactory2 {
 
     @Override
     public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
-        return new PackageJSONPrj(projectDirectory);
+        if (isProject(projectDirectory)) {
+            return new PackageJSONPrj(projectDirectory);
+        }
+        return null;
     }
 
     @Override
