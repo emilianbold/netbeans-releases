@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.highlight.hints;
 
 import java.util.Collection;
 import org.netbeans.modules.cnd.analysis.api.AnalyzerResponse;
-import org.netbeans.modules.cnd.analysis.api.AuditPreferences;
+import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMember;

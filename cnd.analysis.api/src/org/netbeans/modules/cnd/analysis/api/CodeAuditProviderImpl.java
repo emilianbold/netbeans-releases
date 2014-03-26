@@ -4,6 +4,7 @@
  */
 package org.netbeans.modules.cnd.analysis.api;
 
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

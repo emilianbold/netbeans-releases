@@ -51,9 +51,9 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.cnd.analysis.api.AuditPreferences;
-import org.netbeans.modules.cnd.analysis.api.CodeAudit;
-import org.netbeans.modules.cnd.analysis.api.CodeAuditProvider;
+import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
@@ -182,15 +182,6 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
             audits = res;
         }
         return audits;
-    }
-
-    @Override
-    public String getConfidence() {
-        String confidence = myPreferences.get(getName(), "confidence"); //NOI18N
-        if (confidence == null || confidence.isEmpty()) {
-            return "2"; //NOI18N
-        }
-        return confidence;
     }
 
     @Override
