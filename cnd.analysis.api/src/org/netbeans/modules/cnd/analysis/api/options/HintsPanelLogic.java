@@ -41,10 +41,6 @@
 
 package org.netbeans.modules.cnd.analysis.api.options;
 
-import org.netbeans.modules.cnd.analysis.api.AbstractCustomizerProvider;
-import org.netbeans.modules.cnd.analysis.api.CodeAudit;
-import org.netbeans.modules.cnd.analysis.api.CodeAuditProvider;
-import org.netbeans.modules.cnd.analysis.api.options.HintsPanel.ExtendedModel;
 import java.awt.BorderLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -54,7 +50,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
@@ -70,6 +66,10 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.cnd.analysis.api.AbstractCustomizerProvider;
+import org.netbeans.modules.cnd.analysis.api.options.HintsPanel.ExtendedModel;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.awt.Mnemonics;
@@ -94,7 +94,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     
     
     static {
-        severity2index = new HashMap<Severity, Integer>();
+        severity2index = new EnumMap<Severity, Integer>(Severity.class);
         severity2index.put( Severity.ERROR, 0  );
         severity2index.put( Severity.WARNING, 1  );
     }
