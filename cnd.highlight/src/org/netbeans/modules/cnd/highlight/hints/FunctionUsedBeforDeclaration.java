@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.EditorEvent;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -69,6 +70,11 @@ public class FunctionUsedBeforDeclaration extends AbstractCodeAudit {
     
     private FunctionUsedBeforDeclaration(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
         super(id, name, description, defaultSeverity, defaultEnabled, myPreferences);
+    }
+    
+    @Override
+    public boolean isSupportedEvent(EditorEvent kind) {
+        return kind == EditorEvent.FileBased;
     }
 
     @Override
@@ -122,12 +128,7 @@ public class FunctionUsedBeforDeclaration extends AbstractCodeAudit {
                         if (funDecl.getStartOffset() <= ref.getStartOffset()) {
                             return;
                         }
-                        CsmErrorInfo.Severity severity;
-                        if ("error".equals(minimalSeverity())) { // NOI18N
-                            severity = CsmErrorInfo.Severity.ERROR;
-                        } else {
-                            severity = CsmErrorInfo.Severity.WARNING;
-                        }
+                        CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
                         String message = NbBundle.getMessage(FunctionUsedBeforDeclaration.class, "FunctionUsedBeforDeclaration.message", fun.getName()); // NOI18N
                         if (response instanceof AnalyzerResponse) {
                             ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, ref.getContainingFile().getFileObject(),
