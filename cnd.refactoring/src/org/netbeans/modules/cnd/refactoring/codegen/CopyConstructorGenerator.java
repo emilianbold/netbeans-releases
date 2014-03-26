@@ -98,6 +98,7 @@ public class CopyConstructorGenerator implements CodeGenerator {
             final Set<CsmField> mayBeIninitializedFields = new LinkedHashSet<>();
             final Set<CsmField> cannotBeInitializedFields = new LinkedHashSet<>();
             final List<CsmConstructor> constructors = new ArrayList<>();
+            final Map<CsmClass,CsmConstructor> inheritedConstructors = new HashMap<>();
             CsmCacheManager.enter();
             try {
                 GeneratorUtils.scanForFieldsAndConstructors(typeElement, shouldBeInitializedFields, mayBeIninitializedFields, cannotBeInitializedFields, constructors);
@@ -106,24 +107,23 @@ public class CopyConstructorGenerator implements CodeGenerator {
                         return ret;
                     }
                 }
-            } finally {
-            CsmCacheManager.leave();
-            }
-            final Map<CsmClass,CsmConstructor> inheritedConstructors = new HashMap<>();
-            // check base class
-            for (CsmInheritance csmInheritance : typeElement.getBaseClasses()) {
-                CsmClass baseClass = CsmInheritanceUtilities.getCsmClass(csmInheritance);
-                if (baseClass != null) {
-                    List<CsmConstructor> list = new ArrayList<>();
-                    for (CsmMember member : baseClass.getMembers()) {
-                        if (CsmKindUtilities.isConstructor(member) &&
-                            CsmInheritanceUtilities.matchVisibility(member, csmInheritance.getVisibility()) &&
-                            isCopyConstructor(baseClass, (CsmConstructor) member)) {
-                            inheritedConstructors.put(baseClass, (CsmConstructor)member);
-                            break;
+                // check base class
+                for (CsmInheritance csmInheritance : typeElement.getBaseClasses()) {
+                    CsmClass baseClass = CsmInheritanceUtilities.getCsmClass(csmInheritance);
+                    if (baseClass != null) {
+                        List<CsmConstructor> list = new ArrayList<>();
+                        for (CsmMember member : baseClass.getMembers()) {
+                            if (CsmKindUtilities.isConstructor(member) &&
+                                CsmInheritanceUtilities.matchVisibility(member, csmInheritance.getVisibility()) &&
+                                isCopyConstructor(baseClass, (CsmConstructor) member)) {
+                                inheritedConstructors.put(baseClass, (CsmConstructor)member);
+                                break;
+                            }
                         }
                     }
                 }
+            } finally {
+                CsmCacheManager.leave();
             }
             if (shouldBeInitializedFields.size() + mayBeIninitializedFields.size() + inheritedConstructors.size() > 0) {
                 ret.add(new CopyConstructorGenerator(component, path, typeElement, shouldBeInitializedFields, mayBeIninitializedFields, inheritedConstructors));
