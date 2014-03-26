@@ -51,11 +51,13 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
+import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
+import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfoHintProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
@@ -64,6 +66,7 @@ import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -162,9 +165,7 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
                     if (request.isCancelled()) {
                         return;
                     }
-                    if (audit instanceof CodeAuditInfo) {
-                        ((CodeAuditInfo)audit).doGetErrors(request, response);
-                    }
+                    ((AbstractCodeAudit)audit).doGetErrors(request, response);
                 }
             } finally {
                 CsmCacheManager.leave();
@@ -176,9 +177,9 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
     public synchronized Collection<CodeAudit> getAudits() {
         if (audits == null) {
             List<CodeAudit> res = new ArrayList<CodeAudit>();
-            res.add(NonVirtualDestructor.create(myPreferences));
-            res.add(MethodDeclarationMissed.create(myPreferences));
-            res.add(FunctionUsedBeforDeclaration.create(myPreferences));
+            for(CodeAuditFactory factory : Lookups.forPath(CodeAuditFactory.REGISTRATION_PATH).lookupAll(CodeAuditFactory.class)) {
+                res.add(factory.create(myPreferences));
+            }
             audits = res;
         }
         return audits;
