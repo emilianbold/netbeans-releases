@@ -44,18 +44,18 @@ package org.netbeans.modules.cnd.highlight.hints;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.cnd.analysis.api.AuditPreferences;
-import org.netbeans.modules.cnd.analysis.api.CodeAudit;
-import org.netbeans.modules.cnd.analysis.api.CodeAuditProvider;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
+import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
+import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfoHintProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
@@ -64,6 +64,7 @@ import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -145,8 +146,14 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
     }
 
     @Override
-    public Set<EditorEvent> supportedEvents() {
-        return EnumSet.<EditorEvent>of(EditorEvent.FileBased);
+    public boolean isSupportedEvent(EditorEvent kind) {
+        for(CodeAudit audit : getAudits()) {
+            AbstractCodeAudit engine = (AbstractCodeAudit)audit;
+            if (engine.isSupportedEvent(kind)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     @Override
@@ -162,8 +169,9 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
                     if (request.isCancelled()) {
                         return;
                     }
-                    if (audit instanceof CodeAuditInfo) {
-                        ((CodeAuditInfo)audit).doGetErrors(request, response);
+                    AbstractCodeAudit engine = (AbstractCodeAudit)audit;
+                    if (engine.isEnabled() && engine.isSupportedEvent(request.getEvent())) {
+                        engine.doGetErrors(request, response);
                     }
                 }
             } finally {
@@ -176,21 +184,12 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
     public synchronized Collection<CodeAudit> getAudits() {
         if (audits == null) {
             List<CodeAudit> res = new ArrayList<CodeAudit>();
-            res.add(NonVirtualDestructor.create(myPreferences));
-            res.add(MethodDeclarationMissed.create(myPreferences));
-            res.add(FunctionUsedBeforDeclaration.create(myPreferences));
+            for(CodeAuditFactory factory : Lookups.forPath(CodeAuditFactory.REGISTRATION_PATH).lookupAll(CodeAuditFactory.class)) {
+                res.add(factory.create(myPreferences));
+            }
             audits = res;
         }
         return audits;
-    }
-
-    @Override
-    public String getConfidence() {
-        String confidence = myPreferences.get(getName(), "confidence"); //NOI18N
-        if (confidence == null || confidence.isEmpty()) {
-            return "2"; //NOI18N
-        }
-        return confidence;
     }
 
     @Override
@@ -205,7 +204,7 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
         @Override
         protected List<Fix> doGetFixes(CsmErrorInfo info, List<Fix> alreadyFound) {
             if (info instanceof ErrorInfoImpl) {
-                alreadyFound.add(new DisableHintFix());
+                alreadyFound.add(new DisableHintFix((ErrorInfoImpl) info));
             }
             return alreadyFound;
         }
@@ -213,8 +212,10 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
     
     
     private static class DisableHintFix implements EnhancedFix {
+        private final ErrorInfoImpl error;
 
-        DisableHintFix() {
+        DisableHintFix(ErrorInfoImpl error) {
+            this.error = error;
         }
 
         @Override
@@ -224,7 +225,8 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
 
         @Override
         public ChangeInfo implement() throws Exception {
-            OptionsDisplayer.getDefault().open("Editor/Hints/text/x-cnd+sourcefile"); // NOI18N
+            String providerName = NbBundle.getMessage(CsmHintProvider.class, "General_NAME");
+            OptionsDisplayer.getDefault().open("Editor/Hints/text/x-cnd+sourcefile/"+providerName+"/"+error.getAuditName()); // NOI18N
             return null;
         }
 

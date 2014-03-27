@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.analysis.api;
+package org.netbeans.modules.cnd.api.model.syntaxerr;
 
 import java.util.Collection;
 
@@ -50,6 +50,5 @@ public interface CodeAuditProvider {
     String getName();
     String getDisplayName();
     String getDescription();
-    String getConfidence();
     AuditPreferences getPreferences();
 }

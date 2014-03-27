@@ -40,17 +40,15 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.highlight.hints;
+package org.netbeans.modules.cnd.api.model.syntaxerr;
 
-import org.netbeans.modules.cnd.analysis.api.AuditPreferences;
-import org.netbeans.modules.cnd.analysis.api.CodeAudit;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.EditorEvent;
 
 /**
  *
  * @author Alexander Simon
  */
-abstract class CodeAuditInfo implements CodeAudit {
+public abstract class AbstractCodeAudit implements CodeAudit {
     private final String id;
     private final String name;
     private final String description;
@@ -58,7 +56,7 @@ abstract class CodeAuditInfo implements CodeAudit {
     private final boolean defaultEnabled;
     private final AuditPreferences myPreferences;
 
-    CodeAuditInfo(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
+    protected AbstractCodeAudit(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -100,10 +98,20 @@ abstract class CodeAuditInfo implements CodeAudit {
         return severity;
     }
 
+    public static CsmErrorInfo.Severity toSeverity(String severity){
+        if ("error".equals(severity)) { // NOI18N
+            return CsmErrorInfo.Severity.ERROR;
+        } else {
+            return CsmErrorInfo.Severity.WARNING;
+        }
+    }
+    
     @Override
     public AuditPreferences getPreferences() {
         return myPreferences;
     }
+
+    public abstract boolean isSupportedEvent(EditorEvent kind);
     
-    abstract void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response);
+    public abstract void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response);
 }

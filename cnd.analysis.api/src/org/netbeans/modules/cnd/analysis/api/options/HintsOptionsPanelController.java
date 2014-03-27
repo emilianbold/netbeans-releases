@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.analysis.api.options;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -90,10 +91,21 @@ public class HintsOptionsPanelController extends OptionsPanelController {
 	return new HelpCtx("netbeans.optionsDialog.java.hints"); //NOI18N
     }
     
+    protected HintsPanel createPanel(Lookup masterLookup, CodeAuditProvider selection) {
+        return new HintsPanel(masterLookup, selection);
+    }
+    
+    @Override
+    protected void setCurrentSubcategory(String subpath) {
+        if (panel != null) {
+            panel.selectPath(subpath);
+        }
+    }
+    
     @Override
     public synchronized JComponent getComponent(Lookup masterLookup) {
         if ( panel == null ) {
-            panel = new HintsPanel(masterLookup, null);
+            panel = createPanel(masterLookup, null);
         }
         return panel;
     }

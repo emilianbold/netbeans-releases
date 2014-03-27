@@ -40,57 +40,15 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.highlight.hints;
-
-import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
+package org.netbeans.modules.cnd.api.model.syntaxerr;
 
 /**
  *
- * @author alsimon
+ * @author Alexander Simon
  */
-final class ErrorInfoImpl implements CsmErrorInfo {
-    private final String audutID;
-    private final String audutName;
-    private final String message;
-    private final Severity severity;
-    private final int startOffset;
-    private final int endOffset;
-
-    ErrorInfoImpl(String audutID, String audutName, String message, Severity severity, int startOffset, int endOffset) {
-        this.audutID = audutID;
-        this.audutName = audutName;
-        this.message = message;
-        this.severity = severity;
-        this.startOffset = startOffset;
-        this.endOffset = endOffset;
-    }
-
-    public String getAuditID() {
-        return audutID;
-    }
-
-    public String getAuditName() {
-        return audutName;
-    }
-
-    @Override
-    public String getMessage() {
-        return message;
-    }
-
-    @Override
-    public Severity getSeverity() {
-        return severity;
-    }
-
-    @Override
-    public int getStartOffset() {
-        return startOffset;
-    }
-
-    @Override
-    public int getEndOffset() {
-        return endOffset;
-    }
-    
+public interface CodeAuditFactory {
+    // constant to be used for registration of provider
+    // i.e. @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH, service = CodeAuditFactory.class, position = 100)
+    public static final String REGISTRATION_PATH = "CND/CndHintsFactory"; // NOI18N
+    AbstractCodeAudit create(AuditPreferences preferences);
 }
