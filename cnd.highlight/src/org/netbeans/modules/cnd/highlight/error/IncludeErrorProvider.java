@@ -53,14 +53,13 @@ import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmInclude.IncludeState;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.EditorEvent;
+import org.netbeans.modules.cnd.highlight.hints.ErrorInfoImpl;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -89,41 +88,6 @@ public final class IncludeErrorProvider extends AbstractCodeAudit {
         return kind == EditorEvent.DocumentBased || kind == EditorEvent.FileBased;
     }
 
-    private static class OffsetableErrorInfo implements CsmErrorInfo {
-
-        private final String message;
-        private final int start;
-        private final int end;
-        private final CsmErrorInfo.Severity severity;
-        
-        public OffsetableErrorInfo(String message, CsmOffsetable offsetable, CsmErrorInfo.Severity severity) {
-            this.message = message;
-            start = offsetable.getStartOffset();
-            end = offsetable.getEndOffset();
-            this.severity = severity;
-        }
-
-        @Override
-        public int getEndOffset() {
-            return end;
-        }
-
-        @Override
-        public int getStartOffset() {
-            return start;
-        }
-
-        @Override
-        public Severity getSeverity() {
-            return severity;
-        }
-
-        @Override
-        public String getMessage() {
-            return message;
-        }
-    }
-
     @Override
     public void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         CsmFile file = request.getFile();
@@ -142,10 +106,11 @@ public final class IncludeErrorProvider extends AbstractCodeAudit {
                         if (response instanceof AnalyzerResponse) {
                             String decoratedText = getID()+"\n"+NbBundle.getMessage(IncludeErrorProvider.class, message); // NOI18N
                             ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, file.getFileObject(),
-                                    new OffsetableErrorInfo(decoratedText, incl, toSeverity(minimalSeverity())));
+                                    new ErrorInfoImpl(CodeAssistanceHintProvider.NAME, getID(), decoratedText, toSeverity(minimalSeverity()), incl.getStartOffset(), incl.getEndOffset()));
                         } else {
                             String decoratedText = decorateWithExtraHyperlinkTip(NbBundle.getMessage(IncludeErrorProvider.class, message));
-                            response.addError(new OffsetableErrorInfo(decoratedText, incl, toSeverity(minimalSeverity())));
+                            response.addError(
+                                    new ErrorInfoImpl(CodeAssistanceHintProvider.NAME, getID(), decoratedText, toSeverity(minimalSeverity()), incl.getStartOffset(), incl.getEndOffset()));
                         }
                     }
                 } else if(incl.getIncludeFile() == null) {
@@ -153,10 +118,11 @@ public final class IncludeErrorProvider extends AbstractCodeAudit {
                         if (response instanceof AnalyzerResponse) {
                             String decoratedText = getID()+"\n"+NbBundle.getMessage(IncludeErrorProvider.class, message, getIncludeText(incl)); // NOI18N
                             ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, file.getFileObject(),
-                                    new OffsetableErrorInfo(decoratedText, incl, toSeverity(minimalSeverity())));
+                                    new ErrorInfoImpl(CodeAssistanceHintProvider.NAME, getID(), decoratedText, toSeverity(minimalSeverity()), incl.getStartOffset(), incl.getEndOffset()));
                         } else {
                             String decoratedText = decorateWithExtraHyperlinkTip(NbBundle.getMessage(IncludeErrorProvider.class, message, getIncludeText(incl)));
-                            response.addError(new OffsetableErrorInfo(decoratedText, incl, toSeverity(minimalSeverity())));
+                            response.addError(
+                                    new ErrorInfoImpl(CodeAssistanceHintProvider.NAME, getID(), decoratedText, toSeverity(minimalSeverity()), incl.getStartOffset(), incl.getEndOffset()));
                         }
                     }
                 }
@@ -173,10 +139,11 @@ public final class IncludeErrorProvider extends AbstractCodeAudit {
                 if (response instanceof AnalyzerResponse) {
                     String decoratedText = getID()+"\n"+NbBundle.getMessage(IncludeErrorProvider.class, message); // NOI18N
                     ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, file.getFileObject(),
-                            new OffsetableErrorInfo(decoratedText, error, toSeverity(minimalSeverity())));
+                            new ErrorInfoImpl(CodeAssistanceHintProvider.NAME, getID(), decoratedText, toSeverity(minimalSeverity()), error.getStartOffset(), error.getEndOffset()));
                 } else {
                     String decoratedText = NbBundle.getMessage(IncludeErrorProvider.class, message);
-                    response.addError(new OffsetableErrorInfo(decoratedText, error, toSeverity(minimalSeverity())));
+                    response.addError(
+                           new ErrorInfoImpl(CodeAssistanceHintProvider.NAME, getID(), decoratedText, toSeverity(minimalSeverity()), error.getStartOffset(), error.getEndOffset()));
                 }
             }
         }
@@ -194,10 +161,11 @@ public final class IncludeErrorProvider extends AbstractCodeAudit {
                     if (response instanceof AnalyzerResponse) {
                         String decoratedText = getID()+"\n"+NbBundle.getMessage(IncludeErrorProvider.class, message, getIncludeText(incl)); // NOI18N
                         ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, file.getFileObject(),
-                                new OffsetableErrorInfo(decoratedText, incl, toSeverity(minimalSeverity())));
+                                new ErrorInfoImpl(CodeAssistanceHintProvider.NAME, getID(), decoratedText, toSeverity(minimalSeverity()), incl.getStartOffset(), incl.getEndOffset()));
                     } else {
                         String decoratedText = decorateWithExtraHyperlinkTip(NbBundle.getMessage(IncludeErrorProvider.class, message, getIncludeText(incl)));
-                        response.addError(new OffsetableErrorInfo(decoratedText, incl, toSeverity(minimalSeverity())));
+                        response.addError(
+                                new ErrorInfoImpl(CodeAssistanceHintProvider.NAME, getID(), decoratedText, toSeverity(minimalSeverity()), incl.getStartOffset(), incl.getEndOffset()));
                     }
                 }
             }
@@ -234,7 +202,7 @@ public final class IncludeErrorProvider extends AbstractCodeAudit {
         return false;
     }
     
-    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH, service = CodeAuditFactory.class, position = 4000)
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CodeAssistanceHintProvider.NAME, service = CodeAuditFactory.class, position = 4000)
     public static final class UnresolvedFactory implements CodeAuditFactory {
         @Override
         public AbstractCodeAudit create(AuditPreferences preferences) {
@@ -244,7 +212,7 @@ public final class IncludeErrorProvider extends AbstractCodeAudit {
             return new IncludeErrorProvider(id, id, description, "error", true, preferences, UNRESOLVED, message); // NOI18N
         }
     }
-    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH, service = CodeAuditFactory.class, position = 4010)
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CodeAssistanceHintProvider.NAME, service = CodeAuditFactory.class, position = 4010)
     public static final class InsideUnresolvedFactory implements CodeAuditFactory {
         @Override
         public AbstractCodeAudit create(AuditPreferences preferences) {
@@ -254,7 +222,7 @@ public final class IncludeErrorProvider extends AbstractCodeAudit {
             return new IncludeErrorProvider(id, id, description, "warning", true, preferences, UNRESOLVED_INSIDE, message); // NOI18N
         }
     }
-    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH, service = CodeAuditFactory.class, position = 4020)
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CodeAssistanceHintProvider.NAME, service = CodeAuditFactory.class, position = 4020)
     public static final class RecursiveFactory implements CodeAuditFactory {
         @Override
         public AbstractCodeAudit create(AuditPreferences preferences) {
@@ -264,7 +232,7 @@ public final class IncludeErrorProvider extends AbstractCodeAudit {
             return new IncludeErrorProvider(id, id, description, "warning", true, preferences, RECURSIVE, message); // NOI18N
         }
     }
-    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH, service = CodeAuditFactory.class, position = 4030)
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CodeAssistanceHintProvider.NAME, service = CodeAuditFactory.class, position = 4030)
     public static final class ErrorFactory implements CodeAuditFactory {
         @Override
         public AbstractCodeAudit create(AuditPreferences preferences) {

@@ -110,9 +110,9 @@ class NonVirtualDestructor extends AbstractCodeAudit {
                     CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
                     if (response instanceof AnalyzerResponse) {
                         ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, method.getContainingFile().getFileObject(),
-                                new ErrorInfoImpl(getID(), getName(), getID()+"\n"+message, severity, method.getStartOffset(), method.getParameterList().getEndOffset())); // NOI18N
+                                new ErrorInfoImpl(CsmHintProvider.NAME, getID(), getName()+"\n"+message, severity, method.getStartOffset(), method.getParameterList().getEndOffset())); // NOI18N
                     } else {
-                        response.addError(new ErrorInfoImpl(getID(), getName(), message, severity, method.getStartOffset(), method.getParameterList().getEndOffset()));
+                        response.addError(new ErrorInfoImpl(CsmHintProvider.NAME, getID(), message, severity, method.getStartOffset(), method.getParameterList().getEndOffset()));
                     }
                 }
             }
@@ -122,7 +122,7 @@ class NonVirtualDestructor extends AbstractCodeAudit {
         visit(csmClass.getMembers(), request, response);
     }
     
-    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH, service = CodeAuditFactory.class, position = 1000)
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CsmHintProvider.NAME, service = CodeAuditFactory.class, position = 1000)
     public static final class Factory implements CodeAuditFactory {
         @Override
         public AbstractCodeAudit create(AuditPreferences preferences) {

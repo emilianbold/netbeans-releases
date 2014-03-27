@@ -46,31 +46,33 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 
 /**
  *
- * @author alsimon
+ * @author Alexander Simon
  */
-final class ErrorInfoImpl implements CsmErrorInfo {
+public final class ErrorInfoImpl implements CsmErrorInfo, DisableHintFix.CodeAuditInfo{
+    private final String providerID;
     private final String audutID;
-    private final String audutName;
     private final String message;
     private final Severity severity;
     private final int startOffset;
     private final int endOffset;
 
-    ErrorInfoImpl(String audutID, String audutName, String message, Severity severity, int startOffset, int endOffset) {
-        this.audutID = audutID;
-        this.audutName = audutName;
+    public ErrorInfoImpl(String providerName, String audutName, String message, Severity severity, int startOffset, int endOffset) {
+        this.providerID = providerName;
+        this.audutID = audutName;
         this.message = message;
         this.severity = severity;
         this.startOffset = startOffset;
         this.endOffset = endOffset;
     }
 
+    @Override
+    public String getProviderID() {
+        return providerID;
+    }
+    
+    @Override
     public String getAuditID() {
         return audutID;
-    }
-
-    public String getAuditName() {
-        return audutName;
     }
 
     @Override
@@ -92,5 +94,4 @@ final class ErrorInfoImpl implements CsmErrorInfo {
     public int getEndOffset() {
         return endOffset;
     }
-    
 }

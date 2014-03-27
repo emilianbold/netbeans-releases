@@ -40,7 +40,7 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.highlight.hints;
+package org.netbeans.modules.cnd.highlight.error;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -69,12 +69,12 @@ import org.openide.util.lookup.ServiceProviders;
  */
 @ServiceProviders({
     //@ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=1400),
-    @ServiceProvider(service = CsmErrorProvider.class, position = 1100),
-    @ServiceProvider(service = CodeAuditProvider.class, position = 1100)
+    @ServiceProvider(service = CsmErrorProvider.class, position = 1000),
+    @ServiceProvider(service = CodeAuditProvider.class, position = 1000)
 })
-public final class CsmHintProvider extends CsmErrorProvider implements CodeAuditProvider {
+public class CodeAssistanceHintProvider extends CsmErrorProvider implements CodeAuditProvider {
     
-    public static final String NAME = "General"; //NOI18N
+    public static final String NAME = "CodeAssistance"; //NOI18N
     private Collection<CodeAudit> audits;
     private final AuditPreferences myPreferences;
 
@@ -87,11 +87,11 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
         return null;
     }
     
-    public CsmHintProvider() {
+    public CodeAssistanceHintProvider() {
          myPreferences = new AuditPreferences(AuditPreferences.AUDIT_PREFERENCES_ROOT.node(NAME));
     }
     
-    CsmHintProvider(Preferences preferences) {        
+    CodeAssistanceHintProvider(Preferences preferences) {        
         try {
             if (preferences.nodeExists(NAME)) {
                 preferences = preferences.node(NAME);
@@ -106,7 +106,7 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
     }
 
     @Override
-    protected boolean validate(Request request) {
+    protected boolean validate(CsmErrorProvider.Request request) {
         CsmFile file = request.getFile();
         if (file == null){
             return false;
@@ -131,16 +131,16 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
 
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(CsmHintProvider.class, "General_NAME"); //NOI18N
+        return NbBundle.getMessage(CodeAssistanceHintProvider.class, "CA_NAME"); //NOI18N
     }
 
     @Override
     public String getDescription() {
-        return NbBundle.getMessage(CsmHintProvider.class, "General_DESCRIPTION"); //NOI18N
+        return NbBundle.getMessage(CodeAssistanceHintProvider.class, "CA_DESCRIPTION"); //NOI18N
     }
 
     @Override
-    public boolean isSupportedEvent(EditorEvent kind) {
+    public boolean isSupportedEvent(CsmErrorProvider.EditorEvent kind) {
         for(CodeAudit audit : getAudits()) {
             AbstractCodeAudit engine = (AbstractCodeAudit)audit;
             if (engine.isSupportedEvent(kind)) {

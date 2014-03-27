@@ -112,9 +112,9 @@ public class MethodDeclarationMissed extends AbstractCodeAudit {
                             String message = NbBundle.getMessage(MethodDeclarationMissed.class, "MethodDeclarationMissed.message", def.getName()); // NOI18N
                             if (response instanceof AnalyzerResponse) {
                                 ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, ref.getContainingFile().getFileObject(),
-                                        new ErrorInfoImpl(getID(), getName(), getID()+"\n"+message, severity, ref.getStartOffset(), ref.getEndOffset())); // NOI18N
+                                        new ErrorInfoImpl(CsmHintProvider.NAME, getID(), getName()+"\n"+message, severity, ref.getStartOffset(), ref.getEndOffset())); // NOI18N
                             } else {
-                                response.addError(new ErrorInfoImpl(getID(), getName(), message, severity, ref.getStartOffset(), ref.getEndOffset()));
+                                response.addError(new ErrorInfoImpl(CsmHintProvider.NAME, getID(), message, severity, ref.getStartOffset(), ref.getEndOffset()));
                             }
                         }
                     }
@@ -123,7 +123,7 @@ public class MethodDeclarationMissed extends AbstractCodeAudit {
         }
     }
     
-    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH, service = CodeAuditFactory.class, position = 2000)
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CsmHintProvider.NAME, service = CodeAuditFactory.class, position = 2000)
     public static final class Factory implements CodeAuditFactory {
         @Override
         public AbstractCodeAudit create(AuditPreferences preferences) {
