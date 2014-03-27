@@ -57,6 +57,9 @@ import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -142,15 +145,29 @@ public final class CndParserFactory extends ParserFactory {
                 file = CsmStandaloneFileProvider.getDefault().getCsmFile(fo);
             }
             if (file != null) {
-                try {
-                    file.scheduleParsing(true);
-                } catch (InterruptedException ex) {
-//                Exceptions.printStackTrace(ex);
+                if (!TraceFlags.USE_PARSER_API) {
+                    try {
+                        file.scheduleParsing(true);
+                    } catch (InterruptedException ex) {
+    //                Exceptions.printStackTrace(ex);
+                    }
                 }
             }
             synchronized (lock) {
                 long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
                 if (oldVersion != fileVersion || !snapshot.getText().equals(oldText) || docVersion != oldDocVersion) {
+                    if (TraceFlags.USE_PARSER_API) {
+                        if (file instanceof FileImpl) {
+                            FileImpl fileImpl = (FileImpl) file;
+                            ProjectBase projectImpl = fileImpl.getProjectImpl(false);
+                            if (projectImpl != null) {
+                                projectImpl.onSnapshotChanged(fileImpl, snapshot);
+                            }
+                        } else {
+                            throw new IllegalStateException(
+                                    "should be instance of FileImpl: " + file.getClass()); //NOI18N
+                        }
+                    }
                     this.cndParserResult = new CndParserResult(file, snapshot, fileVersion, docVersion);
                 }
             }
