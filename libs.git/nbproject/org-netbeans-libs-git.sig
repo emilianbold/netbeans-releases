@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.19.1
+#Version 1.21
 
 CLSS public abstract interface java.io.Serializable
 
@@ -600,6 +600,7 @@ intf java.util.EventListener
 
 CLSS public abstract org.netbeans.libs.git.progress.ProgressMonitor
 cons public init()
+fld public final static int UNKNOWN_WORK_UNITS = 0
 innr public static DefaultProgressMonitor
 meth public abstract boolean isCanceled()
 meth public abstract void finished()
@@ -607,6 +608,9 @@ meth public abstract void notifyError(java.lang.String)
 meth public abstract void notifyWarning(java.lang.String)
 meth public abstract void preparationsFailed(java.lang.String)
 meth public abstract void started(java.lang.String)
+meth public void beginTask(java.lang.String,int)
+meth public void endTask()
+meth public void updateTaskState(int)
 supr java.lang.Object
 
 CLSS public static org.netbeans.libs.git.progress.ProgressMonitor$DefaultProgressMonitor

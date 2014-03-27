@@ -46,10 +46,8 @@ package org.openide.util;
 
 import java.lang.ref.*;
 import java.util.*;
-import org.openide.ErrorManager;
 import junit.framework.*;
 import org.netbeans.junit.*;
-import org.openide.util.Enumerations;
 import java.io.*;
 import java.util.Enumeration;
 import java.io.Serializable;
@@ -74,7 +72,7 @@ public class UtilitiesTranslateTest extends NbTestCase {
      */
     protected void setUp () {
         System.setProperty ("org.openide.util.Lookup", "-");
-        Utilities.initForLoader (new CL ("UtilitiesTranslate.txt"), null);
+        BaseUtilities.initForLoader (new CL ("UtilitiesTranslate.txt"), null);
     }
     
     /** Checks whether the . is treated is normal character.
@@ -168,13 +166,13 @@ public class UtilitiesTranslateTest extends NbTestCase {
     /** Test that we are able to read the original format.
      */
     public void testReadOldFormat () {
-        Utilities.initForLoader (new CL ("UtilitiesTranslateOrig.txt"), null);
+        BaseUtilities.initForLoader (new CL ("UtilitiesTranslateOrig.txt"), null);
     }
     
     /** Translate whole original format.
      */
     public void testTranslateOldFormat () throws Exception {
-        Utilities.initForLoader (new CL ("UtilitiesTranslateOrig.txt"), null);
+        BaseUtilities.initForLoader (new CL ("UtilitiesTranslateOrig.txt"), null);
         
         InputStream is = getClass ().getResourceAsStream ("UtilitiesTranslateOrig.txt");
         BufferedReader r = new BufferedReader (new InputStreamReader (is));
@@ -200,14 +198,14 @@ public class UtilitiesTranslateTest extends NbTestCase {
     /** Test with empty classloader.
      */
     public void testNoConvesions () {
-        Utilities.initForLoader (new CL (null), null);
+        BaseUtilities.initForLoader (new CL (null), null);
         
         Utilities.translate ("something.strange");
         Utilities.translate ("anything");
     }
     
     public void testEmptyFile () {
-        Utilities.initForLoader (new CL ("UtilitiesTranslateEmpty.txt"), null);
+        BaseUtilities.initForLoader (new CL ("UtilitiesTranslateEmpty.txt"), null);
         
         Utilities.translate ("something.strange");
         Utilities.translate ("anything");
@@ -216,7 +214,7 @@ public class UtilitiesTranslateTest extends NbTestCase {
     /** Test to fix bug 29878
      */
     public void testBug29878 () {
-        Utilities.initForLoader (new CL ("UtilitiesTranslate29878.txt"), null);
+        BaseUtilities.initForLoader (new CL ("UtilitiesTranslate29878.txt"), null);
         Utilities.translate ("org.netbeans.modules.apisupport.APIModule");
     }
     

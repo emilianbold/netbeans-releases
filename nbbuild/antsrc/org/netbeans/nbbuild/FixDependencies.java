@@ -79,6 +79,7 @@ public class FixDependencies extends Task {
     /** fail on error */
     private boolean fail;
     private boolean doSanity = true;
+    private boolean strip = true;
     
     
     /** tasks to be executed */
@@ -122,6 +123,10 @@ public class FixDependencies extends Task {
     
     public void setFailOnError (boolean b) {
         fail = b;
+    }
+    
+    public void setStrip(boolean b) {
+        this.strip = b;
     }
 
     @Override
@@ -182,7 +187,7 @@ public class FixDependencies extends Task {
             
             try {
                 boolean change = fix (xml);
-                if (onlyChanged && !change) {
+                if (!strip || onlyChanged && !change) {
                     continue;
                 }
                 simplify (xml, script, task, cleanTask);
@@ -208,7 +213,7 @@ public class FixDependencies extends Task {
         String stream = new String (data);
         String old = stream;
         data = null;
-
+        
         DEPS: for (Replace r : replaces) {
             int md = stream.indexOf("<module-dependencies");
             if (md == -1) {
@@ -225,14 +230,14 @@ public class FixDependencies extends Task {
             if (idx == -1 || idx > ed) continue;
 
             int from = stream.lastIndexOf ("<dependency>", idx);
-            if (from == -1) throw new BuildException ("No <dependency> tag before index " + idx);
-            int after = stream.indexOf ("</dependency>", idx);
-            if (after == -1) throw new BuildException ("No </dependency> tag after index " + idx);
+            if (from == -1) throw new BuildException ("No <dependency> tag before index " + idx + " in " + file);
+            int after = stream.indexOf ("</dependency", idx);
+            if (after == -1) throw new BuildException ("No </dependency> tag after index " + idx + " in " + file);
             after = after + "</dependency>".length ();
             
             String remove = stream.substring (from, after);
             if (r.addCompileTime && remove.indexOf ("compile-dependency") == -1) {
-                int fromAfter = "<dependency>".length();
+                int fromAfter = "<dependency".length();
                 int nonSpace = findNonSpace (remove, fromAfter);
                 String spaces = remove.substring (fromAfter, nonSpace);
                 remove = remove.substring (0, fromAfter) + spaces + "<compile-dependency/>" + remove.substring (fromAfter);
@@ -346,9 +351,9 @@ public class FixDependencies extends Task {
                 first = from;
             }
             
-            int after = stream.indexOf ("</dependency>", from);
-            if (after == -1) throw new BuildException ("No </dependency> tag after index " + from);
-            after = findNonSpace (stream, after + "</dependency>".length ());
+            int after = stream.indexOf ("</dependency", from);
+            if (after == -1) throw new BuildException ("No </dependency> tag after index " + from + " in " + file);
+            after = findNonSpace (stream, after + "</dependency".length ());
             
             last = after;
             begin = last;
@@ -411,7 +416,18 @@ public class FixDependencies extends Task {
         }
     } // end of simplify
 
+    /**
+     * Finds first non-whitespace after the tag. The tag may be commented out, sometimes
+     * the comment appear as &lt;tagname-->. So if > appears right after tagname, consume it
+     * first, then search for non-whitespaces. Otherwise, break on the nearest nonwhitespace
+     * @param where
+     * @param from
+     * @return 
+     */
     private static int findNonSpace (String where, int from) {
+        if (from < where.length() && where.charAt(from) == '>') {
+            from++;
+        }
         while (from < where.length () && Character.isWhitespace (where.charAt (from))) {
             from++;
         }
@@ -438,7 +454,7 @@ public class FixDependencies extends Task {
         String codeNameBase;
         List<Module> modules = new ArrayList<Module>();
         boolean addCompileTime;
-        
+
         public void setCodeNameBase (String s) {
             codeNameBase = s;
         }
@@ -452,9 +468,9 @@ public class FixDependencies extends Task {
             modules.add (m);
             return m;
         }
-        
+
     }
-    
+            
     public static final class Module extends Object {
         String codeNameBase;
         String specVersion;

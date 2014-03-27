@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 3.32
+#Version 3.43
 
 CLSS public abstract interface java.io.Serializable
 
@@ -8,6 +8,7 @@ CLSS public abstract interface java.lang.Cloneable
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, PARAMETER, TYPE])
 intf java.lang.annotation.Annotation
 
 CLSS public java.lang.Object
@@ -73,12 +74,15 @@ supr java.lang.Object
 hfds err,name,serialVersionUID,supp
 
 CLSS public final org.openide.util.HelpCtx
-cons public init(java.lang.Class)
+cons public init(java.lang.Class<?>)
+ anno 0 java.lang.Deprecated()
 cons public init(java.lang.String)
 cons public init(java.net.URL)
  anno 0 java.lang.Deprecated()
 fld public final static org.openide.util.HelpCtx DEFAULT_HELP
+innr public abstract interface static Displayer
 innr public abstract interface static Provider
+meth public boolean display()
 meth public boolean equals(java.lang.Object)
 meth public int hashCode()
 meth public java.lang.String getHelpID()
@@ -168,7 +172,7 @@ meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void setLastSelected(org.openidex.search.SearchPattern)
 supr java.lang.Object
-hfds INSTANCE,MAX_SEARCH_PATTERNS_ITEMS,PREFS_NODE,PROP_SEARCH_PATTERN_PREFIX,lastSelected,pcs,prefs,searchPatternsList
+hfds INSTANCE,MAX_SEARCH_PATTERNS_ITEMS,PREFS_NODE,PROP_SEARCH_PATTERN_PREFIX,pcs,prefs,searchPatternsList
 
 CLSS public abstract interface org.openidex.search.SearchInfo
 innr public abstract interface static Files

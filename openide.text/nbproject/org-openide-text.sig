@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 6.61.1
+#Version 6.62
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -625,8 +625,6 @@ meth public void firePropertyChange(java.lang.String,boolean,boolean)
 meth public void firePropertyChange(java.lang.String,char,char)
 meth public void firePropertyChange(java.lang.String,int,int)
 meth public void grabFocus()
-meth public void hide()
- anno 0 java.lang.Deprecated()
 meth public void paint(java.awt.Graphics)
 meth public void paintImmediately(int,int,int,int)
 meth public void paintImmediately(java.awt.Rectangle)

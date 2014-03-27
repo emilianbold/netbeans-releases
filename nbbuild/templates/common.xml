@@ -1305,7 +1305,10 @@ made subject to such option by the copyright holder.
                 <module codenamebase="org.openide.filesystems" spec="8.0"/>
                 <module codenamebase="org.openide.util.lookup" spec="8.16"/>
             </replace>
-
+            <replace codenamebase="org.openide.util" addcompiletime="true">
+                <module codenamebase="org.openide.util" spec="9.0"/>
+                <module codenamebase="org.openide.util.base" spec="9.0"/>
+            </replace>
             <fileset dir="nbproject" >
                 <include name="project.xml" />
             </fileset>

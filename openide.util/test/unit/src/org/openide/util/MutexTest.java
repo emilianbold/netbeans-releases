@@ -69,7 +69,7 @@ public class MutexTest extends NbTestCase {
     protected void setUp () {
         p = new Mutex.Privileged ();
         m = new Mutex (p);
-        Mutex.beStrict = true;
+        ReadWriteAccess.beStrict = true;
     }
     @Override 
     protected Level logLevel() {
