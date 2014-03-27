@@ -198,52 +198,6 @@ public final class IdentifierErrorProvider extends CsmErrorProvider {
                     response.addError(new ErrorInfoImpl(
                             ref.getStartOffset(), ref.getEndOffset(),
                             ref.getText().toString(), severity, "HighlightProvider_IdentifierMissed")); //NOI18N
-                } else if (CsmKindUtilities.isFunctionDefinition(referencedObject)) {
-                    // check function definition without declaration
-                    if (CsmReferenceResolver.getDefault().isKindOf(ref, EnumSet.of(CsmReferenceKind.DEFINITION))) {
-                        if (((CsmFunction)referencedObject).getDeclaration() == null) {
-                            Severity severity = Severity.ERROR;
-                            foundError++;
-                            //TODO: we can be more clever here and provide user with hint to create declaration
-                            response.addError(new ErrorInfoImpl(
-                                    ref.getStartOffset(), ref.getEndOffset(),
-                                    ref.getText().toString(), severity, "HighlightProvider_FunDeclarationMissed")); //NOI18N
-                        }
-                    }
-                } else if (false && referencedObject instanceof CsmFunction) {
-                    // Check for function usages befor it's declaration
-                    if (CsmReferenceResolver.getDefault().isKindOf(ref, EnumSet.of(CsmReferenceKind.DEFINITION,
-                            CsmReferenceKind.DECLARATION,
-                            CsmReferenceKind.IN_DEAD_BLOCK,
-                            CsmReferenceKind.IN_PREPROCESSOR_DIRECTIVE))) {
-                        return;
-                    }
-                    CsmFunction fun = (CsmFunction) referencedObject;
-                    if (fun.getContainingFile() != ref.getContainingFile()) {
-                        return;
-                    }
-                    if (fun.getStartOffset() <= ref.getStartOffset()) {
-                        return;
-                    }
-                    if (!CsmKindUtilities.isGlobalFunction(fun)) {
-                        return;
-                    }
-                    CsmFunction funDecl = fun.getDeclaration();
-                    if(funDecl == null) {
-                        return;
-                    }
-                    if (funDecl.getContainingFile() != ref.getContainingFile()) {
-                        return;
-                    }
-                    if (funDecl.getStartOffset() <= ref.getStartOffset()) {
-                        return;
-                    }
-                    Severity severity = Severity.WARNING;
-                    foundError++;
-                    response.addError(new ErrorInfoImpl(
-                            ref.getStartOffset(), ref.getEndOffset(),
-                            ref.getText().toString(), severity, 
-                            "HighlightProvider_DeclarationAfterUsage")); //NOI18N
                 }
             }
         }
