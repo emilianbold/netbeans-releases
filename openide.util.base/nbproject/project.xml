@@ -36,7 +36,7 @@
             <public-packages>
                 <package>org.openide</package>
                 <package>org.openide.util</package>
-                <package>org.openide.io</package>
+                <package>org.openide.util.io</package>
             </public-packages>
         </data>
     </configuration>
