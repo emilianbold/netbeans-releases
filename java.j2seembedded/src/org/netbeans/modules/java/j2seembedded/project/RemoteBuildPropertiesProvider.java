@@ -92,7 +92,11 @@ public class RemoteBuildPropertiesProvider implements J2SEBuildPropertiesProvide
                 if (rp != null) {
                     final ConnectionMethod.Authentification auth = rp.getConnectionMethod().getAuthentification();                    
                     Map<String,String> res = new HashMap<>();
-                    String target = Utilities.getTargetOSForRP(rp.getSystemProperties().get("os.name"), rp.getSystemProperties().get("os.arch"), rp.getSystemProperties().get("sun.arch.abi"), rp.getSystemProperties().get(("java.vm.name"))); //NOI18N
+                    String target = Utilities.getTargetOSForRP(
+                        rp.getSystemProperties().get("os.name"),    //NOI18N
+                        rp.getSystemProperties().get("os.arch"),    //NOI18N
+                        rp.getSystemProperties().get("sun.arch.abi"),   //NOI18N
+                        rp.getSystemProperties().get(("java.vm.name"))); //NOI18N
                     res.put(PROP_JAVA_SPEC_VER, rp.getSystemProperties().get("java.specification.version").replace(".","")); //NOI18N
                     res.put(PROP_OS_ARCH_RP, target);
                     res.put(PROP_FILENAME_RP, target.replace("-", "").replace("15","")); //NOI18N
