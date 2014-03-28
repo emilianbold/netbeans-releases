@@ -113,5 +113,3 @@ final class TodoValidator {
     }
 
 }
-
-?>
