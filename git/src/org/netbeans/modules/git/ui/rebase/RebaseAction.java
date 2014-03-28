@@ -335,7 +335,9 @@ public class RebaseAction extends SingleRepositoryAction {
                 info = client.log(GitUtils.HEAD, GitUtils.NULL_PROGRESS_MONITOR);
                 if (origHead != null && onto != null) {
                     GitRevisionInfo i = client.getCommonAncestor(new String[] { origHead, onto }, pm);
-                    base = i.getRevision();
+                    if (i != null) {
+                        base = i.getRevision();
+                    }
                 }
             } catch (GitException ex) {
                 GitClientExceptionHandler.notifyException(ex, true);
