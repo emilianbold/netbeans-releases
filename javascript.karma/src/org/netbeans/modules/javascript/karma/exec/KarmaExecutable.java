@@ -86,9 +86,12 @@ public class KarmaExecutable {
 
     public static final String KARMA_NAME = "karma"; // NOI18N
     public static final String KARMA_LONG_NAME = KARMA_NAME + FileUtils.getScriptExtension(true, true);
-    private static final String PROJECT_KARMA_BASE_PATH = "node_modules/karma/bin/"; // NOI18N
-    public static final String PROJECT_KARMA_PATH = PROJECT_KARMA_BASE_PATH + KARMA_NAME;
-    public static final String PROJECT_KARMA_LONG_PATH = PROJECT_KARMA_BASE_PATH + KARMA_LONG_NAME;
+    private static final String PROJECT_KARMA_BASE_PATH_1 = "node_modules/karma/bin/"; // NOI18N
+    private static final String PROJECT_KARMA_BASE_PATH_2 = "node_modules/.bin/"; // NOI18N
+    public static final String PROJECT_KARMA_PATH_1 = PROJECT_KARMA_BASE_PATH_1 + KARMA_NAME;
+    public static final String PROJECT_KARMA_LONG_PATH_1 = PROJECT_KARMA_BASE_PATH_1 + KARMA_LONG_NAME;
+    public static final String PROJECT_KARMA_PATH_2 = PROJECT_KARMA_BASE_PATH_2 + KARMA_NAME;
+    public static final String PROJECT_KARMA_LONG_PATH_2 = PROJECT_KARMA_BASE_PATH_2 + KARMA_LONG_NAME;
 
     private static final String START_COMMAND = "start";
     private static final String RUN_COMMAND = "run";
