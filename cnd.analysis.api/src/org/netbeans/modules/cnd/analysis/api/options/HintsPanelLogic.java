@@ -259,7 +259,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             
             // Set proper values to the componetnts
 
-            if ("action".equals(hint.getKind())) {
+            if ("action".equals(hint.getKind())) {// NOI18N
                 severityComboBox.setSelectedIndex(severity2index.get(Severity.HINT));
                 severityComboBox.setEnabled(false);
             } else {
