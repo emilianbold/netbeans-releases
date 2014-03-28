@@ -144,7 +144,8 @@ import org.netbeans.modules.java.hints.errors.Utilities;
 public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirror>, Object> {
     /**
      * The expression, whose type should be guessed. Possibly null if the expression is not known.
-     * This field may change on parenthesis and type casts, which are ignored.
+     * This field may change on parenthesis and type casts, which are ignored. Used for tracking 
+     * which child node the traversal came to the parent.
      */
     private TreePath theExpression;
     
@@ -215,7 +216,7 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
     private boolean notRedundant;
     
     public ExpectedTypeResolver(TreePath theExpression, CompilationInfo info) {
-        this.originalExpression = this.theExpression = theExpression;
+        this.originalExpression = theExpression;
         this.info = info;
     }
     
@@ -936,9 +937,15 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
         Element el = info.getTrees().getElement(getCurrentPath());
         
         if (el.getKind() == ElementKind.METHOD) {
+            // special hack: if the casted value is a lambda, we NEED to assign it a type prior to method invocation:
+            TreePath exp = getExpressionWithoutCasts();
+            if (exp != null && exp.getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+                return null;
+            }
             TreePath methodInvocation = getCurrentPath().getParentPath();
             TreePath invocationParent = methodInvocation.getParentPath();
             ExpectedTypeResolver subResolver = new ExpectedTypeResolver(methodInvocation, info);
+            subResolver.theExpression = methodInvocation;
             subResolver.typeCastDepth++;
             List<? extends TypeMirror> parentTypes = subResolver.scan(invocationParent, v);
             TypeMirror castable = null;
@@ -1001,6 +1008,9 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
         if (typeCastDepth == 1) {
             if (casted == null) {
                 casted = new TreePath(getCurrentPath(), node.getExpression());
+                while (casted.getLeaf().getKind() == Tree.Kind.PARENTHESIZED) {
+                    casted = new TreePath(casted, ((ParenthesizedTree)casted.getLeaf()).getExpression());
+                }
                 dontResetCast = true;
             }
             return scanParent();
