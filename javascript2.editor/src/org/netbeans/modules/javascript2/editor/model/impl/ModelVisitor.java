@@ -1136,9 +1136,12 @@ public class ModelVisitor extends PathNodeVisitor {
     public Node enter(ReferenceNode referenceNode) {
         FunctionNode reference = referenceNode.getReference();
         if (reference != null) {
-            addToPath(referenceNode);
-            reference.accept(this);
-            removeFromPathTheLast();
+            Node lastNode = getPreviousFromPath(1);
+            if (!( lastNode instanceof VarNode && !reference.isAnonymous())) {
+                addToPath(referenceNode);
+                reference.accept(this);
+                removeFromPathTheLast();
+            } 
             return null;
         }
         return super.enter(referenceNode);
@@ -1274,6 +1277,23 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (variable != null) {
                     variable.setJsKind(JsElement.Kind.OBJECT_LITERAL);
                     modelBuilder.setCurrentObject(variable);
+                }
+            }
+        } else if (varNode.getInit() instanceof ReferenceNode) {
+            ReferenceNode rnode = (ReferenceNode)varNode.getInit();
+            if (rnode.getReference() != null && rnode.getReference() instanceof FunctionNode) {
+                FunctionNode fnode = (FunctionNode)rnode.getReference();
+                if (!fnode.isAnonymous()) {
+                    // we expect case like: var prom = function name () {}
+                    JsObjectImpl function = modelBuilder.getCurrentDeclarationFunction();
+                    JsObject origFunction = function.getProperty(fnode.getName());
+                    Identifier name = ModelElementFactory.create(parserResult, varNode.getName());
+                    if (name != null && origFunction != null && origFunction instanceof JsFunction) {
+                        JsObjectImpl oldVariable = (JsObjectImpl)function.getProperty(name.getName());
+                        JsObjectImpl variable = new JsFunctionReference(function, name, (JsFunction)origFunction, true, 
+                                oldVariable != null ? oldVariable.getModifiers() : null );
+                        function.addProperty(variable.getName(), variable);
+                    }
                 }
             }
         }
