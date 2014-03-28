@@ -40,7 +40,7 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.highlight.hints;
+package org.netbeans.modules.cnd.refactoring.hints;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,15 +49,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
-import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -69,18 +64,16 @@ import org.openide.util.lookup.ServiceProviders;
  * @author Alexander Simon
  */
 @ServiceProviders({
-    //@ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=1400),
-    @ServiceProvider(service = CsmErrorProvider.class, position = 1100),
-    @ServiceProvider(service = CodeAuditProvider.class, position = 1100)
+    @ServiceProvider(service = CodeAuditProvider.class, position = 1200)
 })
-public final class CsmHintProvider extends CsmErrorProvider implements CodeAuditProvider {
+public final class SuggestionProvider implements CodeAuditProvider {
     
-    public static final String NAME = "General"; //NOI18N
+    public static final String NAME = "Suggestion"; //NOI18N
     private Collection<CodeAudit> audits;
     private final AuditPreferences myPreferences;
 
-    public static CsmErrorProvider getInstance() {
-        for(CsmErrorProvider provider : Lookup.getDefault().lookupAll(CsmErrorProvider.class)) {
+    public static CodeAuditProvider getInstance() {
+        for(CodeAuditProvider provider : Lookup.getDefault().lookupAll(CodeAuditProvider.class)) {
             if (NAME.equals(provider.getName())) {
                 return provider;
             }
@@ -88,11 +81,11 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
         return null;
     }
     
-    public CsmHintProvider() {
+    public SuggestionProvider() {
          myPreferences = new AuditPreferences(AuditPreferences.AUDIT_PREFERENCES_ROOT.node(NAME));
     }
     
-    CsmHintProvider(Preferences preferences) {        
+    SuggestionProvider(Preferences preferences) {        
         try {
             if (preferences.nodeExists(NAME)) {
                 preferences = preferences.node(NAME);
@@ -107,72 +100,18 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
     }
 
     @Override
-    protected boolean validate(Request request) {
-        CsmFile file = request.getFile();
-        if (file == null){
-            return false;
-        }
-        for(CodeAudit audit : getAudits()) {
-            if (audit.isEnabled()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean hasHintControlPanel() {
-        return true;
-    }
-    
-    @Override
     public String getName() {
         return NAME;
     }
 
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(CsmHintProvider.class, "General_NAME"); //NOI18N
+        return NbBundle.getMessage(SuggestionProvider.class, "Suggestion_NAME"); //NOI18N
     }
 
     @Override
     public String getDescription() {
-        return NbBundle.getMessage(CsmHintProvider.class, "General_DESCRIPTION"); //NOI18N
-    }
-
-    @Override
-    public boolean isSupportedEvent(EditorEvent kind) {
-        for(CodeAudit audit : getAudits()) {
-            AbstractCodeAudit engine = (AbstractCodeAudit)audit;
-            if (engine.isSupportedEvent(kind)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    @Override
-    protected void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
-        CsmFile file = request.getFile();
-        if (file != null) {
-            if (request.isCancelled()) {
-                return;
-            }
-            CsmCacheManager.enter();
-            try {
-                for(CodeAudit audit : getAudits()) {
-                    if (request.isCancelled()) {
-                        return;
-                    }
-                    AbstractCodeAudit engine = (AbstractCodeAudit)audit;
-                    if ((engine.isEnabled() || CndUtils.isUnitTestMode()) && engine.isSupportedEvent(request.getEvent())) {
-                        engine.doGetErrors(request, response);
-                    }
-                }
-            } finally {
-                CsmCacheManager.leave();
-            }
-        }
+        return NbBundle.getMessage(SuggestionProvider.class, "Suggestion_DESCRIPTION"); //NOI18N
     }
 
     @Override

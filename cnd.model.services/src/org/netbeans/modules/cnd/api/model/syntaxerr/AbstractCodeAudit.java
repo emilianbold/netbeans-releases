@@ -98,6 +98,11 @@ public abstract class AbstractCodeAudit implements CodeAudit {
         return severity;
     }
 
+    @Override
+    public String getKind() {
+        return "inspection"; //NOI18N
+    }
+
     public static CsmErrorInfo.Severity toSeverity(String severity){
         if ("error".equals(severity)) { // NOI18N
             return CsmErrorInfo.Severity.ERROR;

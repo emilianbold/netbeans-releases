@@ -85,6 +85,11 @@ import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmEntityResolver;
+import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
+import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.actions.InstantRenamePerformer;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -109,6 +114,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -127,17 +133,28 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
             canceled.set(true);
             canceled = new AtomicBoolean(false);
         }
+        Collection<CodeAudit> audits = SuggestionProvider.getInstance().getAudits();
+        boolean enabled = false;
+        for(CodeAudit audit : audits) {
+            if (audit.isEnabled()) {
+                enabled = true;
+                break;
+            }
+        }
+        if (!enabled) {
+            return;
+        }
         final Document doc = result.getSnapshot().getSource().getDocument(false);
         final FileObject fileObject = result.getSnapshot().getSource().getFileObject();
         final CsmFile file = CsmFileInfoQuery.getDefault().getCsmFile(result);
         if (file != null && doc != null) {
             if (event instanceof CursorMovedSchedulerEvent) {
-                process(doc, fileObject, (CursorMovedSchedulerEvent)event, file, canceled);
+                process(audits, doc, fileObject, (CursorMovedSchedulerEvent)event, file, canceled);
             }
         }
     }
 
-    private void process(final Document doc, final FileObject fileObject, CursorMovedSchedulerEvent cursorEvent, final CsmFile file, final AtomicBoolean canceled) {
+    private void process(Collection<CodeAudit> audits, final Document doc, final FileObject fileObject, CursorMovedSchedulerEvent cursorEvent, final CsmFile file, final AtomicBoolean canceled) {
         clearHint(doc, fileObject);
         int caretOffset = cursorEvent.getCaretOffset();
         JTextComponent comp = EditorRegistry.lastFocusedComponent();
@@ -157,25 +174,38 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
         if (canceled.get())  {
             return;
         }
-        CsmExpressionStatement expression = res.expression;
-        if (expression != null) {
-            createStatementHint(expression, doc, fileObject);
+        boolean introduce = false;
+        boolean assign = false;
+        for(CodeAudit audit : audits) {
+            if (IntroduceVariable.ID.equals(audit.getID()) && audit.isEnabled()) {
+                introduce = true;
+            } else if (AssignVariable.ID.equals(audit.getID()) && audit.isEnabled()) {
+                assign = true;
+            } 
         }
-        if (res.container != null && res.statementInBody != null && comp != null && selectionStart < selectionEnd) {
-            if (CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionStart)[0] ==
-                    CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionEnd)[0] &&
-                    isExpressionSelection(doc, selectionStart, selectionEnd)) {
-                if (!(res.container.getStartOffset() == selectionStart &&
-                        res.container.getEndOffset() == selectionEnd)) {
-                    try {
-                        final String text = doc.getText(selectionStart, selectionEnd-selectionStart);
-                        if(text.length() > 0) {
-                            CsmOffsetable csmOffsetable = new CsmOffsetableImpl(file, selectionStart, selectionEnd, text);
-                            if (isApplicableExpression(csmOffsetable, doc)) {
-                                createExpressionHint(res.statementInBody, csmOffsetable, doc, comp, fileObject);
+        if (assign) {
+            CsmExpressionStatement expression = res.expression;
+            if (expression != null) {
+                createStatementHint(expression, doc, fileObject);
+            }
+        }
+        if (introduce) {
+            if (res.container != null && res.statementInBody != null && comp != null && selectionStart < selectionEnd) {
+                if (CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionStart)[0] ==
+                        CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionEnd)[0] &&
+                        isExpressionSelection(doc, selectionStart, selectionEnd)) {
+                    if (!(res.container.getStartOffset() == selectionStart &&
+                            res.container.getEndOffset() == selectionEnd)) {
+                        try {
+                            final String text = doc.getText(selectionStart, selectionEnd-selectionStart);
+                            if(text.length() > 0) {
+                                CsmOffsetable csmOffsetable = new CsmOffsetableImpl(file, selectionStart, selectionEnd, text);
+                                if (isApplicableExpression(csmOffsetable, doc)) {
+                                    createExpressionHint(res.statementInBody, csmOffsetable, doc, comp, fileObject);
+                                }
                             }
+                        } catch (BadLocationException ex) {
                         }
-                    } catch (BadLocationException ex) {
                     }
                 }
             }
@@ -566,7 +596,7 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
     
     private void createStatementHint(CsmExpressionStatement expression, Document doc, FileObject fo) {
         List<Fix> fixes = Collections.<Fix>singletonList(new AssignmentFixImpl(expression.getExpression(), doc, fo));
-        String description = NbBundle.getMessage(LineFactoryTask.class, "HINT_AssignResultToVariable"); //NOI18N
+        String description = NbBundle.getMessage(LineFactoryTask.class, "AssignVariable.name"); //NOI18N
         List<ErrorDescription> hints = Collections.singletonList(
                 ErrorDescriptionFactory.createErrorDescription(Severity.HINT, description, fixes, fo,
                         expression.getStartOffset(), expression.getStartOffset()));
@@ -576,7 +606,7 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
 
     private void createExpressionHint(CsmStatement st, CsmOffsetable expression, Document doc, JTextComponent comp, FileObject fo) {
         List<Fix> fixes = Collections.<Fix>singletonList(new IntroduceFixImpl(st, expression, doc, comp, fo));
-        String description = NbBundle.getMessage(LineFactoryTask.class, "HINT_IntroduceVariable"); //NOI18N
+        String description = NbBundle.getMessage(LineFactoryTask.class, "IntroduceVariable.name"); //NOI18N
         List<ErrorDescription> hints = Collections.singletonList(
                 ErrorDescriptionFactory.createErrorDescription(Severity.HINT, description, fixes, fo,
                         expression.getStartOffset(), expression.getStartOffset()));
@@ -905,5 +935,59 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
         public CharSequence getText() {
             return text;
         }
-    }    
+    }
+    
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+SuggestionProvider.NAME, service = CodeAuditFactory.class, position = 1000)
+    public static final class IntroduceVariable implements CodeAuditFactory {
+        private static final String ID = "IntroduceVariable"; //NOI18N
+        @Override
+        public AbstractCodeAudit create(AuditPreferences preferences) {
+            String name = NbBundle.getMessage(LineFactoryTask.class, "IntroduceVariable.name"); // NOI18N
+            String description = NbBundle.getMessage(LineFactoryTask.class, "IntroduceVariable.description"); // NOI18N
+            return new AbstractCodeAudit(ID, name, description, "warning", true, preferences) { // NOI18N
+
+                @Override
+                public boolean isSupportedEvent(CsmErrorProvider.EditorEvent kind) {
+                    return true;
+                }
+
+                @Override
+                public String getKind() {
+                    return "action"; //NOI18N
+                }
+
+                @Override
+                public void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+                    throw new UnsupportedOperationException();
+                }
+            };
+        }
+    }
+    
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+SuggestionProvider.NAME, service = CodeAuditFactory.class, position = 1000)
+    public static final class AssignVariable implements CodeAuditFactory {
+        private static final String ID = "AssignVariable"; //NOI18N
+        @Override
+        public AbstractCodeAudit create(AuditPreferences preferences) {
+            String name = NbBundle.getMessage(LineFactoryTask.class, "AssignVariable.name"); // NOI18N
+            String description = NbBundle.getMessage(LineFactoryTask.class, "AssignVariable.description"); // NOI18N
+            return new AbstractCodeAudit(ID, name, description, "warning", true, preferences) { // NOI18N
+
+                @Override
+                public boolean isSupportedEvent(CsmErrorProvider.EditorEvent kind) {
+                    return true;
+                }
+
+                @Override
+                public String getKind() {
+                    return "action"; //NOI18N
+                }
+
+                @Override
+                public void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+                    throw new UnsupportedOperationException();
+                }
+            };
+        }
+    }
 }
