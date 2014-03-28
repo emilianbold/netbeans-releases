@@ -136,6 +136,7 @@ public final class HighlightProvider  {
         switch( info.getSeverity() ) {
             case ERROR:     return org.netbeans.spi.editor.hints.Severity.ERROR;
             case WARNING:   return org.netbeans.spi.editor.hints.Severity.WARNING;
+            case HINT:   return org.netbeans.spi.editor.hints.Severity.HINT;
             default:        throw new IllegalArgumentException("Unexpected severity: " + info.getSeverity()); //NOI18N
         }
     }
