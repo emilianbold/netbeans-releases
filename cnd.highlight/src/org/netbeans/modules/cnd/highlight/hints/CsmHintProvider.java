@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -164,7 +165,7 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
                         return;
                     }
                     AbstractCodeAudit engine = (AbstractCodeAudit)audit;
-                    if (engine.isEnabled() && engine.isSupportedEvent(request.getEvent())) {
+                    if ((engine.isEnabled() || CndUtils.isUnitTestMode()) && engine.isSupportedEvent(request.getEvent())) {
                         engine.doGetErrors(request, response);
                     }
                 }
