@@ -106,8 +106,10 @@ public abstract class AbstractCodeAudit implements CodeAudit {
     public static CsmErrorInfo.Severity toSeverity(String severity){
         if ("error".equals(severity)) { // NOI18N
             return CsmErrorInfo.Severity.ERROR;
-        } else {
+        } else if ("warning".equals(severity)) { // NOI18N
             return CsmErrorInfo.Severity.WARNING;
+        } else {
+            return CsmErrorInfo.Severity.HINT;
         }
     }
     
