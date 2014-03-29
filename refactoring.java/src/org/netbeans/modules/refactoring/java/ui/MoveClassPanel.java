@@ -208,13 +208,13 @@ public final class MoveClassPanel extends JPanel implements ActionListener, Docu
         updateClasses();
         // Determine the extension
     }
-    
+
     @Override
-    public void requestFocus() {
+    public boolean requestFocusInWindow() {
         if(packageComboBox.isEditable() && packageComboBox.isEnabled()) {
-            packageComboBox.requestFocus();
+            return packageComboBox.requestFocusInWindow();
         } else {
-            newNameField.requestFocus();
+            return newNameField.requestFocusInWindow();
         }
     }
     

@@ -206,12 +206,16 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
         });
         initialized = true;
     }
-    
-    @Override
-    public void requestFocus() {
-        super.requestFocus();
-    }
 
+    @Override
+    public boolean requestFocusInWindow() {
+        if(safeDelete != null) {
+            return safeDelete.requestFocusInWindow();
+        } else {
+            return searchInComments.requestFocusInWindow();
+        }
+    }
+    
     boolean isRegularDelete() {
         if (safeDelete!=null) {
             return !safeDelete.isSelected();
