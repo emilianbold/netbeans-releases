@@ -48,7 +48,7 @@ package org.netbeans.modules.cnd.api.model.syntaxerr;
  */
 public interface CodeAuditFactory {
     // constant to be used for registration of provider
-    // i.e. @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH, service = CodeAuditFactory.class, position = 100)
-    public static final String REGISTRATION_PATH = "CND/CndHintsFactory"; // NOI18N
+    // i.e. @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+"ProviderName", service = CodeAuditFactory.class, position = 100)
+    public static final String REGISTRATION_PATH = "CND/CndHintsFactory/"; // NOI18N
     AbstractCodeAudit create(AuditPreferences preferences);
 }

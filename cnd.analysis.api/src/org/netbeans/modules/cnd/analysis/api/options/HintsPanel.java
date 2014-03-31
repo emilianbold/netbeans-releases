@@ -122,10 +122,10 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
         for(DefaultMutableTreeNode node : model.audits) {
             Object provider = node.getUserObject();
             if (provider instanceof CodeAuditProvider) {
-                String displayName = ((CodeAuditProvider)provider).getDisplayName();
-                if (path.startsWith(displayName)) {
+                String providerID = ((CodeAuditProvider)provider).getName();
+                if (path.startsWith(providerID)) {
                     treePath = new TreePath(new Object[]{model.getRoot(),node});
-                    path = path.substring(displayName.length());
+                    path = path.substring(providerID.length());
                     if (path.length() > 1) {
                         path = path.substring(1);
                         Enumeration children = node.children();

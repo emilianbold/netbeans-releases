@@ -105,6 +105,7 @@ public class SvnConfigFiles {
     private static final String WINDOWS_GLOBAL_CONFIG_DIR = getGlobalAPPDATA() + "\\Subversion";                                // NOI18N
     private static final List<String> DEFAULT_GLOBAL_IGNORES = 
             parseGlobalIgnores("*.o *.lo *.la #*# .*.rej *.rej .*~ *~ .#* .DS_Store");                                          // NOI18N
+    private static final boolean DO_NOT_SAVE_PASSPHRASE = Boolean.getBoolean("versioning.subversion.noPassphraseInConfig"); // NOI18N
 
     private String recentUrl;
 
@@ -218,7 +219,7 @@ public class SvnConfigFiles {
                 }
             }
             if(url.getProtocol().startsWith("https")) {
-                setSSLCert(rc, nbGlobalSection);
+                setSSLCert(rc, nbGlobalSection, connType);
             }
             setProxy(url, nbGlobalSection);
             storeIni(nbServers, "servers");                    // NOI18N
@@ -226,7 +227,7 @@ public class SvnConfigFiles {
         }
     }
 
-    private boolean setSSLCert(RepositoryConnection rc, Ini.Section nbGlobalSection) {
+    private boolean setSSLCert(RepositoryConnection rc, Ini.Section nbGlobalSection, ConnectionType connType) {
         if(rc == null) {
             return true;
         }
@@ -240,7 +241,9 @@ public class SvnConfigFiles {
             return true;
         }
         nbGlobalSection.put("ssl-client-cert-file", certFile);
-        nbGlobalSection.put("ssl-client-cert-password", certPassword);
+        if (connType != ConnectionType.svnkit && !DO_NOT_SAVE_PASSPHRASE) {
+            nbGlobalSection.put("ssl-client-cert-password", certPassword);
+        }
         return true;
     }
 
