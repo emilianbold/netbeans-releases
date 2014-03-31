@@ -63,11 +63,11 @@ import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
-import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
@@ -85,7 +85,7 @@ public final class SemanticHighlighter extends HighlighterBase {
     private static final Logger LOG = Logger.getLogger(SemanticHighlighter.class.getName());
     
     private InterrupterImpl interrupter = new InterrupterImpl();
-    private CndParserResult lastParserResult;
+    private Parser.Result lastParserResult;
 
     public SemanticHighlighter(String mimeType) {
         init(mimeType);
@@ -257,7 +257,7 @@ public final class SemanticHighlighter extends HighlighterBase {
     }
 
     @Override
-    public void run(CndParserResult result, SchedulerEvent event) {
+    public void run(Parser.Result result, SchedulerEvent event) {
         synchronized(this) {
             if (lastParserResult == result) {
                 return;

@@ -57,11 +57,14 @@ public class LoginTask implements Runnable {
     @Override
     public void run() {
         synchronized (monitor) {
-            for (TeamServerProvider prov : TeamServerManager.getDefault().getProviders()) {
-                prov.initialize();
+            try {
+                for (TeamServerProvider prov : TeamServerManager.getDefault().getProviders()) {
+                    prov.initialize();
+                }
+            } finally {
+                isFinished = true;
+                monitor.notify();
             }
-            isFinished = true;
-            monitor.notify();
         }
     }
 
