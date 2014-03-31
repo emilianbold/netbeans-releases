@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,74 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.team.server;
+package org.netbeans.modules.debugger.jpda.js.breakpoints;
 
-import org.netbeans.modules.team.server.api.TeamServerManager;
-import org.netbeans.modules.team.server.ui.spi.TeamServerProvider;
-import org.openide.util.Exceptions;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Objects;
 
-/**
+/** Equality for URLs that can handle canonical paths on local file URLs.
  *
- * @author Jan Becicka
  */
-public class LoginTask implements Runnable {
+final class URLEquality {
+    private final String protocol;
+    private final String host;
+    private final int port;
+    private final String path;
+    private final int hash;
 
-    public static boolean isFinished = false;
-    public static final Object monitor = new Object();
+    public URLEquality(URL url) {
+        protocol = url.getProtocol().toLowerCase();
+        String h = url.getHost();
+        if (h != null) {
+            h = h.toLowerCase();
+        }
+        host = h;
+        port = url.getPort();
+        path = url.getPath();
+        int last = url.getPath().lastIndexOf("/");
+        hash = protocol.hashCode() + host.hashCode() + port + url.getPath().substring(last + 1).hashCode();
+    }
+
     @Override
-    public void run() {
-        synchronized (monitor) {
-            try {
-                for (TeamServerProvider prov : TeamServerManager.getDefault().getProviders()) {
-                    prov.initialize();
-                }
-            } finally {
-                isFinished = true;
-                monitor.notify();
-            }
-        }
+    public int hashCode() {
+        return hash;
     }
 
-    public static void waitStartupFinished() {
-        synchronized (monitor) {
-            if (!isFinished) {
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof URLEquality)) {
+            return false;
+        }
+        URLEquality ue = (URLEquality) obj;
+        if (ue.hash != hash) {
+            return false;
+        }
+        if (
+            protocol.equals(ue.protocol) && 
+            Objects.equals(host, ue.host) &&
+            port == ue.port
+        ) {
+            if (Objects.equals(path, ue.path)) {
+                return true;
+            }
+            if ("file".equals(protocol) && path != null && ue.path != null) { // NOI18N
                 try {
-                    monitor.wait();
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
+                    File fThis = new File(path);
+                    File fObj = new File(ue.path);
+                    if (fThis.getCanonicalPath().equals(fObj.getCanonicalPath())) {
+                        return true;
+                    }
+                } catch (IOException ex) {
+                    // go on
                 }
             }
         }
+        return false;
     }
+    
 }

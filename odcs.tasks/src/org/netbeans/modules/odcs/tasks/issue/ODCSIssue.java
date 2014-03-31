@@ -998,7 +998,8 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     }
 
     public String getPriorityID() {
-        return getPriority().getId().toString();
+        final Priority priority = getPriority();
+        return priority != null ? priority.getId().toString() : ""; // NOI18N
     }
 
     private static class IssueFieldColumnDescriptor extends ColumnDescriptor<String> {
