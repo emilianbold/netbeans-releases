@@ -43,8 +43,8 @@
 package org.netbeans.modules.cnd.highlight.hints;
 
 import java.util.Collection;
+import java.util.Iterator;
 import org.netbeans.modules.cnd.analysis.api.AnalyzerResponse;
-import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMember;
@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
+import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
@@ -65,8 +66,8 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Alexander Simon
  */
-class NonVirtualDestructor extends AbstractCodeAudit {
-    private NonVirtualDestructor(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
+class NonVirtualMethod extends AbstractCodeAudit {
+    private NonVirtualMethod(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
         super(id, name, description, defaultSeverity, defaultEnabled, myPreferences);
     }
     
@@ -102,18 +103,49 @@ class NonVirtualDestructor extends AbstractCodeAudit {
     }
     
     private void visit(CsmMember csmMember, CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
-        if (CsmKindUtilities.isDestructor(csmMember)) {
+        if (CsmKindUtilities.isMethod(csmMember) && !CsmKindUtilities.isDestructor(csmMember) && !CsmKindUtilities.isConstructor(csmMember)) {
             CsmMethod method = (CsmMethod)csmMember;
-            if (!CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
-                if (!CsmTypeHierarchyResolver.getDefault().getSubTypes(method.getContainingClass(), true).isEmpty()) {
-                    String message = NbBundle.getMessage(NonVirtualDestructor.class, "NonVirtualDestructor.message"); // NOI18N
-                    CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
-                    if (response instanceof AnalyzerResponse) {
-                        ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, method.getContainingFile().getFileObject(),
-                                new ErrorInfoImpl(CsmHintProvider.NAME, getID(), getName()+"\n"+message, severity, method.getStartOffset(), method.getParameterList().getEndOffset())); // NOI18N
+            CsmVirtualInfoQuery.CsmOverriddenChain overriddenChain = CsmVirtualInfoQuery.getDefault().getOverriddenChain(method);
+            if (!overriddenChain.getThisMethod().isVirtual() &&
+                (overriddenChain.getBaseMethods().size() > 0 || overriddenChain.getDerivedMethods().size() > 0)) {
+                String message;
+                if (overriddenChain.getBaseMethods().size() > 0) {
+                    Iterator<CsmVirtualInfoQuery.CsmOverrideInfo> iterator = overriddenChain.getBaseMethods().iterator();
+                    if (overriddenChain.getBaseMethods().size() == 1) {
+                        String name = iterator.next().getMethod().getContainingClass().getName().toString();
+                        message = NbBundle.getMessage(NonVirtualMethod.class, "NonVirtualMethod.message.supper.class", name); // NOI18N
                     } else {
-                        response.addError(new ErrorInfoImpl(CsmHintProvider.NAME, getID(), message, severity, method.getStartOffset(), method.getParameterList().getEndOffset()));
+                        StringBuilder buf = new StringBuilder();
+                        while(iterator.hasNext()) {
+                            if (buf.length()>0) {
+                                buf.append(", "); // NOI18N
+                            }
+                            buf.append(iterator.next().getMethod().getContainingClass().getName());
+                        }
+                        message = NbBundle.getMessage(NonVirtualMethod.class, "NonVirtualMethod.message.supper.classes", buf.toString()); // NOI18N
                     }
+                } else {
+                    Iterator<CsmVirtualInfoQuery.CsmOverrideInfo> iterator = overriddenChain.getDerivedMethods().iterator();
+                    if (overriddenChain.getDerivedMethods().size() == 1) {
+                        String name = iterator.next().getMethod().getContainingClass().getName().toString();
+                        message = NbBundle.getMessage(NonVirtualMethod.class, "NonVirtualMethod.message.sub.class", name); // NOI18N
+                    } else {
+                        StringBuilder buf = new StringBuilder();
+                        while(iterator.hasNext()) {
+                            if (buf.length()>0) {
+                                buf.append(", "); // NOI18N
+                            }
+                            buf.append(iterator.next().getMethod().getContainingClass().getName());
+                        }
+                        message = NbBundle.getMessage(NonVirtualMethod.class, "NonVirtualMethod.message.sub.classes", buf.toString()); // NOI18N
+                    }
+                }
+                CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
+                if (response instanceof AnalyzerResponse) {
+                    ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, method.getContainingFile().getFileObject(),
+                            new ErrorInfoImpl(CsmHintProvider.NAME, getID(), getName()+"\n"+message, severity, method.getStartOffset(), method.getParameterList().getEndOffset())); // NOI18N
+                } else {
+                    response.addError(new ErrorInfoImpl(CsmHintProvider.NAME, getID(), message, severity, method.getStartOffset(), method.getParameterList().getEndOffset()));
                 }
             }
         }
@@ -122,13 +154,13 @@ class NonVirtualDestructor extends AbstractCodeAudit {
         visit(csmClass.getMembers(), request, response);
     }
     
-    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CsmHintProvider.NAME, service = CodeAuditFactory.class, position = 1000)
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CsmHintProvider.NAME, service = CodeAuditFactory.class, position = 1100)
     public static final class Factory implements CodeAuditFactory {
         @Override
         public AbstractCodeAudit create(AuditPreferences preferences) {
-            String id = NbBundle.getMessage(NonVirtualDestructor.class, "NonVirtualDestructor.name"); // NOI18N
-            String description = NbBundle.getMessage(NonVirtualDestructor.class, "NonVirtualDestructor.description"); // NOI18N
-            return new NonVirtualDestructor(id, id, description, "hint", true, preferences); // NOI18N
+            String id = NbBundle.getMessage(NonVirtualMethod.class, "NonVirtualMethod.name"); // NOI18N
+            String description = NbBundle.getMessage(NonVirtualMethod.class, "NonVirtualMethod.description"); // NOI18N
+            return new NonVirtualMethod(id, id, description, "hint", true, preferences); // NOI18N
         }
     }
 }
