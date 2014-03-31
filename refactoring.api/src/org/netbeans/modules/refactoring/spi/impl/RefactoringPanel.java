@@ -92,6 +92,7 @@ import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.ToolbarWithOverflow;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.*;
 import org.openide.windows.TopComponent;
@@ -586,6 +587,12 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
             RefactoringPanelContainer.getUsagesComponent().removePanel(this);
         } else {
             RefactoringPanelContainer.getRefactoringComponent().removePanel(this);
+        }
+        if(isVisible) {
+            Action action = FileUtil.getConfigObject("Actions/Window/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance", Action.class); //NOI18N
+            if(action != null) {
+                action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null));
+            }
         }
         closeNotify();
     }
