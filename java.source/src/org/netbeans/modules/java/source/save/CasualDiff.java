@@ -1988,6 +1988,10 @@ public class CasualDiff {
         int localPointer = bounds[0];
         // lhs
         int[] lhsBounds = getBounds(oldT.lhs);
+        if (lhsBounds[0] < 0) {
+            lhsBounds[0] = getOldPos(oldT.rhs);
+            lhsBounds[1] = -1;
+        }
         copyTo(localPointer, lhsBounds[0]);
         localPointer = diffTree(oldT.lhs, newT.lhs, lhsBounds);
         int[] rhsBounds = getBounds(oldT.rhs);
