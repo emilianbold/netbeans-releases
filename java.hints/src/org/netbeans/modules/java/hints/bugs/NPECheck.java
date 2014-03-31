@@ -1182,7 +1182,7 @@ public class NPECheck {
             
             do {
                 if (curT == null || curT.getKind() != TypeKind.DECLARED) return;
-                DeclaredType dtt = (DeclaredType)thrown;
+                DeclaredType dtt = (DeclaredType)curT;
                 // hack; getSuperclass may provide different type instance for the same element.
                 thrown = dtt.asElement().asType();
                 Map<VariableElement, State> r = resumeOnExceptionHandler.get(thrown);
