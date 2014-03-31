@@ -361,6 +361,10 @@ public class VariableProvider {
     }
     
     public int getSizeOfValue(String obj) {
+        if (true) {
+            return Integer.MAX_VALUE; // Not supported yet
+        }
+        
         List<CsmInstantiation> instantiations = null;
         
         if (CsmKindUtilities.isInstantiation(decl)) {
