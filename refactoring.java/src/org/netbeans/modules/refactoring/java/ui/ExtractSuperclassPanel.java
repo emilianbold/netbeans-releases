@@ -175,7 +175,8 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
 
     @Override
     public boolean requestFocusInWindow() {
-        return nameText.requestFocusInWindow();
+        nameText.requestFocusInWindow();
+        return true;
     }
 
     /** Initialization of the panel (called by the parent window).

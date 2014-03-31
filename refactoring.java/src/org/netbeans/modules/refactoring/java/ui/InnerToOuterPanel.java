@@ -143,7 +143,8 @@ public class InnerToOuterPanel extends JPanel implements CustomRefactoringPanel 
 
     @Override
     public boolean requestFocusInWindow() {
-        return classNameField.requestFocusInWindow();
+        classNameField.requestFocusInWindow();
+        return true;
     }
     
     // --- GENERATED CODE ------------------------------------------------------

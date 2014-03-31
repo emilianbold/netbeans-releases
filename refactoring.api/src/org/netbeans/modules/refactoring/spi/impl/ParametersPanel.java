@@ -760,6 +760,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 next.setVisible(false);
                 previewButton.setVisible(true);
                 previewButton.setEnabled(true);
+            } else {
+                next.setVisible(true);
+                previewButton.setVisible(false);
+                previewButton.setEnabled(false);
             }
         } else {
             ProblemDetails details = getDetails(problem);
@@ -780,6 +784,12 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         }
         ((BorderLayout)this.getLayout()).invalidateLayout(this);
         dialog.pack();
+        if(next.isEnabled() && next.isVisible()) {
+            next.requestFocusInWindow();
+        } else {
+            cancel.requestFocusInWindow();
+        }
+        dialog.repaint();
     }
 
     private void placeCustomPanel() {

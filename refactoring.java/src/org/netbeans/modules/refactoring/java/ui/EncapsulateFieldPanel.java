@@ -147,7 +147,8 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
 
     @Override
     public boolean requestFocusInWindow() {
-        return jTableFields.requestFocusInWindow();
+        jTableFields.requestFocusInWindow();
+        return true;
     }
 
     @Override

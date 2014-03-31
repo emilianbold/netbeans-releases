@@ -427,6 +427,7 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
 
     @Override
     public boolean requestFocusInWindow() {
-        return ((JEditorPane)singleLineEditor[1]).requestFocusInWindow();
+        ((JEditorPane)singleLineEditor[1]).requestFocusInWindow();
+        return true;
     }
 }

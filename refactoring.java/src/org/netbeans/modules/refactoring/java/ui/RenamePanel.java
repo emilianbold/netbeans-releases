@@ -286,10 +286,11 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
     @Override
     public boolean requestFocusInWindow() {
         if(nameField.isEnabled()) {
-            return nameField.requestFocusInWindow();
+            nameField.requestFocusInWindow();
         } else {
-            return textCheckBox.requestFocusInWindow();
+            textCheckBox.requestFocusInWindow();
         }
+        return true;
     }
     
     /** This method is called from within the constructor to

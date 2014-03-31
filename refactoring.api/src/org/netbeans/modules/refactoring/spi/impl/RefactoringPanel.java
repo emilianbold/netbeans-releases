@@ -623,7 +623,6 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
         expandButton.setToolTipText(
             NbBundle.getMessage(RefactoringPanel.class, "HINT_collapseAll") // NOI18N
         );
-        requestFocus();
     } 
 
     /* collapseAll nodes in the tree */
@@ -644,30 +643,8 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
         expandButton.setToolTipText(
             NbBundle.getMessage(RefactoringPanel.class, "HINT_expandAll") // NOI18N
         );
-        requestFocus();
     }
     
-    /**
-     * TODO: probably useless
-     * remove
-     */
-    public void invalidateObject() {
-        if (isQuery) {
-            return;
-        }
-        Runnable invalidate = new Runnable() {
-            @Override
-            public void run() {
-                setRefactoringEnabled(false, false);
-            }
-        };
-        if (SwingUtilities.isEventDispatchThread()) {
-            invalidate.run();
-        } else {
-            SwingUtilities.invokeLater(invalidate);
-        }
-    }
-
     private void refresh(final boolean showParametersPanel) {
         checkEventThread();
         boolean scanning = IndexingManager.getDefault().isIndexing();
@@ -948,7 +925,6 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
                 }
 
                 tree.setSelectionRow(0);
-                requestFocus();
                 setRefactoringEnabled(true, true);
                 if (parametersPanel != null && (Boolean) parametersPanel.getClientProperty(ParametersPanel.JUMP_TO_FIRST_OCCURENCE)) {
                     selectNextUsage();
@@ -1041,22 +1017,14 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
             public void run() {
                 createTree(root);
                 tree.setSelectionRow(0);
-                requestFocus();
+                if (refactorButton != null) {
+                    refactorButton.requestFocusInWindow();
+                } else if (tree != null) {
+                    tree.requestFocusInWindow();
+                }
             }
         });
     }    
-                
-    @Override
-    public void requestFocus() {
-        super.requestFocus();
-        if (refactorButton != null) {
-            refactorButton.requestFocus();
-        } else {
-            if (tree!=null) {
-                tree.requestFocus();
-            }
-        }
-    }
     
     void setRefactoringEnabled(boolean enabled, boolean isRefreshing) {
         checkEventThread();
@@ -1075,6 +1043,11 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
             if (refactorButton != null) {
                 refactorButton.setEnabled(enabled);
             }
+        }
+        if (refactorButton != null) {
+            refactorButton.requestFocusInWindow();
+        } else if (tree != null) {
+            tree.requestFocusInWindow();
         }
     }
 

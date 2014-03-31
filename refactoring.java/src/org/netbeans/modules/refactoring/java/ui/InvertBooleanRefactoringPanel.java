@@ -126,7 +126,8 @@ public class InvertBooleanRefactoringPanel extends javax.swing.JPanel implements
 
     @Override
     public boolean requestFocusInWindow() {
-        return nameField.requestFocusInWindow();
+        nameField.requestFocusInWindow();
+        return true;
     }
 
     @Override

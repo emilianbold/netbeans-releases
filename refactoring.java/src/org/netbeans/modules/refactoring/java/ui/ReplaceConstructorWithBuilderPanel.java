@@ -188,7 +188,8 @@ public class ReplaceConstructorWithBuilderPanel extends javax.swing.JPanel imple
 
     @Override
     public boolean requestFocusInWindow() {
-        return nameField.requestFocusInWindow();
+        nameField.requestFocusInWindow();
+        return true;
     }
 
     public List<ReplaceConstructorWithBuilderRefactoring.Setter> getSetters() {

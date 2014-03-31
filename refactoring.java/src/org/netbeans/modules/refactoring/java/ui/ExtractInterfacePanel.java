@@ -167,7 +167,8 @@ public final class ExtractInterfacePanel extends JPanel implements CustomRefacto
 
     @Override
     public boolean requestFocusInWindow() {
-        return nameText.requestFocusInWindow();
+        nameText.requestFocusInWindow();
+        return true;
     }
     
 
