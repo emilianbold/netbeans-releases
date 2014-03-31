@@ -50,7 +50,7 @@ import org.netbeans.spi.java.classpath.support.PathResourceBase;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 
 import java.net.URL;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 
 /**
@@ -93,7 +93,7 @@ public final class SimplePathResourceImplementation  extends PathResourceBase {
             File f = null;
             boolean dir = false;
             try {
-                f = Utilities.toFile(root.toURI());
+                f = BaseUtilities.toFile(root.toURI());
                 dir = f.isDirectory();
             } catch (URISyntaxException use) {
                 //pass - handle as non dir

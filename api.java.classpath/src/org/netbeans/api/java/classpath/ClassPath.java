@@ -65,6 +65,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -86,9 +87,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -311,7 +312,7 @@ public final class ClassPath {
                     //todo: Ignore non file urls, we can try to url->fileobject->url
                     //if it becomes a file.
                     if ("file".equals(url.getProtocol())) { //NOI18N
-                        file = FileUtil.normalizeFile(Utilities.toFile(url.toURI()));
+                        file = FileUtil.normalizeFile(BaseUtilities.toFile(url.toURI()));
                     }
                 } catch (IllegalArgumentException e) {
                     LOG.log(Level.WARNING, "Unexpected URL <{0}>: {1}", new Object[] {url, e});
@@ -800,7 +801,7 @@ public final class ClassPath {
                             } else {
                                 String fileState = null;
                                 try {
-                                    final File file = Utilities.toFile(this.url.toURI());
+                                    final File file = BaseUtilities.toFile(this.url.toURI());
                                     final boolean exists = file.exists();
                                     final boolean isDirectory = file.isDirectory();
                                     if (exists && !isDirectory) {
@@ -960,7 +961,7 @@ public final class ClassPath {
         @Override
         public boolean equals (Object other) {
             if (other instanceof ClassPath.Entry) {
-                return Utilities.compareObjects(((ClassPath.Entry)other).url, this.url);
+                return Objects.equals(((ClassPath.Entry)other).url, this.url);
             }
             return false;
         }
@@ -1195,7 +1196,7 @@ public final class ClassPath {
         private final Set<File> roots;
 
         private RootsListener (ClassPath owner) {
-            super (owner, Utilities.activeReferenceQueue());
+            super (owner, BaseUtilities.activeReferenceQueue());
             roots = new HashSet<File> ();
         }
 
