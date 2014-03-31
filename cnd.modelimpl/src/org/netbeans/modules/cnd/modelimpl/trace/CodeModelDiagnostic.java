@@ -274,7 +274,7 @@ public final class CodeModelDiagnostic {
             long maxSize = 0;
             for (CsmFile file : sourceFiles) {
                 if (printList) {
-                    printOut.printf("\t%s\n", file.getAbsolutePath());
+                    printOut.printf("\t%s\n", file.getAbsolutePath()); // NOI18N
                 }
                 FileObject fo = file.getFileObject();
                 if (fo != null && fo.isValid()) {
@@ -284,7 +284,7 @@ public final class CodeModelDiagnostic {
             }
             for (CsmFile file : headerFiles) {
                 if (printList) {
-                    printOut.printf("\t%s\n", file.getAbsolutePath());
+                    printOut.printf("\t%s\n", file.getAbsolutePath()); // NOI18N
                 }
                 FileObject fo = file.getFileObject();
                 if (fo != null && fo.isValid()) {
@@ -292,7 +292,7 @@ public final class CodeModelDiagnostic {
                     maxSize = Math.max(maxSize, fo.getSize());
                 }
             }
-            printOut.printf("   total files size: %,d KBytes;  max file size: %,d KBytes\n", kilobytes(totalSize), kilobytes(maxSize));
+            printOut.printf("   total files size: %,d KBytes;  max file size: %,d KBytes\n", kilobytes(totalSize), kilobytes(maxSize)); // NOI18N
         }
         private static long kilobytes(long num) {
             return ((num % 1024) < 512) ? num/1024 : num/1024+1;
