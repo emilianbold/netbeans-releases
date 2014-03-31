@@ -545,7 +545,7 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
             return;
             }
         }
-        disableComponents(RefactoringPanel.this);
+        disableComponents();
         progressListener = new ProgressL();
         RP.post(new Runnable() {
             @Override
@@ -1052,17 +1052,25 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
     }
 
     // disables all components in a given container
-    private static void disableComponents(Container c) {
-        checkEventThread();
-        Component children[] = c.getComponents();
-        for (int i = 0; i < children.length; i++) {
-            if (children[i].isEnabled()) {
-                children[i].setEnabled(false);
-            }
-            if (children[i] instanceof Container) {
-                disableComponents((Container) children[i]);
-            }
+    private void disableComponent(JComponent jc) {
+        if(jc != null) {
+            jc.setEnabled(false);
         }
+    }
+        
+    private void disableComponents() {
+        disableComponent(cancelButton);
+        disableComponent(expandButton);
+        disableComponent(filterBar);
+        disableComponent(logicalViewButton);
+        disableComponent(nextMatch);
+        disableComponent(physicalViewButton);
+        disableComponent(prevMatch);
+        disableComponent(refactorButton);
+        disableComponent(refreshButton);
+        disableComponent(rerunButton);
+        disableComponent(stopButton);
+        disableComponent(tree);
     }
     
     void selectNextUsage() {
@@ -1175,9 +1183,11 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
     ////////////////////////////////////////////////////////////////////////////
 
     private void stopSearch() {
-        stopButton.setEnabled(false);
-        stopButton.setVisible(false);
-        refreshButton.setVisible(true);
+        if(isVisible) {
+            stopButton.setEnabled(false);
+            stopButton.setVisible(false);
+            refreshButton.setVisible(true);
+        }
         cancelRequest.set(true);
         ui.getRefactoring().cancelRequest();
     }

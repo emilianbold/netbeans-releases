@@ -158,13 +158,13 @@ public class RefactoringPanelContainer extends TopComponent {
                 remove(tabs);
                 add(c, BorderLayout.CENTER);
             }
+            validate();
         } else {
             if (comp != null)
                 remove(comp);
             isVisible = false;
             close();
         }
-        validate();
     }
     
     void closeAllButCurrent() {
