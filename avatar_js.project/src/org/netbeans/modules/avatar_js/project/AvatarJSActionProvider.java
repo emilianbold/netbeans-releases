@@ -61,6 +61,7 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -228,6 +229,15 @@ public class AvatarJSActionProvider extends BaseActionProvider {
     @Override
     protected String[] getPlatformSensitiveActions() {
         return platformSensitiveActions;
+    }
+
+    @Override
+    protected JavaPlatform getProjectPlatform() {
+        JavaPlatform jp = super.getProjectPlatform();
+        if (jp == null) {
+            jp = NashornPlatform.getDefault();
+        }
+        return jp;
     }
 
     @Override
