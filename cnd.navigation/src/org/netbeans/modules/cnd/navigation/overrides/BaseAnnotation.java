@@ -104,7 +104,7 @@ public abstract class BaseAnnotation extends Annotation {
     protected final Collection<CsmUID<? extends CsmOffsetableDeclaration>> baseTemplateUIDs;
     protected final Collection<CsmUID<? extends CsmOffsetableDeclaration>> specializationUIDs;
     
-    protected BaseAnnotation(StyledDocument document, CsmOffsetableDeclaration decl, boolean toSeparateClassConstructor,
+    protected BaseAnnotation(StyledDocument document, CsmOffsetableDeclaration decl,
             Collection<? extends CsmOffsetableDeclaration> baseDecls,
             Collection<? extends CsmOffsetableDeclaration> descDecls,
             Collection<? extends CsmOffsetableDeclaration> baseTemplates,
@@ -160,7 +160,7 @@ public abstract class BaseAnnotation extends Annotation {
         }
     }
     
-    protected BaseAnnotation(StyledDocument document, CsmFunction decl,
+    protected BaseAnnotation(StyledDocument document, CsmFunction decl, CsmVirtualInfoQuery.CsmOverrideInfo thisMethod, 
             Collection<CsmVirtualInfoQuery.CsmOverrideInfo> baseDecls,
             Collection<CsmVirtualInfoQuery.CsmOverrideInfo> descDecls,
             Collection<? extends CsmOffsetableDeclaration> baseTemplates,
@@ -172,8 +172,8 @@ public abstract class BaseAnnotation extends Annotation {
             // overrides only 
             if (baseDecls.isEmpty()) {
                 boolean pseudo = false;
-                if (CsmKindUtilities.isMethod(decl)) {
-                    pseudo = !((CsmMethod)decl).isVirtual();
+                if (thisMethod != null) {
+                    pseudo = !thisMethod.isVirtual();
                 }
                 for(CsmVirtualInfoQuery.CsmOverrideInfo info :descDecls) {
                     if (!info.isVirtual()) {
