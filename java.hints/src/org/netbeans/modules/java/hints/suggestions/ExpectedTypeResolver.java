@@ -97,6 +97,7 @@ import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type.CapturedType;
 import java.util.ArrayList;
@@ -114,6 +115,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
@@ -217,6 +219,12 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
     
     public ExpectedTypeResolver(TreePath theExpression, CompilationInfo info) {
         this.originalExpression = theExpression;
+        this.info = info;
+    }
+    
+    public ExpectedTypeResolver(TreePath theExpression, TreePath prevExpression, CompilationInfo info) {
+        this.originalExpression = theExpression;
+        this.theExpression = prevExpression;
         this.info = info;
     }
     
@@ -401,7 +409,7 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
             return null;
         }
 
-        ExpectedTypeResolver subResolver = new ExpectedTypeResolver(getCurrentPath(), info);
+        ExpectedTypeResolver subResolver = new ExpectedTypeResolver(getCurrentPath(), getCurrentPath(), info);
         subResolver.typeCastDepth++;
         List<? extends TypeMirror> pp = subResolver.scan(getCurrentPath().getParentPath(), null);
         
@@ -412,12 +420,40 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
 
         for (Iterator<? extends TypeMirror> it = parentTypes.iterator(); it.hasNext(); ) {
             TypeMirror m = it.next();
-            if (!info.getTypeUtilities().isCastable(thisType, m) || 
-                !info.getTypes().isAssignable(otherType, m)) {
-                it.remove();
+            if (!info.getTypeUtilities().isCastable(thisType, m)) {
+                Scope s = info.getTrees().getScope(getCurrentPath());
+                SourcePositions pos = info.getTrees().getSourcePositions();
+                StringBuilder sb = new StringBuilder();
+                int posFirst = (int)pos.getStartPosition(info.getCompilationUnit(), theExpression.getLeaf());
+                int posSecond = (int)pos.getStartPosition(info.getCompilationUnit(), otherExpression);
+                
+                if (posFirst < 0 || posSecond < 0) {
+                    // LOMBOK
+                    return null;
+                }
+                String first = info.getText().substring(posFirst, 
+                        (int)pos.getEndPosition(info.getCompilationUnit(), theExpression.getLeaf()));
+                String second = info.getText().substring(posSecond, 
+                        (int)pos.getEndPosition(info.getCompilationUnit(), otherExpression));
+                sb.append(first).append("+").append(second);
+                ExpressionTree expr = info.getTreeUtilities().parseExpression(sb.toString(), new SourcePositions[1]);
+                TypeMirror targetType = purify(info, info.getTreeUtilities().attributeTree(expr, s));
+                if (targetType == null || !info.getTypes().isAssignable(targetType, m)) {
+                    it.remove();
+                }
             }
         }
         return parentTypes.isEmpty() ? Collections.singletonList(otherType) : parentTypes;
+    }
+
+    private TypeMirror purify(CompilationInfo info, TypeMirror targetType) {
+        if (targetType != null && targetType.getKind() == TypeKind.ERROR) {
+            targetType = info.getTrees().getOriginalType((ErrorType) targetType);
+        }
+
+        if (targetType == null || targetType.getKind() == /*XXX:*/TypeKind.ERROR || targetType.getKind() == TypeKind.NONE || targetType.getKind() == TypeKind.NULL) return null;
+
+        return Utilities.resolveCapturedType(info, targetType);
     }
 
     /**
