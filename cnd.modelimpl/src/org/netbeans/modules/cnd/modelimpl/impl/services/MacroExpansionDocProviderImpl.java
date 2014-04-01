@@ -259,7 +259,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         APTToken to = APTUtils.getExpandedToken(fileToken);
         if (to != null) {
             Interval paramInterval = createInterval(to.getOffset(), to.getEndOffset());
-            Interval paramExpansionInterval = createInterval(tt.currentOut.start + expandedOffsetShift, tt.currentOut.start + expandedOffsetShift + fileToken.getText().length());
+            Interval paramExpansionInterval = createInterval(tt.currentOut.start + expandedOffsetShift, tt.currentOut.start + expandedOffsetShift + fileToken.getTextID().length());
             List<Interval> paramExpansions = paramsToExpansion.get(paramInterval);
             if (paramExpansions != null) {
                 paramExpansions.add(paramExpansionInterval);
@@ -456,7 +456,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             try {
                 APTToken t = (APTToken) ts.nextToken();
                 while (t != null && !APTUtils.isEOF(t)) {
-                    sb.append(t.getText());
+                    sb.append(t.getTextID());
                     t = (APTToken) ts.nextToken();
                 }
             } catch (TokenStreamException ex) {
@@ -619,11 +619,11 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         if (fileToken.getOffset() < docTokenEndOffset) {
             // empty comment - expansion of empty macro
             if (!APTUtils.isCommentToken(fileToken)) {
-                expandedToken.append(fileToken.getText());
+                expandedToken.append(fileToken.getTextID());
                 if (APTUtils.isMacroParamExpandedToken(fileToken)) {
                     fillParamsToExpansionMap(fileToken, tt, expandedOffsetShift, paramsToExpansion);
                 }
-                expandedOffsetShift += fileToken.getText().length();
+                expandedOffsetShift += fileToken.getTextID().length();
                 skipIndent = false;
             }
             APTToken prevFileToken = fileToken;
@@ -638,11 +638,11 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                         }
                     }
                     skipIndent = false;
-                    expandedToken.append(fileToken.getText());
+                    expandedToken.append(fileToken.getTextID());
                     if (APTUtils.isMacroParamExpandedToken(fileToken)) {
                         fillParamsToExpansionMap(fileToken, tt, expandedOffsetShift, paramsToExpansion);
                     }
-                    expandedOffsetShift += fileToken.getText().length();
+                    expandedOffsetShift += fileToken.getTextID().length();
                 }
                 prevFileToken = fileToken;
                 fileTS.moveNext();

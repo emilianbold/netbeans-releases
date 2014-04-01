@@ -113,7 +113,7 @@ class NonVirtualMethod extends AbstractCodeAudit {
                     Iterator<CsmVirtualInfoQuery.CsmOverrideInfo> iterator = overriddenChain.getBaseMethods().iterator();
                     if (overriddenChain.getBaseMethods().size() == 1) {
                         String name = iterator.next().getMethod().getContainingClass().getName().toString();
-                        message = NbBundle.getMessage(NonVirtualMethod.class, "NonVirtualMethod.message.supper.class", name); // NOI18N
+                        message = NbBundle.getMessage(NonVirtualMethod.class, "NonVirtualMethod.message.super.class", name); // NOI18N
                     } else {
                         StringBuilder buf = new StringBuilder();
                         while(iterator.hasNext()) {
@@ -122,7 +122,7 @@ class NonVirtualMethod extends AbstractCodeAudit {
                             }
                             buf.append(iterator.next().getMethod().getContainingClass().getName());
                         }
-                        message = NbBundle.getMessage(NonVirtualMethod.class, "NonVirtualMethod.message.supper.classes", buf.toString()); // NOI18N
+                        message = NbBundle.getMessage(NonVirtualMethod.class, "NonVirtualMethod.message.super.classes", buf.toString()); // NOI18N
                     }
                 } else {
                     Iterator<CsmVirtualInfoQuery.CsmOverrideInfo> iterator = overriddenChain.getDerivedMethods().iterator();

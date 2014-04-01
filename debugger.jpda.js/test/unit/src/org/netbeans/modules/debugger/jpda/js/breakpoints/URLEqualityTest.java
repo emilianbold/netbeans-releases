@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,71 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.team.server;
+package org.netbeans.modules.debugger.jpda.js.breakpoints;
 
-import org.netbeans.modules.team.server.api.TeamServerManager;
-import org.netbeans.modules.team.server.ui.spi.TeamServerProvider;
-import org.openide.util.Exceptions;
+import java.io.File;
+import java.io.IOException;
+import org.netbeans.junit.NbTestCase;
+import org.openide.util.Utilities;
 
 /**
  *
- * @author Jan Becicka
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class LoginTask implements Runnable {
-
-    public static boolean isFinished = false;
-    public static final Object monitor = new Object();
+public class URLEqualityTest extends NbTestCase {
+    private File orig;
+    
+    public URLEqualityTest(String testName) {
+        super(testName);
+    }
+    
     @Override
-    public void run() {
-        synchronized (monitor) {
-            try {
-                for (TeamServerProvider prov : TeamServerManager.getDefault().getProviders()) {
-                    prov.initialize();
-                }
-            } finally {
-                isFinished = true;
-                monitor.notify();
-            }
-        }
+    protected void setUp() throws Exception {
+        clearWorkDir();
+        File odir = new File(getWorkDir(), "orig");
+        odir.mkdir();
+        orig = new File(odir, "test.js");
+        orig.createNewFile();
+    }
+    
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
     }
 
-    public static void waitStartupFinished() {
-        synchronized (monitor) {
-            if (!isFinished) {
-                try {
-                    monitor.wait();
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
+    public void testEqualSymlinks() throws Exception {
+        if (!Utilities.isUnix()) {
+            return;
         }
+        File copy = new File(getWorkDir(), "copy");
+        int ret = new ProcessBuilder("ln", "-s", "orig", copy.getPath()).start().waitFor();
+        assertEquals("Symlink created", ret, 0);
+        assertTrue("Dir exists", copy.exists());
+        File f = new File(copy, "test.js");
+        assertTrue("File exists", f.exists());
+        
+        URLEquality oe = new URLEquality(orig.toURI().toURL());
+        URLEquality ne = new URLEquality(f.toURI().toURL());
+
+        assertEquals("Same hashCode", oe.hashCode(), ne.hashCode());
+        assertEquals("They are similar", oe, ne);
+        
     }
+
+    public void testDifferentInSiblinks() throws Exception {
+        File copy = new File(getWorkDir(), "copy");
+        copy.mkdir();
+        File f = new File(copy, "test.js");
+        f.createNewFile();
+        
+        URLEquality oe = new URLEquality(orig.toURI().toURL());
+        URLEquality ne = new URLEquality(f.toURI().toURL());
+        
+        assertEquals("Same hashCode", oe.hashCode(), ne.hashCode());
+        assertFalse("Not equals", oe.equals(ne));
+    }
+    
 }
