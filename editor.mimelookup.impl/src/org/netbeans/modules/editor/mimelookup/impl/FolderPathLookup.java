@@ -51,7 +51,9 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
@@ -74,9 +76,39 @@ public final class FolderPathLookup extends AbstractLookup {
     private final InstanceContent content;
     
     private final CompoundFolderChildren children;
-    private final PCL listener = new PCL();
 
-//    private final InstanceConvertor CONVERTOR = new InstanceConvertor();
+    private final PCL listener = new PCL();
+    
+    /**
+     * Map holding fileobject to created instance pairs. Once the clients stop
+     * referencing the created instance the whole item gets removed from the cache.
+     * This ensures that the particular file object always gives the same instance
+     * (e.g. when registered for empty mime-type the same instance gets returned
+     * when asked for both empty and non-empty mime-types).
+     * This is crucial for some of the MimeLookup clients.
+     */
+    private static final Map<FileObject,InstanceItem> fo2item = new HashMap(128);
+    
+    static InstanceItem getInstanceItem(FileObject fo, InstanceItem ignoreItem) {
+        synchronized (fo2item) {
+            InstanceItem item = fo2item.get(fo);
+            if (item == null || item == ignoreItem) {
+                item = new InstanceItem(fo);
+                fo2item.put(fo, item);
+            }
+            return item;
+        }
+    }
+
+    static void releaseInstanceItem(InstanceItem item) {
+        synchronized (fo2item) {
+            // Optimistically suppose the value in the map is the removed one.
+            InstanceItem removed = fo2item.remove(item.getFileObject());
+            if (removed != item) {
+                fo2item.put(item.getFileObject(), removed);
+            }
+        }
+    }
     
     /** Creates a new instance of InstanceProviderLookup */
     public FolderPathLookup(String [] paths) {
@@ -95,15 +127,15 @@ public final class FolderPathLookup extends AbstractLookup {
     }
 
     private void rebuild() {
-        List<FOItem> instanceFiles = new ArrayList<FOItem>();
+        List<PairItem> pairItems = new ArrayList<PairItem>();
         for (FileObject fo : children.getChildren()) {
             if (!fo.isValid()) {
                 // Can happen after modules are disabled. Ignore it.
                 continue;
             }
-            instanceFiles.add(new FOItem(fo));
+            pairItems.add(new PairItem(fo));
         }
-        content.setPairs(instanceFiles);
+        content.setPairs(pairItems);
     }
     
     private class PCL implements PropertyChangeListener {
@@ -113,11 +145,73 @@ public final class FolderPathLookup extends AbstractLookup {
         }
     } // End of PCL class
     
+    private static final class PairItem extends AbstractLookup.Pair<Object> {
+        
+        private final InstanceItem instanceItem;
+        
+        PairItem(FileObject fo) {
+            instanceItem = getInstanceItem(fo, null);
+            assert (instanceItem != null) : "InstanceItem must not be null";
+        }
+
+        @Override
+        protected boolean instanceOf(Class<?> c) {
+            return instanceItem.instanceOf(c);
+        }
+
+        @Override
+        protected boolean creatorOf(Object obj) {
+            return instanceItem.creatorOf(obj);
+        }
+
+        @Override
+        public Object getInstance() {
+            return instanceItem.getInstance();
+        }
+
+        @Override
+        public Class<? extends Object> getType() {
+            return instanceItem.getType();
+        }
+
+        @Override
+        public String getId() {
+            return instanceItem.getId();
+        }
+
+        @Override
+        public String getDisplayName() {
+            return instanceItem.getDisplayName();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            // Transferred from RecognizeInstanceFiles.FOItem
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            final PairItem other = (PairItem) obj;
+            return instanceItem.equals(other.instanceItem);
+        }
+
+        @Override
+        public int hashCode() {
+            // Transferred from RecognizeInstanceFiles.FOItem
+            int hash = 3;
+            hash = 11 * hash + instanceItem.hashCode();
+            return hash;
+        }
+
+    }
+    
 
     /**
-     * Item for a single FileObject.
+     * Item referencing a file object and object instance that was created from it.
+     * <br/>
+     * Once the instance gets released the item will be removed from cache.
      */
-    private static final class FOItem extends AbstractLookup.Pair<Object> {
+    private static final class InstanceItem {
 
         static final long serialVersionUID = 10L;
         
@@ -127,13 +221,25 @@ public final class FolderPathLookup extends AbstractLookup {
         private transient Reference<Object> ref;
 
         /** Constructs new item. */
-        public FOItem (FileObject fo) {
+        InstanceItem (FileObject fo) {
+            assert (fo != null) : "FileObject must not be null";
             this.fo = fo;
         }
         
-        @Override
+        FileObject getFileObject() {
+            return fo;
+        }
+        
+        private synchronized Reference<Object> getRef() {
+            return ref;
+        }
+        
+        private synchronized void setRef(Reference<Object> ref) {
+            this.ref = ref;
+        }
+
         protected boolean instanceOf(Class<?> c) {
-            Reference<Object> refL = ref;
+            Reference<Object> refL = getRef();
             Object inst = (refL != null) ? refL.get() : null;
             if (inst != null) {
                 return c.isInstance(inst);
@@ -158,17 +264,23 @@ public final class FolderPathLookup extends AbstractLookup {
         }
 
         protected boolean creatorOf(Object obj) {
-            Reference<Object> refL = ref;
+            Reference<Object> refL = getRef();
             return (refL != null) ? refL.get() == obj : false;
         }
 
         public synchronized Object getInstance() {
-            Reference<Object> refL = ref;
-            Object inst = (refL != null) ? refL.get() : null;
+            Reference<Object> refL = getRef();
+            Object inst = null;
+            if (refL != null) {
+                inst = refL.get();
+                if (inst == null) { // Instance already released -> get a fresh item
+                    return getInstanceItem(fo, this).getInstance();
+                }
+            }
             if (inst == null) {
                 inst = createInstanceFor(fo, Object.class);
                 if (inst != null) {
-                    ref = new WeakReference<Object>(inst);
+                    setRef(new Ref(inst));
                 }
             }
             return inst;
@@ -202,7 +314,7 @@ public final class FolderPathLookup extends AbstractLookup {
                 return false;
             if (getClass() != obj.getClass())
                 return false;
-            final FOItem other = (FOItem) obj;
+            final InstanceItem other = (InstanceItem) obj;
 
             if (this.fo != other.fo &&
                 (this.fo == null || !this.fo.equals(other.fo)))
@@ -211,15 +323,13 @@ public final class FolderPathLookup extends AbstractLookup {
         }
 
         public @Override int hashCode() {
-            int hash = 3;
-            hash = 11 * hash + (this.fo != null ? this.fo.hashCode() : 0);
-            return hash;
+           return fo.hashCode();
         }
-
+        
         private static ClassLoader loader() {
             ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
             if (l == null) {
-                l = FOItem.class.getClassLoader();
+                l = InstanceItem.class.getClassLoader();
             }
             return l;
         }
@@ -303,8 +413,24 @@ public final class FolderPathLookup extends AbstractLookup {
             name = name.replace ('-', '.');
             name = Utilities.translate(name);
 
-            //System.out.println ("Original: " + getPrimaryFile ().getName () + " new one: " + name); // NOI18N
             return name;
+        }
+        
+        void release() {
+            releaseInstanceItem(this);
+        }
+        
+        private final class Ref extends WeakReference<Object> implements Runnable {
+            
+            Ref(Object inst) {
+                super(inst, Utilities.activeReferenceQueue());
+            }
+
+            @Override
+            public void run() {
+                release();
+            }
+            
         }
 
     }
