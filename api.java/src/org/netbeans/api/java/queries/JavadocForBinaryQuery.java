@@ -46,10 +46,11 @@ package org.netbeans.api.java.queries;
 
 import java.net.URL;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
-import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 
 /**
@@ -59,7 +60,7 @@ import org.openide.util.Lookup;
  */
 public class JavadocForBinaryQuery {
 
-    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(JavadocForBinaryQuery.class.getName());
+    private static final Logger LOG = Logger.getLogger(JavadocForBinaryQuery.class.getName());
     
     private static final Lookup.Result<? extends JavadocForBinaryQueryImplementation> implementations =
         Lookup.getDefault().lookupResult(JavadocForBinaryQueryImplementation.class);
@@ -78,19 +79,32 @@ public class JavadocForBinaryQuery {
      * @return a result object encapsulating the answer (never null)
      */
     public static Result findJavadoc(URL binary) {
-        ClassPathSupport.createResource(binary); // just to check for IAE; XXX might be unnecessary since CP ctor now check this too
-        boolean log = ERR.isLoggable(ErrorManager.INFORMATIONAL);
-        if (log) ERR.log("JFBQ.findJavadoc: " + binary);
+        ClassPathSupport.createResource(binary); // just to check for IAE; XXX might be unnecessary since CP ctor now check this too        
+        LOG.log(
+            Level.FINE,
+            "JFBQ.findJavadoc: {0}",    //NOI18N
+            binary);
         for  (JavadocForBinaryQueryImplementation impl : implementations.allInstances()) {
             Result r = impl.findJavadoc(binary);
             if (r != null) {
-                if (log) ERR.log("  got result " + Arrays.asList(r.getRoots()) + " from " + impl);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(
+                        Level.FINE,
+                        "  got result {0} from {1}",    //NOI18N
+                        new Object[]{
+                            Arrays.asList(r.getRoots()),
+                            impl
+                        });
+                }
                 return r;
             } else {
-                if (log) ERR.log("  got no result from " + impl);
+                LOG.log(
+                    Level.FINE,
+                    "  got no result from {0}", //NOI18N
+                    impl);
             }
         }
-        if (log) ERR.log("  got no results from any impl");
+        LOG.fine("  got no results from any impl"); //NOI18N
         return EMPTY_RESULT;        
     }
 
