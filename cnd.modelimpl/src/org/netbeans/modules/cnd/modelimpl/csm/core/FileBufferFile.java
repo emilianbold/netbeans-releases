@@ -49,6 +49,8 @@ import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
+import java.nio.charset.Charset;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -177,6 +179,18 @@ public class FileBufferFile extends AbstractFileBuffer {
             lastModifiedWhenCachedString = lastModified();
             return readChars;
         }
+    }
+
+    protected final String getEncoding() {
+        FileObject fo = getFileObject();
+        Charset cs = null;
+        if (fo != null && fo.isValid()) {
+            cs = FileEncodingQuery.getEncoding(fo);
+        }
+        if (cs == null) {
+            cs = FileEncodingQuery.getDefaultEncoding();
+        }
+        return cs.name();
     }
 
     @Override

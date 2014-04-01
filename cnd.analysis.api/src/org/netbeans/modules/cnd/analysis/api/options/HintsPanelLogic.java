@@ -97,6 +97,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         severity2index = new EnumMap<Severity, Integer>(Severity.class);
         severity2index.put( Severity.ERROR, 0  );
         severity2index.put( Severity.WARNING, 1  );
+        severity2index.put( Severity.HINT, 2  );
     }
     
     private JTree errorTree;
@@ -112,7 +113,8 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     HintsPanelLogic() {
         defModel.addElement(NbBundle.getMessage(HintsPanel.class, "CTL_AsError")); //NOI18N
         defModel.addElement(NbBundle.getMessage(HintsPanel.class, "CTL_AsWarning")); //NOI18N
-    }
+        defModel.addElement(NbBundle.getMessage(HintsPanel.class, "CTL_WarningOnCurrentLine")); //NOI18N
+   }
     
     void connect( JTree errorTree, ExtendedModel model, JLabel severityLabel, JComboBox severityComboBox,
                   JPanel customizerPanel, JEditorPane descriptionTextArea,
@@ -257,12 +259,19 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             
             // Set proper values to the componetnts
 
-            if ("error".equals(hint.minimalSeverity())) { // NOI18N
-                severityComboBox.setSelectedIndex(severity2index.get(Severity.ERROR));
+            if ("action".equals(hint.getKind())) {// NOI18N
+                severityComboBox.setSelectedIndex(severity2index.get(Severity.HINT));
+                severityComboBox.setEnabled(false);
             } else {
-                severityComboBox.setSelectedIndex(severity2index.get(Severity.WARNING));
+                if ("error".equals(hint.minimalSeverity())) { // NOI18N
+                    severityComboBox.setSelectedIndex(severity2index.get(Severity.ERROR));
+                } else if ("warning".equals(hint.minimalSeverity())) { // NOI18N
+                    severityComboBox.setSelectedIndex(severity2index.get(Severity.WARNING));
+                }  else {
+                    severityComboBox.setSelectedIndex(severity2index.get(Severity.HINT));
+                }
             }
-
+            
             String description = hint.getDescription();
             descriptionTextArea.setText( description == null ? "" : wrapDescription(description)); // NOI18N
                                     
@@ -335,8 +344,10 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
                 CodeAudit hint = (CodeAudit) o;
                 if (index2severity(severityComboBox.getSelectedIndex()) == Severity.ERROR) {
                     hint.getPreferences().put(hint.getID(), "severity", "error"); //NOI18N
-                } else {
+                } else if (index2severity(severityComboBox.getSelectedIndex()) == Severity.WARNING) {
                     hint.getPreferences().put(hint.getID(), "severity", "warning"); //NOI18N
+                } else {
+                    hint.getPreferences().put(hint.getID(), "severity", "hint"); //NOI18N
                 }
             }
         }

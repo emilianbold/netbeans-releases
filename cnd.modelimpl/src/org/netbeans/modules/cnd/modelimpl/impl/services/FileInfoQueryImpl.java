@@ -77,9 +77,11 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindMacrosWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
+import org.netbeans.modules.cnd.modelimpl.platform.CndParserResult;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.parsing.spi.Parser;
 
 /**
  * CsmFileInfoQuery implementation
@@ -228,6 +230,14 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
             return !buffer.isFileBased();
         }
         return false;
+    }
+    
+    @Override
+    public CsmFile getCsmFile(Parser.Result parseResult) {
+        if (parseResult instanceof CndParserResult) {
+            return ((CndParserResult) parseResult).getCsmFile();
+        }
+        return null;
     }
 
     private static final class NamedLock {

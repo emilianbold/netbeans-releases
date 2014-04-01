@@ -48,12 +48,13 @@ import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.model.tasks.CndParserResult;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
@@ -67,7 +68,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  *
  * @author Alexander Simon
  */
-public class NavigatorNodeFactoryTask extends IndexingAwareParserResultTask<CndParserResult> {
+public class NavigatorNodeFactoryTask extends IndexingAwareParserResultTask<Parser.Result> {
     private AtomicBoolean canceled = new AtomicBoolean(false);
     
     public NavigatorNodeFactoryTask() {
@@ -75,7 +76,7 @@ public class NavigatorNodeFactoryTask extends IndexingAwareParserResultTask<CndP
     }
 
     @Override
-    public void run(CndParserResult result, SchedulerEvent event) {
+    public void run(Parser.Result result, SchedulerEvent event) {
         synchronized (this) {
             canceled.set(true);
             canceled = new AtomicBoolean(false);
@@ -112,7 +113,7 @@ public class NavigatorNodeFactoryTask extends IndexingAwareParserResultTask<CndP
             content = panelUI.getContent();
         }
         String mimeType = result.getSnapshot().getMimePath().getPath();
-        CsmFile csmFile = result.getCsmFile();
+        CsmFile csmFile = CsmFileInfoQuery.getDefault().getCsmFile(result);
         if (csmFile != null) {
             NavigatorModel oldModel = content.getModel();
             if (oldModel != null) {

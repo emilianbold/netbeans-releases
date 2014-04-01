@@ -154,6 +154,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Cancellable;
@@ -2986,6 +2987,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public void onFileEditEnd(FileBuffer buf, NativeFileItem nativeFile, boolean undo) {
     }
+
+    public void onSnapshotChanged(FileImpl file, Snapshot snapshot) {
+    }
+
     private CsmUID<CsmProject> uid = null;
     private final Object uidLock = new Object();
     

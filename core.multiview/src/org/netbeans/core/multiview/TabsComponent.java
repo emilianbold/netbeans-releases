@@ -700,6 +700,9 @@ class TabsComponent extends JPanel {
         }
         toolbarVisible = visible;
         bar.setVisible(visible);
+        if( null != barSplit ) {
+            barSplit.setVisible(visible);
+        }
     }
 
     void setToolbarBarVisibleSplit(boolean visible) {

@@ -47,6 +47,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
@@ -249,7 +250,54 @@ public final class CodeModelDiagnostic {
             ModelImpl.instance().dumpInfo(printOut, false);
             printOut.printf("====Libraries:\n"); //NOI18N
             LibraryManager.dumpInfo(printOut, false);
+            printOut.printf("====Files count size summary:\n"); //NOI18N
+            dumpProjectFilesInfo(printOut);
         }
+        
+        private void dumpProjectFilesInfo(PrintWriter printOut) {          
+            Collection<CsmProject> projects = CsmModelAccessor.getModel().projects();
+            for (CsmProject project : projects) {
+                dumpProjectFilesInfo(project, printOut, false);
+                for (CsmProject lib : project.getLibraries()) {
+                    dumpProjectFilesInfo(lib, printOut, false);
+                }
+            }
+        }
+
+        private void dumpProjectFilesInfo(CsmProject project, PrintWriter printOut, boolean printList) {
+            Collection<CsmFile> sourceFiles = project.getSourceFiles();
+            Collection<CsmFile> headerFiles = project.getHeaderFiles();
+            printOut.printf("%s\n", project.getDisplayName());// NOI18N
+            printOut.printf("   %,d source files; %,d header files; %,d total files\n", // NOI18N
+                    sourceFiles.size(), headerFiles.size(), sourceFiles.size() + headerFiles.size());
+            long totalSize = 0;
+            long maxSize = 0;
+            for (CsmFile file : sourceFiles) {
+                if (printList) {
+                    printOut.printf("\t%s\n", file.getAbsolutePath()); // NOI18N
+                }
+                FileObject fo = file.getFileObject();
+                if (fo != null && fo.isValid()) {
+                    totalSize += fo.getSize();
+                    maxSize = Math.max(maxSize, fo.getSize());
+                }
+            }
+            for (CsmFile file : headerFiles) {
+                if (printList) {
+                    printOut.printf("\t%s\n", file.getAbsolutePath()); // NOI18N
+                }
+                FileObject fo = file.getFileObject();
+                if (fo != null && fo.isValid()) {
+                    totalSize += fo.getSize();
+                    maxSize = Math.max(maxSize, fo.getSize());
+                }
+            }
+            printOut.printf("   total files size: %,d KBytes;  max file size: %,d KBytes\n", kilobytes(totalSize), kilobytes(maxSize)); // NOI18N
+        }
+        private static long kilobytes(long num) {
+            return ((num % 1024) < 512) ? num/1024 : num/1024+1;
+        }
+        
     }
     
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1350)
@@ -448,5 +496,5 @@ public final class CodeModelDiagnostic {
                 printOut.println(refsNumber);
             }
         }
-    }    
+    }
 }
