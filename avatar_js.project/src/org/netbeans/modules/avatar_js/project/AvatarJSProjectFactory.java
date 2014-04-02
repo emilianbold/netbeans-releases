@@ -45,7 +45,11 @@ package org.netbeans.modules.avatar_js.project;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -62,14 +66,18 @@ import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -160,23 +168,40 @@ public final class AvatarJSProjectFactory implements ProjectFactory2 {
                 if (main instanceof String) {
                     FileObject toRun = dir.getFileObject((String)main);
                     if (toRun != null) {
-                        ExecItem.executeJS(dir, toRun, "nodejs", command);
+                        if (canExecute("nodejs")) {
+                            ExecItem.executeJS(dir, toRun, "nodejs", command);
+                        } else {
+                            ExecItem.executeJS(dir, toRun, command, false);
+                        }
                         return;
                     }
                 }
             }
-            if (ActionProvider.COMMAND_RUN.equals(command)) {
+            if (ActionProvider.COMMAND_DEBUG.equals(command)) {
                 Object main = getPackage().get("main");
                 if (main instanceof String) {
                     FileObject toRun = dir.getFileObject((String)main);
                     if (toRun != null) {
                         // TODO: debug in avatarjs
-                        ExecItem.executeJS(dir, toRun, "nodejs", command);
+                        //if (canExecute("nodejs")) {
+                        //    ExecItem.executeJS(dir, toRun, "nodejs", command);
+                        //} else {
+                            ExecItem.executeJS(dir, toRun, command, true);
+                        //}
                         return;
                     }
                 }
             }
             throw new IllegalArgumentException(command);
+        }
+
+        private static boolean canExecute(String nodecmd) {
+            try {
+                int exitValue = Runtime.getRuntime().exec(new String[] { nodecmd, "-v" }).exitValue();
+                return exitValue == 0;
+            } catch (IOException ex) {
+                return false;
+            }
         }
 
         @Override
@@ -249,6 +274,7 @@ public final class AvatarJSProjectFactory implements ProjectFactory2 {
         private final String name;
         private final FileObject dir;
         private final ProcessBuilder pb;
+        private final AvatarJSExecutor nex;
         private Future<Integer> running;
 
         ExecItem(
@@ -259,8 +285,20 @@ public final class AvatarJSProjectFactory implements ProjectFactory2 {
             this.name = name;
             this.dir = dir;
             this.pb = pb;
+            this.nex = null;
         }
-
+        
+        ExecItem(
+            String action, String name,
+            FileObject dir, AvatarJSExecutor nex
+        ) {
+            this.action = action;
+            this.name = name;
+            this.dir = dir;
+            this.nex = nex;
+            this.pb = null;
+        }
+        
         static void executeJS(FileObject dir, FileObject toRun, final String prg, String command) {
             File drf = FileUtil.toFile(dir);
             File trf = FileUtil.toFile(toRun);
@@ -269,6 +307,12 @@ public final class AvatarJSProjectFactory implements ProjectFactory2 {
             pb.setArguments(Arrays.asList(trf.getAbsolutePath()));
             pb.setWorkingDirectory(drf.getAbsolutePath());
             final ExecItem ei = new ExecItem(command, toRun.getNameExt(), dir, pb);
+            ei.repeatExecution();
+        }
+        
+        static void executeJS(FileObject dir, FileObject toRun, String command, boolean debug) {
+            AvatarJSExecutor nex = new AvatarJSExecutor(toRun, debug);
+            final ExecItem ei = new ExecItem(command, toRun.getNameExt(), dir, nex);
             ei.repeatExecution();
         }
         
@@ -292,11 +336,36 @@ public final class AvatarJSProjectFactory implements ProjectFactory2 {
             if (isRunning()) {
                 return;
             }
+            if (pb != null) {
+                repeatExtExecution();
+            } else {
+                repeatNashornExecution();
+            }
+        }
+        
+        private void repeatExtExecution() {
             ExecutionDescriptor ed = new ExecutionDescriptor()
                     .frontWindow(true).inputVisible(true).postExecution(this);
             final ExecutionService serv = ExecutionService.newService(pb, ed, getDisplayName());
             BuildExecutionSupport.registerRunningItem(this);
             running = serv.run();
+        }
+        
+        private void repeatNashornExecution() {
+            ExecutionDescriptor ed = new ExecutionDescriptor()
+                    .frontWindow(true).inputVisible(true).postExecution(this);
+            BuildExecutionSupport.registerRunningItem(this);
+            try {
+                running = nex.run(NashornPlatform.getDefault());
+            } catch (IOException | UnsupportedOperationException ex) {
+                running = new Future<Integer>() {
+                    @Override public boolean cancel(boolean mayInterruptIfRunning) { return false; }
+                    @Override public boolean isCancelled() { return false; }
+                    @Override public boolean isDone() { return true; }
+                    @Override public Integer get() { return -1; }
+                    @Override public Integer get(long timeout, TimeUnit unit) { return -1; }
+                };
+            }
         }
         
         @Override
