@@ -171,7 +171,7 @@ public final class Mutex {
      * @param privileged can enter privileged states of this Mutex
      *  @param executor allows to wrap the work of the mutex with a custom code
      * @since 7.12
-     * @see SimpleMutex#SimpleMutex(org.openide.util.SimpleMutex.Privileged, java.util.concurrent.Executor)
+     * @see SimpleMutex#SimpleMutex(org.openide.util.ReadWriteAccess.Privileged, java.util.concurrent.Executor)
      */
     public Mutex(Privileged privileged, Executor executor) {
         this.delegate = ReadWriteAccess.controlledBy(privileged.delegate, executor);

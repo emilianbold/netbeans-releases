@@ -54,7 +54,7 @@ import java.util.*;
 *
 * @author Jaroslav Tulach
 * @since 3.30
-* @see Utilities#topologicalSort
+* @see BaseMutexUtilities#topologicalSort
 */
 public final class TopologicalSortException extends Exception {
     /** all vertexes */

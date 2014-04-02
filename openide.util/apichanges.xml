@@ -77,17 +77,17 @@ made subject to such option by the copyright holder.
                 <li><a href="@org-openide-util-base@/org/openide/util/Enumerations.html">Enumerations</a></li>
                 <li><a href="@org-openide-util-base@/org/openide/util/Exceptions.html">Exceptions</a></li>
                 <li><a href="@org-openide-util-base@/org/openide/util/MapFormat.html">MapFormat</a></li>
-                <li><a href="@org-openide-util-base@/org/openide/util/Mutex.html">Mutex</a></li>
+                <li><a href="@org-openide-util-base@/org/openide/util/ReadWriteAccess.html">ReadWriteAccess</a> created from former Mutex</li>
                 <li><a href="@org-openide-util-base@/org/openide/util/MutexException.html">MutexException</a></li>
                 <li><a href="@org-openide-util-base@/org/openide/util/NbBundle.html">NbBundle</a></li>
-                <li><a href="@org-openide-util-base@/org/openide/util/NbCollections">NbCollections</a></li>
+                <li><a href="@org-openide-util-base@/org/openide/util/NbCollections.html">NbCollections</a></li>
                 <li><a href="@org-openide-util-base@/org/openide/util/NotImplementedException.html">NotImplementedExcepion</a></li>
                 <li><a href="@org-openide-util-base@/org/openide/util/Pair.html">Pair</a></li>
                 <li><a href="@org-openide-util-base@/org/openide/util/Parameters.html">Parameters</a></li>
                 <li><a href="@org-openide-util-base@/org/openide/util/RequestProcessor.html">RequestProcessor</a></li>
                 <li><a href="@org-openide-util-base@/org/openide/util/Task.html">Task</a></li>
                 <li><a href="@org-openide-util-base@/org/openide/util/TaskListener.html">TaskListener</a></li>
-                <li><a href="@org-openide-util-base@/org/openide/util/TimedSoftReference.html">TimedSoftReference</a></li>
+                <!--<li><a href="@org-openide-util-base@/org/openide/util/TimedSoftReference.html">TimedSoftReference</a></li>-->
                 <li><a href="@org-openide-util-base@/org/openide/util/TopologicalSortException.html">TopologicalSortException</a></li>
                 <li><a href="@org-openide-util-base@/org/openide/util/Union2.html">Union2</a></li>
                 <li><a href="@org-openide-util-base@/org/openide/util/WeakListeners.html">WeakListeners</a></li>
@@ -95,7 +95,7 @@ made subject to such option by the copyright holder.
             </ul>
             <p>
                 The class <a href="@TOP@/org/openide/util/Utilities.html">Utilities</a> was also split and the
-                client desktop indepenent parts landed in <a href="@org-openide-util-base@/org/openide/util/BaseUtilities">BaseUtilities</a>.
+                client desktop indepenent parts landed in <a href="@org-openide-util-base@/org/openide/util/BaseUtilities.html">BaseUtilities</a>.
                 Although all the constants and methods are still available through Utilities class, it is advised to change the dependencies
                 and reference them through BaseUtilities.
             </p>
@@ -112,7 +112,7 @@ made subject to such option by the copyright holder.
         <description>
             <p>
                 Two new methods, <code>tryReadAccess</code> and <code>tryWriteAccess</code>,
-                added to <a href="@org-openide-util-base@/org/openide/util/Mutex.Privileged.html">Mutex.Privileged</a>
+                added to <a href="@TOP@/org/openide/util/Mutex.Privileged.html">Mutex.Privileged</a>
                 to allow better control when waiting for a lock.
             </p>
         </description>
@@ -729,7 +729,7 @@ made subject to such option by the copyright holder.
         <description>
             <p>
                 Added new constructor
-                <a href="@org-openide-util-base@//org/openide/util/Mutex.html">Mutex(Privileged, Executor)</a>
+                <a href="@TOP@//org/openide/util/Mutex.html">Mutex(Privileged, Executor)</a>
                 that allows creators of the mutex to intercept and wrap all actions running
                 inside the mutex with custom code.
             </p>
@@ -968,9 +968,9 @@ made subject to such option by the copyright holder.
       <author login="jtulach"/>
       <compatibility addition="yes" modification="no" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no"/>
       <description>
-        <a href="@TOP@/org/openide/util/RequestProcessor.html">RequestProcessor.create(Runnable, boolean)</a>
+        <a href="@org-openide-util-base@/org/openide/util/RequestProcessor.html">RequestProcessor.create(Runnable, boolean)</a>
         has been added to allow creation of 
-        <a href="@TOP@/org/openide/util/RequestProcessor.Task.html">Task</a>
+        <a href="@org-openide-util-base@/org/openide/util/RequestProcessor.Task.html">Task</a>
         that has not executed its runnable yet, but looks like it is finished.
       </description>
       <class package="org.openide.util" name="RequestProcessor"/>

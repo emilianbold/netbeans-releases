@@ -112,10 +112,10 @@ import java.util.logging.Logger;
 * Examples of use:
 *
 * <pre>
-* SimpleMutex m = new SimpleMutex();
+* ReadWriteAccess m = new ReadWriteAccess();
 *
 * // Grant write access, compute an integer and return it:
-* return m.writeAccess(new SimpleMutex.Action&lt;Integer>(){
+* return m.writeAccess(new ReadWriteAccess.Action&lt;Integer>(){
 *     public Integer run() {
 *         return 1;
 *     }
@@ -124,7 +124,7 @@ import java.util.logging.Logger;
 * // Obtain read access, do some computation,
 * // possibly throw an IOException:
 * try {
-*     m.readAccess(new SimpleMutex.ExceptionAction&lt;Void>() {
+*     m.readAccess(new ReadWriteAccess.ExceptionAction&lt;Void>() {
 *         public Void run() throws IOException {
 *             if (...) throw new IOException();
 *             return null;
@@ -220,7 +220,7 @@ public class ReadWriteAccess {
     /** Enhanced constructor that permits specifying an object to use as a lock.
     * The lock is used on entry and exit to {@link #readAccess} and during the
     * whole execution of {@link #writeAccess}. The ability to specify locks
-    * allows several <code>SimpleMutex</code>es to synchronize on one object or to synchronize
+    * allows several <code>ReadWriteAccess</code>es to synchronize on one object or to synchronize
     * a mutex with another critical section.
     *
     * @param lock lock to use
@@ -229,7 +229,7 @@ public class ReadWriteAccess {
         return new ReadWriteAccess(lock);
     }
     
-    /** @param privileged can enter privileged states of this SimpleMutex
+    /** @param p can enter privileged states of this ReadWriteAccess
      * This helps avoid creating of custom Runnables.
      */
     public static ReadWriteAccess controlledBy(Privileged p) {
@@ -243,11 +243,11 @@ public class ReadWriteAccess {
      * method and do pre and post initialization tasks before running the runnable.
      * <p>
      * The {@link Executor#execute} method shall return only when the passed in
-     * {@link Runnable} is finished, otherwise methods like {@link SimpleMutex#readAccess(Action)} and co.
+     * {@link Runnable} is finished, otherwise methods like {@link ReadWriteAccess#readAccess(Action)} and co.
      * might not return proper result.
      * 
-     * @param privileged can enter privileged states of this SimpleMutex
-     *  @param executor allows to wrap the work of the mutex with a custom code
+     * @param p can enter privileged states of this ReadWriteAccess
+     * @param e allows to wrap the work of the mutex with a custom code
      */
     public static ReadWriteAccess controlledBy(Privileged p, Executor e) {
         return new ReadWriteAccess(p, e);
@@ -256,7 +256,7 @@ public class ReadWriteAccess {
     /** Enhanced constructor that permits specifying an object to use as a lock.
     * The lock is used on entry and exit to {@link #readAccess} and during the
     * whole execution of {@link #writeAccess}. The ability to specify locks
-    * allows several <code>SimpleMutex</code>es to synchronize on one object or to synchronize
+    * allows several <code>ReadWriteAccess</code>es to synchronize on one object or to synchronize
     * a mutex with another critical section.
     *
     * @param lock lock to use
@@ -273,7 +273,7 @@ public class ReadWriteAccess {
         this.wrapper = null;
     }
 
-    /** @param privileged can enter privileged states of this SimpleMutex
+    /** @param privileged can enter privileged states of this ReadWriteAccess
      * This helps avoid creating of custom Runnables.
      */
     ReadWriteAccess(Privileged privileged) {
@@ -287,16 +287,16 @@ public class ReadWriteAccess {
     }
 
     /** Constructor for those who wish to do some custom additional tasks
-     * whenever an action or runnable is executed in the {@link SimpleMutex}. This
+     * whenever an action or runnable is executed in the {@link ReadWriteAccess}. This
      * may be useful for wrapping all the actions with custom {@link ThreadLocal}
      * value, etc. Just implement the {@link Executor}'s <code>execute(Runnable)</code>
      * method and do pre and post initialization tasks before running the runnable.
      * <p>
      * The {@link Executor#execute} method shall return only when the passed in
-     * {@link Runnable} is finished, otherwise methods like {@link SimpleMutex#readAccess(Action)} and co.
+     * {@link Runnable} is finished, otherwise methods like {@link ReadWriteAccess#readAccess(Action)} and co.
      * might not return proper result.
      * 
-     * @param privileged can enter privileged states of this SimpleMutex
+     * @param privileged can enter privileged states of this ReadWriteAccess
      *  @param executor allows to wrap the work of the mutex with a custom code
      */
     ReadWriteAccess(Privileged privileged, Executor executor) {
@@ -304,7 +304,7 @@ public class ReadWriteAccess {
         this.wrapper = executor;
     }
 
-    /** Initiates this SimpleMutex */
+    /** Initiates this ReadWriteAccess */
     private Object init(Object lock) {
         this.waiters = new LinkedList<QueueCell>();
         this.cnt = counter++;
@@ -317,7 +317,7 @@ public class ReadWriteAccess {
     /** Run an action only with read access.
     * See class description re. entering for write access within the dynamic scope.
     * @param action the action to perform
-    * @return the object returned from {@link SimpleMutex.Action#run}
+    * @return the object returned from {@link ReadWriteAccess.Action#run}
     */
     public <T> T readAccess(final Action<T> action) {
         if (wrapper != null) {
@@ -357,10 +357,10 @@ public class ReadWriteAccess {
     * Note that <em>runtime exceptions</em> are always passed through, and neither
     * require this invocation style, nor are encapsulated.
     * @param action the action to execute
-    * @return the object returned from {@link SimpleMutex.ExceptionAction#run}
+    * @return the object returned from {@link ReadWriteAccess.ExceptionAction#run}
     * @exception MutexException encapsulates a user exception
     * @exception RuntimeException if any runtime exception is thrown from the run method
-    * @see #readAccess(SimpleMutex.Action)
+    * @see #readAccess(ReadWriteAccess.Action)
     */
     public <T> T readAccess(final ExceptionAction<T> action) throws MutexException {
         if (wrapper != null) {
@@ -385,7 +385,7 @@ public class ReadWriteAccess {
     * It may be run asynchronously.
     *
     * @param action the action to perform
-    * @see #readAccess(SimpleMutex.Action)
+    * @see #readAccess(ReadWriteAccess.Action)
     */
     public void readAccess(final Runnable action) {
         if (wrapper != null) {
@@ -411,7 +411,7 @@ public class ReadWriteAccess {
     * The same thread may meanwhile reenter the mutex; see the class description for details.
     *
     * @param action the action to perform
-    * @return the result of {@link SimpleMutex.Action#run}
+    * @return the result of {@link ReadWriteAccess.Action#run}
     */
     public <T> T writeAccess(Action<T> action) {
         if (wrapper != null) {
@@ -447,11 +447,11 @@ public class ReadWriteAccess {
     * </PRE></code>
     *
     * @param action the action to execute
-    * @return the result of {@link SimpleMutex.ExceptionAction#run}
+    * @return the result of {@link ReadWriteAccess.ExceptionAction#run}
     * @exception MutexException an encapsulated checked exception, if any
     * @exception RuntimeException if a runtime exception is thrown in the action
-    * @see #writeAccess(SimpleMutex.Action)
-    * @see #readAccess(SimpleMutex.ExceptionAction)
+    * @see #writeAccess(ReadWriteAccess.Action)
+    * @see #readAccess(ReadWriteAccess.ExceptionAction)
     */
     public <T> T writeAccess(ExceptionAction<T> action) throws MutexException {
         if (wrapper != null) {
@@ -476,7 +476,7 @@ public class ReadWriteAccess {
     * It may be run asynchronously.
     *
     * @param action the action to perform
-    * @see #writeAccess(SimpleMutex.Action)
+    * @see #writeAccess(ReadWriteAccess.Action)
     * @see #readAccess(Runnable)
     */
     public void writeAccess(final Runnable action) {
@@ -569,13 +569,13 @@ public class ReadWriteAccess {
     }
 
     /** Posts a read request. This request runs immediately iff
-     * this SimpleMutex is in the shared mode or this SimpleMutex is not contended
+     * this ReadWriteAccess is in the shared mode or this ReadWriteAccess is not contended
      * at all.
      *
-     * This request is delayed if this SimpleMutex is in the exclusive
+     * This request is delayed if this ReadWriteAccess is in the exclusive
      * mode and is held by this thread, until the exclusive is left.
      *
-     * Finally, this request blocks, if this SimpleMutex is in the exclusive
+     * Finally, this request blocks, if this ReadWriteAccess is in the exclusive
      * mode and is held by another thread.
      *
      * <p><strong>Warning:</strong> this method blocks.</p>
@@ -587,14 +587,14 @@ public class ReadWriteAccess {
     }
 
     /** Posts a write request. This request runs immediately iff
-     * this SimpleMutex is in the "pure" exclusive mode, i.e. this SimpleMutex
+     * this ReadWriteAccess is in the "pure" exclusive mode, i.e. this ReadWriteAccess
      * is not reentered in shared mode after the exclusive mode
      * was acquired. Otherwise it is delayed until all read requests
      * are executed.
      *
-     * This request runs immediately if this SimpleMutex is not contended at all.
+     * This request runs immediately if this ReadWriteAccess is not contended at all.
      *
-     * This request blocks if this SimpleMutex is in the shared mode.
+     * This request blocks if this ReadWriteAccess is in the shared mode.
      *
      * <p><strong>Warning:</strong> this method blocks.</p>
      * @param run runnable to run
@@ -1402,7 +1402,7 @@ public class ReadWriteAccess {
     */
     public interface Action<T> extends ExceptionAction<T> {
         /** Execute the action.
-        * @return any object, then returned from {@link SimpleMutex#readAccess(SimpleMutex.Action)} or {@link SimpleMutex#writeAccess(SimpleMutex.Action)}
+        * @return any object, then returned from {@link ReadWriteAccess#readAccess(ReadWriteAccess.Action)} or {@link ReadWriteAccess#writeAccess(ReadWriteAccess.Action)}
         */
         @Override
         T run();
@@ -1418,7 +1418,7 @@ public class ReadWriteAccess {
     public interface ExceptionAction<T> {
         /** Execute the action.
         * Can throw an exception.
-        * @return any object, then returned from {@link SimpleMutex#readAccess(SimpleMutex.ExceptionAction)} or {@link SimpleMutex#writeAccess(SimpleMutex.ExceptionAction)}
+        * @return any object, then returned from {@link ReadWriteAccess#readAccess(ReadWriteAccess.ExceptionAction)} or {@link ReadWriteAccess#writeAccess(ReadWriteAccess.ExceptionAction)}
         * @exception Exception any exception the body needs to throw
         */
         T run() throws Exception;
@@ -1573,7 +1573,7 @@ public class ReadWriteAccess {
         }
     }
     
-    /** Provides access to SimpleMutex's internal methods.
+    /** Provides access to ReadWriteAccess's internal methods.
      *
      * This class can be used when one wants to avoid creating a
      * bunch of Runnables. Instead,
@@ -1587,8 +1587,8 @@ public class ReadWriteAccess {
      * </pre>
      * can be used.
      *
-     * You must, however, control the related SimpleMutex, i.e. you must be creator of
-     * the SimpleMutex.
+     * You must, however, control the related ReadWriteAccess, i.e. you must be creator of
+     * the ReadWriteAccess.
      *
      * @since 1.17
      */

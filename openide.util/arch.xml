@@ -104,10 +104,10 @@ made subject to such option by the copyright holder.
  <answer id="compat-i18n">
   <p>
    There is not much things to localize in this module, so it is properly localized.
-   But it is good to note that the module adds <api name="BrandingSupport" category="official" group="property" type="export" url="@TOP@/org/openide/util/NbBundle.html">
+   But it is good to note that the module adds <api name="BrandingSupport" category="official" group="property" type="export" url="@org-openide-util-base@/org/openide/util/NbBundle.html">
    which is similar to localization but also supports changes of resorces 
    for application build on top of NetBeans. This is handled by our
-   class <a href="@TOP@/org/openide/util/NbBundle.html">NbBundle</a> which 
+   class <a href="@org-openide-util-base@/org/openide/util/NbBundle.html">NbBundle</a> which 
    reimplements the JDK's standard <a href="@JDK@/java/util/ResourceBundle.html">ResourceBundle</a>
    to to take branding into the consideration.
    </api>. 
@@ -296,7 +296,7 @@ made subject to such option by the copyright holder.
   <p>
    <a href="@TOP@/org/openide/util/Utilities.html">Utilities</a> provide wrapper
    for java beans introspection. <api category="private" group="java" name="ParserFactory" type="import" >
-       The <a href="@TOP@/org/openide/xml/XMLUtil.html">XMLUtil</a> class is loading
+       The <a href="@org-openide-util-base@/org/openide/xml/XMLUtil.html">XMLUtil</a> class is loading
        a class from <code>core/core.jar</code> to initialize the correct parser factory.
        This is a fix for <a href="http://www.netbeans.org/issues/show_bug.cgi?id=68942">issue 68942</a>.
    </api>
@@ -330,7 +330,7 @@ made subject to such option by the copyright holder.
         </api>.
     </li>
     <li><api type="export" group="systemproperty" name="org.openide.util.RequestProcessor.inactiveTime" category="private">
-    Specifies the time in ms unused <a href="@TOP@org/openide/util/RequestProcessor.html">RequestProcessor</a>
+    Specifies the time in ms unused <a href="@org-openide-util-base@/org/openide/util/RequestProcessor.html">RequestProcessor</a>
     processor threads remain around, until 
     they get GCed. By default 60s. Primarily used from tests.</api></li>
   </ul>
@@ -353,7 +353,7 @@ made subject to such option by the copyright holder.
    <api category="devel" group="java" name="SharedClassObject.setAccessible" type="export" url="@TOP@/org/openide/util/SharedClassObject.html">
    used to instantiate subclasses. 
    </api>. 
-   <api category="devel" group="java" name="WeakListener.setAccessible" type="export" url="@TOP@/org/openide/util/WeakListeners.html">
+   <api category="devel" group="java" name="WeakListener.setAccessible" type="export" url="@org-openide-util-base@/org/openide/util/WeakListeners.html">
    used to call the remove method using reflection
    </api>. 
    <api category="private" group="lookup" name="ActionManagerInvocation" type="export" >
@@ -440,8 +440,8 @@ made subject to such option by the copyright holder.
     </api>.</li>
 
     <li><api name="LookupEntityCatalog" category="devel" group="lookup" type="export">
-    <a href="@TOP@/org/openide/xml/EntityCatalog.html">EntityCatalog</a> 
-    delegates its methods to all instances of <a href="@TOP@/org/openide/xml/EntityCatalog.html">EntityCatalog</a>s
+    <a href="@org-openide-util-base@/org/openide/xml/EntityCatalog.html">EntityCatalog</a> 
+    delegates its methods to all instances of <a href="@org-openide-util-base@/org/openide/xml/EntityCatalog.html">EntityCatalog</a>s
     found in Lookup
     </api>.</li>
     
