@@ -85,6 +85,17 @@ public final class MavenProjectCache {
     private static final Map<File, WeakReference<MavenProject>> file2Project = new WeakHashMap<File, WeakReference<MavenProject>>();
     private static final Map<File, Mutex> file2Mutex = new WeakHashMap<File, Mutex>();
     
+    public static void clearMavenProject(final File pomFile) {
+        Mutex mutex = getMutex(pomFile);
+        mutex.writeAccess(new Action<MavenProject>() {
+            @Override
+            public MavenProject run() {
+                file2Project.remove(pomFile);
+                return null;
+            }
+        });
+    }
+    
     /**
      * returns a MavenProject instance for given folder, if folder contains a pom.xml always returns an instance, if not returns null
      * @param pomFile
