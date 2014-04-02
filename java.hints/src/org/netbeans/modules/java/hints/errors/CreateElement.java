@@ -52,10 +52,8 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
-import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -67,7 +65,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -77,13 +74,9 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import com.sun.source.tree.ExpressionStatementTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.StatementTree;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -103,7 +96,6 @@ import org.openide.util.NbBundle;
 import static org.netbeans.modules.java.hints.errors.CreateElementUtilities.*;
 import org.netbeans.modules.java.hints.errors.ErrorFixesFakeHint.FixKind;
 import org.netbeans.modules.java.hints.errors.Utilities.MethodArguments;
-import org.netbeans.modules.java.hints.introduce.Flow;
 import org.openide.util.Pair;
 
 /**
@@ -111,7 +103,8 @@ import org.openide.util.Pair;
  * @author Jan Lahoda
  */
 public final class CreateElement implements ErrorRule<Void> {
-
+    private static final Logger LOG = Logger.getLogger(CreateElement.class.getName());
+    
     /** Creates a new instance of CreateElement */
     public CreateElement() {
     }
@@ -328,7 +321,18 @@ public final class CreateElement implements ErrorRule<Void> {
             if (types == null || types.isEmpty()) {
                 return Collections.<Fix>emptyList();
             }
-            result.addAll(prepareCreateMethodFix(info, methodInvocation, modifiers, (TypeElement) target, simpleName, mit.getArguments(), types));
+            try {
+                result.addAll(prepareCreateMethodFix(info, methodInvocation, modifiers, (TypeElement) target, simpleName, mit.getArguments(), types));
+            } catch (IllegalArgumentException ex) {
+                // FIXME: see issue #243028; EXECUTABLE somehow gets here and causes an exception. Let's log all the necessary info incl. source
+                LOG.log(Level.INFO, "Unexpected exception, perhaps a type that cannot be converted to a Handle. See issue #243028 for more details. Please attach" +
+                        "the following ide.log to the issue");
+                LOG.log(Level.INFO, "Caused by source:\n==============\n" + 
+                                    info.getSnapshot().getText().toString() + "\n==============\n");
+                LOG.log(Level.INFO, "Caused by error at offset " + offset + ", tree: " + methodInvocation.getLeaf().toString(), ex);
+                LOG.log(Level.INFO, "Invocation starts at " + info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), methodInvocation.getLeaf()));
+                throw ex;
+            }
         }
 
         Set<ElementKind> fixTypes = EnumSet.noneOf(ElementKind.class);
@@ -484,7 +488,7 @@ public final class CreateElement implements ErrorRule<Void> {
 
         return result;
     }
-
+    
     private static List<Fix> prepareCreateMethodFix(CompilationInfo info, TreePath invocation, Set<Modifier> modifiers, TypeElement target, String simpleName, List<? extends ExpressionTree> arguments, List<? extends TypeMirror> returnTypes) {
         //return type:
         //XXX: should reasonably consider all the found type candidates, not only the one:
