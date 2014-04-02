@@ -42,8 +42,11 @@
 
 package org.netbeans.modules.cnd.highlight.hints;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import org.netbeans.modules.cnd.analysis.api.AnalyzerResponse;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -58,7 +61,6 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -115,12 +117,17 @@ class NonVirtualMethod extends AbstractCodeAudit {
                         String name = iterator.next().getMethod().getContainingClass().getName().toString();
                         message = NbBundle.getMessage(NonVirtualMethod.class, "NonVirtualMethod.message.super.class", name); // NOI18N
                     } else {
-                        StringBuilder buf = new StringBuilder();
+                        List<String> list = new ArrayList<String>();
                         while(iterator.hasNext()) {
+                            list.add(iterator.next().getMethod().getContainingClass().getName().toString());
+                        }
+                        Collections.sort(list);
+                        StringBuilder buf = new StringBuilder();
+                        for(String s :list) {
                             if (buf.length()>0) {
                                 buf.append(", "); // NOI18N
                             }
-                            buf.append(iterator.next().getMethod().getContainingClass().getName());
+                            buf.append(s);
                         }
                         message = NbBundle.getMessage(NonVirtualMethod.class, "NonVirtualMethod.message.super.classes", buf.toString()); // NOI18N
                     }
@@ -130,12 +137,17 @@ class NonVirtualMethod extends AbstractCodeAudit {
                         String name = iterator.next().getMethod().getContainingClass().getName().toString();
                         message = NbBundle.getMessage(NonVirtualMethod.class, "NonVirtualMethod.message.sub.class", name); // NOI18N
                     } else {
-                        StringBuilder buf = new StringBuilder();
+                        List<String> list = new ArrayList<String>();
                         while(iterator.hasNext()) {
+                            list.add(iterator.next().getMethod().getContainingClass().getName().toString());
+                        }
+                        Collections.sort(list);
+                        StringBuilder buf = new StringBuilder();
+                        for(String s :list) {
                             if (buf.length()>0) {
                                 buf.append(", "); // NOI18N
                             }
-                            buf.append(iterator.next().getMethod().getContainingClass().getName());
+                            buf.append(s);
                         }
                         message = NbBundle.getMessage(NonVirtualMethod.class, "NonVirtualMethod.message.sub.classes", buf.toString()); // NOI18N
                     }
