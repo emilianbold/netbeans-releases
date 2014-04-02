@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,59 +37,71 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.navigation.overrides;
+package org.netbeans.modules.debugger.jpda.js.breakpoints;
 
-import java.util.Collection;
-import java.util.Collections;
-import javax.swing.text.StyledDocument;
-import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.openide.util.NbBundle;
+import java.io.File;
+import java.io.IOException;
+import org.netbeans.junit.NbTestCase;
+import org.openide.util.Utilities;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-/*package*/ class InheritAnnotation extends BaseAnnotation {
-
-    public InheritAnnotation(StyledDocument document, CsmClass decl,
-            Collection<? extends CsmOffsetableDeclaration> descDecls,
-            Collection<? extends CsmOffsetableDeclaration> baseTemplates,
-            Collection<? extends CsmOffsetableDeclaration> templateSpecializations) {
-        super(document, decl, Collections.<CsmOffsetableDeclaration>emptyList(), descDecls, baseTemplates, templateSpecializations);
+public class URLEqualityTest extends NbTestCase {
+    private File orig;
+    
+    public URLEqualityTest(String testName) {
+        super(testName);
+    }
+    
+    @Override
+    protected void setUp() throws Exception {
+        clearWorkDir();
+        File odir = new File(getWorkDir(), "orig");
+        odir.mkdir();
+        orig = new File(odir, "test.js");
+        orig.createNewFile();
+    }
+    
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
     }
 
-
-    @Override
-    public String getShortDescription() {
-        String out = descUIDs.isEmpty() ? "" : NbBundle.getMessage(getClass(), "LAB_Extended");
-        out = addTemplateAnnotation(out);
-        return out;
-    }
-
-    @Override
-    protected CharSequence debugTypeString() {
-        switch (type) {
-            case OVERRIDES:
-                return "INHERITS"; // NOI18N
-            case IS_OVERRIDDEN:
-                return "INHERITED"; // NOI18N
-            case SPECIALIZES:
-                return "SPECIALIZES"; // NOI18N
-            case IS_SPECIALIZED:
-                return "IS_SPECIALIZED"; // NOI18N
-            case OVERRIDEN_COMBINED:
-                return "INHERITS_AND_INHERITED"; // NOI18N
-            case EXTENDED_SPECIALIZES:
-                return "EXTENDED_SPECIALIZES"; // NOI18N
-            case EXTENDED_IS_SPECIALIZED:
-                return "EXTENDED_IS_SPECIALIZED"; // NOI18N
-            default:
-                return "???"; // NOI18N
+    public void testEqualSymlinks() throws Exception {
+        if (!Utilities.isUnix()) {
+            return;
         }
+        File copy = new File(getWorkDir(), "copy");
+        int ret = new ProcessBuilder("ln", "-s", "orig", copy.getPath()).start().waitFor();
+        assertEquals("Symlink created", ret, 0);
+        assertTrue("Dir exists", copy.exists());
+        File f = new File(copy, "test.js");
+        assertTrue("File exists", f.exists());
+        
+        URLEquality oe = new URLEquality(orig.toURI().toURL());
+        URLEquality ne = new URLEquality(f.toURI().toURL());
+
+        assertEquals("Same hashCode", oe.hashCode(), ne.hashCode());
+        assertEquals("They are similar", oe, ne);
+        
     }
 
+    public void testDifferentInSiblinks() throws Exception {
+        File copy = new File(getWorkDir(), "copy");
+        copy.mkdir();
+        File f = new File(copy, "test.js");
+        f.createNewFile();
+        
+        URLEquality oe = new URLEquality(orig.toURI().toURL());
+        URLEquality ne = new URLEquality(f.toURI().toURL());
+        
+        assertEquals("Same hashCode", oe.hashCode(), ne.hashCode());
+        assertFalse("Not equals", oe.equals(ne));
+    }
+    
 }

@@ -50,6 +50,10 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.avatar_js.project</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.debugger.jpda.kit</code-name-base>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
                     <code-name-base>org.apache.tools.ant.module</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>

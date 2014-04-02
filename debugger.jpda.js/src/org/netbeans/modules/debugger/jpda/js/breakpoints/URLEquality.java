@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,74 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.project.ui.actions;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import javax.swing.SwingUtilities;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
-import org.openide.util.NbBundle.Messages;
-import org.openide.util.RequestProcessor;
+package org.netbeans.modules.debugger.jpda.js.breakpoints;
 
-@ActionID(
-        category = "File",
-        id = "org.netbeans.modules.project.ui.actions.CloseAllProjectsAction"
-        )
-@ActionRegistration(
-        displayName = "#CTL_CloseAllProjectsAction"
-        )
-@ActionReference(path = "Menu/File", position = 775)
-@Messages("CTL_CloseAllProjectsAction=Close All Projects")
-public final class CloseAllProjectsAction implements ActionListener {
-    
-    private static final RequestProcessor RP = new RequestProcessor(CloseAllProjectsAction.class);
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Objects;
+
+/** Equality for URLs that can handle canonical paths on local file URLs.
+ *
+ */
+final class URLEquality {
+    private final String protocol;
+    private final String host;
+    private final int port;
+    private final String path;
+    private final int hash;
+
+    public URLEquality(URL url) {
+        protocol = url.getProtocol().toLowerCase();
+        String h = url.getHost();
+        if (h != null) {
+            h = h.toLowerCase();
+        }
+        host = h;
+        port = url.getPort();
+        path = url.getPath();
+        int last = url.getPath().lastIndexOf("/");
+        hash = protocol.hashCode() + host.hashCode() + port + url.getPath().substring(last + 1).hashCode();
+    }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-        RP.post(new Runnable() { //#239718
-            @Override
-            public void run() { 
-                OpenProjects manager = OpenProjects.getDefault();
-                List<Project> openProjects = new ArrayList<Project>(Arrays.asList(manager.getOpenProjects()));
-                if (!openProjects.isEmpty()) {
-                    Project[] projectsToBeClosed = openProjects.toArray(new Project[openProjects.size()]);
-                    manager.close(projectsToBeClosed);
+    public int hashCode() {
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof URLEquality)) {
+            return false;
+        }
+        URLEquality ue = (URLEquality) obj;
+        if (ue.hash != hash) {
+            return false;
+        }
+        if (
+            protocol.equals(ue.protocol) && 
+            Objects.equals(host, ue.host) &&
+            port == ue.port
+        ) {
+            if (Objects.equals(path, ue.path)) {
+                return true;
+            }
+            if ("file".equals(protocol) && path != null && ue.path != null) { // NOI18N
+                try {
+                    File fThis = new File(path);
+                    File fObj = new File(ue.path);
+                    if (fThis.getCanonicalPath().equals(fObj.getCanonicalPath())) {
+                        return true;
+                    }
+                } catch (IOException ex) {
+                    // go on
                 }
             }
-        });
+        }
+        return false;
     }
+    
 }
