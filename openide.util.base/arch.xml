@@ -178,7 +178,7 @@
   </p>
  </answer>
  <answer id="exec-property">
-  <p>
+  <ul>
     <li>
         <api type='import' group="systemproperty" name="line.separator" category="standard" >
         used on few places
@@ -188,7 +188,7 @@
     Specifies the time in ms unused <a href="@TOP@org/openide/util/RequestProcessor.html">RequestProcessor</a>
     processor threads remain around, until 
     they get GCed. By default 60s. Primarily used from tests.</api></li>
-  </p>
+  </ul>
  </answer>
  <answer id="exec-reflection">
   <p>
@@ -216,8 +216,8 @@
   <p>
     The <a href="http://java.sun.com/j2se/1.3/docs/guide/jar/jar.html#Provider%20Configuration%20File">META-INF/services/...</a> files.
     <api name="TranslateNames" category="official" type="export" group="java.io.File" 
-    url="@TOP@/org/openide/util/Utilities.html#translate(java.lang.String)">
-    <a href="@TOP@/org/openide/util/Utilities.html#translate(java.lang.String)">Utilities.translate</a> 
+    url="@TOP@/org/openide/util/BaseUtilities.html#translate(java.lang.String)">
+    <a href="@TOP@/org/openide/util/BaseUtilities.html#translate(java.lang.String)">Utilities.translate</a> 
     reads <code>META-INF/netbeans/translate.names</code> files from JARs</api>.
   </p>
  </answer>

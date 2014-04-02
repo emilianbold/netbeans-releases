@@ -46,9 +46,9 @@ package org.openide.util;
 
 /** Encapsulates other exceptions thrown from a mutex method.
 *
-* @see Mutex.ExceptionAction
-* @see Mutex#readAccess(Mutex.ExceptionAction)
-* @see Mutex#writeAccess(Mutex.ExceptionAction)
+* @see ReadWriteAccess.ExceptionAction
+* @see ReadWriteAccess#readAccess(ReadWriteAccess.ExceptionAction)
+* @see ReadWriteAccess#writeAccess(ReadWriteAccess.ExceptionAction)
 *
 * @author Jaroslav Tulach
 */
