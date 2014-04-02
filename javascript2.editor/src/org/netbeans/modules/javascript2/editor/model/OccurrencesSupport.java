@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor.model;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.OccurrenceImpl;
 
@@ -93,10 +94,20 @@ public class OccurrencesSupport {
                     return result;
                 }
             }
-            for(JsObject property: object.getProperties().values()) {
-                result = findOccurrence(property, offset);
-                if (result != null) {
-                    break;
+            if (!(object instanceof JsObjectReference && ModelUtils.isDescendant(object, ((JsObjectReference)object).getOriginal()))) {
+                for(JsObject property: object.getProperties().values()) {
+                    if (!(property instanceof JsObjectReference && !((JsObjectReference)property).getOriginal().isAnonymous())) {
+                        result = findOccurrence(property, offset);
+                        if (result != null) {
+                            break;
+                        }
+                    } else {
+                        for(Occurrence occurrence: property.getOccurrences()) {
+                            if (occurrence.getOffsetRange().containsInclusive(offset)) {
+                                return occurrence;
+                            }
+                        }
+                    }
                 }
             }
         return result;

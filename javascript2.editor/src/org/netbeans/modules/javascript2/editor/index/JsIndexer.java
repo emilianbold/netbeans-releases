@@ -43,7 +43,6 @@ package org.netbeans.modules.javascript2.editor.index;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.logging.Level;
@@ -56,6 +55,7 @@ import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -116,15 +116,19 @@ public class JsIndexer extends EmbeddingIndexer {
                 IndexDocument document = IndexedElement.createDocument(object, fqn, support, indexable);
                 support.addDocument(document);
             }
-            // look for all other properties. Even if the object doesn't have to be delcared in the file
-            // there can be declared it's properties or methods
-            for (JsObject property : object.getProperties().values()) {
-                storeObject(property, fqn + '.' + property.getName(), support, indexable);
-            }
-            if (object instanceof JsFunction) {
-                // store parameters
-                for (JsObject parameter : ((JsFunction)object).getParameters()) {
-                    storeObject(parameter, fqn + '.' + parameter.getName(), support, indexable);
+            if (!(object instanceof JsObjectReference && ModelUtils.isDescendant(object, ((JsObjectReference)object).getOriginal()))) {
+                // look for all other properties. Even if the object doesn't have to be delcared in the file
+                // there can be declared it's properties or methods
+                for (JsObject property : object.getProperties().values()) {
+                    if (!(property instanceof JsObjectReference && !((JsObjectReference)property).getOriginal().isAnonymous())) {
+                        storeObject(property, fqn + '.' + property.getName(), support, indexable);
+                    }
+                }
+                if (object instanceof JsFunction) {
+                    // store parameters
+                    for (JsObject parameter : ((JsFunction)object).getParameters()) {
+                        storeObject(parameter, fqn + '.' + parameter.getName(), support, indexable);
+                    }
                 }
             }
         }
