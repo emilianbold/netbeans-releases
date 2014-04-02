@@ -290,7 +290,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         JsObject pObject = this;
         result.append(getName());
       
-        while((pObject = pObject.getParent()) != null) {
+        while((pObject = pObject.getParent()).getParent() != null) {
             result.insert(0, ".");
             result.insert(0, pObject.getName());
         }
