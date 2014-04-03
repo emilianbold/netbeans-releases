@@ -84,7 +84,6 @@ public class DefineInterceptor implements FunctionInterceptor {
 
     @Override
     public void intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
-        System.out.println("Interceptor: " + name);
         FunctionArgument fArg = null;
         FunctionArgument modules = null;
 
@@ -110,7 +109,6 @@ public class DefineInterceptor implements FunctionInterceptor {
                     // save to the index the return types
                     Collection<? extends TypeUsage> returnTypes = defFunc.getReturnTypes();
                     RequireJsIndexer.addTypes(fo.toURI(), returnTypes);
-                    System.out.println(returnTypes);
                 } else if (modules != null && modules.getValue() instanceof JsArray) {
                     // add assignments for the parameters
                     JsArray array = (JsArray) modules.getValue();
@@ -148,20 +146,14 @@ public class DefineInterceptor implements FunctionInterceptor {
                                 Collection<? extends TypeUsage> exposedTypes = rIndex.getExposedTypes(module, factory);
                                 if (paramIterator.hasNext()) {
                                     JsObject param = paramIterator.next();
-                                    System.out.println("!!!!!! " + param.getName() + " adding type " + exposedTypes.size());
                                     for (TypeUsage typeUsage : exposedTypes) {
                                         param.addAssignment(typeUsage, -1);
-                                        System.out.println("                       " + typeUsage.getType());
                                     }
                                 }
                             }
                         }
                     }
-
-//                    String[] paths = new String()[modules];
                 }
-//                defFunc.getParameters().iterator().next().addAssignment(returnTypes.iterator().next(), -1);
-
             }
         }
     }

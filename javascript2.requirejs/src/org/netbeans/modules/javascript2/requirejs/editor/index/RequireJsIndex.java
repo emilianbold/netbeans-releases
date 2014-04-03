@@ -49,18 +49,13 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
-import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 
 /**
@@ -126,7 +121,6 @@ public class RequireJsIndex {
             Exceptions.printStackTrace(ex);
         }
         if (result != null && !result.isEmpty()) {
-            System.out.println("Z indexu result: " + result.size());
             Collection<TypeUsage> types = new ArrayList<TypeUsage>();
             for (IndexResult indexResult : result) {
                 String[] values = indexResult.getValues(RequireJsIndexer.FIELD_EXPOSED_TYPES);

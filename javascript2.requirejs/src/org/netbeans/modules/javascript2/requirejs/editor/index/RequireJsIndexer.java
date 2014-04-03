@@ -77,7 +77,6 @@ public class RequireJsIndexer extends EmbeddingIndexer {
 
     @Override
     protected void index(Indexable indexable, Parser.Result parserResult, Context context) {
-        System.out.println("index");
         Map<URI, Collection<? extends TypeUsage>> types = exposedTypes.get();
         if (types != null && !types.isEmpty()) {
             FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
@@ -110,16 +109,8 @@ public class RequireJsIndexer extends EmbeddingIndexer {
         if (map == null) {
             throw new IllegalStateException("RequireJsIndexer.addControllers can be called only from scanner thread.");  //NOI18N
         }
-
         Collection<? extends TypeUsage> types = map.get(uri);
-
         map.put(uri, exported);
-//        if (types == null) {
-//            map.put(uri, exported);
-//        } else {
-//            types.add(exported);
-//        }
-
     }
 
     public static final class Factory extends EmbeddingIndexerFactory {
@@ -172,18 +163,13 @@ public class RequireJsIndexer extends EmbeddingIndexer {
 
         @Override
         public boolean scanStarted(Context context) {
-            System.out.println("@@@@@Scan started");
             postScanTasks.set(new LinkedList<Runnable>());
             exposedTypes.set(new HashMap<URI, Collection<? extends TypeUsage>>());
-//            controllers.set(new HashMap<URI, Collection<AngularJsController>>());
-//            templateControllers.set(new HashMap<URI, Map<String, String>>());
-//            addedToJsIndexPost.set(Boolean.FALSE);
             return super.scanStarted(context);
         }
 
         @Override
         public void scanFinished(Context context) {
-            System.out.println("@@@@@Scan Finished");
             try {
                 for (Runnable task : postScanTasks.get()) {
                     task.run();
