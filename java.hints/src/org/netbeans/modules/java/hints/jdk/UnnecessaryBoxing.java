@@ -237,7 +237,7 @@ public class UnnecessaryBoxing {
         if (pt == null || ot == null) {
             return false;
         }
-        ExpectedTypeResolver res = new ExpectedTypeResolver(expr, ci);
+        ExpectedTypeResolver res = new ExpectedTypeResolver(expr, prevPath, ci);
         List<? extends TypeMirror> types = res.scan(expr, null);
         for (TypeMirror m : types) {
             if (ci.getTypes().isAssignable(pt, m)) {
@@ -264,7 +264,7 @@ public class UnnecessaryBoxing {
         TreePath prevPath = new TreePath(expr, prev);
         
         TypeMirror pt = Utilities.unboxIfNecessary(ci, ci.getTrees().getTypeMirror(prevPath)); // assume boxed
-        ExpectedTypeResolver res = new ExpectedTypeResolver(expr, ci);
+        ExpectedTypeResolver res = new ExpectedTypeResolver(expr, prevPath, ci);
         List<? extends TypeMirror> types = res.scan(expr, null);
         if (types == null) {
             // cannot determine the type -> no hint, probably an error

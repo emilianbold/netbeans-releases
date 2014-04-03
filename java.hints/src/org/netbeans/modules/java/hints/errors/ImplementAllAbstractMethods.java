@@ -66,14 +66,16 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.tools.Diagnostic;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.editor.GuardedException;
@@ -113,7 +115,17 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Boolean>, Ov
         TreePath path = deepTreePath(info, offset);
         Element e = info.getTrees().getElement(path);
         if (e == null || !e.getKind().isClass()) {
-            return null;
+            TypeMirror tm = info.getTrees().getTypeMirror(path);
+            if (tm == null || tm.getKind() != TypeKind.DECLARED) {
+                if (path.getLeaf().getKind() == Tree.Kind.NEW_CLASS) {
+                    tm = info.getTrees().getTypeMirror(new TreePath(path, ((NewClassTree)path.getLeaf()).getIdentifier()));
+                }
+            }
+            if (tm != null && tm.getKind() == TypeKind.DECLARED) {
+                e = ((DeclaredType)tm).asElement();
+            } else {
+                return null;
+            }
         }
         List<? extends ExecutableElement> lee = info.getElementUtilities().findUnimplementedMethods((TypeElement)e);
         Scope s = info.getTrees().getScope(path);
