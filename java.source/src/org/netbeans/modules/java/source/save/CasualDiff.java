@@ -45,55 +45,143 @@ package org.netbeans.modules.java.source.save;
 
 import com.sun.source.doctree.DocCommentTree;
 import com.sun.source.doctree.DocTree;
-import static com.sun.source.doctree.DocTree.Kind.RETURN;
-import org.netbeans.api.java.source.WorkingCopy;
-import com.sun.tools.javac.util.Names;
-import java.util.*;
 import com.sun.source.tree.*;
-import com.sun.source.util.TreePath;
-import java.util.logging.Logger;
-import org.netbeans.api.java.source.Comment.Style;
-import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.modules.java.source.transform.FieldGroupTree;
-import static com.sun.source.tree.Tree.*;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.DocSourcePositions;
+import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.api.JavacTrees;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.java.source.builder.CommentHandlerService;
-import org.netbeans.api.java.source.Comment;
-import org.netbeans.modules.java.source.query.CommentHandler;
-import org.netbeans.modules.java.source.query.CommentSet;
 import com.sun.tools.javac.code.*;
 import com.sun.tools.javac.tree.DCTree;
-import com.sun.tools.javac.tree.DCTree.*;
+import com.sun.tools.javac.tree.DCTree.DCAttribute;
+import com.sun.tools.javac.tree.DCTree.DCAuthor;
+import com.sun.tools.javac.tree.DCTree.DCComment;
+import com.sun.tools.javac.tree.DCTree.DCDeprecated;
+import com.sun.tools.javac.tree.DCTree.DCDocComment;
+import com.sun.tools.javac.tree.DCTree.DCDocRoot;
+import com.sun.tools.javac.tree.DCTree.DCEndElement;
+import com.sun.tools.javac.tree.DCTree.DCEntity;
+import com.sun.tools.javac.tree.DCTree.DCErroneous;
+import com.sun.tools.javac.tree.DCTree.DCIdentifier;
+import com.sun.tools.javac.tree.DCTree.DCInheritDoc;
+import com.sun.tools.javac.tree.DCTree.DCLink;
+import com.sun.tools.javac.tree.DCTree.DCLiteral;
+import com.sun.tools.javac.tree.DCTree.DCParam;
+import com.sun.tools.javac.tree.DCTree.DCReference;
+import com.sun.tools.javac.tree.DCTree.DCReturn;
+import com.sun.tools.javac.tree.DCTree.DCSee;
+import com.sun.tools.javac.tree.DCTree.DCSerial;
+import com.sun.tools.javac.tree.DCTree.DCSerialData;
+import com.sun.tools.javac.tree.DCTree.DCSerialField;
+import com.sun.tools.javac.tree.DCTree.DCSince;
+import com.sun.tools.javac.tree.DCTree.DCStartElement;
+import com.sun.tools.javac.tree.DCTree.DCText;
+import com.sun.tools.javac.tree.DCTree.DCThrows;
+import com.sun.tools.javac.tree.DCTree.DCUnknownBlockTag;
+import com.sun.tools.javac.tree.DCTree.DCUnknownInlineTag;
+import com.sun.tools.javac.tree.DCTree.DCValue;
+import com.sun.tools.javac.tree.DCTree.DCVersion;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.*;
+import com.sun.tools.javac.tree.JCTree.JCAnnotatedType;
+import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
+import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
+import com.sun.tools.javac.tree.JCTree.JCAssert;
+import com.sun.tools.javac.tree.JCTree.JCAssign;
+import com.sun.tools.javac.tree.JCTree.JCAssignOp;
+import com.sun.tools.javac.tree.JCTree.JCBinary;
+import com.sun.tools.javac.tree.JCTree.JCBlock;
+import com.sun.tools.javac.tree.JCTree.JCBreak;
+import com.sun.tools.javac.tree.JCTree.JCCase;
+import com.sun.tools.javac.tree.JCTree.JCCatch;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.JCTree.JCConditional;
+import com.sun.tools.javac.tree.JCTree.JCContinue;
+import com.sun.tools.javac.tree.JCTree.JCDoWhileLoop;
+import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
+import com.sun.tools.javac.tree.JCTree.JCErroneous;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCForLoop;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
+import com.sun.tools.javac.tree.JCTree.JCIf;
+import com.sun.tools.javac.tree.JCTree.JCImport;
+import com.sun.tools.javac.tree.JCTree.JCInstanceOf;
+import com.sun.tools.javac.tree.JCTree.JCLabeledStatement;
+import com.sun.tools.javac.tree.JCTree.JCLambda;
+import com.sun.tools.javac.tree.JCTree.JCLiteral;
+import com.sun.tools.javac.tree.JCTree.JCMemberReference;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
+import com.sun.tools.javac.tree.JCTree.JCModifiers;
+import com.sun.tools.javac.tree.JCTree.JCNewArray;
+import com.sun.tools.javac.tree.JCTree.JCNewClass;
+import com.sun.tools.javac.tree.JCTree.JCParens;
+import com.sun.tools.javac.tree.JCTree.JCPrimitiveTypeTree;
+import com.sun.tools.javac.tree.JCTree.JCReturn;
+import com.sun.tools.javac.tree.JCTree.JCStatement;
+import com.sun.tools.javac.tree.JCTree.JCSwitch;
+import com.sun.tools.javac.tree.JCTree.JCSynchronized;
+import com.sun.tools.javac.tree.JCTree.JCThrow;
+import com.sun.tools.javac.tree.JCTree.JCTry;
+import com.sun.tools.javac.tree.JCTree.JCTypeApply;
+import com.sun.tools.javac.tree.JCTree.JCTypeCast;
+import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
+import com.sun.tools.javac.tree.JCTree.JCTypeUnion;
+import com.sun.tools.javac.tree.JCTree.JCUnary;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.JCTree.JCWhileLoop;
+import com.sun.tools.javac.tree.JCTree.JCWildcard;
+import com.sun.tools.javac.tree.JCTree.LetExpr;
+import com.sun.tools.javac.tree.JCTree.Tag;
+import com.sun.tools.javac.tree.JCTree.TypeBoundKind;
 import com.sun.tools.javac.tree.Pretty;
 import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
+import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.util.Position;
 import java.lang.reflect.Method;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CodeStyle;
+import org.netbeans.api.java.source.Comment;
+import org.netbeans.api.java.source.Comment.Style;
+import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
+import org.netbeans.modules.java.source.query.CommentHandler;
+import org.netbeans.modules.java.source.query.CommentSet;
+import org.netbeans.modules.java.source.save.ListMatcher.Operation;
+import org.netbeans.modules.java.source.save.ListMatcher.ResultItem;
+import org.netbeans.modules.java.source.save.ListMatcher.Separator;
+import org.netbeans.modules.java.source.save.PositionEstimator.Direction;
+import org.netbeans.modules.java.source.transform.FieldGroupTree;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
+
+import static com.sun.source.doctree.DocTree.Kind.RETURN;
+import static com.sun.source.tree.Tree.*;
+import static com.sun.tools.javac.code.Flags.*;
 import static java.util.logging.Level.*;
 
 import static org.netbeans.modules.java.source.save.ListMatcher.*;
-import static com.sun.tools.javac.code.Flags.*;
-import java.util.Map.Entry;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.editor.indent.api.Indent;
 
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
-import org.openide.util.Exceptions;
 
 public class CasualDiff {
 
@@ -1900,6 +1988,10 @@ public class CasualDiff {
         int localPointer = bounds[0];
         // lhs
         int[] lhsBounds = getBounds(oldT.lhs);
+        if (lhsBounds[0] < 0) {
+            lhsBounds[0] = getOldPos(oldT.rhs);
+            lhsBounds[1] = -1;
+        }
         copyTo(localPointer, lhsBounds[0]);
         localPointer = diffTree(oldT.lhs, newT.lhs, lhsBounds);
         int[] rhsBounds = getBounds(oldT.rhs);
@@ -2668,6 +2760,30 @@ public class CasualDiff {
               return matchAnnotatedType((JCAnnotatedType) t1, (JCAnnotatedType) t2);
           case LAMBDA:
               return matchLambda((JCLambda)t1, (JCLambda)t2);
+          case ERRONEOUS: {
+              // errors match, iff their source texts match
+              SourcePositions sps = this.diffContext.trees.getSourcePositions();
+              int a1 = (int)sps.getStartPosition(diffContext.origUnit, t1);
+              int a2 = (int)sps.getEndPosition(diffContext.origUnit, t1);
+              
+              int b1 = (int)sps.getStartPosition(diffContext.origUnit, t2);
+              int b2 = (int)sps.getEndPosition(diffContext.origUnit, t2);
+              
+              if (a1 == b1 && a2 == b2) {
+                  return true;
+              }
+              
+              if (a1 == NOPOS || a2 == NOPOS || b1 == NOPOS || b2 == NOPOS) {
+                  return false;
+              }
+              if (a1 == -1 || a2 == -1 || b1 == -1 || b2 == -1) {
+                  return false;
+              }
+              String sa = diffContext.origText.substring(a1, a2);
+              String sb = diffContext.origText.substring(b1, b2);
+              
+              return sa.equals(sb);
+          }
           default:
               String msg = ((com.sun.source.tree.Tree)t1).getKind().toString() +
                       " " + t1.getClass().getName();

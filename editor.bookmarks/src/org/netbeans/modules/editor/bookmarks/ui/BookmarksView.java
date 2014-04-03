@@ -431,7 +431,7 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
     void requestFocusTreeOrTable() {
         if (treeViewShowing) {
             treeView.requestFocusInWindow();
-        } else {
+        } else if (tableView != null) {
             tableView.getTable().requestFocusInWindow();
         }
         Node selectedNode = getTreeSelectedNode();
