@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 
@@ -213,8 +214,9 @@ public class LineHyperlinkProvider implements HyperlinkProviderExt {
                     String path = item.file;
                     try {
                         FSPath fs;
-                        if (CndPathUtilities.isPathAbsolute(path)) {
-                            fs = new FSPath(fileObject.getFileSystem(), path);
+                        FileSystem fileSystem = fileObject.getFileSystem();
+                        if (CndPathUtilities.isAbsolute(fileSystem, path)) {
+                            fs = new FSPath(fileSystem, path);
                         } else {
                             fs = new FSPath(fileObject.getFileSystem(), fileObject.getParent().getPath()+"/"+path); //NOI18N
                         }
