@@ -55,11 +55,9 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
-import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.CharSequences;
 
 /**
  * composition of include handler and macro map for parsing file phase
@@ -87,7 +85,7 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
         this.lang = lang;
         assert flavor != null;
         this.flavor = flavor;
-        this.cuCRC = countCompilationUnitCRC(inclHandler.getStartEntry().getStartFileProject().getUnitId());
+        this.cuCRC = countCompilationUnitCRC();
     }
     
     @Override
@@ -151,15 +149,15 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
         return cuCRC;
     }
     
-    private long countCompilationUnitCRC(int unitId) {
+    private long countCompilationUnitCRC() {
 	Checksum checksum = new Adler32();
 	updateCrc(checksum, lang.toString());
 	updateCrc(checksum, flavor.toString());
-	updateCrcByFSPaths(checksum, ((APTIncludeHandlerImpl)inclHandler).getSystemIncludePaths(), unitId);
-	updateCrcByFSPaths(checksum, ((APTIncludeHandlerImpl)inclHandler).getUserIncludePaths(), unitId);
-	updateCrcByFSPaths(checksum, ((APTIncludeHandlerImpl)inclHandler).getUserIncludeFilePaths(), unitId);
+	updateCrcByFSPaths(checksum, ((APTIncludeHandlerImpl)inclHandler).getSystemIncludePaths());
+	updateCrcByFSPaths(checksum, ((APTIncludeHandlerImpl)inclHandler).getUserIncludePaths());
+	updateCrcByFSPaths(checksum, ((APTIncludeHandlerImpl)inclHandler).getUserIncludeFilePaths());
         long value = checksum.getValue();
-        value += APTHandlersSupportImpl.getCompilationUnitCRC(macroMap);        
+        value += APTHandlersSupportImpl.getCompilationUnitCRC(macroMap);
 	return value;
         
     }
@@ -168,11 +166,9 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
 	checksum.update(s.getBytes(), 0, s.length());
     }
     
-    private void updateCrcByFSPaths(Checksum checksum, List<IncludeDirEntry> paths, int unitId) {
+    private void updateCrcByFSPaths(Checksum checksum, List<IncludeDirEntry> paths) {
 	for( IncludeDirEntry path : paths ) {
-            int id = Repository.getFileIdByName(unitId, path.getAsSharedCharSequence());
-	    checksum.update(id);
-            //updateCrc(checksum, path.getPath());
+	    updateCrc(checksum, path.getPath());
 	}
     }
 
