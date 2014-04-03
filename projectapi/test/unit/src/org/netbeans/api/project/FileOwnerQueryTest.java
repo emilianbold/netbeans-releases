@@ -48,6 +48,8 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URI;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.projectapi.NbProjectManager;
+import org.netbeans.modules.projectapi.NbProjectManagerAccessor;
 import org.netbeans.modules.projectapi.TimedWeakReference;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -82,7 +84,7 @@ public class FileOwnerQueryTest extends NbTestCase {
     
     protected @Override void setUp() throws Exception {
         MockLookup.setLayersAndInstances(TestUtil.testProjectFactory());
-        ProjectManager.getDefault().reset();
+        NbProjectManagerAccessor.reset();
         FileOwnerQuery.reset();
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("my-project");
