@@ -129,6 +129,11 @@ public final class UncaughtException implements ErrorRule<Void> {
             
             Tree currentTree = path.getLeaf();
             
+            if (currentTree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+                // no checked exceptions can be thrown out of Lambda, #243106
+                break;
+            }
+            
             if (currentTree.getKind() == Kind.TRY) {
                 TryTree tt = (TryTree) currentTree;
                 
@@ -227,7 +232,6 @@ public final class UncaughtException implements ErrorRule<Void> {
 			else
 			    uncaught = ((ExecutableElement) el).getThrownTypes();
                     }
-                    path = path.getParentPath();
                     break OUTTER;
                 case THROW:
                     TypeMirror uncaughtException = info.getTrees().getTypeMirror(new TreePath(path, ((ThrowTree) leaf).getExpression()));
@@ -262,7 +266,7 @@ public final class UncaughtException implements ErrorRule<Void> {
                             inResourceSection = true;
                         }
                     case METHOD: case ANNOTATION_TYPE: case CLASS:
-                    case ENUM: case INTERFACE:
+                    case ENUM: case INTERFACE: case LAMBDA_EXPRESSION:
                         break LOOK_FOR_TWR;
                 }
                 inLast = in.getLeaf();

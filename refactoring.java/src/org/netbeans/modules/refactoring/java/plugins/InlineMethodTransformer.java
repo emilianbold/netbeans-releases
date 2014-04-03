@@ -278,8 +278,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                     lastStatement = GeneratorUtilities.get(workingCopy).importFQNs(lastStatement);
                 }
             }
-            lastStatement = translateLastStatement(parent, grandparent, newStatementList, lastStatement, node);
-            
+            lastStatement = translateLastStatement(parent, grandparent, newStatementList, lastStatement, node, methodInvocationPath, method);
             Element element = workingCopy.getTrees().getElement(statementPath);
             if (element != null && element.getKind() == ElementKind.FIELD) {
                 if (!newStatementList.isEmpty()) {
@@ -616,7 +615,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
         }
     }
 
-    private Tree translateLastStatement(Tree parent, Tree grandparent, List<StatementTree> newStatementList, Tree lastStatement, Tree node) {
+    private Tree translateLastStatement(Tree parent, Tree grandparent, List<StatementTree> newStatementList, Tree lastStatement, Tree node, TreePath location, Element method) {
         Tree result = lastStatement;
         if (parent.getKind() != Tree.Kind.EXPRESSION_STATEMENT) {
             if (result != null) {
@@ -629,6 +628,12 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                         break;
                     default:
                     // TODO: Problem, need an expression, but last statement is not an expression.
+                }
+                if(result instanceof ExpressionTree) {
+                    boolean needsParentheses = OperatorPrecedence.needsParentheses(location, method, (ExpressionTree) result, workingCopy);
+                    if(needsParentheses) {
+                        result = workingCopy.getTreeMaker().Parenthesized((ExpressionTree) result);
+                    }
                 }
             }
         } else {
