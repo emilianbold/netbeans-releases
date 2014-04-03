@@ -47,13 +47,20 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 
 /**
@@ -66,6 +73,7 @@ public class RequireJsIndex {
 
     private final QuerySupport querySupport;
     private static final Map<Project, RequireJsIndex> INDEXES = new WeakHashMap();
+    private static boolean areProjectsOpen = false;
 
     public static RequireJsIndex get(Project project) throws IOException {
         if (project == null) {
@@ -74,20 +82,36 @@ public class RequireJsIndex {
         synchronized (INDEXES) {
             RequireJsIndex index = INDEXES.get(project);
             if (index == null) {
-                index = new RequireJsIndex(project);
-                INDEXES.put(project, index);
+                if (!areProjectsOpen) {
+                    try {
+                        // just be sure that the projects are open
+                        OpenProjects.getDefault().openProjects().get();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (ExecutionException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } finally {
+                        areProjectsOpen = true;
+                    }
+                }
+                Collection<FileObject> sourceRoots = QuerySupport.findRoots(project,
+                        null /* all source roots */,
+                        Collections.<String>emptyList(),
+                        Collections.<String>emptyList());
+                QuerySupport querySupport = QuerySupport.forRoots(RequireJsIndexer.Factory.NAME, RequireJsIndexer.Factory.VERSION, sourceRoots.toArray(new FileObject[]{}));
+                index = new RequireJsIndex(querySupport);
+                if (sourceRoots.size() > 0) {
+                    INDEXES.put(project, index);
+                }
             }
             return index;
         }
     }
 
-    private RequireJsIndex(Project project) throws IOException {
-        Collection<FileObject> sourceRoots = QuerySupport.findRoots(project,
-                null /* all source roots */,
-                Collections.<String>emptyList(),
-                Collections.<String>emptyList());
-        this.querySupport = QuerySupport.forRoots(RequireJsIndexer.Factory.NAME, RequireJsIndexer.Factory.VERSION, sourceRoots.toArray(new FileObject[]{}));
+    private RequireJsIndex(QuerySupport querySupport) throws IOException {
+        this.querySupport = querySupport;
     }
+    
     
     public Collection<? extends TypeUsage> getExposedTypes(String module, ModelElementFactory factory) {
         Collection<? extends IndexResult> result = null;
