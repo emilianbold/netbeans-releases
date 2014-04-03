@@ -84,6 +84,8 @@ FIELD      document: document              [PUBLIC]   JS Platform
 FIELD      frameElement: Element           [PUBLIC]   JS Platform
 FIELD      frames: Array                   [PUBLIC]   JS Platform
 FIELD      fullScreen: Boolean             [PUBLIC]   JS Platform
+FIELD      globalThree235206: Number       [PUBLIC]   issue235206.js
+FIELD      globalTwo235206: Number         [PUBLIC]   issue235206.js
 FIELD      history: History                [PUBLIC]   JS Platform
 FIELD      innerHeight: Number             [PUBLIC]   JS Platform
 FIELD      innerWidth: Number              [PUBLIC]   JS Platform
@@ -133,6 +135,10 @@ FIELD      parent: Window                  [PUBLIC]   JS Platform
 FIELD      performance: Object             [PUBLIC]   JS Platform
 FIELD      personalbar: Object             [PUBLIC]   JS Platform
 FIELD      screen: Screen                  [PUBLIC]   JS Platform
+FIELD      screenLeft: Number              [PUBLIC]   JS Platform
+FIELD      screenTop: Number               [PUBLIC]   JS Platform
+FIELD      screenX: Number                 [PUBLIC]   JS Platform
+FIELD      screenY: Number                 [PUBLIC]   JS Platform
 FIELD      scrollMaxX: Number              [PUBLIC]   JS Platform
 FIELD      scrollMaxY: Number              [PUBLIC]   JS Platform
 FIELD      scrollX: Number                 [PUBLIC]   JS Platform
