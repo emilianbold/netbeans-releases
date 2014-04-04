@@ -1056,52 +1056,6 @@ public class DefaultMutexImplementation implements MutexImplementation {
         return run.ret;
     }
 
-    // ------------------------------- EVENT METHODS ----------------------------
-
-    /** Notify exception and returns new MutexException */
-    private static MutexException notifyException(Throwable t) {
-        if (t instanceof InvocationTargetException) {
-            t = unfoldInvocationTargetException((InvocationTargetException) t);
-        }
-
-        if (t instanceof Error) {
-            annotateEventStack(t);
-            throw (Error) t;
-        }
-
-        if (t instanceof RuntimeException) {
-            annotateEventStack(t);
-            throw (RuntimeException) t;
-        }
-
-        MutexException exc = new MutexException((Exception) t);
-        exc.initCause(t);
-
-        return exc;
-    }
-
-    private static void annotateEventStack(Throwable t) {
-        //ErrorManager.getDefault().annotate(t, new Exception("Caught here in mutex")); // NOI18N
-    }
-
-    private static Throwable unfoldInvocationTargetException(InvocationTargetException e) {
-        Throwable ret;
-
-        do {
-            ret = e.getTargetException();
-
-            if (ret instanceof InvocationTargetException) {
-                e = (InvocationTargetException) ret;
-            } else {
-                e = null;
-            }
-        } while (e != null);
-
-        return ret;
-    }
-
-    // --------------------------------------------- END OF EVENT METHODS ------------------------------
-
     private static final class ThreadInfo {
         /** t is forcibly sent from waiters to enter() by wakeUpOthers() */
         boolean forced;
