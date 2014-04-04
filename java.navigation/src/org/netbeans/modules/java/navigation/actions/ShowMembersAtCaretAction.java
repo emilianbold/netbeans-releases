@@ -42,9 +42,7 @@
 package org.netbeans.modules.java.navigation.actions;
 
 import java.awt.event.ActionEvent;
-import java.util.Collection;
 import javax.swing.Action;
-import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
@@ -53,16 +51,10 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
-import org.netbeans.modules.java.navigation.ClassMemberPanelUI;
-import org.netbeans.modules.java.navigation.hierarchy.HierarchyTopComponent;
-import org.netbeans.spi.navigator.NavigatorHandler;
-import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -82,8 +74,8 @@ public class ShowMembersAtCaretAction extends BaseAction {
 
     public ShowMembersAtCaretAction() {
         putValue(Action.NAME, Bundle.CTL_ShowMembersAtCaretAction());
-        putValue(SHORT_DESCRIPTION, getValue(NAME));
-        putValue(ExtKit.TRIMMED_TEXT,getValue(NAME));
+        putValue(SHORT_DESCRIPTION, "");
+        putValue(ExtKit.TRIMMED_TEXT, Bundle.CTL_ShowMembersAtCaretActionPopUp());
         putValue(BaseAction.POPUP_MENU_TEXT, Bundle.CTL_ShowMembersAtCaretActionPopUp());
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }

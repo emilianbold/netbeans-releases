@@ -1177,10 +1177,12 @@ public class NPECheck {
          * @param thrown thrown exception type
          */
         private void recordResumeOnExceptionHandler(TypeMirror thrown, Map<VariableElement, State> variable2State) {
-            if (thrown == null || thrown.getKind() != TypeKind.DECLARED) return;
-            DeclaredType dtt = (DeclaredType)thrown;
+            
+            TypeMirror curT = thrown;
             
             do {
+                if (curT == null || curT.getKind() != TypeKind.DECLARED) return;
+                DeclaredType dtt = (DeclaredType)curT;
                 // hack; getSuperclass may provide different type instance for the same element.
                 thrown = dtt.asElement().asType();
                 Map<VariableElement, State> r = resumeOnExceptionHandler.get(thrown);
@@ -1192,8 +1194,8 @@ public class NPECheck {
                 if (tel == throwableEl) {
                     break;
                 }
-                dtt = (DeclaredType)tel.getSuperclass();
-            } while (dtt != null);
+                curT = tel.getSuperclass();
+            } while (curT != null);
         }
         
         private void resumeAfter(Tree target, Map<VariableElement, State> state) {
