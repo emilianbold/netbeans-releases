@@ -129,25 +129,9 @@ public class BugzillaRepository {
         this();
         this.info = info;
         String name = info.getDisplayName();
-        String user = info.getUsername();
-        if(user == null) {
-            user = ""; // NOI18N
-        }
-        char[] password = info.getPassword();
-        if(password == null) {
-            password = new char[0]; 
-        }
-        String httpUser = info.getHttpUsername();
-        if(httpUser == null) {
-            httpUser = ""; // NOI18N
-        }
-        char[] httpPassword = info.getHttpPassword();
-        if(httpPassword == null) {
-            httpPassword = new char[0]; 
-        }
         String url = info.getUrl();
         boolean shortLoginEnabled = Boolean.parseBoolean(info.getValue(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN));
-        taskRepository = setupTaskRepository(name, null, url, user, password, httpUser, httpPassword, shortLoginEnabled);
+        taskRepository = setupTaskRepository(name, null, url, "", new char[0], "", new char[0], shortLoginEnabled);
     }
 
     public RepositoryInfo getInfo() {
