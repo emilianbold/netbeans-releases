@@ -44,11 +44,7 @@
 
 package org.openide.util;
 
-import java.awt.EventQueue;
-import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import org.openide.util.MutexException;
 import org.openide.util.Union2;
@@ -351,7 +347,9 @@ public final class Mutex {
     /** toString */
     @Override
     public String toString() {        
-        return impl.toString();
+        return String.format(
+            "Mutex[%s]",    //NOI18N
+            impl.toString());
     }
 
     // priv methods  -----------------------------------------
