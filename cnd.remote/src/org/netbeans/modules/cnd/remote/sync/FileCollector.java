@@ -131,11 +131,25 @@ import org.openide.util.Utilities;
         return filesToFeed;
     }
 
+    private static class DupsPreventer<T> {
+
+        Set<T> set = new HashSet<>();
+
+        public boolean check(T t) {
+            if (set.contains(t)) {
+                return false;
+            }
+            set.add(t);
+            return true;
+        }
+    }
+
     public void gatherFiles() {
         long time = System.currentTimeMillis();        
 
         // the set of top-level dirs
         Set<File> topDirs = new HashSet<File>();
+        DupsPreventer<File> dupsPreventer = new DupsPreventer<File>();
 
         for (File file : files) {
             file = CndFileUtils.normalizeFile(file);
@@ -145,7 +159,7 @@ import org.openide.util.Utilities;
                 File[] children = file.listFiles(filter);
                 if (children != null) {
                     for (File child : children) {
-                        gatherFiles(child, toRemoteFilePathName, filter, filesToFeed);
+                        gatherFiles(child, toRemoteFilePathName, filter, filesToFeed, dupsPreventer);
                     }
                 }
                 topDirs.add(file);
@@ -155,17 +169,21 @@ import org.openide.util.Utilities;
                 if (!topDirs.contains(parentFile)) {
                     // add parent folder for external file
                     topDirs.add(parentFile);
-                    addFileGatheringInfo(filesToFeed, parentFile, toRemoteFilePathName);
+                    if (dupsPreventer.check(parentFile)) {
+                        addFileGatheringInfo(filesToFeed, parentFile, toRemoteFilePathName);
+                    }
                 }
-                gatherFiles(file, toRemoteFilePathName, filter, filesToFeed);
+                gatherFiles(file, toRemoteFilePathName, filter, filesToFeed, dupsPreventer);
             }
         }
 
         Collection<File> parents = gatherParents(topDirs);
         for (File file : parents) {
             file = CndFileUtils.normalizeFile(file);
-            String toRemoteFilePathName = mapper.getRemotePath(file.getAbsolutePath());
-            addFileGatheringInfo(filesToFeed, file, toRemoteFilePathName);
+            if (dupsPreventer.check(file)) {
+                String toRemoteFilePathName = mapper.getRemotePath(file.getAbsolutePath());
+                addFileGatheringInfo(filesToFeed, file, toRemoteFilePathName);
+            }
         }
         logger.log(Level.FINE, "gathered %d files in %d ms", filesToFeed.size(), System.currentTimeMillis() - time);
         time = System.currentTimeMillis();
@@ -191,16 +209,18 @@ import org.openide.util.Utilities;
         logger.log(Level.FINE, "sorting file list took %d ms", System.currentTimeMillis() - time);
     }
 
-    private static void gatherFiles(File file, String base, FileFilter filter, List<FileInfo> files) {
-        // it is assumed that the file itself was already filtered
-        String remotePath = isEmpty(base) ? file.getName() : base + '/' + file.getName();
-        files.add(new FileInfo(file, remotePath));
-        if (file.isDirectory()) {
-            File[] children = file.listFiles(filter);
-            if (children != null) {
-                for (File child : children) {
-                    String newBase = isEmpty(base) ? file.getName() : (base + "/" + file.getName()); // NOI18N
-                    gatherFiles(child, newBase, filter, files);
+    private static void gatherFiles(File file, String base, FileFilter filter, List<FileInfo> files, DupsPreventer<File> dupsPreventer) {
+        if (dupsPreventer.check(file)) {
+            // it is assumed that the file itself was already filtered
+            String remotePath = isEmpty(base) ? file.getName() : base + '/' + file.getName();
+            files.add(new FileInfo(file, remotePath));
+            if (file.isDirectory()) {
+                File[] children = file.listFiles(filter);
+                if (children != null) {
+                    for (File child : children) {
+                        String newBase = isEmpty(base) ? file.getName() : (base + "/" + file.getName()); // NOI18N
+                        gatherFiles(child, newBase, filter, files, dupsPreventer);
+                    }
                 }
             }
         }
