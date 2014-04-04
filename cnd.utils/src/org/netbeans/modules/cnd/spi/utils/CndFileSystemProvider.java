@@ -201,6 +201,10 @@ public abstract class CndFileSystemProvider {
         getDefault().removeFileChangeListenerImpl(listener, fileSystem, path);
     }
     
+    public static FileSystem getLocalFileSystem() {
+        return DefaultProvider.getRootFileSystem();
+    }
+
     /**
      * Checks whether the file specified by path exists or not
      * @param path
@@ -386,13 +390,13 @@ public abstract class CndFileSystemProvider {
             }
         }
         
-        private FileSystem getRootFileSystem() {
+        private static FileSystem getRootFileSystem() {
             if (rootFileSystem == null) {
                 File tmpFile = null;
                 try {
                     tmpFile = File.createTempFile("NetBeans", ".tmp"); //NOI18N
                     tmpFile = FileUtil.normalizeFile(tmpFile);
-                    FileObject fo = FileUtil.toFileObject(tmpFile);
+                    FileObject fo = FileUtil.toFileObject(tmpFile.getParentFile());
                     rootFileSystem = fo.getFileSystem();
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
