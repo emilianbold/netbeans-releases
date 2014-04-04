@@ -50,6 +50,11 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
+import org.openide.util.MutexException;
+import org.openide.util.Union2;
+import org.netbeans.modules.openide.util.DefaultMutexImplementation;
+import org.openide.util.spi.MutexEventProvider;
+import org.openide.util.spi.MutexImplementation;
 
 /** Read-many/write-one lock.
 * Allows control over resources that
@@ -105,7 +110,7 @@ public final class Mutex {
     /**
      * The actual delegate, which performs the work
      */
-    private final ReadWriteAccess delegate;
+    private final MutexImplementation impl;
     
     /** logger for things that happen in mutex */
     private static final Logger LOG = Logger.getLogger(Mutex.class.getName());
@@ -137,25 +142,48 @@ public final class Mutex {
      *  <code>action.run()</code> is immediately executed.
      * </UL>
      */
-    public static final Mutex EVENT = new Mutex();
+    public static final Mutex EVENT;
+    static {
+        final MutexEventProvider provider = Lookup.getDefault().lookup(MutexEventProvider.class);
+        if (provider == null) {
+            throw new IllegalStateException("No MutexEventProvider found in default Lookup.");  //NOI18N
+        }
+        final MutexImplementation mutexImpl = provider.createMutex();
+        if (mutexImpl == null) {
+            throw new IllegalStateException(String.format(
+                "Null value from %s.createMutex()", //NOI18N
+                provider.getClass()));
+        }
+        EVENT = new Mutex(mutexImpl);
+    }
 
     // lock mode constants
 
+    /**
+     * Creates {@link Mutex} with given SPI.
+     * @param impl the {@link Mutex} SPI.
+     * @since 9.1
+     */
+    public Mutex(MutexImplementation impl) {
+        Parameters.notNull("impl", impl);  //NOI18N
+        this.impl = impl;
+    }
+
     public Mutex(Object lock) {
-        this.delegate = ReadWriteAccess.usingLock(lock);
+        this(DefaultMutexImplementation.usingLock(lock));
     }
 
     /** Default constructor.
     */
     public Mutex() {
-        this.delegate = ReadWriteAccess.create();
+        this(DefaultMutexImplementation.create());
     }
 
     /** @param privileged can enter privileged states of this Mutex
      * This helps avoid creating of custom Runnables.
      */
     public Mutex(Privileged privileged) {
-        this.delegate = ReadWriteAccess.controlledBy(privileged.delegate);
+        this.impl = DefaultMutexImplementation.controlledBy(privileged.delegate);
     }
 
     /** Constructor for those who wish to do some custom additional tasks
@@ -174,7 +202,7 @@ public final class Mutex {
      * @see SimpleMutex#SimpleMutex(org.openide.util.ReadWriteAccess.Privileged, java.util.concurrent.Executor)
      */
     public Mutex(Privileged privileged, Executor executor) {
-        this.delegate = ReadWriteAccess.controlledBy(privileged.delegate, executor);
+        this.impl = DefaultMutexImplementation.controlledBy(privileged.delegate, executor);
     }
 
     /** Run an action only with read access.
@@ -182,15 +210,12 @@ public final class Mutex {
     * @param action the action to perform
     * @return the object returned from {@link Mutex.Action#run}
     */
-    public <T> T readAccess(final Action<T> action) {
-        if (this == EVENT) {
-            try {
-                return doEventAccess(action);
-            } catch (MutexException e) {
-                throw (InternalError) new InternalError("Exception from non-Exception Action").initCause(e.getException()); // NOI18N
-            }
+    public <T> T readAccess(final Action<T> action) {        
+        try {
+            return impl.readAccess(ActionWrapper.from(action));
+        } catch (MutexException ex) {
+            throw (InternalError) new InternalError("Exception from non-Exception Action").initCause(ex.getException()); // NOI18N
         }
-        return delegate.readAccess(action);
     }
     
 
@@ -218,11 +243,8 @@ public final class Mutex {
     * @exception RuntimeException if any runtime exception is thrown from the run method
     * @see #readAccess(Mutex.Action)
     */
-    public <T> T readAccess(final ExceptionAction<T> action) throws MutexException {
-        if (this == EVENT) {
-            return doEventAccess(action);
-        }
-        return delegate.readAccess(action);
+    public <T> T readAccess(final ExceptionAction<T> action) throws MutexException {        
+        return impl.readAccess(action);
     }
 
     /** Run an action with read access, returning no result.
@@ -231,13 +253,12 @@ public final class Mutex {
     * @param action the action to perform
     * @see #readAccess(Mutex.Action)
     */
-    public void readAccess(final Runnable action) {
-        if (this == EVENT) {
-            doEvent(action);
-
-            return;
+    public void readAccess(final Runnable action) {        
+        try {
+            impl.readAccess(ActionWrapper.from(action));
+        } catch (MutexException ex) {
+            throw (InternalError) new InternalError("Exception from non-Exception Action").initCause(ex.getException()); // NOI18N
         }
-        delegate.readAccess(action);
     }
 
     /** Run an action with write access.
@@ -246,15 +267,12 @@ public final class Mutex {
     * @param action the action to perform
     * @return the result of {@link Mutex.Action#run}
     */
-    public <T> T writeAccess(Action<T> action) {
-        if (this == EVENT) {
-            try {
-                return doEventAccess(action);
-            } catch (MutexException e) {
-                throw (InternalError) new InternalError("Exception from non-Exception Action").initCause(e.getException()); // NOI18N
-            }
+    public <T> T writeAccess(Action<T> action) {        
+        try {
+            return impl.writeAccess(ActionWrapper.from(action));
+        } catch (MutexException ex) {
+            throw (InternalError) new InternalError("Exception from non-Exception Action").initCause(ex.getException()); // NOI18N
         }
-        return delegate.writeAccess(action);
     }
 
     /** Run an action with write access and possibly throw an exception.
@@ -279,7 +297,7 @@ public final class Mutex {
     * @see #readAccess(Mutex.ExceptionAction)
     */
     public <T> T writeAccess(ExceptionAction<T> action) throws MutexException {
-        return delegate.writeAccess(action);
+        return impl.writeAccess(action);
     }
 
     /** Run an action with write access and return no result.
@@ -289,13 +307,12 @@ public final class Mutex {
     * @see #writeAccess(Mutex.Action)
     * @see #readAccess(Runnable)
     */
-    public void writeAccess(final Runnable action) {
-        if (this == EVENT) {
-            doEvent(action);
-
-            return;
+    public void writeAccess(final Runnable action) {        
+        try {
+            impl.writeAccess(ActionWrapper.from(action));
+        } catch (MutexException ex) {
+            throw (InternalError) new InternalError("Exception from non-Exception Action").initCause(ex.getException()); // NOI18N
         }
-        delegate.writeAccess(action);
     }
 
     /** Tests whether this thread has already entered the mutex in read access.
@@ -315,11 +332,8 @@ public final class Mutex {
      * @return true if the thread is in read access section
      * @since 4.48
      */
-    public boolean isReadAccess() {
-        if (this == EVENT) {
-            return javax.swing.SwingUtilities.isEventDispatchThread();
-        }
-        return delegate.isReadAccess();
+    public boolean isReadAccess() {        
+        return impl.isReadAccess();
     }
 
     /** Tests whether this thread has already entered the mutex in write access.
@@ -330,20 +344,14 @@ public final class Mutex {
      * @return true if the thread is in write access section
      * @since 4.48
      */
-    public boolean isWriteAccess() {
-        if (this == EVENT) {
-            return javax.swing.SwingUtilities.isEventDispatchThread();
-        }
-        return delegate.isWriteAccess();
+    public boolean isWriteAccess() {        
+        return impl.isWriteAccess();
     }
 
     /** toString */
     @Override
-    public String toString() {
-        if (this == EVENT) {
-            return "Mutex.EVENT"; // NOI18N
-        }
-        return delegate.toString();
+    public String toString() {        
+        return impl.toString();
     }
 
     // priv methods  -----------------------------------------
@@ -362,13 +370,8 @@ public final class Mutex {
      *
      * @param run runnable to run
      */
-    public void postReadRequest(final Runnable run) {
-        if (this == EVENT) {
-            doEventRequest(run);
-
-            return;
-        }
-        delegate.postReadRequest(run);
+    public void postReadRequest(final Runnable run) {        
+        impl.postReadRequest(run);
     }
 
     /** Posts a write request. This request runs immediately iff
@@ -384,161 +387,15 @@ public final class Mutex {
      * <p><strong>Warning:</strong> this method blocks.</p>
      * @param run runnable to run
      */
-    public void postWriteRequest(Runnable run) {
-        if (this == EVENT) {
-            doEventRequest(run);
-
-            return;
-        }
-        delegate.postWriteRequest(run);
+    public void postWriteRequest(Runnable run) {        
+        impl.postWriteRequest(run);
     }
-    
-    // ------------------------------- EVENT METHODS ----------------------------
-
-    /** Runs the runnable in event queue, either immediatelly,
-    * or it posts it into the queue.
-    */
-    private static void doEvent(Runnable run) {
-        if (EventQueue.isDispatchThread()) {
-            run.run();
-        } else {
-            EventQueue.invokeLater(run);
-        }
-    }
-
-    /** Methods for access to event queue.
-    * @param run runabble to post later
-    */
-    private static void doEventRequest(Runnable run) {
-        EventQueue.invokeLater(run);
-    }
-
-    /** Methods for access to event queue and waiting for result.
-    * @param run runnable to post later
-    */
-    private static <T> T doEventAccess(final ReadWriteAccess.ExceptionAction<T> run)
-    throws MutexException {
-        if (isDispatchThread()) {
-            try {
-                return run.run();
-            } catch (RuntimeException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new MutexException(e);
-            }
-        }
-
-        final AtomicReference<Union2<T,Throwable>> res = new AtomicReference<Union2<T,Throwable>>();
-        final AtomicBoolean started = new AtomicBoolean(); // #210991
-        final AtomicBoolean finished = new AtomicBoolean();
-        final AtomicBoolean invoked = new AtomicBoolean();
-        try {
-            class AWTWorker implements Runnable {
-                @Override
-                public void run() {
-                    started.set(true);
-                    try {
-                        res.set(Union2.<T,Throwable>createFirst(run.run()));
-                    } catch (Exception e) {
-                        res.set(Union2.<T,Throwable>createSecond(e));
-                    } catch (LinkageError e) {
-                        // #20467
-                        res.set(Union2.<T,Throwable>createSecond(e));
-                    } catch (StackOverflowError e) {
-                        // #20467
-                        res.set(Union2.<T,Throwable>createSecond(e));
-                    }
-                    finished.set(true);
-                }
-            }
-
-            AWTWorker w = new AWTWorker();
-            EventQueue.invokeAndWait(w);
-            invoked.set(true);
-        } catch (InterruptedException e) {
-            res.set(Union2.<T,Throwable>createSecond(e));
-        } catch (InvocationTargetException e) {
-            res.set(Union2.<T,Throwable>createSecond(e));
-        }
-
-        Union2<T,Throwable> _res = res.get();
-        if (_res == null) {
-            throw new IllegalStateException("#210991: got neither a result nor an exception; started=" + started + " finished=" + finished + " invoked=" + invoked);
-        } else if (_res.hasFirst()) {
-            return _res.first();
-        } else {
-            Throwable e = _res.second();
-            if (e instanceof RuntimeException) {
-                throw (RuntimeException) e;
-            } else {
-                throw notifyException(e);
-            }
-        }
-    }
-
-    /** @return true iff current thread is EventDispatchThread */
-    static boolean isDispatchThread() {
-        boolean dispatch = EventQueue.isDispatchThread();
-
-        if (!dispatch && (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS)) {
-            // on solaris the event queue is not always recognized correctly
-            // => try to guess by name
-            dispatch = (Thread.currentThread().getClass().getName().indexOf("EventDispatchThread") >= 0); // NOI18N
-        }
-
-        return dispatch;
-    }
-
-    /** Notify exception and returns new MutexException */
-    private static MutexException notifyException(Throwable t) {
-        if (t instanceof InvocationTargetException) {
-            t = unfoldInvocationTargetException((InvocationTargetException) t);
-        }
-
-        if (t instanceof Error) {
-            annotateEventStack(t);
-            throw (Error) t;
-        }
-
-        if (t instanceof RuntimeException) {
-            annotateEventStack(t);
-            throw (RuntimeException) t;
-        }
-
-        MutexException exc = new MutexException((Exception) t);
-        exc.initCause(t);
-
-        return exc;
-    }
-
-    private static void annotateEventStack(Throwable t) {
-        //ErrorManager.getDefault().annotate(t, new Exception("Caught here in mutex")); // NOI18N
-    }
-
-    private static Throwable unfoldInvocationTargetException(InvocationTargetException e) {
-        Throwable ret;
-
-        do {
-            ret = e.getTargetException();
-
-            if (ret instanceof InvocationTargetException) {
-                e = (InvocationTargetException) ret;
-            } else {
-                e = null;
-            }
-        } while (e != null);
-
-        return ret;
-    }
-
-    // --------------------------------------------- END OF EVENT METHODS ------------------------------
-
     /** Action to be executed in a mutex without throwing any checked exceptions.
     * Unchecked exceptions will be propagated to calling code.
      * @param T the type of object to return
     */
     @SuppressWarnings("PublicInnerClass")
-    public interface Action<T> extends ReadWriteAccess.Action<T>, ExceptionAction<T> {
+    public interface Action<T> extends ExceptionAction<T> {
         /** Execute the action.
         * @return any object, then returned from {@link Mutex#readAccess(Mutex.Action)} or {@link Mutex#writeAccess(Mutex.Action)}
         */
@@ -554,7 +411,7 @@ public final class Mutex {
      * @param T the type of object to return
     */
     @SuppressWarnings("PublicInnerClass")
-    public interface ExceptionAction<T> extends ReadWriteAccess.ExceptionAction<T> {
+    public interface ExceptionAction<T> {
         /** Execute the action.
         * Can throw an exception.
         * @return any object, then returned from {@link Mutex#readAccess(Mutex.ExceptionAction)} or {@link Mutex#writeAccess(Mutex.ExceptionAction)}
@@ -583,10 +440,10 @@ public final class Mutex {
      * @since 1.17
      */
     public static final class Privileged {
-        private final ReadWriteAccess.Privileged delegate;
+        private final DefaultMutexImplementation.Privileged delegate;
         
         public Privileged() {
-            this.delegate = new ReadWriteAccess.Privileged();
+            this.delegate = new DefaultMutexImplementation.Privileged();
         }
 
         public void enterReadAccess() {
@@ -635,4 +492,34 @@ public final class Mutex {
             delegate.exitWriteAccess();
         }
     }
+
+    private static class ActionWrapper<T> implements ExceptionAction<T> {
+
+        private final Union2<Runnable,Action<T>> delegate;
+
+        private ActionWrapper(final Union2<Runnable,Action<T>> delegate) {
+            Parameters.notNull("delegate", delegate);   //NOI18N
+            this.delegate = delegate;
+        }
+
+        @Override
+        public T run() throws Exception {
+            if (delegate.hasFirst()) {
+                delegate.first().run();
+                return null;
+            } else {
+                return delegate.second().run();
+            }
+        }
+
+        static ActionWrapper<Void> from(final Runnable runnable) {
+            Parameters.notNull("runnable", runnable);   //NOI18N
+            return new ActionWrapper<Void>(Union2.<Runnable,Action<Void>>createFirst(runnable));
+        }
+
+        static <T> ActionWrapper<T> from(final Action<T> action) {
+            Parameters.notNull("action", action);   //NOI18N
+            return new ActionWrapper<T>(Union2.<Runnable,Action<T>>createSecond(action));
+        }
+    }        
 }

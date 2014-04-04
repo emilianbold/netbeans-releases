@@ -80,7 +80,7 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.openide.util;
+package org.netbeans.modules.openide.util;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -91,68 +91,24 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.util.Exceptions;
+import org.openide.util.Mutex.ExceptionAction;
+import org.openide.util.MutexException;
+import org.openide.util.spi.MutexImplementation;
 
-/** Read-many/write-one lock.
-* Allows control over resources that
-* can be read by several readers at once but only written by one writer.
-* <P>
-* It is guaranteed that if you are a writer you can also enter the
-* mutex as a reader. Conversely, if you are the <em>only</em> reader you
-* can enter the mutex as a writer, but you'll be warned because it is very
-* deadlock prone (two readers trying to get write access concurently).
-* <P>
-* If the mutex is used only by one thread, the thread can repeatedly
-* enter it as a writer or reader. So one thread can never deadlock itself,
-* whichever order operations are performed in.
-* <P>
-* There is no strategy to prevent starvation.
-* Even if there is a writer waiting to enter, another reader might enter
-* the section instead.
-* <P>
-* Examples of use:
-*
-* <pre>
-* ReadWriteAccess m = new ReadWriteAccess();
-*
-* // Grant write access, compute an integer and return it:
-* return m.writeAccess(new ReadWriteAccess.Action&lt;Integer>(){
-*     public Integer run() {
-*         return 1;
-*     }
-* });
-*
-* // Obtain read access, do some computation,
-* // possibly throw an IOException:
-* try {
-*     m.readAccess(new ReadWriteAccess.ExceptionAction&lt;Void>() {
-*         public Void run() throws IOException {
-*             if (...) throw new IOException();
-*             return null;
-*         }
-*     });
-* } catch (MutexException ex) {
-*     throw (IOException) ex.getException();
-* }
-*
-* // check whether you are already in read access
-* if (m.isReadAccess()) {
-*     // do your work
-* }
-* </pre>
-*
-* @author Ales Novak
-*/
-public class ReadWriteAccess {
+
+public class DefaultMutexImplementation implements MutexImplementation {
+
     /** counter of created mutexes */
     static int counter;
 
     /** logger for things that happen in mutex */
-    private static final Logger LOG = Logger.getLogger(ReadWriteAccess.class.getName());
+    private static final Logger LOG = Logger.getLogger(DefaultMutexImplementation.class.getName());
 
     /** this is used from tests to prevent upgrade from readAccess to writeAccess
      * by strictly throwing exception. Otherwise we just notify that using ErrorManager.
      */
-    static boolean beStrict;
+    public static boolean beStrict;
 
     // lock mode constants
 
@@ -210,73 +166,35 @@ public class ReadWriteAccess {
 
     /** identification of the mutex */
     private int cnt;
-    
-    /** Default constructor.
-    */
-    public static ReadWriteAccess create() {
-        return new ReadWriteAccess();
+        
+    public static DefaultMutexImplementation create() {
+        return new DefaultMutexImplementation();
+    }
+        
+    public static DefaultMutexImplementation usingLock(Object lock) {
+        return new DefaultMutexImplementation(lock);
+    }
+        
+    public static DefaultMutexImplementation controlledBy(Privileged p) {
+        return new DefaultMutexImplementation(p);
     }
     
-    /** Enhanced constructor that permits specifying an object to use as a lock.
-    * The lock is used on entry and exit to {@link #readAccess} and during the
-    * whole execution of {@link #writeAccess}. The ability to specify locks
-    * allows several <code>ReadWriteAccess</code>es to synchronize on one object or to synchronize
-    * a mutex with another critical section.
-    *
-    * @param lock lock to use
-    */
-    public static ReadWriteAccess usingLock(Object lock) {
-        return new ReadWriteAccess(lock);
-    }
-    
-    /** @param p can enter privileged states of this ReadWriteAccess
-     * This helps avoid creating of custom Runnables.
-     */
-    public static ReadWriteAccess controlledBy(Privileged p) {
-        return new ReadWriteAccess(p);
-    }
-    
-    /** *  Constructor for those who wish to do some custom additional tasks
-     * whenever an action or runnable is executed in the {@link ReadWriteAccess}. This
-     * may be useful for wrapping all the actions with custom {@link ThreadLocal}
-     * value, etc. Just implement the {@link Executor}'s <code>execute(Runnable)</code>
-     * method and do pre and post initialization tasks before running the runnable.
-     * <p>
-     * The {@link Executor#execute} method shall return only when the passed in
-     * {@link Runnable} is finished, otherwise methods like {@link ReadWriteAccess#readAccess(Action)} and co.
-     * might not return proper result.
-     * 
-     * @param p can enter privileged states of this ReadWriteAccess
-     * @param e allows to wrap the work of the mutex with a custom code
-     */
-    public static ReadWriteAccess controlledBy(Privileged p, Executor e) {
-        return new ReadWriteAccess(p, e);
+    public static DefaultMutexImplementation controlledBy(Privileged p, Executor e) {
+        return new DefaultMutexImplementation(p, e);
     }
 
-    /** Enhanced constructor that permits specifying an object to use as a lock.
-    * The lock is used on entry and exit to {@link #readAccess} and during the
-    * whole execution of {@link #writeAccess}. The ability to specify locks
-    * allows several <code>ReadWriteAccess</code>es to synchronize on one object or to synchronize
-    * a mutex with another critical section.
-    *
-    * @param lock lock to use
-    */
-    ReadWriteAccess(Object lock) {
+    
+    private DefaultMutexImplementation(Object lock) {
         this.LOCK = init(lock);
         this.wrapper = null;
     }
 
-    /** Default constructor.
-    */
-    ReadWriteAccess() {
+    private DefaultMutexImplementation() {
         this.LOCK = init(new InternalLock());
         this.wrapper = null;
     }
 
-    /** @param privileged can enter privileged states of this ReadWriteAccess
-     * This helps avoid creating of custom Runnables.
-     */
-    ReadWriteAccess(Privileged privileged) {
+    private DefaultMutexImplementation(Privileged privileged) {
         if (privileged == null) {
             throw new IllegalArgumentException("privileged == null"); //NOI18N
         } else {
@@ -286,21 +204,9 @@ public class ReadWriteAccess {
         this.wrapper = null;
     }
 
-    /** Constructor for those who wish to do some custom additional tasks
-     * whenever an action or runnable is executed in the {@link ReadWriteAccess}. This
-     * may be useful for wrapping all the actions with custom {@link ThreadLocal}
-     * value, etc. Just implement the {@link Executor}'s <code>execute(Runnable)</code>
-     * method and do pre and post initialization tasks before running the runnable.
-     * <p>
-     * The {@link Executor#execute} method shall return only when the passed in
-     * {@link Runnable} is finished, otherwise methods like {@link ReadWriteAccess#readAccess(Action)} and co.
-     * might not return proper result.
-     * 
-     * @param privileged can enter privileged states of this ReadWriteAccess
-     *  @param executor allows to wrap the work of the mutex with a custom code
-     */
-    ReadWriteAccess(Privileged privileged, Executor executor) {
-        LOCK = new ReadWriteAccess(privileged);
+
+    private DefaultMutexImplementation(Privileged privileged, Executor executor) {
+        LOCK = new DefaultMutexImplementation(privileged);
         this.wrapper = executor;
     }
 
@@ -314,57 +220,11 @@ public class ReadWriteAccess {
         return lock;
     }
 
-    /** Run an action only with read access.
-    * See class description re. entering for write access within the dynamic scope.
-    * @param action the action to perform
-    * @return the object returned from {@link ReadWriteAccess.Action#run}
-    */
-    public <T> T readAccess(final Action<T> action) {
-        if (wrapper != null) {
-            try {
-                return doWrapperAccess(action, null, true);
-            } catch (MutexException e) {
-                throw (InternalError) new InternalError("Exception from non-Exception Action").initCause(e.getException()); // NOI18N
-            }
-        }
 
-        Thread t = Thread.currentThread();
-        readEnter(t, 0);
-
-        try {
-            return action.run();
-        } finally {
-            leave(t);
-        }
-    }
-
-    /** Run an action with read access and possibly throw a checked exception.
-    * The exception if thrown is then encapsulated
-    * in a <code>MutexException</code> and thrown from this method. One is encouraged
-    * to catch <code>MutexException</code>, obtain the inner exception, and rethrow it.
-    * Here is an example:
-    * <p><code><PRE>
-    * try {
-    *   mutex.readAccess (new ExceptionAction () {
-    *     public void run () throws IOException {
-    *       throw new IOException ();
-    *     }
-    *   });
-    *  } catch (MutexException ex) {
-    *    throw (IOException) ex.getException ();
-    *  }
-    * </PRE></code>
-    * Note that <em>runtime exceptions</em> are always passed through, and neither
-    * require this invocation style, nor are encapsulated.
-    * @param action the action to execute
-    * @return the object returned from {@link ReadWriteAccess.ExceptionAction#run}
-    * @exception MutexException encapsulates a user exception
-    * @exception RuntimeException if any runtime exception is thrown from the run method
-    * @see #readAccess(ReadWriteAccess.Action)
-    */
+    @Override
     public <T> T readAccess(final ExceptionAction<T> action) throws MutexException {
         if (wrapper != null) {
-            return doWrapperAccess(action, null, true);
+            return doWrapperAccess(action, true);
         }
 
         Thread t = Thread.currentThread();
@@ -380,82 +240,11 @@ public class ReadWriteAccess {
             leave(t);
         }
     }
-
-    /** Run an action with read access, returning no result.
-    * It may be run asynchronously.
-    *
-    * @param action the action to perform
-    * @see #readAccess(ReadWriteAccess.Action)
-    */
-    public void readAccess(final Runnable action) {
-        if (wrapper != null) {
-            try {
-                doWrapperAccess(null, action, true);
-                return;
-            } catch (MutexException ex) {
-                throw new IllegalStateException(ex);
-            }
-        }
-
-        Thread t = Thread.currentThread();
-        readEnter(t, 0);
-
-        try {
-            action.run();
-        } finally {
-            leave(t);
-        }
-    }
-
-    /** Run an action with write access.
-    * The same thread may meanwhile reenter the mutex; see the class description for details.
-    *
-    * @param action the action to perform
-    * @return the result of {@link ReadWriteAccess.Action#run}
-    */
-    public <T> T writeAccess(Action<T> action) {
-        if (wrapper != null) {
-            try {
-                return doWrapperAccess(action, null, false);
-            } catch (MutexException e) {
-                throw (InternalError) new InternalError("Exception from non-Exception Action").initCause(e.getException()); // NOI18N
-            }
-        }
-
-        Thread t = Thread.currentThread();
-        writeEnter(t, 0);
-
-        try {
-            return action.run();
-        } finally {
-            leave(t);
-        }
-    }
-
-    /** Run an action with write access and possibly throw an exception.
-    * Here is an example:
-    * <p><code><PRE>
-    * try {
-    *   mutex.writeAccess (new ExceptionAction () {
-    *     public void run () throws IOException {
-    *       throw new IOException ();
-    *     }
-    *   });
-    *  } catch (MutexException ex) {
-    *    throw (IOException) ex.getException ();
-    *  }
-    * </PRE></code>
-    *
-    * @param action the action to execute
-    * @return the result of {@link ReadWriteAccess.ExceptionAction#run}
-    * @exception MutexException an encapsulated checked exception, if any
-    * @exception RuntimeException if a runtime exception is thrown in the action
-    * @see #writeAccess(ReadWriteAccess.Action)
-    * @see #readAccess(ReadWriteAccess.ExceptionAction)
-    */
+    
+    @Override
     public <T> T writeAccess(ExceptionAction<T> action) throws MutexException {
         if (wrapper != null) {
-            return doWrapperAccess(action, null, false);
+            return doWrapperAccess(action, false);
         }
 
         Thread t = Thread.currentThread();
@@ -472,53 +261,10 @@ public class ReadWriteAccess {
         }
     }
 
-    /** Run an action with write access and return no result.
-    * It may be run asynchronously.
-    *
-    * @param action the action to perform
-    * @see #writeAccess(ReadWriteAccess.Action)
-    * @see #readAccess(Runnable)
-    */
-    public void writeAccess(final Runnable action) {
-        if (wrapper != null) {
-            try {
-                doWrapperAccess(null, action, false);
-            } catch (MutexException ex) {
-                throw new IllegalStateException(ex);
-            }
-            return;
-        }
-
-        Thread t = Thread.currentThread();
-        writeEnter(t, 0);
-
-        try {
-            action.run();
-        } finally {
-            leave(t);
-        }
-    }
-
-    /** Tests whether this thread has already entered the mutex in read access.
-     * If it returns true, calling <code>readAccess</code>
-     * will be executed immediatelly
-     * without any blocking.
-     * Calling <code>postWriteAccess</code> will delay the execution
-     * of its <code>Runnable</code> until a readAccess section is over
-     * and calling <code>writeAccess</code> is strongly prohibited and will
-     * result in a warning as a deadlock prone behaviour.
-     * <p><strong>Warning:</strong> since a thread with write access automatically
-     * has effective read access as well (whether or not explicitly requested), if
-     * you want to check whether a thread can read some data, you should check for
-     * either kind of access, e.g.:
-     * <pre>assert myMutex.isReadAccess() || myMutex.isWriteAccess();</pre>
-     *
-     * @return true if the thread is in read access section
-     * @since 4.48
-     */
+    @Override
     public boolean isReadAccess() {
         if (wrapper != null) {
-            ReadWriteAccess m = (ReadWriteAccess)LOCK;
+            DefaultMutexImplementation m = (DefaultMutexImplementation)LOCK;
             return m.isReadAccess();
         }
 
@@ -537,18 +283,11 @@ public class ReadWriteAccess {
 
         return false;
     }
-
-    /** Tests whether this thread has already entered the mutex in write access.
-     * If it returns true, calling <code>writeAccess</code> will be executed
-     * immediatelly without any other blocking. <code>postReadAccess</code>
-     * will be delayed until a write access runnable is over.
-     *
-     * @return true if the thread is in write access section
-     * @since 4.48
-     */
+    
+    @Override
     public boolean isWriteAccess() {
         if (wrapper != null) {
-            ReadWriteAccess m = (ReadWriteAccess)LOCK;
+            DefaultMutexImplementation m = (DefaultMutexImplementation)LOCK;
             return m.isWriteAccess();
         }
 
@@ -567,38 +306,13 @@ public class ReadWriteAccess {
 
         return false;
     }
-
-    /** Posts a read request. This request runs immediately iff
-     * this ReadWriteAccess is in the shared mode or this ReadWriteAccess is not contended
-     * at all.
-     *
-     * This request is delayed if this ReadWriteAccess is in the exclusive
-     * mode and is held by this thread, until the exclusive is left.
-     *
-     * Finally, this request blocks, if this ReadWriteAccess is in the exclusive
-     * mode and is held by another thread.
-     *
-     * <p><strong>Warning:</strong> this method blocks.</p>
-     *
-     * @param run runnable to run
-     */
+    
+    @Override
     public void postReadRequest(final Runnable run) {
         postRequest(S, run, null);
     }
 
-    /** Posts a write request. This request runs immediately iff
-     * this ReadWriteAccess is in the "pure" exclusive mode, i.e. this ReadWriteAccess
-     * is not reentered in shared mode after the exclusive mode
-     * was acquired. Otherwise it is delayed until all read requests
-     * are executed.
-     *
-     * This request runs immediately if this ReadWriteAccess is not contended at all.
-     *
-     * This request blocks if this ReadWriteAccess is in the shared mode.
-     *
-     * <p><strong>Warning:</strong> this method blocks.</p>
-     * @param run runnable to run
-     */
+    @Override
     public void postWriteRequest(Runnable run) {
         postRequest(X, run, null);
     }
@@ -608,7 +322,7 @@ public class ReadWriteAccess {
     public String toString() {
         String newline = System.getProperty("line.separator");
         StringBuilder sbuff = new StringBuilder(512);
-
+        sbuff.append("DefaultMutexImplementation").append(newline);
         synchronized (LOCK) {
             sbuff.append("threads: ").append(getRegisteredThreads()).append(newline); // NOI18N
             sbuff.append("readersNo: ").append(readersNo).append(newline); // NOI18N
@@ -1228,7 +942,7 @@ public class ReadWriteAccess {
     // published by bytecode patching
     void postRequest(final int mutexMode, final Runnable run, Executor exec) {
         if (wrapper != null) {
-            ReadWriteAccess m = (ReadWriteAccess)LOCK;
+            DefaultMutexImplementation m = (DefaultMutexImplementation)LOCK;
             m.postRequest(mutexMode, run, wrapper);
             return;
         }
@@ -1309,28 +1023,20 @@ public class ReadWriteAccess {
     // -------------------------------- WRAPPERS --------------------------------
     
     private <T> T doWrapperAccess(
-        final ExceptionAction<T> action, final Runnable runnable, final boolean readOnly
-    ) throws MutexException {
+        final ExceptionAction<T> action,
+        final boolean readOnly) throws MutexException {
         class R implements Runnable {
             T ret;
             MutexException e;
             
             @Override
             public void run() {
-                ReadWriteAccess m = (ReadWriteAccess)LOCK;
+                DefaultMutexImplementation m = (DefaultMutexImplementation)LOCK;
                 try {
                     if (readOnly) {
-                        if (action != null) {
-                            ret = m.readAccess(action);
-                        } else {
-                            m.readAccess(runnable);
-                        }
+                        ret = m.readAccess(action);                        
                     } else {
-                        if (action != null) {
-                            ret = m.writeAccess(action);
-                        } else {
-                            m.writeAccess(runnable);
-                        }
+                        ret = m.writeAccess(action);
                     }
                 } catch (MutexException ex) {
                     e = ex;
@@ -1338,7 +1044,7 @@ public class ReadWriteAccess {
             }
         }
         R run = new R();
-        ReadWriteAccess m = (ReadWriteAccess)LOCK;
+        DefaultMutexImplementation m = (DefaultMutexImplementation)LOCK;
         if (m.isWriteAccess() || m.isReadAccess()) {
             run.run();
         } else {
@@ -1395,34 +1101,6 @@ public class ReadWriteAccess {
     }
 
     // --------------------------------------------- END OF EVENT METHODS ------------------------------
-
-    /** Action to be executed in a mutex without throwing any checked exceptions.
-    * Unchecked exceptions will be propagated to calling code.
-     * @param T the type of object to return
-    */
-    public interface Action<T> extends ExceptionAction<T> {
-        /** Execute the action.
-        * @return any object, then returned from {@link ReadWriteAccess#readAccess(ReadWriteAccess.Action)} or {@link ReadWriteAccess#writeAccess(ReadWriteAccess.Action)}
-        */
-        @Override
-        T run();
-    }
-
-    /** Action to be executed in a mutex, possibly throwing checked exceptions.
-    * May throw a checked exception, in which case calling
-    * code should catch the encapsulating exception and rethrow the
-    * real one.
-    * Unchecked exceptions will be propagated to calling code without encapsulation.
-     * @param T the type of object to return
-    */
-    public interface ExceptionAction<T> {
-        /** Execute the action.
-        * Can throw an exception.
-        * @return any object, then returned from {@link ReadWriteAccess#readAccess(ReadWriteAccess.ExceptionAction)} or {@link ReadWriteAccess#writeAccess(ReadWriteAccess.ExceptionAction)}
-        * @exception Exception any exception the body needs to throw
-        */
-        T run() throws Exception;
-    }
 
     private static final class ThreadInfo {
         /** t is forcibly sent from waiters to enter() by wakeUpOthers() */
@@ -1594,9 +1272,9 @@ public class ReadWriteAccess {
      */
     @SuppressWarnings("PublicInnerClass")
     public static class Privileged {
-        private ReadWriteAccess parent;
+        private DefaultMutexImplementation parent;
 
-        final void setParent(ReadWriteAccess parent) {
+        final void setParent(DefaultMutexImplementation parent) {
             this.parent = parent;
         }
 

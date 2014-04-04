@@ -49,8 +49,8 @@ import org.netbeans.junit.NbTestCase;
 
 
 public class MutexWrapTest extends NbTestCase implements Executor {
-    ReadWriteAccess.Privileged p;
-    ReadWriteAccess m;
+    Mutex.Privileged p;
+    Mutex m;
     ThreadLocal<Object> IN = new ThreadLocal<Object>();
 
     public MutexWrapTest(java.lang.String testName) {
@@ -61,8 +61,8 @@ public class MutexWrapTest extends NbTestCase implements Executor {
      */
     @Override
     protected void setUp () {
-        p = new ReadWriteAccess.Privileged ();
-        m = new ReadWriteAccess (p, this);
+        p = new Mutex.Privileged ();
+        m = new Mutex (p, this);
     }
     
     public void testRead() throws Exception {
@@ -156,7 +156,7 @@ public class MutexWrapTest extends NbTestCase implements Executor {
     }
     
     
-    private class A implements ReadWriteAccess.Action<Object> {
+    private class A implements Mutex.Action<Object> {
         boolean exec;
         
         public Object run() {
@@ -165,7 +165,7 @@ public class MutexWrapTest extends NbTestCase implements Executor {
             return this;
         }
     }
-    private class E implements ReadWriteAccess.ExceptionAction<Object> {
+    private class E implements Mutex.ExceptionAction<Object> {
         boolean exec;
         
         public Object run() {

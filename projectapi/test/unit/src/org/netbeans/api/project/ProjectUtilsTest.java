@@ -57,6 +57,7 @@ import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.projectapi.NbProjectManagerAccessor;
 import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.ProjectIconAnnotator;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -306,7 +307,7 @@ public class ProjectUtilsTest extends NbTestCase {
         goodproject.createFolder("testproject");
         ProjectIconAnnotatorImpl pia = new ProjectIconAnnotatorImpl();
         MockLookup.setInstances(TestUtil.testProjectFactory(), pia);
-        ProjectManager.getDefault().reset();
+        NbProjectManagerAccessor.reset();
         Project p = ProjectManager.getDefault().findProject(goodproject);
         ProjectInformation pi = ProjectUtils.getInformation(p);
         Icon icon = pi.getIcon();

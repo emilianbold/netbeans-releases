@@ -178,10 +178,11 @@ import java.util.logging.Logger;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.openide.util.DefaultMutexImplementation;
 
 public class ReadWriteAccessTest extends NbTestCase {
-    ReadWriteAccess.Privileged p;
-    ReadWriteAccess m;
+    Mutex.Privileged p;
+    Mutex m;
 
 
 
@@ -193,9 +194,9 @@ public class ReadWriteAccessTest extends NbTestCase {
      */
     @Override
     protected void setUp () {
-        p = new ReadWriteAccess.Privileged ();
-        m = new ReadWriteAccess (p);
-        ReadWriteAccess.beStrict = true;
+        p = new Mutex.Privileged ();
+        m = new Mutex (p);
+        DefaultMutexImplementation.beStrict = true;
     }
     @Override 
     protected Level logLevel() {
@@ -205,8 +206,8 @@ public class ReadWriteAccessTest extends NbTestCase {
     public void testReadWriteRead() throws Exception {
         
         final Object lock = new Object();
-        final ReadWriteAccess.Privileged mPriv =  new ReadWriteAccess.Privileged();
-        final ReadWriteAccess tmpMutex = new ReadWriteAccess( mPriv );
+        final Mutex.Privileged mPriv =  new Mutex.Privileged();
+        final Mutex tmpMutex = new Mutex( mPriv );
         
         synchronized ( lock ) {
             mPriv.enterReadAccess();
@@ -396,13 +397,13 @@ public class ReadWriteAccessTest extends NbTestCase {
     
     // starts a new thread, after return the thread will hold lock "p" in
     // mode X for timeout milliseconds
-    private static void asyncEnter(final ReadWriteAccess.Privileged p, final boolean X, final long timeout) throws InterruptedException {
+    private static void asyncEnter(final Mutex.Privileged p, final boolean X, final long timeout) throws InterruptedException {
         asyncEnter(p, X, timeout, null);
     }
 
      // starts a new thread, after return the thread will hold lock "p" in
     // mode X for timeout milliseconds, the new thread execs "run" first
-    private static void asyncEnter(final ReadWriteAccess.Privileged p, final boolean X, final long timeout, final Runnable run) throws InterruptedException {
+    private static void asyncEnter(final Mutex.Privileged p, final boolean X, final long timeout, final Runnable run) throws InterruptedException {
         final Object lock = new Object();
         
         synchronized (lock) {
@@ -670,8 +671,8 @@ public class ReadWriteAccessTest extends NbTestCase {
      * - C performs its write and die
      */
     public void testStarvation68106() throws Exception {
-        final ReadWriteAccess.Privileged PR = new ReadWriteAccess.Privileged();
-        final ReadWriteAccess M = new ReadWriteAccess(PR);
+        final Mutex.Privileged PR = new Mutex.Privileged();
+        final Mutex M = new Mutex(PR);
         final Object L = new Object();
         final boolean[] done = new boolean[3];
         
@@ -761,11 +762,11 @@ public class ReadWriteAccessTest extends NbTestCase {
      *
      */
     public void testStarvation49466() throws Exception {
-        final ReadWriteAccess.Privileged pr1 = new ReadWriteAccess.Privileged();
-        final ReadWriteAccess mutex1 = new ReadWriteAccess(pr1);
+        final Mutex.Privileged pr1 = new Mutex.Privileged();
+        final Mutex mutex1 = new Mutex(pr1);
         
-        final ReadWriteAccess.Privileged pr2 = new ReadWriteAccess.Privileged();
-        final ReadWriteAccess mutex2 = new ReadWriteAccess(pr2);
+        final Mutex.Privileged pr2 = new Mutex.Privileged();
+        final Mutex mutex2 = new Mutex(pr2);
         
         final boolean[] done = new boolean[3];
 
@@ -860,8 +861,8 @@ public class ReadWriteAccessTest extends NbTestCase {
     public void testReadEnterAfterPostWriteWasContended87932() throws Exception {
         final Logger LOG = Logger.getLogger("org.openide.util.test");//testReadEnterAfterPostWriteWasContended87932");
         
-        final ReadWriteAccess.Privileged pr = new ReadWriteAccess.Privileged();
-        final ReadWriteAccess mutex = new ReadWriteAccess(pr);
+        final Mutex.Privileged pr = new Mutex.Privileged();
+        final Mutex mutex = new Mutex(pr);
         final Ticker tick = new Ticker();
         class WR implements Runnable {
             boolean inWrite;
@@ -1090,8 +1091,8 @@ public class ReadWriteAccessTest extends NbTestCase {
     // be CHAIN/W (write granted, readers waiting). Let's cover this with a test.
     @RandomlyFails // NB-Core-Build #8070: B finished after unblocking M
     public void testReaderCannotEnterWriteChainedMutex() throws Exception {
-        final ReadWriteAccess.Privileged PR = new ReadWriteAccess.Privileged();
-        final ReadWriteAccess M = new ReadWriteAccess(PR);
+        final Mutex.Privileged PR = new Mutex.Privileged();
+        final Mutex M = new Mutex(PR);
         final boolean[] done = new boolean[2];
         
         final Ticker tickX1 = new Ticker();     
@@ -1130,7 +1131,7 @@ public class ReadWriteAccessTest extends NbTestCase {
     
     private void exceptionsReporting(final Throwable t) throws Exception {
         final IOException e1 = new IOException();
-        final ReadWriteAccess mm = m;
+        final Mutex mm = m;
         final Runnable secondRequest = new Runnable() {
             public void run() {
                 if (t instanceof RuntimeException) {
@@ -1140,7 +1141,7 @@ public class ReadWriteAccessTest extends NbTestCase {
                 }
             }
         };
-        ReadWriteAccess.ExceptionAction<Object> firstRequest = new ReadWriteAccess.ExceptionAction<Object>() {
+        Mutex.ExceptionAction<Object> firstRequest = new Mutex.ExceptionAction<Object>() {
             public Object run () throws Exception {
                 mm.postWriteRequest(secondRequest);
                 throw e1;

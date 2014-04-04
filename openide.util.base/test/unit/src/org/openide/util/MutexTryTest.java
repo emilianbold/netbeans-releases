@@ -51,8 +51,8 @@ import org.openide.util.Exceptions;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class MutexTryTest extends NbTestCase {
-    private ReadWriteAccess.Privileged p;
-    private ReadWriteAccess m;
+    private Mutex.Privileged p;
+    private Mutex m;
 
     public MutexTryTest(String name) {
         super(name);
@@ -60,8 +60,8 @@ public class MutexTryTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        p = new ReadWriteAccess.Privileged();
-        m = new ReadWriteAccess(p);
+        p = new Mutex.Privileged();
+        m = new Mutex(p);
     }
 
     @Override
@@ -123,11 +123,11 @@ public class MutexTryTest extends NbTestCase {
     
     
     private static class Block implements Runnable {
-        private final ReadWriteAccess.Privileged p;
+        private final Mutex.Privileged p;
         private final boolean read;
         private final CountDownLatch runs = new CountDownLatch(1);
         
-        Block(ReadWriteAccess.Privileged p, boolean read) {
+        Block(Mutex.Privileged p, boolean read) {
             this.p = p;
             this.read = read;
         }
