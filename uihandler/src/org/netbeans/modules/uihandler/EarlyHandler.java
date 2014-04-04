@@ -49,6 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -67,7 +68,8 @@ public final class EarlyHandler extends Handler {
 
     @Override
     public void publish(LogRecord record) {
-        if (record.getLoggerName() != null && record.getLoggerName().startsWith(Installer.UI_LOGGER_NAME)) {
+        String uiLoggerName = NbBundle.getMessage(EarlyHandler.class, "UI_LOGGER_NAME");
+        if (record.getLoggerName() != null && record.getLoggerName().startsWith(uiLoggerName)) {
             disable();
             Installer.findObject(Installer.class, true).restored();
             // one again for the Installer's logs
