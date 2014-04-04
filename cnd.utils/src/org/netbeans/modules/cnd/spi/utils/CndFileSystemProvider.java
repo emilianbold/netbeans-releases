@@ -181,7 +181,7 @@ public abstract class CndFileSystemProvider {
         return getDefault().normalizeAbsolutePathImpl(fs, absPath);
     }
     
-    public static boolean isAbsolute(FileSystem fs, CharSequence path) {
+    public static boolean isAbsolute(FileSystem fs, String path) {
         return getDefault().isAbsoluteImpl(fs, path);
     }
     
@@ -241,7 +241,7 @@ public abstract class CndFileSystemProvider {
     protected abstract void removeFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem);
     protected abstract void addFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem);
 
-    protected abstract boolean isAbsoluteImpl(FileSystem fs, CharSequence path);
+    protected abstract boolean isAbsoluteImpl(FileSystem fs, String path);
 
     
     private static class DefaultProvider extends CndFileSystemProvider {
@@ -547,7 +547,7 @@ public abstract class CndFileSystemProvider {
         }        
 
         @Override
-        protected boolean isAbsoluteImpl(FileSystem fs, CharSequence path) {
+        protected boolean isAbsoluteImpl(FileSystem fs, String path) {
             for (CndFileSystemProvider provider : cache) {
                 return provider.isAbsoluteImpl(fs, path);
             }

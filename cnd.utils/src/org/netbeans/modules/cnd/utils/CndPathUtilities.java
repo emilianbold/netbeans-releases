@@ -534,7 +534,7 @@ public class CndPathUtilities {
         return s;
     }
 
-    public static boolean isAbsolute(FileSystem fileSystem, CharSequence path) {
+    public static boolean isAbsolute(FileSystem fileSystem, String path) {
         return CndFileSystemProvider.isAbsolute(fileSystem, path);
     }
 
