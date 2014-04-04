@@ -333,12 +333,12 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                                         state = State.IN_COMMENT;
                                         input.backup(lastWord.length() - 1);
                                         return TplTopTokenId.T_COMMENT;
-                                    } else if (lastWord.startsWith("literal")) {
+                                    } else if (lastWord.startsWith("literal" + metadata.getCloseDelimiter())) {
                                         subState = SubState.LITERAL;
                                         state = State.AFTER_SUBSTATE;
                                         input.backup(lastWord.length() - 7);
                                         return TplTopTokenId.T_SMARTY;
-                                    } else if (lastWord.startsWith("php")) {
+                                    } else if (lastWord.startsWith("php" + metadata.getCloseDelimiter())) {
                                         subState = SubState.PHP_CODE;
                                         state = State.AFTER_SUBSTATE;
                                         input.backup(lastWord.length() - 3);
