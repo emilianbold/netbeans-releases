@@ -34,9 +34,9 @@
                 </test-type>
             </test-dependencies>
             <public-packages>
-                <package>org.openide</package>
                 <package>org.openide.util</package>
                 <package>org.openide.util.io</package>
+                <package>org.openide.util.spi</package>
                 <package>org.openide.xml</package>
             </public-packages>
         </data>
