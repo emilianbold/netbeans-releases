@@ -305,8 +305,8 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
     }
 
     @Override
-    protected boolean isAbsoluteImpl(FileSystem fs, CharSequence path) {
-        return FileSystemProvider.isAbsolute(fs, cachePrefix);
+    protected boolean isAbsoluteImpl(FileSystem fs, String path) {
+        return FileSystemProvider.isAbsolute(fs, path);
     }
 
     @Override

@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
+import org.openide.util.Parameters;
 
 /**
  * implementation of include handler responsible for preventing recursive inclusion
@@ -104,6 +105,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
                                     List<IncludeDirEntry> systemIncludePaths,
                                     List<IncludeDirEntry> userIncludePaths,
                                     List<IncludeDirEntry> userIncludeFilePaths, APTFileSearch fileSearch) {
+        Parameters.notNull("startFile", startFile);
         this.startFile = startFile;
         this.systemIncludePaths = systemIncludePaths;
         this.userIncludePaths = userIncludePaths;
