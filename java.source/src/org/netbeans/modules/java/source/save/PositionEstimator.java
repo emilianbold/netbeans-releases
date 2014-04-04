@@ -653,6 +653,7 @@ public abstract class PositionEstimator {
                     matrix[i][2] = seq.index();
                 }
             }
+            initialized = true;
         }
         
         @Override()
