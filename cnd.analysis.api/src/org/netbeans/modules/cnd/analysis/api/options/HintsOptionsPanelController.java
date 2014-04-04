@@ -92,7 +92,14 @@ public class HintsOptionsPanelController extends OptionsPanelController {
     }
     
     protected HintsPanel createPanel(Lookup masterLookup, CodeAuditProvider selection) {
-        return new HintsPanel(masterLookup, null);
+        return new HintsPanel(masterLookup, selection);
+    }
+    
+    @Override
+    protected void setCurrentSubcategory(String subpath) {
+        if (panel != null) {
+            panel.selectPath(subpath);
+        }
     }
     
     @Override

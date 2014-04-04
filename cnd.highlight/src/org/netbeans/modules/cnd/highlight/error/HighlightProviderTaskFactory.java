@@ -47,11 +47,12 @@ import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
-import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
@@ -78,17 +79,17 @@ public final class HighlightProviderTaskFactory extends TaskFactory {
         return Collections.singletonList(new ErrorsHighlighter());
     }
 
-    private final class ErrorsHighlighter extends IndexingAwareParserResultTask<CndParserResult> {
+    private final class ErrorsHighlighter extends IndexingAwareParserResultTask<Parser.Result> {
 
         private InterrupterImpl interrupter = new InterrupterImpl();
-        private CndParserResult lastParserResult;
+        private Parser.Result lastParserResult;
 
         public ErrorsHighlighter() {
             super(TaskIndexingMode.ALLOWED_DURING_SCAN);
         }
 
         @Override
-        public void run(CndParserResult result, SchedulerEvent event) {
+        public void run(Parser.Result result, SchedulerEvent event) {
             synchronized(this) {
                 if (lastParserResult == result) {
                     return;
@@ -102,7 +103,7 @@ public final class HighlightProviderTaskFactory extends TaskFactory {
                 if (fo == null) {
                     return;
                 }
-                final CsmFile csmFile = result.getCsmFile();
+                final CsmFile csmFile = CsmFileInfoQuery.getDefault().getCsmFile(result);
                 if (csmFile == null) {
                     return;
                 }

@@ -62,6 +62,7 @@ import org.netbeans.modules.maven.api.MavenValidators;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.modelcache.MavenProjectCache;
 import static org.netbeans.modules.maven.operations.Bundle.*;
 import org.netbeans.validation.api.AbstractValidator;
 import org.netbeans.validation.api.Problems;
@@ -373,6 +374,8 @@ public class RenameProjectPanel extends javax.swing.JPanel {
             handle.progress((int) (currentWorkDone = totalWork * NOTIFY_WORK));
 
             FileObject projectDirectory = project.getProjectDirectory();
+            NbMavenProjectImpl impl = project.getLookup().lookup(NbMavenProjectImpl.class);
+            File pomFile = impl.getPOMFile();
 
             double workPerFileAndOperation = totalWork * (1.0 - 2 * NOTIFY_WORK - FIND_PROJECT_WORK);
 
@@ -395,6 +398,9 @@ public class RenameProjectPanel extends javax.swing.JPanel {
             //#64264: the non-project cache can be filled with incorrect data (gathered during the project copy phase), clear it:
             ProjectManager.getDefault().clearNonProjectCache();
             Project nue = ProjectManager.getDefault().findProject(target);
+            //#243447 clear the cached model, however one still doesn't have any guarantee that the old project is not referenced and called from some place.
+            //if it is, we will get unloadable project most likely and the #243447 scenario will occur again. Unfixable though with the current Project lifecycle.
+            MavenProjectCache.clearMavenProject(pomFile);
 
             handle.progress((int) (currentWorkDone += totalWork * FIND_PROJECT_WORK));
 

@@ -102,7 +102,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     public FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath) {
         if (baseFileObject instanceof RemoteFileObject) {
             ExecutionEnvironment execEnv = ((RemoteFileObject) baseFileObject).getExecutionEnvironment();
-            if (isPathAbsolute(relativeOrAbsolutePath)) {
+            if (isAbsolute(relativeOrAbsolutePath)) {
                 relativeOrAbsolutePath = RemoteFileSystemManager.getInstance().getFileSystem(execEnv).normalizeAbsolutePath(relativeOrAbsolutePath);
                 try {
                     return baseFileObject.getFileSystem().findResource(relativeOrAbsolutePath);
@@ -117,26 +117,10 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         return null;
     }
 
-    /** Copy-pasted from CndPathUtilities.isPathAbsolute */
-    private static boolean isPathAbsolute(String path) {
-        if (path == null || path.length() == 0) {
-            return false;
-        } else if (path.charAt(0) == '/') {
-            return true;
-        } else if (path.charAt(0) == '\\') {
-            return true;
-        } else if (path.indexOf(':') > 0) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     @Override
     public boolean isMine(ExecutionEnvironment env) {
         return env.isRemote();
     }
-
 
     @Override
     public boolean isMine(FileObject fileObject) {
@@ -338,7 +322,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
      * FileObject. 
      */
     public String toURL(FileSystem fileSystem, String absPath) {
-        RemoteLogger.assertTrue(RemoteFileSystemUtils.isPathAbsolute(absPath), "Path must be absolute: " + absPath); //NOPI18N        
+        RemoteLogger.assertTrue(isAbsolute(absPath), "Path must be absolute: " + absPath); //NOPI18N        
         if (!(fileSystem instanceof RemoteFileSystem)) {
             throw new IllegalArgumentException("File system should be an istance of " + RemoteFileSystem.class.getName()); //NOI18N
         }

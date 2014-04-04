@@ -86,6 +86,7 @@ import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import static org.netbeans.modules.debugger.jpda.ui.Utilities.debuggerConsoleTitle;
 import org.openide.util.Exceptions;
@@ -114,8 +115,8 @@ public class AntSanityTest extends JellyTestCase {
         "finishDebugger",
         "applyCodeChanges",
         "takeGUISnapshot",
-        "newWatch"
-        // "evaluateExpression"
+        "newWatch",
+        "evaluateExpression"
     };
 
     /**
@@ -375,6 +376,10 @@ public class AntSanityTest extends JellyTestCase {
      * Evaluates simple expression during debugging session.
      */
     public void evaluateExpression() throws IllegalAccessException, InvocationTargetException, InterruptedException, InvalidExpressionException {
+        TopComponentOperator variablesView = new TopComponentOperator(new ContainerOperator(MainWindowOperator.getDefault(), VIEW_CHOOSER), "Variables");
+        JToggleButtonOperator showEvaluationResultButton = new JToggleButtonOperator(variablesView, 0);
+        showEvaluationResultButton.clickMouse();
+        TopComponentOperator evaluationResultView = new TopComponentOperator("Evaluation Result");
         new Action("Debug|Evaluate Expression...", null).perform();
         TopComponentOperator expressionEvaluator = new TopComponentOperator("Evaluate Expression");
         JEditorPaneOperator expressionEditor = new JEditorPaneOperator(expressionEvaluator);
@@ -383,10 +388,9 @@ public class AntSanityTest extends JellyTestCase {
         JButton expressionEvaluatorButton = (JButton) buttonsPanel.getComponent(1);
         assertEquals("Evaluate code fragment (Ctrl + Enter)", expressionEvaluatorButton.getToolTipText());
         expressionEvaluatorButton.doClick();
-        TopComponentOperator variablesView = new TopComponentOperator(new ContainerOperator(MainWindowOperator.getDefault(), VIEW_CHOOSER), "Variables");
-        JTableOperator variablesTable = new JTableOperator(variablesView);
-        assertValue(variablesTable, 0, 0, "\"If n is: \" + n + \", then n + 1 is: \" + (n + 1)");
-        assertValue(variablesTable, 0, 2, "If n is: 50, then n + 1 is: 51");
+        JTableOperator variablesTable = new JTableOperator(evaluationResultView);
+        assertValue(variablesTable, 0, 2, "If n is: 50, then n + 1 is: 51");        
+        assertEquals("\"If n is: \" + n + \", then n + 1 is: \" + (n + 1)", variablesTable.getValueAt(0, 0).toString());
     }
     
     /**
@@ -443,11 +447,14 @@ public class AntSanityTest extends JellyTestCase {
      * @param value Value to be searched for.
      */
     private void assertValue(JTableOperator table, int row, int column, String value) throws IllegalAccessException, InvocationTargetException, InvalidExpressionException {
-        org.openide.nodes.Node.Property property = (org.openide.nodes.Node.Property) table.getValueAt(row, column);
+        org.openide.nodes.Node.Property property = null;
         for (int i = 0; i < 10; i++) {
-            if (!property.getValue().equals("Evaluating...")) break;
+            property = (org.openide.nodes.Node.Property) table.getValueAt(row, column);
+            if (property != null)
+                if (!"Evaluating...".equals(property.getValue())) break;
             new EventTool().waitNoEvent(1000);
         }
+        assertNotNull(property);
         if (property.getValue() instanceof ObjectVariable) {
             assertEquals(value, ((ObjectVariable) property.getValue()).getToStringValue());
         } else {

@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.spi.project.NativeProjectRelocationMapperProvider;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.CharSequences;
@@ -207,16 +208,19 @@ public class NativeProjectRelocationMapperProviderImpl implements NativeProjectR
             return destinationProjectName;
         }        
         
-        void addMapping(CharSequence sourceRoot, CharSequence destRoot) {
+        private void addMapping(CharSequence sourceRoot, CharSequence destRoot) {
             sourceRoots.put(sourceRoot, destRoot);
         }
 
         CharSequence getDestinationFilePath(CharSequence sourceFilePath) {
             Set<CharSequence> keySet = sourceRoots.keySet();
             for (CharSequence sourceRoot : keySet) {
-                if (sourceFilePath.toString().startsWith(sourceRoot.toString())) {
-                    CharSequence destRoot = sourceRoots.get(sourceRoot);
-                    return sourceFilePath.toString().replace(sourceRoot, destRoot);
+                //if (sourceFilePath.toString().startsWith(sourceRoot.toString())) {
+                if(CharSequenceUtils.startsWith(sourceFilePath, sourceRoot)) {
+                    //return sourceFilePath.toString().replace(sourceRoot, destRoot);
+                    StringBuilder sb = new StringBuilder(sourceRoots.get(sourceRoot));
+                    sb.append(sourceFilePath.subSequence(sourceRoot.length(), sourceFilePath.length()));
+                    return sb;
                 }
             }                        
             return sourceFilePath;

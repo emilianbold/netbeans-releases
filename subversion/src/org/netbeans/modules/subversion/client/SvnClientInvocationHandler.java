@@ -145,6 +145,8 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     private final ConnectionType connectionType;
     private volatile boolean disposed;
     private static final Map<String, Mutex> locks = new HashMap<>(5);
+    private static final ConfigFiles SENSITIVE_CONFIG_FILES = new ConfigFiles();
+    private static final boolean KEEP_SERVERS_FILE = Boolean.getBoolean("versioning.subversion.keepServersFile");
     
     public SvnClientInvocationHandler (ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions, SvnClientFactory.ConnectionType connType) {
         
@@ -432,21 +434,36 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             if(support != null) {
                 support.setCancellableDelegate(cancellable);
             }            
-            // save the proxy settings into the svn servers file                
-            if(desc != null && desc.getSvnUrl() != null) {
-                SvnConfigFiles.getInstance().storeSvnServersSettings(desc.getSvnUrl(), connectionType);
-                if (!parallelizable(proxyMethod) && !"getInfo".equals(proxyMethod.getName())) { //NOI18N
-                    // all svn actions running against a remote repository (commit, update, diff)
-                    String url = desc.getSvnUrl().toString();
-                    if (url.startsWith("file://")) { // NOI18N
-                        // null means LOCAL
-                        url = null;
+            File serversConfigFile = null;
+            try {
+                // save the proxy settings into the svn servers file                
+                if(desc != null && desc.getSvnUrl() != null) {
+                    synchronized (SENSITIVE_CONFIG_FILES) {
+                        // prepare a config file. If the return value is not null
+                        // it means the file should be deleted eventually because it 
+                        // contains sensitive private data.
+                        serversConfigFile = SvnConfigFiles.getInstance().storeSvnServersSettings(desc.getSvnUrl(), connectionType);
+                        if (serversConfigFile != null) {
+                            SENSITIVE_CONFIG_FILES.add(serversConfigFile);
+                        }
                     }
-                    Utils.logVCSExternalRepository("SVN", url); //NOI18N
+                    if (!parallelizable(proxyMethod) && !"getInfo".equals(proxyMethod.getName())) { //NOI18N
+                        // all svn actions running against a remote repository (commit, update, diff)
+                        String url = desc.getSvnUrl().toString();
+                        if (url.startsWith("file://")) { // NOI18N
+                            // null means LOCAL
+                            url = null;
+                        }
+                        Utils.logVCSExternalRepository("SVN", url); //NOI18N
+                    }
+                }
+                logClientInvoked();
+                ret = adapter.getClass().getMethod(proxyMethod.getName(), parameters).invoke(adapter, args);
+            } finally {
+                if (serversConfigFile != null) {
+                    SENSITIVE_CONFIG_FILES.decrease(serversConfigFile);
                 }
             }
-            logClientInvoked();
-            ret = adapter.getClass().getMethod(proxyMethod.getName(), parameters).invoke(adapter, args);
             if(support != null) {
                 support.setCancellableDelegate(null);
             }
@@ -492,6 +509,34 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             }
         }
         super.finalize();
+    }
+
+    private static class ConfigFiles extends HashMap<File, Integer> {
+
+        public synchronized void add (File file) {
+            Integer currentCounter = get(file);
+            if (currentCounter == null) {
+                currentCounter = 0;
+            }
+            currentCounter++;
+            put(file, currentCounter);
+        }
+
+        public synchronized void decrease (File file) {
+            Integer currentCounter = get(file);
+            if (currentCounter == null) {
+                currentCounter = 1;
+            }
+            currentCounter--;
+            if (currentCounter == 0) {
+                remove(file);
+                if (!KEEP_SERVERS_FILE) {
+                    file.delete();
+                }
+            } else {
+                put(file, currentCounter);
+            }
+        }
     }
     
 }

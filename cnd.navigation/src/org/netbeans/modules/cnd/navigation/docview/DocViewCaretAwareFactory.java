@@ -51,15 +51,16 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
-import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.spi.model.services.CsmDocProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
@@ -72,7 +73,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Alexander Simon
  */
-public class DocViewCaretAwareFactory extends IndexingAwareParserResultTask<CndParserResult> {
+public class DocViewCaretAwareFactory extends IndexingAwareParserResultTask<Parser.Result> {
     private static final RequestProcessor RP = new RequestProcessor("DocViewCaretAwareFactory runner", 1); //NOI18N"
     private static final int TASK_DELAY = getInt("cnd.docview.delay", 500); // NOI18N
     private AtomicBoolean canceled = new AtomicBoolean(false);
@@ -82,7 +83,7 @@ public class DocViewCaretAwareFactory extends IndexingAwareParserResultTask<CndP
         
     }
     @Override
-    public void run(CndParserResult result, SchedulerEvent event) {
+    public void run(Parser.Result result, SchedulerEvent event) {
         synchronized (this) {
             canceled.set(true);
             canceled = new AtomicBoolean(false);
@@ -94,7 +95,7 @@ public class DocViewCaretAwareFactory extends IndexingAwareParserResultTask<CndP
         if (!(doc instanceof StyledDocument)) {
             return;
         }
-        CsmFile csmFile = result.getCsmFile();
+        CsmFile csmFile = CsmFileInfoQuery.getDefault().getCsmFile(result);
         if (csmFile == null) {
             csmFile = (CsmFile) doc.getProperty(CsmFile.class);
         }

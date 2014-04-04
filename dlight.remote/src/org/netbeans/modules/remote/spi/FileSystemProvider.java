@@ -241,6 +241,15 @@ public final class FileSystemProvider {
         return true; // for other file system, let us return true - or should it be false? 
     }
     
+    public static boolean isAbsolute(FileSystem fileSystem,  String path) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileSystem)) {
+                return provider.isAbsolute(path);
+            }
+        }
+        return true; // for other file system, let us return true - or should it be false? 
+    }
+
     public static boolean isAbsolute(String path) {
         if (path == null || path.length() == 0) {
             return false;
