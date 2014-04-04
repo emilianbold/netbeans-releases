@@ -57,16 +57,21 @@ public class JavaScriptLibrarySelectionPanelTest extends NbTestCase {
     @Test
     public void testCompareSameVersions() {
         assertEquals(-1, libraryComparator.compareSameVersions("1.0", "1.0rc1").intValue());
+        assertEquals(1, libraryComparator.compareSameVersions("1.0rc1", "1.0").intValue());
         assertEquals(1, libraryComparator.compareSameVersions("1.0-pre.1", "1.0-pre.2").intValue());
         assertEquals(-1, libraryComparator.compareSameVersions("1.0-rc2", "1.0-pre1").intValue());
         assertEquals(-1, libraryComparator.compareSameVersions("1.0-rc1", "1.0-pre7").intValue());
+        assertEquals(1, libraryComparator.compareSameVersions("1.0-pre7", "1.0-rc1").intValue());
         assertEquals(-1, libraryComparator.compareSameVersions("1.0-rc1", "1.0-beta7").intValue());
         assertEquals(-1, libraryComparator.compareSameVersions("1.0-pre1", "1.0-beta7").intValue());
+        assertEquals(1, libraryComparator.compareSameVersions("1.0-beta7", "1.0-pre1").intValue());
         assertEquals(0, libraryComparator.compareSameVersions("1.0-rc2", "1.0-rc2").intValue());
         assertEquals(1, libraryComparator.compareSameVersions("1.0-rc2", "1.0-patch").intValue());
+        assertEquals(-1, libraryComparator.compareSameVersions("1.0-patch", "1.0-rc2").intValue());
         assertEquals(-1, libraryComparator.compareSameVersions("1.0-patch4", "1.0-patch3").intValue());
         assertEquals(-1, libraryComparator.compareSameVersions("1.0-patch1", "1.0-beta.3").intValue());
         assertEquals(1, libraryComparator.compareSameVersions("3.0.0-rc1", "3.0.0-rc2").intValue());
+        assertEquals(-1, libraryComparator.compareSameVersions("3.0.0-rc2", "3.0.0-rc1").intValue());
     }
 
 }
