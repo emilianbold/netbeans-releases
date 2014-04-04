@@ -56,6 +56,8 @@ public class JavaScriptLibrarySelectionPanelTest extends NbTestCase {
 
     @Test
     public void testCompareSameVersions() {
+        assertEquals(1, libraryComparator.compareSameVersions("1.0", "1.0patch1").intValue());
+        assertEquals(-1, libraryComparator.compareSameVersions("1.0patch1", "1.0").intValue());
         assertEquals(-1, libraryComparator.compareSameVersions("1.0", "1.0rc1").intValue());
         assertEquals(1, libraryComparator.compareSameVersions("1.0rc1", "1.0").intValue());
         assertEquals(1, libraryComparator.compareSameVersions("1.0-pre.1", "1.0-pre.2").intValue());
