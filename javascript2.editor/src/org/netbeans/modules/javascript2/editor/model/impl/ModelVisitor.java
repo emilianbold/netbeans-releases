@@ -324,8 +324,16 @@ public class ModelVisitor extends PathNodeVisitor {
     @Override
     public Node leave(CallNode callNode) {
         Collection<JsObjectImpl> functionArguments = functionArgumentStack.pop();
-        if(callNode.getFunction() instanceof AccessNode) {
-                List<Identifier> funcName = getName((AccessNode)callNode.getFunction(), parserResult);
+
+        Node function = callNode.getFunction();
+        if (function instanceof AccessNode || function instanceof IdentNode) {
+            List<Identifier> funcName;
+            if (function instanceof AccessNode) {
+                funcName = getName((AccessNode) function, parserResult);
+            } else {
+                funcName = new ArrayList<Identifier>();
+                funcName.add(new IdentifierImpl(((IdentNode) function).getName(), ((IdentNode) function).getStart()));
+            }
                 if (funcName != null) {
                     StringBuilder sb = new StringBuilder();
                     for (Identifier identifier : funcName) {

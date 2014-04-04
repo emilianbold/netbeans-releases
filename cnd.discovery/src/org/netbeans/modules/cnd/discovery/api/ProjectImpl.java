@@ -220,19 +220,21 @@ public final class ProjectImpl implements ProjectProperties {
         Project makeProject = project.getProject();
         ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
         MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
-        Item[] items = makeConfigurationDescriptor.getProjectItems();
-        Map<String, Item> projectSearchBase = new HashMap<>();
-        for (int i = 0; i < items.length; i++) {
-            Item item = items[i];
-            String path = item.getNormalizedPath();
-            projectSearchBase.put(path, item);
-        }
-        for (int i = 0; i < items.length; i++) {
-            Item item = items[i];
-            if (!isExcluded(item)) {
-                final Language lang = item.getLanguage();
-                if (lang == Language.C || lang == Language.CPP) {
-                    res.add(new ItemWrapper(item));
+        if (makeConfigurationDescriptor != null) {
+            Item[] items = makeConfigurationDescriptor.getProjectItems();
+            Map<String, Item> projectSearchBase = new HashMap<>();
+            for (int i = 0; i < items.length; i++) {
+                Item item = items[i];
+                String path = item.getNormalizedPath();
+                projectSearchBase.put(path, item);
+            }
+            for (int i = 0; i < items.length; i++) {
+                Item item = items[i];
+                if (!isExcluded(item)) {
+                    final Language lang = item.getLanguage();
+                    if (lang == Language.C || lang == Language.CPP) {
+                        res.add(new ItemWrapper(item));
+                    }
                 }
             }
         }

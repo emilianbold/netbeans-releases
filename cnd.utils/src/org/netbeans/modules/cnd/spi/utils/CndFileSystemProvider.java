@@ -181,7 +181,7 @@ public abstract class CndFileSystemProvider {
         return getDefault().normalizeAbsolutePathImpl(fs, absPath);
     }
     
-    public static boolean isAbsolute(FileSystem fs, CharSequence path) {
+    public static boolean isAbsolute(FileSystem fs, String path) {
         return getDefault().isAbsoluteImpl(fs, path);
     }
     
@@ -201,6 +201,10 @@ public abstract class CndFileSystemProvider {
         getDefault().removeFileChangeListenerImpl(listener, fileSystem, path);
     }
     
+    public static FileSystem getLocalFileSystem() {
+        return DefaultProvider.getRootFileSystem();
+    }
+
     /**
      * Checks whether the file specified by path exists or not
      * @param path
@@ -237,7 +241,7 @@ public abstract class CndFileSystemProvider {
     protected abstract void removeFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem);
     protected abstract void addFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem);
 
-    protected abstract boolean isAbsoluteImpl(FileSystem fs, CharSequence path);
+    protected abstract boolean isAbsoluteImpl(FileSystem fs, String path);
 
     
     private static class DefaultProvider extends CndFileSystemProvider {
@@ -386,13 +390,13 @@ public abstract class CndFileSystemProvider {
             }
         }
         
-        private FileSystem getRootFileSystem() {
+        private static FileSystem getRootFileSystem() {
             if (rootFileSystem == null) {
                 File tmpFile = null;
                 try {
                     tmpFile = File.createTempFile("NetBeans", ".tmp"); //NOI18N
                     tmpFile = FileUtil.normalizeFile(tmpFile);
-                    FileObject fo = FileUtil.toFileObject(tmpFile);
+                    FileObject fo = FileUtil.toFileObject(tmpFile.getParentFile());
                     rootFileSystem = fo.getFileSystem();
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
@@ -543,7 +547,7 @@ public abstract class CndFileSystemProvider {
         }        
 
         @Override
-        protected boolean isAbsoluteImpl(FileSystem fs, CharSequence path) {
+        protected boolean isAbsoluteImpl(FileSystem fs, String path) {
             for (CndFileSystemProvider provider : cache) {
                 return provider.isAbsoluteImpl(fs, path);
             }
