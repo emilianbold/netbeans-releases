@@ -71,6 +71,42 @@ public class InlineTest extends RefactoringTestBase {
         JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
     }
     
+    public void test242995() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    public static boolean toBeInlined() {\n"
+                        + "        return toBeMatched() == 24;\n"
+                        + "    }\n"
+                        + "\n"
+                        + "    public static Integer toBeMatched() {\n"
+                        + "        return 12;\n"
+                        + "    }\n"
+                        + "\n"
+                        + "    public static void main(String[] args) {\n"
+                        + "        if(!toBeInlined()) {\n"
+                        + "            System.out.println(\"true\");\n"
+                        + "        }\n"
+                        + "    }\n"
+                        + "}\n"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    public static Integer toBeMatched() {\n"
+                        + "        return 12;\n"
+                        + "    }\n"
+                        + "\n"
+                        + "    public static void main(String[] args) {\n"
+                        + "        if(!(toBeMatched() == 24)) {\n"
+                        + "            System.out.println(\"true\");\n"
+                        + "        }\n"
+                        + "    }\n"
+                        + "}\n"));
+    }
+    
     public void test238831() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"

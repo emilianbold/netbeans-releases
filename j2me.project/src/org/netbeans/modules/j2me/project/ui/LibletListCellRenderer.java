@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,51 +37,52 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javafx2.platform;
+package org.netbeans.modules.j2me.project.ui;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.modules.java.j2seplatform.spi.J2SEPlatformDefaultJavadoc;
-import org.openide.modules.SpecificationVersion;
-import org.openide.util.Exceptions;
-import org.openide.util.lookup.ServiceProvider;
+import java.awt.Component;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import org.netbeans.modules.j2me.project.ui.customizer.LibletInfo;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
+import org.openide.awt.HtmlRenderer;
+import org.openide.util.NbBundle;
 
 /**
- * Default Javadoc for JavaFX.
- * @author Tomas Zezula
+ *
+ * @author rsvitanic
  */
-@ServiceProvider(service = J2SEPlatformDefaultJavadoc.class, position = 200, path="org-netbeans-api-java/platform/j2seplatform/defaultJavadocProviders")
-public final class JavaFxDefaultJavadocImpl implements J2SEPlatformDefaultJavadoc {
+public class LibletListCellRenderer implements ListCellRenderer {
 
-    private static final Map<SpecificationVersion,String> OFFICIAL_JAVADOC;
-    static {
-        final Map<SpecificationVersion,String> jdocs = new HashMap<>();
-        jdocs.put(new SpecificationVersion("1.7"), "http://docs.oracle.com/javafx/2/api/"); //NOI18N
-        jdocs.put(new SpecificationVersion("1.8"), "http://docs.oracle.com/javase/8/javafx/api/"); //NOI18N
-        OFFICIAL_JAVADOC = Collections.unmodifiableMap(jdocs);
+    private final ListCellRenderer delegate;
+
+    public LibletListCellRenderer() {
+        delegate = HtmlRenderer.createRenderer();
     }
 
     @Override
-    @NonNull
-    public Collection<URI> getDefaultJavadoc(@NonNull final JavaPlatform platform) {
-        final SpecificationVersion spec = platform.getSpecification().getVersion();
-        final String uri = OFFICIAL_JAVADOC.get(spec);
-        if (uri != null) {
-            try {
-                return Collections.singletonList(new URI(uri));
-            } catch (URISyntaxException ex) {
-                Exceptions.printStackTrace(ex);
+    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        String displayText = null;
+        if (value instanceof LibletInfo) {
+            LibletInfo li = (LibletInfo) value;
+            String libletType = NbBundle.getMessage(LibletListCellRenderer.class, "TXT_Liblets_TypeUnknown"); //NOI18N
+            if (li.getType() != LibletInfo.LibletType.LIBLET) {
+                displayText = li.getName() + " (" + li.getType().toString().toLowerCase() + ")"; //NOI18N
+            } else {
+                switch (li.getItem().getType()) {
+                    case ClassPathSupport.Item.TYPE_JAR:
+                        libletType = NbBundle.getMessage(LibletListCellRenderer.class, "TXT_Liblets_TypeJar"); //NOI18N
+                        break;
+                    case ClassPathSupport.Item.TYPE_ARTIFACT:
+                        libletType = NbBundle.getMessage(LibletListCellRenderer.class, "TXT_Liblets_TypeProject"); //NOI18N
+                        break;
+                }
+                displayText = li.getName() + " (" + libletType + ")"; //NOI18N
             }
         }
-        return Collections.<URI>emptyList();
+
+        return delegate.getListCellRendererComponent(list, displayText, index, isSelected, cellHasFocus);
     }
 
 }

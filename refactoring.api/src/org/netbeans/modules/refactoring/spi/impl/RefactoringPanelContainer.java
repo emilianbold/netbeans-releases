@@ -141,14 +141,6 @@ public class RefactoringPanelContainer extends TopComponent {
         validate();
         requestActive();
     }
-
-    @Override
-    protected void componentActivated () {
-        super.componentActivated();
-        JPanel panel = getCurrentPanel();
-        if (panel!=null)
-            panel.requestFocus();
-    }
     
     void removePanel(JPanel panel) {
         RefactoringPanel.checkEventThread();
@@ -166,13 +158,13 @@ public class RefactoringPanelContainer extends TopComponent {
                 remove(tabs);
                 add(c, BorderLayout.CENTER);
             }
+            validate();
         } else {
             if (comp != null)
                 remove(comp);
             isVisible = false;
             close();
         }
-        validate();
     }
     
     void closeAllButCurrent() {
@@ -200,7 +192,7 @@ public class RefactoringPanelContainer extends TopComponent {
             usages = (RefactoringPanelContainer) WindowManager.getDefault().findTopComponent( "find-usages" ); //NOI18N
             if (usages == null) {
                 // #156401: WindowManager.findTopComponent may fail
-                usages = createUsagesComponent();
+                usages = new RefactoringPanelContainer(org.openide.util.NbBundle.getMessage(RefactoringPanelContainer.class, "LBL_Usages"), false);
             }
         } 
         return usages;
@@ -211,22 +203,10 @@ public class RefactoringPanelContainer extends TopComponent {
             refactorings = (RefactoringPanelContainer) WindowManager.getDefault().findTopComponent( "refactoring-preview" ); //NOI18N
             if (refactorings == null) {
                 // #156401: WindowManager.findTopComponent may fail
-                refactorings = createRefactoringComponent();
+                refactorings = new RefactoringPanelContainer(org.openide.util.NbBundle.getMessage(RefactoringPanelContainer.class, "LBL_Refactoring"), true);
             }
         } 
         return refactorings;
-    }
-    
-    public static synchronized RefactoringPanelContainer createRefactoringComponent() {
-        if (refactorings == null)
-            refactorings = new RefactoringPanelContainer(org.openide.util.NbBundle.getMessage(RefactoringPanelContainer.class, "LBL_Refactoring"), true);
-        return refactorings;
-    }
-    
-    public static synchronized RefactoringPanelContainer createUsagesComponent() {
-        if (usages == null)
-            usages = new RefactoringPanelContainer(org.openide.util.NbBundle.getMessage(RefactoringPanelContainer.class, "LBL_Usages"), false);
-        return usages;
     }
     
     @Override

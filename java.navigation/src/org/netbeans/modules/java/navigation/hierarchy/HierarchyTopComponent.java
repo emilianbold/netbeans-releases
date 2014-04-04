@@ -274,9 +274,11 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     public void actionPerformed(ActionEvent e) {
         if (refreshButton == e.getSource()) {
             final JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();
-            final JavaSource js = JavaSource.forDocument(Utilities.getDocument(lastFocusedComponent));
-            if (js != null) {
-                setContext(js, lastFocusedComponent);
+            if (lastFocusedComponent != null) {
+                final JavaSource js = JavaSource.forDocument(Utilities.getDocument(lastFocusedComponent));
+                if (js != null) {
+                    setContext(js, lastFocusedComponent);
+                }
             }
         } else if (jdocButton == e.getSource()) {
             final TopComponent win = JavadocTopComponent.findInstance();
