@@ -74,6 +74,7 @@ public class JavaScriptLibrarySelectionPanelTest extends NbTestCase {
         assertEquals(-1, libraryComparator.compareSameVersions("1.0-patch1", "1.0-beta.3").intValue());
         assertEquals(1, libraryComparator.compareSameVersions("3.0.0-rc1", "3.0.0-rc2").intValue());
         assertEquals(-1, libraryComparator.compareSameVersions("3.0.0-rc2", "3.0.0-rc1").intValue());
+        assertNull(libraryComparator.compareSameVersions("3.0.0-unk1", "3.0.0-xyz2"));
     }
 
 }
