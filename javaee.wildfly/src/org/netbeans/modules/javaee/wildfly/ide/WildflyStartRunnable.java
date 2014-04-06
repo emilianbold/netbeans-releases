@@ -167,7 +167,7 @@ class WildflyStartRunnable implements Runnable {
             };
 
             for (String prop : PROXY_PROPS) {
-                if (javaOpts.indexOf(prop) == -1) {
+                if (!javaOpts.contains(prop)) {
                     String value = System.getProperty(prop);
                     if (value != null) {
                         if ("http.nonProxyHosts".equals(prop)) { // NOI18N
@@ -179,10 +179,7 @@ class WildflyStartRunnable implements Runnable {
                                 while ((line = br.readLine()) != null) {
                                     noNL.append(line);
                                 }
-                                value = noNL.toString().replaceAll("<", "").replace(">", "").replace("\"", "").replace('|', ',').trim();
-
-                                // enclose the host list in double quotes because it may contain spaces
-                                value = '\"' + value + '\"'; // NOI18N
+                                value = noNL.toString().replaceAll("<", "").replace(">", "").replace(" ", "").replace("\"", "").replace('|', ',').trim();
                             } catch (IOException ioe) {
                                 Exceptions.attachLocalizedMessage(ioe, NbBundle.getMessage(WildflyStartRunnable.class, "ERR_NonProxyHostParsingError"));
                                 Logger.getLogger("global").log(Level.WARNING, null, ioe);
@@ -202,8 +199,8 @@ class WildflyStartRunnable implements Runnable {
         if ("64".equals(platform.getSystemProperties().get("sun.arch.data.model"))) {
             javaOptsBuilder.append(" -server -XX:+UseCompressedOops");
         }
-        if (startServer.getMode() == WildflyStartServer.MODE.DEBUG && javaOptsBuilder.toString().indexOf("-Xdebug") == -1
-                && javaOptsBuilder.toString().indexOf("-agentlib:jdwp") == -1) { // NOI18N
+        if (startServer.getMode() == WildflyStartServer.MODE.DEBUG && !javaOptsBuilder.toString().contains("-Xdebug")
+                && !javaOptsBuilder.toString().contains("-agentlib:jdwp")) { // NOI18N
             // if in debug mode and the debug options not specified manually
             javaOptsBuilder.append(String.format(" -agentlib:jdwp=transport=dt_socket,address=%1s,server=y,suspend=n", dm.getDebuggingPort())); // NOI18N
 
@@ -219,13 +216,14 @@ class WildflyStartRunnable implements Runnable {
 
         // create new environment for server
         javaOpts = javaOptsBuilder.toString();
+        Logger.getLogger("global").log(Level.INFO,  JAVA_OPTS + "={0}", javaOpts);
         String javaHome = getJavaHome(platform);
 
         String envp[] = new String[]{
-            "JAVA=" + javaHome + File.separator + "bin" + File.separator + "java", // NOI18N
+            "JAVA=" + javaHome + File.separatorChar + "bin" + File.separatorChar + "java", // NOI18N
             "JAVA_HOME=" + javaHome, // NOI18N
             JBOSS_HOME + "=" + ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR), // NOI18N
-            JAVA_OPTS + "=" + javaOpts, // NOI18N
+            JAVA_OPTS + "=" + javaOpts // NOI18N
         };
         return envp;
     }
