@@ -159,7 +159,7 @@ class WildflyStartRunnable implements Runnable {
             javaOptsBuilder.append(" -XX:MaxPermSize=256m");
         }
         if ("64".equals(platform.getSystemProperties().get("sun.arch.data.model"))) {
-            javaOptsBuilder.append(" -server -XX:+UseCompressedOops");
+            javaOptsBuilder.append(" -server");
         }
         // use the IDE proxy settings if the 'use proxy' checkbox is selected
         // do not override a property if it was set manually by the user
@@ -207,6 +207,10 @@ class WildflyStartRunnable implements Runnable {
 
         }
         javaOptsBuilder.append(" -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true");
+        File configFile = new File(ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE));
+        if(configFile.exists() && configFile.getParentFile().exists() && configFile.getParentFile().getParentFile().exists()) {
+            javaOptsBuilder.append(" -Djboss.server.base.dir=").append(configFile.getParentFile().getParentFile().getAbsolutePath());
+        }
 
         for (StartupExtender args : StartupExtender.getExtenders(
                 Lookups.singleton(CommonServerBridge.getCommonInstance(ip.getProperty("url"))), getMode(startServer.getMode()))) {

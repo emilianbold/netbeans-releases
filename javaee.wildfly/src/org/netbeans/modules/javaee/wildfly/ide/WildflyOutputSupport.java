@@ -169,6 +169,7 @@ public final class WildflyOutputSupport {
 
             processTask = localProcessTask;
         }
+        failed = !serverProcess.isAlive();
     }
 
     public void start(InputOutput io, final File file) {
