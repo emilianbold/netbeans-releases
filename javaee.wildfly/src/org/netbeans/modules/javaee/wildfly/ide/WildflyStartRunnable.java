@@ -150,11 +150,17 @@ class WildflyStartRunnable implements Runnable {
     private String[] createEnvironment(final InstanceProperties ip) {
 
         WildFlyProperties properties = dm.getProperties();
-
+        // get Java platform that will run the server
+        JavaPlatform platform = properties.getJavaPlatform();
         // set the JAVA_OPTS value
         String javaOpts = properties.getJavaOpts();
         StringBuilder javaOptsBuilder = new StringBuilder(javaOpts);
-        // if  JB version 4.x
+        if(platform.getSpecification().getVersion().compareTo(JDK_18) < 0) {
+            javaOptsBuilder.append(" -XX:MaxPermSize=256m");
+        }
+        if ("64".equals(platform.getSystemProperties().get("sun.arch.data.model"))) {
+            javaOptsBuilder.append(" -server -XX:+UseCompressedOops");
+        }
         // use the IDE proxy settings if the 'use proxy' checkbox is selected
         // do not override a property if it was set manually by the user
         if (properties.getProxyEnabled()) {
@@ -194,11 +200,6 @@ class WildflyStartRunnable implements Runnable {
             }
         }
 
-        // get Java platform that will run the server
-        JavaPlatform platform = properties.getJavaPlatform();
-        if ("64".equals(platform.getSystemProperties().get("sun.arch.data.model"))) {
-            javaOptsBuilder.append(" -server -XX:+UseCompressedOops");
-        }
         if (startServer.getMode() == WildflyStartServer.MODE.DEBUG && !javaOptsBuilder.toString().contains("-Xdebug")
                 && !javaOptsBuilder.toString().contains("-agentlib:jdwp")) { // NOI18N
             // if in debug mode and the debug options not specified manually

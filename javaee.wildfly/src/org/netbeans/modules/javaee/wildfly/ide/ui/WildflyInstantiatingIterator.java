@@ -74,8 +74,7 @@ public class WildflyInstantiatingIterator implements WizardDescriptor.Instantiat
 
     private static final String PROP_DISPLAY_NAME = "ServInstWizard_displayName"; // NOI18N
 
-    private static final String WILDFLY_JAVA_OPTS = "-Xms128m -Xmx512m -XX:MaxPermSize=256m"; // NOI18N
-
+    private static final String WILDFLY_JAVA_OPTS = "-Xms128m -Xmx512m"; // NOI18N
     /**
      * skipServerLocationStep allow to skip Select Location step in New Instance Wizard
      * if this step allready was passed
