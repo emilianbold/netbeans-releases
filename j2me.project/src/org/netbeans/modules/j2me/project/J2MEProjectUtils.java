@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -105,6 +106,33 @@ public class J2MEProjectUtils {
 
     public static ArrayList<JCheckBox> getOptionalPackages() {
         return optionalPackages;
+    }
+
+    public static HashMap<J2MEPlatform.Device, List<String>> getOptionalPackagesForDevices() {
+        final HashMap<J2MEPlatform.Device, List<String>> devices2packages = new HashMap<>();
+        final JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(
+                null,
+                new Specification(
+                        J2MEPlatform.SPECIFICATION_NAME,
+                        new SpecificationVersion("8.0") //NOI18N
+                )
+        );
+        for (JavaPlatform jp : platforms) {
+            if (jp instanceof J2MEPlatform) {
+                J2MEPlatform.Device[] devices = ((J2MEPlatform) jp).getDevices();
+                for (J2MEPlatform.Device device : devices) {
+                    List<String> deviceProfiles = new ArrayList<>();
+                    devices2packages.put(device, deviceProfiles);
+                    J2MEPlatform.J2MEProfile[] profiles = device.getProfiles();
+                    for (J2MEPlatform.J2MEProfile profile : profiles) {
+                        if (profile.getType().equals(J2MEPlatform.J2MEProfile.TYPE_OPTIONAL)) {
+                            deviceProfiles.add(profile.toString());
+                        }
+                    }
+                }
+            }
+        }
+        return devices2packages;
     }
 
     public static HashMap<String, J2MEPlatform.J2MEProfile> getNameToProfileMap() {
