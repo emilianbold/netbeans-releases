@@ -43,6 +43,8 @@
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -51,8 +53,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil.ASTExpandedTokensChecker;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil.ASTTokensStringizer;
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
-import org.netbeans.modules.cnd.modelimpl.parser.TokenBasedAST;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -63,6 +63,8 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  * @author petrk
  */
 public class ExpandedExpressionBase extends ExpressionBase {
+    
+    private static final Logger LOG = Logger.getLogger(ExpandedExpressionBase.class.getSimpleName());
     
     private static final int MAX_EXPANDING_LENGTH = 512;
     
@@ -77,6 +79,7 @@ public class ExpandedExpressionBase extends ExpressionBase {
         if (expanded.length() < MAX_EXPANDING_LENGTH) {
             expandedText = DefaultCache.getManager().getString(expanded);
         } else {
+            LOG.log(Level.INFO, "Too large expression ({0} symbols) defined inside macros: {1}:{2}", new Object[]{expanded.length(), file, getStartPosition()});
             expandedText = getText();
         }
     }
