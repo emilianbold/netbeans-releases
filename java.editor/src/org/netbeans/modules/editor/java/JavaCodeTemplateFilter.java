@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 
 import com.sun.source.tree.CaseTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.util.SourcePositions;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -133,6 +134,17 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter {
                                         treeKindCtx = tree.getKind();
                                         if (treeKindCtx == Tree.Kind.CASE && startOffset < controller.getTrees().getSourcePositions().getEndPosition(controller.getCompilationUnit(), ((CaseTree)tree).getExpression())) {
                                             treeKindCtx = null;
+                                        } else if (treeKindCtx == Tree.Kind.CLASS) {
+                                            SourcePositions sp = controller.getTrees().getSourcePositions();
+                                            int startPos = (int)sp.getEndPosition(controller.getCompilationUnit(), ((ClassTree)tree).getModifiers());
+                                            if (startPos <= 0) {
+                                                startPos = (int)sp.getStartPosition(controller.getCompilationUnit(), tree);
+                                            }
+                                            String headerText = controller.getText().substring(startPos, startOffset);
+                                            int idx = headerText.indexOf('{'); //NOI18N
+                                            if (idx < 0) {
+                                                treeKindCtx = null;
+                                            }
                                         }
                                     }
                                 }
