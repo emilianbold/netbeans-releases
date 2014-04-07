@@ -743,13 +743,18 @@ public class TaskProcessor {
                                                                                 SchedulerEvent schedulerEvent = SourceAccessor.getINSTANCE().getSchedulerEvent(source, parserResultTask.getSchedulerClass());
                                                                                 cancelTime = callParserResultTask(parserResultTask, currentResult, schedulerEvent);
                                                                             } else {
-                                                                                assert false : "Unknown task type: " + r.task.getClass();   //NOI18N
+                                                                                assert false : 
+                                                                                    String.format (
+                                                                                        "Unknown task type: %s : %s",   //NOI18N
+                                                                                        r.task,
+                                                                                        r.task.getClass());
                                                                             }
                                                                             if (LOGGER.isLoggable(Level.FINEST)) {
                                                                                 LOGGER.log(
                                                                                         Level.FINEST,
-                                                                                        "Executed task: {0} in {1} ms.", //NOI18N
+                                                                                        "Executed task: {0} : {1} in {2} ms.", //NOI18N
                                                                                         new Object[]{
+                                                                                            r.task,
                                                                                             r.task.getClass(),
                                                                                             System.currentTimeMillis() - startTime
                                                                                         });
@@ -757,8 +762,9 @@ public class TaskProcessor {
                                                                             if (cancelTime > SLOW_CANCEL_LIMIT) {
                                                                                 LOGGER.log(
                                                                                         Level.INFO,
-                                                                                        "Task: {0} ignored cancel for {1} ms.", //NOI18N
+                                                                                        "Task: {0} : {1} ignored cancel for {2} ms.", //NOI18N
                                                                                         new Object[]{
+                                                                                            r.task,
                                                                                             r.task.getClass(),
                                                                                             cancelTime
                                                                                         });

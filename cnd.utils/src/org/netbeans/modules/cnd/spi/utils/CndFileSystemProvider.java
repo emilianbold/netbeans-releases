@@ -49,6 +49,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -60,6 +61,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -179,6 +181,10 @@ public abstract class CndFileSystemProvider {
         return getDefault().normalizeAbsolutePathImpl(fs, absPath);
     }
     
+    public static boolean isAbsolute(FileSystem fs, String path) {
+        return getDefault().isAbsoluteImpl(fs, path);
+    }
+    
     public static void addFileChangeListener(FileChangeListener listener) {
         getDefault().addFileChangeListenerImpl(listener);
     }
@@ -195,6 +201,10 @@ public abstract class CndFileSystemProvider {
         getDefault().removeFileChangeListenerImpl(listener, fileSystem, path);
     }
     
+    public static FileSystem getLocalFileSystem() {
+        return DefaultProvider.getRootFileSystem();
+    }
+
     /**
      * Checks whether the file specified by path exists or not
      * @param path
@@ -230,6 +240,9 @@ public abstract class CndFileSystemProvider {
 
     protected abstract void removeFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem);
     protected abstract void addFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem);
+
+    protected abstract boolean isAbsoluteImpl(FileSystem fs, String path);
+
     
     private static class DefaultProvider extends CndFileSystemProvider {
         private static final String FILE_PROTOCOL_PREFIX = "file:"; // NOI18N
@@ -377,13 +390,13 @@ public abstract class CndFileSystemProvider {
             }
         }
         
-        private FileSystem getRootFileSystem() {
+        private static FileSystem getRootFileSystem() {
             if (rootFileSystem == null) {
                 File tmpFile = null;
                 try {
                     tmpFile = File.createTempFile("NetBeans", ".tmp"); //NOI18N
                     tmpFile = FileUtil.normalizeFile(tmpFile);
-                    FileObject fo = FileUtil.toFileObject(tmpFile);
+                    FileObject fo = FileUtil.toFileObject(tmpFile.getParentFile());
                     rootFileSystem = fo.getFileSystem();
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
@@ -531,6 +544,14 @@ public abstract class CndFileSystemProvider {
             for (CndFileSystemProvider provider : cache) {
                 provider.removeFileSystemProblemListenerImpl(listener, fileSystem);
             }
+        }        
+
+        @Override
+        protected boolean isAbsoluteImpl(FileSystem fs, String path) {
+            for (CndFileSystemProvider provider : cache) {
+                return provider.isAbsoluteImpl(fs, path);
+            }
+            return CndPathUtilities.isAbsolute(path);
         }        
     }
 }

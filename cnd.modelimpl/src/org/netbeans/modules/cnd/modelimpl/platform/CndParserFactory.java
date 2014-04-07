@@ -164,8 +164,10 @@ public final class CndParserFactory extends ParserFactory {
                                 projectImpl.onSnapshotChanged(fileImpl, snapshot);
                             }
                         } else {
-                            throw new IllegalStateException(
-                                    "should be instance of FileImpl: " + file.getClass()); //NOI18N
+                            if(file != null) {
+                                throw new IllegalStateException(
+                                        "should be instance of FileImpl: " + file.getClass()); //NOI18N
+                            }
                         }
                     }
                     this.cndParserResult = new CndParserResult(file, snapshot, fileVersion, docVersion);

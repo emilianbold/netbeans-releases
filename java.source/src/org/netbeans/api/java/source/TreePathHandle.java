@@ -504,7 +504,7 @@ public final class TreePathHandle {
                 if (this.position == null && other.position == null) {
                     return true;
                 }
-                if (this.position.getPosition().getOffset() != this.position.getPosition().getOffset()) {
+                if (this.position.getPosition().getOffset() != other.position.getPosition().getOffset()) {
                     return false;
                 }
                 if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
