@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import static org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
@@ -69,6 +70,8 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
+import org.openide.util.CharSequences;
 
 /**
  * Represent pointer to function type
@@ -552,7 +555,7 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
 
         @Override
         public CharSequence getUniqueName() {
-            return type.getCanonicalText(); // NOI18N
+            return CharSequences.create(CharSequenceUtils.concatenate(Utils.getCsmDeclarationKindkey(getKind()), UNIQUE_NAME_SEPARATOR, type.getCanonicalText())); //NOI18N
         }
 
         @Override
