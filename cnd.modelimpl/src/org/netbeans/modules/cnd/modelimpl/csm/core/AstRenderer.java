@@ -1623,6 +1623,8 @@ public class AstRenderer {
             case CPPTokenTypes.LITERAL___global:
             case CPPTokenTypes.LITERAL___hidden:
                 return true;
+            case CPPTokenTypes.LITERAL_thread_local:
+                return true;
             default:
                 return false;
         }
