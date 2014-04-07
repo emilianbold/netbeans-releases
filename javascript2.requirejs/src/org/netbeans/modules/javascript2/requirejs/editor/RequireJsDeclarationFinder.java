@@ -59,7 +59,9 @@ import org.openide.filesystems.FileObject;
 @DeclarationFinder.Registration(priority = 12)
 public class RequireJsDeclarationFinder implements DeclarationFinder {
 
-    private static String DEFINE = "define"; //NOI18N
+    private static String DEFINE = "define";    //NOI18N
+    private static String REQUIRE = "require";    //NOI18N
+    private static String PATHS = "paths";        //NOI18N
 
     @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
@@ -122,8 +124,18 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
                     JsTokenId.STRING_BEGIN, JsTokenId.STRING, JsTokenId.STRING_END, JsTokenId.OPERATOR_COMMA));
             if (token.id() == JsTokenId.BRACKET_LEFT_BRACKET) {
                 token = LexUtilities.findPreviousToken(ts, Arrays.asList(JsTokenId.IDENTIFIER));
-                if (token.id() == JsTokenId.IDENTIFIER && DEFINE.equals(token.text().toString())) {
+                if (token.id() == JsTokenId.IDENTIFIER 
+                        && (DEFINE.equals(token.text().toString()) || REQUIRE.equals(token.text().toString()))) {
                     return true;
+                }
+            }
+            if (token.id() == JsTokenId.OPERATOR_COLON) {
+                token = LexUtilities.findPreviousToken(ts, Arrays.asList(JsTokenId.BRACKET_LEFT_CURLY));
+                if (token.id() == JsTokenId.BRACKET_LEFT_CURLY) {
+                    token = LexUtilities.findPreviousToken(ts, Arrays.asList(JsTokenId.IDENTIFIER));
+                    if (token.id() == JsTokenId.IDENTIFIER && PATHS.equals(token.text().toString())) {
+                        return true;
+                    }
                 }
             }
         }
