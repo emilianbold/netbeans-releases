@@ -1080,6 +1080,10 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug242284.cpp", 15, 26, "bug242284.cpp", 13, 13);        
     }    
     
+    public void testBug243594() throws Exception {
+        performTest("bug243594.cpp", 17, 16, "bug243594.cpp", 4, 9);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
