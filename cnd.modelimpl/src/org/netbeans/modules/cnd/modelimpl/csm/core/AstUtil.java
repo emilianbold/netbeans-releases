@@ -562,7 +562,7 @@ public class AstUtil {
     
     public static class ASTTokensStringizer implements ASTTokenVisitor {
     
-        private final StringBuilder sb = new StringBuilder();
+        protected final StringBuilder sb = new StringBuilder();
 
         @Override
         public Action visit(AST token) {
