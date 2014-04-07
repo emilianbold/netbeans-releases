@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
@@ -138,5 +139,28 @@ public class RequireJsIndex {
             return types;
         }
         return Collections.emptyList();
+    }
+    
+    public Map<String, String> getPathMappings(final String prefix) {
+        Collection<? extends IndexResult> result = null;
+        
+        try {
+            result = querySupport.query(RequireJsIndexer.FIELD_PATH_MAP, prefix, QuerySupport.Kind.PREFIX, RequireJsIndexer.FIELD_PATH_MAP);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (result != null && !result.isEmpty()) {
+            Map<String, String> mappings = new HashMap<String, String>();
+            for (IndexResult indexResult : result) {
+                for(String value : indexResult.getValues(RequireJsIndexer.FIELD_PATH_MAP)) {
+                    String[] parts = value.split(";");
+                    if (parts.length == 2 && parts[0].startsWith(prefix)) {
+                        mappings.put(parts[0], parts[1]);
+                    }
+                }
+            }
+            return mappings;
+        }
+        return Collections.emptyMap();
     }
 }

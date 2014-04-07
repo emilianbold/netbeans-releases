@@ -41,16 +41,23 @@
  */
 package org.netbeans.modules.javascript2.requirejs.editor;
 
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Map;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.spi.DeclarationFinder;
+import org.netbeans.modules.javascript2.requirejs.editor.index.RequireJsIndex;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -61,7 +68,7 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
 
     private static String DEFINE = "define";    //NOI18N
     private static String REQUIRE = "require";    //NOI18N
-    private static String PATHS = "paths";        //NOI18N
+    public static String PATHS = "paths";        //NOI18N
 
     @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
@@ -72,8 +79,36 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
                 ts.move(caretOffset);
                 ts.moveNext();
                 String path = ts.token().text().toString();
-                FileObject parent = info.getSnapshot().getSource().getFileObject();
                 String[] pathParts = path.split("/");
+                FileObject parent = info.getSnapshot().getSource().getFileObject();
+                System.out.println("path: " + path);
+                if (parent != null) {
+                    Project project = FileOwnerQuery.getOwner(parent);
+                    RequireJsIndex rIndex = null;
+                    try {
+                        rIndex = RequireJsIndex.get(project);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    Map<String, String> pathMappings = rIndex.getPathMappings(pathParts[0]);
+                    String alias = "";
+                    for (String possibleAlias : pathMappings.keySet()) {
+                        if (possibleAlias.equals(path)) {
+                            alias = possibleAlias;
+                            break;
+                        }
+                        if (path.startsWith(possibleAlias) && (alias.length() < possibleAlias.length())) {
+                            alias = possibleAlias;
+                        }
+                    }
+                    if (!alias.isEmpty()) {
+                        path = pathMappings.get(alias) + path.substring(alias.length());
+                        pathParts = path.split("/");
+                    }
+                    System.out.println("new pathMappings: " + path);
+                }
+                
+                
                 if (parent != null && pathParts.length > 0) {
                     parent = parent.getParent();
                     if (!pathParts[pathParts.length - 1].endsWith(".js")) {
@@ -124,7 +159,7 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
                     JsTokenId.STRING_BEGIN, JsTokenId.STRING, JsTokenId.STRING_END, JsTokenId.OPERATOR_COMMA));
             if (token.id() == JsTokenId.BRACKET_LEFT_BRACKET) {
                 token = LexUtilities.findPreviousToken(ts, Arrays.asList(JsTokenId.IDENTIFIER));
-                if (token.id() == JsTokenId.IDENTIFIER 
+                if (token.id() == JsTokenId.IDENTIFIER
                         && (DEFINE.equals(token.text().toString()) || REQUIRE.equals(token.text().toString()))) {
                     return true;
                 }

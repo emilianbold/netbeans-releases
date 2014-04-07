@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -72,34 +73,55 @@ public class RequireJsIndexer extends EmbeddingIndexer {
 
     public static final String FIELD_EXPOSED_TYPES = "et"; //NOI18N
     public static final String FIELD_MODULE_NAME = "mn"; //NOI18N
+    public static final String FIELD_PATH_MAP = "mp";   //NOI18N
 
     private static final ThreadLocal<Map<URI, Collection<? extends TypeUsage>>> exposedTypes = new ThreadLocal();
+    private static final ThreadLocal<Map<URI, Map<String, String>>> pathsMapping = new ThreadLocal();
 
     @Override
     protected void index(Indexable indexable, Parser.Result parserResult, Context context) {
+        FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
+        if (fo == null) {
+            return;
+        }
+        
+        IndexingSupport support;
+        try {
+            support = IndexingSupport.getInstance(context);
+        } catch (IOException ioe) {
+            LOG.log(Level.WARNING, null, ioe);
+            return;
+        }
+        IndexDocument elementDocument = support.createDocument(fo);
+        boolean storeDocument = false;
         Map<URI, Collection<? extends TypeUsage>> types = exposedTypes.get();
         if (types != null && !types.isEmpty()) {
-            FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
-            if (fo != null) {
-                Collection<? extends TypeUsage> resolvedTypes = types.remove(fo.toURI());
-                if (resolvedTypes != null && !resolvedTypes.isEmpty()) {
-                    IndexingSupport support;
-                    try {
-                        support = IndexingSupport.getInstance(context);
-                    } catch (IOException ioe) {
-                        LOG.log(Level.WARNING, null, ioe);
-                        return;
-                    }
-                    IndexDocument elementDocument = support.createDocument(fo);
-                    for (TypeUsage type : resolvedTypes) {
-                        StringBuilder sb = new StringBuilder();
-                        sb.append(type.getType()).append(":").append(type.getOffset()).append(":").append(type.isResolved() ? "1" : "0"); //NOI18N
-                        elementDocument.addPair(FIELD_EXPOSED_TYPES, sb.toString(), false, true);
-                    }
-                    elementDocument.addPair(FIELD_MODULE_NAME, fo.getName(), true, true);
-                    support.addDocument(elementDocument);
+            Collection<? extends TypeUsage> resolvedTypes = types.remove(fo.toURI());
+            if (resolvedTypes != null && !resolvedTypes.isEmpty()) {
+                for (TypeUsage type : resolvedTypes) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(type.getType()).append(":").append(type.getOffset()).append(":").append(type.isResolved() ? "1" : "0"); //NOI18N
+                    elementDocument.addPair(FIELD_EXPOSED_TYPES, sb.toString(), false, true);
                 }
+                storeDocument = true;
+                elementDocument.addPair(FIELD_MODULE_NAME, fo.getName(), true, true);
             }
+        }
+
+        Map<URI, Map<String, String>> mappings = pathsMapping.get();
+        if (mappings != null && !mappings.isEmpty()) {
+            Map<String, String> pathMappings = mappings.remove(fo.toURI());
+            if (pathMappings != null && !pathMappings.isEmpty()) {
+                for(String path: pathMappings.keySet()) {
+                    StringBuilder sb = new StringBuilder();
+                        sb.append(path).append(";").append(pathMappings.get(path)); //NOI18N
+                        elementDocument.addPair(FIELD_PATH_MAP, sb.toString(), true, true);
+                }
+                storeDocument = true;
+            }
+        }
+        if (storeDocument) {
+            support.addDocument(elementDocument);
         }
     }
 
@@ -111,6 +133,15 @@ public class RequireJsIndexer extends EmbeddingIndexer {
         }
         Collection<? extends TypeUsage> types = map.get(uri);
         map.put(uri, exported);
+    }
+
+    public static void addPathMapping(final URI uri, final Map<String, String> mappings) {
+        final Map<URI, Map<String, String>> map = pathsMapping.get();
+
+        if (map == null) {
+            throw new IllegalStateException("RequireJsIndexer.addControllers can be called only from scanner thread.");  //NOI18N
+        }
+        map.put(uri, mappings);
     }
 
     public static final class Factory extends EmbeddingIndexerFactory {
@@ -165,6 +196,7 @@ public class RequireJsIndexer extends EmbeddingIndexer {
         public boolean scanStarted(Context context) {
             postScanTasks.set(new LinkedList<Runnable>());
             exposedTypes.set(new HashMap<URI, Collection<? extends TypeUsage>>());
+            pathsMapping.set(new HashMap<URI, Map<String, String>>());
             return super.scanStarted(context);
         }
 
