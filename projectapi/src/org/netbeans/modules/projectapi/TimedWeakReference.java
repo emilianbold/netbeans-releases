@@ -50,8 +50,8 @@ package org.netbeans.modules.projectapi;
 //     removed map key functionality
 
 import java.lang.ref.WeakReference;
+import org.openide.util.BaseUtilities;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  * A weak reference which is held strongly for a while after last access.
@@ -89,7 +89,7 @@ public final class TimedWeakReference<T> extends WeakReference<T> implements Run
      * @param o the referent
      */
     public TimedWeakReference(T o) {
-        super(o, Utilities.activeReferenceQueue());
+        super(o, BaseUtilities.activeReferenceQueue());
         this.o = o;
         task = RP.create(this);
         task.schedule(TIMEOUT);

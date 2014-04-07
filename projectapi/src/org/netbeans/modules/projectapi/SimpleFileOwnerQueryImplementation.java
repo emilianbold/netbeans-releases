@@ -65,8 +65,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.BaseUtilities;
 import org.openide.util.NbPreferences;
-import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
 
 /**
@@ -315,6 +315,6 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
         assert u.toString().startsWith(nue.toString()) : "not a parent: " + nue + " of " + u;
         return nue;
     }
-    private static final boolean WINDOWS = Utilities.isWindows();
+    private static final boolean WINDOWS = BaseUtilities.isWindows();
     
 }
