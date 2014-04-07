@@ -1452,6 +1452,9 @@ public final class MakeProject implements Project, MakeProjectListener {
     
     private void createLaunchersFileIfNeeded(final FileObject projectDir) {
         CndUtils.assertNonUiThread();
+        if (projectDir == null) {
+            return;
+        }
         try {
             FileObject projectPrivateFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER);
             if (projectPrivateFolder == null) {
