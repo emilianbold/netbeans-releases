@@ -64,6 +64,8 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  */
 public class ExpandedExpressionBase extends ExpressionBase {
     
+    private static final int MAX_EXPANDING_LENGTH = 512;
+    
     private final CharSequence expandedText;
     
 
@@ -71,7 +73,12 @@ public class ExpandedExpressionBase extends ExpressionBase {
         super(ast, file, scope);
         ASTTokensStringizer stringizer = new ASTTokensStringizer();
         AstUtil.visitAST(stringizer, ast);
-        expandedText = DefaultCache.getManager().getString(stringizer.getText());
+        String expanded = stringizer.getText();
+        if (expanded.length() < MAX_EXPANDING_LENGTH) {
+            expandedText = DefaultCache.getManager().getString(expanded);
+        } else {
+            expandedText = getText();
+        }
     }
 
     @Override
