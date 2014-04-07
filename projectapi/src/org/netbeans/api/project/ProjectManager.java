@@ -51,10 +51,8 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectManagerImplementation;
-import org.netbeans.spi.project.ProjectManagerImplementation.LockManagerImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -70,21 +68,16 @@ public final class ProjectManager {
     private static final Logger LOG = Logger.getLogger(ProjectManager.class.getName());
     private static final ProjectManager DEFAULT = new ProjectManager();
     private final ProjectManagerImplementation impl;
-    private final LockManager lm;
     
     private ProjectManager() {
         this.impl = Lookup.getDefault().lookup(ProjectManagerImplementation.class);
         if (this.impl == null) {
             throw new IllegalStateException("No ProjectManagerImplementation found in global Lookup."); //NOI18N
         }
-        this.lm = new LockManager(impl.getLockManager());
         LOG.log(
             Level.FINE,
-            "ProjectManager created with implementation {0} : {1}", //NOI18N
-            new Object[]{
-                this.impl,
-                this.impl.getClass()
-            });
+            "ProjectManager created with implementation: {0}", //NOI18N
+            this.impl);
     }       
 
     /**
@@ -114,13 +107,24 @@ public final class ProjectManager {
     }
 
     /**
-     * Returns projects locks manager.
-     * @return the {@link LockManager}
+     * Get a read/write lock to be used for project metadata accesses.
+     * The returned lock may be optimized to limit contention only on given
+     * project(s).
+     * @param autoSave if true the other most write operation automatically saves
+     * the passed project(s)
+     * @param project the project to lock
+     * @param otherProjects other projects to lock
+     * @return a general read/write lock for project metadata operations
      * @since 1.59
      */
     @NonNull
-    public static LockManager getLockManager() {
-        return getDefault().lm;
+    public static Mutex mutex(
+        final boolean autoSave,
+        @NonNull Project project,
+        @NonNull Project... otherProjects) {
+        Parameters.notNull("project", project); //NOI18N
+        Parameters.notNull("otherProjects", otherProjects); //NOI18N
+        return getDefault().impl.getMutex(autoSave, project, otherProjects);
     }
         
     /**
@@ -303,43 +307,6 @@ public final class ProjectManager {
          */
         public Icon getIcon() {
             return icon;
-        }
-    }
-
-    /**
-     * Project lock manager.
-     * Todo: replace with plugable {@link Mutex}.
-     * @since 1.59
-     */
-    public static final class LockManager {
-        private final LockManagerImplementation impl;
-
-        private LockManager(@NonNull final LockManagerImplementation impl) {
-            Parameters.notNull("impl", impl);
-            this.impl = impl;
-        }
-
-        @NullUnknown
-        public <R> R readAccess(
-            @NonNull Mutex.Action<R> action,
-            @NonNull Project project,
-            @NonNull Project... otherProjects) {
-            Parameters.notNull("action", action);   //NOI18N
-            Parameters.notNull("project", project); //NOI18N
-            Parameters.notNull("otherProjects", otherProjects); //NOI18N
-            return impl.readAccess(action, project, otherProjects);
-        }
-
-        @NullUnknown
-        public <R> R writeAccess(
-            @NonNull Mutex.Action<R> action,
-            boolean autoSave,
-            @NonNull Project project,
-            @NonNull Project... otherProjects) {
-            Parameters.notNull("action", action);   //NOI18N
-            Parameters.notNull("project", project); //NOI18N
-            Parameters.notNull("otherProjects", otherProjects); //NOI18N
-            return impl.writeAccess(action, autoSave, project, otherProjects);
         }
     }
 }

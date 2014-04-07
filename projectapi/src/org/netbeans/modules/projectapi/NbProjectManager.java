@@ -44,23 +44,26 @@
 
 package org.netbeans.modules.projectapi;
 
-import org.netbeans.api.project.*;
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.lang.ref.Reference;
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.project.*;
 import org.netbeans.api.project.ProjectManager.Result;
 import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
 import org.netbeans.modules.projectapi.TimedWeakReference;
@@ -79,10 +82,13 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
+import org.openide.util.Mutex.ExceptionAction;
 import org.openide.util.MutexException;
+import org.openide.util.Parameters;
 import org.openide.util.Union2;
 import org.openide.util.WeakSet;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.spi.MutexImplementation;
 
 /**
  * Manages loaded projects.
@@ -140,19 +146,7 @@ public final class NbProjectManager implements ProjectManagerImplementation {
     }
 
     private final Mutex MUTEX = new Mutex();
-
-    private final LockManagerImplementation LOCK_MANAGER = new LockManagerImplementation() {
-        @Override
-        public <R> R readAccess(Mutex.Action<R> action, Project project, Project... otherProjects) {
-            return MUTEX.readAccess(action);
-        }
-
-        @Override
-        public <R> R writeAccess(Mutex.Action<R> action, boolean autoSave, Project project, Project... otherProjects) {
-            return MUTEX.writeAccess(action);
-        }
-    };
-
+    
     /**
      * Cache of loaded projects (modified or not).
      * Also caches a dir which is <em>not</em> a project.
@@ -189,8 +183,15 @@ public final class NbProjectManager implements ProjectManagerImplementation {
 
     @NonNull
     @Override
-    public LockManagerImplementation getLockManager() {
-        return LOCK_MANAGER;
+    public Mutex getMutex(
+        final boolean autoSave,
+        @NonNull final Project project,
+        @NonNull final Project... otherProjects) {
+        return new Mutex(new MutexImpl(
+            this,
+            autoSave,
+            project,
+            otherProjects));
     }
     
     /**
@@ -733,5 +734,118 @@ public final class NbProjectManager implements ProjectManagerImplementation {
             }
         }
         
+    }
+
+    private static final class MutexImpl implements MutexImplementation {
+
+        private final NbProjectManager owner;
+        private final boolean autoSave;
+        private final Project[] projects;
+        private final AtomicInteger writeDepth = new AtomicInteger();
+
+        MutexImpl(
+            @NonNull final NbProjectManager owner,
+            final boolean autoSave,
+            @NonNull final Project project,
+            @NonNull final Project... otherProjects) {
+            Parameters.notNull("owner", owner);   //NOI18N
+            Parameters.notNull("project", project); //NOI18N
+            Parameters.notNull("otherProjects", otherProjects); //NOI18N
+            this.owner = owner;
+            this.autoSave = autoSave;
+            this.projects = new Project[1+otherProjects.length];
+            this.projects[0] = project;
+            System.arraycopy(otherProjects, 0, projects, 1, otherProjects.length);
+        }
+
+        @Override
+        public boolean isReadAccess() {
+            return owner.MUTEX.isReadAccess();
+        }
+
+        @Override
+        public boolean isWriteAccess() {
+            return owner.MUTEX.isWriteAccess();
+        }
+
+        @Override
+        public <T> T writeAccess(ExceptionAction<T> action) throws MutexException {
+            return owner.MUTEX.writeAccess(wrap(action));
+        }
+
+        @Override
+        public <T> T readAccess(ExceptionAction<T> action) throws MutexException {
+            return owner.MUTEX.readAccess(action);
+        }
+
+        @Override
+        public void postReadRequest(Runnable run) {
+            owner.MUTEX.postReadRequest(run);
+        }
+
+        @Override
+        public void postWriteRequest(Runnable run) {
+            owner.MUTEX.postWriteRequest(wrap(run));
+        }
+
+        @NonNull
+        private Runnable wrap (@NonNull final Runnable r) {
+            return autoSave ?
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        writeDepth.incrementAndGet();
+                        try {
+                            r.run();
+                        } finally {
+                            if(writeDepth.decrementAndGet() == 0) {
+                                saveProjects(RuntimeException.class);
+                            }
+                        }
+                    }
+                } :
+                r;
+        }
+
+        private <T> ExceptionAction<T> wrap(@NonNull final ExceptionAction<T> a) {
+            return autoSave ?
+                new ExceptionAction<T>() {
+                    @Override
+                    public T run() throws Exception {
+                        writeDepth.incrementAndGet();
+                        try {
+                            return a.run();
+                        } finally {
+                            if (writeDepth.decrementAndGet() == 0) {
+                                saveProjects(IOException.class);
+                            }
+                        }
+                    }
+                } :
+                a;
+        }
+
+        private <E extends Exception> void saveProjects(@NonNull final Class<E> clz) throws E {
+            final Queue<Exception> causes = new ArrayDeque<Exception>();
+            for (Project prj : projects) {
+                try {
+                    owner.saveProject(prj);
+                } catch (IOException ioe) {
+                    causes.add(ioe);
+                }
+            }
+            if (!causes.isEmpty()) {
+                try {
+                    final E exc = clz.getDeclaredConstructor().newInstance();
+                    for (Exception cause : causes) {
+                        exc.addSuppressed(cause);
+                    }
+                    throw  exc;
+                } catch (ReflectiveOperationException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+        }
+
     }
 }
