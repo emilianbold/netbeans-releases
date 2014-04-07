@@ -168,7 +168,7 @@ public class APTConditionResolverTest {
         }
         
         private static StartEntry createStartEntry(APTFile apt) {
-            StartEntry entry = new StartEntry(apt.getFileSystem(), apt.getPath().toString(), DymmyProjectKey.getOrCreate(apt.getFileSystem()));
+            StartEntry entry = new StartEntry(apt.getFileSystem(), apt.getPath().toString(), DummyProjectKey.getOrCreate(apt.getFileSystem()));
             return entry;
         }
 
