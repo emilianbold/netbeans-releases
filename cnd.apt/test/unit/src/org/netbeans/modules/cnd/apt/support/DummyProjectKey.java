@@ -58,17 +58,17 @@ import org.openide.filesystems.FileSystem;
 /**
  * @author vkvashin
  */
-final class DymmyProjectKey implements Key, PersistentFactory, Persistent {
+final class DummyProjectKey implements Key, PersistentFactory, Persistent {
 
-    private static final Map<FileSystem, DymmyProjectKey> instances = new HashMap<FileSystem, DymmyProjectKey>();
+    private static final Map<FileSystem, DummyProjectKey> instances = new HashMap<FileSystem, DummyProjectKey>();
     private static final Object lock = new Object();
     private static boolean first = true;
     
-    public static DymmyProjectKey getOrCreate(FileSystem fileSystem) {
+    public static DummyProjectKey getOrCreate(FileSystem fileSystem) {
         synchronized (lock) {
-            DymmyProjectKey key = instances.get(fileSystem);
+            DummyProjectKey key = instances.get(fileSystem);
             if (key == null) {
-                key = new DymmyProjectKey(fileSystem);
+                key = new DummyProjectKey(fileSystem);
                 instances.put(fileSystem, key);
             }
             return key;
@@ -78,7 +78,7 @@ final class DymmyProjectKey implements Key, PersistentFactory, Persistent {
     private final CharSequence unitName;
     private final int unitId;
 
-    private DymmyProjectKey(FileSystem fileSystem) {
+    private DummyProjectKey(FileSystem fileSystem) {
         synchronized (lock) {
             if (first) {
                 first = false;
