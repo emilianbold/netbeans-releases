@@ -3010,7 +3010,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public final Key getUIDKey() {
         // project UID is always key based
         CsmUID<CsmProject> uid = getUID();
-        assert uid instanceof KeyHolder : "project UID should be key based " + KeyHolder;
+        assert uid instanceof KeyHolder : "project UID should be key based ";
         return ((KeyHolder) uid).getKey();
     }
 
