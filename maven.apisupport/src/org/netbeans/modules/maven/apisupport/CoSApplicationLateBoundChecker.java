@@ -129,7 +129,8 @@ public class CoSApplicationLateBoundChecker implements LateBoundPrerequisitesChe
         String branding = PluginPropertyUtils.getPluginProperty(config.getProject(), MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "brandingToken", "cluster-app", "netbeans.branding.token");
         //TODO care about figuring out build.outputdir?
         //only relativize path on windows
-        File currentDir = Utilities.isWindows() ? new File(new File(config.getExecutionDirectory(), "target"), branding) : null; 
+        assert config.getExecutionDirectory() != null : "RunConfig for " + config.getActionName() + " is missing executionDirectory"; //#243564 we need to learn which 
+        File currentDir = Utilities.isWindows() && config.getExecutionDirectory() != null ? new File(new File(config.getExecutionDirectory(), "target"), branding) : null; 
         
         for (Map.Entry<String, DependencyProjectsProvider.Pair> pairEnt : modules.entrySet()) {
                 NbModuleProvider nbm = pairEnt.getValue().getProject().getLookup().lookup(NbModuleProvider.class);
