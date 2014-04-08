@@ -890,29 +890,29 @@ template_explicit_specialization
 //
 protected
 external_declaration_template { String s; K_and_R = false; boolean ctrName=false; boolean definition; boolean friend = false; TypeQualifier tq; StorageClass sc;int ts = 0;}
-	:
-		((LITERAL___extension__)? LITERAL_template LESSTHAN GREATERTHAN) => 
+    :
+        ((LITERAL___extension__)? LITERAL_template LESSTHAN GREATERTHAN) => 
+        (
+            (LITERAL___extension__!)?
             (
-                (LITERAL___extension__!)?
-                (
-                    {checkTemplateExplicitSpecialization()}?
-                        template_explicit_specialization
-                    |
-                        declaration_template_impl
-                )
+                {checkTemplateExplicitSpecialization()}? 
+                    template_explicit_specialization
+            |
+                declaration_template_impl
             )
-	|
-		(LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union)) =>
-		LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union) 
-		s=scope_override IDENT (LESSTHAN template_argument_list GREATERTHAN)? SEMICOLON
-		{#external_declaration_template = #(#[CSM_TEMPLATE_EXPLICIT_INSTANTIATION, "CSM_TEMPLATE_EXPLICIT_INSTANTIATION"], #external_declaration_template);}
-	|
-		(LITERAL_template (~LESSTHAN)) =>
-		LITERAL_template declaration[declOther]
-		{#external_declaration_template = #(#[CSM_TEMPLATE_EXPLICIT_INSTANTIATION, "CSM_TEMPLATE_EXPLICIT_INSTANTIATION"], #external_declaration_template);}	
+        )
+    |
+        (LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union)) =>
+        LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union) 
+        s=scope_override IDENT (LESSTHAN template_argument_list GREATERTHAN)? SEMICOLON
+        {#external_declaration_template = #(#[CSM_TEMPLATE_EXPLICIT_INSTANTIATION, "CSM_TEMPLATE_EXPLICIT_INSTANTIATION"], #external_declaration_template);}
+    |
+        (LITERAL_template (~LESSTHAN)) =>
+        LITERAL_template declaration[declOther]
+        {#external_declaration_template = #(#[CSM_TEMPLATE_EXPLICIT_INSTANTIATION, "CSM_TEMPLATE_EXPLICIT_INSTANTIATION"], #external_declaration_template);}	
     |
         declaration_template_impl
-	;
+    ;
 
 protected
 declaration_template_impl { String s; K_and_R = false; boolean ctrName=false; boolean definition; boolean friend = false; TypeQualifier tq; StorageClass sc;int ts = 0;}
