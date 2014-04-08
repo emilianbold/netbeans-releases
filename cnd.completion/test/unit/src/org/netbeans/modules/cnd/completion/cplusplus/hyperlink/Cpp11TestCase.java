@@ -314,4 +314,12 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         // Bug 243598 - C++11 thread_local variables highlighted as Unable to resolve identifier
         performTest("bug243598.cpp", 5, 17, "bug243598.cpp", 4, 9);
     }    
+    
+    public void testBug243600() throws Exception {
+        // Bug 243600 - static_cast<int> do not work as casting to int
+        performTest("bug243600.cpp", 14, 31, "bug243600.cpp", 7, 9);
+        performTest("bug243600.cpp", 15, 37, "bug243600.cpp", 7, 9);
+        performTest("bug243600.cpp", 16, 70, "bug243600.cpp", 7, 9);
+        performTest("bug243600.cpp", 17, 50, "bug243600.cpp", 7, 9);
+    }        
 }

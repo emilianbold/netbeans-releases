@@ -295,8 +295,11 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
     }
 
     /* package-local */ static Collection<CsmReference> getOccurrences(BaseDocument doc, CsmFile file, int position, InterrupterImpl interrupter) {
-        position = getFileOffset(doc, position);
         Collection<CsmReference> out = Collections.<CsmReference>emptyList();
+        position = getFileOffset(doc, position);
+        if (interrupter.cancelled()) {
+            return out;
+        }
         // check if offset is in preprocessor conditional block
         if (isPreprocessorConditionalBlock(doc, position)) {
             return getPreprocReferences(doc, file, position, interrupter);
@@ -306,9 +309,15 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
                 return getStringReferences(doc, stringToken, interrupter);
             }
         }
+        if (interrupter.cancelled()) {
+            return out;
+        }
         if (file != null && file.isParsed()) {
             CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, position);
             if (ref != null && ref.getReferencedObject() != null) {
+                if (interrupter.cancelled()) {
+                    return out;
+                }
                 out = CsmReferenceRepository.getDefault().getReferences(ref.getReferencedObject(), file, CsmReferenceKind.ALL, interrupter);
             }
         }

@@ -54,8 +54,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
-import org.netbeans.modules.cnd.antlr.TokenStream;
-import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,6 +61,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
@@ -72,6 +71,8 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -91,8 +92,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionDocProvider;
-import org.openide.util.CharSequences;
 import org.openide.text.NbDocument;
+import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 
 /**
@@ -109,7 +110,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
     public final static String MACRO_EXPANSION_STOP_ON_OFFSET_PARSE_FILE_WALKER_CACHE = "macro-expansion-stop-on-offset-parse-file-walker-cache"; // NOI18N
 
     @Override
-    public synchronized int expand(final Document inDoc, final int startOffset, final int endOffset, final Document outDoc) {
+    public synchronized int expand(final Document inDoc, final int startOffset, final int endOffset, final Document outDoc, final AtomicBoolean canceled) {
         if (inDoc == null || outDoc == null) {
             return 0;
         }
@@ -154,7 +155,9 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                     if (isWhitespace(docToken)) {
                         continue;
                     }
-
+                    if (canceled.get()) {
+                        break;
+                    }
                     APTToken fileToken = findToken(fileTS, docTokenStartOffset);
                     if (fileToken == null) {
                         // expanded stream ended
