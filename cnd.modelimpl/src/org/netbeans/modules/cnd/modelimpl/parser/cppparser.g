@@ -896,7 +896,7 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
             (LITERAL___extension__!)?
             (
                 {checkTemplateExplicitSpecialization()}? 
-                    template_explicit_specialization
+                template_explicit_specialization
             |
                 declaration_template_impl
             )
