@@ -309,4 +309,9 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug240723_c.cpp", 15, 42, "bug240723_c.cpp", 14, 9);
         performTest("bug240723_c.cpp", 27, 42, "bug240723_c.cpp", 26, 9);
     }        
+    
+    public void testBug243598() throws Exception {
+        // Bug 243598 - C++11 thread_local variables highlighted as Unable to resolve identifier
+        performTest("bug243598.cpp", 5, 17, "bug243598.cpp", 4, 9);
+    }    
 }

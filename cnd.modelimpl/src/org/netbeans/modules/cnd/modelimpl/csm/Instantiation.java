@@ -1767,28 +1767,28 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                 
                 if (CsmKindUtilities.isTypedef(resolved) && CsmKindUtilities.isClassMember(resolved)) {
                     CsmMember tdMember = (CsmMember)resolved;
-                    if (CsmKindUtilities.isTemplate(tdMember.getContainingClass())) {
+                    if (isTemplateScope(tdMember.getContainingClass())) {
                         resolved = new Typedef((CsmTypedef)resolved, instantiation);
                         return resolved;
                     }
                 }
                 if (CsmKindUtilities.isTypeAlias(resolved) && CsmKindUtilities.isClassMember(resolved)) {
                     CsmMember taMember = (CsmMember)resolved;
-                    if (CsmKindUtilities.isTemplate(taMember.getContainingClass())) {
+                    if (isTemplateScope(taMember.getContainingClass())) {
                         resolved = new MemberTypeAlias((CsmTypeAlias)resolved, instantiation);
                         return resolved;
                     }
                 }
                 if (CsmKindUtilities.isClass(resolved) && CsmKindUtilities.isClassMember(resolved)) {
                     CsmMember tdMember = (CsmMember)resolved;
-                    if (CsmKindUtilities.isTemplate(tdMember.getContainingClass())) {
+                    if (isTemplateScope(tdMember.getContainingClass())) {
                         resolved = new Class((CsmClass)resolved, instantiation.getMapping());
                         return resolved;
                     }
                 }
             }
             return resolved;
-        }
+        }        
 
         @Override
         public CharSequence getCanonicalText() {
@@ -1859,6 +1859,16 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             indent(out, indent).append("END OF ").append(instName);// NOI18N
             return out.toString();
         }
+        
+        private boolean isTemplateScope(CsmClass cls) {
+            while (!CsmKindUtilities.isTemplate(cls)) {
+                if (!CsmKindUtilities.isClassMember(cls)) {
+                    return false;
+                }
+                cls = ((CsmMember) cls).getContainingClass();
+            }
+            return true;
+        }        
     }
     
     private static class TypeFunPtr extends Type implements CsmFunctionPointerType {

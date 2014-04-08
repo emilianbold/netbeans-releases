@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Map;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Repository;
@@ -203,7 +204,7 @@ public class PushTest extends AbstractGitTestCase {
         branches = getClient(workDir).getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(2, branches.size());
         assertEquals(1, localUpdates.size());
-        assertUpdate(localUpdates.get("master"), "origin/master", "master", newid, id, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.FAST_FORWARD);
+        assertUpdate(localUpdates.get("master"), "origin/master", "master", newid, id, new URIish(remoteUri).toString(), Type.BRANCH, EnumSet.of(GitRefUpdateResult.FAST_FORWARD, GitRefUpdateResult.FORCED));
         assertEquals(newid, branches.get("origin/master").getId());
         
         //let's set tracking branch
@@ -227,7 +228,7 @@ public class PushTest extends AbstractGitTestCase {
         branches = getClient(workDir).getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(2, branches.size());
         assertEquals(1, localUpdates.size());
-        assertUpdate(localUpdates.get("master"), "origin/master", "master", newid, id, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.FAST_FORWARD);
+        assertUpdate(localUpdates.get("master"), "origin/master", "master", newid, id, new URIish(remoteUri).toString(), Type.BRANCH, EnumSet.of(GitRefUpdateResult.FAST_FORWARD, GitRefUpdateResult.FORCED));
         assertEquals(newid, branches.get("origin/master").getId());
         
         // and what about adding a new branch, does it show among remotes?
@@ -332,12 +333,17 @@ public class PushTest extends AbstractGitTestCase {
 }
 
     private void assertUpdate(GitTransportUpdate update, String localName, String remoteName, String newObjectId, String oldObjectId, String remoteUri, Type type, GitRefUpdateResult result) {
+        assertUpdate(update, localName, remoteName, newObjectId, oldObjectId, remoteUri, type, EnumSet.of(result));
+    }
+
+    private void assertUpdate(GitTransportUpdate update, String localName, String remoteName, String newObjectId, String oldObjectId, String remoteUri, Type type,
+            EnumSet<GitRefUpdateResult> allowedResults) {
         assertEquals(localName, update.getLocalName());
         assertEquals(remoteName, update.getRemoteName());
         assertEquals(newObjectId, update.getNewObjectId());
         assertEquals(oldObjectId, update.getOldObjectId());
         assertEquals(remoteUri, update.getRemoteUri());
         assertEquals(type, update.getType());
-        assertEquals(result, update.getResult());
+        assertTrue("Result: " + update.getResult() + " not allowed: " + allowedResults, allowedResults.contains(update.getResult()));
     }
 }

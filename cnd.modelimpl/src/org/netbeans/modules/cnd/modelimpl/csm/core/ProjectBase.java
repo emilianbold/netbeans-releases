@@ -130,6 +130,7 @@ import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.ClassifierContainerKey;
 import org.netbeans.modules.cnd.modelimpl.repository.FileContainerKey;
 import org.netbeans.modules.cnd.modelimpl.repository.GraphContainerKey;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyHolder;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.ProjectDeclarationContainerKey;
@@ -1380,8 +1381,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     protected final APTPreprocHandler createEmptyPreprocHandler(CharSequence absPath) {
-        StartEntry startEntry = new StartEntry(getFileSystem(), FileContainer.getFileKey(absPath, true).toString(),
-                RepositoryUtils.UIDtoKey(getUID()));
+        StartEntry startEntry = new StartEntry(getFileSystem(), FileContainer.getFileKey(absPath, true).toString(), getUIDKey());
         return APTHandlersSupport.createEmptyPreprocHandler(startEntry);
     }
 
@@ -1413,8 +1413,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             FileSystem nativeProjectFS = nativeFile.getNativeProject().getFileSystem();
             CndUtils.assertTrue(nativeProjectFS.equals(curPrjFS), "File systems differ: incoming=" + nativeProjectFS + ";cur=" + curPrjFS); //NOI18N
         }
-        StartEntry startEntry = new StartEntry(getFileSystem(), entryKey, 
-                RepositoryUtils.UIDtoKey(getUID()));
+        StartEntry startEntry = new StartEntry(getFileSystem(), entryKey, getUIDKey());
         APTFileSearch searcher = null;
         UnitDescriptor unitDescriptor = getUnitDescriptor();
         if (unitDescriptor != null) {
@@ -3006,6 +3005,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         }
         return out;
+    }
+    
+    public final Key getUIDKey() {
+        // project UID is always key based
+        CsmUID<CsmProject> uid = getUID();
+        assert uid instanceof KeyHolder : "project UID should be key based ";
+        return ((KeyHolder) uid).getKey();
     }
 
     @Override

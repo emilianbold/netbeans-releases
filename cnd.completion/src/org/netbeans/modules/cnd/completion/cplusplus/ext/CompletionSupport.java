@@ -110,6 +110,7 @@ import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities.TypeInfoCollector;
 import org.netbeans.modules.cnd.utils.Antiloop;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -650,11 +651,11 @@ public final class CompletionSupport implements DocumentListener {
                             instantiations.add(inst);
                         }
                     }
-                    // resolving was started from macros and we should use context scope
+                    // TODO: run this check only if resolving was started from macros and we should use context scope
                     int counter = Antiloop.MAGIC_PLAIN_TYPE_RESOLVING_CONST;
-                    while (retType != null && !CsmBaseUtilities.isValid(retType.getClassifier()) && counter > 0) {
+                    while (retType != null && !CsmBaseUtilities.isValid(retType.getClassifier()) && !CharSequenceUtils.isNullOrEmpty(retType.getClassifierText()) && counter > 0) {
                         retType = CsmEntityResolver.resolveType(
-                                retType.getText(), 
+                                retType.getClassifierText(), 
                                 retType.getContainingFile(), 
                                 retType.getStartOffset(), 
                                 ctx.getContextScope(), 
