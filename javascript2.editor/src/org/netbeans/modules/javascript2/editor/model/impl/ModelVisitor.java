@@ -115,6 +115,7 @@ public class ModelVisitor extends PathNodeVisitor {
     // keeps objects that are created as arguments of a function call
     private final Stack<Collection<JsObjectImpl>> functionArgumentStack = new Stack<Collection<JsObjectImpl>>();
     private Map<FunctionInterceptor, Collection<FunctionCall>> functionCalls = null;
+    private final String scriptName;
     
 //    private JsObjectImpl fromAN = null;
 
@@ -125,6 +126,7 @@ public class ModelVisitor extends PathNodeVisitor {
         this.occurrenceBuilder = occurrenceBuilder;
         this.functionStack = new ArrayList<List<FunctionNode>>();
         this.parserResult = parserResult; 
+        this.scriptName = fileObject != null ? fileObject.getName() : "";
     }
 
     public JsObject getGlobalObject() {
@@ -597,7 +599,8 @@ public class ModelVisitor extends PathNodeVisitor {
                 // the function is alredy there
                 return null;
             }
-            name.add(new IdentifierImpl(functionNode.getIdent().getName(), new OffsetRange(start, end)));
+            String funcName = functionNode.isAnonymous() ? functionNode.getName() : functionNode.getIdent().getName();
+            name.add(new IdentifierImpl(funcName, new OffsetRange(start, end)));
             if (pathSize > 2 && getPath().get(pathSize - 2) instanceof FunctionNode) {
                 isPrivate = true;
                 //isStatic = true;
@@ -658,6 +661,12 @@ public class ModelVisitor extends PathNodeVisitor {
                     for (JsObject property : propertiesCopy) {
                         ModelUtils.moveProperty(fncScope, property);
                     }
+                }
+            }
+        } else {
+            for(FunctionNode cFunction: functionNode.getFunctions()) {
+                if (cFunction.isAnonymous()) {
+                    cFunction.setName(scriptName + cFunction.getName());
                 }
             }
         }
