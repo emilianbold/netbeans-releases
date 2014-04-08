@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.support.Interrupter;
 
 /**
  *
@@ -95,7 +96,7 @@ public class ModelUtils {
     }
 
 
-    /*package*/ static List<CsmReference> collect(final CsmFile csmFile, final ReferenceCollector collector) {
+    /*package*/ static List<CsmReference> collect(final CsmFile csmFile, final ReferenceCollector collector, final Interrupter interrupter) {
         CsmFileReferences.getDefault().accept(csmFile, new CsmFileReferences.Visitor() {
             @Override
             public void visit(CsmReferenceContext context) {
@@ -104,7 +105,7 @@ public class ModelUtils {
 
             @Override
             public boolean cancelled() {
-                return false;
+                return interrupter.cancelled();
             }
         });
         return collector.getReferences();
@@ -140,6 +141,11 @@ public class ModelUtils {
                 list.add(ref);
             }
         }
+
+        @Override
+        public boolean cancelled() {
+            return false;
+        }
     }
 
     /*package*/ static class TypedefReferenceCollector extends AbstractReferenceCollector {
@@ -152,6 +158,11 @@ public class ModelUtils {
             if (CsmKindUtilities.isTypedef(obj)) {
                 list.add(ref);
             }
+        }
+
+        @Override
+        public boolean cancelled() {
+            return false;
         }
     }
     /*package*/ static class FunctionReferenceCollector extends AbstractReferenceCollector {
@@ -167,6 +178,11 @@ public class ModelUtils {
         private boolean isWanted(CsmReference ref, CsmFile file) {
             CsmObject csmObject = ref.getReferencedObject();
             return CsmKindUtilities.isFunction(csmObject);
+        }
+
+        @Override
+        public boolean cancelled() {
+            return false;
         }
     }
 
@@ -232,6 +248,11 @@ public class ModelUtils {
                 }
             }
             return parameters;
+        }
+
+        @Override
+        public boolean cancelled() {
+            return false;
         }
     }
 

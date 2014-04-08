@@ -170,6 +170,9 @@ public final class SemanticHighlighter extends HighlighterBase {
             // the following loop deals with entities without collectors
             // and gathers collectors for the next step
             for (Iterator<SemanticEntity> i = entities.iterator(); i.hasNext(); ) {
+                if (interrupter.cancelled()) {
+                    break;
+                }
                 SemanticEntity se = i.next();
                 if (NamedOption.getAccessor().getBoolean(se.getName()) && 
                         (!macroExpansionView || !se.getName().equals(SemanticEntitiesProvider.MacrosCodeProvider.NAME))) { // NOI18N
@@ -180,7 +183,7 @@ public final class SemanticHighlighter extends HighlighterBase {
                     } else {
                         // this is simple entity without collector,
                         // let's add its blocks right now
-                        addHighlightsToBag(doc, newBagFast, se.getBlocks(csmFile), se);
+                        addHighlightsToBag(doc, newBagFast, se.getBlocks(csmFile, interrupter), se);
                         i.remove();
                     }
                 } else {
@@ -189,37 +192,39 @@ public final class SemanticHighlighter extends HighlighterBase {
                 }
             }
             // to show inactive code and macros first
-            getHighlightsBag(doc, true).setHighlights(newBagFast);
-            // here we invoke the collectors
-            // but not for huge documents
-            if (!entities.isEmpty() && !isVeryBigDocument(doc)) {
-                CsmFileReferences.getDefault().accept(csmFile, new Visitor() {
-                    @Override
-                    public void visit(CsmReferenceContext context) {
-                        CsmReference ref = context.getReference();
-                        for (ReferenceCollector c : collectors) {
-                            if (interrupter.cancelled()) {
-                                break;
-                            }
-                            c.visit(ref, csmFile);
-                        }
-                    }
-
-                    @Override
-                    public boolean cancelled() {
-                        return interrupter.cancelled();
-                    }
-                }, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE_AND_PREPROCESSOR);
-                // here we apply highlighting to discovered blocks
-                for (int i = 0; i < entities.size(); ++i) {
-                    addHighlightsToBag(doc, newBagSlow, collectors.get(i).getReferences(), entities.get(i));
-                }
-            }
-            if (LOG.isLoggable(Level.FINER)) {
-                LOG.log(Level.FINER, "Semantic Highlighting update() done in {0}ms for file {1}", new Object[]{System.currentTimeMillis() - start, csmFile.getAbsolutePath()});
-            }
             if (!interrupter.cancelled()){
-                getHighlightsBag(doc, false).setHighlights(newBagSlow);
+                getHighlightsBag(doc, true).setHighlights(newBagFast);
+                // here we invoke the collectors
+                // but not for huge documents
+                if (!entities.isEmpty() && !isVeryBigDocument(doc)) {
+                    CsmFileReferences.getDefault().accept(csmFile, new Visitor() {
+                        @Override
+                        public void visit(CsmReferenceContext context) {
+                            CsmReference ref = context.getReference();
+                            for (ReferenceCollector c : collectors) {
+                                if (interrupter.cancelled()) {
+                                    break;
+                                }
+                                c.visit(ref, csmFile);
+                            }
+                        }
+
+                        @Override
+                        public boolean cancelled() {
+                            return interrupter.cancelled();
+                        }
+                    }, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE_AND_PREPROCESSOR);
+                    // here we apply highlighting to discovered blocks
+                    for (int i = 0; i < entities.size(); ++i) {
+                        addHighlightsToBag(doc, newBagSlow, collectors.get(i).getReferences(), entities.get(i));
+                    }
+                }
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.log(Level.FINER, "Semantic Highlighting update() done in {0}ms for file {1}", new Object[]{System.currentTimeMillis() - start, csmFile.getAbsolutePath()});
+                }
+                if (!interrupter.cancelled()){
+                    getHighlightsBag(doc, false).setHighlights(newBagSlow);
+                }
             }
         }
     }
