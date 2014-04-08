@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
@@ -77,6 +78,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Vladimir Kvashin
  */
 public class OverrideTaskFactory extends IndexingAwareParserResultTask<Parser.Result> {
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
     private static final RequestProcessor RP = new RequestProcessor("OverrideTaskFactory runner", 1); //NOI18N"
     private static final int TASK_DELAY = getInt("cnd.overrides.delay", 500); // NOI18N
     private AtomicBoolean canceled = new AtomicBoolean(false);
@@ -120,7 +122,12 @@ public class OverrideTaskFactory extends IndexingAwareParserResultTask<Parser.Re
         if (canceled.get()) {
             return;
         }
-        RP.post(new RunnerImpl(dobj, csmFile, (StyledDocument)doc, canceled), TASK_DELAY);
+        long time = 0;
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "OverrideTaskFactory started"); //NOI18N
+            time = System.currentTimeMillis();
+        }
+        RP.post(new RunnerImpl(dobj, csmFile, (StyledDocument)doc, canceled, time+TASK_DELAY), TASK_DELAY);
     }
 
     @Override
@@ -132,9 +139,14 @@ public class OverrideTaskFactory extends IndexingAwareParserResultTask<Parser.Re
     }
 
     @Override
-    public final synchronized void cancel() {
-        canceled.set(true);
-        lastParserResult = null;
+    public final void cancel() {
+        synchronized(this) {
+            canceled.set(true);
+            lastParserResult = null;
+        }
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "OverrideTaskFactory cancelled"); //NOI18N
+        }
     }
 
     private static boolean isEnabled() {
@@ -159,16 +171,19 @@ public class OverrideTaskFactory extends IndexingAwareParserResultTask<Parser.Re
         private final CsmFile file;
         private final Reference<StyledDocument> weakDoc;
         private final AtomicBoolean canceled;
+        private final long time;
 
-        private RunnerImpl(DataObject dobj, CsmFile file, StyledDocument doc, AtomicBoolean canceled){
+        private RunnerImpl(DataObject dobj, CsmFile file, StyledDocument doc, AtomicBoolean canceled, long time){
             this.dobj = dobj;
             this.file = file;
             weakDoc = new WeakReference<StyledDocument>((StyledDocument) doc);
             this.canceled = canceled;
+            this.time = time;
         }
 
         @Override
         public void run() {
+            try {
             if (!isEnabled()) {
                 AnnotationsHolder.clearIfNeed(dobj);
                 return;
@@ -179,6 +194,11 @@ public class OverrideTaskFactory extends IndexingAwareParserResultTask<Parser.Re
             StyledDocument doc = weakDoc.get();
             if (doc != null) {
                 addAnnotations(file, doc, dobj, canceled);
+            }
+            } finally {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "OverrideTaskFactory finished for {0}ms", System.currentTimeMillis()-time); //NOI18N
+                }
             }
         }
 
