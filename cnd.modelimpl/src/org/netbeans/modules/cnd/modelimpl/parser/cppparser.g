@@ -2823,7 +2823,7 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
         //{functionEndParameterList(definition);}
         (( ASSIGNEQUAL ~(LITERAL_default | LITERAL_delete)) => ASSIGNEQUAL OCTALINT)?	// The value of the octal must be 0
         (options {greedy=true;} :function_attribute_specification)?
-        (asm_block!)?
+        (options {greedy=true;} :asm_block!)?
         (options {greedy=true;} :function_attribute_specification)?
     ;
  
@@ -2837,11 +2837,10 @@ trailing_type
 {int ts = tsInvalid; TypeQualifier tq;}
     :
         POINTERTO 
-        (tq=cv_qualifier)*
+        cv_qualifier_seq
         ts=trailing_type_specifier
-        (options {greedy=true;} : tq=cv_qualifier)*
-        (options {greedy=true;} : ptr_operator)*
-        (LSQUARE (constant_expression)? RSQUARE)*
+        cv_qualifier_seq
+        (options {greedy=true;} : greedy_abstract_declarator)?
     ;
 
 trailing_type_specifier returns [/*TypeSpecifier*/int ts = tsInvalid]
@@ -2851,6 +2850,8 @@ trailing_type_specifier returns [/*TypeSpecifier*/int ts = tsInvalid]
     |   
         (LITERAL_class|LITERAL_struct|LITERAL_union|LITERAL_enum|LITERAL_typename)
         id = qualified_id
+    |
+        LITERAL_auto
 ;
 
 protected
@@ -3200,21 +3201,42 @@ abstract_declarator
     |
     ;
 
+/**
+ * This rule could be used when nothing goes after it (i.e. parent rule is not anchored).
+ * NOTE: it doesn't handle top-level empty alternative
+ */
+greedy_abstract_declarator
+    :
+        ptr_operator (literal_restrict!)? (options{greedy = true;} : greedy_abstract_declarator)?
+    |
+        (options{greedy = true;} : abstract_declarator_suffix)+
+    |
+        (ELLIPSIS) => ELLIPSIS
+    ;
+
 abstract_declarator_suffix
 	:	
-		LSQUARE (constant_expression)? RSQUARE
-		{declaratorArray();}
-    |   
-        (LPAREN abstract_declarator RPAREN) => LPAREN abstract_declarator RPAREN
+            LSQUARE (constant_expression)? RSQUARE
+            {declaratorArray();}
+        |   
+            (LPAREN RPAREN) => abstract_declarator_param_list
+        |
+            (LPAREN abstract_declarator RPAREN) => LPAREN abstract_declarator RPAREN
 	|
-		LPAREN
-		//{declaratorParameterList(false);}
-		(parameter_list[false])?
-		RPAREN
-		cv_qualifier_seq
-		//{declaratorEndParameterList(false);}
-		(exception_specification)?
+            abstract_declarator_param_list
 	;
+
+abstract_declarator_param_list
+    :
+        LPAREN
+        //{declaratorParameterList(false);}
+        (parameter_list[false])?
+        RPAREN
+        cv_qualifier_seq
+        //{declaratorEndParameterList(false);}
+        (exception_specification)?
+        (options{greedy = true;} : trailing_type)?
+    ;
 
 exception_specification
     {String so;}
