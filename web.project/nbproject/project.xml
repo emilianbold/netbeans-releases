@@ -579,6 +579,9 @@ made subject to such option by the copyright holder.
                         <test/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.projectapi.nb</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.web.project</code-name-base>
                         <recursive/>
                         <compile-dependency/>

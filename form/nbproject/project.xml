@@ -266,6 +266,9 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.projectapi.nb</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.queries</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
@@ -349,6 +352,9 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
                         <recursive/>
                         <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.projectapi.nb</code-name-base>
                     </test-dependency>
                 </test-type>
             </test-dependencies>

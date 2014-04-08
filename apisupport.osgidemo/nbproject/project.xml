@@ -68,7 +68,7 @@
                         <specification-version>9.0</specification-version>
                     </run-dependency>
                 </dependency>
-                </module-dependencies>
+            </module-dependencies>
             <test-dependencies>
                 <test-type>
                     <name>unit</name>
@@ -106,6 +106,9 @@
                         <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
                         <recursive/>
                         <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.projectapi.nb</code-name-base>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.projectui</code-name-base>

@@ -149,6 +149,10 @@
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
+                        <code-name-base>org.apache.commons.codec</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.apache.commons.httpclient</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
@@ -157,15 +161,11 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.apache.commons.codec</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.apache.xmlrpc</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.netbinox</code-name-base>
+                        <code-name-base>org.eclipse.core.jobs</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
@@ -177,15 +177,11 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.eclipse.equinox.security</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.eclipse.core.jobs</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.eclipse.equinox.common</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.eclipse.equinox.security</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
@@ -209,6 +205,12 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.bugtracking</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.bugzilla</code-name-base>
                         <recursive/>
                         <compile-dependency/>
@@ -220,10 +222,11 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.bugtracking</code-name-base>
-                        <recursive/>
+                        <code-name-base>org.netbeans.modules.netbinox</code-name-base>
                         <compile-dependency/>
-                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.projectapi.nb</code-name-base>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openide.util.lookup</code-name-base>

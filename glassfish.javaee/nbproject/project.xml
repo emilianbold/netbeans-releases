@@ -402,6 +402,9 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.projectapi.nb</code-name-base>
+                    </test-dependency>
                 </test-type>
                 <test-type>
                     <name>unit</name>
@@ -413,6 +416,9 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
                         <recursive/>
                         <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.projectapi.nb</code-name-base>
                     </test-dependency>
                 </test-type>
             </test-dependencies>
