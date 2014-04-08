@@ -46,6 +46,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -121,6 +123,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Alexander Simon
  */
 public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result> {
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
     private AtomicBoolean canceled = new AtomicBoolean(false);
     
     public LineFactoryTask() {
@@ -144,6 +147,11 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
         if (!enabled) {
             return;
         }
+        long time = 0;
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "LineFactoryTask started"); //NOI18N
+            time = System.currentTimeMillis();
+        }
         final Document doc = result.getSnapshot().getSource().getDocument(false);
         final FileObject fileObject = result.getSnapshot().getSource().getFileObject();
         final CsmFile file = CsmFileInfoQuery.getDefault().getCsmFile(result);
@@ -151,6 +159,9 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
             if (event instanceof CursorMovedSchedulerEvent) {
                 process(audits, doc, fileObject, (CursorMovedSchedulerEvent)event, file, canceled);
             }
+        }
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "LineFactoryTask finished for {0}ms", System.currentTimeMillis()-time); //NOI18N
         }
     }
 
@@ -627,8 +638,13 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
     }
 
     @Override
-    public final synchronized void cancel() {
-        canceled.set(true);
+    public final void cancel() {
+        synchronized(this) {
+            canceled.set(true);
+        }
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "LineFactoryTask cancelled"); //NOI18N
+        }
     }
     
     @MimeRegistrations({

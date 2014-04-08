@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.qnavigator.navigator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
@@ -69,6 +71,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  * @author Alexander Simon
  */
 public class NavigatorNodeFactoryTask extends IndexingAwareParserResultTask<Parser.Result> {
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
     private AtomicBoolean canceled = new AtomicBoolean(false);
     
     public NavigatorNodeFactoryTask() {
@@ -103,33 +106,44 @@ public class NavigatorNodeFactoryTask extends IndexingAwareParserResultTask<Pars
         if (cdo == null) {
             return;
         }
-        final NavigatorPanelUI panelUI;
-        final NavigatorContent content;
-        if (!navigatorEnabled) {
-            panelUI = null;
-            content = NavigatorComponent.getContent();
-        } else {
-            panelUI = NavigatorComponent.getInstance().getPanelUI();
-            content = panelUI.getContent();
+        long time = 0;
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "NavigatorNodeFactoryTask started"); //NOI18N
+            time = System.currentTimeMillis();
         }
-        String mimeType = result.getSnapshot().getMimePath().getPath();
-        CsmFile csmFile = CsmFileInfoQuery.getDefault().getCsmFile(result);
-        if (csmFile != null) {
-            NavigatorModel oldModel = content.getModel();
-            if (oldModel != null) {
-                DataObject oldCdo = oldModel.getDataObject();
-                CsmFile oldCsmFile = oldModel.getCsmFile();
-                if (oldCsmFile != null && oldCsmFile.isValid()) {
-                    if (cdo.equals(oldCdo) && csmFile.equals(oldCsmFile) && csmFile.isValid()) {
-                        oldModel.update(canceled, false);
-                        return;
+        try {
+            final NavigatorPanelUI panelUI;
+            final NavigatorContent content;
+            if (!navigatorEnabled) {
+                panelUI = null;
+                content = NavigatorComponent.getContent();
+            } else {
+                panelUI = NavigatorComponent.getInstance().getPanelUI();
+                content = panelUI.getContent();
+            }
+            String mimeType = result.getSnapshot().getMimePath().getPath();
+            CsmFile csmFile = CsmFileInfoQuery.getDefault().getCsmFile(result);
+            if (csmFile != null) {
+                NavigatorModel oldModel = content.getModel();
+                if (oldModel != null) {
+                    DataObject oldCdo = oldModel.getDataObject();
+                    CsmFile oldCsmFile = oldModel.getCsmFile();
+                    if (oldCsmFile != null && oldCsmFile.isValid()) {
+                        if (cdo.equals(oldCdo) && csmFile.equals(oldCsmFile) && csmFile.isValid()) {
+                            oldModel.update(canceled, false);
+                            return;
+                        }
                     }
                 }
             }
+            final NavigatorModel model = new NavigatorModel(cdo, fo, panelUI, mimeType, csmFile);
+            content.setModel(model);
+            model.update(canceled, true);
+        } finally {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "NavigatorNodeFactoryTask finished for {0}ms", System.currentTimeMillis()-time); //NOI18N
+            }
         }
-        final NavigatorModel model = new NavigatorModel(cdo, fo, panelUI, mimeType, csmFile);
-        content.setModel(model);
-        model.update(canceled, true);
     }
 
     static final int PRIORITY = 90;
@@ -146,7 +160,12 @@ public class NavigatorNodeFactoryTask extends IndexingAwareParserResultTask<Pars
 
     @Override
     public final synchronized void cancel() {
-        canceled.set(true);
+        synchronized(this) {
+            canceled.set(true);
+        }
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "NavigatorNodeFactoryTask cancelled"); //NOI18N
+        }
     }
     
     @MimeRegistrations({

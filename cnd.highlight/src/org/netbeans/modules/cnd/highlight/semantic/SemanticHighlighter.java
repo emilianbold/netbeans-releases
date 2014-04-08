@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.highlight.semantic;
 
+import java.security.Identity;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -82,7 +83,7 @@ import org.netbeans.spi.editor.highlighting.support.PositionsBag;
 public final class SemanticHighlighter extends HighlighterBase {
     private static final String SLOW_POSITION_BAG = "CndSemanticHighlighterSlow"; // NOI18N
     private static final String FAST_POSITION_BAG = "CndSemanticHighlighterFast"; // NOI18N
-    private static final Logger LOG = Logger.getLogger(SemanticHighlighter.class.getName());
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
     
     private InterrupterImpl interrupter = new InterrupterImpl();
     private Parser.Result lastParserResult;
@@ -276,13 +277,26 @@ public final class SemanticHighlighter extends HighlighterBase {
             lastParserResult = result;
             interrupter = new InterrupterImpl();
         }
+        long time = 0;
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "SemanticHighlighter started, Task={0}, Result={1}", new Object[]{System.identityHashCode(this), System.identityHashCode(result)}); //NOI18N
+            time = System.currentTimeMillis();
+        }
         update(result.getSnapshot().getSource().getDocument(false), interrupter);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "SemanticHighlighter finished for {0}ms", System.currentTimeMillis()-time); //NOI18N
+        }
     }
 
     @Override
-    public synchronized void cancel() {
-        interrupter.cancel();
-        lastParserResult = null;
+    public void cancel() {
+        synchronized(this) {
+            interrupter.cancel();
+            lastParserResult = null;
+        }
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "SemanticHighlighter canceled in {0}, Task={1}", new Object[]{Thread.currentThread().getName(), System.identityHashCode(this)}); //NOI18N
+        }
     }
 
     @Override

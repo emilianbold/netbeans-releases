@@ -186,6 +186,7 @@ public final class CndParserFactory extends ParserFactory {
         @Override
         public CndParserResult getResult(Task task) throws ParseException {
             synchronized (lock) {
+                LOG.log(Level.FINE, "getResult for {0}, Task={1}, Result={2}", new Object[]{task.getClass().getName(), System.identityHashCode(task), System.identityHashCode(cndParserResult)}); //NOI18N
                 return cndParserResult;
             }
         }
