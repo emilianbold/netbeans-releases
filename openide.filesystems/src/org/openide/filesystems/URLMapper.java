@@ -64,7 +64,7 @@ import org.netbeans.modules.openide.filesystems.DefaultURLMapperProxy;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 /** Mapper from FileObject -> URL.
  * Should be registered in default lookup. For details see {@link Lookup#getDefault()}.
@@ -422,7 +422,7 @@ public abstract class URLMapper {
                     // XXX clumsy; see ArchiveURLMapper for possible cleaner style
                     String toReplace = "__EXCLAMATION_REPLACEMENT__";//NOI18N
                     retURL = new URL(
-                            "jar:" + Utilities.toURI(new File(f,toReplace + fo.getPath())).toString().replaceFirst("/"+toReplace,"!/") + // NOI18N
+                            "jar:" + BaseUtilities.toURI(new File(f,toReplace + fo.getPath())).toString().replaceFirst("/"+toReplace,"!/") + // NOI18N
                             ((fo.isFolder() && !fo.isRoot()) ? "/" : "")
                         ); // NOI18N
                 } catch (MalformedURLException mfx) {
@@ -460,7 +460,7 @@ public abstract class URLMapper {
         }
 
         private static URL toURL(File fFile, FileObject fo) throws MalformedURLException {
-            URL retVal = Utilities.toURI(fFile).toURL();
+            URL retVal = BaseUtilities.toURI(fFile).toURL();
             if (retVal != null && fo.isFolder()) {
                 // #155742,160333 - URL for folder must always end with slash
                 final String urlDef = retVal.toExternalForm();
@@ -529,7 +529,7 @@ public abstract class URLMapper {
             try {
                 URI uri = new URI(u.toExternalForm());
 
-                return FileUtil.normalizeFile(Utilities.toFile(uri));
+                return FileUtil.normalizeFile(BaseUtilities.toFile(uri));
             } catch (URISyntaxException use) {
                 // malformed URL
                 return null;

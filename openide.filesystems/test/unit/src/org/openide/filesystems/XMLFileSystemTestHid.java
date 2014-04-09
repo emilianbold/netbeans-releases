@@ -62,7 +62,7 @@ import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import org.openide.util.Enumerations;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 public class XMLFileSystemTestHid extends TestBaseHid {
     /** Factory for all filesystems that want to use TCK in this class.
@@ -107,7 +107,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         
         resources = new String[] {"a/b/c","a/b1/c"};
 
-        if (!FileSystemFactoryHid.switchXMLSystem(xfs, this, Utilities.toURI(createXMLLayer()).toURL())) {
+        if (!FileSystemFactoryHid.switchXMLSystem(xfs, this, BaseUtilities.toURI(createXMLLayer()).toURL())) {
             // OK, unsupported
             return;
         }
@@ -120,7 +120,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
     @Override
     protected void setUp() throws Exception {
         File f = createXMLLayer();
-        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, Utilities.toURI(f).toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, BaseUtilities.toURI(f).toURL());
         this.testedFS = xfs;
         this.allTestedFS = new FileSystem[] { xfs };
         super.setUp();
@@ -152,13 +152,13 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         
         
         
-        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, Utilities.toURI(f).toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, BaseUtilities.toURI(f).toURL());
         
         FileObject fo = xfs.findResource ("TestModule/sample.txt");
         assertEquals ("Four bytes there", 4, fo.getSize ());
         registerDefaultListener (fo);
         
-        if (!FileSystemFactoryHid.switchXMLSystem(xfs, this, Utilities.toURI(f2).toURL())) {
+        if (!FileSystemFactoryHid.switchXMLSystem(xfs, this, BaseUtilities.toURI(f2).toURL())) {
             // OK, unsupported
             return;
         }
@@ -191,13 +191,13 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         
         
         
-        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, Utilities.toURI(f).toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, BaseUtilities.toURI(f).toURL());
         
         FileObject fo = xfs.findResource ("TestModule/sample.txt");
         assertEquals ("Four bytes there", 4, fo.getSize ());
         registerDefaultListener (fo);
         
-        if (!FileSystemFactoryHid.switchXMLSystem(xfs, this, Utilities.toURI(f2).toURL())) {
+        if (!FileSystemFactoryHid.switchXMLSystem(xfs, this, BaseUtilities.toURI(f2).toURL())) {
             // OK, unsupported
             return;
         }
@@ -231,13 +231,13 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         
         
         
-        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, Utilities.toURI(f).toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, BaseUtilities.toURI(f).toURL());
         
         FileObject fo = xfs.findResource ("TestModule/sample.txt");
         assertEquals("Old value is in the attribute", "old", fo.getAttribute("value"));
         registerDefaultListener (fo);
         
-        if (!FileSystemFactoryHid.switchXMLSystem(xfs, this, Utilities.toURI(f2).toURL())) {
+        if (!FileSystemFactoryHid.switchXMLSystem(xfs, this, BaseUtilities.toURI(f2).toURL())) {
             // OK, unsupported
             return;
         }
@@ -265,13 +265,13 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         
         
         
-        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, Utilities.toURI(f).toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, BaseUtilities.toURI(f).toURL());
         
         FileObject fo = xfs.findResource("TestModule/sample.txt");
         assertEquals("Four bytes there", 4, fo.getSize());
         registerDefaultListener(fo);
         
-        if (!FileSystemFactoryHid.switchXMLSystem(xfs, this, Utilities.toURI(f2).toURL())) {
+        if (!FileSystemFactoryHid.switchXMLSystem(xfs, this, BaseUtilities.toURI(f2).toURL())) {
             // OK, unsupported
             return;
         }
@@ -301,7 +301,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
                 f.lastModified() < f2.lastModified()
             );
         }
-        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, Utilities.toURI(f).toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, BaseUtilities.toURI(f).toURL());
         FileObject fo = xfs.findResource ("TestModule/sample.txt");
         assertNotNull(fo);
         assertEquals(fo.lastModified().getTime(), f.lastModified());        
@@ -326,7 +326,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
                 "</filesystem>\n"
                 );
 
-        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, Utilities.toURI(f).toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, BaseUtilities.toURI(f).toURL());
         FileObject fo = xfs.findResource ("TestModule/sample.txt");
         assertNotNull(fo);
         
@@ -350,7 +350,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
                 + "    </folder>\n"
                 + "</filesystem>");
 
-        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, Utilities.toURI(f).toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, BaseUtilities.toURI(f).toURL());
         final LocalFileSystem lfs = new LocalFileSystem();
         lfs.setRootDirectory(getWorkDir());
         MultiFileSystem mfs = new MultiFileSystem(lfs, xfs);
@@ -377,7 +377,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
                 );
         Count.cnt = 0;
 
-        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, Utilities.toURI(f).toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, BaseUtilities.toURI(f).toURL());
         /** the following is a fake implementation of filesystem that
          * allows us to prevent calls to fileObject.getAttributes()
          */
@@ -500,7 +500,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
                 "</filesystem>\n"
                 );
 
-        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, Utilities.toURI(f).toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, BaseUtilities.toURI(f).toURL());
         FileObject fo = xfs.findResource ("TestModule/sample.txt");
         assertNotNull(fo);
 
@@ -525,7 +525,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
                 "</filesystem>\n"
                 );
 
-        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, Utilities.toURI(f).toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, BaseUtilities.toURI(f).toURL());
         FileObject fo = xfs.findResource ("TestModule/sample.txt");
         assertNotNull(fo);
 
@@ -550,7 +550,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
             "</filesystem>\n"
         );
 
-        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, Utilities.toURI(f).toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, BaseUtilities.toURI(f).toURL());
         FileObject fo = xfs.findResource ("TestModule/sample.txt");
         assertNotNull(fo);
 
@@ -580,11 +580,11 @@ public class XMLFileSystemTestHid extends TestBaseHid {
             "</filesystem>\n"
         );
 
-        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, Utilities.toURI(f).toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, BaseUtilities.toURI(f).toURL());
         FileObject fo = xfs.findResource ("TestModule/sample.txt");
         assertNotNull(fo);
 
-        XMLFileSystem realXMLFS = new XMLFileSystem(Utilities.toURI(f).toURL());
+        XMLFileSystem realXMLFS = new XMLFileSystem(BaseUtilities.toURI(f).toURL());
         FileObject realfo = realXMLFS.findResource("TestModule/sample.txt");
         assertNotNull(realfo);
 
@@ -621,7 +621,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
             "</filesystem>\n"
         );
 
-        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, Utilities.toURI(f).toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, BaseUtilities.toURI(f).toURL());
         FileObject fo = xfs.findResource ("TestModule/sample.txt");
         FileObject snd = xfs.findResource ("TestModule/snd.txt");
         assertNotNull(fo);
@@ -722,7 +722,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
                 "</filesystem>\n"
                 );
 
-        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, Utilities.toURI(f).toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, BaseUtilities.toURI(f).toURL());
         FileObject fo = xfs.findResource ("TestModule/sample.txt");
         assertNotNull(fo);
 
@@ -771,8 +771,8 @@ public class XMLFileSystemTestHid extends TestBaseHid {
             )
         );
 
-        URL url1 = new URL("jar:" + Utilities.toURI(jar1) + "!/layer.xml");
-        URL url2 = new URL("jar:" + Utilities.toURI(jar2) + "!/layer.xml");
+        URL url1 = new URL("jar:" + BaseUtilities.toURI(jar1) + "!/layer.xml");
+        URL url2 = new URL("jar:" + BaseUtilities.toURI(jar2) + "!/layer.xml");
 
         FileSystem xfs1 = FileSystemFactoryHid.createXMLSystem(getName(), this, url1);
         FileObject fo1 = xfs1.findResource("dir/file");
@@ -902,7 +902,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         File f2 = changeOfAnAttributeInLayerIsFiredgenerateLayer("Folder", "java.awt.Button");
         File f3 = changeOfAnAttributeInLayerIsFiredgenerateLayer("NoChange", "nochange");
 
-        fs.setXmlUrls (new URL[] { Utilities.toURI(f1).toURL(), Utilities.toURI(f3).toURL() } );
+        fs.setXmlUrls (new URL[] { BaseUtilities.toURI(f1).toURL(), BaseUtilities.toURI(f3).toURL() } );
         
         FileObject file = fs.findResource("Folder/empty.xml");
         assertNotNull("File found in layer", file);
@@ -918,7 +918,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         assertAttr("The first value is list", file, "value", "java.awt.List");
         assertAttr("Imutable value is nochange", nochange, "value", "nochange");
         
-        fs.setXmlUrls (new URL[] { Utilities.toURI(f2).toURL(), Utilities.toURI(f3).toURL() } );
+        fs.setXmlUrls (new URL[] { BaseUtilities.toURI(f2).toURL(), BaseUtilities.toURI(f3).toURL() } );
         String v2 = (String) file.getAttribute("value");
         assertEquals("The second value is button", "java.awt.Button", v2);
         
@@ -953,7 +953,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         LocalFileSystem target = new LocalFileSystem();
         target.setRootDirectory(r);
 
-        FileSystem source = FileSystemFactoryHid.createXMLSystem(getName(), this, Utilities.toURI(f).toURL());
+        FileSystem source = FileSystemFactoryHid.createXMLSystem(getName(), this, BaseUtilities.toURI(f).toURL());
         FileObject template = source.findResource("Templates/Other/special");
         assertNotNull("template found", template);
         FileObject foTested = target.getRoot().createData("copiedTemplate");
@@ -1078,7 +1078,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
             w.close();
         }
 
-        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, Utilities.toURI(f1).toURL(), Utilities.toURI(f2).toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, BaseUtilities.toURI(f1).toURL(), BaseUtilities.toURI(f2).toURL());
 
 
         FileObject just1 = xfs.findResource("just1/empty.xml");
@@ -1090,19 +1090,19 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         String layers2 = layers(just2);
         String layersB = layers(both);
 
-        if (!layersR.contains(Utilities.toURI(f1).toString())) {
-            fail("Missing " + Utilities.toURI(f1).toString() + "\ninside: " + layersR);
+        if (!layersR.contains(BaseUtilities.toURI(f1).toString())) {
+            fail("Missing " + BaseUtilities.toURI(f1).toString() + "\ninside: " + layersR);
         }
-        if (!layersR.contains(Utilities.toURI(f2).toString())) {
-            fail("Missing " + Utilities.toURI(f2).toString() + "\ninside: " + layersR);
+        if (!layersR.contains(BaseUtilities.toURI(f2).toString())) {
+            fail("Missing " + BaseUtilities.toURI(f2).toString() + "\ninside: " + layersR);
         }
 
-        assertEquals(Utilities.toURI(f1).toString(), layers1);
-        assertEquals(Utilities.toURI(f2).toString(), layers2);
-        if (!layersB.contains(Utilities.toURI(f1).toString())) {
+        assertEquals(BaseUtilities.toURI(f1).toString(), layers1);
+        assertEquals(BaseUtilities.toURI(f2).toString(), layers2);
+        if (!layersB.contains(BaseUtilities.toURI(f1).toString())) {
             fail("Missing " + f1 + "\ninside: " + layersB);
         }
-        if (!layersB.contains(Utilities.toURI(f2).toString())) {
+        if (!layersB.contains(BaseUtilities.toURI(f2).toString())) {
             fail("Missing " + f2 + "\ninside: " + layersB);
         }
     }
@@ -1120,7 +1120,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
             + "</filesystem>");
         w.close();
 
-        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, Utilities.toURI(layer).toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, BaseUtilities.toURI(layer).toURL());
 
         FileObject fo = xfs.findResource("f/empty.xml");
         assertNotNull("File found", fo);
@@ -1143,25 +1143,25 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         File f1 = writeFile("layer1.xml",
                 "<filesystem>\n" +
                 "<folder name='d'>\n" +
-                "<file name='f' url='" + Utilities.toURI(c1) + "'/>" +
+                "<file name='f' url='" + BaseUtilities.toURI(c1) + "'/>" +
                 "</folder>\n" +
                 "</filesystem>\n"
                 );
         File f2 = writeFile("layer2.xml",
                 "<filesystem>\n" +
                 "<folder name='d'>\n" +
-                "<file name='f' url='" + Utilities.toURI(c2) + "'>" +
+                "<file name='f' url='" + BaseUtilities.toURI(c2) + "'>" +
                 "  <attr name='weight' intvalue='100'/>" +
                 "</file>\n" +
                 "</folder>\n" +
                 "</filesystem>\n"
                 );
 
-        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, Utilities.toURI(f2).toURL(), Utilities.toURI(f1).toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, BaseUtilities.toURI(f2).toURL(), BaseUtilities.toURI(f1).toURL());
         FileObject fo = xfs.findResource("d/f");
         assertNotNull(fo);
         assertEquals(6, fo.getSize());
-        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, Utilities.toURI(f1).toURL(), Utilities.toURI(f2).toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, BaseUtilities.toURI(f1).toURL(), BaseUtilities.toURI(f2).toURL());
         fo = xfs.findResource("d/f");
         assertNotNull(fo);
         assertEquals(6, fo.getSize());

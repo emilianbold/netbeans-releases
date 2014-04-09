@@ -222,3 +222,4 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-core-multitabs" value="${javadoc.web.root}/org-netbeans-core-multitabs"/>
 <property name="javadoc.docs.org-openide-util-base" value="${javadoc.web.root}/org-openide-util-base"/>
 <property name="javadoc.docs.org-openide-filesystems-compat8" value="${javadoc.web.root}/org-openide-filesystems-compat8"/>
+<property name="javadoc.docs.org-openide-filesystems-compat8" value="${javadoc.web.root}/org-openide-filesystems-compat8"/>

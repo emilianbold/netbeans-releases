@@ -1309,6 +1309,16 @@ made subject to such option by the copyright holder.
                 <module codenamebase="org.openide.util" spec="9.0"/>
                 <module codenamebase="org.openide.util.base" spec="9.0"/>
             </replace>
+
+            <replace codenamebase="org.openide.filesystems" addcompiletime="true">
+                <module codenamebase="org.openide.filesystems" spec="9.0"/>
+                <module codenamebase="org.openide.filesystems.nb" spec="9.0"/>
+                <module codenamebase="org.openide.filesystems.compat8" spec="9.0"/>
+            </replace>
+            <replace codenamebase="org.openide.execution" addcompiletime="true">
+                <module codenamebase="org.openide.execution" spec="9.0"/>
+                <module codenamebase="org.openide.execution.compat8" spec="9.0"/>
+            </replace>
             <fileset dir="nbproject" >
                 <include name="project.xml" />
             </fileset>

@@ -239,7 +239,7 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
             public String getDisplayName() {
                 return FileUtil.getFileDisplayName(layer);
             }
-            @Override
+            
             public SystemAction[] getActions(Set<FileObject> foSet) {
                 return new SystemAction[] {
                     SystemAction.get(PickNameAction.class),

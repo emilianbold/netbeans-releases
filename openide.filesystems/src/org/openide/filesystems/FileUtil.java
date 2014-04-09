@@ -84,16 +84,13 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Icon;
-import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileSystemView;
 import org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.implspi.NamedServicesProvider;
 
@@ -835,10 +832,10 @@ public final class FileUtil extends Object {
             }
 
             if ((fileURL != null) && "file".equals(fileURL.getProtocol())) {
-                retVal = Utilities.toFile(URI.create(fileURL.toExternalForm()));
+                retVal = BaseUtilities.toFile(URI.create(fileURL.toExternalForm()));
             }
         }
-        assert assertNormalized(retVal, Utilities.isMac()); // #240180
+        assert assertNormalized(retVal, BaseUtilities.isMac()); // #240180
         return retVal;
     }
 
@@ -885,7 +882,7 @@ public final class FileUtil extends Object {
 
         FileObject retVal = null;
         try {
-            URL url = Utilities.toURI(file).toURL();
+            URL url = BaseUtilities.toURI(file).toURL();
             retVal = URLMapper.findFileObject(url);
 
             /*probably temporary piece of code to catch the cause of #46630*/
@@ -928,7 +925,7 @@ public final class FileUtil extends Object {
         }
 
         try {
-            URL url = (Utilities.toURI(file).toURL());
+            URL url = (BaseUtilities.toURI(file).toURL());
             retVal = URLMapper.findFileObjects(url);
         } catch (MalformedURLException e) {
             retVal = null;
@@ -1212,7 +1209,7 @@ public final class FileUtil extends Object {
      * @return true, if such name does not exists
      */
     private static boolean checkFreeName(FileObject fo, String name, String ext) {
-        if ((Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2)) || Utilities.isMac()) {
+        if ((BaseUtilities.isWindows() || (BaseUtilities.getOperatingSystem() == BaseUtilities.OS_OS2)) || BaseUtilities.isMac()) {
             // case-insensitive, do some special check
             Enumeration<? extends FileObject> en = fo.getChildren(false);
 
@@ -1607,9 +1604,9 @@ public final class FileUtil extends Object {
         LOG.log(Level.FINE, "FileUtil.normalizeFile for {0}", file); // NOI18N
 
         long now = System.currentTimeMillis();
-        if ((Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2))) {
+        if ((BaseUtilities.isWindows() || (BaseUtilities.getOperatingSystem() == BaseUtilities.OS_OS2))) {
             retFile = normalizeFileOnWindows(file);
-        } else if (Utilities.isMac()) {
+        } else if (BaseUtilities.isMac()) {
             retFile = normalizeFileOnMac(file);
         } else {
             retFile = normalizeFileOnUnixAlike(file);
@@ -1625,7 +1622,7 @@ public final class FileUtil extends Object {
     private static File normalizeFileOnUnixAlike(File file) {
         // On Unix, do not want to traverse symlinks.
         // URI.normalize removes ../ and ./ sequences nicely.
-        file = Utilities.toFile(Utilities.toURI(file).normalize()).getAbsoluteFile();
+        file = BaseUtilities.toFile(BaseUtilities.toURI(file).normalize()).getAbsoluteFile();
         while (file.getAbsolutePath().startsWith("/../")) { // NOI18N
             file = new File(file.getAbsolutePath().substring(3));
         }
@@ -1641,7 +1638,7 @@ public final class FileUtil extends Object {
 
         try {
             // URI.normalize removes ../ and ./ sequences nicely.            
-            File absoluteFile = Utilities.toFile(Utilities.toURI(file).normalize());
+            File absoluteFile = BaseUtilities.toFile(BaseUtilities.toURI(file).normalize());
             File canonicalFile = file.getCanonicalFile();
             String absolutePath = absoluteFile.getAbsolutePath();
             if (absolutePath.equals("/..")) { // NOI18N
@@ -1738,7 +1735,7 @@ public final class FileUtil extends Object {
             }
         }
         // #135547 - on Windows Vista map "Documents and Settings\<username>\My Documents" to "Users\<username>\Documents"
-        if((Utilities.getOperatingSystem() & Utilities.OS_WINVISTA) != 0) {
+        if((BaseUtilities.getOperatingSystem() & BaseUtilities.OS_WINVISTA) != 0) {
             if(retVal == null) {
                 retVal = file.getAbsoluteFile();
             }
@@ -1987,7 +1984,7 @@ public final class FileUtil extends Object {
             do {
                 wasDir = entry.isDirectory();
                 LOG.finest("urlForArchiveOrDir:toURI:entry");   //NOI18N
-                u = Utilities.toURI(entry).toURL();
+                u = BaseUtilities.toURI(entry).toURL();
                 isDir = entry.isDirectory();
             } while (wasDir ^ isDir);
             if (isArchiveFile(u) || entry.isFile() && entry.length() < 4) {
@@ -2022,9 +2019,9 @@ public final class FileUtil extends Object {
     public static File archiveOrDirForURL(URL entry) {
         String u = entry.toString();
         if (u.startsWith("jar:file:") && u.endsWith("!/")) { // NOI18N
-            return Utilities.toFile(URI.create(u.substring(4, u.length() - 2)));
+            return BaseUtilities.toFile(URI.create(u.substring(4, u.length() - 2)));
         } else if (u.startsWith("file:")) { // NOI18N
-            return Utilities.toFile(URI.create(u));
+            return BaseUtilities.toFile(URI.create(u));
         } else {
             return null;
         }
@@ -2034,14 +2031,14 @@ public final class FileUtil extends Object {
      * Make sure that a JFileChooser does not traverse symlinks on Unix.
      * @param chooser a file chooser
      * @param currentDirectory if not null, a file to set as the current directory
-     *                         using {@link JFileChooser#setCurrentDirectory} without canonicalizing
+     *                         using {@link javax.swing.JFileChooser#setCurrentDirectory} without canonicalizing
      * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=46459">Issue #46459</a>
      * @see <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4906607">JRE bug #4906607</a>
      * @since org.openide/1 4.42
-     * @deprecated Just use {@link JFileChooser#setCurrentDirectory}. JDK 6 does not have this bug.
+     * @deprecated Just use {@link javax.swing.JFileChooser#setCurrentDirectory}. JDK 6 does not have this bug.
      */
     @Deprecated
-    public static void preventFileChooserSymlinkTraversal(JFileChooser chooser, File currentDirectory) {
+    public static void preventFileChooserSymlinkTraversal(javax.swing.JFileChooser chooser, File currentDirectory) {
         chooser.setCurrentDirectory(currentDirectory);
     }
 
@@ -2211,123 +2208,6 @@ public final class FileUtil extends Object {
         }
     }
 
-    private static final class NonCanonicalizingFileSystemView extends FileSystemView {
-        private final FileSystemView delegate = FileSystemView.getFileSystemView();
-
-        public NonCanonicalizingFileSystemView() {
-        }
-
-        @Override
-        public boolean isFloppyDrive(File dir) {
-            return delegate.isFloppyDrive(dir);
-        }
-
-        @Override
-        public boolean isComputerNode(File dir) {
-            return delegate.isComputerNode(dir);
-        }
-
-        public File createNewFolder(File containingDir)
-        throws IOException {
-            return wrapFileNoCanonicalize(delegate.createNewFolder(containingDir));
-        }
-
-        @Override
-        public boolean isDrive(File dir) {
-            return delegate.isDrive(dir);
-        }
-
-        @Override
-        public boolean isFileSystemRoot(File dir) {
-            return delegate.isFileSystemRoot(dir);
-        }
-
-        @Override
-        public File getHomeDirectory() {
-            return wrapFileNoCanonicalize(delegate.getHomeDirectory());
-        }
-
-        @Override
-        public File createFileObject(File dir, String filename) {
-            return wrapFileNoCanonicalize(delegate.createFileObject(dir, filename));
-        }
-
-        @Override
-        public Boolean isTraversable(File f) {
-            return delegate.isTraversable(f);
-        }
-
-        @Override
-        public boolean isFileSystem(File f) {
-            return delegate.isFileSystem(f);
-        }
-
-        /*
-        protected File createFileSystemRoot(File f) {
-            return translate(delegate.createFileSystemRoot(f));
-        }
-         */
-        @Override
-        public File getChild(File parent, String fileName) {
-            return wrapFileNoCanonicalize(delegate.getChild(parent, fileName));
-        }
-
-        @Override
-        public File getParentDirectory(File dir) {
-            return wrapFileNoCanonicalize(delegate.getParentDirectory(dir));
-        }
-
-        @Override
-        public Icon getSystemIcon(File f) {
-            return delegate.getSystemIcon(f);
-        }
-
-        @Override
-        public boolean isParent(File folder, File file) {
-            return delegate.isParent(folder, file);
-        }
-
-        @Override
-        public String getSystemTypeDescription(File f) {
-            return delegate.getSystemTypeDescription(f);
-        }
-
-        @Override
-        public File getDefaultDirectory() {
-            return wrapFileNoCanonicalize(delegate.getDefaultDirectory());
-        }
-
-        @Override
-        public String getSystemDisplayName(File f) {
-            return delegate.getSystemDisplayName(f);
-        }
-
-        @Override
-        public File[] getRoots() {
-            return wrapFilesNoCanonicalize(delegate.getRoots());
-        }
-
-        @Override
-        public boolean isHiddenFile(File f) {
-            return delegate.isHiddenFile(f);
-        }
-
-        @Override
-        public File[] getFiles(File dir, boolean useFileHiding) {
-            return wrapFilesNoCanonicalize(delegate.getFiles(dir, useFileHiding));
-        }
-
-        @Override
-        public boolean isRoot(File f) {
-            return delegate.isRoot(f);
-        }
-
-        @Override
-        public File createFileObject(String path) {
-            return wrapFileNoCanonicalize(delegate.createFileObject(path));
-        }
-    }
-    
     private static FileSystem getDiskFileSystem() {
         synchronized (FileUtil.class) {
             return diskFileSystem;

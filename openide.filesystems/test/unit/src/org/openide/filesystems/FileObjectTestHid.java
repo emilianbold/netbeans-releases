@@ -1101,8 +1101,8 @@ public class FileObjectTestHid extends TestBaseHid {
     
     public void  testGetPath3() throws  IOException{
         /** There is no possible to create filenames ending in dots on Win platforms*/
-        if ((org.openide.util.Utilities.isWindows () ||
-                (org.openide.util.Utilities.getOperatingSystem () == org.openide.util.Utilities.OS_OS2))) {
+        if ((org.openide.util.BaseUtilities.isWindows () ||
+                (org.openide.util.BaseUtilities.getOperatingSystem () == BaseUtilities.OS_OS2))) {
             return;
         }
         checkSetUp();

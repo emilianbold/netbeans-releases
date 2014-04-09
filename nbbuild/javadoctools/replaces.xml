@@ -222,3 +222,4 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-core-multitabs@" value="${javadoc.docs.org-netbeans-core-multitabs}"/>
 <replacefilter token="@org-openide-util-base@" value="${javadoc.docs.org-openide-util-base}"/>
 <replacefilter token="@org-openide-filesystems-compat8@" value="${javadoc.docs.org-openide-filesystems-compat8}"/>
+<replacefilter token="@org-openide-filesystems-compat8@" value="${javadoc.docs.org-openide-filesystems-compat8}"/>

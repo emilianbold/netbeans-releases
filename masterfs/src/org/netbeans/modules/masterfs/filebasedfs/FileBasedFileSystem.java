@@ -237,12 +237,6 @@ public final class FileBasedFileSystem extends FileSystem {
         throw new IOException("Cannot create temporary file"); // NOI18N
     }
 
-    @Override
-    public SystemAction[] getActions() {
-        return new SystemAction[] {};
-    }
-
-    @Override
     public final SystemAction[] getActions(final Set<FileObject> foSet) {
         SystemAction[] some = status.getActions (foSet);
         if (some != null) {
