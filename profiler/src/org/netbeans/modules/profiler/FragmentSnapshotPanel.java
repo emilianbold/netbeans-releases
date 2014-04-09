@@ -98,7 +98,7 @@ public class FragmentSnapshotPanel extends SnapshotPanel implements ChangeListen
         tabs.addChangeListener(this);
 
         ProfilerToolbar toolBar = ProfilerToolbar.create(false);
-        toolBar.add(saveAction = new SaveSnapshotAction(ls));
+        saveAction = new SaveSnapshotAction(ls);
         toolBar.add(new ExportAction(this,ls));
 
         add(toolBar.getComponent(), BorderLayout.NORTH);
