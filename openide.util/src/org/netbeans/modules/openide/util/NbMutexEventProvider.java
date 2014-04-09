@@ -79,8 +79,18 @@ public class NbMutexEventProvider implements MutexEventProvider {
         }
 
         @Override
+        public void writeAccess(Runnable runnable) {
+            doEvent(runnable);
+        }
+
+        @Override
         public <T> T writeAccess(Mutex.ExceptionAction<T> action) throws MutexException {
             return doEventAccess(action);         
+        }
+
+        @Override
+        public void readAccess(Runnable runnable) {
+            doEvent(runnable);
         }
 
         @Override
@@ -102,6 +112,14 @@ public class NbMutexEventProvider implements MutexEventProvider {
         public String toString() {
             return "EVENT - Full JRE"; // NOI18N
         }
+
+        private static void doEvent(Runnable run) {
+           if (EventQueue.isDispatchThread()) {
+               run.run();
+           } else {
+               EventQueue.invokeLater(run);
+           }
+       }
 
         /** Methods for access to event queue.
         * @param run runabble to post later

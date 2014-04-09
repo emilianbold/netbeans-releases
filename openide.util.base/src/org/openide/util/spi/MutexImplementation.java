@@ -53,7 +53,9 @@ import org.openide.util.MutexException;
 public interface MutexImplementation {
     boolean isReadAccess();
     boolean isWriteAccess();
+    void writeAccess(Runnable runnable);
     <T> T writeAccess(Mutex.ExceptionAction<T> action) throws MutexException;
+    void readAccess(Runnable runnable);
     <T> T readAccess(Mutex.ExceptionAction<T> action) throws MutexException;
     void postReadRequest(Runnable run);
     void postWriteRequest(Runnable run);

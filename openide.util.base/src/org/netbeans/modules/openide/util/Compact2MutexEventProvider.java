@@ -74,8 +74,18 @@ public class Compact2MutexEventProvider implements MutexEventProvider{
         }
 
         @Override
+        public void writeAccess(Runnable runnable) {
+            handle();
+        }
+
+        @Override
         public <T> T writeAccess(Mutex.ExceptionAction<T> action) throws MutexException {
             return handle();
+        }
+
+        @Override
+        public void readAccess(Runnable runnable) {
+            handle();
         }
 
         @Override

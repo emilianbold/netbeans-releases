@@ -219,11 +219,30 @@ public class DefaultMutexImplementation implements MutexImplementation {
         return lock;
     }
 
+    @Override
+    public void readAccess(Runnable runnable) {
+        if (wrapper != null) {
+            try {
+                doWrapperAccess(null, runnable, true);
+                return;
+            } catch (MutexException ex) {
+                throw new IllegalStateException(ex);
+            }
+        }
+        Thread t = Thread.currentThread();
+        readEnter(t, 0);
+
+        try {
+            runnable.run();
+        } finally {
+            leave(t);
+        }
+    }
 
     @Override
     public <T> T readAccess(final ExceptionAction<T> action) throws MutexException {
         if (wrapper != null) {
-            return doWrapperAccess(action, true);
+            return doWrapperAccess(action, null, true);
         }
 
         Thread t = Thread.currentThread();
@@ -239,11 +258,32 @@ public class DefaultMutexImplementation implements MutexImplementation {
             leave(t);
         }
     }
-    
+
+    @Override
+    public void writeAccess(Runnable runnable) {
+        if (wrapper != null) {
+            try {
+                doWrapperAccess(null, runnable, false);
+            } catch (MutexException ex) {
+                throw new IllegalStateException(ex);
+            }
+            return;
+        }
+
+        Thread t = Thread.currentThread();
+        writeEnter(t, 0);
+
+        try {
+            runnable.run();
+        } finally {
+            leave(t);
+        }
+    }
+
     @Override
     public <T> T writeAccess(ExceptionAction<T> action) throws MutexException {
         if (wrapper != null) {
-            return doWrapperAccess(action, false);
+            return doWrapperAccess(action, null, false);
         }
 
         Thread t = Thread.currentThread();
@@ -1023,36 +1063,45 @@ public class DefaultMutexImplementation implements MutexImplementation {
     
     private <T> T doWrapperAccess(
         final ExceptionAction<T> action,
+        final Runnable runnable,
         final boolean readOnly) throws MutexException {
         class R implements Runnable {
-            T ret;
-            MutexException e;
-            
-            @Override
-            public void run() {
-                DefaultMutexImplementation m = (DefaultMutexImplementation)LOCK;
-                try {
-                    if (readOnly) {
-                        ret = m.readAccess(action);                        
-                    } else {
-                        ret = m.writeAccess(action);
-                    }
-                } catch (MutexException ex) {
-                    e = ex;
-                }
-            }
-        }
-        R run = new R();
-        DefaultMutexImplementation m = (DefaultMutexImplementation)LOCK;
-        if (m.isWriteAccess() || m.isReadAccess()) {
-            run.run();
-        } else {
-            wrapper.execute(run);
-        }
-        if (run.e != null) {
-            throw run.e;
-        }
-        return run.ret;
+           T ret;
+           MutexException e;
+
+           @Override
+           public void run() {
+               DefaultMutexImplementation m = (DefaultMutexImplementation)LOCK;
+               try {
+                   if (readOnly) {
+                       if (action != null) {
+                           ret = m.readAccess(action);
+                       } else {
+                           m.readAccess(runnable);
+                       }
+                   } else {
+                       if (action != null) {
+                           ret = m.writeAccess(action);
+                       } else {
+                           m.writeAccess(runnable);
+                       }
+                   }
+               } catch (MutexException ex) {
+                   e = ex;
+               }
+           }
+       }
+       R run = new R();
+       DefaultMutexImplementation m = (DefaultMutexImplementation)LOCK;
+       if (m.isWriteAccess() || m.isReadAccess()) {
+           run.run();
+       } else {
+           wrapper.execute(run);
+       }
+       if (run.e != null) {
+           throw run.e;
+       }
+       return run.ret;
     }
 
     private static final class ThreadInfo {

@@ -208,7 +208,7 @@ public final class Mutex {
     */
     public <T> T readAccess(final Action<T> action) {        
         try {
-            return impl.readAccess(ActionWrapper.from(action));
+            return impl.readAccess(action);
         } catch (MutexException ex) {
             throw (InternalError) new InternalError("Exception from non-Exception Action").initCause(ex.getException()); // NOI18N
         }
@@ -250,11 +250,7 @@ public final class Mutex {
     * @see #readAccess(Mutex.Action)
     */
     public void readAccess(final Runnable action) {        
-        try {
-            impl.readAccess(ActionWrapper.from(action));
-        } catch (MutexException ex) {
-            throw (InternalError) new InternalError("Exception from non-Exception Action").initCause(ex.getException()); // NOI18N
-        }
+        impl.readAccess(action);
     }
 
     /** Run an action with write access.
@@ -265,7 +261,7 @@ public final class Mutex {
     */
     public <T> T writeAccess(Action<T> action) {        
         try {
-            return impl.writeAccess(ActionWrapper.from(action));
+            return impl.writeAccess(action);
         } catch (MutexException ex) {
             throw (InternalError) new InternalError("Exception from non-Exception Action").initCause(ex.getException()); // NOI18N
         }
@@ -304,11 +300,7 @@ public final class Mutex {
     * @see #readAccess(Runnable)
     */
     public void writeAccess(final Runnable action) {        
-        try {
-            impl.writeAccess(ActionWrapper.from(action));
-        } catch (MutexException ex) {
-            throw (InternalError) new InternalError("Exception from non-Exception Action").initCause(ex.getException()); // NOI18N
-        }
+        impl.writeAccess(action);
     }
 
     /** Tests whether this thread has already entered the mutex in read access.
@@ -489,35 +481,5 @@ public final class Mutex {
         public void exitWriteAccess() {
             delegate.exitWriteAccess();
         }
-    }
-
-    private static class ActionWrapper<T> implements ExceptionAction<T> {
-
-        private final Union2<Runnable,Action<T>> delegate;
-
-        private ActionWrapper(final Union2<Runnable,Action<T>> delegate) {
-            Parameters.notNull("delegate", delegate);   //NOI18N
-            this.delegate = delegate;
-        }
-
-        @Override
-        public T run() throws Exception {
-            if (delegate.hasFirst()) {
-                delegate.first().run();
-                return null;
-            } else {
-                return delegate.second().run();
-            }
-        }
-
-        static ActionWrapper<Void> from(final Runnable runnable) {
-            Parameters.notNull("runnable", runnable);   //NOI18N
-            return new ActionWrapper<Void>(Union2.<Runnable,Action<Void>>createFirst(runnable));
-        }
-
-        static <T> ActionWrapper<T> from(final Action<T> action) {
-            Parameters.notNull("action", action);   //NOI18N
-            return new ActionWrapper<T>(Union2.<Runnable,Action<T>>createSecond(action));
-        }
-    }        
+    }    
 }
