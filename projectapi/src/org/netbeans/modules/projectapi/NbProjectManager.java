@@ -769,8 +769,18 @@ public final class NbProjectManager implements ProjectManagerImplementation {
         }
 
         @Override
+        public void writeAccess(Runnable runnable) {
+            owner.MUTEX.writeAccess(wrap(runnable));
+        }
+
+        @Override
         public <T> T writeAccess(ExceptionAction<T> action) throws MutexException {
             return owner.MUTEX.writeAccess(wrap(action));
+        }
+
+        @Override
+        public void readAccess(Runnable runnable) {
+            owner.MUTEX.readAccess(wrap(runnable));
         }
 
         @Override
