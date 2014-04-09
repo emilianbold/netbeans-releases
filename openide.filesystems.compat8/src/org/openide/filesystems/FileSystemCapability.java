@@ -129,7 +129,8 @@ public class FileSystemCapability extends Object {
         class FFS implements org.openide.util.Enumerations.Processor<FileSystem, FileSystem> {
             @Deprecated
             public FileSystem process(FileSystem fs, Collection<FileSystem> ignore) {
-                return fs.getCapability().capableOf(FileSystemCapability.this) ? fs : null;
+                return FileSystemCompat.compat(fs).getCapability().
+                        capableOf(FileSystemCapability.this) ? fs : null;
             }
         }
 

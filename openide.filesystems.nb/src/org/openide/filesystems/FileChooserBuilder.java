@@ -58,6 +58,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.filechooser.FileView;
 import org.netbeans.modules.openide.filesystems.FileFilterSupport;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.*;
 
 /**
@@ -437,7 +438,7 @@ public class FileChooserBuilder {
             return null;
         if( !Boolean.getBoolean("nb.native.filechooser") )
             return null;
-        if( dirsOnly && !Utilities.isMac() )
+        if( dirsOnly && !BaseUtilities.isMac() )
             return null;
         Component parentComponent = findDialogParent();
         Frame parentFrame = (Frame) SwingUtilities.getAncestorOfClass(Frame.class, parentComponent);

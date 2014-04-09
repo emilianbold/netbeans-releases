@@ -264,6 +264,10 @@ public abstract class Module extends ModuleInfo {
         return data().getCodeName();
     }
     
+    String getFragmentHostCodeName() {
+        return data().getFragmentHostCodeName();
+    }
+    
     @Override
     public String getCodeNameBase() {
         String cnb = mgr.cnbFor(getJarFile());

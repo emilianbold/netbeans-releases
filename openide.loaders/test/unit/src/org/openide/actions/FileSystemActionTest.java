@@ -108,7 +108,6 @@ public class FileSystemActionTest extends NbTestCase {
 }
     
     private static class TestFS extends LocalFileSystem {
-        @Override
         public SystemAction[] getActions() {
             return new SystemAction[] {
                 SystemAction.get(TestFSAction.class),

@@ -47,7 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.NbCollections;
 import org.openide.util.TopologicalSortException;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 /**
  * Implements folder ordering logic in {@link FileUtil}.
@@ -209,7 +209,7 @@ class Ordering {
             return new ArrayList<FileObject>(children);
         } else {
             try {
-                return Utilities.topologicalSort(children, edges);
+                return BaseUtilities.topologicalSort(children, edges);
             } catch (TopologicalSortException x) {
                 if (logWarnings) {
                     LOG.log(Level.WARNING, "Contradictory partial ordering in " + parent.getPath(), x);

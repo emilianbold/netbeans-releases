@@ -45,8 +45,6 @@
 package org.openide.filesystems;
 
 import java.awt.Image;
-import java.awt.Toolkit;
-import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -57,6 +55,7 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -64,7 +63,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.*;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -159,9 +157,6 @@ public abstract class FileSystem implements Serializable {
     /** Property name giving read-only state. */
     public static final String PROP_READ_ONLY = "readOnly"; // NOI18N
 
-    /** Property name giving capabilities state. @deprecated No more capabilities. */
-    static final String PROP_CAPABILITIES = "capabilities"; // NOI18N    
-
     /** Used for synchronization purpose*/
     private static final Object internLock = new Object();
     private transient static ThreadLocal<EventControl> thrLocal = new ThreadLocal<EventControl>();
@@ -191,18 +186,6 @@ public abstract class FileSystem implements Serializable {
     /**Repository that contains this FileSystem or null*/
     private transient Repository repository = null;
     private transient FCLSupport fclSupport;
-
-    /** Describes capabilities of the filesystem.
-    */
-    @Deprecated // have to store it for compat
-    private /* XXX JDK #6460147: javac still reports it even though @Deprecated,
-               and @SuppressWarnings("deprecation") does not help either: FileSystemCapability*/Object capability;
-
-    /** property listener on FileSystemCapability. */
-    private transient PropertyChangeListener capabilityListener;
-
-    /** hidden flag */
-    private boolean hidden = false;
 
     /** system name */
     private String systemName = ""; // NOI18N
@@ -248,47 +231,6 @@ public abstract class FileSystem implements Serializable {
                 PROP_VALID, (!v) ? Boolean.TRUE : Boolean.FALSE, v ? Boolean.TRUE : Boolean.FALSE, Boolean.FALSE
             );
         }
-    }
-
-    /** Set hidden state of the object.
-     * A hidden filesystem is not presented to the user in the Repository list (though it may be present in the Repository Settings list).
-    *
-    * @param hide <code>true</code> if the filesystem should be hidden
-     * @deprecated This property is now useless.
-    */
-    @Deprecated
-    public final void setHidden(boolean hide) {
-        if (hide != hidden) {
-            hidden = hide;
-            firePropertyChange(PROP_HIDDEN, (!hide) ? Boolean.TRUE : Boolean.FALSE, hide ? Boolean.TRUE : Boolean.FALSE);
-        }
-    }
-
-    /** Getter for the hidden property.
-     * @return the hidden property.
-     * @deprecated This property is now useless.
-    */
-    @Deprecated
-    public final boolean isHidden() {
-        return hidden;
-    }
-
-    /** Tests whether filesystem will survive reloading of system pool.
-    * If true then when
-    * {@link Repository} is reloading its content, it preserves this
-    * filesystem in the pool.
-    * <P>
-    * This can be used when the pool contains system level and user level
-    * filesystems. The system ones should be preserved when the user changes
-    * the content (for example when he is loading a new project).
-    * <p>The default implementation returns <code>false</code>.
-    *
-    * @return true if the filesystem should be persistent
-     * @deprecated This property is long since useless.
-    */
-    @Deprecated
-    protected boolean isPersistent() {
-        return false;
     }
 
     /** Provides a name for the system that can be presented to the user.
@@ -468,27 +410,6 @@ public abstract class FileSystem implements Serializable {
         throw new IOException("Unsupported operation"); // NOI18N
     }
         
-    /** Returns an array of actions that can be invoked on any file in
-    * this filesystem.
-    * These actions should preferably
-    * support the {@link org.openide.util.actions.Presenter.Menu Menu},
-    * {@link org.openide.util.actions.Presenter.Popup Popup},
-    * and {@link org.openide.util.actions.Presenter.Toolbar Toolbar} presenters.
-    *
-    * @return array of available actions
-    */
-    public abstract SystemAction[] getActions();
-
-    /**
-     * Get actions appropriate to a certain file selection.
-     * By default, returns the same list as {@link #getActions()}.
-     * @param foSet one or more files which may be selected
-     * @return zero or more actions appropriate to those files
-     */
-    public SystemAction[] getActions(Set<FileObject> foSet) {
-        return this.getActions();
-    }
-
     /** Reads object from stream and creates listeners.
     * @param in the input stream to read from
     * @exception IOException error during read
@@ -498,34 +419,21 @@ public abstract class FileSystem implements Serializable {
     private void readObject(java.io.ObjectInputStream in)
     throws java.io.IOException, java.lang.ClassNotFoundException {
         in.defaultReadObject();
-
-        if (capability != null) {
-            ((FileSystemCapability) capability).addPropertyChangeListener(getCapabilityChangeListener());
-        }
     }
 
     @Override
     public String toString() {
         return getSystemName() + "[" + super.toString() + "]"; // NOI18N
     }
-
-    /** Allows filesystems to set up the environment for external execution
-    * and compilation.
-    * Each filesystem can add its own values that
-    * influence the environment. The set of operations that can modify
-    * environment is described by the {@link Environment} interface.
-    * <P>
-    * The default implementation throws an exception to signal that it does not
-    * support external compilation or execution.
-    *
-    * @param env the environment to setup
-    * @exception EnvironmentNotSupportedException if external execution
-    *    and compilation cannot be supported
-    * @deprecated Please use the <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
-    */
-    @Deprecated
-    public void prepareEnvironment(Environment env) throws EnvironmentNotSupportedException {
-        throw new EnvironmentNotSupportedException(this);
+    
+    private static volatile Lookup.Result<FileSystem.Status> statusResult;
+    
+    private static FileSystem.Status defaultStatus() {
+        if (statusResult == null) {
+            statusResult = Lookup.getDefault().lookupResult(FileSystem.Status.class);
+        }
+        Iterator<? extends FileSystem.Status> it = statusResult.allInstances().iterator();
+        return it.hasNext() ? it.next() : SFS_STATUS;
     }
 
     /**
@@ -552,40 +460,7 @@ public abstract class FileSystem implements Serializable {
      * @return the status object for this filesystem
      */
     public Status getStatus() {
-        return isDefault() ? SFS_STATUS : STATUS_NONE;
-    }
-
-    /** The object describing capabilities of this filesystem.
-     * Subclasses cannot override it.
-     * @return object describing capabilities of this filesystem.
-     * @deprecated Capabilities are no longer used.
-     */
-    @Deprecated
-    public final FileSystemCapability getCapability() {
-        if (capability == null) {
-            capability = new FileSystemCapability.Bean();
-            ((FileSystemCapability) capability).addPropertyChangeListener(getCapabilityChangeListener());
-        }
-
-        return (FileSystemCapability) capability;
-    }
-
-    /** Allows subclasses to change a set of capabilities of the
-    * filesystem.
-    * @param capability the capability to use
-     * @deprecated Capabilities are no longer used.
-    */
-    @Deprecated
-    protected final void setCapability(FileSystemCapability capability) {
-        if (this.capability != null) {
-            ((FileSystemCapability) this.capability).removePropertyChangeListener(getCapabilityChangeListener());
-        }
-
-        this.capability = capability;
-
-        if (this.capability != null) {
-            ((FileSystemCapability) this.capability).addPropertyChangeListener(getCapabilityChangeListener());
-        }
+        return isDefault() ? defaultStatus() : STATUS_NONE;
     }
 
     /** Executes atomic action. The atomic action represents a set of
@@ -642,21 +517,6 @@ public abstract class FileSystem implements Serializable {
      */
     void dispatchEvent(EventDispatcher run) {
         getEventControl().dispatchEvent(run);
-    }
-
-    /** returns property listener on FileSystemCapability. */
-    private synchronized PropertyChangeListener getCapabilityChangeListener() {
-        if (capabilityListener == null) {
-            capabilityListener = new PropertyChangeListener() {
-                        public void propertyChange(java.beans.PropertyChangeEvent propertyChangeEvent) {
-                            firePropertyChange(
-                                PROP_CAPABILITIES, propertyChangeEvent.getOldValue(), propertyChangeEvent.getNewValue()
-                            );
-                        }
-                    };
-        }
-
-        return capabilityListener;
     }
 
     private final EventControl getEventControl() {
@@ -971,27 +831,6 @@ public abstract class FileSystem implements Serializable {
         public String annotateNameHtml(String name, Set<? extends FileObject> files);
     }
 
-    /** Interface that allows filesystems to set up the Java environment
-    * for external execution and compilation.
-    * Currently just used to append entries to the external class path.
-    * @deprecated Please use the <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
-    */
-    @Deprecated
-    public static abstract class Environment extends Object {
-        /** Deprecated. */
-        public Environment() {
-            assert false : "Deprecated.";
-        }
-
-        /** Adds one element to the class path environment variable.
-        * @param classPathElement string representing the one element
-        * @deprecated Please use the <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
-        */
-        @Deprecated
-        public void addClassPath(String classPathElement) {
-        }
-    }
-
     /** Class used to notify events for the filesystem.
     */
     static abstract class EventDispatcher extends Object implements Runnable {
@@ -1052,7 +891,7 @@ public abstract class FileSystem implements Serializable {
             String bundleName = (String) fo.getAttribute("SystemFileSystem.localizingBundle"); // NOI18N
             if (bundleName != null) {
                 try {
-                    bundleName = Utilities.translate(bundleName);
+                    bundleName = BaseUtilities.translate(bundleName);
                     ResourceBundle b = NbBundle.getBundle(bundleName);
                     try {
                         return b.getString(fo.getPath());
@@ -1087,33 +926,6 @@ public abstract class FileSystem implements Serializable {
         }
 
         private Image annotateIcon(FileObject fo, int type) {
-            String attr = null;
-            if (type == BeanInfo.ICON_COLOR_16x16) {
-                attr = "SystemFileSystem.icon"; // NOI18N
-            } else if (type == BeanInfo.ICON_COLOR_32x32) {
-                attr = "SystemFileSystem.icon32"; // NOI18N
-            }
-            if (attr != null) {
-                Object value = fo.getAttribute(attr);
-                if (value != null) {
-                    if (value instanceof URL) {
-                        return Toolkit.getDefaultToolkit().getImage((URL) value);
-                    } else if (value instanceof Image) {
-                        // #18832
-                        return (Image) value;
-                    } else {
-                        LOG.warning("Attribute " + attr + " on " + fo + " expected to be a URL or Image; was: " + value);
-                    }
-                }
-            }
-            String base = (String) fo.getAttribute("iconBase"); // NOI18N
-            if (base != null) {
-                if (type == BeanInfo.ICON_COLOR_16x16) {
-                    return ImageUtilities.loadImage(base, true);
-                } else if (type == BeanInfo.ICON_COLOR_32x32) {
-                    return ImageUtilities.loadImage(insertBeforeSuffix(base, "_32"), true); // NOI18N
-                }
-            }
             return null;
         }
 

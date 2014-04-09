@@ -118,7 +118,6 @@ implements FileChangeListener {
         home = fss.length > 1 ? (ModuleLayeredFileSystem) fss[1] : null;
         
         setSystemName(SYSTEM_NAME);
-        setHidden(true);
         addFileChangeListener(this);
     }
 
@@ -188,13 +187,6 @@ implements FileChangeListener {
         return super.createLocksOn (name);
     }
     
-    /** This filesystem cannot be removed from pool, it is persistent.
-    */
-    @Deprecated
-    public @Override boolean isPersistent() {
-        return true;
-    }
-
     /** Initializes and creates new repository. This repository's system fs is
     * based on the content of ${HOME_DIR}/system and ${USER_DIR}/system directories
     *

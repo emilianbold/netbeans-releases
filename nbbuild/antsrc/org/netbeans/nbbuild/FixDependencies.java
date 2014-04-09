@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.FileScanner;
 import org.apache.tools.ant.Project;
@@ -80,6 +81,11 @@ public class FixDependencies extends Task {
     private boolean fail;
     private boolean doSanity = true;
     private boolean strip = true;
+    
+    /**
+     * Only update dependencies for the codebase(s), which match the filter.
+     */
+    private Pattern moduleFilter;
     
     
     /** tasks to be executed */
@@ -127,6 +133,13 @@ public class FixDependencies extends Task {
     
     public void setStrip(boolean b) {
         this.strip = b;
+    }
+    
+    public void setModuleFilter(String s) {
+        if (s == null || "".equals(s)) {
+            return;
+        }
+        moduleFilter = Pattern.compile(s, Pattern.CASE_INSENSITIVE);
     }
 
     @Override
@@ -182,11 +195,9 @@ public class FixDependencies extends Task {
                     continue;
                 }
             }
-
-
             
             try {
-                boolean change = fix (xml);
+                boolean change = fix (xml, script, task, cleanTask);
                 if (!strip || onlyChanged && !change) {
                     continue;
                 }
@@ -200,7 +211,7 @@ public class FixDependencies extends Task {
     /** Modifies the xml file to replace dependencies wiht new ones.
      * @return true if there was a change in the file
      */
-    private boolean fix (File file) throws IOException, BuildException {
+    private boolean fix (File file, File script, org.apache.tools.ant.taskdefs.Ant task, org.apache.tools.ant.taskdefs.Ant cleanTask) throws IOException, BuildException {
         int s = (int)file.length ();
         byte[] data = new byte[s];
         InputStream is = new FileInputStream(file);
@@ -213,102 +224,155 @@ public class FixDependencies extends Task {
         String stream = new String (data);
         String old = stream;
         data = null;
-        
-        DEPS: for (Replace r : replaces) {
-            int md = stream.indexOf("<module-dependencies");
-            if (md == -1) {
-                throw new BuildException("No module dependencies in " + file);
-            }
 
-            int ed = stream.indexOf ("</module-dependencies>", md);
-            ed = ed == -1 ? stream.indexOf ("<module-dependencies/>", md) : ed;
-            if (ed == -1) {
-                ed = stream.length();
-            }
+        boolean compiled = false;
+        try {
+            DEPS: for (Replace r : replaces) {
+                int md = stream.indexOf("<module-dependencies");
+                if (md == -1) {
+                    throw new BuildException("No module dependencies in " + file);
+                }
 
-            int idx = stream.indexOf ("<code-name-base>" + r.codeNameBase + "</code-name-base>", md);
-            if (idx == -1 || idx > ed) continue;
+                int ed = stream.indexOf ("</module-dependencies>", md);
+                ed = ed == -1 ? stream.indexOf ("<module-dependencies/>", md) : ed;
+                if (ed == -1) {
+                    ed = stream.length();
+                }
+                if (moduleFilter != null && !moduleFilter.matcher(r.codeNameBase).matches()) {
+                    continue;
+                }
+                String alldeps = stream.substring(md, ed);
+                int idx = stream.indexOf ("<code-name-base>" + r.codeNameBase + "</code-name-base>", md);
+                if (idx == -1 || idx > ed) continue;
 
-            int from = stream.lastIndexOf ("<dependency>", idx);
-            if (from == -1) throw new BuildException ("No <dependency> tag before index " + idx + " in " + file);
-            int after = stream.indexOf ("</dependency", idx);
-            if (after == -1) throw new BuildException ("No </dependency> tag after index " + idx + " in " + file);
-            after = after + "</dependency>".length ();
-            
-            String remove = stream.substring (from, after);
-            if (r.addCompileTime && remove.indexOf ("compile-dependency") == -1) {
-                int fromAfter = "<dependency".length();
-                int nonSpace = findNonSpace (remove, fromAfter);
-                String spaces = remove.substring (fromAfter, nonSpace);
-                remove = remove.substring (0, fromAfter) + spaces + "<compile-dependency/>" + remove.substring (fromAfter);
-            }
-            
-            StringBuffer sb = new StringBuffer ();
-            sb.append (stream.substring (0, from));
-            boolean prefix = false;
-            
-            for (Module m : r.modules) {
-                if (m.codeNameBase.equals(r.codeNameBase)) {
-                    if (remove.contains("<implementation-version/>")) {
-                        continue DEPS;
-                    }
+                int from = stream.lastIndexOf ("<dependency>", idx);
+                if (from == -1) throw new BuildException ("No <dependency> tag before index " + idx + " in " + file);
+                int after = stream.indexOf ("</dependency", idx);
+                if (after == -1) throw new BuildException ("No </dependency> tag after index " + idx + " in " + file);
+                after = after + "</dependency>".length ();
 
-                    String b = "<specification-version>";
-                    int specBeg = remove.indexOf(b);
-                    int specEnd = remove.indexOf("</specification-version>");
-                    if (specBeg != -1 && specEnd != -1) {
-                        String v = remove.substring(specBeg + b.length(), specEnd);
-                        if (olderThanOrEqual(m.specVersion, v)) {
+                String remove = stream.substring (from, after);
+                if (r.addCompileTime && remove.indexOf ("compile-dependency") == -1) {
+                    int fromAfter = "<dependency".length();
+                    int nonSpace = findNonSpace (remove, fromAfter);
+                    String spaces = remove.substring (fromAfter, nonSpace);
+                    remove = remove.substring (0, fromAfter) + spaces + "<compile-dependency/>" + remove.substring (fromAfter);
+                }
+
+                StringBuffer sb = new StringBuffer ();
+                sb.append (stream.substring (0, from));
+                boolean prefix = false;
+
+                StringBuffer save = new StringBuffer();
+
+                int mods = r.modules.size();
+                int changed = 0;
+
+                for (Module m : r.modules) {
+                    if (m.codeNameBase.equals(r.codeNameBase)) {
+                        log ("Checking dependency: " + r.codeNameBase, Project.MSG_INFO);
+                        if (remove.contains("<implementation-version/>")) {
                             continue DEPS;
                         }
+
+                        String b = "<specification-version>";
+                        int specBeg = remove.indexOf(b);
+                        int specEnd = remove.indexOf("</specification-version>");
+                        if (specBeg != -1 && specEnd != -1) {
+                            String v = remove.substring(specBeg + b.length(), specEnd);
+                            if (olderThanOrEqual(m.specVersion, v)) {
+                                continue DEPS;
+                            }
+                        } else {
+                            log("No specification version present for dependency: " + m.codeNameBase, Project.MSG_WARN);
+                        }
+                    } else {
+                        if (alldeps.indexOf ("<code-name-base>" + m.codeNameBase + "</code-name-base>") != -1) {
+                            changed++;
+                            continue;
+                        }
                     }
-                } else {
-                    if (stream.indexOf ("<code-name-base>" + m.codeNameBase + "</code-name-base>") != -1) {
-                        continue;
+
+                    if (prefix) {
+                        sb.append('\n');
+                        for (int i = from - 1; stream.charAt(i) == ' '; i--) {
+                            sb.append(' ');
+                        }
+                    }
+
+                    changed++;
+                    log ("Adding dependency: " + m, Project.MSG_INFO);
+                    int beg = remove.indexOf (r.codeNameBase);
+                    int aft = beg + r.codeNameBase.length ();
+                    sb.append (remove.substring (0, beg));
+                    sb.append (m.codeNameBase);
+                    String a = remove.substring (aft);
+                    if (m.specVersion != null) {
+                        a = a.replaceAll (
+                            "<specification-version>[0-9\\.]*</specification-version>", 
+                            "<specification-version>" + m.specVersion + "</specification-version>"
+                        );
+                    }
+                    if (m.releaseVersion == null) {
+                        a = a.replaceAll (
+                            "<release-version>[0-9]*</release-version>[\n\r ]*", 
+                            ""
+                        );
+                    }
+                    sb.append (a);
+                    prefix = true;
+                    // check whether the dependency is sufficient, or replacements must be made
+                    if (remove.contains("<compile-dependency")) {
+                        save = new StringBuffer(sb.toString());
+                        save.append(stream.substring(after));
+                        String x = save.toString();
+                        if (!old.equals (x)) {
+                            FileWriter fw = new FileWriter (file);
+                            fw.write (x);
+                            fw.close ();
+
+                            try {
+                                if (compiled && cleanTask != null) {
+                                    log ("Cleaning " + clean + " in " + script, Project.MSG_INFO);
+                                    cleanTask.execute ();
+                                    compiled = false;
+                                }
+                                log ("Executing target " + tgt + " in " + script, Project.MSG_INFO);
+                                task.execute ();
+                                log ("Dependency on " + m + " is sufficient, skipping the rest", Project.MSG_INFO);
+                                compiled = true;
+                                continue DEPS;
+                            } catch (BuildException ex) {
+                                fw = new FileWriter (file);
+                                fw.write (old);
+                                fw.close ();
+                                if (changed == mods) {
+                                    throw new BuildException("Could not fix dependencies.");
+                                }
+                            }
+                        }
                     }
                 }
 
-                if (prefix) {
-                    sb.append('\n');
-                    for (int i = from - 1; stream.charAt(i) == ' '; i--) {
-                        sb.append(' ');
-                    }
-                }
+                sb.append (stream.substring (after));
 
-                int beg = remove.indexOf (r.codeNameBase);
-                int aft = beg + r.codeNameBase.length ();
-                sb.append (remove.substring (0, beg));
-                sb.append (m.codeNameBase);
-                String a = remove.substring (aft);
-                if (m.specVersion != null) {
-                    a = a.replaceAll (
-                        "<specification-version>[0-9\\.]*</specification-version>", 
-                        "<specification-version>" + m.specVersion + "</specification-version>"
-                    );
-                }
-                if (m.releaseVersion == null) {
-                    a = a.replaceAll (
-                        "<release-version>[0-9]*</release-version>[\n\r ]*", 
-                        ""
-                    );
-                }
-                
-                sb.append (a);
-                prefix = true;
+                stream = sb.toString ();
             }
-            
-            sb.append (stream.substring (after));
-            
-            stream = sb.toString ();
-        }
-        
-        if (!old.equals (stream)) {
-            FileWriter fw = new FileWriter (file);
-            fw.write (stream);
-            fw.close ();
-            return true;
-        } else {
-            return false;
+
+            if (!old.equals (stream)) {
+                FileWriter fw = new FileWriter (file);
+                fw.write (stream);
+                fw.close ();
+                return true;
+            } else {
+                return false;
+            }
+        } finally {
+            // leave compiled so other modules may benefit from the module-auto-deps
+            if (!compiled) {
+                log ("Executing target " + tgt + " in " + script, Project.MSG_INFO);
+                task.execute ();
+            }
         }
     } // end of fix
     
@@ -487,6 +551,10 @@ public class FixDependencies extends Task {
         
         public void setRelease (String r) {
             releaseVersion = r;
+        }
+        
+        public String toString() {
+            return codeNameBase + (releaseVersion != null ? releaseVersion : "") + " > " + specVersion;
         }
     }
 }
