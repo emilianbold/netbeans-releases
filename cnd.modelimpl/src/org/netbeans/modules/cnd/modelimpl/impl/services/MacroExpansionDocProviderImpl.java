@@ -613,13 +613,14 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
 
     private CharSequence expandMacroToken(MyTokenSequence fileTS, int docTokenStartOffset, int docTokenEndOffset, TransformationTable tt) {
         APTToken fileToken = fileTS.token();
-        StringBuilder expandedToken = new StringBuilder(""); // NOI18N
+        StringBuilder expandedToken = new StringBuilder();
         int expandedOffsetShift = 0;
 
         Map<Interval, List<Interval>> paramsToExpansion = new HashMap<>();
                 
         boolean skipIndent = true;
         if (fileToken.getOffset() < docTokenEndOffset) {
+            int line = 0;
             // empty comment - expansion of empty macro
             if (!APTUtils.isCommentToken(fileToken)) {
                 expandedToken.append(fileToken.getTextID());
@@ -629,10 +630,22 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                 expandedOffsetShift += fileToken.getTextID().length();
                 skipIndent = false;
             }
+            if (APTUtils.isMacroExpandedToken(fileToken) && !APTUtils.isMacroParamExpandedToken(fileToken)) {
+                line = APTUtils.getExpandedToken(fileToken).getLine();
+            }
             APTToken prevFileToken = fileToken;
             fileTS.moveNext();
             fileToken = fileTS.token();
             while (fileToken != null && !APTUtils.isEOF(fileToken) && fileToken.getOffset() < docTokenEndOffset) {
+                int aLine = 0;
+                if (APTUtils.isMacroExpandedToken(fileToken) && !APTUtils.isMacroParamExpandedToken(fileToken)) {
+                    aLine = APTUtils.getExpandedToken(fileToken).getLine();
+                }
+                if (aLine > 0 && aLine != line) {
+                    expandedToken.append("\n"); // NOI18N
+                    expandedOffsetShift++;
+                    line = aLine;
+                }
                 if (!APTUtils.isCommentToken(fileToken)) {
                     if (!skipIndent) {
                         if (!APTUtils.areAdjacent(prevFileToken, fileToken)) {
