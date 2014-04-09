@@ -544,7 +544,14 @@ None.
         </question>
 -->
 <answer id="lookup-lookup">
-Implementations of MIMEResolver and URLMapper are looked up .
+    The following services are looked up:
+    <ul>
+        <li>Implementations of MIMEResolver and URLMapper are looked up</li>
+        <li>instance of <a href="@TOP@/org/openide/filesystems/FileSystem.Status.html">FileSystem.Status</a> which is
+            used as the Status of the <b>default</b> FileSystem</li>
+        <li>instance of <a href="@TOP@/org/openide/filesystems/spi/CustomInstanceFactory.html">CustomInstanceFactory</a>
+            which is used to create instances for FileSystem files without <code>instanceCreate</code> attribute</li>
+    </ul>
 </answer>
 
 
@@ -560,7 +567,8 @@ Implementations of MIMEResolver and URLMapper are looked up .
         </question>
 -->
 <answer id="lookup-register">
-No
+    <code>URLStreamHandlerFactory</code> implementations for <b>nbfs:</b> and
+    <b>memory:</b> protocols are registered as named services.
 </answer>
 
 

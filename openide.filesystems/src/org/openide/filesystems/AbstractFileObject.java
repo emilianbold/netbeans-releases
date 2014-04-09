@@ -1233,44 +1233,4 @@ final class AbstractFileObject extends AbstractFolder {
         }
     }
      // end of Invalid
-
-    /** Replace that stores name of fs and file.
-     * @deprecated In favor of AbstractFolder.Replace.
-    */
-    @Deprecated
-    static final class Replace extends Object implements Serializable {
-        /** generated Serialized Version UID */
-        static final long serialVersionUID = -8543432135435542113L;
-        private String fsName;
-        private String fileName;
-
-        /** Constructor
-        */
-        public Replace(String fsName, String fileName) {
-            this.fsName = fsName;
-            this.fileName = fileName;
-        }
-
-        /** Finds the right file.
-        */
-        public Object readResolve() {
-            Repository rep = Repository.getDefault();
-            @SuppressWarnings("deprecation") // FileSystem.systemName historical part of serial form
-            FileSystem fs = rep.findFileSystem(fsName);
-            FileObject fo = null;
-
-            if (fs != null) {
-                // scan desired system
-                fo = fs.findResource(fileName);
-            }
-
-            if (fo == null) {
-                // create invalid file instead
-                return new Invalid(fsName, fileName);
-            }
-
-            return fo;
-        }
-    }
-     // end of Replace
 }

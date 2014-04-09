@@ -61,6 +61,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.Module.PackageExport;
 import org.openide.modules.Dependency;
+import org.openide.modules.PatchFor;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -85,7 +86,7 @@ class ModuleData {
     private final Dependency[] dependencies;
     private final Set<String> coveredPackages;
     private final String agentClass;
-    
+    private final String fragmentHostCodeName;
     
     ModuleData(Manifest mf, Module forModule) throws InvalidException {
         Attributes attr = mf.getMainAttributes();
@@ -211,6 +212,23 @@ class ModuleData {
                 this.friendNames = set;
             }
             this.dependencies = initDeps(forModule, deps, attr);
+            String classLoader = attr.getValue(PatchFor.MANIFEST_FRAGMENT_HOST); // NOI18N
+            if (classLoader != null) {
+                Object[] clParse = Util.parseCodeName(classLoader);
+                String frag = (String)clParse[0];
+                if (frag != null) {
+                    if ((frag = frag.trim()).isEmpty()) {
+                        frag = null;
+                    }
+                }
+                this.fragmentHostCodeName = frag;
+                if (verifyCNBs && frag != null) {
+                    // Indirect way of checking syntax:
+                    Dependency.create(Dependency.TYPE_MODULE, fragmentHostCodeName);
+                }
+            } else {
+                fragmentHostCodeName = null;
+            }
         } catch (IllegalArgumentException iae) {
             throw (InvalidException) new InvalidException("While parsing " + codeName + " a dependency attribute: " + iae.toString()).initCause(iae); // NOI18N
         }
@@ -249,6 +267,7 @@ class ModuleData {
         this.dependencies = computeImported(mf.getMainAttributes());
         this.coveredPackages = new HashSet<String>();
         this.agentClass = getMainAttribute(mf, "Agent-Class"); // NOI18N
+        this.fragmentHostCodeName = null;
     }
     
     ModuleData(ObjectInput dis) throws IOException {
@@ -265,6 +284,11 @@ class ModuleData {
             this.specVers = new SpecificationVersion(dis.readUTF());
             this.publicPackages = Module.PackageExport.read(dis);
             this.agentClass = dis.readUTF();
+            String s = dis.readUTF();
+            if (s != null) {
+                s = s.trim();
+            }
+            this.fragmentHostCodeName = s == null || s.isEmpty() ? null : s;
         } catch (ClassNotFoundException cnfe) {
             throw new IOException(cnfe);
         }
@@ -283,6 +307,7 @@ class ModuleData {
         dos.writeUTF(specVers != null ? specVers.toString() : "0");
         Module.PackageExport.write(dos, publicPackages);
         dos.writeUTF(agentClass == null ? "" : agentClass);
+        dos.writeUTF(fragmentHostCodeName == null ? "" : fragmentHostCodeName);
     }
 
     private Dependency[] computeImported(Attributes attr) {
@@ -427,6 +452,10 @@ class ModuleData {
         deps.addAll(Dependency.create(Dependency.TYPE_RECOMMENDS, attr.getValue("OpenIDE-Module-Recommends"))); // NOI18N
         forModule.refineDependencies(deps);
         return deps.toArray(new Dependency[deps.size()]);
+    }
+    
+    final String getFragmentHostCodeName() {
+        return fragmentHostCodeName;
     }
 
     final String getCodeName() {

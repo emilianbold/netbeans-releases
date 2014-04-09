@@ -68,7 +68,6 @@ import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
-import org.openide.util.UserQuestionException;
 
 /** This is the base for all implementations of file objects on a filesystem.
 * Provides basic information about the object (its name, parent,
@@ -838,7 +837,7 @@ public abstract class FileObject extends Object implements Serializable, Lookup.
     /** Lock this file.
     * @return lock that can be used to perform various modifications on the file
     * @throws FileAlreadyLockedException if the file is already locked
-    * @throws UserQuestionException in case when the lock cannot be obtained now,
+    * @throws IOException (UserQuestionException) in case when the lock cannot be obtained now,
     *    but the underlaying implementation is able to do it after some
     *    complex/dangerous/long-lasting operation and request confirmation
     *    from the user
@@ -1093,7 +1092,7 @@ public abstract class FileObject extends Object implements Serializable, Lookup.
      * <li>Then:
      * <ul>
      * <li>If no exception is thrown, proceed with the operation.
-     * <li>If a {@link UserQuestionException} is thrown,
+     * <li>If a UserQuestionException is thrown,
      * call {@link UserQuestionException#confirmed} on it
      * (asynchronously - do not block any important threads). If <code>true</code>,
      * proceed with the operation. If <code>false</code>, exit.

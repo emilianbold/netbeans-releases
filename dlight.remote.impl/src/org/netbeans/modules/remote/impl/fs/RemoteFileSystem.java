@@ -358,11 +358,6 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     }
     
 
-    @Override
-    public SystemAction[] getActions() {
-        return NO_SYSTEM_ACTIONS;
-    }
-
     public void addPendingFile(RemoteFileObjectBase fo) {
         remoteFileSupport.addPendingFile(fo);
         fireProblemListeners(fo.getPath());
@@ -665,7 +660,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
     }
 
-    @Override
+//    @Override -- overrides at runtime
     public final SystemAction[] getActions(final Set<FileObject> foSet) {
         SystemAction[] result = status.getActions (foSet);
         SystemAction refreshAction = isManualRefresh() ? null :  FileSystemRefreshAction.get(FileSystemRefreshAction.class);                 

@@ -149,7 +149,7 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
                     }
                 }                
                 backSet.addAll(backupList);
-                result.addAll(Arrays.asList(fs.getActions (backSet)));
+                //result.addAll(Arrays.asList(fs.getActions (backSet)));
             }
 
             if (isManualRefresh()) {

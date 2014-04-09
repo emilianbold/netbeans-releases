@@ -68,7 +68,7 @@ import org.openide.filesystems.test.TestFileUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -113,7 +113,7 @@ public class FileUtilTest extends NbTestCase {
     }
 
     public void testLowerAndCapitalNormalization() throws IOException {
-        if (!Utilities.isWindows()) {
+        if (!BaseUtilities.isWindows()) {
             return;
         }
         clearWorkDir();
@@ -148,7 +148,7 @@ public class FileUtilTest extends NbTestCase {
     }
 
     public void testToFileObjectSlash() throws Exception { // #98388
-        if (!Utilities.isUnix()) {
+        if (!BaseUtilities.isUnix()) {
             return;
         }
         File root = new File("/");
@@ -225,12 +225,12 @@ public class FileUtilTest extends NbTestCase {
     }
     private void assertCorrectURL(String filename, String expectedURLPrefix, String expectedURLSuffix) throws Exception {
         File d = getWorkDir();
-        assertEquals(expectedURLSuffix == null ? null : new URL(expectedURLPrefix + Utilities.toURI(d) + expectedURLSuffix),
+        assertEquals(expectedURLSuffix == null ? null : new URL(expectedURLPrefix + BaseUtilities.toURI(d) + expectedURLSuffix),
                 FileUtil.urlForArchiveOrDir(new File(d, filename)));
     }
     private void assertCorrectFile(String expectedFilename, String urlPrefix, String urlSuffix) throws Exception {
         assertEquals(expectedFilename == null ? null : new File(getWorkDir(), expectedFilename),
-                FileUtil.archiveOrDirForURL(new URL(urlPrefix + Utilities.toURI(getWorkDir()) + urlSuffix)));
+                FileUtil.archiveOrDirForURL(new URL(urlPrefix + BaseUtilities.toURI(getWorkDir()) + urlSuffix)));
     }
 
     /** Tests translation from jar resource url to jar archive url. */
@@ -299,7 +299,7 @@ public class FileUtilTest extends NbTestCase {
         };
         log.addHandler(handler);
         try {
-            final boolean result = FileUtil.isArchiveFile(Utilities.toURI(testFile).toURL());
+            final boolean result = FileUtil.isArchiveFile(BaseUtilities.toURI(testFile).toURL());
             assertTrue("The test.jar should be archive.",result);   //NOI18N
         } finally {
             log.removeHandler(handler);
@@ -319,7 +319,7 @@ public class FileUtilTest extends NbTestCase {
     }
     
     public void testNormalizeNonExistingButNotAccessibleRootOnWindows() throws IOException {
-        if (!Utilities.isWindows()) {
+        if (!BaseUtilities.isWindows()) {
             return;
         }
         for (File r : File.listRoots()) {
@@ -362,7 +362,7 @@ public class FileUtilTest extends NbTestCase {
     private Map<String, String> createNormalizedPaths() throws IOException {
         // pairs of path before and after normalization
         Map<String, String> paths = new HashMap<String, String>();
-        if (Utilities.isWindows()) {
+        if (BaseUtilities.isWindows()) {
             paths.put("A:\\", "A:\\");
             paths.put("A:\\dummy", "A:\\dummy");
             paths.put("a:\\", "A:\\");
@@ -403,7 +403,7 @@ public class FileUtilTest extends NbTestCase {
     }
     
     public void testNormalizePathChangeCase() throws Exception {
-        if (!Utilities.isWindows()) {
+        if (!BaseUtilities.isWindows()) {
             return;
         }
         clearWorkDir();

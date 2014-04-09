@@ -49,7 +49,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 public class MultiFileObjectTestHid extends TestBaseHid {
     private static String[] resources = new String [] {
@@ -236,7 +236,7 @@ public class MultiFileObjectTestHid extends TestBaseHid {
                 + "      </folder>\n"
                 + "    </folder>\n"
                 + "</filesystem>");
-        XMLFileSystem xml = new XMLFileSystem(Utilities.toURI(f).toURL());
+        XMLFileSystem xml = new XMLFileSystem(BaseUtilities.toURI(f).toURL());
         all.add(xml);
         mfs.setDelegates(all.toArray(new FileSystem[0]));
 

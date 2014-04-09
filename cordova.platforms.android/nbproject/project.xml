@@ -111,7 +111,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.29</specification-version>
+                        <specification-version>9.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -119,7 +119,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.2</specification-version>
+                        <specification-version>9.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
