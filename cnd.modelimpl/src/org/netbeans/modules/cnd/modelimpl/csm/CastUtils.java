@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.openide.util.CharSequences;
@@ -64,10 +65,32 @@ public class CastUtils {
 	    case CPPTokenTypes.CSM_USER_TYPE_CAST_DEFINITION:
 	    case CPPTokenTypes.CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION:
 	    case CPPTokenTypes.CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION:
+        case CPPTokenTypes.CSM_USER_TYPE_CAST_DEFINITION_EXPLICIT_SPECIALIZATION:
 		return true;
 	    default:
 		return false;
 	}
+    }
+    
+    // Extracts qualified id into subnode CSM_QUALIFIED_ID
+    public static AST transform(AST ast) {
+        // TODO: this should be done in grammar
+        assert isCast(ast);
+        AST nameStart = findCastOperatorNameStart(ast);
+        AST nameEnd = findCastOperatorNameEnd(ast);
+        
+        AST transformed = new FakeAST();
+        transformed.setType(ast.getType());
+        transformed.setFirstChild(AstUtil.cloneAST(ast.getFirstChild(), nameStart, false));
+        
+        AST qualifiedName = new FakeAST();
+        qualifiedName.setType(CPPTokenTypes.CSM_QUALIFIED_ID);
+        qualifiedName.setFirstChild(AstUtil.cloneAST(nameStart, nameEnd));
+        
+        AstUtil.getLastChild(transformed).setNextSibling(qualifiedName);
+        qualifiedName.setNextSibling(AstUtil.cloneAST(nameEnd.getNextSibling(), AstUtil.getLastChild(ast)));
+        
+        return transformed;
     }
     
     public static String getFunctionName(AST ast) {
@@ -106,8 +129,12 @@ public class CastUtils {
 	}
 	return sb.toString();
     }
-
+    
     public static CharSequence getFunctionRawName(AST token) {
+        return getFunctionRawName(token, "."); // NOI18N
+    }
+
+    public static CharSequence getFunctionRawName(AST token, String separator) {
         assert isCast(token);
         AST ast = token;
         token = token.getFirstChild();
@@ -116,7 +143,7 @@ public class CastUtils {
             switch( token.getType() ) {
                 case CPPTokenTypes.IDENT:
                     if (l.length()>0) {
-                        l.append('.');
+                        l.append(separator);
                     }
                     l.append(AstUtil.getText(token));
                     break;
@@ -124,7 +151,7 @@ public class CastUtils {
                     break;
                 case CPPTokenTypes.LITERAL_OPERATOR:
                     if (l.length()>0) {
-                        l.append('.');
+                        l.append(separator);
                     }
                     l.append(getFunctionName(ast));
                     return NameCache.getManager().getString(CharSequences.create(l));
@@ -163,7 +190,7 @@ public class CastUtils {
     public static boolean isMemberDefinition(AST ast) {
 	assert isCast(ast);
         AST child = ast.getFirstChild();
-        if (child != null && child.getType() == CPPTokenTypes.LITERAL_template) {
+        while (child != null && child.getType() == CPPTokenTypes.LITERAL_template) {
             child = AstRenderer.skipTemplateSibling(child);
         }
         child = AstRenderer.getFirstSiblingSkipInline(child);
@@ -180,5 +207,44 @@ public class CastUtils {
 	return false;
     }
 
+    public static boolean isCastOperatorOnlySpecialization(AST ast) {
+        assert isCast(ast);        
+        AST operator = AstUtil.findChildOfType(ast, CPPTokenTypes.LITERAL_OPERATOR);
+        if (operator != null) {
+            AST nameStart = findCastOperatorNameStart(ast);
+            while (nameStart != null && nameStart != operator) {
+                if (nameStart.getType() == CPPTokenTypes.LESSTHAN) {
+                    return false;
+                }
+                nameStart = nameStart.getNextSibling();
+            }
+            return true;
+        }
+        return false;
+    }
+    
+    public static AST findCastOperatorNameStart(AST ast) {
+        assert isCast(ast);   
+        AST lastTemplateInHeader = ast.getFirstChild();
+        if (lastTemplateInHeader != null && lastTemplateInHeader.getType() != CPPTokenTypes.LITERAL_template) {
+            return lastTemplateInHeader;
+        }
+        AST current = lastTemplateInHeader;
+        while (current != null && current.getNextSibling() != null && current.getNextSibling().getType() == CPPTokenTypes.LESSTHAN) {
+            lastTemplateInHeader = current;
+            current = AstUtil.findSiblingOfType(current.getNextSibling(), CPPTokenTypes.LITERAL_template);
+        }
+        return AstUtil.findSiblingOfType(lastTemplateInHeader, CPPTokenTypes.GREATERTHAN).getNextSibling();        
+    }
 
+    public static AST findCastOperatorNameEnd(AST ast) {
+        assert isCast(ast);
+        AST nameStart = findCastOperatorNameStart(ast);
+        AST nameEnd = nameStart;
+        while (nameStart != null && nameStart.getType() != CPPTokenTypes.LPAREN) {
+            nameEnd = nameStart;
+            nameStart = nameStart.getNextSibling();
+        }
+        return nameEnd;
+    }    
 }
