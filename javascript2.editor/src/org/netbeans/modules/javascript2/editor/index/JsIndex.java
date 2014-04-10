@@ -199,9 +199,12 @@ public class JsIndex {
                 logStats(value.getResult(), true, fieldsToLoad);
                 return value.getResult();
             }
-
+            long start = System.currentTimeMillis();
             Collection<? extends IndexResult> result = querySupport.query(
                     fieldName, fieldValue, kind, fieldsToLoad);
+            long end = System.currentTimeMillis();
+            System.out.println("dotaz do indexu trval: " + (end - start) + " fieldValue: " + fieldValue + " kind: " + kind);            
+            
             if (updateCache) {
                 WRITE_LOCK.lock();
                 try {
@@ -388,13 +391,19 @@ public class JsIndex {
                 }
             }
             // find properties of the fqn
-            String pattern = escapeRegExp(fqn) + PROPERTIES_PATTERN; //NOI18N
+//            String pattern = escapeRegExp(fqn) + PROPERTIES_PATTERN; //NOI18N
             results = query(
-                    JsIndex.FIELD_FQ_NAME, pattern, QuerySupport.Kind.REGEXP, TERMS_BASIC_INFO); //NOI18N
+                    JsIndex.FIELD_FQ_NAME, fqn + "." , QuerySupport.Kind.PREFIX, TERMS_BASIC_INFO); //NOI18N
             for (IndexResult indexResult : results) {
-                IndexedElement property = IndexedElement.create(indexResult);
-                if (!property.getModifiers().contains(Modifier.PRIVATE)) {
-                    result.add(property);
+                String value = indexResult.getValue(JsIndex.FIELD_FQ_NAME);
+                if (!value.isEmpty() && value.charAt(value.length() - 1) != IndexedElement.PARAMETER_POSTFIX) {
+                    value = value.substring(fqn.length());
+                    if (value.lastIndexOf('.') == 0) {
+                        IndexedElement property = IndexedElement.create(indexResult);
+                        if (!property.getModifiers().contains(Modifier.PRIVATE)) {
+                            result.add(property);
+                        }
+                    }
                 }
             }
         }
@@ -403,9 +412,13 @@ public class JsIndex {
 
     public Collection<? extends IndexResult> findByFqn(String fqn, String... fields) {
         String pattern = escapeRegExp(fqn) + "."; // NOI18N
-        Collection<? extends IndexResult> results = query(
-                JsIndex.FIELD_FQ_NAME, pattern, QuerySupport.Kind.REGEXP, fields); //NOI18N
-
+        Collection<IndexResult> results = new ArrayList<IndexResult>();
+        results.addAll(query(JsIndex.FIELD_FQ_NAME, fqn+'A', QuerySupport.Kind.EXACT, fields)); //NOI18N
+        results.addAll(query(JsIndex.FIELD_FQ_NAME, fqn+'O', QuerySupport.Kind.EXACT, fields)); //NOI18N
+        results.addAll(query(JsIndex.FIELD_FQ_NAME, fqn+'P', QuerySupport.Kind.EXACT, fields)); //NOI18N
+//        System.out.print("pocet " + results.size());
+//        results.addAll(query(JsIndex.FIELD_FQ_NAME, pattern, QuerySupport.Kind.REGEXP, fields)); //NOI18N
+//        System.out.println(" pak: " + results.size());
         return results;
     }
     
