@@ -500,6 +500,13 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         List<String> expChain = ModelUtils.resolveExpressionChain(request.result.getSnapshot(), request.anchor, false);
         if (!expChain.isEmpty()) {
             Map<String, List<JsElement>> toAdd = getCompletionFromExpressionChain(request, expChain);
+            long start = System.currentTimeMillis();
+            Collection<IndexedElement> fromUsages = JsIndex.get(request.result.getSnapshot().getSource().getFileObject()).getUsagesFromExpression(expChain);
+            for (IndexedElement indexedElement : fromUsages) {
+                addPropertyToMap(request, addedItems, indexedElement);
+            }
+            long end = System.currentTimeMillis();
+            System.out.println("Usages trvalo: " + (end - start));
             addedItems.putAll(toAdd);
         }
     }

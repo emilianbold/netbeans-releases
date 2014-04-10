@@ -159,7 +159,14 @@ public class JsCompletionItem implements CompletionProposal {
         }
 
         formatter.reset();
+        boolean isgues = OffsetRange.NONE.equals(element.getOffsetRange(request.result));
+        if (isgues) {
+            formatter.appendHtml("<font color=#999999>");
+        }
         formatter.appendText(location);
+        if (isgues) {
+            formatter.appendHtml("</font>");
+        }
         return formatter.getText();
     }
 
