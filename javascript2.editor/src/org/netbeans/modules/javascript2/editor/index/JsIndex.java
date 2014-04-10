@@ -352,7 +352,7 @@ public class JsIndex {
                     for (String property : parts) {
                         String[] split = property.split("#");
                         if(split.length == 2 && !alreadyUsed.contains(split[0])) {
-                            System.out.println(split[0]);
+                            alreadyUsed.add(split[0]);
                             IndexedElement element = new IndexedElement(fo, split[0], split[0], false, false, split[1].equals("F") ? JsElement.Kind.FUNCTION : JsElement.Kind.OBJECT, 
                                 OffsetRange.NONE, Collections.singleton(Modifier.PUBLIC), Collections.EMPTY_LIST, false);
                             usages.add(element);
