@@ -83,7 +83,8 @@ public class ExpandedExpressionBase extends ExpressionBase {
             LOG.log(Level.INFO, "Too large expression ({0} symbols) defined inside macros: {1}:{2}", new Object[]{expanded.length(), file, getStartPosition()}); // NOI18N
             expanded = SKIPPED_STUB; // NOI18N
         }
-        expandedText = DefaultCache.getManager().getString(expanded);
+//        expandedText = DefaultCache.getManager().getString(expanded);
+        expandedText = expanded;
     }
 
     @Override
