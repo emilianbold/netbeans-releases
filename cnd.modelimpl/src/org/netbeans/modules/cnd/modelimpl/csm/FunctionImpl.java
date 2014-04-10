@@ -115,7 +115,7 @@ import static org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities.UID_SIG
 public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         implements CsmFunction, Disposable, RawNamable, CsmTemplate {
      
-    protected static final String OPERATOR = "operator"; // NOI18N;
+    /*package*/ static final String OPERATOR = "operator"; // NOI18N;
 
     private final CharSequence name;
     private CsmType returnType;

@@ -250,7 +250,7 @@ public class AstRenderer {
                             addTypedefs(renderTypedef(token, spec, currentNamespace).typedefs, currentNamespace, container, spec);
                         } else {
                             if (isMemberDefinition(token)) {
-                                if(!isFunctionSpecialization(token)) {
+                                if(!isFunctionOnlySpecialization(token)) {
                                     // this is a template method specialization declaration (without a definition)
                                     ClassImplFunctionSpecialization spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, language, fileContent, !isRenderingLocalContext(), container);
                                     container.addDeclaration(spec);
@@ -285,9 +285,10 @@ public class AstRenderer {
                     case CPPTokenTypes.CSM_TEMPLATE_DTOR_DEFINITION_EXPLICIT_SPECIALIZATION:
                         container.addDeclaration(DestructorDefinitionImpl.create(token, file, fileContent, !isRenderingLocalContext()));
                         break;
+                    case CPPTokenTypes.CSM_USER_TYPE_CAST_DEFINITION_EXPLICIT_SPECIALIZATION:
                     case CPPTokenTypes.CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION:
                         if (isMemberDefinition(token)) {
-                            if(!isFunctionSpecialization(token)) {
+                            if(!isFunctionOnlySpecialization(token)) {
                                 ClassImpl spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, language, fileContent, !isRenderingLocalContext(), container);
                                 container.addDeclaration(spec);
                             }
@@ -303,7 +304,7 @@ public class AstRenderer {
                                 currentNamespace.addDeclaration(fddit);
                             }
                         }
-                        break;
+                        break;                      
                     case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
                         if(!TraceFlags.CPP_PARSER_ACTION || isRenderingLocalContext()) {
                             NamespaceAliasImpl alias = NamespaceAliasImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
@@ -2111,15 +2112,23 @@ public class AstRenderer {
         return isScopedId(id);
     }
 
-    protected boolean isFunctionSpecialization(AST ast) {
-        AST child = AstUtil.findMethodName(ast);
-	if( child != null && child.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
-            if(AstUtil.findChildOfType(child, CPPTokenTypes.LESSTHAN) == null) {
+    protected boolean isFunctionOnlySpecialization(AST ast) {
+        if (CastUtils.isCast(ast)) {
+            return CastUtils.isCastOperatorOnlySpecialization(ast);
+        }
+        AST mtdName = AstUtil.findMethodName(ast);
+        if (mtdName != null && mtdName.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
+            AST lessThan = AstUtil.findChildOfType(mtdName, CPPTokenTypes.LESSTHAN);
+            if (lessThan == null) {
+                return true; 
+            }
+            AST scope = AstUtil.findSiblingOfType(lessThan, CPPTokenTypes.SCOPE);
+            if (scope == null) {
                 return true;
-            }            
-	    child = child.getNextSibling();
-	}
-	return child != null && child.getType() == CPPTokenTypes.LESSTHAN;
+            }
+            return false;
+        }
+        return mtdName != null && mtdName.getType() == CPPTokenTypes.LESSTHAN;
     }
     
     public static boolean isScopedId(AST id) {
