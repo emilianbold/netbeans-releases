@@ -42,48 +42,50 @@
 
 package org.netbeans.modules.maven.apisupport;
 
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.model.Dependency;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.project.MavenProject;
-import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
-import org.netbeans.modules.maven.api.PluginPropertyUtils;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.codehaus.plexus.util.DirectoryScanner;
-import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.plexus.util.xml.Xpp3DomBuilder;
-import java.beans.PropertyVetoException;
+import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import javax.xml.namespace.QName;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Resource;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.DirectoryScanner;
+import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.codehaus.plexus.util.xml.Xpp3DomBuilder;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.spi.LayerUtil;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.spi.PlatformJarProvider;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.ModelUtils;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Build;
@@ -91,14 +93,14 @@ import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.SpecificationVersion;
-import org.netbeans.spi.project.AuxiliaryProperties;
-import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.XMLFileSystem;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -591,23 +593,38 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         }
         String groupId = mp.getMavenProject().getGroupId();
         String artifactId = mp.getMavenProject().getArtifactId();
-        Project candidate = null;
+        List<Project> candidates = new ArrayList<Project>();
         for (Project p : OpenProjects.getDefault().getOpenProjects()) {
             NbMavenProject mp2 = p.getLookup().lookup(NbMavenProject.class);
             if (mp2 != null && NbMavenProject.TYPE_NBM_APPLICATION.equals(mp2.getPackagingType())) {
                 for (Artifact dep : mp2.getMavenProject().getArtifacts()) {
                     if (dep.getGroupId().equals(groupId) && dep.getArtifactId().equals(artifactId)) {
-                        if (candidate != null) {
-                            // multiple candidates
-                            return null;
-                        } else {
-                            candidate = p;
-                        }
+                        candidates.add(p);
                     }
                 }
             }
         }
-        return candidate;
+        int size = candidates.size();
+        if (size == 1) {
+            return candidates.get(0);
+        }
+        //#242147
+        if (size > 1) {
+            //heuristic storm
+            //1. similar path? colocation?
+            List<Project> colocated = new ArrayList<Project>();
+            URI moduleUri = nbmProject.getProjectDirectory().toURI();
+            for (Project p : candidates) {
+                if (CollocationQuery.areCollocated(moduleUri, p.getProjectDirectory().toURI())) {
+                    colocated.add(p);
+                }
+            }
+            if (colocated.size() == 1) {
+                return colocated.get(0);
+            }
+            //2. what other options do we have? #242147
+        }
+        return null;
     }
     @ProjectServiceProvider(service=ProjectOpenedHook.class, projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_NBM)
     public static class RemoveOldPathToNbApplicationModule extends ProjectOpenedHook {
