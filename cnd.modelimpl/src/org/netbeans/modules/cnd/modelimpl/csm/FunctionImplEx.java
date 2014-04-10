@@ -121,7 +121,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 
         FunctionImplEx<T> functionImplEx = new FunctionImplEx<>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
         functionImplEx.setFlags(FUNC_LIKE_VARIABLE, ast.getType() == CPPTokenTypes.CSM_FUNCTION_LIKE_VARIABLE_DECLARATION);
-        temporaryRepositoryRegistration(global, functionImplEx);
+        temporaryRepositoryRegistration(ast, global, functionImplEx);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionImplEx, clsTemplateSuffix, global);

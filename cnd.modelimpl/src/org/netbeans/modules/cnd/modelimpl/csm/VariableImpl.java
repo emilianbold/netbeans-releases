@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionsFactory;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.parser.OffsetableAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -249,7 +250,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
 
     private void initInitialValue(AST node, CsmScope scope) {
         if (node != null) {
-            int start = 0;
+            AST startAST = null;
             AST tok = AstUtil.findChildOfType(node, CPPTokenTypes.ASSIGNEQUAL);
             if (tok == null && (node.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION ||
                     node.getType() == CPPTokenTypes.CSM_ARRAY_DECLARATION)) {
@@ -262,10 +263,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
                 tok = tok.getNextSibling();
             }
             if (tok != null) {
-                OffsetableAST startAST = AstUtil.getFirstOffsetableAST(tok);
-                if (startAST != null) {
-                    start = startAST.getOffset();
-                }
+                startAST = AstUtil.getFirstOffsetableAST(tok);
             }
             AST lastInitAst = tok;
             int curlyLevel = 0;
@@ -307,8 +305,10 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
             if (lastInitAst != null) {
                 AST lastChild = AstUtil.getLastChildRecursively(lastInitAst);
                 if ((lastChild != null) && (lastChild instanceof CsmAST)) {
-                    int end = ((CsmAST) lastChild).getEndOffset();
-                    initExpr = ExpressionsFactory.create(start, end, getContainingFile(),/* null,*/ _getScope());
+                    AST exprAST = new FakeAST();
+                    exprAST.setType(CPPTokenTypes.CSM_EXPRESSION);
+                    exprAST.addChild(AstUtil.cloneAST(startAST, lastInitAst));
+                    initExpr = ExpressionsFactory.create(exprAST, getContainingFile(),/* null,*/ _getScope());
                     if (!lambdas.isEmpty()) {
                         initExpr.setLambdas(lambdas);
                     }

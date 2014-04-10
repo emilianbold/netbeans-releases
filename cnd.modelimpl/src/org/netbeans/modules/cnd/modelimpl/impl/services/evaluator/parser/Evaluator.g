@@ -30,9 +30,17 @@ import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.VariableProvid
 prog: expr;
 
 expr returns [int value]
-    :   e=multExpr {$value = $e.value;}
-        (   PLUS e=multExpr {$value += $e.value;}
-        |   MINUS e=multExpr {$value -= $e.value;}
+    :   e=equalityExpr {$value = $e.value;}
+        (   PLUS e=equalityExpr {$value += $e.value;}
+        |   MINUS e=equalityExpr {$value -= $e.value;}
+        )*
+    ;
+
+equalityExpr returns [int value]
+    :
+        e = multExpr {$value = $e.value;}
+        ( EQUAL e = multExpr {$value = ($value == $e.value) ? 1 : 0;}
+        | NOTEQUAL e = multExpr {$value = ($value != $e.value) ? 1 : 0;}
         )*
     ;
 
@@ -48,16 +56,10 @@ unaryExpr returns [int value]
 atom returns [int value]
     :   
         DECIMALINT {$value = (($DECIMALINT.text) == null) ? 0 : Integer.parseInt(($DECIMALINT.text).replaceAll("[a-z,A-Z,_].*", "")) ;}
-    |   
-        (LITERAL_const)*
-        id = qualified_id
-        {
-            $value = vp==null?0:vp.getValue($id.q);
-            //Integer v = (Integer)memory.get($IDENT.text);
-            //if ( v!=null ) $value = v.intValue();
-            //else System.err.println("undefined variable "+$IDENT.text);
-        }
+    |   (function_call) => function_call {$value = $function_call.value;}
+    |   variable {$value = $variable.value;}
     |   LPAREN expr RPAREN {$value = $expr.value;}
+    |   LITERAL_sizeof balance_lparen_rparen {$value = vp==null ? 0 : vp.getSizeOfValue($balance_lparen_rparen.s);}
     |   LITERAL_static_cast LESSTHAN (~GREATERTHAN)* GREATERTHAN LPAREN expr RPAREN {$value = $expr.value;}
     |   LITERAL_true
         {
@@ -67,6 +69,20 @@ atom returns [int value]
         {
             $value = vp==null?0:vp.getValue($LITERAL_false.text);
         }
+    ;
+
+function_call returns [int value]
+    :
+        id = qualified_id 
+        args = balance_lparen_rparen
+        { $value = vp==null ? 0 : vp.getValue($id.q + $args.s); }
+    ;
+
+variable returns [int value]
+    :
+        (LITERAL_const)*
+        id = qualified_id
+        { $value = vp==null ? 0 : vp.getValue($id.q); }
     ;
 
 qualified_id returns [String q = ""] 
@@ -123,7 +139,18 @@ balance_less_greater returns [String s = ""]
         |
             other = (~GREATERTHAN) {s += $other.text;}
         )*
-        GREATERTHAN {s += ">";}
+        GREATERTHAN {s += "> ";}
+    ;
+
+balance_lparen_rparen returns [String s = ""]
+    :
+        LPAREN {s += "(";}
+        (
+            (LPAREN)=> inner = balance_lparen_rparen {s += $inner.s;}
+        |
+            other = (~RPAREN) {s += $other.text;}
+        )*
+        RPAREN {s += ")";}
     ;
 
 // Suppressing warnings "no lexer rule corresponding to token"
@@ -136,12 +163,15 @@ fragment STAR: ' ';
 fragment LESSTHAN: ' ';
 fragment GREATERTHAN: ' ';
 fragment NOT: ' ';
+fragment EQUAL: ' ';
+fragment NOTEQUAL: ' ';
 
 fragment SCOPE: ' ';
 
 fragment LPAREN: ' ';
 fragment RPAREN: ' ';
 
+fragment LITERAL_sizeof: ' ';
 fragment LITERAL_static_cast: ' ';
 fragment LITERAL_true: ' ';
 fragment LITERAL_false: ' ';

@@ -110,7 +110,7 @@ public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
 
         ConstructorImpl constructorImpl = new ConstructorImpl(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);        
-        temporaryRepositoryRegistration(global, constructorImpl);
+        temporaryRepositoryRegistration(ast, global, constructorImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, constructorImpl, clsTemplateSuffix, global);

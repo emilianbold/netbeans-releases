@@ -546,8 +546,7 @@ public final class GeneratorUtilities {
             mods.add(Modifier.STATIC);
         }
         TypeMirror type = copy.getTypes().asMemberOf((DeclaredType)clazz.asType(), field);
-        boolean isBoolean = type.getKind() == TypeKind.BOOLEAN
-                || type.getKind() == TypeKind.DECLARED && "java.lang.Boolean".contentEquals(((TypeElement)((DeclaredType)type).asElement()).getQualifiedName()); //NOI18N
+        boolean isBoolean = type.getKind() == TypeKind.BOOLEAN;
         String getterName = CodeStyleUtils.computeGetterName(field.getSimpleName(), isBoolean, isStatic, cs);
         BlockTree body = make.Block(Collections.singletonList(make.Return(make.Identifier(field.getSimpleName()))), false);
         return make.Method(make.Modifiers(mods), getterName, make.Type(type), Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), body, null);
@@ -570,9 +569,7 @@ public final class GeneratorUtilities {
             mods.add(Modifier.STATIC);
         }
         Tree type = field.getType();
-        boolean isBoolean = type.getKind() == Tree.Kind.PRIMITIVE_TYPE && ((PrimitiveTypeTree) type).getPrimitiveTypeKind() == TypeKind.BOOLEAN
-                || type.getKind() == Tree.Kind.IDENTIFIER && "Boolean".equals(name(type)) //NOI18N
-                || type.getKind() == Tree.Kind.MEMBER_SELECT && "java.lang.Boolean".equals(name(type)); //NOI18N
+        boolean isBoolean = type.getKind() == Tree.Kind.PRIMITIVE_TYPE && ((PrimitiveTypeTree) type).getPrimitiveTypeKind() == TypeKind.BOOLEAN;
         String getterName = CodeStyleUtils.computeGetterName(field.getName(), isBoolean, isStatic, cs);
         BlockTree body = make.Block(Collections.singletonList(make.Return(make.Identifier(field.getName()))), false);
         return make.Method(make.Modifiers(mods), getterName, type, Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), body, null);

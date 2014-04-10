@@ -69,8 +69,21 @@ public final class CsmEntityResolver {
      * @return collection of acceptable objects
      */
     public static Collection<CsmObject> resolveObjects(CharSequence text, CsmFile contextFile, int contextOffset, List<CsmInstantiation> instantiations) {
-        return DEFAULT.resolveObjects(new SimpleExpression(text, contextFile, contextOffset), instantiations);
+        return resolveObjects(text, contextFile, contextOffset, null, instantiations);
     } 
+    
+    /**
+     * Resolves expression with the given context (instantiations)
+     * @param text to resolve
+     * @param contextFile
+     * @param contextOffset
+     * @param contextScope - could be null if not known (will be deduced from offset)
+     * @param instantiations - context
+     * @return collection of acceptable objects
+     */
+    public static Collection<CsmObject> resolveObjects(CharSequence text, CsmFile contextFile, int contextOffset, CsmScope contextScope, List<CsmInstantiation> instantiations) {
+        return DEFAULT.resolveObjects(new SimpleExpression(text, contextFile, contextOffset, contextScope), instantiations);
+    }     
     
     /**
      * Resolves expression with the given context (instantiations)
@@ -91,8 +104,21 @@ public final class CsmEntityResolver {
      * @return type
      */
     public static CsmType resolveType(CharSequence text, CsmFile contextFile, int contextOffset, List<CsmInstantiation> instantiations) {
-        return DEFAULT.resolveType(new SimpleExpression(text, contextFile, contextOffset), instantiations);
-    }      
+        return resolveType(text, contextFile, contextOffset, null, instantiations);
+    }   
+    
+    /**
+     * Resolves type of expression with the given context (instantiations)
+     * @param text to resolve
+     * @param contextFile
+     * @param contextOffset
+     * @param contextScope - could be null if not known (will be deduced from offset)
+     * @param instantiations - context
+     * @return type
+     */
+    public static CsmType resolveType(CharSequence text, CsmFile contextFile, int contextOffset, CsmScope contextScope, List<CsmInstantiation> instantiations) {
+        return DEFAULT.resolveType(new SimpleExpression(text, contextFile, contextOffset, contextScope), instantiations);
+    }     
     
     /**
      * Resolves type of expression with the given context (instantiations)
@@ -121,15 +147,18 @@ public final class CsmEntityResolver {
         
         private final CsmFile containingFile;
         
+        private final CsmScope scope;
+        
         private final int startOffset;
         
         private final int endOffset;
 
-        public SimpleExpression(CharSequence expression, CsmFile containingFile, int startOffset) {
+        public SimpleExpression(CharSequence expression, CsmFile containingFile, int startOffset, CsmScope scope) {
             this.expression = expression.toString();
             this.containingFile = containingFile;
             this.startOffset = startOffset;
             this.endOffset = startOffset + expression.length();
+            this.scope = scope;
         }
 
         @Override
@@ -189,7 +218,7 @@ public final class CsmEntityResolver {
 
         @Override
         public CsmScope getScope() {
-            throw new UnsupportedOperationException("Not supported."); // NOI18N
+            return scope;
         }
 
         @Override

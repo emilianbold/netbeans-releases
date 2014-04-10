@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
@@ -102,7 +103,7 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
         this.queryScope = localContext;
         this.fileReferencesContext = fileReferencesContext;
         this.forceCaseSensitiveMode = forceCaseSensitiveMode;
-    }
+    }    
     
     @Override
     protected CsmFinder getFinder() {
@@ -171,11 +172,11 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
     }
     
     @Override
-    protected CompletionResolver getCompletionResolver(boolean openingSource, boolean sort,boolean inIncludeDirective) {
-	return getCompletionResolver(getBaseDocument(), getCsmFile(), openingSource, sort, queryScope, inIncludeDirective);
+    protected CompletionResolver getCompletionResolver(CsmScope contextScope, boolean openingSource, boolean sort, boolean inIncludeDirective) {
+	return getCompletionResolver(getBaseDocument(), getCsmFile(), contextScope, openingSource, sort, queryScope, inIncludeDirective);
     }
 
-    private CompletionResolver getCompletionResolver(BaseDocument bDoc, CsmFile csmFile, 
+    private CompletionResolver getCompletionResolver(BaseDocument bDoc, CsmFile csmFile, CsmScope contextScope,
             boolean openingSource, boolean sort, QueryScope queryScope, boolean inIncludeDirective) {
 	CompletionResolver resolver = null; 
         if (csmFile != null) {
@@ -187,6 +188,9 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
             ((CompletionResolverImpl)resolver).setInIncludeDirective(inIncludeDirective);
             if (offsetInFile != null) {
                 ((CompletionResolverImpl)resolver).setContextOffset(offsetInFile.intValue());
+            }
+            if (contextScope != null) {
+                ((CompletionResolverImpl)resolver).setContextScope(contextScope);
             }
         }
         return resolver;

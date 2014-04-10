@@ -76,7 +76,7 @@ public class WildflyPluginUtils {
 
     public static final String LIB = "lib" + separatorChar;
 
-    public static final String MODULES_BASE_7 = "modules" + separatorChar + "system"
+    public static final String MODULES_BASE = "modules" + separatorChar + "system"
             + separatorChar + "layers" + separatorChar + "base" + separatorChar;
 
     public static final String CLIENT = "client" + separatorChar;
@@ -84,16 +84,16 @@ public class WildflyPluginUtils {
     public static final String COMMON = "common" + separatorChar;
 
     //--------------- checking for possible domain directory -------------
-    private static List<String> domainRequirements7x;
+    private static List<String> domainRequirements;
 
     private static synchronized List<String> getDomainRequirements8x() {
-        if (domainRequirements7x == null) {
-            domainRequirements7x = new ArrayList<String>(11);
-            Collections.addAll(domainRequirements7x,
+        if (domainRequirements == null) {
+            domainRequirements = new ArrayList<String>(11);
+            Collections.addAll(domainRequirements,
                     "configuration"// NOI18N
             );
         }
-        return domainRequirements7x;
+        return domainRequirements;
     }
 
     //--------------- checking for possible server directory -------------
@@ -112,7 +112,7 @@ public class WildflyPluginUtils {
 
     @NonNull
     public static String getModulesBase(String serverRoot) {
-        return MODULES_BASE_7;
+        return MODULES_BASE;
     }
 
     public static final String getDefaultConfigurationFile(String installDir) {

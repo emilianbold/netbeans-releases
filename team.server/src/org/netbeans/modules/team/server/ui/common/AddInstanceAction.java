@@ -118,50 +118,48 @@ public class AddInstanceAction extends AbstractAction {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource().equals(addButton)) {
-                    tsInstanceCustomizer.startProgress();
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    try {
+                        final TeamServer teamServer = tsInstanceCustomizer.getProvider().createTeamServer(tsInstanceCustomizer.getDisplayName(), tsInstanceCustomizer.getUrl());
+                        tsInstanceCustomizer.startProgress();
+                        RequestProcessor.getDefault().post(new Runnable() {
+                            @Override
+                            public void run() {
+                                    if (teamServer == null) {
 
-                        @Override
-                        public void run() {
-                            TeamServer teamServer;
-                            try {
-                                teamServer = tsInstanceCustomizer.getProvider().createTeamServer(tsInstanceCustomizer.getDisplayName(), tsInstanceCustomizer.getUrl());
-                                if (teamServer == null) {
-
-                                    SwingUtilities.invokeLater(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            tsInstanceCustomizer.showError(ERR_TeamServerNotValid());
-                                        }
-                                    });
-                                } else {
-                                    AddInstanceAction.this.teamServer = teamServer;
-                                    SwingUtilities.invokeLater(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            tsInstanceCustomizer.stopProgress();
-                                            dialog.setVisible(false);
-                                            dialog.dispose();
-                                            if (ae != null && ae.getSource() instanceof JComboBox) {
-                                                ((JComboBox) ae.getSource()).setSelectedItem(AddInstanceAction.this.teamServer);
-                                            } else {
-                                                TeamView.getInstance().setSelectedServer(AddInstanceAction.this.teamServer);
+                                        SwingUtilities.invokeLater(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                tsInstanceCustomizer.showError(ERR_TeamServerNotValid());
                                             }
-                                            TeamUIUtils.activateTeamDashboard();
-                                        }
-                                    });
-                                }
-                            } catch (MalformedURLException ex) {
-                                SwingUtilities.invokeLater(new Runnable() {
-
-                                    @Override
-                                    public void run() {
-                                        tsInstanceCustomizer.showError(ERR_TeamServerNotValid());
+                                        });
+                                    } else {
+                                        AddInstanceAction.this.teamServer = teamServer;
+                                        SwingUtilities.invokeLater(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                tsInstanceCustomizer.stopProgress();
+                                                dialog.setVisible(false);
+                                                dialog.dispose();
+                                                if (ae != null && ae.getSource() instanceof JComboBox) {
+                                                    ((JComboBox) ae.getSource()).setSelectedItem(AddInstanceAction.this.teamServer);
+                                                } else {
+                                                    TeamView.getInstance().setSelectedServer(AddInstanceAction.this.teamServer);
+                                                }
+                                                TeamUIUtils.activateTeamDashboard();
+                                            }
+                                        });
                                     }
-                                });
                             }
-                        }
-                    });
+                        });
+                    } catch (MalformedURLException ex) {
+                        SwingUtilities.invokeLater(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                tsInstanceCustomizer.showError(ERR_TeamServerNotValid());
+                            }
+                        });
+                    }
                 } else {
                     dialog.setVisible(false);
                     dialog.dispose();

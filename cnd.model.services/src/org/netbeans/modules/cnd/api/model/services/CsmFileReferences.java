@@ -132,19 +132,25 @@ public abstract class CsmFileReferences {
            // do nothing
        }
    }
-      /**
-    * visitor inteface
+   
+   public interface Cancellable {
+       boolean cancelled();
+   }
+   
+   /**
+    * visitor interface
     */
-   public interface Visitor {
+   public interface Visitor extends Cancellable {
        /**
         * This method is invoked for every matching reference in the file.
         *
         * @param context  reference with its lexical context
         */
        void visit(CsmReferenceContext context);
+       
    }
 
-   public interface ReferenceVisitor {
+   public interface ReferenceVisitor extends Cancellable {
 
        /**
         * This method is invoked for every matching reference in the file.

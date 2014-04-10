@@ -778,14 +778,18 @@ public class NbEditorKit extends ExtKit implements Callable {
                     if (Boolean.TRUE.equals(action.getValue(DynamicMenuContent.HIDE_WHEN_DISABLED)) && !action.isEnabled()) {
                         return;
                     }
-                    item.setEnabled(action.isEnabled());
-                    Object helpID = action.getValue ("helpID"); // NOI18N
-                    if (helpID != null && (helpID instanceof String)) {
-                        item.putClientProperty ("HelpID", helpID); // NOI18N
+                    if (item == null) {
+                        LOG.log(Level.WARNING, "Null menu item produced by action {0}.", action);
+                    } else {
+                        item.setEnabled(action.isEnabled());
+                        Object helpID = action.getValue ("helpID"); // NOI18N
+                        if (helpID != null && (helpID instanceof String)) {
+                            item.putClientProperty ("HelpID", helpID); // NOI18N
+                        }
+                        assignAccelerator(component.getKeymap(), action, item);
+                        debugPopupMenuItem(item, action);
+                        popupMenu.add(item);
                     }
-                    assignAccelerator(component.getKeymap(), action, item);
-                    debugPopupMenuItem(item, action);
-                    popupMenu.add(item);
                 }
             }
         }

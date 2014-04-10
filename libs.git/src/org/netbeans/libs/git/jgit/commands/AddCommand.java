@@ -177,6 +177,10 @@ public class AddCommand extends GitCommand {
                             }
                             builder.add(entry);
                             lastAddedFile = path;
+                        } else if (treeWalk.isSubtree()) {
+                            // this is a folder but does not exist on disk any more
+                            // still needs to go through all the index entries and copy
+                            treeWalk.enterSubtree();
                         } else {
                             DirCacheIterator c = treeWalk.getTree(0, DirCacheIterator.class);
                             builder.add(c.getDirCacheEntry());

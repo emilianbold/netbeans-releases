@@ -458,6 +458,11 @@ public class TraceXRef extends TraceModel {
                 }
             }
         }
+
+        @Override
+        public boolean cancelled() {
+            return canceled.get();
+        }
     }
 
     private static final class LWReportIndexVisitor implements CsmFileReferences.Visitor {
@@ -530,6 +535,11 @@ public class TraceXRef extends TraceModel {
                 indexed.increment(fromStorage);
             }
         }
+
+        @Override
+        public boolean cancelled() {
+            return canceled.get();
+        }
     }
     
     private static void handleFunctionDefinition(final CsmFunctionDefinition fun, final StatisticsParameters params, final XRefResultSet<XRefEntry> bag,
@@ -566,6 +576,11 @@ public class TraceXRef extends TraceModel {
                                     unres.increment();
                                 }
                             }
+                        }
+
+                        @Override
+                        public boolean cancelled() {
+                            return false;
                         }
                     },
                     params.interestedReferences);

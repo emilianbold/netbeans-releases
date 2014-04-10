@@ -1623,6 +1623,8 @@ public class AstRenderer {
             case CPPTokenTypes.LITERAL___global:
             case CPPTokenTypes.LITERAL___hidden:
                 return true;
+            case CPPTokenTypes.LITERAL_thread_local:
+                return true;
             default:
                 return false;
         }
@@ -1844,6 +1846,9 @@ public class AstRenderer {
                     if (inParamsLevel == 0) {
                         arrayDepth++;
                     }
+                    break;
+                case CPPTokenTypes.CSM_EXPRESSION:
+                    // TODO: TypeImpl should store expression for array definitions
                     break;
                 case CPPTokenTypes.LITERAL_struct:
                 case CPPTokenTypes.LITERAL_union:

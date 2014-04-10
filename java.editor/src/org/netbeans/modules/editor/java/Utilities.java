@@ -609,6 +609,11 @@ public final class Utilities {
                 ls.add(getConstName(s));
             vnct = ls;
         }
+        if (vnct.isEmpty() && prefix != null && prefix.length() > 0
+                && (namePrefix != null && namePrefix.length() > 0
+                || nameSuffix != null && nameSuffix.length() >0)) {
+            vnct = Collections.singletonList(prefix);
+        }
         String p = prefix;
         while (p != null && p.length() > 0) {
             List<String> l = new ArrayList<String>();
@@ -660,9 +665,7 @@ public final class Utilities {
     }
 
     public static boolean isBoolean(TypeMirror type) {
-        return type.getKind() == TypeKind.BOOLEAN
-                || type.getKind() == TypeKind.DECLARED
-                && "java.lang.Boolean".contentEquals(((TypeElement)((DeclaredType)type).asElement()).getQualifiedName()); //NOI18N
+        return type.getKind() == TypeKind.BOOLEAN;
     }
 
     public static Set<Element> getUsedElements(final CompilationInfo info) {
@@ -752,7 +755,10 @@ public final class Utilities {
             case INT:
             case LONG:
             case SHORT:
-                return Collections.<String>singletonList(type.toString().substring(0, 1));
+                String str = type.toString().substring(0, 1);
+                return prefix != null && !prefix.equals(str)
+                        ? Collections.<String>emptyList()
+                        : Collections.<String>singletonList(str);
             case TYPEVAR:
                 return Collections.<String>singletonList(type.toString().toLowerCase(Locale.ENGLISH));
             case ERROR:

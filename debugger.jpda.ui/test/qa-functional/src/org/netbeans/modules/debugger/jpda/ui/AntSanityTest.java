@@ -42,21 +42,30 @@
 package org.netbeans.modules.debugger.jpda.ui;
 
 import java.awt.AWTException;
+import java.awt.Component;
 import java.awt.Robot;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import javax.swing.JButton;
+import javax.swing.JPanel;
 import javax.swing.JViewport;
 import junit.framework.Test;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.BuildJavaProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.actions.SaveAction;
-import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.modules.debugger.actions.ApplyCodeChangesAction;
 import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import org.netbeans.jellytools.modules.debugger.actions.DebugJavaFileAction;
 import org.netbeans.jellytools.modules.debugger.actions.FinishDebuggerAction;
@@ -66,14 +75,18 @@ import org.netbeans.jellytools.modules.debugger.actions.StepIntoAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepOutAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepOverAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepOverExpressionAction;
-import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
-import org.netbeans.jellytools.modules.debugger.actions.ApplyCodeChangesAction;
 import org.netbeans.jellytools.modules.debugger.actions.TakeGUISnapshotAction;
+import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.operators.ContainerOperator;
+import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import static org.netbeans.modules.debugger.jpda.ui.Utilities.debuggerConsoleTitle;
 import org.openide.util.Exceptions;
@@ -101,7 +114,9 @@ public class AntSanityTest extends JellyTestCase {
         "stepOverExpression",
         "finishDebugger",
         "applyCodeChanges",
-        "takeGUISnapshot"
+        "takeGUISnapshot",
+        "newWatch",
+        "evaluateExpression"
     };
 
     /**
@@ -168,9 +183,7 @@ public class AntSanityTest extends JellyTestCase {
      */
     public void pause() {
         new PauseAction().perform();
-        TopComponentOperator debuggingView = new TopComponentOperator("Debugging");
-        JTreeOperator threads = new JTreeOperator(debuggingView);
-        new Node(threads, "'Finalizer' suspended at 'Object.wait'");
+        waitThreadsNode("'Finalizer' suspended at 'Object.wait'");
     }
 
     /**
@@ -216,9 +229,7 @@ public class AntSanityTest extends JellyTestCase {
         new StepIntoAction().perform();
         EditorOperator eo = new EditorOperator("Window.java");
         int lineNumber = eo.getLineNumber();
-        TopComponentOperator debuggingView = new TopComponentOperator("Debugging");
-        JTreeOperator threads = new JTreeOperator(debuggingView);
-        new Node(threads, "'main' suspended at 'Window.setLocation:" + lineNumber + "'");
+        waitThreadsNode("'main' suspended at 'Window.setLocation:" + lineNumber + "'");
         assertEquals(eo.getText(lineNumber).trim(), "super.setLocation(x, y);");
     }
 
@@ -229,9 +240,7 @@ public class AntSanityTest extends JellyTestCase {
         new StepOutAction().perform();
         EditorOperator eo = new EditorOperator("MemoryView.java");
         int lineNumber = eo.getLineNumber();
-        TopComponentOperator debuggingView = new TopComponentOperator("Debugging");
-        JTreeOperator threads = new JTreeOperator(debuggingView);
-        new Node(threads, "'main' suspended at 'MemoryView.main:" + lineNumber + "'");
+        waitThreadsNode("'main' suspended at 'MemoryView.main:" + lineNumber + "'");
         assertEquals(eo.getText(lineNumber).trim(), "mv.setVisible(true);");
     }
 
@@ -243,11 +252,9 @@ public class AntSanityTest extends JellyTestCase {
         eo.setCaretPositionToLine(141);
         new ToggleBreakpointAction().perform();
         new ContinueAction().perform();
-        TopComponentOperator debuggingView = new TopComponentOperator("Debugging");
-        JTreeOperator threads = new JTreeOperator(debuggingView);
-        new Node(threads, "'AWT-EventQueue-0' at line breakpoint MemoryView.java : 141");
+        waitThreadsNode("'AWT-EventQueue-0' at line breakpoint MemoryView.java : 141");
         new StepOverAction().perform();
-        new Node(threads, "'AWT-EventQueue-0' suspended at 'MemoryView.updateStatus:143'");
+        waitThreadsNode("'AWT-EventQueue-0' suspended at 'MemoryView.updateStatus:143'");
         JTableOperator breakpoints = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
         new JPopupMenuOperator(breakpoints.callPopupOnCell(1, 0)).pushMenu("Delete All");
     }
@@ -317,15 +324,17 @@ public class AntSanityTest extends JellyTestCase {
         new StepOverAction().perform();
         new FinishDebuggerAction().perform();
         OutputTabOperator op = new OutputTabOperator("debugTestProjectAnt (debug-single)");
-        assertEquals("Before code changes", op.getLine(op.getLineCount() - 5));
-        assertEquals("After code changes", op.getLine(op.getLineCount() - 4));
+        int beforeCodeChangesLine = op.findLine("Before code changes");
+        int afterCodeChangesLine = op.findLine("After code changes");
+        assertTrue(beforeCodeChangesLine == afterCodeChangesLine - 1);
     }
     
     /**
      * Takes GUI snapshot of debugged application.
      */
-    public void takeGUISnapshot() {
+    public void takeGUISnapshot() throws InterruptedException {
         new Action("Debug|Debug Project (debugTestProjectAnt)", null).perform();
+        Thread.sleep(3000); // Wait 3 seconds. Sometimes starting debugging session was slow.
         OutputTabOperator op = new OutputTabOperator(debuggerConsoleTitle);
         assertEquals("User program running", op.getLine(op.getLineCount() - 2));
         new TakeGUISnapshotAction().perform();
@@ -333,8 +342,57 @@ public class AntSanityTest extends JellyTestCase {
         assertEquals(guiSnapshot.getComponent(1).getName(), "Snapshot Zoom Toolbar");
         JViewport viewPort = (JViewport) guiSnapshot.getComponent(0).getComponentAt(10, 10);
         assertTrue(viewPort.getComponent(0).toString().startsWith("org.netbeans.modules.debugger.jpda.visual.ui.ScreenshotComponent$ScreenshotCanvas"));
+        new FinishDebuggerAction().perform();
     }
-
+    
+    /**
+     * Tests that it is possible to add watches.
+     */
+    public void newWatch() throws IllegalAccessException, InvocationTargetException, InvalidExpressionException {
+        Node projectNode = new ProjectsTabOperator().getProjectRootNode(DEBUG_TEST_PROJECT_ANT);
+        Node testFile = new Node(new SourcePackagesNode(projectNode), "advanced|VariablesTest.java");
+        new OpenAction().perform(testFile);
+        EditorOperator eo = new EditorOperator("VariablesTest.java");
+        Utilities.toggleBreakpoint(eo, 49);
+        MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
+        stt.start();
+        new DebugJavaFileAction().perform(testFile);
+        stt.waitText("Thread main stopped at VariablesTest.java:49");
+        stt.stop();
+        new ActionNoBlock("Debug|New Watch...", null).perform();
+        NbDialogOperator newWatchDialog = new NbDialogOperator("New Watch");
+        new JEditorPaneOperator(newWatchDialog, 0).setText("n");
+        newWatchDialog.ok();
+        TopComponentOperator variablesView = new TopComponentOperator(new ContainerOperator(MainWindowOperator.getDefault(), VIEW_CHOOSER), "Variables");
+        JTableOperator variablesTable = new JTableOperator(variablesView);
+        assertEquals("n", variablesTable.getValueAt(0, 0).toString());
+        org.openide.nodes.Node.Property property = (org.openide.nodes.Node.Property) variablesTable.getValueAt(0, 2);
+        assertEquals("50", property.getValue());
+        JPopupMenuOperator menu = new JPopupMenuOperator(variablesTable.callPopupOnCell(0, 0));
+        menu.pushMenu("Delete All");
+    }
+    
+    /**
+     * Evaluates simple expression during debugging session.
+     */
+    public void evaluateExpression() throws IllegalAccessException, InvocationTargetException, InterruptedException, InvalidExpressionException {
+        TopComponentOperator variablesView = new TopComponentOperator(new ContainerOperator(MainWindowOperator.getDefault(), VIEW_CHOOSER), "Variables");
+        JToggleButtonOperator showEvaluationResultButton = new JToggleButtonOperator(variablesView, 0);
+        showEvaluationResultButton.clickMouse();
+        TopComponentOperator evaluationResultView = new TopComponentOperator("Evaluation Result");
+        new Action("Debug|Evaluate Expression...", null).perform();
+        TopComponentOperator expressionEvaluator = new TopComponentOperator("Evaluate Expression");
+        JEditorPaneOperator expressionEditor = new JEditorPaneOperator(expressionEvaluator);
+        expressionEditor.setText("\"If n is: \" + n + \", then n + 1 is: \" + (n + 1)");
+        JPanel buttonsPanel = (JPanel) expressionEvaluator.getComponent(2);
+        JButton expressionEvaluatorButton = (JButton) buttonsPanel.getComponent(1);
+        assertEquals("Evaluate code fragment (Ctrl + Enter)", expressionEvaluatorButton.getToolTipText());
+        expressionEvaluatorButton.doClick();
+        JTableOperator variablesTable = new JTableOperator(evaluationResultView);
+        assertValue(variablesTable, 0, 2, "If n is: 50, then n + 1 is: 51");        
+        assertEquals("\"If n is: \" + n + \", then n + 1 is: \" + (n + 1)", variablesTable.getValueAt(0, 0).toString());
+    }
+    
     /**
      * Using AWT robot presses and immediately releases certain key.
      * @param code Code of the key to be pressed.
@@ -346,6 +404,61 @@ public class AntSanityTest extends JellyTestCase {
             robot.keyRelease(code);
         } catch (AWTException ex) {
             Exceptions.printStackTrace(ex);
+        }
+    }
+
+    /**
+     * Waits until given threads node shows up in Debugging view.
+     * @param name Full display name of the required thread node to be found.
+     */
+    private void waitThreadsNode(String name) {
+        TopComponentOperator debuggingView = new TopComponentOperator("Debugging");
+        JTreeOperator threads = new JTreeOperator(debuggingView);
+        try {
+            new Node(threads, name);
+        } catch (TimeoutExpiredException tee) {
+            // if fails try second time because sometimes it fails for unknown reason
+            new Node(threads, name);
+        }
+    }
+
+    /**
+     * Variables view component chooser ignoring opened VariablesTest.java editor tab.
+     */
+    private static final ComponentChooser VIEW_CHOOSER = new ComponentChooser() {
+
+        @Override
+        public boolean checkComponent(Component comp) {
+            return comp.getClass().getName().endsWith("org.netbeans.modules.debugger.ui.views.View");
+        }
+
+        @Override
+        public String getDescription() {
+            return "debugger view";// NOI18N
+        }
+    };
+
+    /**
+     * Tests that table contains required value in cell with given coordinates.
+     * 
+     * @param table Table to be used for the search.
+     * @param row Row of the cell.
+     * @param column Column of the cell.
+     * @param value Value to be searched for.
+     */
+    private void assertValue(JTableOperator table, int row, int column, String value) throws IllegalAccessException, InvocationTargetException, InvalidExpressionException {
+        org.openide.nodes.Node.Property property = null;
+        for (int i = 0; i < 10; i++) {
+            property = (org.openide.nodes.Node.Property) table.getValueAt(row, column);
+            if (property != null)
+                if (!"Evaluating...".equals(property.getValue())) break;
+            new EventTool().waitNoEvent(1000);
+        }
+        assertNotNull(property);
+        if (property.getValue() instanceof ObjectVariable) {
+            assertEquals(value, ((ObjectVariable) property.getValue()).getToStringValue());
+        } else {
+            assertEquals(value, property.getValue().toString());
         }
     }
 }

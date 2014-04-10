@@ -176,7 +176,7 @@ public class MimeLookupPerformanceTest extends NbTestCase {
             checkPopupItemPresence(lookup, RenameAction.class, true);
         }
         gc();
-        assertSize("", size + 1000, lookup);
+        assertSize("", size + 20, lookup);
     }
 
     public void testTemplateLookuping() throws IOException{
@@ -193,42 +193,7 @@ public class MimeLookupPerformanceTest extends NbTestCase {
             checkPopupItemPresence(lookup, RenameAction.class, true);
         }
         gc();
-        // Test regularly fails for me (regardless of accompanying change).
-        // Value of size ranges from 300KB to 600KB and the test usually fails for size difference of about 300 bytes.
-        // When comparing the classes from assertSize() above and the one that follows the difference is usually like this:
-//-  [C: 2986, 274224B
-//-  java.lang.String: 2969, 71256B
-//-  java.util.concurrent.ConcurrentHashMap$HashEntry: 1462, 35088B
-//+  [C: 2988, 274416B
-//+  java.lang.String: 2971, 71304B
-//+  java.util.concurrent.ConcurrentHashMap$HashEntry: 1466, 35184B
-//   [B: 49, 34600B
-//   java.util.HashMap$Entry: 876, 21024B
-//   [Ljava.util.HashMap$Entry;: 220, 18736B
-//@@ -8,7 +8,7 @@
-//   [Ljava.lang.Object;: 262, 18272B
-//   java.util.HashMap: 253, 12144B
-//   [Ljava.util.concurrent.ConcurrentHashMap$HashEntry;: 48, 11776B
-//-  java.lang.Object: 1450, 11600B
-//+  java.lang.Object: 1454, 11632B
-//   [Ljava.util.Hashtable$Entry;: 11, 9320B
-//   java.util.logging.LogManager$LoggerWeakRef: 197, 7880B
-//   java.util.logging.Logger: 78, 5616B
-//@@ -270,7 +270,6 @@
-//   javax.swing.plaf.metal.OceanTheme$5: 1, 16B
-//   [Lsun.awt.X11.XAtom;: 1, 16B
-//   org.openide.util.WeakSet$SharedKeyWeakHashMap$KeySet: 1, 16B
-//-  org.apache.tools.ant.util.TeeOutputStream: 1, 16B
-//   java.io.FileDescriptor: 1, 16B
-//   javax.swing.plaf.metal.OceanTheme$1: 1, 16B
-//   org.openide.loaders.DataFolder$ListPCL: 1, 16B
-//@@ -324,5 +323,4 @@
-//   org.openide.filesystems.MIMESupport$CachedFileObject$1: 1, 8B
-//   org.openide.util.Lookup$Empty$1: 1, 8B
-//   sun.java2d.Disposer: 1, 8B
-//-  org.netbeans.modules.openide.filesystems.RecognizeInstanceFiles: 1, 8B
-        // So adding a constant of 1000 bytes should eliminate the failures.
-        assertSize("", size + 1000, lookup);
+        assertSize("", size, lookup);
     }
     
     

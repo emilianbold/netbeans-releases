@@ -74,8 +74,7 @@ public class WildflyInstantiatingIterator implements WizardDescriptor.Instantiat
 
     private static final String PROP_DISPLAY_NAME = "ServInstWizard_displayName"; // NOI18N
 
-    private static final String WILDFLY_JAVA_OPTS = "-Xms128m -Xmx512m -XX:MaxPermSize=256m"; // NOI18N
-
+    private static final String WILDFLY_JAVA_OPTS = "-Xms128m -Xmx512m"; // NOI18N
     /**
      * skipServerLocationStep allow to skip Select Location step in New Instance Wizard
      * if this step allready was passed
@@ -173,6 +172,7 @@ public class WildflyInstantiatingIterator implements WizardDescriptor.Instantiat
             initialProperties.put(WildflyPluginProperties.PROPERTY_HOST, host);
             initialProperties.put(WildflyPluginProperties.PROPERTY_PORT, port);
             initialProperties.put(WildflyPluginProperties.PROPERTY_CONFIG_FILE, configFile);
+            initialProperties.put(WildflyPluginProperties.PROPERTY_ADMIN_PORT, adminPort);
             initialProperties.put(WildflyPluginProperties.PROPERTY_JAVA_OPTS, WILDFLY_JAVA_OPTS);
 
             InstanceProperties ip = InstanceProperties.createInstanceProperties(url,
@@ -285,6 +285,7 @@ public class WildflyInstantiatingIterator implements WizardDescriptor.Instantiat
 
     private String host;
     private String port;
+    private String adminPort;
     private String userName="";
     private String password="";
     private String server;
@@ -311,6 +312,10 @@ public class WildflyInstantiatingIterator implements WizardDescriptor.Instantiat
 
     public void setPort(String port){
         this.port = port.trim();
+    }
+
+    public void setAdminPort(String port){
+        this.adminPort = port.trim();
     }
 
     public void setServer(String server){

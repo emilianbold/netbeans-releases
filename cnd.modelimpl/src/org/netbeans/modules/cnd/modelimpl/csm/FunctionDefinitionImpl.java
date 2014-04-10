@@ -118,7 +118,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 
         FunctionDefinitionImpl<T> functionDefinitionImpl = new FunctionDefinitionImpl<>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
         
-        temporaryRepositoryRegistration(global, functionDefinitionImpl);
+        temporaryRepositoryRegistration(ast, global, functionDefinitionImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionDefinitionImpl, clsTemplateSuffix, global);

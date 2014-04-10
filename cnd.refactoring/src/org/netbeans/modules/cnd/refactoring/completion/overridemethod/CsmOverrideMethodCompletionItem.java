@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.completion.overridemethod;
+package org.netbeans.modules.cnd.refactoring.completion.overridemethod;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -112,12 +112,12 @@ public class CsmOverrideMethodCompletionItem implements CompletionItem {
             anIicon = CsmImageLoader.getIcon(CsmDeclaration.Kind.FUNCTION, CsmUtilities.DESTRUCTOR);
         }
         icon = (ImageIcon) ImageUtilities.image2Icon((ImageUtilities.mergeImages(ImageUtilities.icon2Image(anIicon),
-                                                      ImageUtilities.loadImage("org/netbeans/modules/cnd/completion/resources/generate.png"),  // NOI18N
+                                                      ImageUtilities.loadImage("org/netbeans/modules/cnd/refactoring/resources/generate.png"),  // NOI18N
                                                       0, 7)));
         this.right = right;
     }
 
-    public static CsmOverrideMethodCompletionItem createImplementItem(int substitutionOffset, int priority, CsmClass cls, CsmMember item) {
+    public static CsmOverrideMethodCompletionItem createImplementItem(int substitutionOffset, int caretOffset, CsmClass cls, CsmMember item) {
         String sortItemText;
         if (item == null || CsmKindUtilities.isDestructor(item)) {
             sortItemText = "~"+cls.getName(); //NOI18N

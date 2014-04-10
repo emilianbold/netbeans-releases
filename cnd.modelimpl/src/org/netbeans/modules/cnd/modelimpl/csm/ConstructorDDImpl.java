@@ -119,7 +119,7 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
 
         ConstructorDDImpl constructorDDImpl = new ConstructorDDImpl(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);        
-        temporaryRepositoryRegistration(global, constructorDDImpl);
+        temporaryRepositoryRegistration(ast, global, constructorDDImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, constructorDDImpl, clsTemplateSuffix, global);

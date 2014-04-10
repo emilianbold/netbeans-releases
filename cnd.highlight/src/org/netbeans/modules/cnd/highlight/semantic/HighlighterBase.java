@@ -43,17 +43,17 @@
  */
 package org.netbeans.modules.cnd.highlight.semantic;
 
-import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import org.netbeans.modules.cnd.modelutil.CsmFontColorManager;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 import org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 
 /**
  *
  * @author Sergey Grinev
  */
-public abstract class HighlighterBase extends IndexingAwareParserResultTask<CndParserResult> implements CsmFontColorManager.FontColorChangeListener {
+public abstract class HighlighterBase extends IndexingAwareParserResultTask<Parser.Result> implements CsmFontColorManager.FontColorChangeListener {
 
     /*package*/ static final boolean MINIMAL = Boolean.getBoolean("cnd.highlighting.minimal");
     

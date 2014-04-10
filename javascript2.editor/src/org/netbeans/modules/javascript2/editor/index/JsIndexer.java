@@ -43,7 +43,6 @@ package org.netbeans.modules.javascript2.editor.index;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.logging.Level;
@@ -121,7 +120,9 @@ public class JsIndexer extends EmbeddingIndexer {
                 // look for all other properties. Even if the object doesn't have to be delcared in the file
                 // there can be declared it's properties or methods
                 for (JsObject property : object.getProperties().values()) {
-                    storeObject(property, fqn + '.' + property.getName(), support, indexable);
+                    if (!(property instanceof JsObjectReference && !((JsObjectReference)property).getOriginal().isAnonymous())) {
+                        storeObject(property, fqn + '.' + property.getName(), support, indexable);
+                    }
                 }
                 if (object instanceof JsFunction) {
                     // store parameters
@@ -149,7 +150,7 @@ public class JsIndexer extends EmbeddingIndexer {
     public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "js"; // NOI18N
-        public static final int VERSION = 11;
+        public static final int VERSION = 12;
         private static final int PRIORITY = 100;
         
         private static final ThreadLocal<Collection<Runnable>> postScanTasks = new ThreadLocal<Collection<Runnable>>();

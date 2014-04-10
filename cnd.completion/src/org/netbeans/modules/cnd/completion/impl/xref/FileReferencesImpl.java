@@ -142,9 +142,12 @@ public final class FileReferencesImpl extends CsmFileReferences  {
             end = ((CsmOffsetable)csmScope).getEndOffset();
         }
 
-        List<CsmReferenceContext> refs = getIdentifierReferences(csmFile, doc, start,end, kinds, fileReferncesContext);
+        List<CsmReferenceContext> refs = getIdentifierReferences(csmFile, doc, start,end, kinds, fileReferncesContext, visitor);
 
         for (CsmReferenceContext context : refs) {
+            if (visitor.cancelled()) {
+                return;
+            }
             // skip 'this' if possible
             if (!isThis(context.getReference())) {
                 visitor.visit(context);
@@ -168,6 +171,9 @@ public final class FileReferencesImpl extends CsmFileReferences  {
         try {
             CsmCacheManager.enter();
             for(CsmReference ref : refs) {
+                if (visitor.cancelled()) {
+                    return;
+                }
                 if (fileReferencesContext == null){
                     fileReferencesContext = new FileReferencesContext(ref.getContainingFile());
                 }
@@ -186,8 +192,8 @@ public final class FileReferencesImpl extends CsmFileReferences  {
 
     private List<CsmReferenceContext> getIdentifierReferences(CsmFile csmFile, final BaseDocument doc,
             final int start, final int end,
-            Set<CsmReferenceKind> kinds, FileReferencesContext fileReferncesContext) {
-        ExpandedReferencesProcessor merp = ExpandedReferencesProcessor.create(doc, csmFile, kinds, fileReferncesContext);
+            Set<CsmReferenceKind> kinds, FileReferencesContext fileReferncesContext, Cancellable canceled) {
+        ExpandedReferencesProcessor merp = ExpandedReferencesProcessor.create(doc, csmFile, kinds, fileReferncesContext, canceled);
         doc.readLock();
         try {
             CndTokenUtilities.processTokens(merp, doc, start, end);
@@ -203,8 +209,9 @@ public final class FileReferencesImpl extends CsmFileReferences  {
         private ReferencesProcessor originalReferencesProcessor;
         private ReferencesProcessor macroReferencesProcessor;
         private boolean inMacro = false;
+        private final Cancellable canceled;
 
-        public static ExpandedReferencesProcessor create(BaseDocument doc, CsmFile file, Set<CsmReferenceKind> kinds, FileReferencesContext fileReferncesContext) {
+        public static ExpandedReferencesProcessor create(BaseDocument doc, CsmFile file, Set<CsmReferenceKind> kinds, FileReferencesContext fileReferncesContext, Cancellable canceled) {
             boolean skipPreprocDirectives = !kinds.contains(CsmReferenceKind.IN_PREPROCESSOR_DIRECTIVE);
             Collection<CsmOffsetable> deadBlocks;
             if (!kinds.contains(CsmReferenceKind.IN_DEAD_BLOCK)) {
@@ -218,16 +225,22 @@ public final class FileReferencesImpl extends CsmFileReferences  {
 //            if (etp instanceof CsmExpandedTokenProcessor) {
 //                return new ExpandedReferencesProcessor(rp, (CsmExpandedTokenProcessor) etp);
 //            }
-            return new ExpandedReferencesProcessor(rp, null);
+            return new ExpandedReferencesProcessor(rp, null, canceled);
         }
 
         public List<CsmReferenceContext> getReferences() {
             return originalReferencesProcessor.references;
         }
 
-        private ExpandedReferencesProcessor(ReferencesProcessor rp, CsmExpandedTokenProcessor etp) {
+        private ExpandedReferencesProcessor(ReferencesProcessor rp, CsmExpandedTokenProcessor etp, Cancellable canceled) {
             this.originalReferencesProcessor = rp;
             this.expandedTokenProcessor = etp;
+            this.canceled = canceled;
+        }
+
+        @Override
+        public boolean isStopped() {
+            return canceled.cancelled();
         }
 
         @Override

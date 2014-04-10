@@ -156,6 +156,12 @@ public class Installer extends ModuleInstall implements Runnable {
 
     private static final String CMD_METRICS_ENABLE = "MetricsEnable";   // NOI18N
     private static final String CMD_METRICS_CANCEL = "MetricsCancel";   // NOI18N
+    
+    private static final String MIXED_CT_BOUNDARY = "--------konec<>bloku";     // NOI18N
+    // End of block pattern
+    private static final String END_OF_BLOCK = "--"+MIXED_CT_BOUNDARY;          // NOI18N
+    // End of data block pattern
+    private static final String END_OF_DATA_BLOCK = "\n\n"+END_OF_BLOCK;        // NOI18N
 
     /** Action listener for Usage Statistics Reminder dialog */
     private ActionListener l = new ActionListener () {
@@ -1200,7 +1206,7 @@ public class Installer extends ModuleInstall implements Runnable {
             conn.setReadTimeout(60000);
             conn.setDoOutput(true);
             conn.setDoInput(true);
-            conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=--------konec<>bloku");
+            conn.setRequestProperty("Content-Type", "multipart/form-data; boundary="+MIXED_CT_BOUNDARY);
             conn.setRequestProperty("Pragma", "no-cache");
             conn.setRequestProperty("Cache-control", "no-cache");
             conn.setRequestProperty("User-Agent", "NetBeans");
@@ -1211,12 +1217,15 @@ public class Installer extends ModuleInstall implements Runnable {
         }
         LOG.log(Level.FINE, "uploadLogs, header sent"); // NOI18N
 
-        PrintStream os;
+        final PrintStream os;
+        final String eol;
         if (fileProtocol) {
             os = new PrintStream(new FileOutputStream(postURL.getFile()));
+            eol = System.getProperty("line.separator");         // NOI18N
         } else {
             assert conn != null;
             os = new PrintStream(conn.getOutputStream());
+            eol = "\r\n";   // Content transfer line ending     // NOI18N
         }
         /*
         os.println("POST " + postURL.getPath() + " HTTP/1.1");
@@ -1226,10 +1235,11 @@ public class Installer extends ModuleInstall implements Runnable {
         os.println();
          */
         for (Map.Entry<String, String> en : attrs.entrySet()) {
-            os.println("----------konec<>bloku");
-            os.println("Content-Disposition: form-data; name=\"" + en.getKey() + "\"");
-            os.println();
-            os.println(en.getValue().getBytes());
+            os.print(END_OF_BLOCK+eol);
+            os.print("Content-Disposition: form-data; name=\"" + en.getKey() + "\""+eol);
+            os.print(eol);
+            os.print(en.getValue().getBytes());
+            os.print(eol);
         }
         LOG.log(Level.FINE, "uploadLogs, attributes sent"); // NOI18N
         
@@ -1237,29 +1247,27 @@ public class Installer extends ModuleInstall implements Runnable {
             h.progress(30);
         }
 
-        os.println("----------konec<>bloku");
+        os.print(END_OF_BLOCK+eol);
 
         if (id == null) {
             id = "uigestures"; // NOI18N
         }
 
         if (dataType != DataType.DATA_METRICS && isErrorReport) {
-            os.println("Content-Disposition: form-data; name=\"messages\"; filename=\"" + id + "_messages.gz\"");
-            os.println("Content-Type: x-application/log");
-            os.println();
+            os.print("Content-Disposition: form-data; name=\"messages\"; filename=\"" + id + "_messages.gz\""+eol);
+            os.print("Content-Type: x-application/log"+eol+eol);
             boolean fromLastRun = recs.size() > 0 && isAfterRestart;
             uploadMessagesLog(os, fromLastRun);
-            os.println("\n\n----------konec<>bloku");
+            os.print(END_OF_DATA_BLOCK+eol);
         }
 
         if (slownData != null){
             assert slownData.getNpsContent() != null: "nps param should be not null";
             assert slownData.getNpsContent().length > 0 : "nps param should not be empty";
-            os.println("Content-Disposition: form-data; name=\"slowness\"; filename=\"" + id + "_slowness.gz\"");
-            os.println("Content-Type: x-application/nps");
-            os.println();
+            os.print("Content-Disposition: form-data; name=\"slowness\"; filename=\"" + id + "_slowness.gz\""+eol);
+            os.print("Content-Type: x-application/nps"+eol+eol);
             os.write(slownData.getNpsContent());
-            os.println("\n\n----------konec<>bloku");
+            os.print(END_OF_DATA_BLOCK+eol);
         }
 
         if (dataType != DataType.DATA_METRICS) {
@@ -1274,9 +1282,8 @@ public class Installer extends ModuleInstall implements Runnable {
             long progressUnit = f.length() / 1000;
             if (progressUnit == 0) progressUnit = 1; //prevent #196630
             long alreadyWritten = 0;
-            os.println("Content-Disposition: form-data; name=\"heapdump\"; filename=\"" + id + "_heapdump.gz\"");
-            os.println("Content-Type: x-application/heap");
-            os.println();
+            os.print("Content-Disposition: form-data; name=\"heapdump\"; filename=\"" + id + "_heapdump.gz\""+eol);
+            os.print("Content-Type: x-application/heap"+eol+eol);
             GZIPOutputStream gzip = new GZIPOutputStream(os);
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(f))) {
                 byte[] heapDumpData = new byte[8192];
@@ -1292,22 +1299,20 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
             }
             gzip.finish();
-            os.println("\n\n----------konec<>bloku");
+            os.print(END_OF_DATA_BLOCK+eol);
 
             h.progress(1070);
         }
         File deadlockFile = getDeadlockFile(recs);
         if (deadlockFile != null) {
-            os.println("Content-Disposition: form-data; name=\"deadlock\"; filename=\"" + id + "_deadlock.gz\"");
-            os.println("Content-Type: x-application/log");
-            os.println();
+            os.print("Content-Disposition: form-data; name=\"deadlock\"; filename=\"" + id + "_deadlock.gz\""+eol);
+            os.print("Content-Type: x-application/log"+eol+eol);
             uploadGZFile(os, deadlockFile);
-            os.println("\n\n----------konec<>bloku");
+            os.print(END_OF_DATA_BLOCK+eol);
         }
 
-        os.println("Content-Disposition: form-data; name=\"logs\"; filename=\"" + id + "\"");
-        os.println("Content-Type: x-application/gzip");
-        os.println();
+        os.print("Content-Disposition: form-data; name=\"logs\"; filename=\"" + id + "\""+eol);
+        os.print("Content-Type: x-application/gzip"+eol+eol);
         GZIPOutputStream gzip = new GZIPOutputStream(os);
         DataOutputStream data = new DataOutputStream(gzip);
         data.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n".getBytes("utf-8")); // NOI18N
@@ -1327,7 +1332,7 @@ public class Installer extends ModuleInstall implements Runnable {
         LOG.log(Level.FINE, "uploadLogs, flushing"); // NOI18N
         data.flush();
         gzip.finish();
-        os.println("\n\n----------konec<>bloku--");
+        os.print(END_OF_DATA_BLOCK+"--"+eol);   // "--" nothing more will come
         os.close();
 
         if (dataType != DataType.DATA_METRICS) {

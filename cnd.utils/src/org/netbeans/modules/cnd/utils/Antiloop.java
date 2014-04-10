@@ -51,6 +51,9 @@ import java.util.Set;
  */
 public final class Antiloop<T> {
     
+    public static final int MAGIC_PLAIN_TYPE_RESOLVING_CONST = 4;
+    
+    
     private final Set<T> objects = new HashSet<T>();
     
     /**

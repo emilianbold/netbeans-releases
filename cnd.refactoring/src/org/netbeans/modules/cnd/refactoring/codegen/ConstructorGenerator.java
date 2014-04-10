@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
@@ -95,30 +96,40 @@ public class ConstructorGenerator implements CodeGenerator {
             if (typeElement == null) {
                 return ret;
             }
+            List<CsmObject> pathList = path.getPath();
+            CsmObject last = pathList.get(pathList.size()-1);
+            if (!(CsmKindUtilities.isClass(last) || CsmKindUtilities.isField(last))) {
+                return ret;
+            }
             CsmObject objectUnderOffset = path.getObjectUnderOffset();
             final Set<CsmField> shouldBeInitializedFields = new LinkedHashSet<>();
             final Set<CsmField> mayBeIninitializedFields = new LinkedHashSet<>();
             final Set<CsmField> cannotBeInitializedFields = new LinkedHashSet<>();
             final List<CsmConstructor> constructors = new ArrayList<>();
             final Map<CsmClass,List<CsmConstructor>> inheritedConstructors = new HashMap<>();
-            // check base class
-            for (CsmInheritance csmInheritance : typeElement.getBaseClasses()) {
-                CsmClass baseClass = CsmInheritanceUtilities.getCsmClass(csmInheritance);
-                if (baseClass != null) {
-                    List<CsmConstructor> list = new ArrayList<>();
-                    for (CsmMember member : baseClass.getMembers()) {
-                        if (CsmKindUtilities.isConstructor(member) &&
-                            CsmInheritanceUtilities.matchVisibility(member, csmInheritance.getVisibility()) &&
-                            !isCopyConstructor(baseClass, (CsmConstructor)member)) {
-                            list.add((CsmConstructor)member);
+            CsmCacheManager.enter();
+            try {
+                // check base class
+                for (CsmInheritance csmInheritance : typeElement.getBaseClasses()) {
+                    CsmClass baseClass = CsmInheritanceUtilities.getCsmClass(csmInheritance);
+                    if (baseClass != null) {
+                        List<CsmConstructor> list = new ArrayList<>();
+                        for (CsmMember member : baseClass.getMembers()) {
+                            if (CsmKindUtilities.isConstructor(member) &&
+                                CsmInheritanceUtilities.matchVisibility(member, csmInheritance.getVisibility()) &&
+                                !isCopyConstructor(baseClass, (CsmConstructor)member)) {
+                                list.add((CsmConstructor)member);
+                            }
+                        }
+                        if (!list.isEmpty()) {
+                            inheritedConstructors.put(baseClass, list);
                         }
                     }
-                    if (!list.isEmpty()) {
-                        inheritedConstructors.put(baseClass, list);
-                    }
                 }
+                GeneratorUtils.scanForFieldsAndConstructors(typeElement, shouldBeInitializedFields, mayBeIninitializedFields, cannotBeInitializedFields, constructors);
+            } finally {
+                CsmCacheManager.leave();
             }
-            GeneratorUtils.scanForFieldsAndConstructors(typeElement, shouldBeInitializedFields, mayBeIninitializedFields, cannotBeInitializedFields, constructors);
             ElementNode.Description constructorDescription = null;
             if (!inheritedConstructors.isEmpty()) {
                 List<ElementNode.Description> baseClassesDescriptions = new ArrayList<>();

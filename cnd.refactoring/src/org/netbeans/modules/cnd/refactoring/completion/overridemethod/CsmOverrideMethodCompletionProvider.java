@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.completion.overridemethod;
+package org.netbeans.modules.cnd.refactoring.completion.overridemethod;
 
 import java.util.ArrayList;
 import java.util.Collection;

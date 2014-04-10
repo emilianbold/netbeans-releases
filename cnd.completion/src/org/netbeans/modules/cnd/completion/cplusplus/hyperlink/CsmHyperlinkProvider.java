@@ -63,6 +63,7 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMember;
@@ -72,6 +73,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
@@ -93,6 +95,7 @@ import org.netbeans.modules.cnd.modelutil.OverridesPopup;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.PopupUtil;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
+import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 
 /**
@@ -129,6 +132,7 @@ public class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             }
             if(token.id() instanceof CppTokenId) {
                 switch ((CppTokenId)token.id()) {
+                    case LTLT:
                     case IDENTIFIER:
                     case OPERATOR:
                     case DELETE:
@@ -158,10 +162,52 @@ public class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 primary = null;
                 String deleteExpr = getRestExpression(doc, offset);
                 CsmType resolvedType = CsmEntityResolver.resolveType(deleteExpr, csmFile, offset, null);
-                if (type != null) {
+                if (resolvedType != null) {
                     CsmClassifier classifier = CsmClassifierResolver.getDefault().getTypeClassifier(resolvedType, csmFile, offset, true);
                     if (CsmKindUtilities.isClass(classifier)) {
                         primary = CsmVirtualInfoQuery.getDefault().getFirstDestructor((CsmClass)classifier);
+                    }
+                }
+            } else if (jumpToken.id() == CppTokenId.LTLT) {
+                primary = null;
+                int startExpression = getStartExpression(doc, offset);
+                String rightOperand = getRightOperandExpression(doc, offset, CppTokenId.LTLT);
+                CsmType rightType = CsmEntityResolver.resolveType(rightOperand, csmFile, startExpression, null);
+                if (rightType != null) {
+                    CsmClassifier rightClassifier = CsmClassifierResolver.getDefault().getTypeClassifier(rightType, csmFile, offset, true);
+                    if (CsmKindUtilities.isClass(rightClassifier)) {
+                        for(CsmFriend friend : ((CsmClass)rightClassifier).getFriends()) {
+                            if (CsmKindUtilities.isOperator(friend)) {
+                                if (friend.getName().toString().endsWith(CppTokenId.LTLT.fixedText())) {
+                                    primary = friend;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (primary == null) {
+                        String leftOperand = getLeftmostOperandExpression(doc, offset, CppTokenId.LTLT);
+                        CsmType leftType = CsmEntityResolver.resolveType(leftOperand, csmFile, startExpression, null);
+                        if (leftType != null) {
+                            CsmClassifier leftClassifier = CsmClassifierResolver.getDefault().getTypeClassifier(leftType, csmFile, offset, true);
+                            if (CsmKindUtilities.isClass(leftClassifier)) {
+                                for(CsmMember member : ((CsmClass)leftClassifier).getMembers()) {
+                                    if (CsmKindUtilities.isOperator(member)) {
+                                        if (member.getName().toString().endsWith(CppTokenId.LTLT.fixedText())) {
+                                            Collection<CsmParameter> parameters = ((CsmFunction)member).getParameters();
+                                            if (parameters.size()==1) {
+                                                CsmParameter par = parameters.iterator().next();
+                                                CsmType aType = par.getType();
+                                                if (isTypeEquals(aType, rightType)) {
+                                                    primary = member;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             } else {
@@ -219,6 +265,113 @@ public class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         }            
     }
 
+    String getRightOperandExpression(final Document doc, final int offset, final CppTokenId endToken) {
+        final AtomicReference<String> out = new AtomicReference<String>();
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                TokenSequence<TokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, offset, true, false);
+                if (cppTokenSequence == null) {
+                    return;
+                }
+                cppTokenSequence.move(offset);
+                if (cppTokenSequence.moveNext() && cppTokenSequence.moveNext()) {
+                    int start = cppTokenSequence.offset();
+                    while(cppTokenSequence.moveNext()) {
+                        Token<TokenId> token = cppTokenSequence.token();
+                        if (token.id() == CppTokenId.SEMICOLON) {
+                            break;
+                        } else if (token.id() == endToken) {
+                            break;
+                        }
+                    }
+                    int end = cppTokenSequence.offset();
+                    try {
+                        out.set(doc.getText(start, end-start).trim());
+                    } catch (BadLocationException ex) {
+                    }
+                }
+            }
+        });
+        return out.get();
+    }
+
+    String getLeftmostOperandExpression(final Document doc, final int offset, final CppTokenId endToken) {
+        final AtomicReference<String> out = new AtomicReference<String>();
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                TokenSequence<TokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, offset, true, false);
+                if (cppTokenSequence == null) {
+                    return;
+                }
+                cppTokenSequence.move(offset);
+                if (cppTokenSequence.movePrevious()) {
+                    int end = cppTokenSequence.offset();
+                    while(cppTokenSequence.movePrevious()) {
+                        Token<TokenId> token = cppTokenSequence.token();
+                        if (token.id() == CppTokenId.SEMICOLON || token.id() == CppTokenId.LBRACE || token.id() == CppTokenId.RBRACE) {
+                            break;
+                        } else if (token.id() == endToken) {
+                            end = cppTokenSequence.offset();
+                        }
+                    }
+                    int start = cppTokenSequence.offset();
+                    try {
+                        out.set(doc.getText(start+1, end -start - 1).trim());
+                    } catch (BadLocationException ex) {
+                    }
+                }
+            }
+        });
+        return out.get();
+    }
+
+    int getStartExpression(final Document doc, final int offset) {
+        final AtomicReference<Integer> out = new AtomicReference<Integer>();
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                TokenSequence<TokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, offset, true, false);
+                if (cppTokenSequence == null) {
+                    return;
+                }
+                cppTokenSequence.move(offset);
+                while (cppTokenSequence.movePrevious()) {
+                    Token<TokenId> token = cppTokenSequence.token();
+                    if (token.id() == CppTokenId.SEMICOLON || token.id() == CppTokenId.LBRACE || token.id() == CppTokenId.RBRACE) {
+                        break;
+                    }
+                }
+                out.set(cppTokenSequence.offset()+1);
+            }
+        });
+        return out.get();
+    }
+
+    private boolean isTypeEquals(CsmType type1, CsmType type2) {
+        if (type1 != null && type2 != null) {
+            CsmClassifier cls1 = type1.getClassifier();
+            if (CsmKindUtilities.isTypedef(cls1)) {
+                CsmType aType = ((CsmTypedef) cls1).getType();
+                if (aType != null) {
+                    type1 = aType;
+                }
+            }
+            CsmClassifier cls2 = type2.getClassifier();
+            if (CsmKindUtilities.isTypedef(cls2)) {
+                CsmType aType = ((CsmTypedef) cls2).getType();
+                if (aType != null) {
+                    type2 = aType;
+                }
+            }
+            String canonicalText1 = type1.getCanonicalText().toString().replace("const const", "const"); //NOI18N
+            String canonicalText2 = type2.getCanonicalText().toString().replace("const const", "const"); //NOI18N
+            return canonicalText1.equals(canonicalText2);
+        }
+        return false;
+    }
+    
     String getRestExpression(final Document doc, final int offset) {
         final AtomicReference<String> out = new AtomicReference<String>();
         doc.render(new Runnable() {

@@ -1,10 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
- *
- * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
- * Other names may be trademarks of their respective owners.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -16,9 +13,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the GPL Version 2 section of the License file that
+ * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -37,44 +34,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.model.tasks;
-
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.Parser.Result;
+package org.netbeans.modules.cnd.api.model.syntaxerr;
 
 /**
  *
  * @author Alexander Simon
  */
-public class CndParserResult  extends Result {
-    private final CsmFile file;
-    private final long fileVersion;
-    private final long docVersion;
-
-    /*package*/CndParserResult(CsmFile file, Snapshot snapshot, long fileVersion, long docVersion) {
-        super(snapshot);
-        this.file = file;
-        this.fileVersion = fileVersion;
-        this.docVersion = docVersion;
-    }
-
-    @Override
-    protected void invalidate() {
-    }
-
-    public CsmFile getCsmFile() {
-        return file;
-    }
-    
-    public long getFileVersion() {
-        return fileVersion;
-    }
-    
-    /*package*/long getDocumentVersion() {
-        return docVersion;
-    }
+public interface CodeAudit {
+    String getID();
+    String getName();
+    String getDescription();
+    boolean isEnabled();
+    String minimalSeverity();
+    String getKind();
+    AuditPreferences getPreferences();
 }
