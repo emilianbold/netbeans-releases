@@ -147,6 +147,7 @@ tokens {
 	CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_DTOR_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_USER_TYPE_CAST_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_CLASS_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_EXTERN_TEMPLATE<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_TEMPLATE_PARAMETER<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
@@ -778,7 +779,7 @@ public translation_unit:
 //
 protected
 template_explicit_specialization
-{TypeQualifier tq; StorageClass sc;int ts = 0;}
+{String s; TypeQualifier tq; StorageClass sc;int ts = 0; boolean b;}
     :
     LITERAL_template LESSTHAN GREATERTHAN
     (
@@ -873,7 +874,27 @@ template_explicit_specialization
             enum_specifier
             SEMICOLON
             { #template_explicit_specialization = #(#[CSM_ENUM_FWD_DECLARATION, "CSM_ENUM_FWD_DECLARATION"], #template_explicit_specialization); }
-        |  
+        |
+        // Template explicit specialisation for type cast operator
+            (   (LITERAL___extension__!)?
+                (LITERAL_template LESSTHAN GREATERTHAN)?
+                (   literal_inline
+                |   cv_qualifier
+                |   LITERAL_constexpr
+                )*
+                scope_override LITERAL_OPERATOR
+            ) =>
+            (   (LITERAL___extension__!)?
+                (LITERAL_template LESSTHAN GREATERTHAN)?
+                (   literal_inline
+                |   tq = cv_qualifier
+                |   LITERAL_constexpr
+                )*
+                s = scope_override b = conversion_function_decl_or_def 
+            )
+            { if (b) #template_explicit_specialization = #(#[CSM_USER_TYPE_CAST_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_USER_TYPE_CAST_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization);
+              else #template_explicit_specialization = #(#[CSM_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
+        |
 	// Template explicit specialisation (DW 14/04/03)
 		{if(statementTrace >= 1)
 			printf("template_explicit_specialization_0e[%d]: template " +
@@ -908,7 +929,13 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
         {#external_declaration_template = #(#[CSM_TEMPLATE_EXPLICIT_INSTANTIATION, "CSM_TEMPLATE_EXPLICIT_INSTANTIATION"], #external_declaration_template);}
     |
         (LITERAL_template (~LESSTHAN)) =>
-        LITERAL_template declaration[declOther]
+        LITERAL_template
+        (
+            (scope_override LITERAL_OPERATOR)=>
+                s=scope_override conversion_function_decl
+        |
+            declaration[declOther]
+        )
         {#external_declaration_template = #(#[CSM_TEMPLATE_EXPLICIT_INSTANTIATION, "CSM_TEMPLATE_EXPLICIT_INSTANTIATION"], #external_declaration_template);}	
     |
         declaration_template_impl
@@ -2578,6 +2605,19 @@ member_declarator
                     array_initializer
                 )?
 	;
+
+conversion_function_decl 
+    {CPPParser.TypeQualifier tq; }
+    :
+        LITERAL_OPERATOR declaration_specifiers[true, false]
+        (ptr_operator)*
+        (LESSTHAN template_parameter_list GREATERTHAN)?
+        LPAREN (parameter_list[false])? RPAREN	
+        (tq = cv_qualifier)*
+        (LITERAL_override | LITERAL_final)*
+        (exception_specification)?
+        SEMICOLON! 
+    ;
 
 conversion_function_decl_or_def returns [boolean definition = false]
 	{CPPParser.TypeQualifier tq; }
