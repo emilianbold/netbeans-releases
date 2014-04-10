@@ -127,4 +127,9 @@ public class FileModelCpp11Test extends TraceModelTestBase {
         // Bug 243550 - inaccuracy tests (clang): variadic template and auto 
         performTest("bug243514.cpp");
     }        
+    
+    public void testBug235968() throws Exception {
+        // Bug 235968 - [74cat] Unexpected token 'virtual' in class destructor.
+        performTest("bug235968.cpp");
+    }        
 }
