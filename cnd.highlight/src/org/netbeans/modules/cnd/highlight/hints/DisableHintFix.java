@@ -42,68 +42,41 @@
 
 package org.netbeans.modules.cnd.highlight.hints;
 
-import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.EnhancedFix;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Alexander Simon
  */
-abstract class CodeAuditInfo implements CodeAudit {
-    private final String id;
-    private final String name;
-    private final String description;
-    private final String defaultSeverity;
-    private final boolean defaultEnabled;
-    private final AuditPreferences myPreferences;
+public class DisableHintFix implements EnhancedFix {
+    private final CodeAuditInfo info;
 
-    CodeAuditInfo(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.defaultSeverity = defaultSeverity;
-        this.defaultEnabled = defaultEnabled;
-        this.myPreferences = myPreferences;
+    DisableHintFix(CodeAuditInfo error) {
+        this.info = error;
     }
 
     @Override
-    public String getID() {
-        return id;
+    public String getText() {
+        return NbBundle.getMessage(DisableHintFix.class, "DisableHint"); // NOI18N
     }
 
     @Override
-    public String getName() {
-        return name;
+    public ChangeInfo implement() throws Exception {
+        OptionsDisplayer.getDefault().open("Editor/Hints/text/x-cnd+sourcefile/" + info.getProviderID() + "/" + info.getAuditID()); // NOI18N
+        return null;
     }
 
     @Override
-    public String getDescription() {
-        return description;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        String val = myPreferences.get(getID(), "enabled"); //NOI18N
-        if (val == null || val.isEmpty()) {
-            return defaultEnabled;
-        }
-        return !"false".equals(val); //NOI18N
-    }
-
-    @Override
-    public String minimalSeverity() {
-        String severity = myPreferences.get(getID(), "severity"); //NOI18N
-        if (severity == null || severity.isEmpty()) {
-            return defaultSeverity;
-        }
-        return severity;
-    }
-
-    @Override
-    public AuditPreferences getPreferences() {
-        return myPreferences;
+    public CharSequence getSortText() {
+        //Hint opening options dialog should always be the lastest in offered list
+        return Integer.toString(Integer.MAX_VALUE);
     }
     
-    abstract void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response);
+    public static interface CodeAuditInfo {
+        String getProviderID();
+        String getAuditID();
+    }
 }

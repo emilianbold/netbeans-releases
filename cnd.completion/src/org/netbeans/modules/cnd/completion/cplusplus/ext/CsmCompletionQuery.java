@@ -688,7 +688,10 @@ abstract public class CsmCompletionQuery {
                         errState = tp.isErrorState();
                     }
             }
-        }    
+        }
+        if (!errState && tp.getResultExp() == null) {
+            errState = true;
+        }
         return errState;
     }
     

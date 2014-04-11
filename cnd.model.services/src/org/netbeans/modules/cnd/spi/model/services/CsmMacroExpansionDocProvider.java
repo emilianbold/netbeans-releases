@@ -54,6 +54,7 @@
  */
 package org.netbeans.modules.cnd.spi.model.services;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 
@@ -72,7 +73,7 @@ public interface CsmMacroExpansionDocProvider {
      * @param outDoc - result
      * @return - number of expansions
      */
-    public int expand(Document inDoc, int startOffset, int endOffset, Document outDoc);
+    public int expand(Document inDoc, int startOffset, int endOffset, Document outDoc, AtomicBoolean canceled);
 
     /**
      * Macro expands content of the document.

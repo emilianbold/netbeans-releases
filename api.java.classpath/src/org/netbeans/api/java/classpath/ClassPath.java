@@ -1196,23 +1196,23 @@ public final class ClassPath {
 
         private RootsListener (ClassPath owner) {
             super (owner, Utilities.activeReferenceQueue());
-            roots = new HashSet<File> ();
+            roots = new HashSet<> ();
         }
 
         public void addRoots (final Set<? extends File> newRoots) {
             Parameters.notNull("urls",newRoots);    //NOI18N
 
             synchronized (this) {
-                final Set<File> toRemove = new HashSet<File>(roots);
+                final Set<File> toRemove = new HashSet<>(roots);
                 toRemove.removeAll(newRoots);
-                final Set<File> toAdd = new HashSet<File>(newRoots);
+                final Set<File> toAdd = new HashSet<>(newRoots);
                 toAdd.removeAll(roots);
                 for (File root : toRemove) {
-                    FileUtil.removeFileChangeListener(this, root);
+                    safeRemoveListener(root);
                     roots.remove(root);
                 }
                 for (File root : toAdd) {
-                    FileUtil.addFileChangeListener(this, root);
+                    safeAddListener(root);
                     roots.add (root);
                 }
             }
@@ -1227,14 +1227,17 @@ public final class ClassPath {
             }
         }
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             this.processEvent (fe);
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
             this.processEvent (fe);
         }
 
+        @Override
         public void fileChanged(FileEvent fe) {
             processEvent(fe);
         }
@@ -1243,13 +1246,16 @@ public final class ClassPath {
             this.processEvent (fe);
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             this.processEvent (fe);
         }
 
+        @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
 
+        @Override
         public void run() {
             try {
                 removeAllRoots();
@@ -1269,6 +1275,22 @@ public final class ClassPath {
                 cp.invalidRoots++;
             }
             cp.firePropertyChange(PROP_ROOTS,null,null,null);
+        }
+
+        private void safeAddListener(@NonNull final File root) {
+            try {
+                FileUtil.addFileChangeListener(this, root);
+            } catch (IllegalArgumentException iae) {
+                LOG.warning(iae.getMessage());
+            }
+        }
+
+        private void safeRemoveListener(@NonNull final File root) {
+            try {
+                FileUtil.removeFileChangeListener(this, root);
+            } catch (IllegalArgumentException iae) {
+                LOG.warning(iae.getMessage());
+            }
         }
     }
 }

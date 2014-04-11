@@ -488,6 +488,17 @@ public class AstUtil {
      * @return "cloned" AST
      */
     public static AST cloneAST(AST source, AST stopNode) {
+        return cloneAST(source, stopNode, true);
+    }
+    
+    /**
+     * Clones AST until stop node is reached
+     * @param source
+     * @param stopNode
+     * @param includeLast - true if stopNode should be included
+     * @return "cloned" AST
+     */    
+    public static AST cloneAST(AST source, AST stopNode, boolean includeLast) {
         if (source == null) {
             return null;
         }
@@ -508,6 +519,14 @@ public class AstUtil {
             source = source.getNextSibling();
             prevClonedAST = currentClonedAST;
             currentClonedAST = createFakeClone(source);
+        }
+        
+        if (!includeLast) {
+            if (prevClonedAST == null) {
+                return null;
+            } else {
+                prevClonedAST.setNextSibling(null);
+            }
         }
         
         return firstClonedNode;
@@ -562,7 +581,7 @@ public class AstUtil {
     
     public static class ASTTokensStringizer implements ASTTokenVisitor {
     
-        private final StringBuilder sb = new StringBuilder();
+        protected final StringBuilder sb = new StringBuilder();
 
         @Override
         public Action visit(AST token) {

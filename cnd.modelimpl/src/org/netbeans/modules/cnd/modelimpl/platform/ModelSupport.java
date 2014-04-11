@@ -104,7 +104,7 @@ public class ModelSupport implements PropertyChangeListener {
     private static final ModelSupport instance = new ModelSupport();
     /*package*/volatile ModelImpl theModel;
     private final Set<Lookup.Provider> openedProjects = new HashSet<>();
-    final ModifiedObjectsChangeListener modifiedListener = new ModifiedObjectsChangeListener();
+    final ModifiedObjectsChangeListener modifiedListener = TraceFlags.USE_PARSER_API ? null : new ModifiedObjectsChangeListener();
     private SuspendableFileChangeListener fileChangeListener;
     private static final boolean TRACE_STARTUP = Boolean.getBoolean("cnd.modelsupport.startup.trace");// NOI18N
     private volatile boolean postponeParse = false;
@@ -115,7 +115,7 @@ public class ModelSupport implements PropertyChangeListener {
                     public void run() {
                         openProjectsIfNeeded();
                     }
-                }); 
+                });
 
     private ModelSupport() {
     }
@@ -167,8 +167,10 @@ public class ModelSupport implements PropertyChangeListener {
     }
     
     public void startup() {
-        modifiedListener.clean();
-        DataObject.getRegistry().addChangeListener(modifiedListener);
+        if (!TraceFlags.USE_PARSER_API) {
+            modifiedListener.clean();
+            DataObject.getRegistry().addChangeListener(modifiedListener);
+        }
 
         if (!isStandalone()) {
             openedProjects.clear();
@@ -209,8 +211,10 @@ public class ModelSupport implements PropertyChangeListener {
     }
 
     public void shutdown() {
-        DataObject.getRegistry().removeChangeListener(modifiedListener);
-        modifiedListener.clean();
+        if (!TraceFlags.USE_PARSER_API) {
+            DataObject.getRegistry().removeChangeListener(modifiedListener);
+            modifiedListener.clean();
+        }
         ModelImpl model = theModel;
         if (model != null) {
             CsmCorePackageAccessor.get().notifyClosing(model);
@@ -544,7 +548,8 @@ public class ModelSupport implements PropertyChangeListener {
         public final long lastModified;
     }
 
-    class ModifiedObjectsChangeListener implements ChangeListener {
+    // remove as soon as TraceFlags.USE_PARSER_API becomes always true
+    private class ModifiedObjectsChangeListener implements ChangeListener {
 
         private final Map<DataObject, Collection<BufAndProj>> buffers = new HashMap<>();
 

@@ -498,4 +498,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // Bug 238041 - Function inside a function (in C) breaks parser
         performTest("bug238041.c");
     }
+    
+    public void testBug243560() throws Exception {
+        // Bug 243560 - inaccuracy tests (clang): explicit instantiation
+        performTest("bug243560.cpp");
+    }
 }

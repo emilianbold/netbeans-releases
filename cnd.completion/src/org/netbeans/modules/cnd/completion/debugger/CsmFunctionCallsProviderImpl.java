@@ -154,6 +154,11 @@ public class CsmFunctionCallsProviderImpl implements FunctionCallsProvider {
 //                        }
                     }
             }
+
+            @Override
+            public boolean cancelled() {
+                return false;
+            }
         });
         if (cancelled.get()) {
             return Collections.emptyList();

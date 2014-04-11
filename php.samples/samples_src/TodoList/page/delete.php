@@ -48,5 +48,3 @@ $dao->delete($todo->getId());
 Flash::addFlash('TODO deleted successfully.');
 
 Utils::redirect('list', array('status' => $todo->getStatus()));
-
-?>

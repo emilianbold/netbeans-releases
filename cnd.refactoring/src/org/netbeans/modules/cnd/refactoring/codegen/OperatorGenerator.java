@@ -642,7 +642,7 @@ public class OperatorGenerator implements CodeGenerator {
 
         @Override
         public CharSequence getUniqueName() {
-            return name;
+            return "F:"+name; //NOI18N
         }
 
         @Override

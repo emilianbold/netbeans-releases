@@ -134,8 +134,8 @@ public class TwigParser extends Parser {
 
                     Block block = new Block();
                     block.function = "";
-                    block.startTokenIndex = sequence.index();
-                    block.endTokenIndex = sequence.index();
+                    block.startTokenOffset = sequence.offset();
+                    block.endTokenOffset = sequence.offset();
                     block.from = token.offset(tokenHierarchy);
 
                     while (sequence.moveNext()) {
@@ -146,12 +146,12 @@ public class TwigParser extends Parser {
                         }
 
                     }
-                    block.endTokenIndex = sequence.index();
+                    block.endTokenOffset = sequence.offset() + sequence.token().length();
                     block.length = token.offset(tokenHierarchy) - block.from + token.length();
 
-                    if (block.startTokenIndex != block.endTokenIndex) { // Closed block found
+                    if (block.startTokenOffset != block.endTokenOffset) { // Closed block found
 
-                        sequence.moveIndex(block.startTokenIndex);
+                        sequence.move(block.startTokenOffset);
 
                         while (sequence.moveNext()) {
 
@@ -188,7 +188,7 @@ public class TwigParser extends Parser {
                                         break;
                                     }
 
-                                } while (sequence.index() < block.endTokenIndex);
+                                } while (sequence.offset() < block.endTokenOffset);
 
                                 if (!standalone) {
                                     blockList.add(block);
@@ -210,7 +210,7 @@ public class TwigParser extends Parser {
                                         break;
                                     }
 
-                                } while (sequence.index() < block.endTokenIndex);
+                                } while (sequence.offset() < block.endTokenOffset);
 
                                 if (!standalone) {
                                     blockList.add(block);
@@ -222,7 +222,7 @@ public class TwigParser extends Parser {
 
                         }
 
-                        sequence.moveIndex(block.endTokenIndex);
+                        sequence.move(block.endTokenOffset);
 
                     }
 
@@ -315,8 +315,8 @@ public class TwigParser extends Parser {
     private static class Block {
         CharSequence function = null;
         CharSequence extra = null;
-        int startTokenIndex = 0;
-        int endTokenIndex = 0;
+        int startTokenOffset = 0;
+        int endTokenOffset = 0;
         int from = 0;
         int length = 0;
         int functionFrom = 0;

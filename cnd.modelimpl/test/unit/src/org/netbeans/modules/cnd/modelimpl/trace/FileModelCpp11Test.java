@@ -121,4 +121,10 @@ public class FileModelCpp11Test extends TraceModelTestBase {
         // Bug 242729 - Some c++11 features not recognized by code assistance engine
         performTest("bug242729.cpp");
     }    
+    
+    public void test243514() throws Exception {
+        // Bug 243514 - inaccuracy tests (clang): unexpected token 'auto'
+        // Bug 243550 - inaccuracy tests (clang): variadic template and auto 
+        performTest("bug243514.cpp");
+    }        
 }

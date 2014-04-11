@@ -50,6 +50,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
@@ -57,6 +59,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -70,6 +73,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -77,11 +81,11 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
-import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
@@ -96,7 +100,7 @@ import org.openide.util.NbBundle;
  */
 public final class MarkOccurrencesHighlighter extends HighlighterBase {
     private static final String POSITION_BAG = "CndMarkOccurrencesHighlighter"; // NOI18N
-
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
     private static final ConcurrentHashMap<String,AttributeSet> defaultColors = new ConcurrentHashMap<String, AttributeSet>();
     
     private InterrupterImpl interrupter = new InterrupterImpl();
@@ -148,25 +152,38 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
     public static final Color ES_COLOR = new Color(175, 172, 102);
 
     @Override
-    public void run(CndParserResult result, SchedulerEvent event) {
+    public void run(Parser.Result result, SchedulerEvent event) {
         synchronized(this) {
             interrupter.cancel();
             this.interrupter = new InterrupterImpl();
         }
-        if (event instanceof CursorMovedSchedulerEvent) {
-            CsmCacheManager.enter();
-            try {
-                runImpl((BaseDocument)result.getSnapshot().getSource().getDocument(false), (CursorMovedSchedulerEvent) event, interrupter);
-            } finally {
-                CsmCacheManager.leave();
-            }
+        if (!(event instanceof CursorMovedSchedulerEvent)) {
+            return;
         }
-        
+        long time = 0;
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "MarkOccurrencesHighlighter started"); //NOI18N
+            time = System.currentTimeMillis();
+        }
+        CsmCacheManager.enter();
+        try {
+            runImpl((BaseDocument)result.getSnapshot().getSource().getDocument(false), (CursorMovedSchedulerEvent) event, interrupter);
+        } finally {
+            CsmCacheManager.leave();
+        }
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "MarkOccurrencesHighlighter finished for {0}ms", System.currentTimeMillis()-time); //NOI18N
+        }
     }
 
     @Override
-    public synchronized void cancel() {
-        interrupter.cancel();
+    public void cancel() {
+        synchronized(this) {
+            interrupter.cancel();
+        }
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "MarkOccurrencesHighlighter canceled"); //NOI18N
+        }
     }
 
     @Override
@@ -295,8 +312,11 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
     }
 
     /* package-local */ static Collection<CsmReference> getOccurrences(BaseDocument doc, CsmFile file, int position, InterrupterImpl interrupter) {
-        position = getFileOffset(doc, position);
         Collection<CsmReference> out = Collections.<CsmReference>emptyList();
+        position = getFileOffset(doc, position);
+        if (interrupter.cancelled()) {
+            return out;
+        }
         // check if offset is in preprocessor conditional block
         if (isPreprocessorConditionalBlock(doc, position)) {
             return getPreprocReferences(doc, file, position, interrupter);
@@ -306,9 +326,15 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
                 return getStringReferences(doc, stringToken, interrupter);
             }
         }
+        if (interrupter.cancelled()) {
+            return out;
+        }
         if (file != null && file.isParsed()) {
             CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, position);
             if (ref != null && ref.getReferencedObject() != null) {
+                if (interrupter.cancelled()) {
+                    return out;
+                }
                 out = CsmReferenceRepository.getDefault().getReferences(ref.getReferencedObject(), file, CsmReferenceKind.ALL, interrupter);
             }
         }

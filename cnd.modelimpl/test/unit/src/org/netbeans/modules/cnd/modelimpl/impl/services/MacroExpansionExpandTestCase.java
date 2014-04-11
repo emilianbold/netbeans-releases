@@ -56,6 +56,7 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -154,7 +155,7 @@ public class MacroExpansionExpandTestCase extends MacroExpansionDocProviderImplB
             if (expandDoc) {
                 Document doc2 = createExpandedContextDocument(doc, currentFile);
                 assertNotNull(doc2);
-                int expNum = mp.expand(doc, startOffset, endOffset, doc2);
+                int expNum = mp.expand(doc, startOffset, endOffset, doc2, new AtomicBoolean(false));
                 streamOut.println("Number of expansions: " + expNum); // NOI18N
                 String res = doc2.getText(0, doc2.getLength());
                 assertNotNull(doc);
@@ -189,7 +190,7 @@ public class MacroExpansionExpandTestCase extends MacroExpansionDocProviderImplB
             if (expandDoc) {
                 Document doc2 = createExpandedContextDocument(doc, currentFile);
                 assertNotNull(doc2);
-                int expNum = mp.expand(doc, startOffset, endOffset, doc2);
+                int expNum = mp.expand(doc, startOffset, endOffset, doc2, new AtomicBoolean(false));
                 streamOut.println("Number of expansions: " + expNum); // NOI18N
                 String res = doc2.getText(0, doc2.getLength());
                 assertNotNull(doc);

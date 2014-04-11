@@ -51,11 +51,13 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.io.File;
 import java.util.logging.Level;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.repository.Repository;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
+import org.netbeans.modules.mercurial.ui.repository.RepositoryConnection;
 import org.netbeans.modules.mercurial.ui.wizards.CloneRepositoryWizardPanel;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -149,7 +151,7 @@ public class PullOtherAction extends ContextAction {
                                           + repository.getUrlString());
                 return;
             }
-            pull(context, root, pullSource);
+            pull(context, root, pullSource, repository.getRepositoryConnection());
         }
     }
 
@@ -159,7 +161,7 @@ public class PullOtherAction extends ContextAction {
      * @param root
      * @param pullSource password is nulled
      */
-    public static void pull(final VCSContext ctx, final File root, final HgURL pullSource) {
+    private static void pull(final VCSContext ctx, final File root, final HgURL pullSource, final RepositoryConnection rc) {
         if (root == null || pullSource == null) return;
         final String fromPrjName = NbBundle.getMessage(PullAction.class, "MSG_EXTERNAL_REPOSITORY"); // NOI18N
         final String toPrjName = HgProjectUtils.getProjectName(root);
@@ -168,6 +170,9 @@ public class PullOtherAction extends ContextAction {
         HgProgressSupport support = new HgProgressSupport() {
             @Override
             public void perform() { 
+                if (rc != null) {
+                    HgModuleConfig.getDefault().insertRecentUrl(rc);
+                }
                 PullAction.performPull(PullAction.PullType.OTHER, root, pullSource, fromPrjName, toPrjName, null, null, this);
             }
         };

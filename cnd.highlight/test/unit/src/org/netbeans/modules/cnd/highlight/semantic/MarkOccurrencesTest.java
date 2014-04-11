@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.logging.Level;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.filesystems.FileUtil;
@@ -230,6 +231,6 @@ public class MarkOccurrencesTest extends SemanticHighlightingTestBase {
             e.printStackTrace(System.err);
             doc = null;
         }
-        return MarkOccurrencesHighlighter.getOccurrences(doc, testFile, offset, null);
+        return MarkOccurrencesHighlighter.getOccurrences(doc, testFile, offset, new InterrupterImpl());
     }
 }

@@ -305,6 +305,11 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
     }
 
     @Override
+    protected boolean isAbsoluteImpl(FileSystem fs, String path) {
+        return FileSystemProvider.isAbsolute(fs, path);
+    }
+
+    @Override
     protected void removeFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem) {
         synchronized (adapters) {
             for (Iterator<ProblemListenerAdapter> it = adapters.iterator(); it.hasNext(); ) {
