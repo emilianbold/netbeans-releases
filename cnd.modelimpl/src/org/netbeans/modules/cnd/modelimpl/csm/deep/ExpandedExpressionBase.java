@@ -81,7 +81,7 @@ public class ExpandedExpressionBase extends ExpressionBase {
         AstUtil.visitAST(stringizer, ast);
         String expanded = stringizer.getText();
         if (expanded.length() > MAX_EXPANDING_LENGTH) {
-            LOG.log(Level.INFO, "Too large expression ({0} symbols) defined inside macros: {1}:{2}", new Object[]{expanded.length(), file, getStartPosition()}); // NOI18N
+            LOG.log(Level.FINE, "Too large expression ({0} symbols) defined inside macros: {1}:{2}", new Object[]{expanded.length(), file, getStartPosition()}); // NOI18N
             expanded = SKIPPED_STUB; // NOI18N
         }
         if (stringizer.getNumberOfStringizedTokens() > 1) {
