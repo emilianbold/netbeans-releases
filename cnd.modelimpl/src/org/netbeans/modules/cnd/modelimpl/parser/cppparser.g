@@ -1785,7 +1785,7 @@ member_declaration
 			printf("member_declaration_10[%d]: Declaration(s)\n",
 				LT(1).getLine());
 		}
-		(LITERAL___extension__!)? declaration_specifiers[true, false] (member_declarator_list)? (trailing_type)?
+		(LITERAL___extension__!)? declaration_specifiers[true, false] (member_declarator_list)? 
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | SEMICOLON) //{end_of_stmt();}
                 // now member typedefs are placed under CSM_FIELD, so we do this here as well
@@ -1924,7 +1924,6 @@ declaration[int kind]
         {kind == declSimpleFunction}? (IDENT LPAREN) =>
         {beginDeclaration();}
         init_declarator_list[kind]
-        (trailing_type)?
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | SEMICOLON )
         {endDeclaration();}
@@ -1938,7 +1937,6 @@ declaration[int kind]
         {action.end_decl_specifiers(LT(0));}
 
         ((COMMA!)? init_declarator_list[kind])?
-        (trailing_type)?
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | SEMICOLON )
         //{end_of_stmt();}
@@ -2111,6 +2109,11 @@ cv_qualifier returns [CPPParser.TypeQualifier tq = tqInvalid] // aka cv_qualifie
 	|  literal_volatile			{tq = tqVOLATILE;}
 	|  LITERAL__TYPE_QUALIFIER__    {tq = tqOTHER;}
 	;
+
+ref_qualifier
+    :
+        AMPERSAND | AND
+    ;
 
 type_specifier[DeclSpecifier ds, boolean noTypeId] returns [/*TypeSpecifier*/int ts = tsInvalid]
 :   ts = simple_type_specifier[noTypeId]
@@ -2797,8 +2800,11 @@ function_like_var_declarator
         LPAREN //{declaratorParameterList(false);}
         (parameter_list[false])?
         RPAREN //{declaratorEndParameterList(false);}
-        (tq = cv_qualifier)*
+        (options{greedy = true;} : cv_qualifier_seq)?
+        (ref_qualifier)?
         (exception_specification)?
+        (trailing_type)?
+        (options {greedy = true;} : virt_specifiers)?
         (options {greedy=true;} :function_attribute_specification)?
         (asm_block!)?
         (options {greedy=true;} :function_attribute_specification)?
@@ -2847,10 +2853,13 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
         // IZ#134182 : missed const in function parameter
         // we should add "const" to function only if it's not K&R style function
         (   ((cv_qualifier)* 
-             (is_post_declarator_token | literal_try | LITERAL_throw | LITERAL_noexcept | literal_attribute | POINTERTO | LITERAL_override | LITERAL_final | LITERAL_new))
+             (is_post_declarator_token | literal_try | LITERAL_throw | LITERAL_noexcept | literal_attribute | POINTERTO | 
+              LITERAL_override | LITERAL_final | LITERAL_new | AMPERSAND | AND))
             =>
             (options{warnWhenFollowAmbig = false;}: tq = cv_qualifier)* 
         )?
+
+        (options{greedy=true;} : ref_qualifier)?
 
         (exception_specification)?
 
@@ -2992,6 +3001,8 @@ ctor_declarator[boolean definition]
 
         (options{greedy = true;} : cv_qualifier_seq)?
 
+        (ref_qualifier)?
+
         (exception_specification)?
 
         (options {greedy = true;} : virt_specifiers)?
@@ -3120,6 +3131,8 @@ dtor_declarator[boolean definition]
 	LPAREN (LITERAL_void)? RPAREN
         //{declaratorEndParameterList(definition);}
         (options{greedy = true;} : cv_qualifier_seq)?
+
+        (ref_qualifier)?
 
         (exception_specification)?
 
@@ -3281,6 +3294,7 @@ declarator_param_list
         (parameter_list[false])?
         RPAREN
         cv_qualifier_seq
+        (options{greedy = true;} : ref_qualifier)?
         //{declaratorEndParameterList(false);}
         (exception_specification)?
         (options{greedy = true;} : trailing_type)?
