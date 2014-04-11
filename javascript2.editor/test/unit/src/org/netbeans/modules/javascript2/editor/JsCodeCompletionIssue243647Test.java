@@ -40,68 +40,51 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.twig.editor.format;
+package org.netbeans.modules.javascript2.editor;
+
+import java.io.File;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
+import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Petr Pisl
  */
-public class TwigIndenterTest extends TwigIndenterTestBase {
-
-    public TwigIndenterTest(String testName) {
+public class JsCodeCompletionIssue243647Test extends JsCodeCompletionBase {
+    
+    public JsCodeCompletionIssue243647Test(String testName) {
         super(testName);
     }
-
-    public void testIssue230506_01() throws Exception {
-        indent("testIssue230506_01");
+    
+    public void testIssue243647_01() throws Exception {
+        checkCompletion("testfiles/completion/issue243647/test243647.js", "some243647_1.n^;", false);
+    }
+    
+    public void testIssue243647_02() throws Exception {
+        checkCompletion("testfiles/completion/issue243647/test243647.js", "some243647_2.s^;", false);
+    }
+    
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/issue243647")));
+        return Collections.singletonMap(
+            JS_SOURCE_ID,
+            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+        );
     }
 
-    public void testIssue230506_02() throws Exception {
-        indent("testIssue230506_02");
+    @Override
+    protected boolean classPathContainsBinaries() {
+        return true;
     }
-
-    public void testIssue230506_03() throws Exception {
-        indent("testIssue230506_03");
-    }
-
-    public void testIssue230506_04() throws Exception {
-        indent("testIssue230506_04");
-    }
-
-    public void testIssue230506_05() throws Exception {
-        indent("testIssue230506_05");
-    }
-
-    public void testIssue230506_06() throws Exception {
-        indent("testIssue230506_06");
-    }
-
-    public void testIssue230506_07() throws Exception {
-        indent("testIssue230506_07");
-    }
-
-    public void testIssue230506_08() throws Exception {
-        indent("testIssue230506_08");
-    }
-
-    public void testIssue230506_09() throws Exception {
-        indent("testIssue230506_09");
-    }
-
-    public void testIssue230506_10() throws Exception {
-        indent("testIssue230506_10");
-    }
-
-    public void testIssue230506_11() throws Exception {
-        indent("testIssue230506_11");
-    }
-
-    public void testIssue230506_12() throws Exception {
-        indent("testIssue230506_12");
-    }
-
-    public void testIssue243317() throws Exception {
-        indent("testIssue243317");
-    }
-
+    
 }
