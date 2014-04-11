@@ -303,7 +303,7 @@ public class Utilities {
         if (class2Kind.get(VariableTree.class).contains(leaf.getKind())) {
             VariableTree var = (VariableTree) leaf;
             // see #240912 - lambda implicit-typed parameter has synthetic type, shouldn't be searched.
-            boolean typeSynthetic = info.getTreeUtilities().isSynthetic(new TreePath(decl, var.getType()));
+            boolean typeSynthetic = var.getType() == null || info.getTreeUtilities().isSynthetic(new TreePath(decl, var.getType()));
             return findIdentifierSpanImpl(info, leaf, 
                     typeSynthetic ? null : var.getType(), 
                     Collections.singletonList(var.getInitializer()), var.getName().toString(), info.getCompilationUnit(), info.getTrees().getSourcePositions());
