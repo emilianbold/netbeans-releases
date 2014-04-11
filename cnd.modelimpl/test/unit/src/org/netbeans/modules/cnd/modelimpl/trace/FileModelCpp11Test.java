@@ -137,4 +137,9 @@ public class FileModelCpp11Test extends TraceModelTestBase {
         // Bug 243513 - inaccuracy tests (clang): trailing return types
         performTest("bug243513.cpp");
     }            
+    
+    public void testBug243515() throws Exception {
+        // Bug 243515 - inaccuracy tests (clang): C++11 ref-qualifiers
+        performTest("bug243515.cpp");
+    }
 }
