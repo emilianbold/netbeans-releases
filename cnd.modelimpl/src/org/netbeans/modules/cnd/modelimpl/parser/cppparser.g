@@ -2812,12 +2812,10 @@ declarator_suffixes
 		(options {warnWhenFollowAmbig = false;}:
 		 LSQUARE (constant_expression)? RSQUARE)+
 		{declaratorArray();}
+        |
+                (LPAREN RPAREN) => declarator_param_list
 	|	{(!((LA(1)==LPAREN)&&(LA(2)==IDENT))||(qualifiedItemIsOneOf(qiType|qiCtor,1)))}?
-		LPAREN //{declaratorParameterList(false);}
-		(parameter_list[false])?
-		RPAREN //{declaratorEndParameterList(false);}
-		(tq = cv_qualifier)*
-		(exception_specification)?
+		declarator_param_list
 //	|	// DW 28/06/04 deleted Assume either following bracketed declaration
 //		// empty
 	)
@@ -3269,14 +3267,14 @@ abstract_declarator_suffix
             LSQUARE (constant_expression)? RSQUARE
             {declaratorArray();}
         |   
-            (LPAREN RPAREN) => abstract_declarator_param_list
+            (LPAREN RPAREN) => declarator_param_list
         |
             (LPAREN abstract_declarator RPAREN) => LPAREN abstract_declarator RPAREN
 	|
-            abstract_declarator_param_list
+            declarator_param_list
 	;
 
-abstract_declarator_param_list
+declarator_param_list
     :
         LPAREN
         //{declaratorParameterList(false);}

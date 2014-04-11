@@ -132,4 +132,9 @@ public class FileModelCpp11Test extends TraceModelTestBase {
         // Bug 235968 - [74cat] Unexpected token 'virtual' in class destructor.
         performTest("bug235968.cpp");
     }        
+    
+    public void testBug243513() throws Exception {
+        // Bug 243513 - inaccuracy tests (clang): trailing return types
+        performTest("bug243513.cpp");
+    }            
 }
