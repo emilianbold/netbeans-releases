@@ -115,7 +115,7 @@ public class MacroExpansionNextPrevMacroTestCase extends MacroExpansionDocProvid
 
             Document doc2 = createExpandedContextDocument(doc, currentFile);
             assertNotNull(doc2);
-            mp.expand(doc, 0, doc.getLength(), doc2, new AtomicBoolean(false));
+            mp.expand(doc, 0, doc.getLength(), doc2, new AtomicBoolean(false), false);
 
             int offset = CndCoreTestUtils.getDocumentOffset((BaseDocument)doc2, line, column);
 
