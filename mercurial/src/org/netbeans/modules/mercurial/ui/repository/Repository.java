@@ -90,6 +90,7 @@ import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -372,7 +373,21 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
                 }
             }
             pathNames = new ArrayList<String>(paths.keySet());
-            pathNames.removeAll(SKIPPED_PATHS);
+            for (String skippedPath : SKIPPED_PATHS) {
+                // add the default paths as URLs into the recent list
+                String predefinedUrl = paths.get(skippedPath);
+                if (predefinedUrl != null) {
+                    try {
+                        RepositoryConnection rc = new RepositoryConnection(predefinedUrl);
+                        if (!recentUrls.contains(rc)) {
+                            recentUrls.add(rc);
+                        }
+                    } catch (URISyntaxException ex) {
+                        // 
+                    }
+                }
+                pathNames.remove(skippedPath);
+            }
             Collections.sort(pathNames);
             storedPaths = paths;
         }
@@ -573,7 +588,7 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
         return url;
     }
 
-    public RepositoryConnection getRepositoryConnection() throws URISyntaxException {
+    public RepositoryConnection getRepositoryConnection() {
         prepareRepositoryConnection();
         assert (repositoryConnection != null);
         return repositoryConnection;
