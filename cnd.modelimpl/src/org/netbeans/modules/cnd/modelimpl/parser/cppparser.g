@@ -2609,7 +2609,7 @@ member_declarator
                 )?
 	;
 
-conversion_function_decl 
+conversion_function_head
     {CPPParser.TypeQualifier tq; }
     :
         LITERAL_OPERATOR declaration_specifiers[true, false]
@@ -2617,22 +2617,20 @@ conversion_function_decl
         (LESSTHAN template_parameter_list GREATERTHAN)?
         LPAREN (parameter_list[false])? RPAREN	
         (tq = cv_qualifier)*
-        (LITERAL_override | LITERAL_final)*
+        (ref_qualifier)?
         (exception_specification)?
-        SEMICOLON! 
+        (virt_specifiers)?
+    ;
+
+conversion_function_decl 
+    :
+        conversion_function_head
+        SEMICOLON!
     ;
 
 conversion_function_decl_or_def returns [boolean definition = false]
-	{CPPParser.TypeQualifier tq; }
 	:	// DW 01/08/03 Use type_specifier here? see syntax
-		LITERAL_OPERATOR declaration_specifiers[true, false]
-                (ptr_operator)*
-                (LESSTHAN template_parameter_list GREATERTHAN)?
-		LPAREN (parameter_list[false])? RPAREN	
-		(tq = cv_qualifier)*
-                (LITERAL_override | LITERAL_final | LITERAL_new)*
-                ((conversion_function_special_definition)=> definition = conversion_function_special_definition)?
-		(exception_specification)?
+		conversion_function_head
 		(	compound_statement { definition = true; }
                     |	
                         ((conversion_function_special_definition)=> definition = conversion_function_special_definition)?

@@ -142,4 +142,9 @@ public class FileModelCpp11Test extends TraceModelTestBase {
         // Bug 243515 - inaccuracy tests (clang): C++11 ref-qualifiers
         performTest("bug243515.cpp");
     }
+    
+    public void testBug243527() throws Exception {
+        // Bug 243527 - inaccuracy tests (clang): complex test with C++11 ref-qualifiers
+        performTest("bug243527.cpp");
+    }    
 }
