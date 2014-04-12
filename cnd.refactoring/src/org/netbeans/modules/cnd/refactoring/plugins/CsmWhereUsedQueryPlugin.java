@@ -466,6 +466,9 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
         filtersDescription.addFilter(CsmWhereUsedFilters.DECLARATIONS.getKey(),
                 NbBundle.getMessage(this.getClass(), "TXT_Filter_Declarations"), false,
                 ImageUtilities.loadImageIcon(CsmImageName.METHOD_PUBLIC, false));
+        filtersDescription.addFilter(CsmWhereUsedFilters.SCOPE.getKey(),
+                NbBundle.getMessage(this.getClass(), "TXT_Filter_Scope"), false,
+                ImageUtilities.loadImageIcon(CsmImageName.SCOPE, false));
         filtersDescription.addFilter(CsmWhereUsedFilters.MACROS.getKey(),
                 NbBundle.getMessage(this.getClass(), "TXT_Filter_Macros"), true,
                 ImageUtilities.loadImageIcon(CsmImageName.MACRO, false));
@@ -479,6 +482,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
         filtersDescription.enable(CsmWhereUsedFilters.DEAD_CODE.getKey());
         if (!isFindDirectSubclassesOnly() && !isFindSubclasses()) {
             filtersDescription.enable(CsmWhereUsedFilters.DECLARATIONS.getKey());
+            filtersDescription.enable(CsmWhereUsedFilters.SCOPE.getKey());
         }
         filtersDescription.enable(CsmWhereUsedFilters.MACROS.getKey());
     }

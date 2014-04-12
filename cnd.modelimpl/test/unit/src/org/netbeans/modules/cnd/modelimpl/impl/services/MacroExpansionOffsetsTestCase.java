@@ -116,7 +116,7 @@ public class MacroExpansionOffsetsTestCase extends MacroExpansionDocProviderImpl
 
             Document doc2 = createExpandedContextDocument(doc, currentFile);
             assertNotNull(doc2);
-            mp.expand(doc, 0, doc.getLength(), doc2, new AtomicBoolean(false));
+            mp.expand(doc, 0, doc.getLength(), doc2, new AtomicBoolean(false), false);
 
             int res = 0;
             if(originalToExpanded) {

@@ -105,7 +105,12 @@ public class CallModelImpl implements CallModel {
     public Function getRoot() {
         CsmFunction root = uin.getFunction();
         if (root != null) {
-            return new FunctionImpl(root);
+            CsmCacheManager.enter();
+            try {
+                return new FunctionImpl(root);
+            } finally {
+                CsmCacheManager.leave();
+            }
         }
         return null;
     }

@@ -141,7 +141,7 @@ public class MacroExpansionTablesTestCase extends MacroExpansionDocProviderImplB
 
             Document doc2 = createExpandedContextDocument(doc, currentFile);
             assertNotNull(doc2);
-            mp.expand(doc, startOffset, endOffset, doc2, new AtomicBoolean(false));
+            mp.expand(doc, startOffset, endOffset, doc2, new AtomicBoolean(false), false);
             res = mp.dumpTables(doc2);
             streamOut.println(res);
 

@@ -130,8 +130,8 @@ public final class CsmMacroExpansion {
      * @param outDoc - result
      * @return - number of expansions
      */
-    public static int expand(Document inDoc, int startOffset, int endOffset, Document outDoc, AtomicBoolean canceled) {
-        return getMacroExpansionDocProvider().expand(inDoc, startOffset, endOffset, outDoc, canceled);
+    public static int expand(Document inDoc, int startOffset, int endOffset, Document outDoc, AtomicBoolean canceled, boolean formatExpansion) {
+        return getMacroExpansionDocProvider().expand(inDoc, startOffset, endOffset, outDoc, canceled, formatExpansion);
     }
 
     /**
@@ -260,7 +260,7 @@ public final class CsmMacroExpansion {
         }
 
         @Override
-        public int expand(Document inDoc, int startOffset, int endOffset, Document outDoc, AtomicBoolean canceled) {
+        public int expand(Document inDoc, int startOffset, int endOffset, Document outDoc, AtomicBoolean canceled, boolean formatExpansion) {
             return 0;
         }
 
