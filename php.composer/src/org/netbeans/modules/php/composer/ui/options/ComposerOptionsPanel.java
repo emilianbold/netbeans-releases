@@ -104,10 +104,21 @@ public class ComposerOptionsPanel extends JPanel {
     @NbBundle.Messages({
         "# {0} - short script name",
         "# {1} - long script name",
-        "ComposerOptionsPanel.composer.hint=Full path of Composer script (typically {0} or {1})."
+        "ComposerOptionsPanel.composer.hint_2=Full path of Composer script (typically {0} or {1}).",
+        "# {0} - short script name",
+        "# {1} - long script name",
+        "# {2} - long script name (alternative)",
+        "ComposerOptionsPanel.composer.hint_3=Full path of Composer script (typically {0} or {1} or {2}).",
     })
     private void init() {
-        hintLabel.setText(Bundle.ComposerOptionsPanel_composer_hint(Composer.NAME, Composer.LONG_NAME));
+        List<String> fileNames = Composer.getFileNames();
+        String hint;
+        if (fileNames.size() == 3) {
+            hint = Bundle.ComposerOptionsPanel_composer_hint_3(fileNames.get(0), fileNames.get(1), fileNames.get(2));
+        } else {
+            hint = Bundle.ComposerOptionsPanel_composer_hint_2(fileNames.get(0), fileNames.get(1));
+        }
+        hintLabel.setText(hint);
         errorLabel.setText(" "); // NOI18N
 
         // listeners
@@ -318,7 +329,7 @@ public class ComposerOptionsPanel extends JPanel {
         String script = UiUtils.SearchWindow.search(new UiUtils.SearchWindow.SearchWindowSupport() {
             @Override
             public List<String> detect() {
-                return FileUtils.findFileOnUsersPath(Composer.NAME, Composer.LONG_NAME);
+                return FileUtils.findFileOnUsersPath(Composer.getFileNames().toArray(new String[0]));
             }
             @Override
             public String getWindowTitle() {
