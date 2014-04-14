@@ -141,13 +141,15 @@ public class DefineInterceptor implements FunctionInterceptor {
                             } catch (IOException ex) {
                                 Exceptions.printStackTrace(ex);
                             }
-                            Iterator<? extends JsObject> paramIterator = defFunc.getParameters().iterator();
-                            for (String module : paths) {
-                                Collection<? extends TypeUsage> exposedTypes = rIndex.getExposedTypes(module, factory);
-                                if (paramIterator.hasNext()) {
-                                    JsObject param = paramIterator.next();
-                                    for (TypeUsage typeUsage : exposedTypes) {
-                                        param.addAssignment(typeUsage, -1);
+                            if (rIndex != null) {
+                                Iterator<? extends JsObject> paramIterator = defFunc.getParameters().iterator();
+                                for (String module : paths) {
+                                    Collection<? extends TypeUsage> exposedTypes = rIndex.getExposedTypes(module, factory);
+                                    if (paramIterator.hasNext()) {
+                                        JsObject param = paramIterator.next();
+                                        for (TypeUsage typeUsage : exposedTypes) {
+                                            param.addAssignment(typeUsage, -1);
+                                        }
                                     }
                                 }
                             }

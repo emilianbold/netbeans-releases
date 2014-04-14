@@ -143,24 +143,22 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
                 Exceptions.printStackTrace(ex);
             }
             
-            if (rIndex == null) {
-                return null;
-            }
-            
-            Map<String, String> pathMappings = rIndex.getPathMappings(pathParts[0]);
-            String alias = "";
-            for (String possibleAlias : pathMappings.keySet()) {
-                if (possibleAlias.equals(path)) {
-                    alias = possibleAlias;
-                    break;
+            if (rIndex != null) {
+                Map<String, String> pathMappings = rIndex.getPathMappings(pathParts[0]);
+                String alias = "";
+                for (String possibleAlias : pathMappings.keySet()) {
+                    if (possibleAlias.equals(path)) {
+                        alias = possibleAlias;
+                        break;
+                    }
+                    if (path.startsWith(possibleAlias) && (alias.length() < possibleAlias.length())) {
+                        alias = possibleAlias;
+                    }
                 }
-                if (path.startsWith(possibleAlias) && (alias.length() < possibleAlias.length())) {
-                    alias = possibleAlias;
+                if (!alias.isEmpty()) {
+                    path = pathMappings.get(alias) + path.substring(alias.length());
+                    pathParts = path.split("/");                        //NOI18N
                 }
-            }
-            if (!alias.isEmpty()) {
-                path = pathMappings.get(alias) + path.substring(alias.length());
-                pathParts = path.split("/");                        //NOI18N
             }
         }
         if (parent != null && pathParts.length > 0) {

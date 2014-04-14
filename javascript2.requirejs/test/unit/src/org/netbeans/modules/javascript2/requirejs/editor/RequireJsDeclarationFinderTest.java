@@ -42,72 +42,20 @@
 
 package org.netbeans.modules.javascript2.requirejs.editor;
 
-import javax.swing.text.Document;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.netbeans.modules.csl.api.DeclarationFinder;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.JsTestBase;
 
 /**
  *
- * @author ppisl
+ * @author Petr Pisl
  */
-public class RequireJsDeclarationFinderTest {
+public class RequireJsDeclarationFinderTest extends JsTestBase {
     
-    public RequireJsDeclarationFinderTest() {
-    }
-    
-    @BeforeClass
-    public static void setUpClass() {
+    public RequireJsDeclarationFinderTest(String testName) {
+        super(testName);
     }
     
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-    @Before
-    public void setUp() {
-    }
-    
-    @After
-    public void tearDown() {
-    }
-
-    /**
-     * Test of findDeclaration method, of class RequireJsDeclarationFinder.
-     */
-    @Test
-    public void testFindDeclaration() {
-        System.out.println("findDeclaration");
-        ParserResult info = null;
-        int caretOffset = 0;
-        RequireJsDeclarationFinder instance = new RequireJsDeclarationFinder();
-        DeclarationFinder.DeclarationLocation expResult = null;
-        DeclarationFinder.DeclarationLocation result = instance.findDeclaration(info, caretOffset);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getReferenceSpan method, of class RequireJsDeclarationFinder.
-     */
-    @Test
-    public void testGetReferenceSpan() {
-        System.out.println("getReferenceSpan");
-        Document doc = null;
-        int caretOffset = 0;
-        RequireJsDeclarationFinder instance = new RequireJsDeclarationFinder();
-        OffsetRange expResult = null;
-        OffsetRange result = instance.getReferenceSpan(doc, caretOffset);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+    public void testNavigationFromModuleDeclaration() throws Exception {
+        checkDeclaration("TestProject1/js/main.js", "'folde^r1/module1'", "module1.js", 0);
     }
     
 }
