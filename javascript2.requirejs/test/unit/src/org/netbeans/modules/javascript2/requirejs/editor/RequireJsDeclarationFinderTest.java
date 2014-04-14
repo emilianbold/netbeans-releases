@@ -55,10 +55,18 @@ public class RequireJsDeclarationFinderTest extends JsTestBase {
     }
     
     public void testNavigationFromModuleDeclaration01() throws Exception {
-        checkDeclaration("TestProject1/js/main.js", "'folde^r1/module1'", "module1.js", 0);
+        checkDeclaration("TestProject1/js/main.js", "'folde^r1/module1',", "module1.js", 0);
+    }
+    
+    public void testNavigationFromModuleDeclaration02() throws Exception {
+        checkDeclaration("TestProject1/js/main.js", "'./folde^r1/module1'", "module1.js", 0);
+    }
+    
+    public void testNavigationFromModuleDeclaration03() throws Exception {
+        checkDeclaration("TestProject1/js/folder1/api/utils.js", "'../../fol^der1/module1'", "module1.js", 0);
     }
     
     public void testNavigationFromParameter01() throws Exception {
-        checkDeclaration("TestProject1/js/main.js", "function (mod^ule1) {", "module1.js", 0);
+        checkDeclaration("TestProject1/js/main.js", "function (mod^ule1, module11) {", "module1.js", 0);
     }
 }
