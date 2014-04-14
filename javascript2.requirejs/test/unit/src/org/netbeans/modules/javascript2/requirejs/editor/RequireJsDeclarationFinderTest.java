@@ -54,8 +54,11 @@ public class RequireJsDeclarationFinderTest extends JsTestBase {
         super(testName);
     }
     
-    public void testNavigationFromModuleDeclaration() throws Exception {
+    public void testNavigationFromModuleDeclaration01() throws Exception {
         checkDeclaration("TestProject1/js/main.js", "'folde^r1/module1'", "module1.js", 0);
     }
     
+    public void testNavigationFromParameter01() throws Exception {
+        checkDeclaration("TestProject1/js/main.js", "function (mod^ule1) {", "module1.js", 0);
+    }
 }
