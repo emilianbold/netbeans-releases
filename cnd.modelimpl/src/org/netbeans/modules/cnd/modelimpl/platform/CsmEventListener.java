@@ -58,8 +58,10 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -127,7 +129,11 @@ import org.openide.util.RequestProcessor;
         FileObject fo = event.getFileObject();
         if (fo != null) {
             try {
-                assert fo.getFileSystem().equals(nativeProject.getFileSystem());
+                FileSystem fs = fo.getFileSystem();
+                if (!fs.equals(InvalidFileObjectSupport.getDummyFileSystem()) && !fs.equals(nativeProject.getFileSystem())) {
+                    CndUtils.assertTrue(false, "Filesystem differs CsmEvent filesystem is " + fs + //NOI18N
+                            ", project filesystem is " + nativeProject.getFileSystem()); //NOI18N
+                }
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }
