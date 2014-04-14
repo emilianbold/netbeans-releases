@@ -5271,6 +5271,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
     
     private void sendCommandInt(MICommand cmd) {
+        if (postedKill || postedKillEngine || gdb == null || cmd == null) {
+            LOG.log(Level.FINE, "sendCommandInt when session is finished for example, see values to get more information postedKill= {0} "
+                    + "postedKillEngine = {1} gdb == {2} || cmd == {3}", 
+                    new String[]{postedKill + "", "" + postedKillEngine, gdb == null ? "null" : "Not null", 
+                        cmd == null ? "null" : "Not null"});//NOI18N
+            return;
+        }
         pause(true);
         gdb.sendCommand(cmd);
     }
