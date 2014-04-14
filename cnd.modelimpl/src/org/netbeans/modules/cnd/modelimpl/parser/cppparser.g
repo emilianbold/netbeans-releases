@@ -401,6 +401,7 @@ tokens {
 	protected static final int tsBOOL      = 0x8000;
 	protected static final int tsCOMPLEX   = 0x10000;
 	protected static final int tsIMAGINARY = 0x20000;
+        protected static final int tsAUTO      = 0x40000; // c++11 auto type specifier
         protected static final int tsOTHER     = 0x80000;
 
 	public static class TypeQualifier extends Enum { public TypeQualifier(String id) { super(id); } }
@@ -2123,7 +2124,7 @@ type_specifier[DeclSpecifier ds, boolean noTypeId] returns [/*TypeSpecifier*/int
 :   ts = simple_type_specifier[noTypeId]
 |   ts = class_specifier[ds]
 |   enum_specifier {ts=tsENUM;}
-|   LITERAL_auto
+|   LITERAL_auto {ts=tsAUTO;}
     { #type_specifier = #([CSM_TYPE_BUILTIN, "CSM_TYPE_BUILTIN"], #type_specifier); }
 ;
 
@@ -4224,19 +4225,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen, int temp
 
             |   balanceParensInExpression 
             |   balanceSquaresInExpression 
-                (   ((balanceParensInExpression)? (LITERAL_mutable)? (trailing_type)? LCURLY) =>                    
-                    (
-                        (
-                            (LPAREN (parameter_list[false])? RPAREN)? 
-                            (LITERAL_mutable)?
-                        )
-                        (trailing_type)?
-                        compound_statement
-                        {#lazy_expression = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #lazy_expression);}
-                    )
-                    {#lazy_expression = #(#[CSM_DECLARATION_STATEMENT, "CSM_DECLARATION_STATEMENT"], #lazy_expression);}
-                |
-                )
+                ((lambda_expression_post_capture_predicate) => lambda_expression_post_capture)?
             |   constant
 
             |   LITERAL_typename
@@ -4305,6 +4294,31 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen, int temp
         )+
 
         ({(!inTemplateParams)}?((GREATERTHAN lazy_expression_predicate) => (GREATERTHAN)+ lazy_expression[false, false, templateLevel])?)?
+    ;
+
+lambda_expression_post_capture_predicate
+    : 
+        (balanceParensInExpression)? 
+        (LITERAL_mutable)? 
+        (exception_specification)?
+        (function_attribute_specification)? 
+        (trailing_type)? 
+        LCURLY
+    ;
+
+lambda_expression_post_capture
+    :
+        (
+            // Lambda function
+            (LPAREN (parameter_list[false])? RPAREN)? 
+            (LITERAL_mutable)?
+            (exception_specification)?
+            (function_attribute_specification)? 
+            (trailing_type)?
+            compound_statement
+            {#lambda_expression_post_capture = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #lambda_expression_post_capture);}
+        )
+        {#lambda_expression_post_capture = #(#[CSM_DECLARATION_STATEMENT, "CSM_DECLARATION_STATEMENT"], #lambda_expression_post_capture);}
     ;
 
 // Lazy expression including assignement expressions (like a = b = c;)
