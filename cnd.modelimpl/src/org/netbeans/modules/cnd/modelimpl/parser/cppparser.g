@@ -1831,8 +1831,12 @@ function_definition_no_ret_type
 function_declarator_with_fun_as_ret_type  [boolean definition]
         :
                 (ptr_operator)=> ptr_operator function_declarator_with_fun_as_ret_type[definition]
-                |
-                LPAREN function_declarator[definition, false, false] RPAREN function_params
+            |
+                LPAREN function_declarator[definition, false, false] RPAREN 
+                function_params
+                (options{greedy = true;} : fun_cv_qualifier_seq)? // TODO: check if here could be cv qualifiers
+                (options{greedy = true;} : ref_qualifier)?        // TODO: check if here could be ref qualifier
+                (exception_specification)?
         ;
     
 function_declaration_with_fun_as_ret_type
@@ -2649,6 +2653,19 @@ conversion_function_special_definition returns [boolean definition = false]
         )
     ;
 
+fun_cv_qualifier_seq
+    {CPPParser.TypeQualifier tq;}
+    :
+        // IZ#134182 : missed const in function parameter
+        // we should add "const" to function only if it's not K&R style function
+        (   ((cv_qualifier)* 
+             (is_post_declarator_token | literal_try | LITERAL_throw | LITERAL_noexcept | literal_attribute | POINTERTO | 
+              LITERAL_override | LITERAL_final | LITERAL_new | AMPERSAND | AND))
+            =>
+            (options{warnWhenFollowAmbig = false;}: tq = cv_qualifier)* 
+        )?
+    ;
+
 // JEL note:  does not use (const|volatile)* to avoid lookahead problems
 cv_qualifier_seq
 	{TypeQualifier tq;}
@@ -2843,19 +2860,12 @@ function_declarator [boolean definition, boolean allowParens, boolean symTabChec
     ;
 
 function_direct_declarator [boolean definition, boolean symTabCheck] 
-	{String q; CPPParser.TypeQualifier tq;}
+	{String q;}
     :
         (options {greedy=true;} : function_attribute_specification)?
         (function_direct_declarator_2[definition, symTabCheck])
 
-        // IZ#134182 : missed const in function parameter
-        // we should add "const" to function only if it's not K&R style function
-        (   ((cv_qualifier)* 
-             (is_post_declarator_token | literal_try | LITERAL_throw | LITERAL_noexcept | literal_attribute | POINTERTO | 
-              LITERAL_override | LITERAL_final | LITERAL_new | AMPERSAND | AND))
-            =>
-            (options{warnWhenFollowAmbig = false;}: tq = cv_qualifier)* 
-        )?
+        fun_cv_qualifier_seq
 
         (options{greedy=true;} : ref_qualifier)?
 
