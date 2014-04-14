@@ -130,7 +130,8 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
      * @param info
      * @return 
      */
-    private FileObject findFileObject(String path, ParserResult info) {
+    private FileObject findFileObject(final String pathToFile, final ParserResult info) {
+        String path = pathToFile;
         String[] pathParts = path.split("/");
         FileObject parent = info.getSnapshot().getSource().getFileObject();
         if (parent != null) {
@@ -141,6 +142,11 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+            
+            if (rIndex == null) {
+                return null;
+            }
+            
             Map<String, String> pathMappings = rIndex.getPathMappings(pathParts[0]);
             String alias = "";
             for (String possibleAlias : pathMappings.keySet()) {
@@ -154,13 +160,13 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
             }
             if (!alias.isEmpty()) {
                 path = pathMappings.get(alias) + path.substring(alias.length());
-                pathParts = path.split("/");
+                pathParts = path.split("/");                        //NOI18N
             }
         }
         if (parent != null && pathParts.length > 0) {
             parent = parent.getParent();
-            if (!pathParts[pathParts.length - 1].endsWith(".js")) {
-                path += ".js";
+            if (!pathParts[pathParts.length - 1].endsWith(".js")) { //NOI18N
+                path += ".js";                                      //NOI18N
             }
             FileObject targetFO;
             while (parent != null) {
