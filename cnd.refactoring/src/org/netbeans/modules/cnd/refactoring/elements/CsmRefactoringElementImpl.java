@@ -86,13 +86,13 @@ public class CsmRefactoringElementImpl extends SimpleRefactoringElementImplement
         }  
         this.enclosing = composite;
         this.isDecl = CsmReferenceResolver.getDefault().isKindOf(elem, EnumSet.of(CsmReferenceKind.DECLARATION, CsmReferenceKind.DEFINITION));
-        this.isScope = isCsope(elem);
+        this.isScope = isScope(elem);
         this.isInMacros = CsmReferenceResolver.getDefault().isKindOf(elem, EnumSet.of(CsmReferenceKind.IN_PREPROCESSOR_DIRECTIVE));
         this.isInDeadCode = CsmReferenceResolver.getDefault().isKindOf(elem, EnumSet.of(CsmReferenceKind.IN_DEAD_BLOCK));
         this.isInComments = CsmReferenceResolver.getDefault().isKindOf(elem, EnumSet.of(CsmReferenceKind.COMMENT));
     }
 
-    private boolean isCsope(CsmReference ref) {
+    private boolean isScope(CsmReference ref) {
         CsmFile csmFile = ref.getContainingFile();
         int stToken = ref.getStartOffset();
         int endToken = ref.getEndOffset();
