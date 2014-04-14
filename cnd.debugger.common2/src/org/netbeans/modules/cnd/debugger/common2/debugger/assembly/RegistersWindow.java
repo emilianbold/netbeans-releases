@@ -288,7 +288,8 @@ public final class RegistersWindow extends TopComponent
             if (names == null) {
                 continue;
             }
-            String regname = names[0] + "\t";//need to add tab here as in hidden_regs we have register name with the tab append
+            //need to add tab here as in hidden_regs we have register name with the tab append
+            String regname = names[0] + '\t';
             int m = 0;
             if (!hidden_regs.contains(regname)) {
                 ta.append(s);
