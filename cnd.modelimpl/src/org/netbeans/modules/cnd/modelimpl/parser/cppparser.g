@@ -818,7 +818,7 @@ template_explicit_specialization
 			printf("template_explicit_specialization_0c[%d]: template " +
 				"explicit-specialisation ctor declaration\n", LT(1).getLine());
 		}
-		ctor_declarator[false] SEMICOLON
+		b = ctor_declarator[false] SEMICOLON
 		{ #template_explicit_specialization = #(#[CSM_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
         // Template explicit specialisation dtor declaration        
         |
@@ -977,8 +977,8 @@ declaration_template_impl { String s; K_and_R = false; boolean ctrName=false; bo
                                 LT(1).getLine());
                 }
                 friend = ctor_decl_spec
-                {ctrName = qualifiedItemIsOneOf(qiCtor);}
-                ctor_declarator[false]
+//                {ctrName = qualifiedItemIsOneOf(qiCtor);}
+                ctrName = ctor_declarator[false]
                 (
                         EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
                     |   
@@ -1000,15 +1000,25 @@ declaration_template_impl { String s; K_and_R = false; boolean ctrName=false; bo
                 // JEL 4/3/96.. Added predicate that works once the
                 // restriction is added that ctor cannot be virtual
                 (  
-                                    ctor_decl_spec                            
-                    {qualifiedItemIsOneOf(qiCtor)}?
+                    ctor_decl_spec                            
+                    /*{qualifiedItemIsOneOf(qiCtor)}?*/
+                    ctor_declarator[true]
                 )=>
                 {if (statementTrace>=1) 
                     printf("declaration_template_impl_11b[%d]: Template constructor " +
                         "definition\n", LT(1).getLine());
                 }
-                ctor_definition
-                { #declaration_template_impl = #(#[CSM_CTOR_TEMPLATE_DEFINITION, "CSM_CTOR_TEMPLATE_DEFINITION"], #declaration_template_impl); }
+                // TODO: use ctor_definition here
+                friend = ctor_decl_spec
+                ctrName = ctor_declarator[true]
+                (ctor_body | ASSIGNEQUAL (LITERAL_default | LITERAL_delete))
+                {
+                    if (ctrName && !friend) {
+                        #declaration_template_impl= #(#[CSM_CTOR_TEMPLATE_DEFINITION, "CSM_CTOR_TEMPLATE_DEFINITION"],  #declaration_template_impl); //end_of_stmt();
+                    } else {
+                        #declaration_template_impl= #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"],  #declaration_template_impl); //end_of_stmt();
+                    }
+                }
             |  
                 // User-defined type cast
                 {isCPlusPlus()}?
@@ -1443,7 +1453,7 @@ namespace_alias_definition
 // it's a caller's responsibility to check isCPlusPlus
 //
 member_declaration_template
-	{String q; boolean definition=false; boolean friend = false;}
+	{String q; boolean definition=false; boolean friend = false; boolean ctorName = false;}
 	:
 		{beginTemplateDefinition();}
 		template_head
@@ -1470,7 +1480,7 @@ member_declaration_template
                                         LT(1).getLine());
                         }
                         friend = ctor_decl_spec
-                        ctor_declarator[false] 	
+                        ctorName = ctor_declarator[false] 	
                         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
                         | SEMICOLON ) // Constructor declarator
                         {
@@ -1546,7 +1556,7 @@ member_declaration_template
 	;
 
 member_declaration
-	{String q; boolean definition;boolean ctrName=false;boolean dtrName=false;StorageClass sc = scInvalid;int ts = 0;boolean friend = false;}
+	{String q; boolean definition;boolean ctrName=false;StorageClass sc = scInvalid;int ts = 0;boolean friend = false;}
 	:
 	(
 		// Class definition
@@ -1613,8 +1623,8 @@ member_declaration
 				LT(1).getLine());
 		}
 		friend = cds:ctor_decl_spec
-                {ctrName = qualifiedItemIsOneOf(qiCtor);}
-		cd:ctor_declarator[false] 	(EOF!|SEMICOLON) // Constructor declarator
+//                {ctrName = qualifiedItemIsOneOf(qiCtor);}
+		ctrName = cd:ctor_declarator[false] 	(EOF!|SEMICOLON) // Constructor declarator
 		{
                     // below is a workaround for know infinite loop bug in ANTLR 
                     // see http://www.jguru.com/faq/view.jsp?EID=271922
@@ -1641,8 +1651,8 @@ member_declaration
         )=>
         {if (statementTrace>=1) printf("member_declaration_4[%d]: Constructor or no-ret type fun definition\n", LT(1).getLine());}
         friend = ctor_decl_spec
-        {ctrName = qualifiedItemIsOneOf(qiCtor);}
-        ctor_declarator[true]
+//        {ctrName = qualifiedItemIsOneOf(qiCtor);}
+        ctrName = ctor_declarator[true]
         (   ctor_body
         |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
         )
@@ -1658,19 +1668,16 @@ member_declaration
                 printf("member_declaration_5a[%d]: Destructor declaration\n",
                         LT(1).getLine());
         }
-
         // This is inlined dtor_head rule (here it is necessary to know if destructor is friend)
         friend = dtor_decl_spec        
-        {dtrName = qualifiedItemIsOneOf(qiDtor);}
         dtor_declarator[false]
-
         ( 
             EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | 
             SEMICOLON 
         ) //{end_of_stmt();}	// Declaration        
         {
-            if (dtrName && !friend) {
+            if (!friend) {
                 #member_declaration = #(#[CSM_DTOR_DECLARATION, "CSM_DTOR_DECLARATION"], #member_declaration); //end_of_stmt();
             } else {
                 #member_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #member_declaration); //end_of_stmt();
@@ -2660,7 +2667,7 @@ fun_cv_qualifier_seq
         // IZ#134182 : missed const in function parameter
         // we should add "const" to function only if it's not K&R style function
         (   ((cv_qualifier)* 
-             (is_post_declarator_token | literal_try | LITERAL_throw | LITERAL_noexcept | literal_attribute | POINTERTO | 
+             (is_post_declarator_token | LITERAL_throw | LITERAL_noexcept | literal_attribute | POINTERTO | 
               LITERAL_override | LITERAL_final | LITERAL_new | AMPERSAND | AND))
             =>
             (options{warnWhenFollowAmbig = false;}: tq = cv_qualifier)* 
@@ -2886,7 +2893,7 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
 protected
 is_post_declarator_token
     :
-        SEMICOLON | ASSIGNEQUAL | LCURLY | EOF | RPAREN
+        SEMICOLON | ASSIGNEQUAL | LCURLY | EOF | RPAREN | literal_try
     ;
 
 trailing_type
@@ -2987,10 +2994,10 @@ ctor_definition
     ;
 
 ctor_head 
-{boolean friend = false;}
+{boolean friend = false; boolean ctorName = false;}
 	:
 	friend = ctor_decl_spec
-	ctor_declarator[true]
+	ctorName = ctor_declarator[true]
 	;
 
 ctor_decl_spec returns [boolean friend = false]
@@ -2998,10 +3005,20 @@ ctor_decl_spec returns [boolean friend = false]
     ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_explicit|LITERAL_friend {friend = true;} | LITERAL_constexpr )*
 	;
 
-ctor_declarator[boolean definition]
-	{String q;}
-	: 
+ctor_declarator[boolean definition] returns [boolean isCtor = false]
+    :
+        (LPAREN ctor_declarator[definition] RPAREN is_post_declarator_token)=>
+            LPAREN isCtor = ctor_declarator[definition] RPAREN
+        |
+            isCtor = ctor_direct_declarator[definition]
+    ;   
+
+ctor_direct_declarator[boolean definition] returns [boolean isCtor = false]
+    {String q;}
+    : 
 	// JEL 4/3/96 qualified_id too broad DW 10/06/03 ?
+        {isCtor = qualifiedItemIsOneOf(qiCtor);}
+
 	q = qualified_ctor_id
         // VV: 06/06/06 handle constructor of class template explicite specialization
         (LESSTHAN template_argument_list GREATERTHAN)?
@@ -3020,11 +3037,20 @@ ctor_declarator[boolean definition]
         ((ASSIGNEQUAL OCTALINT) => ASSIGNEQUAL OCTALINT)?
         // IZ 136239 : C++ grammar does not allow attributes after constructor
         (function_attribute_specification)?
-	;
+    ;
+
+qualified_ctor_id returns [String q = ""]
+    :
+        LPAREN
+        q = qualified_ctor_id                 
+        RPAREN
+    |
+        q = qualified_ctor_direct_id
+    ;
 
 // This matches a generic qualified identifier ::T::B::foo
 // that is satisfactory for a ctor (no operator, no trailing <>)
-qualified_ctor_id returns [String q = ""]
+qualified_ctor_direct_id returns [String q = ""]
 	{
 	    String so;
 	    StringBuilder  qitem = new StringBuilder();
@@ -3041,7 +3067,7 @@ qualified_ctor_id returns [String q = ""]
 **** */
 	{qitem.append(id.getText());        
 	 q = qitem.toString();
-	#qualified_ctor_id = #(#[CSM_QUALIFIED_ID, q], #qualified_ctor_id);} 
+	#qualified_ctor_direct_id = #(#[CSM_QUALIFIED_ID, q], #qualified_ctor_direct_id);} 
 	;
 
 ctor_body
@@ -3124,14 +3150,20 @@ dtor_scope_override
 
 ****** */
 
-
 dtor_declarator[boolean definition]
+    :
+        (LPAREN dtor_declarator[definition] RPAREN is_post_declarator_token)=>
+            LPAREN dtor_declarator[definition] RPAREN
+        |
+            dtor_direct_declarator[definition]        
+    ;
+
+dtor_direct_declarator[boolean definition]
 {String q;}
 	:	
 	//({definition}? dtor_scope_override)
 //        dtor_scope_override
 //	TILDE IDENT
-
         q = qualified_dtor_id
 
        (LESSTHAN template_argument_list GREATERTHAN)?
@@ -3152,9 +3184,18 @@ dtor_declarator[boolean definition]
         (options {greedy=true;} :function_attribute_specification)?
 	;
 
+qualified_dtor_id returns [String q = ""]
+    :
+        LPAREN
+        q = qualified_dtor_id                 
+        RPAREN
+    |
+        q = qualified_dtor_direct_id
+    ;
+
 // This matches a generic qualified identifier ::T::B::foo
 // that is satisfactory for a ctor (no operator, no trailing <>)
-qualified_dtor_id returns [String q = ""]
+qualified_dtor_direct_id returns [String q = ""]
 	{
 	    String so;
 	    StringBuilder  qitem = new StringBuilder();
@@ -3168,7 +3209,7 @@ qualified_dtor_id returns [String q = ""]
         qitem.append("~");
         qitem.append(id.getText());
         q = qitem.toString();
-        #qualified_dtor_id = #(#[CSM_QUALIFIED_ID, q], #qualified_dtor_id);
+        #qualified_dtor_direct_id = #(#[CSM_QUALIFIED_ID, q], #qualified_dtor_direct_id);
     }
 	;
 
