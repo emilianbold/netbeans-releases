@@ -132,8 +132,10 @@ import org.openide.filesystems.FileObject;
             return ((FileObject) object).getPath();
         } else if (object instanceof NativeFileItem) {
             return ((NativeFileItem) object).getAbsolutePath();
+        } else if (object instanceof NativeProject) {
+            return ((NativeProject) object).getProjectRoot();
         } else {
-            return null;
+            return "";
         }
     }
 
@@ -142,20 +144,26 @@ import org.openide.filesystems.FileObject;
     }
 
     public FileObject getFileObject() {
-        return get(FileObject.class);
+        if (object instanceof FileObject) {
+            return (FileObject) object;
+        } else if (object instanceof NativeFileItem) {
+            return ((NativeFileItem) object).getFileObject();
+        }
+        return null;
     }
-    
+
     public NativeFileItem getNativeFileItem() {
-        return get(NativeFileItem.class);
+        if (object instanceof NativeFileItem) {
+            return (NativeFileItem) object;
+        }
+        return null;
     }
     
     public NativeProject getNativeProject() {
-        return get(NativeProject.class);
-    }
-    
-    private <T> T get(Class<T> cls) {
-        if (object != null && cls.isAssignableFrom(object.getClass())) {
-            return (T) object;
+        if (object instanceof NativeProject) {
+            return (NativeProject) object;
+        } else if (object instanceof NativeFileItem) {
+            return ((NativeFileItem) object).getNativeProject();
         }
         return null;
     }
@@ -167,7 +175,7 @@ import org.openide.filesystems.FileObject;
 
     public static void trace(String format, Object... args) {
         if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-            System.out.printf("CsmEvent: %s\n", String.format(format, args));
+            System.out.printf("CsmEvent: %s\n", String.format(format, args)); // NOI18N
         }
     }
 }
