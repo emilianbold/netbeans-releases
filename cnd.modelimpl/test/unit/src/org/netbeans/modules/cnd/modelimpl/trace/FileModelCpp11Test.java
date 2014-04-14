@@ -162,4 +162,9 @@ public class FileModelCpp11Test extends TraceModelTestBase {
         // Bug 243524 - inaccuracy tests (clang): lambda and throw
         performTest("bug243524.cpp");
     }        
+    
+    public void testBug243528() throws Exception {
+        // Bug 243528 - inaccuracy tests (clang): constructor in template
+        performTest("bug243528.cpp");
+    }            
 }
