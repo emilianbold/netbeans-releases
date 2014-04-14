@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.debug.DebugUtils;
  */
 public class TraceFlags {
 
+    public static final boolean MERGE_EVENTS = DebugUtils.getBoolean("cnd.model.merge.events", true);
     public static final boolean USE_PARSER_API = DebugUtils.getBoolean("cnd.model.parser.api", false);
 
     public static volatile boolean TRACE_182342_BUG = Boolean.getBoolean("cnd.modelimpl.trace182342"); // NOI18N

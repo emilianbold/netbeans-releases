@@ -126,6 +126,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.FileInfoQueryImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
+import org.netbeans.modules.cnd.modelimpl.platform.CsmEventDispatcher;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.ClassifierContainerKey;
 import org.netbeans.modules.cnd.modelimpl.repository.FileContainerKey;
@@ -810,39 +811,68 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }    
 
     public final void enableProjectListeners(boolean enable) {
-        synchronized (projectListenerLock) {
-            if (projectListener != null) {
-                projectListener.enableListening(enable);
+        if (TraceFlags.MERGE_EVENTS) {
+            if (platformProject instanceof NativeProject) {
+                // should be in ProjectImpl, but leaving it here makes diff more clear
+                CsmEventDispatcher.getInstance().enableListening(this, enable);
+            }
+        } else {
+            synchronized (projectListenerLock) {
+                if (projectListener != null) {
+                    projectListener.enableListening(enable);
+                }
             }
         }
     }
 
     protected final void registerProjectListeners() {
-        synchronized (projectListenerLock) {
-            if (platformProject instanceof NativeProject) {
-                if (projectListener == null) {
-                    projectListener = new NativeProjectListenerImpl(getModel(), (NativeProject) platformProject, this);
-                }
+        if (platformProject instanceof NativeProject) {
+            if (TraceFlags.MERGE_EVENTS) {
+                // should be in ProjectImpl, but leaving it here makes diff more clear
+                CsmEventDispatcher.getInstance().registerProject(this);
                 NativeProject nativeProject = (NativeProject) platformProject;
-                nativeProject.addProjectItemsListener(projectListener);
                 for (FileSystem fs : getIncludesFileSystems(nativeProject)) {
                     CndFileSystemProvider.addFileSystemProblemListener(this, fs);
+                }
+            } else {
+                synchronized (projectListenerLock) {
+                    if (platformProject instanceof NativeProject) {
+                        if (projectListener == null) {
+                            projectListener = new NativeProjectListenerImpl(getModel(), (NativeProject) platformProject, this);
+                        }
+                        NativeProject nativeProject = (NativeProject) platformProject;
+                        nativeProject.addProjectItemsListener(projectListener);
+                        for (FileSystem fs : getIncludesFileSystems(nativeProject)) {
+                            CndFileSystemProvider.addFileSystemProblemListener(this, fs);
+                        }
+                    }
                 }
             }
         }
     }
 
     protected final void unregisterProjectListeners() {
-        synchronized (projectListenerLock) {
-            if (projectListener != null) {
-                if (platformProject instanceof NativeProject) {
-                    NativeProject nativeProject = (NativeProject) platformProject;
-                    nativeProject.removeProjectItemsListener(projectListener);
-                    for (FileSystem fs : getIncludesFileSystems(nativeProject)) {
-                        CndFileSystemProvider.removeFileSystemProblemListener(this, fs);
+        if (platformProject instanceof NativeProject) {
+            if (TraceFlags.MERGE_EVENTS) {
+                // should be in ProjectImpl, but leaving it here makes diff more clear
+                CsmEventDispatcher.getInstance().unregisterProject(this);
+                NativeProject nativeProject = (NativeProject) platformProject;
+                for (FileSystem fs : getIncludesFileSystems(nativeProject)) {
+                    CndFileSystemProvider.removeFileSystemProblemListener(this, fs);
+                }
+            } else {
+                synchronized (projectListenerLock) {
+                    if (projectListener != null) {
+                        if (platformProject instanceof NativeProject) {
+                            NativeProject nativeProject = (NativeProject) platformProject;
+                            nativeProject.removeProjectItemsListener(projectListener);
+                            for (FileSystem fs : getIncludesFileSystems(nativeProject)) {
+                                CndFileSystemProvider.removeFileSystemProblemListener(this, fs);
+                            }
+                        }
+                        projectListener = null;
                     }
                 }
-                projectListener = null;
             }
         }
     }
@@ -2465,28 +2495,37 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         return removedFromProject;
     }
-    
+
     public final void onFileObjectExternalCreate(FileObject file) {
+        onFileObjectExternalCreate(Arrays.asList(file));
+    }
+
+    public final void onFileObjectExternalCreate(Collection<FileObject> files) {
         try {
             ParserQueue.instance().onStartAddingProjectFiles(this);
             CndFileUtils.clearFileExistenceCache();
             // #196664 - Code Model ignores the generated files"
             // when external file was created and assigned to this project => 
             // create csm file for it if possible
-            NativeFileItem nativeFileItem = null;
+            List<NativeFileItem> nativeFileItems = new ArrayList<>();
             // Try to find native file
             if (getPlatformProject() instanceof NativeProject) {
                 NativeProject prj = (NativeProject) getPlatformProject();
-                if (prj != null) {
-                    nativeFileItem = prj.findFileItem(file);
+                for (FileObject fo : files) {
+                    if (prj != null) {
+                        NativeFileItem item = prj.findFileItem(fo);
+                        if (item != null) {
+                            nativeFileItems.add(item);
+                        }
+                    }
                 }
             }
             // schedule reparse like added NFI
-            if (nativeFileItem != null) {
-                onFileItemsAdded(Collections.singletonList(nativeFileItem));
+            if (!nativeFileItems.isEmpty()) {
+                onFileItemsAdded(nativeFileItems);
             }
             // allow to fix broken includes
-            DeepReparsingUtils.reparseOnAdded(file, this);
+            DeepReparsingUtils.reparseOnAdded(nativeFileItems, this);
         } finally {
             ParserQueue.instance().onEndAddingProjectFiles(this);   
         }
@@ -3585,7 +3624,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private static final class FileContainerLock {}
     private final Object fileContainerLock = new FileContainerLock();
     private final Key graphStorageKey;
+
+    // remove as soon as TraceFlags.MERGE_EVENTS is removed
     private volatile NativeProjectListenerImpl projectListener;
+    // remove as soon as TraceFlags.MERGE_EVENTS is removed
     private final Object projectListenerLock = new Object();
     
     // test variables.
