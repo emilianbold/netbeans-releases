@@ -56,6 +56,7 @@ import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
@@ -70,14 +71,16 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Represents <a href="http://getcomposer.org/">Composer</a> command line tool.
  */
 public final class Composer {
 
-    public static final String NAME = "composer"; // NOI18N
-    public static final String LONG_NAME = NAME + ".phar"; // NOI18N
+    private static final String NAME = "composer"; // NOI18N
+    private static final String LONG_NAME = NAME + ".phar"; // NOI18N
+    private static final String LONG_NAME_2;
 
     private static final String COMPOSER_FILENAME = "composer.json"; // NOI18N
 
@@ -109,6 +112,15 @@ public final class Composer {
 
     private volatile File workDir;
 
+    static {
+        // #243767
+        if (Utilities.isWindows()) {
+            LONG_NAME_2 = NAME + FileUtils.getScriptExtension(true);
+        } else {
+            LONG_NAME_2 = null;
+        }
+    }
+
 
     public Composer(String composerPath) {
         this.composerPath = composerPath;
@@ -139,6 +151,16 @@ public final class Composer {
             return false;
         }
         return true;
+    }
+
+    public static List<String> getFileNames() {
+        List<String> fileNames = new ArrayList<>(3);
+        fileNames.add(Composer.NAME);
+        fileNames.add(Composer.LONG_NAME);
+        if (Composer.LONG_NAME_2 != null) {
+            fileNames.add(Composer.LONG_NAME_2);
+        }
+        return fileNames;
     }
 
     public Future<Integer> initIfNotPresent(PhpModule phpModule) {
