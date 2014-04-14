@@ -223,7 +223,7 @@ public final class CsmEventDispatcher {
         if (model == null) {
             return;
         }
-        CsmEvent.trace("dispatching %s", event);
+        CsmEvent.trace("dispatching %s", event); // NOI18N
         switch (event.getKind()) {
             case ITEM_ADDED:
             case ITEM_REMOVED:

@@ -113,30 +113,14 @@ import org.openide.util.RequestProcessor;
             case NULL:
                 return;
         }
-        CsmEvent.trace("%s dispatched to %s", event, project);
+        CsmEvent.trace("%s dispatched to %s", event, project); // NOI18N
         checkEvent(event);
-        String path = getPath(event);
+        String path = event.getPath();
         synchronized (eventsLock) {
             CsmEvent prev = events.get(path);
             events.put(path, convert(prev, event));
         }
         task.schedule(0); // fe.runWhenDeliveryOver(taskScheduler); ???
-    }
-
-    String getPath(CsmEvent event) {
-        FileObject fo = event.getFileObject();
-        if (fo != null) {
-            return fo.getPath();
-        }
-        NativeFileItem item = event.getNativeFileItem();
-        if (item != null) {
-            return item.getAbsolutePath();
-        }
-        NativeProject np = event.getNativeProject();
-        if (np != null) {
-            return np.getProjectRoot();
-        }
-        return "/"; //NOI18N
     }
 
     void checkEvent(CsmEvent event) {
@@ -269,10 +253,10 @@ import org.openide.util.RequestProcessor;
 
     private void processEvents(Collection<CsmEvent> events) {
         if (!enabledEventsHandling) {
-            CsmEvent.trace("events processing disabled, skipping %d events", events.size());
+            CsmEvent.trace("events processing disabled, skipping %d events", events.size()); // NOI18N
             return;
         }
-        CsmEvent.trace("processing %d events", events.size());
+        CsmEvent.trace("processing %d events", events.size()); // NOI18N
 
         boolean projectDeleted = false;
         boolean checkForRemoved = false;
@@ -282,10 +266,10 @@ import org.openide.util.RequestProcessor;
         List<NativeFileItem> addedItems = new ArrayList<>();
         List<NativeFileItem> changedItemProps = new ArrayList<>();
         List<String> changedFiles = new ArrayList<>();
-        List<CsmEvent> renamedItems = new ArrayList<>();
+        List<CsmEvent> renamedCreatedItems = new ArrayList<>();
 
         for (CsmEvent event : events) {
-            CsmEvent.trace("processing %s", event);
+            CsmEvent.trace("processing %s", event); // NOI18N
             switch (event.getKind()) {
                 case FILE_DELETED:
                 case ITEM_REMOVED:
@@ -316,7 +300,7 @@ import org.openide.util.RequestProcessor;
                     allPropertiesChanged = true;
                     break;
                 case ITEM_RENAMED_CREATED:
-                    renamedItems.add(event);
+                    renamedCreatedItems.add(event);
                     break;
                 case PROJECT_DELETED:
                     projectDeleted = true;
@@ -340,8 +324,8 @@ import org.openide.util.RequestProcessor;
                 return;
             }
 
-            if (!renamedItems.isEmpty()) {
-                for (CsmEvent e : renamedItems) {
+            if (!renamedCreatedItems.isEmpty()) {
+                for (CsmEvent e : renamedCreatedItems) {
                     project.onFileItemRenamed(e.getOldPath(), e.getNativeFileItem());
                 }
             }
@@ -388,26 +372,24 @@ import org.openide.util.RequestProcessor;
         }
     }
 
-// the table below is incomplete: to me, it's easier to just fill the switch/case and add some comments there
-// but I left it just in case I decide to fill it later :)
-/*-------------------------------------------------------------------------------------------------------------------------------------------
+/*-------------------------------------------------------------------------------------------------------------------------------------------------
                                      (prevKind)
-(curKind) | F/DEL  | F/CR    | F/REN_CR | F/REN_DL |   F/CH   | I/ADD  | I/RM   | I/PROP | I/ALPROP | I/REN_CR | I/REN_DL | P/DEL  | F/RT_DEL |
-----------------------------------------------------------------------------------------------------------------------------------------------
-F/DEL     | F/DEL  | null    | null     | assert   | F/DEL    | null   | F/DEL  | F/DEL  | assert   | null     | assert   | P/DEL  | assert   |
-I/RM      | I/RM   | null    | null     | assert   | I/RM     | null   | I/RM   | I/RM   | assert   | null     | assert   | P/DEL  | assert   |
-F/RT_DEL  | assert | assert  | assert   | assert   | assert   | assert | assert | assert | assert   | assert   | assert   | P/DEL  | F/RT_DEL |
-F/CR      | F/CH   | F/CR    | assert   | F/CH     | F/CH     | I/ADD  | ?      | ?      | assert   |          |          | P/DEL  |          |
-I/ADD     | I/ADD  | I/ADD?  | I/ADD    | I/ADD    | I/ADD?   | I/ADD  | F/CH   |        | assert   |          |          | P/DEL  | assert   |
-F/REN_CR  | F/CH   | assert  | assert   | F/CH     | assert   |        |        |        | assert   |          |          | P/DEL  |          |
-I/REN_CR  |        |         |          |          |          |        |        |        | assert   |          |          | P/DEL  |          |
-F/REN_DL  | assert | null (?)| null (?) | assert   | F/REN_DL |        |        |        | assert   |          |          | P/DEL  |          |
-I/REN_DL  |        |         |          |          |          |        |        |        | assert   |          |          | P/DEL  |          |
-F/CH      | assert | F/CR    | F/REN_CR | assert   | F/CH     |        |        |        | assert   |          |          | P/DEL  |          |
-I/PROP    | null   | F/CR    | null     | assert   | I/PROP   | I/ADD  | I/RM   | I/PROP | assert   | I/REN_CR | assert   | P/DEL  | assert   |
-I/ALPROP  | assert | assert  | assert   | assert   | assert   | assert | assert | assert | assert   | assert   | assert   | P/DEL  |          |
-P/DEL     | P/DEL  | P/DEL   | P/DEL    | P/DEL    | P/DEL    | P/DEL  | P/DEL  | P/DEL  | P/DEL    | P/DEL    | P/DEL    | P/DEL  | P/DEL    |
-----------------------------------------------------------------------------------------------------------------------------------------------*/
+(curKind) | F/DEL   | I/RM    | F/CR     | I/ADD    | F/REN_CR | I/REN_CR | F/REN_DL | I/REN_DL | F/CH     | I/PROP   | I/ALLPROP | F/RT_DEL | P/DEL |
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+F/DEL     | F/DEL   | F/DEL   | null     | null     | null     | null     | assert   | assert   | F/DEL    | F/DEL    | assert    | assert   | P/DEL |
+I/RM      | I/RM    | I/RM    | null     | null     | null     | null     | I/RM     | I/RM     | I/RM     | I/RM     | assert    | assert   | P/DEL |
+F/CR      | F/CH    | F/CH    | F/CR     | I/ADD    | assert   | I_REN_CR | F/CH     | F/CH     | F/CH     | I/PROP   | assert    | assert   | P/DEL |
+I/ADD     | I/ADD   | I/PROP  | I/ADD    | I/ADD    | I/ADD    | I/ADD    | I/ADD    | I/ADD    | I/ADD    | I/ADD    | assert    | assert   | P/DEL |
+F/REN_CR  | F/CH    | F/CH    | assert   | I/ADD    | F/REN_CR | I/REN_CR | F/CH     | F/CH     | assert   | I/REN_CR | assert    | assert   | P/DEL |
+I/REN_CR  | F/CH    | F/CH    | I/REN_CR | I/ADD    | I/REN_CR | I/REN_CR | F/CH     | F/CH     | I/REN_CR | I/REN_CR | assert    | assert   | P/DEL |
+F/REN_DL  | assert  | F/REN_DL| null     | null     | null     | null     | assert   | assert   | F/REN_DL | F/REN_DL | assert    | assert   | P/DEL |
+I/REN_DL  | I/REN_DL| I/REN_DL| null     | null     | null     | null     | I/REN_DL | I/REN_DL | I/REN_DL | I/REN_DL | assert    | assert   | P/DEL |
+F/CH      | assert  | F/CH    | F/CR     | I/ADD    | F/REN_CR | I/REN_CR | assert   | assert   | F/CH     | I/PROP   | assert    | assert   | P/DEL |
+I/PROP    | null    | null    | I/PROP   | I/ADD    | I/PROP   | I/REN_CR | F/REN_DL | F/REN_DL | I/PROP   | I/PROP   | assert    | assert   | P/DEL |
+I/ALPROP  | assert  | assert  | assert   | assert   | assert   | assert   | assert   | assert   | assert   | assert   | I/ALLPROP | I/ALLPROP| P/DEL |
+F/RT_DEL  | assert  | assert  | assert   | assert   | assert   | assert   | assert   | assert   | assert   | assert   | I/ALLPROP | F/RT_DEL | P/DEL |
+P/DEL     | P/DEL   | P/DEL   | P/DEL    | P/DEL    | P/DEL    | P/DEL    | P/DEL    | P/DEL    | P/DEL    | P/DEL    | P/DEL     | P/DEL    | P/DEL |
+---------------------------------------------------------------------------------------------------------------------------------------------------*/
 
     private static CsmEvent convert(CsmEvent prev, CsmEvent cur) {
         if (prev == null || prev.getKind() == CsmEvent.Kind.NULL) {
@@ -429,40 +411,40 @@ P/DEL     | P/DEL  | P/DEL   | P/DEL    | P/DEL    | P/DEL    | P/DEL  | P/DEL  
                     case ITEM_ADDED:                    return doNull();
                     case FILE_RENAMED_CREATED:          return doNull();
                     case ITEM_RENAMED_CREATED:          return doNull();
-                    case FILE_RENAMED_DELETED:          return doAssert(prev, cur);
-                    case ITEM_RENAMED_DELETED:          return doAssert(prev, cur);
-                    case FILE_CHANGED:                  return cur;
-                    case ITEM_PROPERTY_CHANGED:         return cur;
-                    case ITEMS_ALL_PROPERTY_CHANGED:    return doAssert(prev, cur, prev); // does that mean that the project is deleted?
-                    case FILES_IN_SOURCE_ROOT_DELETED:  return cur; // doesn't matter, processing is thesame
+                    case FILE_RENAMED_DELETED:          return doAssert(prev, cur); // any of these cause ProjcetBase.checkForRemoved()
+                    case ITEM_RENAMED_DELETED:          return doAssert(prev, cur); // any of these cause ProjcetBase.checkForRemoved()
+                    case FILE_CHANGED:                  return cur; // pozdno pit' borjomi
+                    case ITEM_PROPERTY_CHANGED:         return cur; // --""--
+                    case ITEMS_ALL_PROPERTY_CHANGED:    return doAssert(prev, cur, prev); /// prev event path is a project path!
+                    case FILES_IN_SOURCE_ROOT_DELETED:  return doAssert(prev, cur, prev); /// prev event path is a project path!
                     default:    throw new IllegalArgumentException("unexpected " + prev.getKind()); // NOI18N
                 }   //</editor-fold>   
             case FILE_CREATED://<editor-fold defaultstate="collapsed" desc="...">
                 switch (prev.getKind()) {
-                    case FILE_DELETED:                  return doChanged(cur);
-                    case ITEM_REMOVED:                  return doChanged(cur);
-                    case FILE_CREATED:                  return prev;
+                    case FILE_DELETED:                  return doFileChanged(CsmEvent.Kind.FILE_CHANGED, cur.getFileObject());
+                    case ITEM_REMOVED:                  return doFileChanged(CsmEvent.Kind.FILE_CHANGED, cur.getFileObject());
+                    case FILE_CREATED:                  return cur;
                     case ITEM_ADDED:                    return prev; // item events are stronger
                     case FILE_RENAMED_CREATED:          return doAssert(prev, cur);
                     case ITEM_RENAMED_CREATED:          return prev; // ITEM_RENAMED_CREATED will finally cause checkForRemove and nativeItemAdded
-                    case FILE_RENAMED_DELETED:          return doChanged(cur);
-                    case ITEM_RENAMED_DELETED:          return doChanged(cur);
-                    case FILE_CHANGED:                  return prev;
-                    case ITEM_PROPERTY_CHANGED:         return prev; // ?
+                    case FILE_RENAMED_DELETED:          return doFileChanged(CsmEvent.Kind.FILE_CHANGED, cur.getFileObject());
+                    case ITEM_RENAMED_DELETED:          return doFileChanged(CsmEvent.Kind.FILE_CHANGED, cur.getFileObject());
+                    case FILE_CHANGED:                  return prev; //?
+                    case ITEM_PROPERTY_CHANGED:         return prev; //?
                     case ITEMS_ALL_PROPERTY_CHANGED:    return doAssert(prev, cur, prev); // prev event path is a project path!
                     case FILES_IN_SOURCE_ROOT_DELETED:  return doAssert(prev, cur); // prev event path is a project path!
                     default:    throw new AssertionError(prev.getKind());
                 }//</editor-fold>
             case FILE_RENAMED_CREATED://<editor-fold defaultstate="collapsed" desc="...">
                 switch (prev.getKind()) {
-                    case FILE_DELETED:                  return doChanged(cur);
-                    case ITEM_REMOVED:                  return doChanged(cur);
+                    case FILE_DELETED:                  return doFileChanged(CsmEvent.Kind.FILE_CHANGED, cur.getFileObject());
+                    case ITEM_REMOVED:                  return doFileChanged(CsmEvent.Kind.FILE_CHANGED, cur.getFileObject());
                     case FILE_CREATED:                  return doAssert(prev, cur);
                     case ITEM_ADDED:                    return prev;
-                    case FILE_RENAMED_CREATED:          return doAssert(prev, cur);
-                    case ITEM_RENAMED_CREATED:          return doAssert(prev, cur);
-                    case FILE_RENAMED_DELETED:          return doChanged(cur);
-                    case ITEM_RENAMED_DELETED:          return doChanged(cur);
+                    case FILE_RENAMED_CREATED:          return cur; // twice?
+                    case ITEM_RENAMED_CREATED:          return prev; // the same, but item events are stonger
+                    case FILE_RENAMED_DELETED:          return doFileChanged(CsmEvent.Kind.FILE_CHANGED, cur.getFileObject());
+                    case ITEM_RENAMED_DELETED:          return doFileChanged(CsmEvent.Kind.FILE_CHANGED, cur.getFileObject());
                     case FILE_CHANGED:                  return doAssert(prev, cur);
                     case ITEM_PROPERTY_CHANGED:         return cur; //?
                     case ITEMS_ALL_PROPERTY_CHANGED:    return doAssert(prev, cur, prev); // prev event path is a project path!
@@ -472,11 +454,11 @@ P/DEL     | P/DEL  | P/DEL   | P/DEL    | P/DEL    | P/DEL    | P/DEL  | P/DEL  
             case FILE_RENAMED_DELETED://<editor-fold defaultstate="collapsed" desc="...">
                 switch (prev.getKind()) {
                     case FILE_DELETED:                  return doAssert(prev, cur);
-                    case ITEM_REMOVED:                  return doNullOnRename(prev, cur); //?
-                    case FILE_CREATED:                  return doNullOnRename(prev, cur);
-                    case ITEM_ADDED:                    return doNullOnRename(prev, cur);
-                    case FILE_RENAMED_CREATED:          return doNullOnRename(prev, cur);
-                    case ITEM_RENAMED_CREATED:          return doNullOnRename(prev, cur);
+                    case ITEM_REMOVED:                  return cur;
+                    case FILE_CREATED:                  return doNull();
+                    case ITEM_ADDED:                    return doNull();
+                    case FILE_RENAMED_CREATED:          return doNull();
+                    case ITEM_RENAMED_CREATED:          return doNull();
                     case FILE_RENAMED_DELETED:          return doAssert(prev, cur);
                     case ITEM_RENAMED_DELETED:          return doAssert(prev, cur);
                     case FILE_CHANGED:                  return cur;
@@ -490,22 +472,22 @@ P/DEL     | P/DEL  | P/DEL   | P/DEL    | P/DEL    | P/DEL    | P/DEL  | P/DEL  
                     case FILE_DELETED:                  return doAssert(prev, cur);
                     case ITEM_REMOVED:                  return cur;
                     case FILE_CREATED:                  return prev;
+                    case ITEM_ADDED:                    return prev;
                     case FILE_RENAMED_CREATED:          return prev;
-                    case FILE_RENAMED_DELETED:          return doAssert(prev, cur);
-                    case FILE_CHANGED:                  return cur;
-                    case ITEM_ADDED:                    return cur;
-                    case ITEM_PROPERTY_CHANGED:         return prev;
                     case ITEM_RENAMED_CREATED:          return prev;
+                    case FILE_RENAMED_DELETED:          return doAssert(prev, cur);
                     case ITEM_RENAMED_DELETED:          return doAssert(prev, cur);
+                    case FILE_CHANGED:                  return cur;
+                    case ITEM_PROPERTY_CHANGED:         return prev;
                     case ITEMS_ALL_PROPERTY_CHANGED:    return doAssert(prev, cur, prev); // prev event path is a project path!
                     case FILES_IN_SOURCE_ROOT_DELETED:  return doAssert(prev, cur, prev); // prev event path is a project path!
                     default:    throw new IllegalArgumentException("unexpected " + prev.getKind()); // NOI18N
                 }//</editor-fold>
             case ITEM_ADDED://<editor-fold defaultstate="collapsed" desc="...">
                 switch (prev.getKind()) {
-                    case FILE_DELETED:                  return cur;
-                    case ITEM_REMOVED:                  return doChanged(CsmEvent.Kind.ITEM_PROPERTY_CHANGED,  cur);
-                    case FILE_CREATED:                  return cur;
+                    case FILE_DELETED:                  return cur; //item events are stronger
+                    case ITEM_REMOVED:                  return doItemChanged(CsmEvent.Kind.ITEM_PROPERTY_CHANGED,  cur.getNativeFileItem());
+                    case FILE_CREATED:                  return cur; //item events are stronger
                     case ITEM_ADDED:                    return cur;
                     case FILE_RENAMED_CREATED:          return cur;
                     case ITEM_RENAMED_CREATED:          return cur; //?
@@ -521,14 +503,14 @@ P/DEL     | P/DEL  | P/DEL   | P/DEL    | P/DEL    | P/DEL    | P/DEL  | P/DEL  
                 switch (prev.getKind()) {
                     case FILE_DELETED:                  return cur; // procssing is the same
                     case ITEM_REMOVED:                  return cur;
-                    case FILE_CREATED:                  return cur; //?
+                    case FILE_CREATED:                  return doNull();
                     case ITEM_ADDED:                    return doNull();
                     case FILE_RENAMED_CREATED:          return doNull();
                     case ITEM_RENAMED_CREATED:          return doNull();
                     case FILE_RENAMED_DELETED:          return cur; // processing is the same
                     case ITEM_RENAMED_DELETED:          return cur; // processing is the same
-                    case FILE_CHANGED:                  return cur;
-                    case ITEM_PROPERTY_CHANGED:         return cur; //???
+                    case FILE_CHANGED:                  return cur; //?
+                    case ITEM_PROPERTY_CHANGED:         return cur;
                     case ITEMS_ALL_PROPERTY_CHANGED:    return doAssert(prev, cur, prev); // prev event path is a project path!
                     case FILES_IN_SOURCE_ROOT_DELETED:  return doAssert(prev, cur, prev); // prev event path is a project path!
                     default:    throw new IllegalArgumentException("unexpected " + prev.getKind()); // NOI18N
@@ -539,10 +521,10 @@ P/DEL     | P/DEL  | P/DEL   | P/DEL    | P/DEL    | P/DEL    | P/DEL  | P/DEL  
                     case ITEM_REMOVED:                  return doNull();
                     case FILE_CREATED:                  return cur;
                     case ITEM_ADDED:                    return prev;
-                    case FILE_RENAMED_CREATED:          return prev;
+                    case FILE_RENAMED_CREATED:          return cur;
                     case ITEM_RENAMED_CREATED:          return prev;
-                    case FILE_RENAMED_DELETED:          return doNull();
-                    case ITEM_RENAMED_DELETED:          return doNull();
+                    case FILE_RENAMED_DELETED:          return prev;
+                    case ITEM_RENAMED_DELETED:          return prev;
                     case FILE_CHANGED:                  return cur; // item event is stronger
                     case ITEM_PROPERTY_CHANGED:         return cur;
                     case ITEMS_ALL_PROPERTY_CHANGED:    return doAssert(prev, cur, prev); // prev event path is a project path!
@@ -567,9 +549,9 @@ P/DEL     | P/DEL  | P/DEL   | P/DEL    | P/DEL    | P/DEL    | P/DEL  | P/DEL  
                 }//</editor-fold>
             case ITEM_RENAMED_DELETED://<editor-fold defaultstate="collapsed" desc="...">
                 switch (prev.getKind()) {
-                    case FILE_DELETED:                  return doNull();
-                    case ITEM_REMOVED:                  return doNull();
-                    case FILE_CREATED:                  return cur;
+                    case FILE_DELETED:                  return cur; //processing is the same
+                    case ITEM_REMOVED:                  return cur; //processing is the same
+                    case FILE_CREATED:                  return doNull();
                     case ITEM_ADDED:                    return doNull();
                     case FILE_RENAMED_CREATED:          return doNull();
                     case ITEM_RENAMED_CREATED:          return doNull();
@@ -583,14 +565,14 @@ P/DEL     | P/DEL  | P/DEL   | P/DEL    | P/DEL    | P/DEL    | P/DEL  | P/DEL  
                 }//</editor-fold>
             case ITEM_RENAMED_CREATED://<editor-fold defaultstate="collapsed" desc="...">
                 switch (prev.getKind()) {
-                    case FILE_DELETED:                  return doChanged(cur);
-                    case ITEM_REMOVED:                  return doChanged(cur);
+                    case FILE_DELETED:                  return doFileChanged(CsmEvent.Kind.FILE_CHANGED, cur.getFileObject());
+                    case ITEM_REMOVED:                  return doFileChanged(CsmEvent.Kind.FILE_CHANGED, cur.getFileObject());
                     case FILE_CREATED:                  return cur;
                     case ITEM_ADDED:                    return prev;// or cur... doesn/t really matter
                     case FILE_RENAMED_CREATED:          return cur;
                     case ITEM_RENAMED_CREATED:          return cur;
-                    case FILE_RENAMED_DELETED:          return doChanged(cur);
-                    case ITEM_RENAMED_DELETED:          return doChanged(cur);
+                    case FILE_RENAMED_DELETED:          return doFileChanged(CsmEvent.Kind.FILE_CHANGED, cur.getFileObject());
+                    case ITEM_RENAMED_DELETED:          return doFileChanged(CsmEvent.Kind.FILE_CHANGED, cur.getFileObject());
                     case FILE_CHANGED:                  return cur;
                     case ITEM_PROPERTY_CHANGED:         return cur;
                     case ITEMS_ALL_PROPERTY_CHANGED:    return doAssert(prev, cur, prev); // prev event path is a project path!
@@ -626,19 +608,17 @@ P/DEL     | P/DEL  | P/DEL   | P/DEL    | P/DEL    | P/DEL    | P/DEL  | P/DEL  
         return correct;
     }
 
-    private static CsmEvent doChanged(CsmEvent.Kind kind, CsmEvent cur) {
-        return CsmEvent.create(kind, cur);
+    private static CsmEvent doItemChanged(CsmEvent.Kind kind, NativeFileItem item) {
+        CndUtils.assertNotNullInConsole(item, "null NativeFileItem"); //NOI18N
+        return CsmEvent.createItemEvent(kind, item);
     }
 
-    private static CsmEvent doChanged(CsmEvent cur) {
-        return CsmEvent.create(CsmEvent.Kind.FILE_CHANGED, cur);
+    private static CsmEvent doFileChanged(CsmEvent.Kind kind, FileObject fo) {
+        CndUtils.assertNotNullInConsole(fo, "null FileObject"); //NOI18N
+        return CsmEvent.createFileEvent(CsmEvent.Kind.FILE_CHANGED, fo);
     }
 
     private static CsmEvent doNull() {
-        return NULL;
-    }
-
-    private static CsmEvent doNullOnRename(CsmEvent prev, CsmEvent cur) {
         return NULL;
     }
 
