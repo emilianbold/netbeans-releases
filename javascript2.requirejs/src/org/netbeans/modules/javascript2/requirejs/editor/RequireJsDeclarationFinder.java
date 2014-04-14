@@ -49,7 +49,6 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
@@ -79,54 +78,100 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
                 ts.move(caretOffset);
                 ts.moveNext();
                 String path = ts.token().text().toString();
-                String[] pathParts = path.split("/");
-                FileObject parent = info.getSnapshot().getSource().getFileObject();
-                System.out.println("path: " + path);
-                if (parent != null) {
-                    Project project = FileOwnerQuery.getOwner(parent);
-                    RequireJsIndex rIndex = null;
-                    try {
-                        rIndex = RequireJsIndex.get(project);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    Map<String, String> pathMappings = rIndex.getPathMappings(pathParts[0]);
-                    String alias = "";
-                    for (String possibleAlias : pathMappings.keySet()) {
-                        if (possibleAlias.equals(path)) {
-                            alias = possibleAlias;
-                            break;
-                        }
-                        if (path.startsWith(possibleAlias) && (alias.length() < possibleAlias.length())) {
-                            alias = possibleAlias;
-                        }
-                    }
-                    if (!alias.isEmpty()) {
-                        path = pathMappings.get(alias) + path.substring(alias.length());
-                        pathParts = path.split("/");
-                    }
-                    System.out.println("new pathMappings: " + path);
+                FileObject targetFO = findFileObject(path, info);
+                if (targetFO != null) {
+                    return new DeclarationLocation(targetFO, 0);
                 }
-                
-                
-                if (parent != null && pathParts.length > 0) {
-                    parent = parent.getParent();
-                    if (!pathParts[pathParts.length - 1].endsWith(".js")) {
-                        path += ".js";
+            } else if (ts.token().id() == JsTokenId.IDENTIFIER) {
+                int commaNumber = 0;
+                Token<? extends JsTokenId> token;
+                do {
+                    token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.IDENTIFIER, JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
+                    if (token.id() == JsTokenId.OPERATOR_COMMA) {
+                        commaNumber++;
                     }
-                    FileObject targetFO;
-                    while (parent != null) {
-                        targetFO = parent.getFileObject(path);
-                        if (targetFO != null) {
-                            return new DeclarationLocation(targetFO, 0);
+                } while (ts.movePrevious() && token.id() != JsTokenId.BRACKET_LEFT_BRACKET
+                        && token.id() != JsTokenId.BRACKET_LEFT_PAREN);
+                if (token.id() == JsTokenId.BRACKET_LEFT_PAREN) {
+                    token = LexUtilities.findPreviousToken(ts, Arrays.asList(JsTokenId.IDENTIFIER));
+                    if (token.id() == JsTokenId.IDENTIFIER
+                            && (DEFINE.equals(token.text().toString()) || REQUIRE.equals(token.text().toString()))) {
+                        // we found define method
+                        token = LexUtilities.findNextToken(ts, Arrays.asList(JsTokenId.BRACKET_LEFT_BRACKET, JsTokenId.KEYWORD_FUNCTION, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_PAREN));
+                        if (token.id() == JsTokenId.BRACKET_LEFT_BRACKET) {
+                            int commaInArray = 0;
+                            String path = null;
+                            do {
+                               token = LexUtilities.findNextToken(ts, Arrays.asList(JsTokenId.STRING, JsTokenId.OPERATOR_COMMA, JsTokenId.BRACKET_RIGHT_PAREN));
+                               if (token.id() == JsTokenId.OPERATOR_COMMA) {
+                                   commaInArray++;
+                               } else if (token.id() == JsTokenId.STRING && commaInArray == commaNumber) {
+                                   path = token.text().toString();
+                               }
+                            } while (path == null && ts.moveNext() && token.id() != JsTokenId.BRACKET_RIGHT_PAREN);
+                            if (path != null) {
+                                FileObject targetFO = findFileObject(path, info);
+                                if (targetFO != null) {
+                                    return new DeclarationLocation(targetFO, 0);
+                                }
+                            }
                         }
-                        parent = parent.getParent();
                     }
                 }
             }
         }
 
         return DeclarationLocation.NONE;
+    }
+
+    /**
+     * Returns corresponding file, if it's found for the specific path
+     * @param path
+     * @param info
+     * @return 
+     */
+    private FileObject findFileObject(String path, ParserResult info) {
+        String[] pathParts = path.split("/");
+        FileObject parent = info.getSnapshot().getSource().getFileObject();
+        if (parent != null) {
+            Project project = FileOwnerQuery.getOwner(parent);
+            RequireJsIndex rIndex = null;
+            try {
+                rIndex = RequireJsIndex.get(project);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            Map<String, String> pathMappings = rIndex.getPathMappings(pathParts[0]);
+            String alias = "";
+            for (String possibleAlias : pathMappings.keySet()) {
+                if (possibleAlias.equals(path)) {
+                    alias = possibleAlias;
+                    break;
+                }
+                if (path.startsWith(possibleAlias) && (alias.length() < possibleAlias.length())) {
+                    alias = possibleAlias;
+                }
+            }
+            if (!alias.isEmpty()) {
+                path = pathMappings.get(alias) + path.substring(alias.length());
+                pathParts = path.split("/");
+            }
+        }
+        if (parent != null && pathParts.length > 0) {
+            parent = parent.getParent();
+            if (!pathParts[pathParts.length - 1].endsWith(".js")) {
+                path += ".js";
+            }
+            FileObject targetFO;
+            while (parent != null) {
+                targetFO = parent.getFileObject(path);
+                if (targetFO != null) {
+                    return targetFO;
+                }
+                parent = parent.getParent();
+            }
+        }
+        return null;
     }
 
     @Override
