@@ -147,6 +147,7 @@ tokens {
 	CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_DTOR_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_USER_TYPE_CAST_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_CLASS_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_EXTERN_TEMPLATE<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_TEMPLATE_PARAMETER<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
@@ -778,7 +779,7 @@ public translation_unit:
 //
 protected
 template_explicit_specialization
-{TypeQualifier tq; StorageClass sc;int ts = 0;}
+{String s; TypeQualifier tq; StorageClass sc;int ts = 0; boolean b;}
     :
     LITERAL_template LESSTHAN GREATERTHAN
     (
@@ -873,7 +874,27 @@ template_explicit_specialization
             enum_specifier
             SEMICOLON
             { #template_explicit_specialization = #(#[CSM_ENUM_FWD_DECLARATION, "CSM_ENUM_FWD_DECLARATION"], #template_explicit_specialization); }
-        |  
+        |
+        // Template explicit specialisation for type cast operator
+            (   (LITERAL___extension__!)?
+                (LITERAL_template LESSTHAN GREATERTHAN)?
+                (   literal_inline
+                |   cv_qualifier
+                |   LITERAL_constexpr
+                )*
+                scope_override LITERAL_OPERATOR
+            ) =>
+            (   (LITERAL___extension__!)?
+                (LITERAL_template LESSTHAN GREATERTHAN)?
+                (   literal_inline
+                |   tq = cv_qualifier
+                |   LITERAL_constexpr
+                )*
+                s = scope_override b = conversion_function_decl_or_def 
+            )
+            { if (b) #template_explicit_specialization = #(#[CSM_USER_TYPE_CAST_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_USER_TYPE_CAST_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization);
+              else #template_explicit_specialization = #(#[CSM_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
+        |
 	// Template explicit specialisation (DW 14/04/03)
 		{if(statementTrace >= 1)
 			printf("template_explicit_specialization_0e[%d]: template " +
@@ -890,29 +911,35 @@ template_explicit_specialization
 //
 protected
 external_declaration_template { String s; K_and_R = false; boolean ctrName=false; boolean definition; boolean friend = false; TypeQualifier tq; StorageClass sc;int ts = 0;}
-	:
-		((LITERAL___extension__)? LITERAL_template LESSTHAN GREATERTHAN) => 
+    :
+        ((LITERAL___extension__)? LITERAL_template LESSTHAN GREATERTHAN) => 
+        (
+            (LITERAL___extension__!)?
             (
-                (LITERAL___extension__!)?
-                (
-                    {checkTemplateExplicitSpecialization()}?
-                        template_explicit_specialization
-                    |
-                        declaration_template_impl
-                )
+                {checkTemplateExplicitSpecialization()}? 
+                template_explicit_specialization
+            |
+                declaration_template_impl
             )
-	|
-		(LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union)) =>
-		LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union) 
-		s=scope_override IDENT LESSTHAN template_argument_list GREATERTHAN SEMICOLON
-		{#external_declaration_template = #(#[CSM_TEMPLATE_EXPLICIT_INSTANTIATION, "CSM_TEMPLATE_EXPLICIT_INSTANTIATION"], #external_declaration_template);}
-	|
-		(LITERAL_template (~LESSTHAN)) =>
-		LITERAL_template declaration[declOther]
-		{#external_declaration_template = #(#[CSM_TEMPLATE_EXPLICIT_INSTANTIATION, "CSM_TEMPLATE_EXPLICIT_INSTANTIATION"], #external_declaration_template);}	
+        )
+    |
+        (LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union)) =>
+        LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union) 
+        s=scope_override IDENT (LESSTHAN template_argument_list GREATERTHAN)? SEMICOLON
+        {#external_declaration_template = #(#[CSM_TEMPLATE_EXPLICIT_INSTANTIATION, "CSM_TEMPLATE_EXPLICIT_INSTANTIATION"], #external_declaration_template);}
+    |
+        (LITERAL_template (~LESSTHAN)) =>
+        LITERAL_template
+        (
+            (scope_override LITERAL_OPERATOR)=>
+                s=scope_override conversion_function_decl
+        |
+            declaration[declOther]
+        )
+        {#external_declaration_template = #(#[CSM_TEMPLATE_EXPLICIT_INSTANTIATION, "CSM_TEMPLATE_EXPLICIT_INSTANTIATION"], #external_declaration_template);}	
     |
         declaration_template_impl
-	;
+    ;
 
 protected
 declaration_template_impl { String s; K_and_R = false; boolean ctrName=false; boolean definition; boolean friend = false; TypeQualifier tq; StorageClass sc;int ts = 0;}
@@ -2579,6 +2606,19 @@ member_declarator
                 )?
 	;
 
+conversion_function_decl 
+    {CPPParser.TypeQualifier tq; }
+    :
+        LITERAL_OPERATOR declaration_specifiers[true, false]
+        (ptr_operator)*
+        (LESSTHAN template_parameter_list GREATERTHAN)?
+        LPAREN (parameter_list[false])? RPAREN	
+        (tq = cv_qualifier)*
+        (LITERAL_override | LITERAL_final)*
+        (exception_specification)?
+        SEMICOLON! 
+    ;
+
 conversion_function_decl_or_def returns [boolean definition = false]
 	{CPPParser.TypeQualifier tq; }
 	:	// DW 01/08/03 Use type_specifier here? see syntax
@@ -2823,7 +2863,7 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
         //{functionEndParameterList(definition);}
         (( ASSIGNEQUAL ~(LITERAL_default | LITERAL_delete)) => ASSIGNEQUAL OCTALINT)?	// The value of the octal must be 0
         (options {greedy=true;} :function_attribute_specification)?
-        (asm_block!)?
+        (options {greedy=true;} :asm_block!)?
         (options {greedy=true;} :function_attribute_specification)?
     ;
  
@@ -2837,11 +2877,10 @@ trailing_type
 {int ts = tsInvalid; TypeQualifier tq;}
     :
         POINTERTO 
-        (tq=cv_qualifier)*
+        cv_qualifier_seq
         ts=trailing_type_specifier
-        (options {greedy=true;} : tq=cv_qualifier)*
-        (options {greedy=true;} : ptr_operator)*
-        (LSQUARE (constant_expression)? RSQUARE)*
+        cv_qualifier_seq
+        (options {greedy=true;} : greedy_abstract_declarator)?
     ;
 
 trailing_type_specifier returns [/*TypeSpecifier*/int ts = tsInvalid]
@@ -2851,6 +2890,8 @@ trailing_type_specifier returns [/*TypeSpecifier*/int ts = tsInvalid]
     |   
         (LITERAL_class|LITERAL_struct|LITERAL_union|LITERAL_enum|LITERAL_typename)
         id = qualified_id
+    |
+        LITERAL_auto
 ;
 
 protected
@@ -3200,21 +3241,42 @@ abstract_declarator
     |
     ;
 
+/**
+ * This rule could be used when nothing goes after it (i.e. parent rule is not anchored).
+ * NOTE: it doesn't handle top-level empty alternative
+ */
+greedy_abstract_declarator
+    :
+        ptr_operator (literal_restrict!)? (options{greedy = true;} : greedy_abstract_declarator)?
+    |
+        (options{greedy = true;} : abstract_declarator_suffix)+
+    |
+        (ELLIPSIS) => ELLIPSIS
+    ;
+
 abstract_declarator_suffix
 	:	
-		LSQUARE (constant_expression)? RSQUARE
-		{declaratorArray();}
-    |   
-        (LPAREN abstract_declarator RPAREN) => LPAREN abstract_declarator RPAREN
+            LSQUARE (constant_expression)? RSQUARE
+            {declaratorArray();}
+        |   
+            (LPAREN RPAREN) => abstract_declarator_param_list
+        |
+            (LPAREN abstract_declarator RPAREN) => LPAREN abstract_declarator RPAREN
 	|
-		LPAREN
-		//{declaratorParameterList(false);}
-		(parameter_list[false])?
-		RPAREN
-		cv_qualifier_seq
-		//{declaratorEndParameterList(false);}
-		(exception_specification)?
+            abstract_declarator_param_list
 	;
+
+abstract_declarator_param_list
+    :
+        LPAREN
+        //{declaratorParameterList(false);}
+        (parameter_list[false])?
+        RPAREN
+        cv_qualifier_seq
+        //{declaratorEndParameterList(false);}
+        (exception_specification)?
+        (options{greedy = true;} : trailing_type)?
+    ;
 
 exception_specification
     {String so;}

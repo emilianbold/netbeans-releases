@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.highlight.semantic;
 
+import java.security.Identity;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -82,7 +83,7 @@ import org.netbeans.spi.editor.highlighting.support.PositionsBag;
 public final class SemanticHighlighter extends HighlighterBase {
     private static final String SLOW_POSITION_BAG = "CndSemanticHighlighterSlow"; // NOI18N
     private static final String FAST_POSITION_BAG = "CndSemanticHighlighterFast"; // NOI18N
-    private static final Logger LOG = Logger.getLogger(SemanticHighlighter.class.getName());
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
     
     private InterrupterImpl interrupter = new InterrupterImpl();
     private Parser.Result lastParserResult;
@@ -170,6 +171,9 @@ public final class SemanticHighlighter extends HighlighterBase {
             // the following loop deals with entities without collectors
             // and gathers collectors for the next step
             for (Iterator<SemanticEntity> i = entities.iterator(); i.hasNext(); ) {
+                if (interrupter.cancelled()) {
+                    break;
+                }
                 SemanticEntity se = i.next();
                 if (NamedOption.getAccessor().getBoolean(se.getName()) && 
                         (!macroExpansionView || !se.getName().equals(SemanticEntitiesProvider.MacrosCodeProvider.NAME))) { // NOI18N
@@ -180,7 +184,7 @@ public final class SemanticHighlighter extends HighlighterBase {
                     } else {
                         // this is simple entity without collector,
                         // let's add its blocks right now
-                        addHighlightsToBag(doc, newBagFast, se.getBlocks(csmFile), se);
+                        addHighlightsToBag(doc, newBagFast, se.getBlocks(csmFile, interrupter), se);
                         i.remove();
                     }
                 } else {
@@ -189,32 +193,39 @@ public final class SemanticHighlighter extends HighlighterBase {
                 }
             }
             // to show inactive code and macros first
-            getHighlightsBag(doc, true).setHighlights(newBagFast);
-            // here we invoke the collectors
-            // but not for huge documents
-            if (!entities.isEmpty() && !isVeryBigDocument(doc)) {
-                CsmFileReferences.getDefault().accept(csmFile, new Visitor() {
-                    @Override
-                    public void visit(CsmReferenceContext context) {
-                        CsmReference ref = context.getReference();
-                        for (ReferenceCollector c : collectors) {
-                            if (interrupter.cancelled()) {
-                                break;
-                            }
-                            c.visit(ref, csmFile);
-                        }
-                    }
-                }, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE_AND_PREPROCESSOR);
-                // here we apply highlighting to discovered blocks
-                for (int i = 0; i < entities.size(); ++i) {
-                    addHighlightsToBag(doc, newBagSlow, collectors.get(i).getReferences(), entities.get(i));
-                }
-            }
-            if (LOG.isLoggable(Level.FINER)) {
-                LOG.log(Level.FINER, "Semantic Highlighting update() done in {0}ms for file {1}", new Object[]{System.currentTimeMillis() - start, csmFile.getAbsolutePath()});
-            }
             if (!interrupter.cancelled()){
-                getHighlightsBag(doc, false).setHighlights(newBagSlow);
+                getHighlightsBag(doc, true).setHighlights(newBagFast);
+                // here we invoke the collectors
+                // but not for huge documents
+                if (!entities.isEmpty() && !isVeryBigDocument(doc)) {
+                    CsmFileReferences.getDefault().accept(csmFile, new Visitor() {
+                        @Override
+                        public void visit(CsmReferenceContext context) {
+                            CsmReference ref = context.getReference();
+                            for (ReferenceCollector c : collectors) {
+                                if (interrupter.cancelled()) {
+                                    break;
+                                }
+                                c.visit(ref, csmFile);
+                            }
+                        }
+
+                        @Override
+                        public boolean cancelled() {
+                            return interrupter.cancelled();
+                        }
+                    }, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE_AND_PREPROCESSOR);
+                    // here we apply highlighting to discovered blocks
+                    for (int i = 0; i < entities.size(); ++i) {
+                        addHighlightsToBag(doc, newBagSlow, collectors.get(i).getReferences(), entities.get(i));
+                    }
+                }
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.log(Level.FINER, "Semantic Highlighting update() done in {0}ms for file {1}", new Object[]{System.currentTimeMillis() - start, csmFile.getAbsolutePath()});
+                }
+                if (!interrupter.cancelled()){
+                    getHighlightsBag(doc, false).setHighlights(newBagSlow);
+                }
             }
         }
     }
@@ -266,13 +277,26 @@ public final class SemanticHighlighter extends HighlighterBase {
             lastParserResult = result;
             interrupter = new InterrupterImpl();
         }
+        long time = 0;
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "SemanticHighlighter started, Task={0}, Result={1}", new Object[]{System.identityHashCode(this), System.identityHashCode(result)}); //NOI18N
+            time = System.currentTimeMillis();
+        }
         update(result.getSnapshot().getSource().getDocument(false), interrupter);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "SemanticHighlighter finished for {0}ms", System.currentTimeMillis()-time); //NOI18N
+        }
     }
 
     @Override
-    public synchronized void cancel() {
-        interrupter.cancel();
-        lastParserResult = null;
+    public void cancel() {
+        synchronized(this) {
+            interrupter.cancel();
+            lastParserResult = null;
+        }
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "SemanticHighlighter canceled in {0}, Task={1}", new Object[]{Thread.currentThread().getName(), System.identityHashCode(this)}); //NOI18N
+        }
     }
 
     @Override

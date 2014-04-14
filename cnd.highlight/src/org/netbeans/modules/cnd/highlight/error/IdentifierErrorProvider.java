@@ -189,6 +189,11 @@ public final class IdentifierErrorProvider extends AbstractCodeAudit {
                 }
             }
         }
+
+        @Override
+        public boolean cancelled() {
+            return request.isCancelled();
+        }
     }
     
     @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CodeAssistanceHintProvider.NAME, service = CodeAuditFactory.class, position = 4200)

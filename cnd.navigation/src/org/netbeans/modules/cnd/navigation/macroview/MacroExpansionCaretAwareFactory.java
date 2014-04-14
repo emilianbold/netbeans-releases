@@ -46,6 +46,8 @@ package org.netbeans.modules.cnd.navigation.macroview;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
@@ -76,6 +78,7 @@ import org.openide.filesystems.FileObject;
  * @author Nick Ktasilnikov
  */
 public final class MacroExpansionCaretAwareFactory extends IndexingAwareParserResultTask<Parser.Result> {
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
     private AtomicBoolean canceled = new AtomicBoolean(false);
     
     public MacroExpansionCaretAwareFactory(String mimeType) {
@@ -87,6 +90,9 @@ public final class MacroExpansionCaretAwareFactory extends IndexingAwareParserRe
         synchronized (this) {
             canceled.set(true);
             canceled = new AtomicBoolean(false);
+        }
+        if (!(event instanceof CursorMovedSchedulerEvent)) {
+            return;
         }
         if (!MacroExpansionTopComponent.isMacroExpansionInitialized()) {
             return;
@@ -105,14 +111,25 @@ public final class MacroExpansionCaretAwareFactory extends IndexingAwareParserRe
         if (canceled.get()) {
           return;
         }
-        if (event instanceof CursorMovedSchedulerEvent) {
-           runImpl((CursorMovedSchedulerEvent)event, csmFile, doc, canceled);
+        long time = 0;
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "MacroExpansionCaretAwareFactory started"); //NOI18N
+            time = System.currentTimeMillis();
+        }
+        runImpl((CursorMovedSchedulerEvent)event, csmFile, doc, canceled);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "MacroExpansionCaretAwareFactory finished for {0}ms", System.currentTimeMillis()-time); //NOI18N
         }
     }
 
     @Override
-    public final synchronized void cancel() {
-        canceled.set(true);
+    public final void cancel() {
+        synchronized(this) {
+            canceled.set(true);
+        }
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "MacroExpansionCaretAwareFactory cancelled"); //NOI18N
+        }
     }
 
     @Override

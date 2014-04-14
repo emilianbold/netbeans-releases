@@ -57,6 +57,7 @@ import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.openide.filesystems.FileObject;
 import org.openide.text.Line;
 import org.openide.util.WeakListeners;
 
@@ -130,8 +131,11 @@ public class BreakpointActionProvider extends ActionsProviderSupport
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         // We need to push the state there :-(( instead of wait for someone to be interested in...
-        boolean enabled = MiscEditorUtil.getCurrentLine() != null;
-        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, enabled);
+        FileObject fo = EditorContextDispatcher.getDefault().getCurrentFile();
+        setEnabled (
+            ActionsManager.ACTION_TOGGLE_BREAKPOINT,
+            (fo != null && MiscEditorUtil.isHTMLSource(fo))
+        );
     }
 
 }

@@ -141,6 +141,11 @@ public class FunctionUsedBeforDeclaration extends AbstractCodeAudit {
                 }
             }
         }
+
+        @Override
+        public boolean cancelled() {
+            return request.isCancelled();
+        }
     }
     
     @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CsmHintProvider.NAME, service = CodeAuditFactory.class, position = 3000)
