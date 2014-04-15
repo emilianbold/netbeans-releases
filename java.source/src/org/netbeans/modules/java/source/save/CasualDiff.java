@@ -4643,6 +4643,18 @@ public class CasualDiff {
         if (printer.handlePossibleOldTrees(Collections.singletonList(newT), true)) {
             return getCommentCorrectedEndPos(oldT);
         }
+        
+        boolean handleImplicitLambda = parent != null && parent.hasTag(Tag.LAMBDA) && ((JCLambda)parent).params.size() == 1
+                && ((JCLambda)parent).params.get(0) == oldT &&((JCLambda)parent).paramKind == JCLambda.ParameterKind.IMPLICIT
+                && newT.hasTag(Tag.VARDEF) && ((JCVariableDecl)newT).getType() != null;
+        if (handleImplicitLambda) {
+            tokenSequence.move(getOldPos(parent));
+            if (tokenSequence.moveNext() && tokenSequence.token().id() == JavaTokenId.LPAREN) {
+                handleImplicitLambda = false;
+            } else {
+                printer.print("(");
+            }
+        }
 
         // if comments are the same, diffPredComments will skip them so that printer.print(newT) will
         // not emit them from the new element. But if printer.print() won't be used (the newT will be merged in rather
@@ -4891,6 +4903,9 @@ public class CasualDiff {
                   ((com.sun.source.tree.Tree)oldT).getKind().toString() +
                   " " + oldT.getClass().getName();
               throw new AssertionError(msg);
+        }
+        if (handleImplicitLambda) {
+            printer.print(")");
         }
         return diffTrailingComments(oldT, newT, retVal);
     }
