@@ -4065,6 +4065,7 @@ using_declaration
 		|
                     {action.using_declaration(u);}
                     {if(LA(1) == SCOPE) {action.using_declaration(action.USING_DECLARATION__SCOPE, LT(1));}} 
+                    (LITERAL_typename)?
                     qid = unqualified_id				// Using-declaration
                     {action.end_using_declaration(LT(1));}
 		    {#using_declaration = #[CSM_USING_DECLARATION, qid]; #using_declaration.addChild(#u);}
