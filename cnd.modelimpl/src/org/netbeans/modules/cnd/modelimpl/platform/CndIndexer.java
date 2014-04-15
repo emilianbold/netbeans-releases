@@ -122,7 +122,7 @@ public class CndIndexer extends CustomIndexer {
                 return;
             }
             FileObject root = context.getRoot();
-            if (delegate != null) {
+            if (delegate != null && root != null) {
                 delegate.removed(root);
             }
         }

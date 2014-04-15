@@ -82,6 +82,10 @@ import org.openide.filesystems.FileObject;
         private Kind(Class cls) {
             this.cls = cls;
         }
+
+        public Class getObjectClass() {
+            return cls;
+        }
     }
 
     private final Kind kind;
@@ -117,7 +121,10 @@ import org.openide.filesystems.FileObject;
     }
 
     private CsmEvent(Kind kind, Object object, String oldPath) {
-        assert (object == null) ? kind.cls == null : kind.cls.isAssignableFrom(object.getClass());
+        if (object != null) {
+            assert kind.getObjectClass().isAssignableFrom(object.getClass()) :
+                    "Wrong object class " + object.getClass().getName() + ", should be " + kind.getObjectClass().getName(); //NOI18N
+        }
         this.kind = kind;
         this.object = object;
         this.oldPath = oldPath;
