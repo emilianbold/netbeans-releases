@@ -72,12 +72,6 @@ create_test_result() {
     echo '</testsuite>' >>$FILE
 }
 
-if [ -n "$JDEV_BUILD" ]; then
-    export CLUSTER_CONFIG="-Dcluster.config=java"
-else
-    export CLUSTER_CONFIG=
-fi
-
 #NB_BRANCH default
 if [ -z ${NB_BRANCH} ]; then
     export NB_BRANCH=default
