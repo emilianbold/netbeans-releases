@@ -3397,7 +3397,7 @@ declspec!
 protected
 type_attribute_specification!
         :
-            attribute_specification_list | declspec | LITERAL_alignas LPAREN balanceParens RPAREN
+            attribute_specification_list | declspec | LITERAL_alignas balanceParens
 
         ;
 
