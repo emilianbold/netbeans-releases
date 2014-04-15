@@ -258,7 +258,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
 
     private boolean showPopupCompletion = false;
 
-    private boolean addNewDirectory = false;
+    private volatile boolean addNewDirectory = false;
 
     private JPopupMenu popupMenu;
 
@@ -273,7 +273,8 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
 
     private JButton upFolderButton;
     private JButton newFolderButton;
-
+    /** can be null */
+    private JButton homeButton;
     private JComponent topCombo, topComboWrapper, topToolbar;
     private JPanel slownessPanel;
 
@@ -282,6 +283,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
     private volatile File curDir;
 
     private final Action approveSelectionAction;
+    private Action changeToParentDirectoryAction;
     private final Action cancelSelectionAction;
     private final AtomicBoolean cancelled = new AtomicBoolean(false);
 
@@ -293,6 +295,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
     public FileChooserUIImpl(FileChooserBuilder.JFileChooserEx filechooser) {
         super(filechooser);
         approveSelectionAction = new ApproveSelectionAction();
+        changeToParentDirectoryAction = new ChangeToParentDirectoryAction();
         cancelSelectionAction = new CancelSelectionAction();
         fileSeparatorChar = filechooser.getFileSeparatorChar();
     }
@@ -731,7 +734,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
 
         // no home on Win platform
         if (!Utilities.isWindows()) {
-            JButton homeButton = new JButton(getGoHomeAction());
+            homeButton = new JButton(getGoHomeAction());
             Icon homeIcon = null;
             if (!isMac) {
                 homeIcon = UIManager.getIcon("FileChooser.homeFolderIcon");//NOI18N
@@ -804,8 +807,10 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
 
             @Override
             protected void processMouseEvent(MouseEvent e) {
-                dirHandler.preprocessMouseEvent(e);
-                super.processMouseEvent(e);
+                if (this.isEnabled()) {
+                    dirHandler.preprocessMouseEvent(e);
+                    super.processMouseEvent(e);
+                }
             }
 
             // For speed (#127170):
@@ -841,7 +846,6 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
                 }
                 super.paint(g);
             }
-
         };
 
         tree.setFocusable(true);
@@ -3133,10 +3137,55 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
         return cancelSelectionAction;
     }
 
+    @Override
+    public Action getChangeToParentDirectoryAction() {
+        return changeToParentDirectoryAction;
+    }
+
     private class CancelSelectionAction extends AbstractAction {
         public void actionPerformed(ActionEvent e) {
             cancelled.set(true);
             getFileChooser().cancelSelection();
+        }
+    }
+
+    private class ChangeToParentDirectoryAction extends AbstractAction {
+        
+        private volatile File parentFile;
+        
+        protected ChangeToParentDirectoryAction() {
+            super(FilePane.ACTION_CHANGE_TO_PARENT_DIRECTORY);
+            putValue(Action.ACTION_COMMAND_KEY, FilePane.ACTION_CHANGE_TO_PARENT_DIRECTORY);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            setEnabled(false);
+            setCursor(fileChooser, Cursor.WAIT_CURSOR);
+            enableAllButCancel(false);
+            getApproveSelectionAction();            
+            final File curr1 = getFileChooser().getCurrentDirectory();
+            COMMON_RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (!EventQueue.isDispatchThread()) {
+                        File curr2 = getFileChooser().getCurrentDirectory();
+                        if (curr2.equals(curr1)) {
+                            parentFile = getFileChooser().getFileSystemView().getParentDirectory(curr2);
+                        } else {
+                            parentFile = null;
+                        }
+                        SwingUtilities.invokeLater(this);
+                    } else {
+                        if(parentFile != null) {
+                            getFileChooser().setCurrentDirectory(parentFile);
+                        }
+                        enableAllButCancel(true);
+                        setEnabled(true);
+                        setCursor(fileChooser, Cursor.DEFAULT_CURSOR);
+                    }
+                }
+            });            
         }
     }
 
@@ -3372,13 +3421,19 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
     }
 
     private void enableAllButCancel(boolean enable) {
-        FileChooserUIImpl.this.newFolderButton.setEnabled(enable);
-        FileChooserUIImpl.this.approveButton.setEnabled(enable);
-//        FileChooserUIImpl.this.topCombo.setEnabled(enable);
-//        FileChooserUIImpl.this.filenameTextField.setEditable(enable);
-//        FileChooserUIImpl.this.filenameTextField.setEnabled(enable);
-//        FileChooserUIImpl.this.filterTypeComboBox.setEnabled(enable);
-//        FileChooserUIImpl.this.tree.setEnabled(enable);
+        this.upFolderButton.setEnabled(enable);
+        this.newFolderButton.setEnabled(enable);
+        this.approveButton.setEnabled(enable);
+        this.newFolderButton.setEnabled(enable);
+        this.homeButton.setEnabled(enable);
+        
+        this.popupMenu.setEnabled(enable);
+        
+        this.filenameTextField.setEditable(enable);
+        this.filenameTextField.setEnabled(enable);
+        this.filterTypeComboBox.setEnabled(enable);
+        this.tree.setEnabled(enable);
+        this.directoryComboBox.setEnabled(enable);
     }
 
     private void changeDirectory(File dir) {
