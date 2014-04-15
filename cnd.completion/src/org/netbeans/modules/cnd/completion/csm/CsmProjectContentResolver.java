@@ -1295,21 +1295,24 @@ public final class CsmProjectContentResolver {
                     CsmUsingDeclaration using = (CsmUsingDeclaration) member;
                     CsmDeclaration decl = using.getReferencedDeclaration();
                     if (CsmKindUtilities.isClassMember(decl)) {
-                        VisibilityInfo vInfo = getContextVisibility(((CsmMember)decl).getContainingClass(), member, CsmVisibility.PROTECTED, INIT_INHERITANCE_LEVEL);
-                        if (matchVisibility((CsmMember) decl, vInfo.visibility)) {
-                            if (isKindOf(decl.getKind(), kinds)) {
-                                CharSequence memberName = decl.getName();
-                                if ((matchName(memberName, strPrefix, match)) ||
-                                        (memberName.length() == 0 && returnUnnamedMembers)) {
-                                    CharSequence qname;
-                                    if (CsmKindUtilities.isFunction(decl)) {
-                                        qname = ((CsmFunction) decl).getSignature();
-                                    } else {
-                                        qname = decl.getQualifiedName();
-                                    }
-                                    // do not replace inner objects by outer ones
-                                    if (!res.containsKey(qname)) {
-                                        res.put(qname, (CsmMember) decl);
+                        CsmClass containingClass = ((CsmMember)decl).getContainingClass();
+                        if (containingClass != null) {
+                            VisibilityInfo vInfo = getContextVisibility(containingClass, member, CsmVisibility.PROTECTED, INIT_INHERITANCE_LEVEL);
+                            if (matchVisibility((CsmMember) decl, vInfo.visibility)) {
+                                if (isKindOf(decl.getKind(), kinds)) {
+                                    CharSequence memberName = decl.getName();
+                                    if ((matchName(memberName, strPrefix, match)) ||
+                                            (memberName.length() == 0 && returnUnnamedMembers)) {
+                                        CharSequence qname;
+                                        if (CsmKindUtilities.isFunction(decl)) {
+                                            qname = ((CsmFunction) decl).getSignature();
+                                        } else {
+                                            qname = decl.getQualifiedName();
+                                        }
+                                        // do not replace inner objects by outer ones
+                                        if (!res.containsKey(qname)) {
+                                            res.put(qname, (CsmMember) decl);
+                                        }
                                     }
                                 }
                             }
