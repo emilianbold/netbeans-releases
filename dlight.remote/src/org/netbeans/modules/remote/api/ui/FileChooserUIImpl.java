@@ -3425,7 +3425,9 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
         this.newFolderButton.setEnabled(enable);
         this.approveButton.setEnabled(enable);
         this.newFolderButton.setEnabled(enable);
-        this.homeButton.setEnabled(enable);
+        if (homeButton != null) {
+            this.homeButton.setEnabled(enable);
+        }
         
         this.popupMenu.setEnabled(enable);
         
