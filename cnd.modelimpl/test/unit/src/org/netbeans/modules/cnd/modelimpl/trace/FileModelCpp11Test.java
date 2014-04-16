@@ -172,4 +172,9 @@ public class FileModelCpp11Test extends TraceModelTestBase {
         // Bug 243522 - inaccuracy tests (clang): alignas
         performTest("bug243522.cpp");
     }                
+    
+    public void testBug243510() throws Exception {
+        // Bug 243510 - inaccuracy tests (clang): constexpr keyword
+        performTest("bug243510.cpp");
+    }                    
 }
