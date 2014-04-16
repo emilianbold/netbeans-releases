@@ -125,7 +125,6 @@ public class DefineInterceptor implements FunctionInterceptor {
                             if (token.id() == JsTokenId.STRING) {
                                 while (index > paths.size()) {
                                     paths.add("");
-                                    index++;
                                 }
                                 paths.add(token.text().toString());
                             } else if (token.id() == JsTokenId.OPERATOR_COMMA) {

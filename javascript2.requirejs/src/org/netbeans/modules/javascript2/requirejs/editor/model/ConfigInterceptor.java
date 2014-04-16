@@ -41,11 +41,9 @@
  */
 package org.netbeans.modules.javascript2.requirejs.editor.model;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import org.netbeans.api.lexer.Token;
@@ -57,7 +55,7 @@ import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
-import org.netbeans.modules.javascript2.requirejs.editor.RequireJsDeclarationFinder;
+import org.netbeans.modules.javascript2.requirejs.editor.EditorUtils;
 import org.netbeans.modules.javascript2.requirejs.editor.index.RequireJsIndexer;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
@@ -90,7 +88,7 @@ public class ConfigInterceptor implements FunctionInterceptor {
         }
 
         if (fArg != null && fArg.getValue() instanceof JsObject) {
-            JsObject paths = ((JsObject) fArg.getValue()).getProperty(RequireJsDeclarationFinder.PATHS);
+            JsObject paths = ((JsObject) fArg.getValue()).getProperty(EditorUtils.PATHS);
             if (paths != null) {
                 Map<String, String> mapping = new HashMap<String, String>();
                 FileObject fo = globalObject.getFileObject();

@@ -65,20 +65,17 @@ import org.openide.util.Exceptions;
 @DeclarationFinder.Registration(priority = 12)
 public class RequireJsDeclarationFinder implements DeclarationFinder {
 
-    private static String DEFINE = "define";    //NOI18N
-    private static String REQUIRE = "require";    //NOI18N
-    public static String PATHS = "paths";        //NOI18N
-
     @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(info.getSnapshot().getTokenHierarchy(), caretOffset);
-        if (ts != null) {
+        FileObject fo = info.getSnapshot().getSource().getFileObject();
+        if (ts != null && fo != null) {
             ts.move(caretOffset);
-            if (ts.moveNext() && ts.token().id() == JsTokenId.STRING && canBeFileReference(ts)) {
+            if (ts.moveNext() && ts.token().id() == JsTokenId.STRING && EditorUtils.isFileReference(ts, ts.offset())) {
                 ts.move(caretOffset);
                 ts.moveNext();
                 String path = ts.token().text().toString();
-                FileObject targetFO = findFileObject(path, info);
+                FileObject targetFO = FSCompletionUtils.findFileObject(path, fo);
                 if (targetFO != null) {
                     return new DeclarationLocation(targetFO, 0);
                 }
@@ -95,7 +92,7 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
                 if (token.id() == JsTokenId.BRACKET_LEFT_PAREN) {
                     token = LexUtilities.findPreviousToken(ts, Arrays.asList(JsTokenId.IDENTIFIER));
                     if (token.id() == JsTokenId.IDENTIFIER
-                            && (DEFINE.equals(token.text().toString()) || REQUIRE.equals(token.text().toString()))) {
+                            && (EditorUtils.DEFINE.equals(token.text().toString()) || EditorUtils.REQUIRE.equals(token.text().toString()))) {
                         // we found define method
                         token = LexUtilities.findNextToken(ts, Arrays.asList(JsTokenId.BRACKET_LEFT_BRACKET, JsTokenId.KEYWORD_FUNCTION, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_PAREN));
                         if (token.id() == JsTokenId.BRACKET_LEFT_BRACKET) {
@@ -110,7 +107,7 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
                                }
                             } while (path == null && ts.moveNext() && token.id() != JsTokenId.BRACKET_RIGHT_PAREN);
                             if (path != null) {
-                                FileObject targetFO = findFileObject(path, info);
+                                FileObject targetFO = FSCompletionUtils.findFileObject(path, fo);
                                 if (targetFO != null) {
                                     return new DeclarationLocation(targetFO, 0);
                                 }
@@ -124,59 +121,7 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
         return DeclarationLocation.NONE;
     }
 
-    /**
-     * Returns corresponding file, if it's found for the specific path
-     * @param path
-     * @param info
-     * @return 
-     */
-    private FileObject findFileObject(final String pathToFile, final ParserResult info) {
-        String path = pathToFile;
-        String[] pathParts = path.split("/");
-        FileObject parent = info.getSnapshot().getSource().getFileObject();
-        if (parent != null) {
-            Project project = FileOwnerQuery.getOwner(parent);
-            RequireJsIndex rIndex = null;
-            try {
-                rIndex = RequireJsIndex.get(project);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            
-            if (rIndex != null) {
-                Map<String, String> pathMappings = rIndex.getPathMappings(pathParts[0]);
-                String alias = "";
-                for (String possibleAlias : pathMappings.keySet()) {
-                    if (possibleAlias.equals(path)) {
-                        alias = possibleAlias;
-                        break;
-                    }
-                    if (path.startsWith(possibleAlias) && (alias.length() < possibleAlias.length())) {
-                        alias = possibleAlias;
-                    }
-                }
-                if (!alias.isEmpty()) {
-                    path = pathMappings.get(alias) + path.substring(alias.length());
-                    pathParts = path.split("/");                        //NOI18N
-                }
-            }
-        }
-        if (parent != null && pathParts.length > 0) {
-            parent = parent.getParent();
-            if (!pathParts[pathParts.length - 1].endsWith(".js")) { //NOI18N
-                path += ".js";                                      //NOI18N
-            }
-            FileObject targetFO;
-            while (parent != null) {
-                targetFO = parent.getFileObject(path);
-                if (targetFO != null) {
-                    return targetFO;
-                }
-                parent = parent.getParent();
-            }
-        }
-        return null;
-    }
+    
 
     @Override
     public OffsetRange getReferenceSpan(final Document doc, final int caretOffset) {
@@ -190,7 +135,7 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
                 TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
                 if (ts != null) {
                     ts.move(caretOffset);
-                    if (ts.moveNext() && ts.token().id() == JsTokenId.STRING && canBeFileReference(ts)) {
+                    if (ts.moveNext() && ts.token().id() == JsTokenId.STRING && EditorUtils.isFileReference(ts, ts.offset())) {
                         ts.move(caretOffset);
                         ts.moveNext();
                         value[0] = new OffsetRange(ts.offset(), ts.offset() + ts.token().length());
@@ -201,29 +146,6 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
         return value[0];
     }
 
-    private boolean canBeFileReference(TokenSequence<? extends JsTokenId> ts) {
-        Token<? extends JsTokenId> token = ts.token();
-        if (token.id() == JsTokenId.STRING) {
-            token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT,
-                    JsTokenId.STRING_BEGIN, JsTokenId.STRING, JsTokenId.STRING_END, JsTokenId.OPERATOR_COMMA));
-            if (token.id() == JsTokenId.BRACKET_LEFT_BRACKET) {
-                token = LexUtilities.findPreviousToken(ts, Arrays.asList(JsTokenId.IDENTIFIER));
-                if (token.id() == JsTokenId.IDENTIFIER
-                        && (DEFINE.equals(token.text().toString()) || REQUIRE.equals(token.text().toString()))) {
-                    return true;
-                }
-            }
-            if (token.id() == JsTokenId.OPERATOR_COLON) {
-                token = LexUtilities.findPreviousToken(ts, Arrays.asList(JsTokenId.BRACKET_LEFT_CURLY));
-                if (token.id() == JsTokenId.BRACKET_LEFT_CURLY) {
-                    token = LexUtilities.findPreviousToken(ts, Arrays.asList(JsTokenId.IDENTIFIER));
-                    if (token.id() == JsTokenId.IDENTIFIER && PATHS.equals(token.text().toString())) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
+    
 
 }
