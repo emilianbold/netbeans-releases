@@ -2315,8 +2315,8 @@ enum_qualified_id returns [String qid = ""]
         |
             id:IDENT     // DW 22/04/03 Suggest qualified_id here to satisfy
             {qid = id.getText();}
+            {#enum_qualified_id = #(#[CSM_QUALIFIED_ID, qid], #enum_qualified_id);}
         )
-        {#enum_qualified_id = #(#[CSM_QUALIFIED_ID, qid], #enum_qualified_id);}
     ;
 
 enumerator_list
