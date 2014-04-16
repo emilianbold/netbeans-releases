@@ -59,11 +59,9 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -119,7 +117,6 @@ import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.modules.editor.java.ComputeOffAWT;
 import org.netbeans.modules.editor.java.ComputeOffAWT.Worker;
 import org.netbeans.modules.editor.java.JavaKit;
-import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.semantic.FindLocalUsagesQuery;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -459,22 +456,13 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         if(e.getKind() == ElementKind.FIELD) {
             VariableElement variableElement = (VariableElement) e;
             TypeElement typeElement = eu.enclosingTypeElement(e);
-            Map<String, List<ExecutableElement>> methods = new HashMap<String, List<ExecutableElement>>();
-            for (ExecutableElement method : ElementFilter.methodsIn(info.getElements().getAllMembers(typeElement))) {
-                List<ExecutableElement> l = methods.get(method.getSimpleName().toString());
-                if (l == null) {
-                    l = new ArrayList<ExecutableElement>();
-                    methods.put(method.getSimpleName().toString(), l);
-                }
-                l.add(method);
-            }
             
             boolean isProperty = false;
             try {
                 CodeStyle codeStyle = CodeStyle.getDefault(info.getDocument());
-                isProperty = GeneratorUtils.hasGetter(info, typeElement, variableElement, methods, codeStyle);
+                isProperty = eu.hasGetter(typeElement, variableElement, codeStyle);
                 isProperty = isProperty || (!variableElement.getModifiers().contains(Modifier.FINAL) &&
-                                    GeneratorUtils.hasSetter(info, typeElement, variableElement, methods, codeStyle));
+                                    eu.hasSetter(typeElement, variableElement, codeStyle));
             } catch (IOException ex) {
             }
             if(isProperty) {

@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.java.editor.completion;
+package org.netbeans.modules.java.completion;
 
 import org.netbeans.modules.java.source.parsing.JavacParser;
 
@@ -49,9 +49,9 @@ import org.netbeans.modules.java.source.parsing.JavacParser;
  *
  * @author Dusan Balek
  */
-public class JavaCompletionProvider18FeaturesTest extends CompletionTestBase {
+public class JavaCompletionTask18FeaturesTest extends CompletionTestBase {
 
-    public JavaCompletionProvider18FeaturesTest(String testName) {
+    public JavaCompletionTask18FeaturesTest(String testName) {
         super(testName);
     }
 

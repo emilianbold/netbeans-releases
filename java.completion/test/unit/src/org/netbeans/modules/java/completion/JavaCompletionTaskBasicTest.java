@@ -42,15 +42,15 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.editor.completion;
+package org.netbeans.modules.java.completion;
 
 /**
  *
  * @author Dusan Balek
  */
-public class JavaCompletionProviderBasicTest extends CompletionTestBase {
+public class JavaCompletionTaskBasicTest extends CompletionTestBase {
 
-    public JavaCompletionProviderBasicTest(String testName) {
+    public JavaCompletionTaskBasicTest(String testName) {
         super(testName);
     }
 

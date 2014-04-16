@@ -94,7 +94,7 @@ import org.netbeans.api.java.source.CompilationInfo.CacheClearPolicy;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
-import org.netbeans.modules.editor.java.Utilities;
+import org.netbeans.modules.java.completion.Utilities;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.openide.util.Union2;
 

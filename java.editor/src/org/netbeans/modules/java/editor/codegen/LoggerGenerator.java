@@ -80,7 +80,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.editor.java.Utilities;
+import org.netbeans.modules.java.completion.Utilities;
 import org.netbeans.modules.java.editor.codegen.ui.ElementNode;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.util.Exceptions;
@@ -99,12 +99,15 @@ public class LoggerGenerator implements CodeGenerator {
 
         @Override
         public List<? extends CodeGenerator> create(Lookup context) {
-            ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
+            ArrayList<CodeGenerator> ret = new ArrayList<>();
             JTextComponent component = context.lookup(JTextComponent.class);
             CompilationController controller = context.lookup(CompilationController.class);
+            if (component == null || controller == null) {
+                return ret;
+            }
             TreePath path = context.lookup(TreePath.class);
-            path = path != null ? Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path) : null;
-            if (component == null || controller == null || path == null) {
+            path = controller.getTreeUtilities().getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
+            if (path == null) {
                 return ret;
             }
             try {
@@ -118,16 +121,17 @@ public class LoggerGenerator implements CodeGenerator {
             }
             for (VariableElement ve : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
                 TypeMirror type = ve.asType();
-                if (type.getKind() == TypeKind.DECLARED && ((TypeElement)((DeclaredType)type).asElement()).getQualifiedName().contentEquals(Logger.class.getName()))
+                if (type.getKind() == TypeKind.DECLARED && ((TypeElement)((DeclaredType)type).asElement()).getQualifiedName().contentEquals(Logger.class.getName())) {
                     return ret;
+                }
             }
-            List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
+            List<ElementNode.Description> descriptions = new ArrayList<>();
             ret.add(new LoggerGenerator(component, ElementNode.Description.create(controller, typeElement, descriptions, false, false)));
             return ret;
         }
     }
-    private JTextComponent component;
-    private ElementNode.Description description;
+    private final JTextComponent component;
+    private final ElementNode.Description description;
 
     /** Creates a new instance of ToStringGenerator */
     private LoggerGenerator(JTextComponent component, ElementNode.Description description) {
@@ -152,7 +156,7 @@ public class LoggerGenerator implements CodeGenerator {
                         copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         Element e = description.getElementHandle().resolve(copy);
                         TreePath path = e != null ? copy.getTrees().getPath(e) : copy.getTreeUtilities().pathFor(caretOffset);
-                        path = Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
+                        path = copy.getTreeUtilities().getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
                         if (path == null) {
                             String message = NbBundle.getMessage(LoggerGenerator.class, "ERR_CannotFindOriginalClass"); //NOI18N
                             org.netbeans.editor.Utilities.setStatusBoldText(component, message);

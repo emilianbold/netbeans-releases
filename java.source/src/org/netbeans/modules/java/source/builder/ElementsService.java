@@ -44,10 +44,10 @@
 
 package org.netbeans.modules.java.source.builder;
 
+import java.util.List;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
-import javax.lang.model.util.Types;
 import com.sun.tools.javac.code.Scope;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -57,10 +57,11 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.ListBuffer;
 import javax.lang.model.element.*;
-import javax.lang.model.type.*;
-
 import static javax.lang.model.element.ElementKind.*;
+import javax.lang.model.type.*;
+import javax.lang.model.util.Types;
 
 /**
  * Utility methods for working with Element instances.
@@ -154,13 +155,28 @@ public class ElementsService {
         ClassSymbol clazz = (ClassSymbol)enclClass;
         Scope scope = clazz.members();
         Name n = names.fromString(name.toString());
-        scanSymbol:
         for(Scope.Entry e = scope.lookup(n); e.scope==scope; e = e.next())
             if(e.sym.type instanceof ExecutableType && 
                types.isSubsignature(meth, (ExecutableType)e.sym.type))
                 return true;
         return false;
-     }
+    }
+    
+    public boolean alreadyDefinedIn(CharSequence name, TypeMirror returnType, List<TypeMirror> paramTypes, TypeElement enclClass) {
+        ClassSymbol clazz = (ClassSymbol)enclClass;
+        Scope scope = clazz.members();
+        Name n = names.fromString(name.toString());
+        ListBuffer<Type> buff = new ListBuffer<>();
+        for (TypeMirror tm : paramTypes) {
+            buff.append((Type)tm);
+        }
+        for(Scope.Entry e = scope.lookup(n); e.scope==scope; e = e.next())
+            if(e.sym.type instanceof ExecutableType &&
+               jctypes.containsTypeEquivalent(e.sym.type.asMethodType().getParameterTypes(), buff.toList()) &&
+               jctypes.isSameType(e.sym.type.asMethodType().getReturnType(), (Type)returnType))
+                return true;
+        return false;
+    }
     
     public boolean isMemberOf(Element e, TypeElement type) {
         return ((Symbol)e).isMemberOf((TypeSymbol)type, jctypes);

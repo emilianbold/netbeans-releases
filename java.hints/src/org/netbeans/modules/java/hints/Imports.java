@@ -44,7 +44,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.editor.java.Utilities;
+import org.netbeans.modules.java.completion.Utilities;
 import org.netbeans.modules.java.editor.semantic.SemanticHighlighter;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
@@ -54,7 +54,6 @@ import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.Hint.Options;
-import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**

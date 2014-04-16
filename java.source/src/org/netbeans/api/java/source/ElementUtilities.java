@@ -83,10 +83,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
@@ -97,9 +100,10 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.SimpleElementVisitor8;
 import javax.lang.model.util.Types;
-import org.netbeans.api.annotations.common.CheckForNull;
 
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.source.builder.ElementsService;
@@ -443,7 +447,7 @@ public final class ElementUtilities {
             Element hider = it.next();
             if (hider == member)
                 return true;
-            if (hider.getSimpleName() == member.getSimpleName()) {
+            if (hider.getSimpleName().contentEquals(member.getSimpleName())) {
                 if (elements.hides(member, hider)) {
                     it.remove();
                 } else {
@@ -459,6 +463,38 @@ public final class ElementUtilities {
             }
         }
         return false;
+    }
+
+    /**
+     * Returns name of the given element.
+     * @param el element
+     * @param fqn true if fully qualified name should be returned
+     * @return requested name
+     *
+     * @since 0.136
+     */
+    public CharSequence getElementName(Element el, boolean fqn) {
+        if (el == null || el.asType().getKind() == TypeKind.NONE) {
+            return ""; //NOI18N
+        }
+        return new ElementNameVisitor().visit(el, fqn);
+    }
+
+    private static class ElementNameVisitor extends SimpleElementVisitor8<StringBuilder,Boolean> {
+        
+        private ElementNameVisitor() {
+            super(new StringBuilder());
+        }
+
+        @Override
+        public StringBuilder visitPackage(PackageElement e, Boolean p) {
+            return DEFAULT_VALUE.append((p ? e.getQualifiedName() : e.getSimpleName()).toString());
+        }
+
+	@Override
+        public StringBuilder visitType(TypeElement e, Boolean p) {
+            return DEFAULT_VALUE.append((p ? e.getQualifiedName() : e.getSimpleName()).toString());
+        }        
     }
 
     /**
@@ -511,6 +547,62 @@ public final class ElementUtilities {
         return findUnimplementedMethods(impl, impl);
     }
 
+    /**Find all methods in given type and its supertypes, which are overridable.
+     * 
+     * @param type to inspect
+     * @return list of all overridable methods
+     *
+     * @since 0.136
+     */
+    public List<? extends ExecutableElement> findOverridableMethods(TypeElement type) {
+        List<ExecutableElement> overridable = new ArrayList<>();
+        final Set<Modifier> notOverridable = EnumSet.copyOf(NOT_OVERRIDABLE);
+        if (!type.getModifiers().contains(Modifier.ABSTRACT)) {
+            notOverridable.add(Modifier.ABSTRACT);
+        }
+        for (ExecutableElement ee : ElementFilter.methodsIn(info.getElements().getAllMembers(type))) {
+            Set<Modifier> set = EnumSet.copyOf(notOverridable);                
+            set.removeAll(ee.getModifiers());                
+            if (set.size() == notOverridable.size()
+                    && !overridesPackagePrivateOutsidePackage(ee, type) //do not offer package private methods in case they're from different package
+                    && !isOverridden(ee, type)) {
+                overridable.add(ee);
+            }
+        }
+        Collections.reverse(overridable);
+        return overridable;
+    }
+
+    /**
+     * Check whether given type has a getter method for the given field.
+     * @param type to inspect
+     * @param field to search getter for
+     * @param codeStyle
+     * @return true if getter method exists
+     *
+     * @since 0.136
+     */
+    public boolean hasGetter(TypeElement type, VariableElement field, CodeStyle codeStyle) {
+        boolean isBoolean = field.asType().getKind() == TypeKind.BOOLEAN;
+        boolean isStatic = field.getModifiers().contains(Modifier.STATIC);
+        String name = CodeStyleUtils.computeGetterName(field.getSimpleName(), isBoolean, isStatic, codeStyle);
+        return delegate.alreadyDefinedIn(name, field.asType(), com.sun.tools.javac.util.List.<TypeMirror>nil(), type);
+    }
+
+    /**
+     * Check whether given type has a setter method for the given field.
+     * @param type to inspect
+     * @param field to search setter for
+     * @param codeStyle
+     * @return true if setter method exists
+     *
+     * @since 0.136
+     */
+    public boolean hasSetter(TypeElement type, VariableElement field, CodeStyle codeStyle) {
+        boolean isStatic = field.getModifiers().contains(Modifier.STATIC);
+        String name = CodeStyleUtils.computeSetterName(field.getSimpleName(), isStatic, codeStyle);
+        return delegate.alreadyDefinedIn(name, info.getTypes().getNoType(TypeKind.VOID), com.sun.tools.javac.util.List.<TypeMirror>of(field.asType()), type);
+    }
 
     /**
      * Checks whether 'e' contains error or is missing. If the passed element is null
@@ -652,6 +744,7 @@ public final class ElementUtilities {
     
     // private implementation --------------------------------------------------
 
+    private static final Set<Modifier> NOT_OVERRIDABLE = EnumSet.of(Modifier.STATIC, Modifier.FINAL, Modifier.PRIVATE);
 
     private List<? extends ExecutableElement> findUnimplementedMethods(TypeElement impl, TypeElement element) {
         List<ExecutableElement> undef = new ArrayList<ExecutableElement>();
@@ -818,5 +911,29 @@ public final class ElementUtilities {
         if ((encl.getKind().isClass() || encl.getKind().isInterface()) && !((TypeElement)encl).getTypeParameters().isEmpty())
                 return types.getDeclaredType(getDeclaredType((TypeElement)encl, map, types), e, targs);
         return types.getDeclaredType(e, targs);
+    }
+
+    private boolean isOverridden(ExecutableElement methodBase, TypeElement origin) {
+        Element impl = getImplementationOf(methodBase, origin);
+        if (impl == null || impl == methodBase && origin != methodBase.getEnclosingElement()) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean overridesPackagePrivateOutsidePackage(ExecutableElement ee, TypeElement impl) {
+        Name elemPackageName = getPackageName(ee);
+        Name currentPackageName = getPackageName(impl);
+        return !ee.getModifiers().contains(Modifier.PRIVATE)
+                && !ee.getModifiers().contains(Modifier.PUBLIC)
+                && !ee.getModifiers().contains(Modifier.PROTECTED)
+                && !currentPackageName.contentEquals(elemPackageName);
+    }
+
+    private Name getPackageName(Element e) {
+        while (e.getEnclosingElement().getKind() != ElementKind.PACKAGE) {
+            e = e.getEnclosingElement();
+        }
+        return ((PackageElement) e.getEnclosingElement()).getQualifiedName();
     }
 }

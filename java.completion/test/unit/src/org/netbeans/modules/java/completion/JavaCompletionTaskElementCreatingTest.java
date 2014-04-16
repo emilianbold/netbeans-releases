@@ -42,15 +42,15 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.editor.completion;
+package org.netbeans.modules.java.completion;
 
 /**
  *
  * @author Jan Lahoda, Dusan Balek
  */
-public class JavaCompletionProviderElementCreatingTest extends CompletionTestBase {
+public class JavaCompletionTaskElementCreatingTest extends CompletionTestBase {
 
-    public JavaCompletionProviderElementCreatingTest(String testName) {
+    public JavaCompletionTaskElementCreatingTest(String testName) {
         super(testName);
     }
 
@@ -73,39 +73,39 @@ public class JavaCompletionProviderElementCreatingTest extends CompletionTestBas
     }
 
     public void testOverrideAbstractListWithPrefix() throws Exception {
-        performTest("OverrideAbstractList", 118, "to", "OverrideAbstractListWithPrefix.pass", "toSt.*override", "OverrideAbstractListWithPrefix.pass2");
+        performTest("OverrideAbstractList", 118, "to", "OverrideAbstractListWithPrefix.pass");
     }
     
     public void testOverrideFinalize() throws Exception {
-        performTest("OverrideAbstractList", 118, "fin", "OverrideFinalize.pass", "finali.*override", "OverrideFinalize.pass2");
+        performTest("OverrideAbstractList", 118, "fin", "OverrideFinalize.pass");
     }
     
     public void testOverrideAbstractList2a() throws Exception {
-        performTest("OverrideAbstractList2", 139, "ad", "OverrideAbstractList2a.pass", "add.*override", "OverrideAbstractList2a.pass2");
+        performTest("OverrideAbstractList2", 139, "ad", "OverrideAbstractList2a.pass");
     }
     
     public void testOverrideAbstractList2b() throws Exception {
-        performTest("OverrideAbstractList2", 139, "ge", "OverrideAbstractList2b.pass", "ge.*implement", "OverrideAbstractList2b.pass2");
+        performTest("OverrideAbstractList2", 139, "ge", "OverrideAbstractList2b.pass");
     }
     
     public void testOverrideAbstractList3a() throws Exception {
-        performTest("OverrideAbstractList3", 126, "ad", "OverrideAbstractList3a.pass", "add.*override", "OverrideAbstractList3a.pass2");
+        performTest("OverrideAbstractList3", 126, "ad", "OverrideAbstractList3a.pass");
     }
     
     public void testOverrideAbstractList3b() throws Exception {
-        performTest("OverrideAbstractList3", 126, "ge", "OverrideAbstractList3b.pass", "ge.*implement", "OverrideAbstractList3b.pass2");
+        performTest("OverrideAbstractList3", 126, "ge", "OverrideAbstractList3b.pass");
     }
     
     public void testOverrideTypedException1() throws Exception {
-        performTest("OverrideTypedException", 209, "tes", "OverrideTypedException1.pass", "tes.*override", "OverrideTypedException1.pass2");
+        performTest("OverrideTypedException", 209, "tes", "OverrideTypedException1.pass");
     }
     
     public void testOverrideTypedException2() throws Exception {
-        performTest("OverrideTypedException", 305, "tes", "OverrideTypedException2.pass", "tes.*override", "OverrideTypedException2.pass2");
+        performTest("OverrideTypedException", 305, "tes", "OverrideTypedException2.pass");
     }
     
     public void testOverrideInInnerClass() throws Exception {
-        performTest("OverrideInInnerClass", 185, "pai", "OverrideInInnerClass.pass", "paint\\(.*override", "OverrideInInnerClass.pass2");
+        performTest("OverrideInInnerClass", 185, "pai", "OverrideInInnerClass.pass");
     }
     
     public void testOverrideInInnerClassUnresolvable() throws Exception {

@@ -260,7 +260,8 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
         }
 
         CompilationUnitTree cu = info.getCompilationUnit();
-        TreePath tp = info.getTreeUtilities().pathFor(caretPosition);
+        TreeUtilities tu = info.getTreeUtilities();
+        TreePath tp = tu.pathFor(caretPosition);
         if (tp.getParentPath() != null && tp.getParentPath().getLeaf().getKind() == Kind.ANNOTATED_TYPE) {
             tp = tp.getParentPath();
         }
@@ -319,7 +320,7 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
                     setExitDetector(med);
 
                     try {
-                        TreePath tryPath = org.netbeans.modules.editor.java.Utilities.getPathElementOfKind(Kind.TRY, typePath);
+                        TreePath tryPath = tu.getPathElementOfKind(Kind.TRY, typePath);
                         return med.process(info, doc, ((TryTree)tryPath.getLeaf()).getBlock(), Collections.singletonList(typePath.getLeaf()));
                     } finally {
                         setExitDetector(null);

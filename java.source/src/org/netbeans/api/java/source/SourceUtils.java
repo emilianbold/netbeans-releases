@@ -45,11 +45,19 @@
 package org.netbeans.api.java.source;
 
 import java.io.File;
+import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.annotation.processing.Completion;
 import javax.annotation.processing.Processor;
@@ -61,8 +69,10 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.ElementScanner6;
 
 import com.sun.source.tree.*;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTaskImpl;
@@ -78,24 +88,15 @@ import com.sun.tools.javac.comp.Check;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
-import java.io.InputStreamReader;
-import java.io.Reader;
 
-import java.net.URISyntaxException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.lang.model.util.ElementScanner6;
 import javax.swing.SwingUtilities;
 import javax.swing.text.ChangedCharSetException;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.parser.ParserDelegator;
-import org.netbeans.api.annotations.common.CheckForNull;
 
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -147,7 +148,7 @@ public class SourceUtils {
      
     private static final Logger LOG = Logger.getLogger(SourceUtils.class.getName());
     private static final Map<URI,Integer> jdocCache = new ConcurrentHashMap<>();
-    private static final Set<String> docLet1 = Collections.unmodifiableSet(new HashSet<String>(
+    private static final Set<String> docLet1 = Collections.unmodifiableSet(new HashSet<>(
         Arrays.asList(new String[]{
             "constructor_summary",  //NOI18N
             "method_summary",       //NOI18N
@@ -155,7 +156,7 @@ public class SourceUtils {
             "constructor_detail",   //NOI18N
             "method_detail"         //NOI18N
         })));
-    private static final Set<String> docLet2 = Collections.unmodifiableSet(new HashSet<String>(
+    private static final Set<String> docLet2 = Collections.unmodifiableSet(new HashSet<>(
         Arrays.asList(new String[]{
             "constructor.summary",  //NOI18N
             "method.summary",       //NOI18N
@@ -174,10 +175,12 @@ public class SourceUtils {
             TokenSequence<?> ts = hierarchy.tokenSequence();
             while(ts != null && (offset == 0 || ts.moveNext())) {
                 ts.move(offset);
-                if (ts.language() == JavaTokenId.language())
+                if (ts.language() == JavaTokenId.language()) {
                     return (TokenSequence<JavaTokenId>)ts;
-                if (!ts.moveNext() && !ts.movePrevious())
+                }
+                if (!ts.moveNext() && !ts.movePrevious()) {
                     return null;
+                }
                 ts = ts.embedded();
             }
         }
@@ -337,16 +340,20 @@ public class SourceUtils {
      * @return either a simple name or a FQN that will resolve to given fqn in given context
      */
     public static String resolveImport(final CompilationInfo info, final TreePath context, final String fqn) throws NullPointerException, IOException {
-        if (info == null)
+        if (info == null) {
             throw new NullPointerException();
-        if (context == null)
+        }
+        if (context == null) {
             throw new NullPointerException();
-        if (fqn == null)
+        }
+        if (fqn == null) {
             throw new NullPointerException();
+        }
         
         CodeStyle cs = DiffContext.getCodeStyle(info);
-        if (cs.useFQNs())
+        if (cs.useFQNs()) {
             return fqn;
+        }
         CompilationUnitTree cut = info.getCompilationUnit();
         final Trees trees = info.getTrees();
         final Scope scope = trees.getScope(context);
@@ -367,8 +374,9 @@ public class SourceUtils {
             if ((element = info.getElements().getTypeElement(qName)) != null) {
                 clashing = false;
                 String simple = qName.substring(lastDot < 0 ? 0 : lastDot + 1);
-                if (sqName.length() > 0)
+                if (sqName.length() > 0) {
                     sqName.insert(0, '.');
+                }
                 sqName.insert(0, simple);
                 if (cs.useSingleClassImport() && (toImport == null || !cs.importInnerClasses())) {
                     toImport = element;
@@ -399,17 +407,20 @@ public class SourceUtils {
                         }
                     }
                 }
-                if (cs.importInnerClasses())
+                if (cs.importInnerClasses()) {
                     break;
+                }
             } else if ((element = info.getElements().getPackageElement(qName)) != null) {
-                if (toImport == null || GeneratorUtilities.checkPackagesForStarImport(qName, cs))
+                if (toImport == null || GeneratorUtilities.checkPackagesForStarImport(qName, cs)) {
                     toImport = element;
+                }
                 break;
             }
             qName = lastDot < 0 ? null : qName.substring(0, lastDot);
         }
-        if (clashing || toImport == null)
+        if (clashing || toImport == null) {
             return fqn;
+        }
         
         //not imported/visible so far by any means:
         String topLevelLanguageMIMEType = info.getFileObject().getMIMEType();
@@ -527,8 +538,9 @@ public class SourceUtils {
             final List<Pair<FileObject,ClassPath>> fos = findAllResources(pkgName, cps);
             for (Pair<FileObject,ClassPath> pair : fos) {                
                 FileObject root = pair.second().findOwnerRoot(pair.first());
-                if (root == null)
+                if (root == null) {
                     continue;
+                }
                 FileObject[] sourceRoots = SourceForBinaryQuery.findSourceRoots(root.toURL()).getRoots();                        
                 ClassPath sourcePath = ClassPathSupport.createClassPath(sourceRoots);
                 LinkedList<FileObject> folders = new LinkedList<>(sourcePath.findAllResources(pkgName));
@@ -1022,10 +1034,7 @@ public class SourceUtils {
         if (compound.getKind() != TypeKind.DECLARED) {
             return false;
         }
-        if (!"java.lang.String".contentEquals(((TypeElement)((DeclaredType)compound).asElement()).getQualifiedName())) {   //NOI18N
-            return false;
-        }
-        return true;
+        return "java.lang.String".contentEquals(((TypeElement)((DeclaredType)compound).asElement()).getQualifiedName());   //NOI18N
     }
     
     /**
@@ -1111,7 +1120,7 @@ public class SourceUtils {
         if (index == -1) {
             return classFileName;
         }
-        List<String> ll = new ArrayList<String>(3);
+        List<String> ll = new ArrayList<>(3);
         do {
             ll.add(classFileName.substring(0, index));
             if (index >= max) {
@@ -1124,6 +1133,74 @@ public class SourceUtils {
     }
         
     /**
+     * Resolves all captured type variables to their respective wildcards in the given type.
+     * @param info CompilationInfo over which the method should work
+     * @param tm type to resolve
+     * @return resolved type
+     * 
+     * @since 0.136
+     */
+    public static TypeMirror resolveCapturedType(CompilationInfo info, TypeMirror tm) {
+        TypeMirror type = resolveCapturedTypeInt(info, tm);
+        
+        if (type.getKind() == TypeKind.WILDCARD) {
+            TypeMirror tmirr = ((WildcardType) type).getExtendsBound();
+            tmirr = tmirr != null ? tmirr : ((WildcardType) type).getSuperBound();
+            if (tmirr != null) {
+                return tmirr;
+            } else { //no extends, just '?'
+                return info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
+            }
+                
+        }
+        
+        return type;
+    }
+    
+    private static TypeMirror resolveCapturedTypeInt(CompilationInfo info, TypeMirror tm) {
+        if (tm == null) {
+            return tm;
+        }
+        
+        TypeMirror orig = resolveCapturedType(tm);
+
+        if (orig != null) {
+            tm = orig;
+        }
+        
+        if (tm.getKind() == TypeKind.WILDCARD) {
+            TypeMirror extendsBound = ((WildcardType) tm).getExtendsBound();
+            TypeMirror rct = resolveCapturedTypeInt(info, extendsBound != null ? extendsBound : ((WildcardType) tm).getSuperBound());
+            if (rct != null) {
+                return rct.getKind() == TypeKind.WILDCARD ? rct : info.getTypes().getWildcardType(extendsBound != null ? rct : null, extendsBound == null ? rct : null);
+            }
+        }
+        
+        if (tm.getKind() == TypeKind.DECLARED) {
+            DeclaredType dt = (DeclaredType) tm;
+            List<TypeMirror> typeArguments = new LinkedList<>();
+            
+            for (TypeMirror t : dt.getTypeArguments()) {
+                typeArguments.add(resolveCapturedTypeInt(info, t));
+            }
+            
+            final TypeMirror enclosingType = dt.getEnclosingType();
+            if (enclosingType.getKind() == TypeKind.DECLARED) {
+                return info.getTypes().getDeclaredType((DeclaredType) enclosingType, (TypeElement) dt.asElement(), typeArguments.toArray(new TypeMirror[0]));
+            } else {
+                return info.getTypes().getDeclaredType((TypeElement) dt.asElement(), typeArguments.toArray(new TypeMirror[0]));
+            }
+        }
+
+        if (tm.getKind() == TypeKind.ARRAY) {
+            ArrayType at = (ArrayType) tm;
+
+            return info.getTypes().getArrayType(resolveCapturedTypeInt(info, at.getComponentType()));
+        }
+        
+        return tm;
+    }
+    /**
      * @since 0.24
      */
     public static WildcardType resolveCapturedType(TypeMirror type) {
@@ -1134,6 +1211,52 @@ public class SourceUtils {
         }
     }
     
+    /**
+     * Returns all elements of the given scope that are declared after given position in a source.
+     * @param path to the given search scope
+     * @param pos position in the source
+     * @param sourcePositions
+     * @param trees
+     * @return collection of forward references
+     * 
+     * @since 0.136
+     */
+    public static Collection<? extends Element> getForwardReferences(TreePath path, int pos, SourcePositions sourcePositions, Trees trees) {
+        HashSet<Element> refs = new HashSet<>();
+        while(path != null) {
+            switch(path.getLeaf().getKind()) {
+                case BLOCK:
+                    if (path.getParentPath().getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION)
+                        break;
+                case ANNOTATION_TYPE:
+                case CLASS:
+                case ENUM:
+                case INTERFACE:
+                    return refs;
+                case VARIABLE:
+                    refs.add(trees.getElement(path));
+                    TreePath parent = path.getParentPath();
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(parent.getLeaf().getKind())) {
+                        boolean isStatic = ((VariableTree)path.getLeaf()).getModifiers().getFlags().contains(Modifier.STATIC);
+                        for(Tree member : ((ClassTree)parent.getLeaf()).getMembers()) {
+                            if (member.getKind() == Tree.Kind.VARIABLE && sourcePositions.getStartPosition(path.getCompilationUnit(), member) >= pos &&
+                                    (isStatic || !((VariableTree)member).getModifiers().getFlags().contains(Modifier.STATIC))) {
+                                refs.add(trees.getElement(new TreePath(parent, member)));
+                            }
+                        }
+                    }
+                    return refs;
+                case ENHANCED_FOR_LOOP:
+                    EnhancedForLoopTree efl = (EnhancedForLoopTree)path.getLeaf();
+                    if (sourcePositions.getEndPosition(path.getCompilationUnit(), efl.getExpression()) >= pos) {
+                        refs.add(trees.getElement(new TreePath(path, efl.getVariable())));
+                    }                        
+            }
+            path = path.getParentPath();
+        }
+        return refs;
+    }
+
     // --------------- Helper methods of getFile () -----------------------------
     private static ClassPath createClassPath (ClasspathInfo cpInfo, PathKind kind) throws MalformedURLException {
 	return ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(cpInfo, kind);	

@@ -212,6 +212,40 @@ public final class TreeUtilities {
         return false;
     }
     
+    /**
+     * Returns path to the deepest tree of the given kind containing the given
+     * starting tree.
+     * @param kind requested tree kind
+     * @param path path to the starting tree
+     * @return requested path or null if no tree of the given kind encloses
+     * the given starting tree
+     *
+     * @since 0.136
+     */
+    public TreePath getPathElementOfKind(Tree.Kind kind, TreePath path) {
+        return getPathElementOfKind(EnumSet.of(kind), path);
+    }
+    
+    /**
+     * Returns path to the deepest tree of one of the given kinds containing
+     * the given starting tree.
+     * @param kinds requested tree kinds
+     * @param path path to the starting tree
+     * @return requested path or null if no tree of the given kinds encloses
+     * the given starting tree
+     *
+     * @since 0.136
+     */
+    public TreePath getPathElementOfKind(Set<Tree.Kind> kinds, TreePath path) {
+        while (path != null) {
+            if (kinds.contains(path.getLeaf().getKind())) {
+                return path;
+            }
+            path = path.getParentPath();
+        }
+        return null;        
+    }        
+    
     /**Returns list of comments attached to a given tree. Can return either
      * preceding or trailing comments.
      *
@@ -747,6 +781,48 @@ public final class TreeUtilities {
         return set;
     }
     
+    /**
+     * Returns all uninitialized fields of the given class.
+     * @param path to class to inspect
+     * @return set of all uninitialized fields
+     *
+     * @since 0.136
+     */
+    public Set<? extends VariableElement> getUninitializedFields(TreePath path) {
+        final Set<VariableElement> fields = new LinkedHashSet<>();
+        if (path == null) {
+            return fields;
+        }
+        final Trees trees = info.getTrees();
+        Element element = trees.getElement(path);
+        if (element == null || !element.getKind().isClass()) {
+            return fields;
+        }
+        for (VariableElement ve : ElementFilter.fieldsIn(((TypeElement)element).getEnclosedElements())) {
+            if (ve instanceof Symbol && (((Symbol)ve).flags() & (Flags.HASINIT | Flags.STATIC)) == 0) {
+                fields.add(ve);
+            }
+        }
+        new TreePathScanner<Void, Boolean>() {
+            @Override
+            public Void visitAssignment(AssignmentTree node, Boolean p) {
+                Element el = trees.getElement(new TreePath(getCurrentPath(), node.getVariable()));
+                fields.remove(el);
+                return null;
+            }
+            @Override
+            public Void visitClass(ClassTree node, Boolean p) {
+                //do not analyse the inner classes:
+                return p ? super.visitClass(node, Boolean.FALSE) : null;
+            }
+            @Override
+            public Void visitMethod(MethodTree node, Boolean p) {
+                return null;
+            }
+        }.scan(path, Boolean.TRUE);
+        return fields;
+    }
+
     /**Find span of the {@link ClassTree}'s body in the source.
      * Returns starting and ending offset of the body in the source code that was parsed
      * (ie. {@link CompilationInfo.getText()}, which may differ from the positions in the source
