@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -80,10 +81,14 @@ public class ExpandedExpressionBase extends ExpressionBase {
         AstUtil.visitAST(stringizer, ast);
         String expanded = stringizer.getText();
         if (expanded.length() > MAX_EXPANDING_LENGTH) {
-            LOG.log(Level.INFO, "Too large expression ({0} symbols) defined inside macros: {1}:{2}", new Object[]{expanded.length(), file, getStartPosition()}); // NOI18N
+            LOG.log(Level.FINE, "Too large expression ({0} symbols) defined inside macros: {1}:{2}", new Object[]{expanded.length(), file, getStartPosition()}); // NOI18N
             expanded = SKIPPED_STUB; // NOI18N
         }
-        expandedText = DefaultCache.getManager().getString(expanded);
+        if (stringizer.getNumberOfStringizedTokens() > 1) {
+            expandedText = CharSequences.create(expanded);
+        } else {
+            expandedText = DefaultCache.getManager().getString(expanded);
+        }
     }
 
     @Override
@@ -103,6 +108,7 @@ public class ExpandedExpressionBase extends ExpressionBase {
         public Action visit(AST token) {
             if (token.getType() == CPPTokenTypes.STRING_LITERAL) {
                 sb.append(SKIPPED_STUB);
+                numStringizedTokens++;
                 return Action.CONTINUE;
             }
             return super.visit(token);

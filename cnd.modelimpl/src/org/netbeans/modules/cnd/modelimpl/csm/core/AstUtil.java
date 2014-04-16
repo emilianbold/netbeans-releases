@@ -580,6 +580,7 @@ public class AstUtil {
     }    
     
     public static class ASTTokensStringizer implements ASTTokenVisitor {
+        protected int numStringizedTokens = 0;
     
         protected final StringBuilder sb = new StringBuilder();
 
@@ -587,6 +588,7 @@ public class AstUtil {
         public Action visit(AST token) {
             if (token.getFirstChild() == null) {
                 sb.append(token.getText());
+                numStringizedTokens++;
             }
             return Action.CONTINUE;
         }
@@ -594,6 +596,10 @@ public class AstUtil {
         public String getText() {
             return sb.toString();
         }
+
+        public int getNumberOfStringizedTokens() {
+            return numStringizedTokens;
+        }     
     }        
 }
 

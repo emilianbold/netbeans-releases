@@ -94,6 +94,11 @@ public final class SubroutineImpl <T> extends OffsetableDeclarationBase<T>
         postObjectCreateRegistration(true, subroutineImpl);
         return subroutineImpl;
     }
+    
+    @Override
+    public DefinitionKind getDefinitionKind() {
+        return DefinitionKind.REGULAR;
+    }    
 
     @Override
     public Kind getKind() {
