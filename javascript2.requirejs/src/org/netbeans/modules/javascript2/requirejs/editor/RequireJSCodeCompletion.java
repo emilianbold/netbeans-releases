@@ -56,7 +56,6 @@ import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
 import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -72,6 +71,9 @@ public class RequireJSCodeCompletion implements CompletionProvider {
         int offset = ccContext.getCaretOffset();
         Snapshot snapshot = ccContext.getParserResult().getSnapshot();
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(snapshot.getTokenHierarchy(), offset);
+        if (ts == null) {
+            return Collections.emptyList();
+        }
         ts.move(offset);
         String writtenPath = prefix;
         if (ts.moveNext() && (ts.token().id() == JsTokenId.STRING_END || ts.token().id() == JsTokenId.STRING)) {
@@ -87,8 +89,9 @@ public class RequireJSCodeCompletion implements CompletionProvider {
             }
             
         }
-        if (EditorUtils.isFileReference(ts, offset)) {
-            FileObject fo = ccContext.getParserResult().getSnapshot().getSource().getFileObject();
+        
+        FileObject fo = ccContext.getParserResult().getSnapshot().getSource().getFileObject();
+        if (fo != null && EditorUtils.isFileReference(ts, offset)) {
             List<FileObject> relativeTo = new ArrayList<FileObject>();
             if (fo != null) {
                 Collection<String> usedFileInDefine = EditorUtils.getUsedFileInDefine(snapshot, offset);

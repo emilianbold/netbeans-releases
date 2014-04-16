@@ -62,7 +62,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author ppisl
+ * @author Petr Pisl
  */
 public class FSCompletionItem implements CompletionProposal {
 
