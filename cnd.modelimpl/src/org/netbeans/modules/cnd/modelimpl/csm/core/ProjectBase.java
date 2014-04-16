@@ -879,7 +879,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     /*package*/ final void scheduleReparse() {
         ensureFilesCreated();
-        DeepReparsingUtils.reparseOnEdit(this.getAllFileImpls(), this, true);
+        //DeepReparsingUtils.reparseOnEdit(this.getAllFileImpls(), this, true);
     }
 
     private final Object fileCreateLock = new Object();
