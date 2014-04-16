@@ -323,58 +323,58 @@ import org.openide.util.RequestProcessor;
                 default:
                     throw new AssertionError(event.getKind().name());
             }
+        }
 
-            if (projectDeleted) {
-                RepositoryUtils.onProjectDeleted(nativeProject);
-                // all other events aren't relevant any more
-                return;
+        if (projectDeleted) {
+            RepositoryUtils.onProjectDeleted(nativeProject);
+            // all other events aren't relevant any more
+            return;
+        }
+
+        if (!renamedCreatedItems.isEmpty()) {
+            for (CsmEvent e : renamedCreatedItems) {
+                project.onFileItemRenamed(e.getOldPath(), e.getNativeFileItem());
             }
+        }
 
-            if (!renamedCreatedItems.isEmpty()) {
-                for (CsmEvent e : renamedCreatedItems) {
-                    project.onFileItemRenamed(e.getOldPath(), e.getNativeFileItem());
-                }
-            }
-
-            if (allPropertiesChanged) {
-                List<NativeFileItem> items = new ArrayList<>();
-                for (NativeFileItem item : nativeProject.getAllFiles()) {
-                    if (!item.isExcluded()) {
-                        switch (item.getLanguage()) {
-                            case C:
-                            case CPP:
-                            case FORTRAN:
-                                items.add(item);
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                }
-                project.onFileItemsPropertyChanged(items, true);
-                changedItemProps.clear();
-            }
-
-            if(!changedFiles.isEmpty()) {
-                for (String path : changedFiles) {
-                    CsmFile csmFile = project.findFile(path, false, false);
-                    if (csmFile != null) {
-                        project.onFileImplExternalChange((FileImpl) csmFile);
+        if (allPropertiesChanged) {
+            List<NativeFileItem> items = new ArrayList<>();
+            for (NativeFileItem item : nativeProject.getAllFiles()) {
+                if (!item.isExcluded()) {
+                    switch (item.getLanguage()) {
+                        case C:
+                        case CPP:
+                        case FORTRAN:
+                            items.add(item);
+                            break;
+                        default:
+                            break;
                     }
                 }
             }
-            if (!changedItemProps.isEmpty()) {
-                project.onFileItemsPropertyChanged(changedItemProps, false);
+            project.onFileItemsPropertyChanged(items, true);
+            changedItemProps.clear();
+        }
+
+        if(!changedFiles.isEmpty()) {
+            for (String path : changedFiles) {
+                CsmFile csmFile = project.findFile(path, false, false);
+                if (csmFile != null) {
+                    project.onFileImplExternalChange((FileImpl) csmFile);
+                }
             }
-            if (!createdFiles.isEmpty()) {
-                project.onFileObjectExternalCreate(createdFiles);
-            }
-            if (!addedItems.isEmpty()) {
-                project.onFileItemsAdded(addedItems);
-            }
-            if (checkForRemoved) {
-                project.checkForRemoved();
-            }
+        }
+        if (!changedItemProps.isEmpty()) {
+            project.onFileItemsPropertyChanged(changedItemProps, false);
+        }
+        if (!createdFiles.isEmpty()) {
+            project.onFileObjectExternalCreate(createdFiles);
+        }
+        if (!addedItems.isEmpty()) {
+            project.onFileItemsAdded(addedItems);
+        }
+        if (checkForRemoved) {
+            project.checkForRemoved();
         }
     }
 
