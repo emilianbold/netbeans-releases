@@ -204,7 +204,6 @@ public class SvnConfigFiles {
         Ini.Section nbGlobalSection = nbServers.add(GLOBAL_SECTION);
 
         String repositoryUrl = url.toString();
-        changes = !repositoryUrl.equals(recentUrl);
 
         if(changes) {
             RepositoryConnection rc = SvnModuleConfig.getDefault().getRepositoryConnection(repositoryUrl);
@@ -228,10 +227,11 @@ public class SvnConfigFiles {
             }
             hasPassphrase = setProxy(url, nbGlobalSection) | hasPassphrase;
             File configFile = storeIni(nbServers, "servers"); //NOI18N
+            recentUrl = url.toString();
             if (hasPassphrase) {
                 sensitiveConfigFile = configFile;
+                recentUrl = null; //must be regenerated on next run
             }
-            recentUrl = url.toString();
         }
         return sensitiveConfigFile;
     }
