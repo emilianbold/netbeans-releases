@@ -177,4 +177,9 @@ public class FileModelCpp11Test extends TraceModelTestBase {
         // Bug 243510 - inaccuracy tests (clang): constexpr keyword
         performTest("bug243510.cpp");
     }                    
+    
+    public void testBug243525() throws Exception {
+        // Bug 243525 - inaccuracy tests (clang): digraphs
+        performTest("bug243525.cpp");
+    }    
 }
