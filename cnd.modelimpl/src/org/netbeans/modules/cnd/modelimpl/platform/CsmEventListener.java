@@ -115,16 +115,22 @@ import org.openide.util.RequestProcessor;
             case NULL:
                 return;
         }
-        CsmEvent.trace("%s dispatched to %s", event, project); // NOI18N
+        CsmEvent.trace("dispatched %s to %s", event, project); // NOI18N
         checkEvent(event);
         String path = event.getPath();
         synchronized (eventsLock) {
             CsmEvent prev = events.get(path);
-            events.put(path, convert(prev, event));
+            CsmEvent converted = convert(prev, event);
+            if (TraceFlags.TRACE_EXTERNAL_CHANGES && prev != null && prev != NULL) {
+                if (prev.getKind() != converted.getKind() || !prev.getPath().equals(converted.getPath())) {
+                    CsmEvent.trace("converted %s to %s", prev, converted);
+                }
+            }
+            events.put(path, converted);
         }
         task.schedule(0); // fe.runWhenDeliveryOver(taskScheduler); ???
     }
-
+    
     void checkEvent(CsmEvent event) {
         FileObject fo = event.getFileObject();
         if (fo != null) {

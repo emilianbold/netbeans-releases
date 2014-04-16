@@ -177,7 +177,7 @@ import org.openide.filesystems.FileObject;
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + ' ' + kind + ' ' + object + ' ' + oldPath;
+        return getClass().getSimpleName() + ' ' + kind + ' ' + object + ' ' + (oldPath == null ? "" : ("oldPath=" + oldPath));
     }
 
     public static void trace(String format, Object... args) {
