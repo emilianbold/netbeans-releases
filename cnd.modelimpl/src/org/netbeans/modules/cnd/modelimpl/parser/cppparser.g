@@ -846,7 +846,7 @@ template_explicit_specialization
                 |   cv_qualifier
                 |   LITERAL_typedef
                 )*
-                enum_head
+                enum_def_head
             ) =>
             (LITERAL___extension__!)?
             (LITERAL_template LESSTHAN GREATERTHAN)?
@@ -1072,7 +1072,7 @@ declaration_template_impl { String s; K_and_R = false; boolean ctrName=false; bo
                     |   cv_qualifier
                     |   LITERAL_typedef
                     )*
-                    enum_head
+                    enum_def_head
                 ) =>
                 (LITERAL___extension__!)?
                     (   sc = storage_class_specifier
@@ -1159,62 +1159,28 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
                 // we need "static" here for the case "static struct XX {...} myVar; - see issue #106652
 
 //		((LITERAL_typedef | LITERAL_static)? class_head)=>
-                ((LITERAL___extension__!)? (  storage_class_specifier
-		|   cv_qualifier 
-		|   LITERAL_typedef
-		)* class_head) =>
-                {action.simple_declaration(LT(1));}
-                {action.class_declaration(LT(1));}
+        ((LITERAL___extension__!)? (decl_specifiers_before_type)? class_head) =>
+        {action.simple_declaration(LT(1));}
+        {action.class_declaration(LT(1));}
 		(LITERAL___extension__!)? declaration[declOther]
 		{ #external_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #external_declaration); }
-
-	|	
-                //enum typedef )))	
-                (LITERAL_typedef LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = type_specifier[dsInvalid, false])? (type_attribute_specification)? LCURLY)=> typedef_enum
-                {  #external_declaration = #(#[CSM_GENERIC_DECLARATION, "CSM_GENERIC_DECLARATION"], #external_declaration); }
-/*    |
-        // IZ#145071: forward declarations marked as error
-        (LITERAL_typedef (LITERAL_struct |	LITERAL_union |	LITERAL_class)) => typedef_class_fwd
-		{ #external_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #external_declaration); }
-*/
     |
         // Enum definition (don't want to backtrack over this in other alts)
-        (   (LITERAL___extension__!)?
-            (   storage_class_specifier
-            |   cv_qualifier
-            |   LITERAL_typedef
-            )*
-            enum_head
-        ) =>
+        ((LITERAL___extension__!)? (decl_specifiers_before_type)? enum_def_head) =>
         {action.simple_declaration(LT(1));}
         {action.enum_declaration(LT(1));}
-        (LITERAL___extension__!)?
-            (   sc = storage_class_specifier
-            |   tq = cv_qualifier
-            |   LITERAL_typedef
-        )*
         {if (statementTrace>=1) printf("external_declaration_3[%d]: Enum definition\n",LT(1).getLine());}
-        enum_specifier (init_declarator_list[declOther])? 
+        (LITERAL___extension__!)? declaration[declOther]
         {action.end_enum_declaration(LT(1));}
         {action.end_simple_declaration(LT(1));}
-        SEMICOLON! //{end_of_stmt();}
         { #external_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #external_declaration); }
     |
-        // Enum definition (don't want to backtrack over this in other alts)
-        (   (LITERAL___extension__!)?
-            (   storage_class_specifier
-            |   cv_qualifier
-            )*
-            LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? SEMICOLON
-        ) =>
+        // Enum forward declaration (don't want to backtrack over this in other alts)
+        ((LITERAL___extension__!)? (decl_specifiers_before_type)? enum_fwd_head) =>
         {action.simple_declaration(LT(1));}
         {action.enum_declaration(LT(1));}
-        (LITERAL___extension__!)?
-            (   sc = storage_class_specifier
-            |   tq = cv_qualifier
-        )*
         {if (statementTrace>=1) printf("external_declaration_3[%d]: Enum definition\n",LT(1).getLine());}
-        enum_specifier
+        (LITERAL___extension__!)? declaration[declOther]
         {action.end_enum_declaration(LT(1));}
         {action.end_simple_declaration(LT(1));}
         SEMICOLON //{end_of_stmt();}
@@ -1566,12 +1532,9 @@ member_declaration
                 // we need "static" here for the case "static struct XX {...} myVar; - see issue #135149
 
 //		((LITERAL_typedef | LITERAL_static)? class_head)=>
-                ((LITERAL___extension__!)? (  storage_class_specifier
-		|   cv_qualifier 
-		|   LITERAL_typedef
-		)* class_head) =>
-                {action.simple_declaration(LT(1));}
-                {action.class_declaration(LT(1));}
+        ((LITERAL___extension__!)? (decl_specifiers_before_type)? class_head) =>
+        {action.simple_declaration(LT(1));}
+        {action.class_declaration(LT(1));}
 		{if (statementTrace>=1) 
 			printf("member_declaration_1[%d]: Class definition\n",
 				LT(1).getLine());
@@ -1580,39 +1543,35 @@ member_declaration
 		{ #member_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #member_declaration); }
 	|  
 		// Enum definition (don't want to backtrack over this in other alts)
-		((storage_class_specifier)? enum_head)=>
-                {action.simple_declaration(LT(1));}
-                {action.enum_declaration(LT(1));}
-                (sc = storage_class_specifier)?
+		((LITERAL___extension__!)? (decl_specifiers_before_type)? enum_def_head)=>
+        {action.simple_declaration(LT(1));}
+        {action.enum_declaration(LT(1));} 
 		{if (statementTrace>=1) 
 			printf("member_declaration_2[%d]: Enum definition\n",
 				LT(1).getLine());
 		}
-		enum_specifier (member_declarator_list)? 
-                {action.end_enum_declaration(LT(1));}
-                {action.end_simple_declaration(LT(1));}
-                SEMICOLON!	//{end_of_stmt();}
+		(LITERAL___extension__!)? declaration_specifiers[true, false] (member_declarator_list)? 
+        {action.end_enum_declaration(LT(1));}
+        {action.end_simple_declaration(LT(1));}
+        SEMICOLON	//{end_of_stmt();}
 		{ #member_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #member_declaration); }
 	|
-		// Enum definition (don't want to backtrack over this in other alts)
-		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? SEMICOLON )=>
-                {action.simple_declaration(LT(1));}
-                {action.enum_declaration(LT(1));}
-                (sc = storage_class_specifier)?
+		// Enum forward declaration (don't want to backtrack over this in other alts)
+		((LITERAL___extension__!)? (decl_specifiers_before_type)? enum_fwd_head)=>
+        {action.simple_declaration(LT(1));}
+        {action.enum_declaration(LT(1));}
+        (LITERAL___extension__!)? 
+        (decl_specifiers_before_type)?
 		{if (statementTrace>=1)
 			printf("member_declaration_2b[%d]: Enum forward declaration\n",
 				LT(1).getLine());
 		}
 		enum_specifier
-                {action.end_enum_declaration(LT(1));}
-                {action.end_simple_declaration(LT(1));}
-                SEMICOLON	//{end_of_stmt();}
+        {action.end_enum_declaration(LT(1));}
+        {action.end_simple_declaration(LT(1));}
+        SEMICOLON	//{end_of_stmt();}
 		{ #member_declaration = #(#[CSM_ENUM_FWD_DECLARATION, "CSM_ENUM_FWD_DECLARATION"], #member_declaration); }
 	|	
-                //enum typedef )))	
-                (LITERAL_typedef LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = type_specifier[dsInvalid, false])? (type_attribute_specification)? LCURLY)=> typedef_enum
-		{ #member_declaration = #(#[CSM_FIELD, "CSM_FIELD"], #member_declaration); }
-	|
 		// Constructor declarator
 		(	ctor_decl_spec
 			/*{qualifiedItemIsOneOf(qiCtor)}?*/
@@ -2014,7 +1973,9 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
             |   LITERAL_virtual {ds = dsVIRTUAL;}
             |   LITERAL_explicit {ds = dsEXPLICIT;}
             |   LITERAL_final
-            |   LITERAL_enum
+//              Here we could include enum and handle creating of enums on declaration level with predicates
+//              This may be better because we will not accept enums in return types and parameters in such case
+//          |   LITERAL_enum  
             |   {if (statementTrace>=1) printf("declaration_specifiers_1[%d]: Typedef\n", LT(1).getLine());}                        
                 {allowTypedef}? LITERAL_typedef (options {greedy=true;} : LITERAL_typename)? {td=true;} 
             |   LITERAL_typename
@@ -2080,6 +2041,21 @@ unknown_posttype_declaration_specifiers_list
     ((IDENT IDENT) => IDENT! unknown_posttype_declaration_specifiers_list)?
     ;
 
+decl_specifiers_before_type
+    {StorageClass sc; TypeQualifier tq;}
+    :
+        (
+            sc = storage_class_specifier
+        |
+            tq = cv_qualifier
+        |
+            LITERAL_friend
+        |
+            LITERAL_constexpr
+        |
+            LITERAL_typedef
+        )+
+    ;
 
 protected
 typeof_param :
@@ -2225,9 +2201,8 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
         (sc = storage_class_specifier!)?
         (   id = class_qualified_id
             (options{generateAmbigWarnings = false;}:
-            (LITERAL_final | LITERAL_explicit)?
-            (base_clause)?
-                
+                (LITERAL_final | LITERAL_explicit)?
+                (base_clause)?                
                 // parse class body if nesting limit not exceed
                 (
                     {checkClassDefinitionDepth(NESTED_CLASSES_LIMIT)}?
@@ -2249,7 +2224,7 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
                         | RCURLY )
                     |   
                         balanceCurlies
-        )
+                )
             |
                 {classForwardDeclaration(ts, ds, id);}
             )
@@ -2304,6 +2279,7 @@ enum_specifier
 {int ts = 0;
  String qid;}
 :   LITERAL_enum
+    (options {greedy=true;} : type_attribute_specification)?
     (
         (LITERAL_class | LITERAL_struct)
         {action.enum_strongly_typed(LT(1));}
@@ -2314,13 +2290,7 @@ enum_specifier
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | RCURLY )
     |   
-        ( (IDENT (SCOPE | LESSTHAN) ) =>
-            qid = qualified_id
-        |
-            id:IDENT     // DW 22/04/03 Suggest qualified_id here to satisfy
-            {action.enum_name(id);}
-            {beginEnumDefinition(id.getText());}
-        )
+        qid = enum_qualified_id
                      // elaborated_type_specifier        
         (   (options {greedy=true;} : 
                 COLON ts = type_specifier[dsInvalid, false]
@@ -2337,6 +2307,17 @@ enum_specifier
         {endEnumDefinition();}
     )
 ;
+
+enum_qualified_id returns [String qid = ""]
+    :
+        ( (IDENT (SCOPE | LESSTHAN) ) =>
+            qid = qualified_id
+        |
+            id:IDENT     // DW 22/04/03 Suggest qualified_id here to satisfy
+            {qid = id.getText();}
+        )
+        {#enum_qualified_id = #(#[CSM_QUALIFIED_ID, qid], #enum_qualified_id);}
+    ;
 
 enumerator_list
     :           
@@ -2544,10 +2525,24 @@ class_head
 
 // for predicates
 enum_head
-        { String s; int ts; }
-        :
-            LITERAL_enum (LITERAL_class | LITERAL_struct)? (s = qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY
-        ;
+    { String s; int ts; }
+    :
+        LITERAL_enum 
+        (options {greedy=true;} : type_attribute_specification)?
+        (LITERAL_class | LITERAL_struct)? (s = qualified_id)? (COLON ts = type_specifier[dsInvalid, false])?
+    ;
+
+// for predicates
+enum_def_head
+    :
+        enum_head LCURLY
+    ;
+
+// for predicates
+enum_fwd_head
+    :
+        enum_head SEMICOLON        
+    ;
 
 // so far this one is used in predicates only
 class_forward_declaration
@@ -2612,13 +2607,8 @@ member_declarator_list
 member_declarator
 	:	
 		((IDENT)? COLON constant_expression)=>(IDENT)? COLON constant_expression
-        |
-		declarator[declOther, 0] 
-                (
-                    ASSIGNEQUAL initializer
-                |   
-                    array_initializer
-                )?
+    |
+		init_declarator[declOther] 
 	;
 
 conversion_function_head
@@ -4093,7 +4083,7 @@ alias_declaration_type
                     type_name
                     {#alias_declaration_type = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #alias_declaration_type);}
             |
-                (enum_head)=>
+                (enum_def_head)=>
                     // TODO: think about handling enums via type_name 
                     {if(statementTrace>=1) printf("typedef_enum [%d]\n",LT(1).getLine()); }
                     enum_specifier 
