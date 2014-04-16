@@ -204,6 +204,7 @@ public class SvnConfigFiles {
         Ini.Section nbGlobalSection = nbServers.add(GLOBAL_SECTION);
 
         String repositoryUrl = url.toString();
+        changes = !repositoryUrl.equals(recentUrl);
 
         if(changes) {
             RepositoryConnection rc = SvnModuleConfig.getDefault().getRepositoryConnection(repositoryUrl);
