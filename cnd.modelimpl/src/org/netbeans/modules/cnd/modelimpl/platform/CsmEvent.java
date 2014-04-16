@@ -108,8 +108,8 @@ import org.openide.filesystems.FileObject;
         return new CsmEvent(kind, fileObject, null);
     }
 
-    /*package*/ static CsmEvent createFileEvent(Kind kind, FileObject fileObject, String oldNameExt) {
-        return new CsmEvent(kind, fileObject, oldNameExt);
+    /*package*/ static CsmEvent createFileEvent(Kind kind, FileObject fileObject, String oldPath) {
+        return new CsmEvent(kind, fileObject, oldPath);
     }
 
     /*package*/ static CsmEvent createEmptyEvent(Kind kind) {

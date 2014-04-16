@@ -131,31 +131,33 @@ import org.openide.util.RequestProcessor;
                 return;
             }
         }
-        task.schedule(0); // fe.runWhenDeliveryOver(taskScheduler); ???
+        task.schedule(0); // TODO: fe.runWhenDeliveryOver(taskScheduler); ???
     }
     
     void checkEvent(CsmEvent event) {
-        FileObject fo = event.getFileObject();
-        if (fo != null) {
-            try {
-                FileSystem fs = fo.getFileSystem();
-                if (!fs.equals(InvalidFileObjectSupport.getDummyFileSystem()) && !fs.equals(nativeProject.getFileSystem())) {
-                    CndUtils.assertTrue(false, "Filesystem differs CsmEvent filesystem is " + fs + //NOI18N
-                            ", project filesystem is " + nativeProject.getFileSystem()); //NOI18N
+        if (CndUtils.isDebugMode()) {
+            FileObject fo = event.getFileObject();
+            if (fo != null) {
+                try {
+                    FileSystem fs = fo.getFileSystem();
+                    if (!fs.equals(InvalidFileObjectSupport.getDummyFileSystem()) && !fs.equals(nativeProject.getFileSystem())) {
+                        CndUtils.assertTrue(false, "Filesystem differs CsmEvent filesystem is " + fs + //NOI18N
+                                ", project filesystem is " + nativeProject.getFileSystem()); //NOI18N
+                    }
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
             }
-        }
-        NativeProject np = event.getNativeProject();
-        if (np == null) {
-            NativeFileItem item = event.getNativeFileItem();
-            if (item != null) {
-                np = item.getNativeProject();
+            NativeProject np = event.getNativeProject();
+            if (np == null) {
+                NativeFileItem item = event.getNativeFileItem();
+                if (item != null) {
+                    np = item.getNativeProject();
+                }
             }
-        }
-        if (np != null) {
-            assert np.equals(nativeProject);
+            if (np != null) {
+                assert np.equals(nativeProject);
+            }
         }
     }
 
@@ -396,11 +398,11 @@ I/RM      | I/RM    | I/RM    | null     | null     | null     | null     | I/RM
 F/CR      | F/CH    | F/CH    | F/CR     | I/ADD    | assert   | I_REN_CR | F/CH     | F/CH     | F/CH     | I/PROP   | assert    | assert   | P/DEL |
 I/ADD     | I/ADD   | I/PROP  | I/ADD    | I/ADD    | I/ADD    | I/ADD    | I/ADD    | I/ADD    | I/ADD    | I/ADD    | assert    | assert   | P/DEL |
 F/REN_CR  | F/CH    | F/CH    | assert   | I/ADD    | F/REN_CR | I/REN_CR | F/CH     | F/CH     | assert   | I/REN_CR | assert    | assert   | P/DEL |
-I/REN_CR  | F/CH    | F/CH    | I/REN_CR | I/ADD    | I/REN_CR | I/REN_CR | F/CH     | F/CH     | I/REN_CR | I/REN_CR | assert    | assert   | P/DEL |
+I/REN_CR  | I/PROP  | I/PROP  | I/REN_CR | I/ADD    | I/REN_CR | I/REN_CR | I/PROP   | I/PROP   | I/REN_CR | I/REN_CR | assert    | assert   | P/DEL |
 F/REN_DL  | assert  | F/REN_DL| null     | null     | null     | null     | assert   | assert   | F/REN_DL | F/REN_DL | assert    | assert   | P/DEL |
 I/REN_DL  | I/REN_DL| I/REN_DL| null     | null     | null     | null     | I/REN_DL | I/REN_DL | I/REN_DL | I/REN_DL | assert    | assert   | P/DEL |
-F/CH      | assert  | F/CH    | F/CR     | I/ADD    | F/REN_CR | I/REN_CR | assert   | assert   | F/CH     | I/PROP   | assert    | assert   | P/DEL |
-I/PROP    | null    | null    | I/PROP   | I/ADD    | I/PROP   | I/REN_CR | F/REN_DL | F/REN_DL | I/PROP   | I/PROP   | assert    | assert   | P/DEL |
+F/CH      | assert  | F/CH?   | F/CR     | I/ADD    | F/REN_CR | I/REN_CR | assert   | assert   | F/CH     | I/PROP   | assert    | assert   | P/DEL |
+I/PROP    | F/DEL   | I/RM    | I/PROP   | I/ADD    | I/PROP   | I/REN_CR | F/REN_DL | F/REN_DL | I/PROP   | I/PROP   | assert    | assert   | P/DEL |
 I/ALPROP  | assert  | assert  | assert   | assert   | assert   | assert   | assert   | assert   | assert   | assert   | I/ALLPROP | I/ALLPROP| P/DEL |
 F/RT_DEL  | assert  | assert  | assert   | assert   | assert   | assert   | assert   | assert   | assert   | assert   | I/ALLPROP | F/RT_DEL | P/DEL |
 P/DEL     | P/DEL   | P/DEL   | P/DEL    | P/DEL    | P/DEL    | P/DEL    | P/DEL    | P/DEL    | P/DEL    | P/DEL    | P/DEL     | P/DEL    | P/DEL |
@@ -532,8 +534,8 @@ P/DEL     | P/DEL   | P/DEL   | P/DEL    | P/DEL    | P/DEL    | P/DEL    | P/DE
                 }//</editor-fold>
             case ITEM_PROPERTY_CHANGED://<editor-fold defaultstate="collapsed" desc="...">
                 switch (prev.getKind()) {
-                    case FILE_DELETED:                  return doNull();
-                    case ITEM_REMOVED:                  return doNull();
+                    case FILE_DELETED:                  return prev;    
+                    case ITEM_REMOVED:                  return prev;    
                     case FILE_CREATED:                  return cur;
                     case ITEM_ADDED:                    return prev;
                     case FILE_RENAMED_CREATED:          return cur;
@@ -580,14 +582,14 @@ P/DEL     | P/DEL   | P/DEL   | P/DEL    | P/DEL    | P/DEL    | P/DEL    | P/DE
                 }//</editor-fold>
             case ITEM_RENAMED_CREATED://<editor-fold defaultstate="collapsed" desc="...">
                 switch (prev.getKind()) {
-                    case FILE_DELETED:                  return doFileChanged(CsmEvent.Kind.FILE_CHANGED, cur.getFileObject());
-                    case ITEM_REMOVED:                  return doFileChanged(CsmEvent.Kind.FILE_CHANGED, cur.getFileObject());
+                    case FILE_DELETED:                  return doItemChanged(CsmEvent.Kind.ITEM_PROPERTY_CHANGED, cur.getNativeFileItem());
+                    case ITEM_REMOVED:                  return doItemChanged(CsmEvent.Kind.ITEM_PROPERTY_CHANGED, cur.getNativeFileItem());
                     case FILE_CREATED:                  return cur;
                     case ITEM_ADDED:                    return prev;// or cur... doesn/t really matter
                     case FILE_RENAMED_CREATED:          return cur;
                     case ITEM_RENAMED_CREATED:          return cur;
-                    case FILE_RENAMED_DELETED:          return doFileChanged(CsmEvent.Kind.FILE_CHANGED, cur.getFileObject());
-                    case ITEM_RENAMED_DELETED:          return doFileChanged(CsmEvent.Kind.FILE_CHANGED, cur.getFileObject());
+                    case FILE_RENAMED_DELETED:          return doItemChanged(CsmEvent.Kind.ITEM_PROPERTY_CHANGED, cur.getNativeFileItem());
+                    case ITEM_RENAMED_DELETED:          return doItemChanged(CsmEvent.Kind.ITEM_PROPERTY_CHANGED, cur.getNativeFileItem());
                     case FILE_CHANGED:                  return cur;
                     case ITEM_PROPERTY_CHANGED:         return cur;
                     case ITEMS_ALL_PROPERTY_CHANGED:    return doAssert(prev, cur, prev); // prev event path is a project path!
