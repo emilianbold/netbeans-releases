@@ -74,7 +74,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 import org.openide.util.WeakSet;
 
 /**
@@ -774,7 +774,7 @@ public final class FileObjectFactory {
     }
 
     public boolean isWarningEnabled() {
-        return WARNINGS && !Utilities.isMac();
+        return WARNINGS && !BaseUtilities.isMac();
     }
 
     //only for tests purposes

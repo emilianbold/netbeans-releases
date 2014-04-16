@@ -68,8 +68,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
+import org.openide.util.BaseUtilities;
 
 /**
  * @author Radek Matous
@@ -82,7 +81,7 @@ public final class FileBasedFileSystem extends FileSystem {
     transient private static  int modificationInProgress;
     
     public FileBasedFileSystem() {
-        if (Utilities.isWindows()) {
+        if (BaseUtilities.isWindows()) {
             RootObjWindows realRoot = new RootObjWindows();
             root = new RootObj<RootObjWindows>(realRoot);
         } else {
@@ -135,7 +134,7 @@ public final class FileBasedFileSystem extends FileSystem {
         FileObjectFactory fs = FileObjectFactory.getInstance(file);
         FileObject retval = null;
         if (fs != null) {
-            if (file.getParentFile() == null && Utilities.isUnix()) {
+            if (file.getParentFile() == null && BaseUtilities.isUnix()) {
                 retval = FileBasedFileSystem.getInstance().getRoot();
             } else {
                 retval = fs.getValidFileObject(file,caller);
@@ -198,7 +197,7 @@ public final class FileBasedFileSystem extends FileSystem {
 
     @Override
     public FileObject findResource(String name) {
-        if (Utilities.isWindows()) {
+        if (BaseUtilities.isWindows()) {
             if ("".equals(name)) {//NOI18N
                 return FileBasedFileSystem.getInstance().getRoot();
             }
@@ -237,6 +236,7 @@ public final class FileBasedFileSystem extends FileSystem {
         throw new IOException("Cannot create temporary file"); // NOI18N
     }
 
+    /*
     public final SystemAction[] getActions(final Set<FileObject> foSet) {
         SystemAction[] some = status.getActions (foSet);
         if (some != null) {
@@ -245,6 +245,7 @@ public final class FileBasedFileSystem extends FileSystem {
         return new SystemAction[] {};
 
     }
+    */
     
     @Override
     public Status getStatus() {
@@ -306,7 +307,7 @@ public final class FileBasedFileSystem extends FileSystem {
 
             previousProviders = now;
         }
-
+/*
         public SystemAction[] getActions(Set<FileObject> foSet) {
 
             javax.swing.Action[] retVal = null;
@@ -327,6 +328,7 @@ public final class FileBasedFileSystem extends FileSystem {
             }
             return null;
         }
+        */
 
         @Override
         public void annotationChanged(org.openide.filesystems.FileStatusEvent ev) {

@@ -58,7 +58,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.RootObj;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 public final class FileBasedURLMapper extends URLMapper {
     private static final Logger LOG = Logger.getLogger(FileBasedURLMapper.class.getName());
@@ -95,7 +95,7 @@ public final class FileBasedURLMapper extends URLMapper {
         FileObject retVal = null;
         File file;
         try {
-            file = FileUtil.normalizeFile(Utilities.toFile(url.toURI()));
+            file = FileUtil.normalizeFile(BaseUtilities.toFile(url.toURI()));
         } catch (URISyntaxException e) {
             LOG.log(Level.INFO, "URL=" + url, e); // NOI18N
             return null;
@@ -120,7 +120,7 @@ public final class FileBasedURLMapper extends URLMapper {
         }
         return retVal;
     }
-    /** {@link Utilities#toURI} replacement.
+    /** {@link BaseUtilities#toURI} replacement.
      * #171330: we know whether given
      * FileObject is a file or folder, so we can eliminate {@link File#isDirectory}
      * disk touch which is needed otherwise.

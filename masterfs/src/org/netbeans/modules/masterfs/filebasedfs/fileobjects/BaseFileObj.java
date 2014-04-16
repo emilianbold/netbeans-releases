@@ -81,7 +81,7 @@ import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.netbeans.modules.masterfs.watcher.Watcher;
 import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 
 /**
@@ -193,7 +193,7 @@ public abstract class BaseFileObj extends FileObject {
             fileNaming = fileNaming.getParent();
         }
         String rootName = stack.removeFirst();
-        if (Utilities.isWindows()) {
+        if (BaseUtilities.isWindows()) {
             rootName = rootName.replace(File.separatorChar, '/');
             if(rootName.startsWith("//")) {  //NOI18N
                 // UNC root like //computer/sharedFolder
@@ -589,7 +589,7 @@ public abstract class BaseFileObj extends FileObject {
         FileObject retVal = null;
         if (!isRoot()) {
             final FileNaming parent = getFileName().getParent();
-            if (Utilities.isWindows()) {
+            if (BaseUtilities.isWindows()) {
                 if (parent == null) {
                     retVal = FileBasedFileSystem.getInstance().getRoot();
                 } else {
