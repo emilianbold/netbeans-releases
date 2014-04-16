@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -78,9 +79,11 @@ import org.openide.util.Utilities;
  */
 public final class Composer {
 
-    private static final String NAME = "composer"; // NOI18N
-    private static final String LONG_NAME = NAME + ".phar"; // NOI18N
-    private static final String LONG_NAME_2;
+    public static final List<String> COMPOSER_FILENAMES;
+
+    private static final String COMPOSER = "composer"; // NOI18N
+    private static final String COMPOSER_PHAR = COMPOSER + ".phar"; // NOI18N
+    private static final String COMPOSER_BAT = COMPOSER + ".bat"; // NOI18N
 
     private static final String COMPOSER_FILENAME = "composer.json"; // NOI18N
 
@@ -112,15 +115,19 @@ public final class Composer {
 
     private volatile File workDir;
 
+
     static {
         // #243767
+        List<String> fileNames = new ArrayList<>(2);
         if (Utilities.isWindows()) {
-            LONG_NAME_2 = NAME + FileUtils.getScriptExtension(true);
+            fileNames.add(Composer.COMPOSER_BAT);
+            fileNames.add(Composer.COMPOSER_PHAR);
         } else {
-            LONG_NAME_2 = null;
+            fileNames.add(Composer.COMPOSER);
+            fileNames.add(Composer.COMPOSER_PHAR);
         }
+        COMPOSER_FILENAMES = new CopyOnWriteArrayList<>(fileNames);
     }
-
 
     public Composer(String composerPath) {
         this.composerPath = composerPath;
@@ -151,16 +158,6 @@ public final class Composer {
             return false;
         }
         return true;
-    }
-
-    public static List<String> getFileNames() {
-        List<String> fileNames = new ArrayList<>(3);
-        fileNames.add(Composer.NAME);
-        fileNames.add(Composer.LONG_NAME);
-        if (Composer.LONG_NAME_2 != null) {
-            fileNames.add(Composer.LONG_NAME_2);
-        }
-        return fileNames;
     }
 
     public Future<Integer> initIfNotPresent(PhpModule phpModule) {
