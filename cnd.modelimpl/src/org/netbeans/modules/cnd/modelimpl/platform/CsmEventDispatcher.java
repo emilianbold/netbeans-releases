@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.platform;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -411,7 +412,19 @@ public final class CsmEventDispatcher {
 
         @Override
         public void filesAdded(List<NativeFileItem> items) {
-            registerEvents(CsmEvent.Kind.ITEM_ADDED, items);
+            ArrayList<NativeFileItem> list = new ArrayList<>();
+            for (NativeFileItem item : items) {
+                // MakeProject sends such events for excluded items, but model never reacts
+                // So it's better to filter them out at the ver beginning.
+                // (Otherwise on LLVM we add 500 or more events to the queue)
+                // And that's how old NativeProjectListenerImpl behaved
+                if (!item.isExcluded()) {
+                    list.add(item);
+                }
+            }            
+            if (!list.isEmpty()) {
+                registerEvents(CsmEvent.Kind.ITEM_ADDED, list);
+            }            
         }
 
         @Override
