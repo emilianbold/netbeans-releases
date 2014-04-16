@@ -253,7 +253,8 @@ public final class CsmEventDispatcher {
                     ProjectBase project = file.getProjectImpl(true);
                     if (project != null) {
                         handledProjects.add(project);
-                        dispatch(CsmEvent.createFileEvent(CsmEvent.Kind.FILE_CHANGED, fo), project);
+                        CsmEvent.Kind kind = (event.getKind() == CsmEvent.Kind.FILE_INDEXED) ? CsmEvent.Kind.FILE_CHANGED : event.getKind();
+                        dispatch(CsmEvent.createFileEvent(kind, fo), project);
                     }
                 }
                 if (event.getKind() == CsmEvent.Kind.FILE_CREATED || event.getKind() == CsmEvent.Kind.FILE_INDEXED) {
