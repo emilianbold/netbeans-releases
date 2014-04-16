@@ -8,3 +8,6 @@ namespace bug243510 {
     union U4_243510 {} constexpr u4_243510 = {};
     enum E4_243510 { V4_243510 } constexpr e4_243510 = V4_243510;
 }
+namespace bug243510_1 {
+    enum bug243510::E4_243510 var_243510 = bug243510::V4_243510; 
+}
