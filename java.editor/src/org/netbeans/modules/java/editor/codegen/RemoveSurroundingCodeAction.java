@@ -79,6 +79,7 @@ import com.sun.source.util.TreePath;
 import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.settings.AttributesUtilities;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -89,6 +90,8 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
@@ -138,15 +141,22 @@ public class RemoveSurroundingCodeAction extends BaseAction {
                                         return;
                                     }
                                     final TreeUtilities tu = controller.getTreeUtilities();
-                                    final List<CodeDeleter> codeDeleters = new ArrayList<CodeDeleter>();
+                                    final List<CodeDeleter> codeDeleters = new ArrayList<>();
                                     final int caretOffset = component.getCaretPosition();
+                                    final TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+                                    ts.move(caretOffset);
+                                    if (ts.moveNext()) {
+                                        if (ts.token().id() == JavaTokenId.BLOCK_COMMENT || ts.token().id() == JavaTokenId.LINE_COMMENT) {
+                                            codeDeleters.add(new CommentDeleter(component, ts));
+                                        }
+                                    }
                                     TreePath tp = tu.pathFor(caretOffset);
                                     while (tp != null) {
                                         final Tree leaf = tp.getLeaf();
                                         switch (leaf.getKind()) {
                                             case IF:
                                                 if (insideElse(controller, (IfTree) leaf, component.getCaretPosition())) {
-                                                    codeDeleters.add(new Deleter(controller, component, tp, false));
+                                                    codeDeleters.add(new TreeDeleter(controller, component, tp, false));
                                                 }
                                             case FOR_LOOP:
                                             case ENHANCED_FOR_LOOP:
@@ -154,16 +164,16 @@ public class RemoveSurroundingCodeAction extends BaseAction {
                                             case DO_WHILE_LOOP:
                                             case SYNCHRONIZED:
                                             case TRY:
-                                                codeDeleters.add(new Deleter(controller, component, tp));
+                                                codeDeleters.add(new TreeDeleter(controller, component, tp));
                                                  break;
                                             case BLOCK:
                                                 if (tp.getParentPath().getLeaf().getKind() == Tree.Kind.BLOCK) {
-                                                    codeDeleters.add(new Deleter(controller, component, tp));
+                                                    codeDeleters.add(new TreeDeleter(controller, component, tp));
                                                 }
                                                 break;
                                             case PARENTHESIZED:
                                                 if (tp.getParentPath().getLeaf().getKind() != Tree.Kind.IF && !Utilities.containErrors(tp.getParentPath().getLeaf())) {
-                                                    codeDeleters.add(new Deleter(controller, component, tp));
+                                                    codeDeleters.add(new TreeDeleter(controller, component, tp));
                                                 }
                                                 break;
                                         }
@@ -225,20 +235,21 @@ public class RemoveSurroundingCodeAction extends BaseAction {
         return end > 0 && caretPosition > end;
     }
 
-    private static class Deleter implements CodeDeleter {
+    private static final AttributeSet DELETE_HIGHLIGHT = AttributesUtilities.createImmutable(StyleConstants.Background, new Color(245, 245, 245), StyleConstants.Foreground, new Color(180, 180, 180));
+    private static final AttributeSet REMAIN_HIGHLIGHT = AttributesUtilities.createImmutable(StyleConstants.Background, new Color(210, 240, 210));
 
-        private static final AttributeSet DELETE_HIGHLIGHT = AttributesUtilities.createImmutable(StyleConstants.Background, new Color(245, 245, 245), StyleConstants.Foreground, new Color(180, 180, 180));
-        private static final AttributeSet REMAIN_HIGHLIGHT = AttributesUtilities.createImmutable(StyleConstants.Background, new Color(210, 240, 210));
+    private static class TreeDeleter implements CodeDeleter {
+
         private JTextComponent component;
         private TreePathHandle tpHandle;
         private boolean unwrap;
         private OffsetsBag bag;
 
-        private Deleter(CompilationInfo cInfo, JTextComponent component, TreePath path) throws BadLocationException {
+        private TreeDeleter(CompilationInfo cInfo, JTextComponent component, TreePath path) throws BadLocationException {
             this(cInfo, component, path, true);
         }
 
-        private Deleter(CompilationInfo cInfo, JTextComponent component, TreePath path, boolean unwrap) throws BadLocationException {
+        private TreeDeleter(CompilationInfo cInfo, JTextComponent component, TreePath path, boolean unwrap) throws BadLocationException {
             this.component = component;
             this.tpHandle = TreePathHandle.create(path, cInfo);
             this.unwrap = unwrap;
@@ -284,7 +295,7 @@ public class RemoveSurroundingCodeAction extends BaseAction {
                                 TreeUtilities tu = copy.getTreeUtilities();
                                 Tree tree = tp.getLeaf();
                                 Tree parent = tp.getParentPath().getLeaf();
-                                ArrayList<StatementTree> stats = new ArrayList<StatementTree>();
+                                ArrayList<StatementTree> stats = new ArrayList<>();
                                 List<Comment> trailingComments = null;
                                 switch (tree.getKind()) {
                                     case IF:
@@ -400,7 +411,7 @@ public class RemoveSurroundingCodeAction extends BaseAction {
             OffsetsBag offsetsBag = new OffsetsBag(doc, true);
             int start = (int) sp.getStartPosition(path.getCompilationUnit(), path.getLeaf());
             if (start >= 0) {
-                List<int[]> positions = new ArrayList<int[]>();
+                List<int[]> positions = new ArrayList<>();
                 Tree tree = path.getLeaf();
                 switch (tree.getKind()) {
                     case IF:
@@ -514,4 +525,59 @@ public class RemoveSurroundingCodeAction extends BaseAction {
             return comments.isEmpty() ? (int) sp.getEndPosition(cut, tree) : comments.get(comments.size() - 1).endPos();
         }
     }
+    
+    private static class CommentDeleter implements CodeDeleter {
+
+        private final boolean lineComment;
+        private final JTextComponent component;
+        private final int offset;
+        private final int length;
+        private final OffsetsBag bag;
+
+        public CommentDeleter(JTextComponent component, TokenSequence<JavaTokenId> ts) {
+            this.lineComment = ts.token().id() == JavaTokenId.LINE_COMMENT;
+            this.component = component;
+            this.offset = ts.offset();
+            this.length = ts.token().length();
+            this.bag = new OffsetsBag(component.getDocument(), true);
+            if (lineComment) {
+                bag.addHighlight(offset, offset + 2, DELETE_HIGHLIGHT);
+                bag.addHighlight(offset + 2, offset + length, REMAIN_HIGHLIGHT);
+            } else {
+                bag.addHighlight(offset, offset + 2, DELETE_HIGHLIGHT);
+                bag.addHighlight(offset + 2, offset + length - 2, REMAIN_HIGHLIGHT);
+                bag.addHighlight(offset + length -2, offset + length, DELETE_HIGHLIGHT);
+            }
+        }
+
+        @Override
+        public String getDisplayName() {
+            return lineComment ? "// ..." : "/* ... */"; //NOI18N
+        }
+
+        @Override
+        public void invoke() {
+            Document doc = component.getDocument();
+            TokenSequence<JavaTokenId> ts = TokenHierarchy.get(doc).tokenSequence(JavaTokenId.language());
+            ts.move(component.getCaretPosition());
+            if (ts.moveNext()) {
+                if ((ts.token().id() == JavaTokenId.BLOCK_COMMENT || ts.token().id() == JavaTokenId.LINE_COMMENT)
+                        && ts.offset() == offset && ts.token().length() == length) {
+                    try {
+                        if (!lineComment) {
+                            doc.remove(offset + length - 2, 2);
+                        }
+                        doc.remove(offset, 2);
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public OffsetsBag getHighlight() {
+            return bag;
+        }        
+    }    
 }
