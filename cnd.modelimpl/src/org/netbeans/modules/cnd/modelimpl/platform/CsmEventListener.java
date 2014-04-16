@@ -127,6 +127,9 @@ import org.openide.util.RequestProcessor;
                 }
             }
             events.put(path, converted);
+            if (converted.getKind() == CsmEvent.Kind.NULL) {
+                return;
+            }
         }
         task.schedule(0); // fe.runWhenDeliveryOver(taskScheduler); ???
     }
