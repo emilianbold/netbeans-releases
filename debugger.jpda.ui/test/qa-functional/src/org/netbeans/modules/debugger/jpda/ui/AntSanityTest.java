@@ -262,13 +262,14 @@ public class AntSanityTest extends JellyTestCase {
     /**
      * Steps over expression at line 143.
      */
-    public void stepOverExpression() {
+    public void stepOverExpression() throws InterruptedException {
         new StepOverExpressionAction().perform();
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.variablesViewTitle));
         jTableOperator.waitCell("Before call to '<init>()'", 1, 0);
         jTableOperator.waitCell("Arguments", 2, 0);
         jTableOperator.selectCell(2, 0);
         pressKey(KeyEvent.VK_RIGHT);
+        Thread.sleep(3000); // Wait 3 seconds. Sometimes expanding Arguments node is slow.
         jTableOperator.waitCell("total", 3, 0);
         new StepOverExpressionAction().perform();
         jTableOperator.waitCell("free", 3, 0);
