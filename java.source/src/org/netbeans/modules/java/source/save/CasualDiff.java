@@ -2545,7 +2545,15 @@ public class CasualDiff {
             Name oldEnclClassName = printer.enclClassName;
             printer.enclClassName = null;
             suppressParameterTypes = newT.paramKind == JCLambda.ParameterKind.IMPLICIT;
-            localPointer = diffParameterList(oldT.params, newT.params, null, posHint, Measure.MEMBER);
+            // check, if there are already written parenthesis
+            JavaTokenId[] parens = null;
+            if(newT.params.size() > 1) {
+                JavaTokenId id = moveFwdToOneOfTokens(tokenSequence, oldT.params.isEmpty() ? posHint : endPos(oldT.params.last()), LAMBDA_PARAM_END_TOKENS);
+                if (id != JavaTokenId.RPAREN) {
+                    parens = new JavaTokenId[] { JavaTokenId.LPAREN, JavaTokenId.RPAREN };
+                }
+            }
+            localPointer = diffParameterList(oldT.params, newT.params, parens, posHint, Measure.MEMBER);
             suppressParameterTypes = false;
             printer.enclClassName = oldEnclClassName;
             parameterPrint = false;
@@ -3053,7 +3061,7 @@ public class CasualDiff {
             return pos;
         }
         ResultItem<JCTree>[] result = matcher.getResult();
-        if (printParens && oldList.isEmpty()) {
+        if (printParens/* && oldList.isEmpty()*/) {
             printer.print(makeAround[0].fixedText());
         }
         int oldIndex = 0;
@@ -3161,7 +3169,7 @@ public class CasualDiff {
 //                printer.print(";");
             }
         }
-        if (printParens && oldList.isEmpty()) {
+        if (printParens/* && oldList.isEmpty()*/) {
             printer.print(makeAround[1].fixedText());
         }
         if (oldList.isEmpty()) {
