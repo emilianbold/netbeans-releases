@@ -66,6 +66,17 @@ import org.openide.filesystems.FileObject;
  * @author Egor Ushakov <gorrus@netbeans.org>
  */
 public class CndIndexer extends CustomIndexer {
+    
+    /*package*/ interface Delegate {
+        void index(FileObject file);
+        void removed(FileObject root);
+    }
+    
+    private static volatile Delegate delegate;
+    
+    /*package*/ static void setDelegate(Delegate d) {
+        delegate = d;
+    }
 
     @Override
     protected void index(Iterable<? extends Indexable> files, Context context) {
@@ -79,31 +90,9 @@ public class CndIndexer extends CustomIndexer {
         FileObject root = context.getRoot();
         for (Indexable idx : files) {
             final FileObject fo = root.getFileObject(idx.getRelativePath());
-            final ModelImpl model = ModelSupport.instance().getModel();
-            model.enqueueModelTask(new Runnable() {
-                @Override
-                public void run() {
-                    CsmFile[] files = model.findFiles(FSPath.toFSPath(fo), false, false);
-                    Set<ProjectBase> handledProjects = new HashSet<>();
-                    for (int i = 0; i < files.length; ++i) {
-                        FileImpl file = (FileImpl) files[i];
-                        ProjectBase project = file.getProjectImpl(true);
-                        if (project != null) {
-                            handledProjects.add(project);
-                            project.onFileImplExternalChange(file);
-                        }
-                    }
-                    Collection<CsmProject> ownerCsmProjects = CsmUtilities.getOwnerCsmProjects(fo);
-                    for (CsmProject prj : ownerCsmProjects) {
-                        if (prj instanceof ProjectBase) {
-                            ProjectBase project = (ProjectBase) prj;
-                            if (!handledProjects.contains(project)) {
-                                project.onFileObjectExternalCreate(fo);
-                            }
-                        }
-                    }
-                }
-            }, "External File Updater"); // NOI18N
+            if (delegate != null) {
+                delegate.index(fo);
+            }
         }
     }
 
@@ -133,14 +122,8 @@ public class CndIndexer extends CustomIndexer {
                 return;
             }
             FileObject root = context.getRoot();
-            Collection<CsmProject> projects = CsmUtilities.getOwnerCsmProjects(root);
-            for (final CsmProject csmProject : projects) {
-                ModelSupport.instance().getModel().enqueueModelTask(new Runnable() {
-                    @Override
-                    public void run() {
-                        ((ProjectBase) csmProject).checkForRemoved();
-                    }
-                }, "External File Updater"); // NOI18N
+            if (delegate != null && root != null) {
+                delegate.removed(root);
             }
         }
 

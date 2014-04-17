@@ -208,6 +208,7 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
     
     private void fireFileChanged(final CsmProject project, FileObject sourceFileObject) {
         ModelImplTest.fireFileChanged(project, sourceFileObject);
+        sleep(500);
     }
 
     private void fireFileAdded(final CsmProject project, FileObject sourceFileObject) {

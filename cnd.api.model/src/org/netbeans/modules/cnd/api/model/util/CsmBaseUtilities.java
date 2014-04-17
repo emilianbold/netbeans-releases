@@ -93,6 +93,15 @@ public class CsmBaseUtilities {
         }
     }
     
+    /**
+     * Checks if variable has external linkage
+     * @param var
+     * @return true if variable has external linkage, false otherwise
+     */
+    public static boolean isGlobalVariable(CsmVariable var) {
+        return CsmBaseUtilitiesProvider.getDefault().isGlobalVariable(var);
+    }
+    
     public static boolean isGlobalNamespace(CsmScope scope) {
         if (CsmKindUtilities.isNamespace(scope)) {
             return ((CsmNamespace)scope).isGlobal();

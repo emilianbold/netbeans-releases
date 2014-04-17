@@ -19,6 +19,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.cnd.analysis.impl</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.cnd.antlr</code-name-base>
                     <run-dependency>
                         <specification-version>2.7.5</specification-version>

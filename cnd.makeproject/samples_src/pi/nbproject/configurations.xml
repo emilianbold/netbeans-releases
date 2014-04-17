@@ -63,7 +63,6 @@
       </toolsSet>
       <compileType>
         <cCompilerTool>
-          <commandLine>-xinstrument=datarace</commandLine>
           <mtLevel>1</mtLevel>
         </cCompilerTool>
         <linkerTool>
@@ -97,7 +96,6 @@
       </toolsSet>
       <compileType>
         <cCompilerTool>
-          <commandLine>-xinstrument=datarace</commandLine>
           <mtLevel>1</mtLevel>
         </cCompilerTool>
         <linkerTool>
@@ -131,7 +129,6 @@
       </toolsSet>
       <compileType>
         <cCompilerTool>
-          <commandLine>-xinstrument=datarace</commandLine>
           <mtLevel>1</mtLevel>
         </cCompilerTool>
         <linkerTool>
@@ -165,7 +162,6 @@
       </toolsSet>
       <compileType>
         <cCompilerTool>
-          <commandLine>-xinstrument=datarace</commandLine>
           <mtLevel>3</mtLevel>
         </cCompilerTool>
         <linkerTool>

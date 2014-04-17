@@ -121,7 +121,7 @@ public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProv
                 if (expandedContextDoc == null) {
                     return;
                 }
-                final int expansionsNumber = CsmMacroExpansion.expand(mainDoc, startOffset, endOffset, expandedContextDoc, new AtomicBoolean(false));
+                final int expansionsNumber = CsmMacroExpansion.expand(mainDoc, startOffset, endOffset, expandedContextDoc, new AtomicBoolean(false), true);
                 MacroExpansionViewUtils.setOffset(expandedContextDoc, startOffset, endOffset);
                 MacroExpansionViewUtils.saveDocumentAndMarkAsReadOnly(expandedContextDoc);
 

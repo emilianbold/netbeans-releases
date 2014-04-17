@@ -322,4 +322,13 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug243600.cpp", 16, 70, "bug243600.cpp", 7, 9);
         performTest("bug243600.cpp", 17, 50, "bug243600.cpp", 7, 9);
     }        
+    
+    public void testBug243171() throws Exception {
+        // Bug 243171 - No code completion for auto variable
+        performTest("bug243171.cpp", 26, 16, "bug243171.cpp", 3, 9);
+        performTest("bug243171.cpp", 29, 16, "bug243171.cpp", 3, 9);
+        performTest("bug243171.cpp", 32, 16, "bug243171.cpp", 3, 9);
+        performTest("bug243171.cpp", 35, 16, "bug243171.cpp", 3, 9);
+        performTest("bug243171.cpp", 38, 16, "bug243171.cpp", 3, 9);
+    }    
 }
