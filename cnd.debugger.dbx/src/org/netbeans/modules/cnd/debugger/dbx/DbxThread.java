@@ -144,7 +144,8 @@ public final class DbxThread extends Thread {
     public boolean isSuspended() {
 	// dbx currently doesn't support thread suspension and resumption
 	// So this will always be false
-	return thread.db_suspended;
+//	return thread.db_suspended;
+        return !getState().trim().equals("running");	// NOI18N
     }
 
     public Integer getPriority() {

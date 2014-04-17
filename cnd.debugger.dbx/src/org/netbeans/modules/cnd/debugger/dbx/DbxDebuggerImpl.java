@@ -1630,6 +1630,8 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
                     ((DbxFrame) frame).setThread(thread);
                 }
                 thread.setStack(stack);
+            } else{
+                thread.setStack(null);
             }
         }
         return threadsWithStack;
