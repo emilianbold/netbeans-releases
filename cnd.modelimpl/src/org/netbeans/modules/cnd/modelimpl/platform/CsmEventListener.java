@@ -286,9 +286,6 @@ import org.openide.util.RequestProcessor;
         List<CsmEvent> renamedCreatedItems = new ArrayList<>();
 
         for (CsmEvent event : events) {
-            if (event.getPath().endsWith("/revokeall.c")) {
-                System.err.println("");
-            }
             CsmEvent.trace("processing %s", event); // NOI18N
             switch (event.getKind()) {
                 case FILE_DELETED:

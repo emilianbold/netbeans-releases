@@ -127,9 +127,6 @@ import org.openide.filesystems.FileObject;
         }
         if ((object instanceof NativeFileItem)) {
             NativeFileItem item = (NativeFileItem) object;
-            if (item.getAbsolutePath().endsWith("/revokeall.c")) {
-                System.err.println("");
-            }
         }
         this.kind = kind;
         this.object = object;
