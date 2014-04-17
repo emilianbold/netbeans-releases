@@ -57,10 +57,12 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
+import org.netbeans.modules.javascript.karma.util.StringUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 
+@NbBundle.Messages("TestRunner.noName=<no name>")
 public final class TestRunner {
 
     static final Logger LOGGER = Logger.getLogger(TestRunner.class.getName());
@@ -75,7 +77,7 @@ public final class TestRunner {
     private static final String TEST_PASS = "$NB$netbeans testPass"; // NOI18N
     private static final String TEST_IGNORE = "$NB$netbeans testIgnore"; // NOI18N
     private static final String TEST_FAILURE = "$NB$netbeans testFailure"; // NOI18N
-    private static final String NB_VALUE_REGEX = "\\$NB\\$(.+)\\$NB\\$"; // NOI18N
+    private static final String NB_VALUE_REGEX = "\\$NB\\$(.*)\\$NB\\$"; // NOI18N
     private static final String NAME_REGEX = "name=" + NB_VALUE_REGEX; // NOI18N
     private static final String BROWSER_REGEX = "browser=" + NB_VALUE_REGEX; // NOI18N
     private static final String DURATION_REGEX = "duration=" + NB_VALUE_REGEX; // NOI18N
@@ -157,6 +159,10 @@ public final class TestRunner {
     })
     private void sessionFinished(String line) {
         assert testSession != null;
+        if (testSuite != null) {
+            // can happen for qunit
+            suiteFinished(null);
+        }
         if (!hasTests) {
             getManager().displayOutput(testSession, Bundle.TestRunner_tests_none_1(), true);
             getManager().displayOutput(testSession, Bundle.TestRunner_tests_none_2(), true);
@@ -188,6 +194,9 @@ public final class TestRunner {
         } else {
             LOGGER.log(Level.FINE, "Unexpected suite line: {0}", line);
             assert false : line;
+        }
+        if (!StringUtils.hasText(name)) {
+            name = Bundle.TestRunner_noName();
         }
         testSuite = new TestSuite(name);
         testSession.addSuite(testSuite);
@@ -224,6 +233,9 @@ public final class TestRunner {
         Matcher matcher = NAME_DURATION_PATTERN.matcher(line);
         if (matcher.find()) {
             String name = matcher.group(1);
+            if (!StringUtils.hasText(name)) {
+                name = Bundle.TestRunner_noName();
+            }
             long runtime = Long.parseLong(matcher.group(2));
             addTestCase(name, Status.PASSED, runtime);
         } else {
@@ -236,6 +248,9 @@ public final class TestRunner {
         Matcher matcher = NAME_DETAILS_DURATION_PATTERN.matcher(line);
         if (matcher.find()) {
             String name = matcher.group(1);
+            if (!StringUtils.hasText(name)) {
+                name = Bundle.TestRunner_noName();
+            }
             Trouble trouble = new Trouble(false);
             trouble.setStackTrace(processDetails(matcher.group(2)));
             long runtime = Long.parseLong(matcher.group(3));
@@ -262,6 +277,9 @@ public final class TestRunner {
         Matcher matcher = NAME_PATTERN.matcher(line);
         if (matcher.find()) {
             String name = matcher.group(1);
+            if (!StringUtils.hasText(name)) {
+                name = Bundle.TestRunner_noName();
+            }
             addTestCase(name, Status.IGNORED);
         } else {
             LOGGER.log(Level.FINE, "Unexpected test IGNORE line: {0}", line);
