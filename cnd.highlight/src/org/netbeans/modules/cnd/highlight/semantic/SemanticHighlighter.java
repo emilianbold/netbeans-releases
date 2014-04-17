@@ -47,6 +47,9 @@ import java.security.Identity;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
@@ -72,6 +75,8 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * Semantic C/C++ code highlighter responsible for "graying out"
@@ -84,9 +89,12 @@ public final class SemanticHighlighter extends HighlighterBase {
     private static final String SLOW_POSITION_BAG = "CndSemanticHighlighterSlow"; // NOI18N
     private static final String FAST_POSITION_BAG = "CndSemanticHighlighterFast"; // NOI18N
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("SemanticHighlighter profiler",1); //NOI18N
     
     private InterrupterImpl interrupter = new InterrupterImpl();
     private Parser.Result lastParserResult;
+    private Set<Map.Entry<Thread, StackTraceElement[]>> stack;
+    private AtomicBoolean done = new AtomicBoolean(false);
 
     public SemanticHighlighter(String mimeType) {
         init(mimeType);
@@ -177,7 +185,7 @@ public final class SemanticHighlighter extends HighlighterBase {
                 SemanticEntity se = i.next();
                 if (NamedOption.getAccessor().getBoolean(se.getName()) && 
                         (!macroExpansionView || !se.getName().equals(SemanticEntitiesProvider.MacrosCodeProvider.NAME))) { // NOI18N
-                    ReferenceCollector collector = se.getCollector();
+                    ReferenceCollector collector = se.getCollector(interrupter);
                     if (collector != null) {
                         // remember the collector for future use
                         collectors.add(collector);
@@ -281,9 +289,11 @@ public final class SemanticHighlighter extends HighlighterBase {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "SemanticHighlighter started, Task={0}, Result={1}", new Object[]{System.identityHashCode(this), System.identityHashCode(result)}); //NOI18N
             time = System.currentTimeMillis();
+            done = new AtomicBoolean(false);
         }
         update(result.getSnapshot().getSource().getDocument(false), interrupter);
         if (LOG.isLoggable(Level.FINE)) {
+            done.set(true);
             LOG.log(Level.FINE, "SemanticHighlighter finished for {0}ms", System.currentTimeMillis()-time); //NOI18N
         }
     }
@@ -295,6 +305,32 @@ public final class SemanticHighlighter extends HighlighterBase {
             lastParserResult = null;
         }
         if (LOG.isLoggable(Level.FINE)) {
+            RP.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    AtomicBoolean aDone = SemanticHighlighter.this.done;
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    if (!aDone.get()) {
+                        stack = Thread.getAllStackTraces().entrySet();
+                        StringBuilder buf = new StringBuilder();
+                        for (Map.Entry<Thread, StackTraceElement[]> entry : stack) {
+                            if (entry.getKey().getName().startsWith("Editor Parsing Loop")) { //NOI18N
+                                buf.append("What have been semantic provider doing for 100 ms after canceling?\n"); //NOI18N
+                                buf.append("Thread ").append(entry.getKey().getName()); //NOI18N
+                                for (StackTraceElement element : entry.getValue()) {
+                                    buf.append("\n\tat " + element.toString()); //NOI18N
+                                }
+                                LOG.log(Level.FINE, buf.toString());
+                            }
+                        }
+                    }
+                }
+            });
             LOG.log(Level.FINE, "SemanticHighlighter canceled in {0}, Task={1}", new Object[]{Thread.currentThread().getName(), System.identityHashCode(this)}); //NOI18N
         }
     }

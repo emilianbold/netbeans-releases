@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmExpandedTokenProcessor;
+import org.netbeans.modules.cnd.support.Interrupter;
 
 /**
  *
@@ -192,7 +193,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
 
     private List<CsmReferenceContext> getIdentifierReferences(CsmFile csmFile, final BaseDocument doc,
             final int start, final int end,
-            Set<CsmReferenceKind> kinds, FileReferencesContext fileReferncesContext, Cancellable canceled) {
+            Set<CsmReferenceKind> kinds, FileReferencesContext fileReferncesContext, Interrupter canceled) {
         ExpandedReferencesProcessor merp = ExpandedReferencesProcessor.create(doc, csmFile, kinds, fileReferncesContext, canceled);
         doc.readLock();
         try {
@@ -209,13 +210,13 @@ public final class FileReferencesImpl extends CsmFileReferences  {
         private ReferencesProcessor originalReferencesProcessor;
         private ReferencesProcessor macroReferencesProcessor;
         private boolean inMacro = false;
-        private final Cancellable canceled;
+        private final Interrupter canceled;
 
-        public static ExpandedReferencesProcessor create(BaseDocument doc, CsmFile file, Set<CsmReferenceKind> kinds, FileReferencesContext fileReferncesContext, Cancellable canceled) {
+        public static ExpandedReferencesProcessor create(BaseDocument doc, CsmFile file, Set<CsmReferenceKind> kinds, FileReferencesContext fileReferncesContext, Interrupter canceled) {
             boolean skipPreprocDirectives = !kinds.contains(CsmReferenceKind.IN_PREPROCESSOR_DIRECTIVE);
             Collection<CsmOffsetable> deadBlocks;
             if (!kinds.contains(CsmReferenceKind.IN_DEAD_BLOCK)) {
-                deadBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(file);
+                deadBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(file, canceled);
             } else {
                 deadBlocks = Collections.<CsmOffsetable>emptyList();
             }
@@ -232,7 +233,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
             return originalReferencesProcessor.references;
         }
 
-        private ExpandedReferencesProcessor(ReferencesProcessor rp, CsmExpandedTokenProcessor etp, Cancellable canceled) {
+        private ExpandedReferencesProcessor(ReferencesProcessor rp, CsmExpandedTokenProcessor etp, Interrupter canceled) {
             this.originalReferencesProcessor = rp;
             this.expandedTokenProcessor = etp;
             this.canceled = canceled;

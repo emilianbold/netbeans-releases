@@ -94,7 +94,7 @@ public final class SemanticEntitiesProvider {
         }
         @Override
         public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Interrupter interrupter) {
-            return ModelUtils.getInactiveCodeBlocks(csmFile);
+            return ModelUtils.getInactiveCodeBlocks(csmFile, interrupter);
         }
 
         @Override
@@ -135,7 +135,7 @@ public final class SemanticEntitiesProvider {
             return res;
         }
         @Override
-        public ReferenceCollector getCollector() {
+        public ReferenceCollector getCollector(Interrupter interrupter) {
             return null;
         }
 
@@ -173,11 +173,11 @@ public final class SemanticEntitiesProvider {
         }
         @Override
         public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Interrupter interrupter) {
-            return ModelUtils.collect(csmFile, getCollector(), interrupter);
+            return ModelUtils.collect(csmFile, getCollector(interrupter), interrupter);
         }
         @Override
-        public ReferenceCollector getCollector() {
-            return new ModelUtils.FieldReferenceCollector();
+        public ReferenceCollector getCollector(Interrupter interrupter) {
+            return new ModelUtils.FieldReferenceCollector(interrupter);
         }
     }
 
@@ -220,7 +220,7 @@ public final class SemanticEntitiesProvider {
         }
 
         @Override
-        public ReferenceCollector getCollector() {
+        public ReferenceCollector getCollector(Interrupter interrupter) {
             return null;
         }
 
@@ -271,11 +271,11 @@ public final class SemanticEntitiesProvider {
         }
         @Override
         public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Interrupter interrupter) {
-            return ModelUtils.collect(csmFile, getCollector(), interrupter);
+            return ModelUtils.collect(csmFile, getCollector(interrupter), interrupter);
         }
         @Override
-        public ReferenceCollector getCollector() {
-            return new ModelUtils.FunctionReferenceCollector();
+        public ReferenceCollector getCollector(Interrupter interrupter) {
+            return new ModelUtils.FunctionReferenceCollector(interrupter);
         }
 
         @Override
@@ -328,7 +328,7 @@ public final class SemanticEntitiesProvider {
         }
         @Override
         public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Interrupter interrupter) {
-            return ModelUtils.getMacroBlocks(csmFile);
+            return ModelUtils.getMacroBlocks(csmFile, interrupter);
         }
         @Override
         public AttributeSet getAttributes(CsmOffsetable obj, String mimePath) {
@@ -379,11 +379,11 @@ public final class SemanticEntitiesProvider {
         }
         @Override
         public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Interrupter interrupter) {
-            return ModelUtils.collect(csmFile, getCollector(), interrupter);
+            return ModelUtils.collect(csmFile, getCollector(interrupter), interrupter);
         }
         @Override
-        public ReferenceCollector getCollector() {
-            return new ModelUtils.TypedefReferenceCollector();
+        public ReferenceCollector getCollector(Interrupter interrupter) {
+            return new ModelUtils.TypedefReferenceCollector(interrupter);
         }
     }
 
@@ -415,11 +415,11 @@ public final class SemanticEntitiesProvider {
         }
         @Override
         public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Interrupter interrupter) {
-            return ModelUtils.collect(csmFile, getCollector(), interrupter);
+            return ModelUtils.collect(csmFile, getCollector(interrupter), interrupter);
         }
         @Override
-        public ReferenceCollector getCollector() {
-            return new ModelUtils.UnusedVariableCollector();
+        public ReferenceCollector getCollector(Interrupter interrupter) {
+            return new ModelUtils.UnusedVariableCollector(interrupter);
         }
 
         @Override
@@ -484,7 +484,7 @@ public final class SemanticEntitiesProvider {
         }
 
         @Override
-        public ReferenceCollector getCollector() {
+        public ReferenceCollector getCollector(Interrupter interrupter) {
             return null;
         }
 
