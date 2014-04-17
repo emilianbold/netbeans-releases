@@ -1687,7 +1687,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public void makeThreadCurrent(Thread thread) {
         if (!thread.isCurrent()) {
             String tid = ((GdbThread) thread).getId();
-            selectThread(-1, tid, true); // notify gdb to set current thread
+            
+            if (thread.isSuspended()) {// We shouldn't select running thread
+                selectThread(-1, tid, true); // notify gdb to set current thread
+            }
 
             if (get_debugging) {    // TODO maybe better way
                 for (GdbThread debuggingViewThread : threadsWithStacks) {
@@ -2021,52 +2024,85 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         final String id = thrList.getConstValue("id"); //NOI18N
                         final String name = thrList.getConstValue("target-id"); //NOI18N
                         final String state = thrList.getConstValue("state"); //NOI18N
-                        
-                        // TODO FIMXE --thread command activates the thread specified!!!!
-                        MICommand cmd2 = new MiCommandImpl("-stack-info-frame --thread " + id) { // NOI18N
-                            @Override
-                            protected void onDone(MIRecord record) {
-                                MITList results = record.results();
-                                MITList frame = results.valueOf("frame").asList(); //NOI18N
-                                final String frameNo = frame.getConstValue("level"); // NOI18N
-                                
-                                MICommand cmd = new MiCommandImpl("-stack-list-frames --thread " + id) { // NOI18N
-                                    @Override
-                                    protected void onDone(MIRecord record) {
-                                        MITList results = record.results();
-                                        MITList stack_list = (MITList) results.valueOf("stack"); // NOI18N
-                                        int size = stack_list.size();
 
-                                        GdbThread gdbThread = new GdbThread(GdbDebuggerImpl.this, threadUpdater, id, name, null, state);
-                                        if (id.equals(currentThreadId)) {
-                                            gdbThread.setCurrent(true);
-                                        }
-                                        // iterate through frame list
-                                        // initialize before assign, see IZ 196318
-                                        GdbFrame[] frames = new GdbFrame[size];
-                                        for (int vx = 0; vx < size; vx++) {
-                                            MIResult frame = (MIResult) stack_list.get(vx);
-                                            GdbFrame gdbFrame = new GdbFrame(GdbDebuggerImpl.this, frame.value(), null, gdbThread);    // TODO arguments request
-                                            if (gdbFrame.getNumber().equals(frameNo)) {
-                                                gdbFrame.setCurrent(true);
+                        final GdbThread gdbThread = new GdbThread(GdbDebuggerImpl.this, threadUpdater, id, name, null, state);
+                        if (id.equals(currentThreadId)) {
+                            gdbThread.setCurrent(true);
+                        }
+                        res.add(gdbThread);
+
+                        final String frameNo = "0"; // As --thread activates a thread there will be the only value // NOI18N
+
+                        if (gdbThread.isSuspended()) {
+
+                            // TODO FIMXE --thread command activates the thread specified!!!!
+                            MICommand cmd = new MiCommandImpl("-stack-list-frames --thread " + id) { // NOI18N
+                                @Override
+                                protected void onDone(final MIRecord record) {
+
+                                    // "1" means get both arg's name and value
+                                    String args_command = "-stack-list-arguments 1 --thread " + id; // NOI18N
+
+                                    MICommand cmd3 = new MiCommandImpl(args_command) {
+
+                                        @Override
+                                        protected void onDone(MIRecord args) {
+                                            MITList argsresults;
+                                            MITList args_list = null;
+                                            String stringframes;
+
+                                            if (args != null) {
+                                                argsresults = args.results();
+                                                args_list = (MITList) argsresults.valueOf("stack-args"); // NOI18N
+                                                stringframes = args_list.toString();
+                                                if (Log.Variable.mi_frame) {
+                                                    System.out.println("args_list " + stringframes); // NOI18N
+                                                }
                                             }
-                                            frames[vx] = gdbFrame;
+
+                                            MITList results = record.results();
+                                            MITList stack_list = (MITList) results.valueOf("stack"); // NOI18N
+                                            int size = stack_list.size();
+
+                                            // iterate through frame list
+                                            // initialize before assign, see IZ 196318
+                                            GdbFrame[] frames = new GdbFrame[size];
+                                            for (int vx = 0; vx < size; vx++) {
+                                                MIResult frame = (MIResult) stack_list.get(vx);
+
+                                                // try to find frame arguments
+                                                MIResult frameArgs = null;
+                                                if (args_list != null && vx < args_list.size()) {
+                                                    frameArgs = (MIResult) args_list.get(vx);
+                                                }
+
+                                                GdbFrame gdbFrame = new GdbFrame(GdbDebuggerImpl.this, frame.value(), frameArgs, gdbThread);    // TODO arguments request
+                                                if (gdbFrame.getNumber().equals(frameNo)) {
+                                                    gdbFrame.setCurrent(true);
+                                                }
+                                                frames[vx] = gdbFrame;
+                                            }
+                                            gdbThread.setStack(frames);
+
+                                            threadsWithStacks = res.toArray(new GdbThread[res.size()]);   // TODO better place (this causes several updates at once)
+                                            debuggingViewUpdater.treeChanged();
+
+                                            finish();
                                         }
-                                        gdbThread.setStack(frames);
-                                        res.add(gdbThread);
-                                        
-                                        threadsWithStacks = res.toArray(new GdbThread[res.size()]);   // TODO better place (this causes several updates at once)
-                                        debuggingViewUpdater.treeChanged(); // TODO update the certain node
-                                        finish();
-                                    }
-                                };
-                                gdb.sendCommand(cmd);
-                                finish();
-                            }
-                        };
-                        gdb.sendCommand(cmd2);
-                        
+                                        @Override
+                                        protected void onError(MIRecord record) {
+                                            onDone(null);
+                                        }
+                                    };
+                                    gdb.sendCommand(cmd3);
+
+                                    finish();
+                                }
+                            };
+                            gdb.sendCommand(cmd);
+                        }
                     }
+
                     finish();
                 }
             };
@@ -4221,7 +4257,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private void setDis(MIRecord record) {
 	disModel.parseRecord(record);
-        disassembly.update(record.toString());
+                disassembly.update(record.toString());
 
 	// 6582172
 //	if (update_dis)
