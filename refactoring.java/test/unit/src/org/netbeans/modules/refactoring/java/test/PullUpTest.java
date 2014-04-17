@@ -1044,7 +1044,7 @@ public class PullUpTest extends RefactoringTestBase {
                 new File("pullup/B.java", "package pullup; public class B { }"));
         performPullUp(src.getFileObject("pullup/A.java"), 1, Boolean.FALSE);
         verifyContent(src,
-                new File("pullup/A.java", "package pullup; public class A extends B { private method() { foo() } }"),
+                new File("pullup/A.java", "package pullup; public class A extends B {private method() { foo() } }"),
                 new File("pullup/B.java", "package pullup; public class B { protected void foo() { } }"));
     }
 

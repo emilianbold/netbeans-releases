@@ -228,10 +228,11 @@ public class SvnConfigFiles {
             }
             hasPassphrase = setProxy(url, nbGlobalSection) | hasPassphrase;
             File configFile = storeIni(nbServers, "servers"); //NOI18N
+            recentUrl = url.toString();
             if (hasPassphrase) {
                 sensitiveConfigFile = configFile;
+                recentUrl = null; //must be regenerated on next run
             }
-            recentUrl = url.toString();
         }
         return sensitiveConfigFile;
     }
