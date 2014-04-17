@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.parsing.indexing
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/parsing/indexing/Bundle.properties
+

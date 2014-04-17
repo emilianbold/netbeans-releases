@@ -43,18 +43,18 @@
 package org.netbeans.modules.parsing.impl;
 
 import java.util.Collections;
-import java.util.Set;
 import java.util.concurrent.Callable;
-import org.netbeans.api.annotations.common.NonNull;
+import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
@@ -105,46 +105,6 @@ public class Utilities {
         TaskProcessor.scheduleSpecialTask(runnable, priority);
     }
     
-    public static void runAsScanWork(@NonNull Runnable work) {
-        Parameters.notNull("work", work);   //NOI18N
-        RepositoryUpdater.getDefault().runAsWork(work);
-    }
-    
-    /**
-     * Sets the {@link IndexingStatus}
-     * @param st an {@link IndexingStatus}
-     */
-    public static void setIndexingStatus (final IndexingStatus st) {
-        assert st != null;
-        assert status == null;
-        status = st;
-    }
-
-    public static Set<? extends RepositoryUpdater.IndexingState> getIndexingState() {
-        if (status == null) {
-            return RepositoryUpdater.getDefault().getIndexingState();
-        } else {
-            return status.getIndexingState();
-        }
-    }
-
-    /**
-     * Asks the {@link IndexingStatus} about state of indexing
-     * @return true when indexing is active
-     */
-    public static boolean isScanInProgress () {
-        return !getIndexingState().isEmpty();        
-    }
-    //where
-    private static volatile IndexingStatus status;
-
-    /**
-     * Provides state of indexing
-     */
-    public static interface IndexingStatus {
-        Set<? extends RepositoryUpdater.IndexingState> getIndexingState ();
-    }
-
     //Helpers to bridge java.source factories into parsing.api
     public static void revalidate (final Source source) {
         final EventSupport support = SourceAccessor.getINSTANCE().getEventSupport(source);
@@ -189,4 +149,52 @@ public class Utilities {
             cancelReason.set(reason);
         }
     }
+
+    public static FileObject getFileObject(Document doc) {
+        Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
+        if (sdp instanceof FileObject) {
+            return (FileObject)sdp;
+        }
+        if (sdp instanceof DataObject) {
+            return ((DataObject)sdp).getPrimaryFile();
+        }
+        return null;
+    }
+
+    /**
+     * Finds the nearest caller outside the parsing API.
+     * Some additional classes can be also excluded.
+     * 
+     * Note: this method is copied from Indexing API (parsing.impl.indexing.IndexingUtils). Perhaps
+     * a common implementation should be created
+     * 
+     * @param elements
+     * @param classesToFilterOut
+     * @return 
+     */
+    public static StackTraceElement findCaller(StackTraceElement[] elements, Object... classesToFilterOut) {
+        loop: for (StackTraceElement e : elements) {
+            if (e.getClassName().equals(Utilities.class.getName()) || e.getClassName().startsWith("java.lang.")) { //NOI18N
+                continue;
+            }
+
+            if (classesToFilterOut != null && classesToFilterOut.length > 0) {
+                for(Object c : classesToFilterOut) {
+                    if (c instanceof Class && e.getClassName().startsWith(((Class) c).getName())) {
+                        continue loop;
+                    } else if (c instanceof String && e.getClassName().startsWith((String) c)) {
+                        continue loop;
+                    }
+                }
+            } else {
+                if (e.getClassName().startsWith("org.netbeans.modules.parsing.")) { //NOI18N
+                    continue;
+                }
+            }
+
+            return e;
+        }
+        return null;
+    }
+
 }

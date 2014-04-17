@@ -110,6 +110,25 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="Separate.Parsing.Indexing">
+          <api name="Parsing API"/>
+          <summary>Indexing API separated to its own module</summary>
+          <version major="9" minor="0"/>
+          <date day="20" month="4" year="2014"/>
+          <author login="sdedic"/>
+          <compatibility source="incompatible" binary="compatible" semantic="compatible" modification="yes"/>
+          <description>
+              <p>
+                  Historically the module offered both APIs for Parsing (invoking parser, implementing parser) and
+                  Indexing (refresh index, index SPIs). Those APIs are typically used by unrelated pieces of code,
+                  possibly with the exception of "refresh" actions.
+              </p>
+              <p>
+                  The indexing now resides separately in its <code>parsing.indexing</code> module. Binary compatibility
+                  is kept by using module-auto-deps.xml.
+              </p>
+          </description>
+      </change>
       <change id="Scheduler.getSource">
           <api name="ParsingAPI"/>
           <summary>Added <code>Sheduler.getSource</code> method for obtaining the active source</summary>

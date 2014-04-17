@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
-import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexDownloader;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
@@ -102,6 +101,7 @@ import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.impl.indexing.IndexerCache.IndexerInfo;
 import org.netbeans.modules.parsing.impl.indexing.errors.TaskCache;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.DownloadedIndexPatcher;
+import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexDownloader;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingActivityInterceptor;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
@@ -123,6 +123,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -153,7 +154,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     // Public implementation
     // -----------------------------------------------------------------------
 
-    public enum IndexingState {
+        public enum IndexingState {
         STARTING,
         PATH_CHANGING,
         WORKING
@@ -987,7 +988,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     final File parentFile = FileUtil.toFile(newFile.getParent());
                     if (parentFile != null) {
                         try {
-                            URL oldBinaryRoot = org.openide.util.Utilities.toURI(new File (parentFile, oldNameExt)).toURL();
+                            URL oldBinaryRoot = org.openide.util.BaseUtilities.toURI(new File (parentFile, oldNameExt)).toURL();
                             eventQueue.record(
                                     FileEventLog.FileOp.DELETE,
                                     oldBinaryRoot,
@@ -1246,7 +1247,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     private static final RequestProcessor WORKER = new RequestProcessor("RepositoryUpdater.worker", 1, false, false);
     private static final boolean notInterruptible = getSystemBoolean("netbeans.indexing.notInterruptible", false); //NOI18N
     private static final boolean useRecursiveListeners = getSystemBoolean("netbeans.indexing.recursiveListeners", true); //NOI18N
-    private static final int FILE_LOCKS_DELAY = org.openide.util.Utilities.isWindows() ? 2000 : 1000;
+    private static final int FILE_LOCKS_DELAY = BaseUtilities.isWindows() ? 2000 : 1000;
     private static final String PROP_LAST_INDEXED_VERSION = RepositoryUpdater.class.getName() + "-last-indexed-document-version"; //NOI18N
     private static final String PROP_LAST_DIRTY_VERSION = RepositoryUpdater.class.getName() + "-last-dirty-document-version"; //NOI18N
     private static final String PROP_MODIFIED_UNDER_WRITE_LOCK = RepositoryUpdater.class.getName() + "-modified-under-write-lock"; //NOI18N
@@ -4186,7 +4187,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 if (suspectFilesOrFileObjects.isEmpty()) {
                     depCtx.newBinariesToScan.addAll(scannedBinaries2InvDependencies.keySet());
                     try {
-                        depCtx.newRootsToScan.addAll(org.openide.util.Utilities.topologicalSort(scannedRoots2Dependencies.keySet(), scannedRoots2Dependencies));
+                        depCtx.newRootsToScan.addAll(BaseUtilities.topologicalSort(scannedRoots2Dependencies.keySet(), scannedRoots2Dependencies));
                     } catch (final TopologicalSortException tse) {
                         LOGGER.log(Level.INFO, "Cycles detected in classpath roots dependencies, using partial ordering", tse); //NOI18N
                         @SuppressWarnings("unchecked") List<URL> partialSort = tse.partialSort(); //NOI18N
@@ -4636,7 +4637,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 }
 
                 try {
-                    depCtx.newRootsToScan.addAll(org.openide.util.Utilities.topologicalSort(depCtx.newRoots2Deps.keySet(), depCtx.newRoots2Deps));
+                    depCtx.newRootsToScan.addAll(BaseUtilities.topologicalSort(depCtx.newRoots2Deps.keySet(), depCtx.newRoots2Deps));
                 } catch (final TopologicalSortException tse) {
                     LOGGER.log(Level.INFO, "Cycles detected in classpath roots dependencies, using partial ordering", tse); //NOI18N
                     @SuppressWarnings("unchecked") List<URL> partialSort = tse.partialSort(); //NOI18N
@@ -4879,7 +4880,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 if (!newMap.containsKey(key)) {
                     removedEntries.put(key, oldMap.get(key));
                 } else {
-                    if (!org.openide.util.Utilities.compareObjects(oldMap.get(key), newMap.get(key))) {
+                    if (!BaseUtilities.compareObjects(oldMap.get(key), newMap.get(key))) {
                         addedOrChangedEntries.put(key, newMap.get(key));
                     }
                 }
@@ -5286,7 +5287,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         if (packedIndex != null ) {
                             unpack(packedIndex, downloadFolder);
                             packedIndex.delete();
-                            if (patchDownloadedIndex(root,org.openide.util.Utilities.toURI(downloadFolder).toURL())) {
+                            if (patchDownloadedIndex(root,BaseUtilities.toURI(downloadFolder).toURL())) {
                                 final FileObject df = CacheFolder.getDataFolder(root);
                                 assert df != null;
                                 final File dataFolder = FileUtil.toFile(df);
@@ -5842,7 +5843,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         List<URL> sortedRoots;
 
                         try {
-                            sortedRoots = new ArrayList<URL>(org.openide.util.Utilities.topologicalSort(toSort.keySet(), getDefault().scannedRoots2Dependencies));
+                            sortedRoots = new ArrayList<URL>(BaseUtilities.topologicalSort(toSort.keySet(), getDefault().scannedRoots2Dependencies));
                         } catch (TopologicalSortException tse) {
                             LOGGER.log(Level.INFO, "Cycles detected in classpath roots dependencies, using partial ordering", tse); //NOI18N
                             @SuppressWarnings("unchecked") List<URL> partialSort = tse.partialSort(); //NOI18N
@@ -6213,7 +6214,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 if (sourcesListener != null) {
                     if (!sourceRoots.containsKey(root) && root.getProtocol().equals("file")) { //NOI18N
                         try {
-                            File f = org.openide.util.Utilities.toFile(root.toURI());
+                            File f = BaseUtilities.toFile(root.toURI());
                             safeAddRecursiveListener(sourcesListener, f, entry);
                             sourceRoots.put(root, f);
                         } catch (URISyntaxException use) {
@@ -6229,7 +6230,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         try {
                             URI uri = archiveUrl != null ? archiveUrl.toURI() : root.toURI();
                             if (uri.getScheme().equals("file")) { //NOI18N
-                                f = org.openide.util.Utilities.toFile(uri);
+                                f = BaseUtilities.toFile(uri);
                             }
                         } catch (URISyntaxException use) {
                             LOGGER.log(Level.INFO, "Can't convert " + root + " to java.io.File; archiveUrl=" + archiveUrl, use); //NOI18N
@@ -6290,7 +6291,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             @Override
                             public boolean accept(@NonNull final File pathname) {
                                 try {
-                                    return entry.includes(org.openide.util.Utilities.toURI(pathname).toURL());
+                                    return entry.includes(BaseUtilities.toURI(pathname).toURL());
                                 } catch (MalformedURLException ex) {
                                     Exceptions.printStackTrace(ex);
                                     return true;

@@ -122,10 +122,6 @@ public class AttachableDocumentIndexCacheTest extends NbTestCase {
         super.tearDown();
     }
 
-
-
-
-
     public void testMissingDetach234616 () {
         //1st run - the logger throws some ugly exception during the save of Indexer1 index
         IndexingManager.getDefault().refreshIndexAndWait(src.toURL(), null, true);

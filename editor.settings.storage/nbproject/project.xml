@@ -203,6 +203,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.editor.fold</friend>
                 <friend>org.netbeans.modules.editor.fold.nbui</friend>
                 <friend>org.netbeans.modules.parsing.api</friend>
+                <friend>org.netbeans.modules.parsing.indexing</friend>
                 <package>org.netbeans.modules.editor.settings.storage.api</package>
                 <package>org.netbeans.modules.editor.settings.storage.spi</package>
                 <package>org.netbeans.modules.editor.settings.storage.spi.support</package>

@@ -75,7 +75,7 @@ import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 /**
  *
@@ -501,7 +501,7 @@ public final class ClusteredIndexables {
         public ClearReference(
                 @NonNull final Collection[] data,
                 @NonNull final DocumentIndexCacheImpl owner) {
-            super(data, Utilities.activeReferenceQueue());
+            super(data, BaseUtilities.activeReferenceQueue());
             Parameters.notNull("data", data);   //NOI18N
             Parameters.notNull("owner", owner); //NOI18N
             this.owner = owner;

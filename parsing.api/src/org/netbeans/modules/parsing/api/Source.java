@@ -79,8 +79,8 @@ import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceCache;
 import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
-import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -190,7 +190,7 @@ public final class Source {
             }
             
             if (source == null) {
-                FileObject fileObject = Util.getFileObject(document);
+                FileObject fileObject = Utilities.getFileObject(document);
                 if (fileObject != null) {
                     source = Source._get(mimeType, fileObject);
                 } else {
@@ -199,7 +199,7 @@ public final class Source {
                         LanguagePath path = LanguagePath.get(MimeLookup.getLookup(mimeType).lookup(Language.class));
                         Document doc = (Document) attributes.getValue(path, "dialogBinding.document"); //NOI18N
                         if (doc != null) {
-                            fileObject = Util.getFileObject(doc);
+                            fileObject = Utilities.getFileObject(doc);
                         } else {
                             fileObject = (FileObject) attributes.getValue(path, "dialogBinding.fileObject"); //NOI18N
                         }

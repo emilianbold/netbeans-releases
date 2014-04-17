@@ -93,9 +93,6 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdaterTestSupport;
-import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -114,6 +111,7 @@ import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -134,7 +132,6 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
         suite.addTest(new TaskProcessorTest("testCancelCall"));                                 //NOI18N
         suite.addTest(new TaskProcessorTest("testTaskCall"));                                   //NOI18N
         suite.addTest(new TaskProcessorTest("testParserCall"));                                 //NOI18N
-        suite.addTest(new TaskProcessorTest("testRunWhenScanFinishGetCalledUnderCCLock"));      //NOI18N
         suite.addTest(new TaskProcessorTest("testRunLoopSuspend"));                             //NOI18N
         suite.addTest(new TaskProcessorTest("testRunLoopSuspend2"));                            //NOI18N
         suite.addTest(new TaskProcessorTest("testSlowCancelSampler"));                          //NOI18N
@@ -142,11 +139,14 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
         suite.addTest(new TaskProcessorTest("testParserCancelInUT"));                           //NOI18N
         return suite;
     }
-
+    
+    private IndexerEmulator emu = new IndexerEmulator();
+    
     @Override
     protected void setUp() throws Exception {        
         super.setUp();
         clearWorkDir();
+        MockLookup.setInstances(emu);
     }
     
     public void testWarningWhenRunUserTaskCalledFromAWT() throws Exception {
@@ -463,64 +463,6 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
         assertTrue("AssertionError not expected when calling callGetResult with parser lock", success); //NOI18N
         assertEquals(1, parser.resultCount);
         
-    }
-
-    public void testRunWhenScanFinishGetCalledUnderCCLock() throws Exception {
-        final File wd = getWorkDir();
-        final File srcDir = new File (wd,"src");
-        srcDir.mkdirs();
-        final File file = new File (srcDir,"test.foo");
-        file.createNewFile();
-        FileUtil.setMIMEType("foo", "text/foo");
-        MockMimeLookup.setInstances(MimePath.parse("text/foo"), new FooParserFactory(), new PlainKit());
-        final FileObject fo = FileUtil.toFileObject(file);
-        final DataObject dobj = DataObject.find(fo);
-        final EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
-        final StyledDocument doc = ec.openDocument();
-        final Source src = Source.create(doc);
-        final CountDownLatch ruRunning = new CountDownLatch(1);
-        final CountDownLatch rwsfCalled = new CountDownLatch(1);
-        final AtomicReference<Set<RepositoryUpdater.IndexingState>> indexing = new AtomicReference<Set<RepositoryUpdater.IndexingState>>();
-        final Utilities.IndexingStatus is = new Utilities.IndexingStatus() {
-            @Override
-            public Set<? extends RepositoryUpdater.IndexingState> getIndexingState() {
-                return indexing.get();
-            }
-        };
-        Utilities.setIndexingStatus(is);
-        RepositoryUpdaterTestSupport.runAsWork(
-                new Runnable(){
-                    @Override
-                    public void run() {
-                        indexing.set(EnumSet.of(RepositoryUpdater.IndexingState.WORKING));
-                        try {
-                            ruRunning.countDown();
-                            rwsfCalled.await();
-                        } catch (InterruptedException ie) {
-                        } finally {
-                            indexing.set(EnumSet.noneOf(RepositoryUpdater.IndexingState.class));
-                        }
-                    }
-                });
-        ruRunning.await();
-        doc.putProperty("completion-active", Boolean.TRUE);
-        try {
-            final Future<Void> done = ParserManager.parseWhenScanFinished(Collections.<Source>singleton(src),new UserTask() {
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {                    
-                }
-        });
-        assertFalse(done.isDone());
-        assertFalse(done.isCancelled());
-        rwsfCalled.countDown();
-        try {
-            done.get(5, TimeUnit.SECONDS);
-        } catch (TimeoutException te) {
-            assertTrue("Deadlock",false);
-        }
-        } finally {
-            doc.putProperty("completion-active", null);
-        }
     }
 
     public void testRunLoopSuspend() throws Exception {
@@ -987,7 +929,7 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
                 }
                 filteredStackTrace.add(e);
             }
-            caller = Util.findCaller(filteredStackTrace.toArray(new StackTraceElement[filteredStackTrace.size()]));
+            caller = Utilities.findCaller(filteredStackTrace.toArray(new StackTraceElement[filteredStackTrace.size()]));
         }
     }
 

@@ -64,7 +64,7 @@ import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.TopologicalSortException;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 /**
  *
@@ -172,8 +172,8 @@ public final class Util {
                 }
                 // Performance optimization for File.toURI() which calls this method
                 // and the original implementation calls into native method
-                return Utilities.toURI(new FastFile(
-                    Utilities.toFile(root.toURI()),
+                return BaseUtilities.toURI(new FastFile(
+                    BaseUtilities.toFile(root.toURI()),
                     relativePath,
                     isDirectory)).toURL();
             } else {
@@ -210,7 +210,7 @@ public final class Util {
         }
         // Performance optimization for File.toURI() which calls this method
         // and the original implementation calls into native method
-        return Utilities.toURI(new FastFile(
+        return BaseUtilities.toURI(new FastFile(
             file,
             relativePath,
             isDirectory)).toURL();
@@ -295,7 +295,7 @@ public final class Util {
     private static Map<URL,Collection<URL>> fastTransitiveDeps(
         @NonNull final Map<URL,? extends Collection<URL>> inverseDeps,
         @NonNull final Map<URL,? extends Collection<URL>> peers) throws TopologicalSortException {
-        final List<URL> sortedNodes = Utilities.topologicalSort(inverseDeps.keySet(), inverseDeps);
+        final List<URL> sortedNodes = BaseUtilities.topologicalSort(inverseDeps.keySet(), inverseDeps);
         Collections.reverse(sortedNodes);        
         final Map<URL,Collection<URL>> result = new HashMap<URL,Collection<URL>>();
         for (Map.Entry<URL,? extends Collection<URL>> peerEntry : peers.entrySet()) {

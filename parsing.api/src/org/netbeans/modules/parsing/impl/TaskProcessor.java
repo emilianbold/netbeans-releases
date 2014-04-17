@@ -57,9 +57,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
 import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -78,12 +76,10 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.api.indexing.IndexingManager;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
-import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.spi.*;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
@@ -176,7 +172,7 @@ public class TaskProcessor {
         boolean a = false;
         assert a = true;
         if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
-            StackTraceElement stackTraceElement = Util.findCaller(Thread.currentThread().getStackTrace(), TaskProcessor.class, ParserManager.class, 
+            StackTraceElement stackTraceElement = Utilities.findCaller(Thread.currentThread().getStackTrace(), TaskProcessor.class, ParserManager.class, 
                     "org.netbeans.api.java.source.JavaSource", //NOI18N
                     "org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper"); //NOI18N
             if (stackTraceElement != null && warnedAboutRunInEQ.add(stackTraceElement)) {
@@ -190,7 +186,7 @@ public class TaskProcessor {
             }
         });
         try {
-            RepositoryUpdater.getDefault().suspend();
+            suspendOrResumeBackgroundTasks(true);
             try {
                 parserLock.lock();
                 try {
@@ -216,7 +212,7 @@ public class TaskProcessor {
                     parserLock.unlock();
                 }
             } finally {
-                RepositoryUpdater.getDefault().resume();
+                suspendOrResumeBackgroundTasks(false);
             }
         } finally {
             currentRequest.cancelCompleted (request);
@@ -432,13 +428,13 @@ public class TaskProcessor {
             
     //Package private methods needed by the Utilities accessor
     static void acquireParserLock () {
-        RepositoryUpdater.getDefault().suspend();
+        suspendOrResumeBackgroundTasks(true);
         parserLock.lock();
     }
 
     static void releaseParserLock () {
         parserLock.unlock();
-        RepositoryUpdater.getDefault().resume();
+        suspendOrResumeBackgroundTasks(false);
     }
 
     static boolean holdsParserLock () {
@@ -669,7 +665,7 @@ public class TaskProcessor {
                                 final SourceCache sourceCache = r.cache;
                                 if (sourceCache == null) {
                                     assert r.task instanceof ParserResultTask : "Illegal request: EmbeddingProvider has to be bound to Source";     //NOI18N
-                                    RepositoryUpdater.getDefault().suspend();
+                                    suspendOrResumeBackgroundTasks(true);
                                     try {
                                         parserLock.lock();
                                         try {
@@ -690,7 +686,7 @@ public class TaskProcessor {
                                             parserLock.unlock();
                                         }
                                     } finally {
-                                        RepositoryUpdater.getDefault().resume();
+                                        suspendOrResumeBackgroundTasks(false);
                                     }
                                 } else {
                                     final Source source = sourceCache.getSnapshot().getSource();
@@ -707,7 +703,7 @@ public class TaskProcessor {
                                         }
                                     }
 
-                                    RepositoryUpdater.getDefault().suspend();
+                                    suspendOrResumeBackgroundTasks(true);
                                     try {
                                         if (validFlags == 0) {
                                             Snapshot snapshot = null;
@@ -728,7 +724,7 @@ public class TaskProcessor {
                                                             if (currentResult != null) {
                                                                 try {
                                                                     final boolean sourceInvalid = SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.INVALID);
-                                                                    final boolean scanInProgress = IndexingManager.getDefault().isIndexing();
+                                                                    final boolean scanInProgress = getIndexerBridge().isIndexing();
                                                                     final boolean canRunDuringScan = (r.task instanceof IndexingAwareParserResultTask)
                                                                             && ((IndexingAwareParserResultTask) r.task).getIndexingMode() == TaskIndexingMode.ALLOWED_DURING_SCAN;
                                                                     final boolean compatMode = "true".equals(System.getProperty(COMPAT_MODE));  //NOI18N
@@ -789,7 +785,7 @@ public class TaskProcessor {
                                             }
                                         }
                                     } finally {
-                                        RepositoryUpdater.getDefault().resume();
+                                        suspendOrResumeBackgroundTasks(false);
                                     }
                                     //Maybe should be in finally to prevent task lost when parser crashes
                                     //threading: Cannot be called with suspended RU. When RU is suspended and
@@ -1243,5 +1239,69 @@ public class TaskProcessor {
             assert profiler == null;
             profiler = new SelfProfile(System.currentTimeMillis());
         }
+    }
+    
+    private static volatile Lookup.Result<BackgroundTaskControl> controllers;
+    
+    private static void suspendOrResumeBackgroundTasks(boolean stop) {
+        Collection<? extends BackgroundTaskControl> ctrls = getBackgroundControllers();
+        int success = 0;
+        try {
+            for (BackgroundTaskControl ctrl : ctrls) {
+                    if (stop) {
+                        ctrl.suspend();
+                    } else {
+                        ctrl.resume();
+                    }
+                    success++;
+            }
+        } finally {
+            if (success < ctrls.size()) {
+                for (BackgroundTaskControl ctrl : ctrls) {
+                    ctrl.resume();
+                    if (--success == 0) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    
+    static Collection<? extends BackgroundTaskControl> getBackgroundControllers() {
+        if (controllers == null) {
+            Lookup.Result<BackgroundTaskControl> ctrls = Lookup.getDefault().lookupResult(BackgroundTaskControl.class);
+            controllers = ctrls;
+        }
+        return controllers.allInstances();
+    }
+    
+    private static volatile IndexerBridge indexingBridge;
+    
+    public static IndexerBridge getIndexerBridge() {
+        IndexerBridge bridge = indexingBridge;
+        if (bridge != null) {
+            return bridge;
+        }
+        bridge = Lookup.getDefault().lookup(IndexerBridge.class);
+        if (bridge == null) {
+            bridge = new IndexerBridge() { 
+                @Override
+                public boolean isIndexing() {
+                    return false;
+                }
+
+                @Override
+                public boolean ownsProtectedMode() {
+                    return false;
+                }
+
+                @Override
+                public boolean canReleaseCompletionLock() {
+                    return false;
+                }
+                
+            };
+        }
+        return indexingBridge = bridge;
     }
 }
