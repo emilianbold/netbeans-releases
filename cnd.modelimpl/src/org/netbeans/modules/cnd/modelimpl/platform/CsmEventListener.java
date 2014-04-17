@@ -123,7 +123,7 @@ import org.openide.util.RequestProcessor;
             CsmEvent converted = convert(prev, event);
             if (TraceFlags.TRACE_EXTERNAL_CHANGES && prev != null && prev != NULL) {
                 if (prev.getKind() != converted.getKind() || !prev.getPath().equals(converted.getPath())) {
-                    CsmEvent.trace("converted %s to %s", prev, converted);
+                    CsmEvent.trace("converted %s to %s", prev, converted); // NOI18N
                 }
             }
             events.put(path, converted);
