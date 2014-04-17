@@ -503,4 +503,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // Bug 243560 - inaccuracy tests (clang): explicit instantiation
         performTest("bug243560.cpp");
     }
+    
+    public void testBug243508() throws Exception {
+        // Bug 243508 - inaccuracy tests (clang): 'using typename' in namespace
+        performTest("bug243508.cpp");        
+    }
 }
