@@ -224,6 +224,9 @@ public final class CsmEventDispatcher {
         if (model == null) {
             return;
         }
+        if (event.getPath().endsWith("/revokeall.c")) {
+            System.err.println("");
+        }
         CsmEvent.trace("dispatching %s", event); // NOI18N
         switch (event.getKind()) {
             case ITEM_ADDED:

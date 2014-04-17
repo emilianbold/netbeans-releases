@@ -125,6 +125,12 @@ import org.openide.filesystems.FileObject;
             assert kind.getObjectClass().isAssignableFrom(object.getClass()) :
                     "Wrong object class " + object.getClass().getName() + ", should be " + kind.getObjectClass().getName(); //NOI18N
         }
+        if ((object instanceof NativeFileItem)) {
+            NativeFileItem item = (NativeFileItem) object;
+            if (item.getAbsolutePath().endsWith("/revokeall.c")) {
+                System.err.println("");
+            }
+        }
         this.kind = kind;
         this.object = object;
         this.oldPath = oldPath;
