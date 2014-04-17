@@ -271,8 +271,10 @@ public class TypeFactory {
         ///// INIT CLASSFIER stuff
         if( typeStart != null) {
             if (typeStart.getType() == CPPTokenTypes.LITERAL_struct ||
-                    typeStart.getType() == CPPTokenTypes.LITERAL_class ||
-                    typeStart.getType() == CPPTokenTypes.LITERAL_union) {
+                typeStart.getType() == CPPTokenTypes.LITERAL_class ||
+                typeStart.getType() == CPPTokenTypes.LITERAL_union ||
+                typeStart.getType() == CPPTokenTypes.LITERAL_enum) 
+            {
                 typeStart = typeStart.getNextSibling();
             }            
         }

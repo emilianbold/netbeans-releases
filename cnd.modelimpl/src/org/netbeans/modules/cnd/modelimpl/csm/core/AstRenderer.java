@@ -170,6 +170,7 @@ public class AstRenderer {
                                 csmEnum = (EnumImpl)o;
                                 csmEnum.init(currentNamespace, token, file, !isRenderingLocalContext());
                                 container.addDeclaration(csmEnum);
+                                addTypedefs(renderTypedef(token, csmEnum, currentNamespace).typedefs, currentNamespace, container, csmEnum);
                                 renderVariableInClassifier(token, csmEnum, currentNamespace, container);
                             } else {
                                 planB = true;
@@ -179,6 +180,7 @@ public class AstRenderer {
                         }                    
                         if(planB) {
                             csmEnum = createEnum(token, currentNamespace, container);
+                            addTypedefs(renderTypedef(token, csmEnum, currentNamespace).typedefs, currentNamespace, container, csmEnum);
                             renderVariableInClassifier(token, csmEnum, currentNamespace, container);                        
                         }
                         if (csmEnum != null) {
@@ -362,7 +364,7 @@ public class AstRenderer {
         }
     }
 
-    protected void addTypedefs(Collection<CsmTypedef> typedefs, NamespaceImpl currentNamespace, MutableDeclarationsContainer container, ClassImpl enclosingClassifier) {
+    protected void addTypedefs(Collection<CsmTypedef> typedefs, NamespaceImpl currentNamespace, MutableDeclarationsContainer container, ClassEnumBase enclosingClassifier) {
         if (typedefs != null) {
             for (CsmTypedef typedef : typedefs) {
                 // It could be important to register in project before add as member...
@@ -934,7 +936,7 @@ public class AstRenderer {
     }
 
     @SuppressWarnings("fallthrough")
-    protected Pair renderTypedef(AST ast, CsmClass cls, CsmObject container) {
+    protected Pair renderTypedef(AST ast, ClassEnumBase cls, CsmObject container) {
 
         Pair results = new Pair();
 
@@ -955,6 +957,7 @@ public class AstRenderer {
                 case CPPTokenTypes.LITERAL_class:
                 case CPPTokenTypes.LITERAL_union:
                 case CPPTokenTypes.LITERAL_struct:
+                case CPPTokenTypes.LITERAL_enum:
 
                     AST curr = AstUtil.findSiblingOfType(classNode, CPPTokenTypes.RCURLY);
                     if (curr == null) {
@@ -995,7 +998,7 @@ public class AstRenderer {
                                 }
                                 if (typedef != null) {
                                     if (cls != null) {
-                                        results.enclosing = (ClassImpl)cls;
+                                        results.enclosing = cls;
                                     }
                                     results.typedefs.add(typedef);
                                 }
@@ -1721,6 +1724,7 @@ public class AstRenderer {
         if (typeof || tokType.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ||
                 tokType.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND ||
                 tokType.getType() == CPPTokenTypes.CSM_QUALIFIED_ID && isThisReference ||
+                tokType.getType() == CPPTokenTypes.IDENT && isThisReference||
                 tokType.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
             AST nextToken;
             if(tokType.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
