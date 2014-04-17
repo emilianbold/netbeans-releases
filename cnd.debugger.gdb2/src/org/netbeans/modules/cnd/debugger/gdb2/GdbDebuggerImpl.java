@@ -3783,10 +3783,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    }
             send(cmd);
 	}
-        
-        if (sd.isNoPrint()) {
-            send("handle " + sigName + " noprint");
-        }
 
 	boolean signalDiscarded = sd.discardSignal();
 	if (signalDiscarded) {
