@@ -1083,33 +1083,8 @@ is divided into following sections:
                 =================
             </xsl:comment>
 
-            <target name="run">
-                <xsl:attribute name="depends">init,-clean-if-config-changed,jar</xsl:attribute>
+            <target name="run" depends="init,clean,jar">
                 <nb-run jadfile="${{dist.dir}}/${{dist.jad}}" jarfile="{{dist.jar.file}}" jadurl="${{dist.jad.url}}" device="${{platform.device}}" platformhome="${{platform.home}}" platformtype="${{platform.type}}" execmethod="${{run.method}}" commandline="${{platform.runcommandline}}" classpath="${{platform.bootclasspath}}:${{dist.dir}}/${{dist.jar}}" cmdoptions="${{run.cmd.options}}"/>
-            </target>
-
-            <target name="-check-clean-if-config-changed">
-                <xsl:attribute name="depends">-init-project</xsl:attribute>
-                <uptodate property="javame.jar.newer.than.nbproject" targetfile="${{dist.dir}}${{file.separator}}${{dist.jar.file}}" >
-                    <srcfiles dir="${{basedir}}${{file.separator}}nbproject" includes="**${{file.separator}}*"/>
-                </uptodate>
-                <echo message="javame.jar.newer.than.nbproject = ${{javame.jar.newer.than.nbproject}}" level="verbose"/>
-                <available file="${{dist.dir}}${{file.separator}}${{dist.jar.file}}" type="file" property="javame.jar.exists"/>
-                <condition property="request.clean.due.to.config.change">
-                    <and>
-                        <isset property="javame.jar.exists"/>
-                        <not>
-                            <isset property="javame.jar.newer.than.nbproject"/>
-                        </not>
-                    </and>
-                </condition>
-            </target>
-
-            <target name="-clean-if-config-changed">
-                <xsl:attribute name="depends">-check-clean-if-config-changed</xsl:attribute>
-                <xsl:attribute name="if">request.clean.due.to.config.change</xsl:attribute>
-                <echo message="Config change detected. Invoking clean." level="verbose"/>
-                <antcall target="clean"/>
             </target>
 
             <xsl:comment>
