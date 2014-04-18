@@ -1691,9 +1691,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (!thread.isCurrent()) {
             String tid = ((GdbThread) thread).getId();
             
-            if (thread.isSuspended()) {// We shouldn't select running thread
-                selectThread(-1, tid, true); // notify gdb to set current thread
-            }
+            selectThread(-1, tid, true); // notify gdb to set current thread
 
             if (get_debugging) {    // TODO maybe better way
                 for (GdbThread debuggingViewThread : threadsWithStacks) {
