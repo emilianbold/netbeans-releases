@@ -508,4 +508,8 @@ public class FileModel2Test extends TraceModelTestBase {
         // Bug 243508 - inaccuracy tests (clang): 'using typename' in namespace
         performTest("bug243508.cpp");        
     }
+    
+    public void testFunctionReturningEnum() throws Exception {
+        performTest("function_returning_enum.cpp");
+    }
 }
