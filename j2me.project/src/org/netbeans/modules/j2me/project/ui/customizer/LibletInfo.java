@@ -103,8 +103,7 @@ public class LibletInfo {
             LibletInfo lib = (LibletInfo) obj;
             return this.type == lib.getType()
                     && this.name.equals(lib.getName())
-                    && this.vendor.equals(lib.getVendor())
-                    && this.version.equals(lib.getVersion());
+                    && this.vendor.equals(lib.getVendor());
         }
         return false;
     }
