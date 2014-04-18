@@ -434,6 +434,13 @@ public class DebugTreeView extends BeanTreeView {
                 synchronized (currentDVSupportLock) {
                     currentDVSupport = null;
                     currentDVSupportSet = false;
+                    if (evt.getNewValue() == null) {
+                        // No debug engine
+                        if (dmListener != null) {
+                            DebuggerManager.getDebuggerManager().removeDebuggerListener(DebuggerManager.PROP_CURRENT_ENGINE, dmListener);
+                            dmListener = null;
+                        }
+                    }
                 }
             }
         }
