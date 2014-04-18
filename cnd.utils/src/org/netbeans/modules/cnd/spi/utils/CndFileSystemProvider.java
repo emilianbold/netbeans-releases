@@ -204,6 +204,14 @@ public abstract class CndFileSystemProvider {
     public static FileSystem getLocalFileSystem() {
         return DefaultProvider.getRootFileSystem();
     }
+    
+    public static boolean isWindows(FileSystem fs) {
+        return (fs == null) ? Utilities.isWindows() : getDefault().isWindowsImpl(fs);
+    }
+    
+    public static boolean isMacOS(FileSystem fs) {
+        return (fs == null) ? Utilities.isMac() : getDefault().isMacOSImpl(fs);
+    }
 
     /**
      * Checks whether the file specified by path exists or not
@@ -243,6 +251,8 @@ public abstract class CndFileSystemProvider {
 
     protected abstract boolean isAbsoluteImpl(FileSystem fs, String path);
 
+    protected abstract boolean isMacOSImpl(FileSystem fs);
+    protected abstract boolean isWindowsImpl(FileSystem fs);
     
     private static class DefaultProvider extends CndFileSystemProvider {
         private static final String FILE_PROTOCOL_PREFIX = "file:"; // NOI18N
@@ -552,6 +562,22 @@ public abstract class CndFileSystemProvider {
                 return provider.isAbsoluteImpl(fs, path);
             }
             return CndPathUtilities.isAbsolute(path);
+        }        
+
+        @Override
+        protected boolean isMacOSImpl(FileSystem fs) {
+            for (CndFileSystemProvider provider : cache) {
+                return provider.isMacOSImpl(fs);
+            }
+            return Utilities.isMac();
+        }
+
+        @Override
+        protected boolean isWindowsImpl(FileSystem fs) {
+            for (CndFileSystemProvider provider : cache) {
+                return provider.isWindowsImpl(fs);
+            }
+            return Utilities.isWindows();
         }        
     }
 }
