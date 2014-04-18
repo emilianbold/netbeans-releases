@@ -59,6 +59,7 @@ import org.openide.nodes.Sheet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.api.xml.*;
+import org.netbeans.modules.cnd.debugger.common2.debugger.options.SignalsNodeProp;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 
@@ -188,7 +189,7 @@ public class GdbProfile extends DbgProfile implements
 	
         set.put(new PathmapNodeProp(this, "SubPropDisplayName")); // NOI18N
 	// LATER set.put(new ExceptionsNodeProp(this));
-	// LATER set.put(new SignalsNodeProp(this));
+        set.put(new SignalsNodeProp(this));
 	sheet.put(set);
 
 //	set = new Sheet.Set();

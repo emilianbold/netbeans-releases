@@ -1377,6 +1377,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         // get supported features
         initFeatures();
         
+        // init signals list
+        initSignalsList();
+        
         //init global parameters
         send("-gdb-set print repeat " + PRINT_REPEAT); // NOI18N
         send("-gdb-set backtrace limit " + STACK_MAX_DEPTH); // NOI18N
@@ -1857,6 +1860,20 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             @Override
             protected void onDone(MIRecord record) {
                 peculiarity.setFeatures(record);
+                finish();
+            }
+        };
+        cmd.dontReportError();
+        gdb.sendCommand(cmd);
+    }
+    
+    private void initSignalsList() {
+        // Should be replaced with MI command when this functionality is supported by MI
+        MiCommandImpl cmd = new MiCommandImpl("info signals") { //NOI18N
+            @Override
+            protected void onDone(MIRecord record) {
+                String signalList = getConsoleStream();
+                ((GdbDebuggerSettingsBridge)profileBridge()).noteSignalList(signalList);
                 finish();
             }
         };
@@ -3758,9 +3775,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
 	Signals.InitialSignalInfo dsii = null;
 	int signo = 0;
-	int index = 0;
 	DbgProfile debugProfile = getNDI().getDbgProfile();
-	dsii = debugProfile.signals().getSignal(index);
+	dsii = debugProfile.signals().getSignalByName(sigName);
 
 	boolean wasIgnored = false;
 	if (dsii != null) {
@@ -3769,17 +3785,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	} else {
 	    sd.setIgnore(true, false); // default
 	}
-        sd.hideIgnore();
 
 	sd.show();
 
-	if (dsii != null && sd.isIgnore() != wasIgnored) {
+	if (dsii != null /*&& sd.isIgnore() != wasIgnored*/) {
 	    String cmd;
 	    if (sd.isIgnore()) {
 		// gdb seems to not be able to ignore caught signals???
-		cmd = "ignore signal " + sigName; // NOI18N
+		cmd = "handle " + sigName + " noprint"; // NOI18N
 	    } else {
-		cmd = "catch signal " + sigName; // NOI18N
+		cmd = "handle " + sigName + " stop"; // NOI18N
 	    }
             send(cmd);
 	}
