@@ -124,6 +124,8 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
 
     private static final Logger LOG = Logger.getLogger(WritableXMLFileSystem.class.getName());
     
+    private static RequestProcessor RP = new RequestProcessor(WritableXMLFileSystem.class.getName());
+    
     private final TreeEditorCookie cookie;
     private TreeDocumentRoot doc; // may be null if malformed
     private URL location;
@@ -1444,7 +1446,7 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
         if (cookie.getStatus() == TreeEditorCookie.STATUS_OK || cookie.getStatus() == TreeEditorCookie.STATUS_NOT) {
             // Document was modified, and reparsed OK. See what changed.
             if (System.getProperty("Run-OpenDocRoot-Synchronously") == null || !System.getProperty("Run-OpenDocRoot-Synchronously").equals("true")) {
-                RequestProcessor.getDefault().post(new Runnable() {
+                RP.post(new Runnable() {
 
                     @Override
                     public void run() {
