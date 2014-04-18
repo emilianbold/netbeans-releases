@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,32 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.libs.git.jgit.factory;
 
-package org.netbeans.libs.git.jgit;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.libs.git.jgit.factory.CheckJava7ExtensionTest;
-import org.netbeans.libs.git.jgit.factory.CreateClientTest;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import org.eclipse.jgit.util.FS;
+import org.eclipse.jgit.util.FS.FSFactory;
+import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 
 /**
  *
  * @author ondra
  */
-public class ClientFactoryTestSuite extends NbTestSuite {
+public class CheckJava7ExtensionTest extends AbstractGitTestCase {
 
-    public ClientFactoryTestSuite (String testName) {
-        super(testName);
+    public CheckJava7ExtensionTest (String name) throws IOException {
+        super(name);
     }
-
-    public static Test suite() throws Exception {
-        TestSuite suite = new TestSuite();
-        suite.addTestSuite(CreateClientTest.class);
-        suite.addTestSuite(CheckJava7ExtensionTest.class);
-        return suite;
+    
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
     }
-
+    
+    public void testExtension () throws Exception {
+        // ping the factory
+        FS fs = FS.DETECTED;
+        Field f = FS.class.getDeclaredField("factory");
+        f.setAccessible(true);
+        FSFactory fact = (FSFactory) f.get(FS.class);
+        assertEquals("org.eclipse.jgit.util.Java7FSFactory", fact.getClass().getName());
+    }
+    
 }
