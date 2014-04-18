@@ -235,7 +235,9 @@ public class CsmBaseUtilities {
             } else if (!classifiers.isEmpty()) {
                 decl = classifiers.iterator().next();
                 def = cls;
-                System.err.printf("not found declaration for self: %s; use %s\n", target, decl);
+                if (TRACE_XREF_REPOSITORY) {
+                    System.err.printf("not found declaration for self: %s; use %s\n", target, decl);
+                }
             } else {
                 decl = target;
                 def = null;
