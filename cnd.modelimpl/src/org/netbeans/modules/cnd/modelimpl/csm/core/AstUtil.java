@@ -82,6 +82,16 @@ public class AstUtil {
 	return (ast == null || ast.getType() == CPPTokenTypes.EOF);
     }
 
+    public static boolean isElaboratedKeyword(AST ast) {
+        if (ast != null) {
+            return ast.getType() == CPPTokenTypes.LITERAL_struct ||
+                   ast.getType() == CPPTokenTypes.LITERAL_class ||
+                   ast.getType() == CPPTokenTypes.LITERAL_union ||
+                   ast.getType() == CPPTokenTypes.LITERAL_enum;
+        }
+        return false;
+    }
+    
     public static CharSequence getRawNameInChildren(AST ast) {
         return getRawName(findIdToken(ast));
     }

@@ -855,7 +855,7 @@ template_explicit_specialization
                 |   LITERAL_typedef
             )*
             enum_specifier (init_declarator_list[declOther])? 
-            SEMICOLON!
+            SEMICOLON
             { #template_explicit_specialization = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #template_explicit_specialization); }
         |
             (   (LITERAL___extension__!)?
@@ -1080,7 +1080,7 @@ declaration_template_impl { String s; K_and_R = false; boolean ctrName=false; bo
                     |   LITERAL_typedef
                 )*
                 enum_specifier (init_declarator_list[declOther])? 
-                SEMICOLON!
+                SEMICOLON
                 { #declaration_template_impl = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #declaration_template_impl); }
             |
                 (   (LITERAL___extension__!)?

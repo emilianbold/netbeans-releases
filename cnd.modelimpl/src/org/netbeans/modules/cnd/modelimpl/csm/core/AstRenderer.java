@@ -1479,9 +1479,9 @@ public class AstRenderer {
                     return TypeFactory.createType(typeAST, file, ptrOperator, 0);
                 }                
             }
-            if (tokType.getType() == CPPTokenTypes.LITERAL_struct ||
-                    tokType.getType() == CPPTokenTypes.LITERAL_class ||
-                    tokType.getType() == CPPTokenTypes.LITERAL_union) {
+            if (AstUtil.isElaboratedKeyword(tokType)) {
+                boolean createForwardDecl = (tokType.getType() != CPPTokenTypes.LITERAL_enum);
+                
                 AST next = tokType.getNextSibling();
                 if (next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
                     AST tokenTypeStart = tokType;
@@ -1491,7 +1491,7 @@ public class AstRenderer {
                     
                     AST ptrOperator = (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) ? next : null;
                     
-                    if (scope != null) {
+                    if (createForwardDecl && scope != null) {
                         // Find first namespace scope to add elaborated forwards in it
                         MutableObject<CsmNamespace> targetScope = new MutableObject<>();
                         MutableObject<MutableDeclarationsContainer> targetDefinitionContainer = new MutableObject<>();
@@ -1683,8 +1683,8 @@ public class AstRenderer {
                 tokType.getType() == CPPTokenTypes.LITERAL_class)) {
             // This is struct/class word for reference on containing struct/class
             AST keyword = tokType;
-            tokType = tokType.getNextSibling();
             typeAST = tokType;
+            tokType = tokType.getNextSibling();
             if (tokType == null) {
                 return false;
             }
@@ -1791,7 +1791,7 @@ public class AstRenderer {
                                         type = TypeFactory.createBuiltinType(AstUtil.getText(typeNameToken), ptrOperator, 0, tokType, file);
                                     }
                                 } else {
-                                    type = TypeFactory.createType(tokType, file, ptrOperator, 0);
+                                    type = TypeFactory.createType(typeAST, file, ptrOperator, 0);
                                 }
                                 if (isVariableLikeFunc(token)) {
 //                                    CsmScope scope = (namespaceContainer instanceof CsmNamespace) ? (CsmNamespace) namespaceContainer : null;
@@ -2568,6 +2568,7 @@ public class AstRenderer {
                     case CPPTokenTypes.LITERAL_struct:
                     case CPPTokenTypes.LITERAL_class:
                     case CPPTokenTypes.LITERAL_union:
+                    case CPPTokenTypes.LITERAL_enum:
                         return token;
                     default:
                         if( AstRenderer.isCVQualifier(type) ) {
