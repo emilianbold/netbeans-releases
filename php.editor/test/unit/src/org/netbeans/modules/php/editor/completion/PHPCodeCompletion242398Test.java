@@ -40,68 +40,43 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.twig.editor.format;
+package org.netbeans.modules.php.editor.completion;
+
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class TwigIndenterTest extends TwigIndenterTestBase {
+public class PHPCodeCompletion242398Test extends PHPCodeCompletionTestBase {
 
-    public TwigIndenterTest(String testName) {
+    public PHPCodeCompletion242398Test(String testName) {
         super(testName);
     }
 
-    public void testIssue230506_01() throws Exception {
-        indent("testIssue230506_01");
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests242398/issue242398_01.php", "public function foo(^", false);
     }
 
-    public void testIssue230506_02() throws Exception {
-        indent("testIssue230506_02");
+    public void testUseCase2() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests242398/issue242398_02.php", "public function foo(^)", false);
     }
 
-    public void testIssue230506_03() throws Exception {
-        indent("testIssue230506_03");
-    }
-
-    public void testIssue230506_04() throws Exception {
-        indent("testIssue230506_04");
-    }
-
-    public void testIssue230506_05() throws Exception {
-        indent("testIssue230506_05");
-    }
-
-    public void testIssue230506_06() throws Exception {
-        indent("testIssue230506_06");
-    }
-
-    public void testIssue230506_07() throws Exception {
-        indent("testIssue230506_07");
-    }
-
-    public void testIssue230506_08() throws Exception {
-        indent("testIssue230506_08");
-    }
-
-    public void testIssue230506_09() throws Exception {
-        indent("testIssue230506_09");
-    }
-
-    public void testIssue230506_10() throws Exception {
-        indent("testIssue230506_10");
-    }
-
-    public void testIssue230506_11() throws Exception {
-        indent("testIssue230506_11");
-    }
-
-    public void testIssue230506_12() throws Exception {
-        indent("testIssue230506_12");
-    }
-
-    public void testIssue243317() throws Exception {
-        indent("testIssue243317");
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests242398/"))
+            })
+        );
     }
 
 }
