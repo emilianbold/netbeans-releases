@@ -59,12 +59,16 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
+import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.platform.FileBufferSnapshot2;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.support.Interrupter;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -212,7 +216,7 @@ public final class ProjectImpl extends ProjectBase {
             }
         }
         for (FileImpl file : addToParse) {
-            ParserQueue.instance().add(file, getPreprocHandlersForParse(file), ParserQueue.Position.TAIL);
+            ParserQueue.instance().add(file, getPreprocHandlersForParse(file, Interrupter.DUMMY), ParserQueue.Position.TAIL);
         }
     //N.B. don't clear list of editedFiles here.
     }
@@ -241,6 +245,7 @@ public final class ProjectImpl extends ProjectBase {
         }
     }
 
+    // remove as soon as TraceFlags.USE_PARSER_API becomes always true
     private final static class EditingTask {
         // field is synchronized by editedFiles lock
         private RequestProcessor.Task task;
@@ -298,7 +303,8 @@ public final class ProjectImpl extends ProjectBase {
             return this.task;
         }
     }
-    
+
+    // remove as soon as TraceFlags.USE_PARSER_API becomes always true
     private final Map<CsmFile, EditingTask> editedFiles = new HashMap<>();
 
     public 
@@ -371,6 +377,14 @@ public final class ProjectImpl extends ProjectBase {
         //LibraryManager.getInsatnce().read(uid, input);
         getLibraryManager().readProjectLibraries(getUID(), input);
     //nativeFiles = new NativeFileContainer();
+    }
+
+    @Override
+    public void onSnapshotChanged(FileImpl file, Snapshot snapshot) {
+        //file.markReparseNeeded(false);
+        FileBufferSnapshot2 fb = new FileBufferSnapshot2(snapshot, System.currentTimeMillis());
+        file.setBuffer(fb);
+        DeepReparsingUtils.reparseOnEditingFile(this, file);
     }
 
     ////////////////////////////////////////////////////////////////////////////

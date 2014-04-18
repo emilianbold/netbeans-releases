@@ -40,70 +40,12 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.highlight.hints;
-
-import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+package org.netbeans.modules.cnd.model.tasks;
 
 /**
  *
- * @author Alexander Simon
+ * @author vk155633
  */
-abstract class CodeAuditInfo implements CodeAudit {
-    private final String id;
-    private final String name;
-    private final String description;
-    private final String defaultSeverity;
-    private final boolean defaultEnabled;
-    private final AuditPreferences myPreferences;
-
-    CodeAuditInfo(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.defaultSeverity = defaultSeverity;
-        this.defaultEnabled = defaultEnabled;
-        this.myPreferences = myPreferences;
-    }
-
-    @Override
-    public String getID() {
-        return id;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        String val = myPreferences.get(getID(), "enabled"); //NOI18N
-        if (val == null || val.isEmpty()) {
-            return defaultEnabled;
-        }
-        return !"false".equals(val); //NOI18N
-    }
-
-    @Override
-    public String minimalSeverity() {
-        String severity = myPreferences.get(getID(), "severity"); //NOI18N
-        if (severity == null || severity.isEmpty()) {
-            return defaultSeverity;
-        }
-        return severity;
-    }
-
-    @Override
-    public AuditPreferences getPreferences() {
-        return myPreferences;
-    }
-    
-    abstract void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response);
+public interface CndParserImplementation {
+    void firePropertyChanged();
 }

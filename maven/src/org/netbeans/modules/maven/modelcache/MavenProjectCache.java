@@ -44,10 +44,13 @@ package org.netbeans.modules.maven.modelcache;
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -81,9 +84,24 @@ public final class MavenProjectCache {
     private static final String CONTEXT_EXECUTION_RESULT = "NB_Execution_Result";
     private static final String CONTEXT_PARTICIPANTS = "NB_AbstractParticipant_Present";
     
+    private static final Set<String> PARTICIPANT_WHITELIST = new HashSet<String>(Arrays.asList(new String[] {
+        "org.sonatype.nexus.maven.staging.deploy.DeployLifecycleParticipant"
+    }));
+    
     //File is referenced during lifetime of the Project. FileObject cannot be used as with rename it changes value@!!!
     private static final Map<File, WeakReference<MavenProject>> file2Project = new WeakHashMap<File, WeakReference<MavenProject>>();
     private static final Map<File, Mutex> file2Mutex = new WeakHashMap<File, Mutex>();
+    
+    public static void clearMavenProject(final File pomFile) {
+        Mutex mutex = getMutex(pomFile);
+        mutex.writeAccess(new Action<MavenProject>() {
+            @Override
+            public MavenProject run() {
+                file2Project.remove(pomFile);
+                return null;
+            }
+        });
+    }
     
     /**
      * returns a MavenProject instance for given folder, if folder contains a pom.xml always returns an instance, if not returns null
@@ -201,9 +219,16 @@ public final class MavenProjectCache {
 //                            } else {
                                 List<String> parts = new ArrayList<String>();
                                 for (AbstractMavenLifecycleParticipant part : lookup) {
-                                    parts.add(part.getClass().getName());
+                                    String name = part.getClass().getName();
+                                    if (PARTICIPANT_WHITELIST.contains(name)) {
+                                        //#204898 create a whitelist of known not harmful participants that can be just ignored
+                                        continue;
+                                    }
+                                    parts.add(name);
                                 }
-                                newproject.setContextValue(CONTEXT_PARTICIPANTS, parts);
+                                if (parts.size() > 0) {
+                                    newproject.setContextValue(CONTEXT_PARTICIPANTS, parts);
+                                }
 //                            }
                         }
                     } catch (ComponentLookupException e) {

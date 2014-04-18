@@ -70,6 +70,9 @@ public abstract class DebuggingNodeActionsProvider implements NodeActionsProvide
             if (node instanceof Thread) {
                 Thread t = (Thread) node;
                 debugger.makeThreadCurrent(t);
+                if (t.getStack() != null && t.getStack().length > 0) {
+                    debugger.makeFrameCurrent(t.getStack()[0]);
+                }
             } else if (node instanceof Frame) {
                 Frame f = (Frame) node;
                 Thread t = f.getThread();

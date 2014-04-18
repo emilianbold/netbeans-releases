@@ -43,9 +43,13 @@
  */
 package org.netbeans.modules.cnd.highlight.semantic;
 
+import java.security.Identity;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
@@ -63,14 +67,16 @@ import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
-import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * Semantic C/C++ code highlighter responsible for "graying out"
@@ -82,10 +88,13 @@ import org.netbeans.spi.editor.highlighting.support.PositionsBag;
 public final class SemanticHighlighter extends HighlighterBase {
     private static final String SLOW_POSITION_BAG = "CndSemanticHighlighterSlow"; // NOI18N
     private static final String FAST_POSITION_BAG = "CndSemanticHighlighterFast"; // NOI18N
-    private static final Logger LOG = Logger.getLogger(SemanticHighlighter.class.getName());
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("SemanticHighlighter profiler",1); //NOI18N
     
     private InterrupterImpl interrupter = new InterrupterImpl();
-    private CndParserResult lastParserResult;
+    private Parser.Result lastParserResult;
+    private Set<Map.Entry<Thread, StackTraceElement[]>> stack;
+    private AtomicBoolean done = new AtomicBoolean(false);
 
     public SemanticHighlighter(String mimeType) {
         init(mimeType);
@@ -170,17 +179,20 @@ public final class SemanticHighlighter extends HighlighterBase {
             // the following loop deals with entities without collectors
             // and gathers collectors for the next step
             for (Iterator<SemanticEntity> i = entities.iterator(); i.hasNext(); ) {
+                if (interrupter.cancelled()) {
+                    break;
+                }
                 SemanticEntity se = i.next();
                 if (NamedOption.getAccessor().getBoolean(se.getName()) && 
                         (!macroExpansionView || !se.getName().equals(SemanticEntitiesProvider.MacrosCodeProvider.NAME))) { // NOI18N
-                    ReferenceCollector collector = se.getCollector();
+                    ReferenceCollector collector = se.getCollector(interrupter);
                     if (collector != null) {
                         // remember the collector for future use
                         collectors.add(collector);
                     } else {
                         // this is simple entity without collector,
                         // let's add its blocks right now
-                        addHighlightsToBag(doc, newBagFast, se.getBlocks(csmFile), se);
+                        addHighlightsToBag(doc, newBagFast, se.getBlocks(csmFile, interrupter), se);
                         i.remove();
                     }
                 } else {
@@ -189,32 +201,39 @@ public final class SemanticHighlighter extends HighlighterBase {
                 }
             }
             // to show inactive code and macros first
-            getHighlightsBag(doc, true).setHighlights(newBagFast);
-            // here we invoke the collectors
-            // but not for huge documents
-            if (!entities.isEmpty() && !isVeryBigDocument(doc)) {
-                CsmFileReferences.getDefault().accept(csmFile, new Visitor() {
-                    @Override
-                    public void visit(CsmReferenceContext context) {
-                        CsmReference ref = context.getReference();
-                        for (ReferenceCollector c : collectors) {
-                            if (interrupter.cancelled()) {
-                                break;
-                            }
-                            c.visit(ref, csmFile);
-                        }
-                    }
-                }, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE_AND_PREPROCESSOR);
-                // here we apply highlighting to discovered blocks
-                for (int i = 0; i < entities.size(); ++i) {
-                    addHighlightsToBag(doc, newBagSlow, collectors.get(i).getReferences(), entities.get(i));
-                }
-            }
-            if (LOG.isLoggable(Level.FINER)) {
-                LOG.log(Level.FINER, "Semantic Highlighting update() done in {0}ms for file {1}", new Object[]{System.currentTimeMillis() - start, csmFile.getAbsolutePath()});
-            }
             if (!interrupter.cancelled()){
-                getHighlightsBag(doc, false).setHighlights(newBagSlow);
+                getHighlightsBag(doc, true).setHighlights(newBagFast);
+                // here we invoke the collectors
+                // but not for huge documents
+                if (!entities.isEmpty() && !isVeryBigDocument(doc)) {
+                    CsmFileReferences.getDefault().accept(csmFile, new Visitor() {
+                        @Override
+                        public void visit(CsmReferenceContext context) {
+                            CsmReference ref = context.getReference();
+                            for (ReferenceCollector c : collectors) {
+                                if (interrupter.cancelled()) {
+                                    break;
+                                }
+                                c.visit(ref, csmFile);
+                            }
+                        }
+
+                        @Override
+                        public boolean cancelled() {
+                            return interrupter.cancelled();
+                        }
+                    }, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE_AND_PREPROCESSOR);
+                    // here we apply highlighting to discovered blocks
+                    for (int i = 0; i < entities.size(); ++i) {
+                        addHighlightsToBag(doc, newBagSlow, collectors.get(i).getReferences(), entities.get(i));
+                    }
+                }
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.log(Level.FINER, "Semantic Highlighting update() done in {0}ms for file {1}", new Object[]{System.currentTimeMillis() - start, csmFile.getAbsolutePath()});
+                }
+                if (!interrupter.cancelled()){
+                    getHighlightsBag(doc, false).setHighlights(newBagSlow);
+                }
             }
         }
     }
@@ -257,7 +276,7 @@ public final class SemanticHighlighter extends HighlighterBase {
     }
 
     @Override
-    public void run(CndParserResult result, SchedulerEvent event) {
+    public void run(Parser.Result result, SchedulerEvent event) {
         synchronized(this) {
             if (lastParserResult == result) {
                 return;
@@ -266,13 +285,54 @@ public final class SemanticHighlighter extends HighlighterBase {
             lastParserResult = result;
             interrupter = new InterrupterImpl();
         }
+        long time = 0;
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "SemanticHighlighter started, Task={0}, Result={1}", new Object[]{System.identityHashCode(this), System.identityHashCode(result)}); //NOI18N
+            time = System.currentTimeMillis();
+            done = new AtomicBoolean(false);
+        }
         update(result.getSnapshot().getSource().getDocument(false), interrupter);
+        if (LOG.isLoggable(Level.FINE)) {
+            done.set(true);
+            LOG.log(Level.FINE, "SemanticHighlighter finished for {0}ms", System.currentTimeMillis()-time); //NOI18N
+        }
     }
 
     @Override
-    public synchronized void cancel() {
-        interrupter.cancel();
-        lastParserResult = null;
+    public void cancel() {
+        synchronized(this) {
+            interrupter.cancel();
+            lastParserResult = null;
+        }
+        if (LOG.isLoggable(Level.FINE)) {
+            RP.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    AtomicBoolean aDone = SemanticHighlighter.this.done;
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    if (!aDone.get()) {
+                        stack = Thread.getAllStackTraces().entrySet();
+                        StringBuilder buf = new StringBuilder();
+                        for (Map.Entry<Thread, StackTraceElement[]> entry : stack) {
+                            if (entry.getKey().getName().startsWith("Editor Parsing Loop")) { //NOI18N
+                                buf.append("What have been semantic provider doing for 100 ms after canceling?\n"); //NOI18N
+                                buf.append("Thread ").append(entry.getKey().getName()); //NOI18N
+                                for (StackTraceElement element : entry.getValue()) {
+                                    buf.append("\n\tat " + element.toString()); //NOI18N
+                                }
+                                LOG.log(Level.FINE, buf.toString());
+                            }
+                        }
+                    }
+                }
+            });
+            LOG.log(Level.FINE, "SemanticHighlighter canceled in {0}, Task={1}", new Object[]{Thread.currentThread().getName(), System.identityHashCode(this)}); //NOI18N
+        }
     }
 
     @Override

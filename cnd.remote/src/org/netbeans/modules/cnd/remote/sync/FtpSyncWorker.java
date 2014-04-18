@@ -516,6 +516,9 @@ import org.openide.util.RequestProcessor;
                     throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Err_Unzip", 
                             remoteFile, executionEnvironment, rc)); // NOI18N
                 }
+                for (FileCollector.FileInfo fileInfo : toCopy) {
+                    fileData.setState(fileInfo.file, FileState.COPIED);
+                }
             }
         } finally {
             if (zipFile != null && zipFile.exists()) {

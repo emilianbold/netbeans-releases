@@ -63,7 +63,7 @@ public final class ProcessUtilities {
     
     private static final Logger LOGGER = Logger.getLogger(ProcessUtilities.class.getName());
     
-    private static final RequestProcessor RP = new RequestProcessor(ProcessUtilities.class);
+    private static final RequestProcessor RP = new RequestProcessor(ProcessUtilities.class.getName(), 10);
 
     private static class Redirector implements Runnable {
 

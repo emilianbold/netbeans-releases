@@ -43,15 +43,18 @@ package org.netbeans.modules.cnd.highlight.error;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
-import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
@@ -72,23 +75,24 @@ import org.openide.util.Exceptions;
     @MimeRegistration(mimeType = MIMENames.HEADER_MIME_TYPE, service = TaskFactory.class)
 })
 public final class HighlightProviderTaskFactory extends TaskFactory {
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
 
     @Override
     public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
         return Collections.singletonList(new ErrorsHighlighter());
     }
 
-    private final class ErrorsHighlighter extends IndexingAwareParserResultTask<CndParserResult> {
+    private final class ErrorsHighlighter extends IndexingAwareParserResultTask<Parser.Result> {
 
         private InterrupterImpl interrupter = new InterrupterImpl();
-        private CndParserResult lastParserResult;
+        private Parser.Result lastParserResult;
 
         public ErrorsHighlighter() {
             super(TaskIndexingMode.ALLOWED_DURING_SCAN);
         }
 
         @Override
-        public void run(CndParserResult result, SchedulerEvent event) {
+        public void run(Parser.Result result, SchedulerEvent event) {
             synchronized(this) {
                 if (lastParserResult == result) {
                     return;
@@ -97,12 +101,13 @@ public final class HighlightProviderTaskFactory extends TaskFactory {
                 this.lastParserResult = result;
                 this.interrupter = new InterrupterImpl();
             }
+            long time = 0;
             try {
                 final FileObject fo = result.getSnapshot().getSource().getFileObject();
                 if (fo == null) {
                     return;
                 }
-                final CsmFile csmFile = result.getCsmFile();
+                final CsmFile csmFile = CsmFileInfoQuery.getDefault().getCsmFile(result);
                 if (csmFile == null) {
                     return;
                 }
@@ -111,16 +116,28 @@ public final class HighlightProviderTaskFactory extends TaskFactory {
                     return;
                 }
                 DataObject dobj = DataObject.find(fo);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "HighlightProviderTaskFactory started"); //NOI18N
+                    time = System.currentTimeMillis();
+                }
                 HighlightProvider.getInstance().update(csmFile, doc, dobj, interrupter);
             } catch (DataObjectNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
             }
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "HighlightProviderTaskFactory finished for {0}ms", System.currentTimeMillis()-time); //NOI18N
+            }
         }
 
         @Override
-        public synchronized void cancel() {
-            interrupter.cancel();
-            lastParserResult = null;
+        public void cancel() {
+            synchronized(this) {
+                interrupter.cancel();
+                lastParserResult = null;
+            }
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "HighlightProviderTaskFactory canceled"); //NOI18N
+            }
         }
 
         @Override

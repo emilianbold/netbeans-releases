@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
 import org.netbeans.modules.cnd.modelutil.ClassifiersAntiLoop;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Lookup;
 
@@ -132,19 +133,21 @@ public abstract class CsmFileReferences {
            // do nothing
        }
    }
-      /**
-    * visitor inteface
+   
+   /**
+    * visitor interface
     */
-   public interface Visitor {
+   public interface Visitor extends Interrupter {
        /**
         * This method is invoked for every matching reference in the file.
         *
         * @param context  reference with its lexical context
         */
        void visit(CsmReferenceContext context);
+       
    }
 
-   public interface ReferenceVisitor {
+   public interface ReferenceVisitor extends Interrupter {
 
        /**
         * This method is invoked for every matching reference in the file.

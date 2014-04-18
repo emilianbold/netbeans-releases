@@ -124,6 +124,7 @@ public class ComputeAnnotations {
     private void computeAnnotation(CsmFunction func, Collection<BaseAnnotation> toAdd) {
         Collection<CsmVirtualInfoQuery.CsmOverrideInfo> baseMethods = Collections.<CsmVirtualInfoQuery.CsmOverrideInfo>emptyList();
         Collection<CsmVirtualInfoQuery.CsmOverrideInfo> overriddenMethods = Collections.<CsmVirtualInfoQuery.CsmOverrideInfo>emptyList();
+        CsmVirtualInfoQuery.CsmOverrideInfo thisMethod = null;
         if (CsmKindUtilities.isMethod(func)) {
             CsmMethod meth = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration(func);
             if(meth != null) {
@@ -134,6 +135,7 @@ public class ComputeAnnotations {
                 if (!chain.getDerivedMethods().isEmpty()) {
                     overriddenMethods = chain.getDerivedMethods();
                 }
+                thisMethod = chain.getThisMethod();
                 if (BaseAnnotation.LOGGER.isLoggable(Level.FINEST)) {
                     BaseAnnotation.LOGGER.log(Level.FINEST, "Found {0} base decls for {1}", new Object[]{baseMethods.size(), toString(func)});
                     for (CsmVirtualInfoQuery.CsmOverrideInfo baseMethod : baseMethods) {
@@ -154,7 +156,7 @@ public class ComputeAnnotations {
             return;
         }
         if (!baseMethods.isEmpty() || !overriddenMethods.isEmpty() || !baseTemplates.isEmpty() || !templateSpecializations.isEmpty()) {
-            toAdd.add(new OverrideAnnotation(doc, func, baseMethods, overriddenMethods, baseTemplates, templateSpecializations));
+            toAdd.add(new OverrideAnnotation(doc, func, thisMethod, baseMethods, overriddenMethods, baseTemplates, templateSpecializations));
         }
     }
 

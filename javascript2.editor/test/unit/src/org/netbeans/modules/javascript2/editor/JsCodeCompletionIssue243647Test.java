@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,44 +37,54 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.model.tasks;
+package org.netbeans.modules.javascript2.editor;
 
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.Parser.Result;
+import java.io.File;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
+import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Alexander Simon
+ * @author Petr Pisl
  */
-public class CndParserResult  extends Result {
-    private final CsmFile file;
-    private final long fileVersion;
-    private final long docVersion;
-
-    /*package*/CndParserResult(CsmFile file, Snapshot snapshot, long fileVersion, long docVersion) {
-        super(snapshot);
-        this.file = file;
-        this.fileVersion = fileVersion;
-        this.docVersion = docVersion;
+public class JsCodeCompletionIssue243647Test extends JsCodeCompletionBase {
+    
+    public JsCodeCompletionIssue243647Test(String testName) {
+        super(testName);
+    }
+    
+    public void testIssue243647_01() throws Exception {
+        checkCompletion("testfiles/completion/issue243647/test243647.js", "some243647_1.n^;", false);
+    }
+    
+    public void testIssue243647_02() throws Exception {
+        checkCompletion("testfiles/completion/issue243647/test243647.js", "some243647_2.s^;", false);
+    }
+    
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/issue243647")));
+        return Collections.singletonMap(
+            JS_SOURCE_ID,
+            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+        );
     }
 
     @Override
-    protected void invalidate() {
-    }
-
-    public CsmFile getCsmFile() {
-        return file;
+    protected boolean classPathContainsBinaries() {
+        return true;
     }
     
-    public long getFileVersion() {
-        return fileVersion;
-    }
-    
-    /*package*/long getDocumentVersion() {
-        return docVersion;
-    }
 }

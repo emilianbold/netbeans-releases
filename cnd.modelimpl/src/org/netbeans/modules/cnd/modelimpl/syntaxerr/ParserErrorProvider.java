@@ -43,9 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.syntaxerr;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.Iterator;
-import java.util.Set;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -76,8 +74,8 @@ public final class ParserErrorProvider extends CsmErrorProvider {
     }
 
     @Override
-    public Set<EditorEvent> supportedEvents() {
-        return EnumSet.<EditorEvent>of(EditorEvent.DocumentBased, EditorEvent.FileBased);
+    public boolean isSupportedEvent(EditorEvent kind) {
+        return kind == EditorEvent.DocumentBased || kind == EditorEvent.FileBased;
     }
 
     @Override

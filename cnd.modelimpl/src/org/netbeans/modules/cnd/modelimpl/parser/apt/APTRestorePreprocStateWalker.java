@@ -117,7 +117,13 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
                         APTPreprocHandler preprocHandler = getPreprocHandler();
                         // only ask for cached entry
                         APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(preprocHandler.getState(), null);
-                        APTWalker walker = new APTRestorePreprocStateWalker(getStartProject(), aptLight, csmFile, preprocHandler, inclStack, interestedFile, cacheEntry);
+                        APTWalker walker = new APTRestorePreprocStateWalker(getStartProject(), aptLight, csmFile, preprocHandler, inclStack, interestedFile, cacheEntry){
+
+                            @Override
+                            protected boolean isStopped() {
+                                return super.isStopped() || APTRestorePreprocStateWalker.this.isStopped();
+                            }
+                        };
                         walker.visit();
                         // we do not remember cache entry as serial because stopped before #include directive
                         // csmFile.setAPTCacheEntry(preprocHandler, cacheEntry, false);
@@ -133,7 +139,14 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
                     APTPreprocHandler preprocHandler = getPreprocHandler();
                     // only ask for cached entry and visit with it #include directive
                     APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(preprocHandler.getState(), null);
-                    APTWalker walker = new APTSelfWalker(aptLight, preprocHandler, cacheEntry);
+                    APTWalker walker = new APTSelfWalker(aptLight, preprocHandler, cacheEntry) {
+
+                        @Override
+                        protected boolean isStopped() {
+                            return super.isStopped() || APTRestorePreprocStateWalker.this.isStopped();
+                        }
+                        
+                    };
                     walker.visit();
                     // does not remember walk info to safe memory
                     // csmFile.setAPTCacheEntry(preprocHandler, cacheEntry, false);

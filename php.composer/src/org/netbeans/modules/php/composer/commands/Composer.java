@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -56,6 +57,7 @@ import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
@@ -70,14 +72,18 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Represents <a href="http://getcomposer.org/">Composer</a> command line tool.
  */
 public final class Composer {
 
-    public static final String NAME = "composer"; // NOI18N
-    public static final String LONG_NAME = NAME + ".phar"; // NOI18N
+    public static final List<String> COMPOSER_FILENAMES;
+
+    private static final String COMPOSER = "composer"; // NOI18N
+    private static final String COMPOSER_PHAR = COMPOSER + ".phar"; // NOI18N
+    private static final String COMPOSER_BAT = COMPOSER + ".bat"; // NOI18N
 
     private static final String COMPOSER_FILENAME = "composer.json"; // NOI18N
 
@@ -109,6 +115,19 @@ public final class Composer {
 
     private volatile File workDir;
 
+
+    static {
+        // #243767
+        List<String> fileNames = new ArrayList<>(2);
+        if (Utilities.isWindows()) {
+            fileNames.add(Composer.COMPOSER_BAT);
+            fileNames.add(Composer.COMPOSER_PHAR);
+        } else {
+            fileNames.add(Composer.COMPOSER);
+            fileNames.add(Composer.COMPOSER_PHAR);
+        }
+        COMPOSER_FILENAMES = new CopyOnWriteArrayList<>(fileNames);
+    }
 
     public Composer(String composerPath) {
         this.composerPath = composerPath;

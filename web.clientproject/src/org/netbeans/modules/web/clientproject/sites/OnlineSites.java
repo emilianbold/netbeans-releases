@@ -149,7 +149,8 @@ public abstract class OnlineSites implements SiteTemplateImplementation {
 
 
         @NbBundle.Messages({"SiteAngularJsSeed.name=AngularJS Seed",
-                "SiteAngularJsSeed.description=Site template for AngularJS projects."})
+                "SiteAngularJsSeed.description=Site template for AngularJS projects.\n\n"
+                        + "Once created, run \"npm install\" to install dependencies."})
         public SiteAngularJsSeed() {
             super("ANGULAR", Bundle.SiteAngularJsSeed_name(), Bundle.SiteAngularJsSeed_description(), // NOI18N
                     "https://github.com/angular/angular-seed/archive/master.zip", // NOI18N
