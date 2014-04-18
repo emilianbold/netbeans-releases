@@ -114,7 +114,6 @@ public class LibletInfo {
         hash = 47 * hash + Objects.hashCode(this.type);
         hash = 47 * hash + Objects.hashCode(this.name);
         hash = 47 * hash + Objects.hashCode(this.vendor);
-        hash = 47 * hash + Objects.hashCode(this.version);
         return hash;
     }
 
