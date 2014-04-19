@@ -204,6 +204,11 @@ public class CsmAutosProviderImpl implements AutosProvider {
                     }
                 }
             }
+
+            @Override
+            public boolean cancelled() {
+                return false;
+            }
         });
         
         //Parsing arrays' statements

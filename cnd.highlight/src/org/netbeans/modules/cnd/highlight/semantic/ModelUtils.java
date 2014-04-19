@@ -98,9 +98,14 @@ public class ModelUtils {
     /*package*/ static List<CsmReference> collect(final CsmFile csmFile, final ReferenceCollector collector) {
         CsmFileReferences.getDefault().accept(csmFile, new CsmFileReferences.Visitor() {
             @Override
-                public void visit(CsmReferenceContext context) {
-                    collector.visit(context.getReference(), csmFile);
-                }
+            public void visit(CsmReferenceContext context) {
+                collector.visit(context.getReference(), csmFile);
+            }
+
+            @Override
+            public boolean cancelled() {
+                return false;
+            }
         });
         return collector.getReferences();
     }

@@ -204,6 +204,11 @@ public final class SemanticHighlighter extends HighlighterBase {
                             c.visit(ref, csmFile);
                         }
                     }
+
+                    @Override
+                    public boolean cancelled() {
+                        return interrupter.cancelled();
+                    }
                 }, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE_AND_PREPROCESSOR);
                 // here we apply highlighting to discovered blocks
                 for (int i = 0; i < entities.size(); ++i) {

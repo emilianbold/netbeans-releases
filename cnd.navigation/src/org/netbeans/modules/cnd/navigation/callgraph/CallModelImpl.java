@@ -251,6 +251,11 @@ public class CallModelImpl implements CallModel {
                                 e.printStackTrace(System.err);
                             }
                         }
+
+                        @Override
+                        public boolean cancelled() {
+                            return false;
+                        }
                     }, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
                 }
             }
