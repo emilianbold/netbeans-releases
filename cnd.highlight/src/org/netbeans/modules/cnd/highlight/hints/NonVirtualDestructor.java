@@ -52,28 +52,26 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
+import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Alexander Simon
  */
-class NonVirtualDestructor extends CodeAuditInfo {
+class NonVirtualDestructor extends AbstractCodeAudit {
     private NonVirtualDestructor(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
         super(id, name, description, defaultSeverity, defaultEnabled, myPreferences);
     }
-    static NonVirtualDestructor create(AuditPreferences myPreferences) {
-        String id = NbBundle.getMessage(NonVirtualDestructor.class, "NonVirtualDestructor.name"); // NOI18N
-        String description = NbBundle.getMessage(NonVirtualDestructor.class, "NonVirtualDestructor.description"); // NOI18N
-        return new NonVirtualDestructor(id, id, description, "warning", true, myPreferences); // NOI18N
-    }
-    
+
     @Override
-    void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+    public void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         CsmFile file = request.getFile();
         if (file != null) {
             if (request.isCancelled()) {
@@ -122,5 +120,15 @@ class NonVirtualDestructor extends CodeAuditInfo {
     }
     private void visit(CsmClass csmClass, CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         visit(csmClass.getMembers(), request, response);
+    }
+    
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH, service = CodeAuditFactory.class, position = 1000)
+    public static final class Factory implements CodeAuditFactory {
+        @Override
+        public AbstractCodeAudit create(AuditPreferences preferences) {
+            String id = NbBundle.getMessage(NonVirtualDestructor.class, "NonVirtualDestructor.name"); // NOI18N
+            String description = NbBundle.getMessage(NonVirtualDestructor.class, "NonVirtualDestructor.description"); // NOI18N
+            return new NonVirtualDestructor(id, id, description, "warning", true, preferences); // NOI18N
+        }
     }
 }

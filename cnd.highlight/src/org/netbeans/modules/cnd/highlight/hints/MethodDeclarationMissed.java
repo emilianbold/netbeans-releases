@@ -50,6 +50,8 @@ import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
+import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -57,23 +59,19 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Alexander Simon
  */
-public class MethodDeclarationMissed extends CodeAuditInfo {
+public class MethodDeclarationMissed extends AbstractCodeAudit {
     private MethodDeclarationMissed(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
         super(id, name, description, defaultSeverity, defaultEnabled, myPreferences);
     }
-    static MethodDeclarationMissed create(AuditPreferences myPreferences) {
-        String id = NbBundle.getMessage(MethodDeclarationMissed.class, "MethodDeclarationMissed.name"); // NOI18N
-        String description = NbBundle.getMessage(MethodDeclarationMissed.class, "MethodDeclarationMissed.description"); // NOI18N
-        return new MethodDeclarationMissed(id, id, description, "error", true, myPreferences); // NOI18N
-    }
-    
+
     @Override
-    void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+    public void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         CsmFile file = request.getFile();
         if (file != null) {
             if (request.isCancelled()) {
@@ -122,6 +120,16 @@ public class MethodDeclarationMissed extends CodeAuditInfo {
                     }
                 }
             }
+        }
+    }
+    
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH, service = CodeAuditFactory.class, position = 2000)
+    public static final class Factory implements CodeAuditFactory {
+        @Override
+        public AbstractCodeAudit create(AuditPreferences preferences) {
+            String id = NbBundle.getMessage(MethodDeclarationMissed.class, "MethodDeclarationMissed.name"); // NOI18N
+            String description = NbBundle.getMessage(MethodDeclarationMissed.class, "MethodDeclarationMissed.description"); // NOI18N
+            return new MethodDeclarationMissed(id, id, description, "error", true, preferences); // NOI18N
         }
     }
 }
