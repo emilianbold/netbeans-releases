@@ -162,6 +162,8 @@ public class Installer extends ModuleInstall implements Runnable {
     private static final String END_OF_BLOCK = "--"+MIXED_CT_BOUNDARY;          // NOI18N
     // End of data block pattern
     private static final String END_OF_DATA_BLOCK = "\n\n"+END_OF_BLOCK;        // NOI18N
+    
+    private final AtomicBoolean restored = new AtomicBoolean(false);
 
     /** Action listener for Usage Statistics Reminder dialog */
     private ActionListener l = new ActionListener () {
@@ -231,6 +233,19 @@ public class Installer extends ModuleInstall implements Runnable {
 
     @Override
     public void restored() {
+        EarlyHandler eh = Lookup.getDefault().lookup(EarlyHandler.class);
+        restored(eh.earlyRecords);
+    }
+    
+    void restored(java.util.Queue<LogRecord> earlyRecords) {
+        synchronized (restored) {
+            if (!restored.getAndSet(true)) {
+                restoredOnce(earlyRecords);
+            }
+        }
+    }
+    
+    private void restoredOnce(java.util.Queue<LogRecord> earlyRecords) {
         TimeToFailure.logAction();
         deleteAnExcessiveAmountOfUIGestureHTMLFiles();
         Logger log = Logger.getLogger(UI_LOGGER_NAME);
@@ -282,7 +297,20 @@ public class Installer extends ModuleInstall implements Runnable {
         CPUInfo.logCPUInfo();
         ScreenSize.logScreenSize();
         logIdeStartup();
-
+        if (earlyRecords != null) {
+            List<LogRecord> allRecords;
+            synchronized (earlyRecords) {
+                allRecords = new ArrayList<>(earlyRecords);
+                earlyRecords.clear();
+            }
+            List<LogRecord> uiRecords = extractRecords(allRecords, UI_LOGGER_NAME);
+            ui.publishEarlyRecords(uiRecords);
+            handler.publishEarlyRecords(allRecords);
+            if (logMetricsEnabled) {
+                List<LogRecord> metricsRecords = extractRecords(allRecords, METRICS_LOGGER_NAME);
+                metrics.publishEarlyRecords(metricsRecords);
+            }
+        }
         for (Activated a : Lookup.getDefault().lookupAll(Activated.class)) {
             a.activated(log);
         }
@@ -290,6 +318,16 @@ public class Installer extends ModuleInstall implements Runnable {
         if (logsSize >= UIHandler.MAX_LOGS) {
             WindowManager.getDefault().invokeWhenUIReady(this);
         }
+    }
+    
+    private List<LogRecord> extractRecords(List<LogRecord> records, String logger) {
+        List<LogRecord> records2 = new ArrayList<>();
+        for (LogRecord r : records) {
+            if (r.getLoggerName().startsWith(logger)) {
+                records2.add(r);
+            }
+        }
+        return records2;
     }
     
     private static void deleteAnExcessiveAmountOfUIGestureHTMLFiles() {

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.uihandler;
 
+import java.util.List;
 import java.util.Random;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -113,6 +114,12 @@ public class MetricsHandler extends Handler {
 
     @Override
     public void close() throws SecurityException {
+    }
+
+    void publishEarlyRecords(List<LogRecord> earlyRecords) {
+        for (LogRecord r : earlyRecords) {
+            publish(r);
+        }
     }
     
 }

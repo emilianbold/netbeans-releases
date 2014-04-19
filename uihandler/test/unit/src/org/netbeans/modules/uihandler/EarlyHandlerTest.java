@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,69 +34,57 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.uihandler;
 
-import java.util.ArrayDeque;
-import java.util.Queue;
-import java.util.logging.Handler;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Jaroslav Tulach
+ * @author Martin
  */
-@org.openide.util.lookup.ServiceProviders({@org.openide.util.lookup.ServiceProvider(service=java.util.logging.Handler.class), @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.uihandler.EarlyHandler.class)})
-public final class EarlyHandler extends Handler {
+public class EarlyHandlerTest extends NbTestCase {
     
-    final Queue<LogRecord> earlyRecords = new ArrayDeque<>();
-    private final Runnable installerRestore = new InstallerRestore();
-    private volatile boolean isOn = true;
-    
-    public EarlyHandler() {
-        setLevel(Level.ALL);
+    public EarlyHandlerTest(String testName) {
+        super(testName);
     }
     
-    public static void disable() {
+    @Override
+    protected void setUp() throws Exception {
+        System.setProperty("netbeans.user", getWorkDirPath());
+        clearWorkDir();
+    }
+    
+    public void testEarlyPublish() throws Exception {
         EarlyHandler eh = Lookup.getDefault().lookup(EarlyHandler.class);
-        eh.setLevel(Level.OFF);
-        eh.isOn = false;
-    }
-
-    @Override
-    public void publish(LogRecord record) {
-        if (isOn && record.getLoggerName() != null) {
-            synchronized (earlyRecords) {
-                if (earlyRecords.isEmpty()) {
-                    restoreLoggerInstaller();
-                }
-                earlyRecords.add(record);
-            }
-        }
-    }
-
-    @Override
-    public void flush() {
-    }
-
-    @Override
-    public void close() throws SecurityException {
-    }
-    
-    private void restoreLoggerInstaller() {
-        new RequestProcessor(EarlyHandler.class).post(installerRestore);
-    }
-    
-    private class InstallerRestore implements Runnable {
+        Logger allLogger = Logger.getLogger("org.myapplication.ui.test_early"); // Copied Installer.UI_LOGGER_NAME, not to initialize Installer class.
+        allLogger.setLevel(Level.ALL);
+        allLogger.addHandler(eh);
         
-        @Override
-        public void run() {
-            Installer installer = Installer.findObject(Installer.class, true);
-            installer.restored(earlyRecords);
+        allLogger.fine("Test Message 1");
+        allLogger.info("Test Message 2");
+        allLogger.finest("Test Message 3");
+        
+        Installer installer = Installer.findObject(Installer.class, true);
+        installer.restored();
+        assertEquals("EarlyHandler turned off", Level.OFF, eh.getLevel());
+        
+        allLogger.finer("Test Message 4");
+        
+        List<LogRecord> logs = InstallerTest.getLogs();
+        assertEquals("Number of messages logged: ", 4, logs.size());
+        for (int i = 0; i < logs.size(); i++) {
+            assertEquals("Test Message "+(i+1), logs.get(i).getMessage());
         }
     }
 }

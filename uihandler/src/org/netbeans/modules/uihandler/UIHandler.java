@@ -48,6 +48,7 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeSupport;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -296,5 +297,11 @@ implements ActionListener, Runnable, Callable<JButton> {
             System.setProperty("org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater.indexerSampling", "true"); // NOI18N
         }
         return opt == sendAndProfileOption || opt == sendOption;
+    }
+
+    void publishEarlyRecords(List<LogRecord> earlyRecords) {
+        for (LogRecord r : earlyRecords) {
+            publish(r);
+        }
     }
 }
