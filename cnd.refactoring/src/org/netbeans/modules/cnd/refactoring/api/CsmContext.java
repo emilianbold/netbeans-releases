@@ -50,7 +50,9 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -217,7 +219,9 @@ public final class CsmContext {
         } else if (CsmKindUtilities.isNamespaceDefinition(scope)) {
             out = CsmSelect.getDeclarations(((CsmNamespaceDefinition)scope), offsetFilter);
         } else if (CsmKindUtilities.isClass(scope)) {
-            out = CsmSelect.getClassMembers(((CsmClass)scope), offsetFilter);
+            Iterator<CsmMember> out1 = CsmSelect.getClassMembers(((CsmClass)scope), offsetFilter);
+            Iterator<CsmFriend> out2 = CsmSelect.getClassFrirends(((CsmClass)scope), offsetFilter);
+            out = new CompoundIterator(out1, out2);
         } else if (CsmKindUtilities.isCompoundStatement(scope)) {
             // we stop on compound statement
             out = Collections.<CsmObject>emptyList().iterator();
@@ -288,6 +292,35 @@ public final class CsmContext {
             enclosingClass = (CsmClass)obj;
         } else if (CsmKindUtilities.isFunction(obj)) {
             enclosingFun = (CsmFunction) obj;
+        }
+    }
+    
+    private static final class CompoundIterator<T> implements  Iterator<T> {
+        private final Iterator<T> it1;
+        private final Iterator<T> it2;
+        CompoundIterator(Iterator<T> it1,  Iterator<T> it2) {
+            this.it1 = it1;
+            this.it2 = it2;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return it1.hasNext() || it2.hasNext();
+        }
+
+        @Override
+        public T next() {
+            if (it1.hasNext()) {
+                return it1.next();
+            } else if (it2.hasNext()) {
+                return it2.next();
+            }
+            throw new IllegalStateException();
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
         }
     }
 }
