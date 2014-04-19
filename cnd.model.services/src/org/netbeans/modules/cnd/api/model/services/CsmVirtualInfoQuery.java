@@ -49,7 +49,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -96,6 +95,7 @@ public abstract class CsmVirtualInfoQuery {
     public abstract Collection<CsmMethod> getFirstBaseDeclarations(CsmMethod method);
     public abstract Collection<CsmMethod> getAllBaseDeclarations(CsmMethod method);
     public abstract Collection<CsmMethod> getOverriddenMethods(CsmMethod method, boolean searchFromBase);
+    public abstract CsmMethod getFirstDestructor(CsmClass cls);
     
     public abstract CsmOverriddenChain getOverriddenChain(CsmMethod method);
     
@@ -216,6 +216,30 @@ public abstract class CsmVirtualInfoQuery {
             return processClass(method, method.getContainingClass(), new AntiLoop());
         }
         
+        @Override
+        public CsmMethod getFirstDestructor(CsmClass cls) {
+            return processClass(cls, new AntiLoop());
+        }
+
+        private CsmMethod processClass(CsmClass cls, AntiLoop antilLoop) {
+            if (cls == null || antilLoop.contains(cls)) {
+                return null;
+            }
+            antilLoop.add(cls);
+            for(CsmMember m : cls.getMembers()){
+                if (CsmKindUtilities.isDestructor(m)) {
+                    return (CsmMethod)m;
+                }
+            }
+            for(CsmInheritance inh : cls.getBaseClasses()) {
+                CsmMethod res = processClass(CsmInheritanceUtilities.getCsmClass(inh), antilLoop);
+                if (res != null) {
+                    return res;
+                }
+            }
+            return null;
+        }
+
         private boolean processClass(CsmMethod toSearch, CsmClass cls, AntiLoop antilLoop){
             if (cls == null || antilLoop.contains(cls)) {
                 return false;
@@ -239,7 +263,7 @@ public abstract class CsmVirtualInfoQuery {
             }
             return false;
         }
-        
+
         @Override
         public Collection<CsmMethod> getTopmostBaseDeclarations(CsmMethod method) {
             Map<CsmMethod, CsmOverrideInfo> result = new HashMap<CsmMethod, CsmOverrideInfo>();
