@@ -89,7 +89,9 @@ public class OverridesPopup extends JPanel implements FocusListener {
 
     private static enum Kind {
         BASE,
+        BASE_PSEUDO,
         DESC,
+        DESC_PSEUDO,
         MAIN,
         BASE_TEMPLATE,
         SPECIALIZATION,
@@ -115,8 +117,12 @@ public class OverridesPopup extends JPanel implements FocusListener {
             switch (kind) {
                 case BASE:
                     return ImageUtilities.loadImage("org/netbeans/modules/cnd/modelutil/resources/overrides-badge.png");
+                case BASE_PSEUDO:
+                    return ImageUtilities.loadImage("org/netbeans/modules/cnd/modelutil/resources/overrides-badge-pseudo.png");
                 case DESC:
                     return ImageUtilities.loadImage("org/netbeans/modules/cnd/modelutil/resources/is-overridden-badge.png");
+                case DESC_PSEUDO:
+                    return ImageUtilities.loadImage("org/netbeans/modules/cnd/modelutil/resources/is-overridden-badge-pseudo.png");
                 case BASE_TEMPLATE:
                     return ImageUtilities.loadImage("org/netbeans/modules/cnd/modelutil/resources/base-template-badge.png");
                 case SPECIALIZATION:
@@ -267,15 +273,30 @@ public class OverridesPopup extends JPanel implements FocusListener {
 
     public OverridesPopup(String caption,
             Collection<? extends CsmOffsetableDeclaration> baseDeclarations,
+            Collection<? extends CsmOffsetableDeclaration> pseudoBaseDeclarations,
             Collection<? extends CsmOffsetableDeclaration> descendantDeclarations,
+            Collection<? extends CsmOffsetableDeclaration> pseudoDescendantDeclarations,
             Collection<? extends CsmOffsetableDeclaration> baseTemplates,
             Collection<? extends CsmOffsetableDeclaration> templateSpecializations) {
-        this(caption, null, baseDeclarations, descendantDeclarations, baseTemplates, templateSpecializations, false);
+        this(caption, null, baseDeclarations, pseudoBaseDeclarations,
+             descendantDeclarations, pseudoDescendantDeclarations, baseTemplates, templateSpecializations, false);
     }
 
     public OverridesPopup(String caption, CsmOffsetableDeclaration mainDeclaration,
             Collection<? extends CsmOffsetableDeclaration> baseDeclarations,
             Collection<? extends CsmOffsetableDeclaration> descendantDeclarations,
+            Collection<? extends CsmOffsetableDeclaration> baseTemplates,
+            Collection<? extends CsmOffsetableDeclaration> templateSpecializations,
+            boolean gotoDefinitions) {
+        this(caption, mainDeclaration, baseDeclarations, Collections.<CsmOffsetableDeclaration>emptyList(),
+             descendantDeclarations, Collections.<CsmOffsetableDeclaration>emptyList(), baseTemplates, templateSpecializations, gotoDefinitions);
+    }
+
+    private OverridesPopup(String caption, CsmOffsetableDeclaration mainDeclaration,
+            Collection<? extends CsmOffsetableDeclaration> baseDeclarations,
+            Collection<? extends CsmOffsetableDeclaration> pseudoBaseDeclarations,
+            Collection<? extends CsmOffsetableDeclaration> descendantDeclarations,
+            Collection<? extends CsmOffsetableDeclaration> pseudoDescendantDeclarations,
             Collection<? extends CsmOffsetableDeclaration> baseTemplates,
             Collection<? extends CsmOffsetableDeclaration> templateSpecializations,
             boolean gotoDefinitions) {
@@ -301,11 +322,17 @@ public class OverridesPopup extends JPanel implements FocusListener {
         for (CsmOffsetableDeclaration decl : baseDeclarations) {
             elements.add(new Item(decl, Kind.BASE));
         }
+        for (CsmOffsetableDeclaration decl : pseudoBaseDeclarations) {
+            elements.add(new Item(decl, Kind.BASE_PSEUDO));
+        }
         for (CsmOffsetableDeclaration decl : baseTemplates) {
             elements.add(new Item(decl, Kind.BASE_TEMPLATE));
         }
         for (CsmOffsetableDeclaration decl : descendantDeclarations) {
             elements.add(new Item(decl, Kind.DESC));
+        }
+        for (CsmOffsetableDeclaration decl : pseudoDescendantDeclarations) {
+            elements.add(new Item(decl, Kind.DESC_PSEUDO));
         }
         for (CsmOffsetableDeclaration decl : templateSpecializations) {
             elements.add(new Item(decl, Kind.SPECIALIZATION));
