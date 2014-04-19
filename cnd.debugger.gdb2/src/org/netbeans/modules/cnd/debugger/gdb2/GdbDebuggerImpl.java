@@ -1691,9 +1691,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (!thread.isCurrent()) {
             String tid = ((GdbThread) thread).getId();
             
-            if (thread.isSuspended()) {// We shouldn't select running thread
-                selectThread(-1, tid, true); // notify gdb to set current thread
-            }
+            selectThread(-1, tid, true); // notify gdb to set current thread
 
             if (get_debugging) {    // TODO maybe better way
                 for (GdbThread debuggingViewThread : threadsWithStacks) {
@@ -2028,6 +2026,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
     
+    private boolean showMessage = true;
+    
     private void requestThreadsWithStacks() {
         if (peculiarity.supports(GdbVersionPeculiarity.Feature.THREAD_INFO)) {
             MICommand cmd = new MiCommandImpl("-thread-info") { // NOI18N
@@ -2124,11 +2124,15 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 }
             };
             gdb.sendCommand(cmd);
+        } else {
+            if (showMessage) {
+                // TODO we should somehow show the message in the Debugging View itself
+                NativeDebuggerManager.warning(Catalog.get("MSG_OldGdbVersion"));
+                showMessage = false;
+            }
         }
-
-        // TODO non-thread-info way
     }
-
+                    
     @Override
     public Thread[] getThreadsWithStacks() {
         return threadsWithStacks;

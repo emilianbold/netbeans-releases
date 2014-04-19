@@ -182,4 +182,9 @@ public class FileModelCpp11Test extends TraceModelTestBase {
         // Bug 243525 - inaccuracy tests (clang): digraphs
         performTest("bug243525.cpp");
     }    
+    
+    public void testBug225045() throws Exception {
+        // Bug 225045 - C++11 "final" keyword improperly scoped
+        performTest("bug225045.cpp");
+    }    
 }
