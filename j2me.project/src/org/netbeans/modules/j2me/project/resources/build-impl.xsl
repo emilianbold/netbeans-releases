@@ -806,6 +806,7 @@ is divided into following sections:
                 <property name="jad.jarurl" value="${{dist.jar.file}}"/>
                 <nb-jad jadfile="${{dist.dir}}/${{dist.jad}}" jarfile="${{dist.jar}}" url="${{jad.jarurl}}" sign="${{sign.enabled}}" keystore="${{sign.keystore}}" keystorepassword="${{sign.keystore.password}}" alias="${{sign.alias}}" aliaspassword="${{sign.alias.password}}" encoding="UTF-8"/>
                 <antcall inheritall="true" inheritrefs="true" target="-add-liblets"/>
+                <antcall inheritall="true" inheritrefs="true" target="-add-services"/>
             </target>
 
             <target name="-add-midlets">
@@ -882,6 +883,46 @@ is divided into following sections:
                             addLibletProp(libletId + 1, packaging + "-Dependency-JAD-URL-", libletUrl);
                         }
                         libletId++;
+                    }
+                    ]]></script>
+            </target>
+
+            <target name="-add-services">
+                <xsl:attribute name="if">manifest.is.liblet</xsl:attribute>
+                <script language="javascript"><![CDATA[
+                    function isTrue(prop) {
+                        return prop != null &&
+                        (prop.toLowerCase() == "true" || prop.toLowerCase() == "yes" || prop.toLowerCase() == "on");
+                    }
+                    var liblet = project.getProperty("manifest.is.liblet");
+                    if (isTrue(liblet)) {
+                                                var services = "";
+                        var classesDir = project.getProperty("build.classes.dir");
+                        var classesDirF = project.resolveFile(classesDir);
+                        var servicesDirF = new java.io.File(classesDirF + java.io.File.separator + "META-INF" + java.io.File.separator + "services");
+                        if (servicesDirF != null && servicesDirF.exists()) {
+                            var servicesArray = servicesDirF.listFiles();
+                            if (servicesArray != null && servicesArray.length > 0) {
+                                for (var i = 0; i < servicesArray.length; i++) {
+                                    services += servicesArray[i].getName();
+                                    if (i < servicesArray.length - 1) {
+                                        services += ",";
+                                    }
+                                }
+                                var src = new String(project.getBaseDir().getAbsolutePath() +
+                                    "/" + new String(project.getProperty("dist.dir")) +
+                                    "/" + new String(project.getProperty("dist.jad")));
+                                var srf = new java.io.File(src);
+                                var echo = project.createTask("echo");
+                                echo.setAppend(true);
+                                echo.setEncoding("UTF-8");
+                                echo.setFile(srf);
+                                if (echo != null) {
+                                    echo.setMessage("LIBlet-Services: " + services);
+                                }
+                                echo.perform();
+                            }
+                        }
                     }
                     ]]></script>
             </target>
@@ -977,6 +1018,41 @@ is divided into following sections:
                     addLiblet(libletId + 1, libletDep);
                     libletId++;
                 }
+
+                (function addServices() {
+                    var isLiblet = project.getProperty("manifest.is.liblet");
+                        if (isTrue(isLiblet)) {
+                            var services = "";
+                            var classesDir = project.getProperty("build.classes.dir");
+                            var classesDirF = project.resolveFile(classesDir);
+                            var servicesDirF = new java.io.File(classesDirF + java.io.File.separator + "META-INF" + java.io.File.separator + "services");
+                            if (servicesDirF != null && servicesDirF.exists()) {
+                                var servicesArray = servicesDirF.listFiles();
+                                if (servicesArray != null && servicesArray.length > 0) {
+                                    for (var i = 0; i < servicesArray.length; i++) {
+                                        services += servicesArray[i].getName();
+                                        if (i < servicesArray.length - 1) {
+                                            services += ",";
+                                        }
+                                    }
+                                    var src = new String(project.getProperty("tmp.manifest.file"));
+                                    var srf = new java.io.File(src);
+                                    var manifest = project.createTask("manifest");
+                                    var mode = new org.apache.tools.ant.taskdefs.ManifestTask.Mode();
+                                    mode.setValue("update");
+                                    manifest.setMode(mode);
+                                    manifest.setFile(srf);
+                                    if(manifest != null) {
+                                        var propertyAttr = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
+                                        propertyAttr.setName("LIBlet-Services");
+                                        propertyAttr.setValue(services);
+                                        manifest.addConfiguredAttribute(propertyAttr);
+                                    }
+                                    manifest.perform();
+                                }
+                            }
+                        }
+                    })();
                 ]]></script>
             </target>
 
@@ -1084,32 +1160,8 @@ is divided into following sections:
             </xsl:comment>
 
             <target name="run">
-                <xsl:attribute name="depends">init,-clean-if-config-changed,jar</xsl:attribute>
+                <xsl:attribute name="depends">init,clean,jar</xsl:attribute>
                 <nb-run jadfile="${{dist.dir}}/${{dist.jad}}" jarfile="{{dist.jar.file}}" jadurl="${{dist.jad.url}}" device="${{platform.device}}" platformhome="${{platform.home}}" platformtype="${{platform.type}}" execmethod="${{run.method}}" commandline="${{platform.runcommandline}}" classpath="${{platform.bootclasspath}}:${{dist.dir}}/${{dist.jar}}" cmdoptions="${{run.cmd.options}}"/>
-            </target>
-
-            <target name="-check-clean-if-config-changed">
-                <xsl:attribute name="depends">-init-project</xsl:attribute>
-                <uptodate property="javame.jar.newer.than.nbproject" targetfile="${{dist.dir}}${{file.separator}}${{dist.jar.file}}" >
-                    <srcfiles dir="${{basedir}}${{file.separator}}nbproject" includes="**${{file.separator}}*"/>
-                </uptodate>
-                <echo message="javame.jar.newer.than.nbproject = ${{javame.jar.newer.than.nbproject}}" level="verbose"/>
-                <available file="${{dist.dir}}${{file.separator}}${{dist.jar.file}}" type="file" property="javame.jar.exists"/>
-                <condition property="request.clean.due.to.config.change">
-                    <and>
-                        <isset property="javame.jar.exists"/>
-                        <not>
-                            <isset property="javame.jar.newer.than.nbproject"/>
-                        </not>
-                    </and>
-                </condition>
-            </target>
-
-            <target name="-clean-if-config-changed">
-                <xsl:attribute name="depends">-check-clean-if-config-changed</xsl:attribute>
-                <xsl:attribute name="if">request.clean.due.to.config.change</xsl:attribute>
-                <echo message="Config change detected. Invoking clean." level="verbose"/>
-                <antcall target="clean"/>
             </target>
 
             <xsl:comment>
