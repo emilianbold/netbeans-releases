@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.cnd.api.model.syntaxerr;
 
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.EditorEvent;
+
 /**
  *
  * @author Alexander Simon
@@ -96,10 +98,20 @@ public abstract class AbstractCodeAudit implements CodeAudit {
         return severity;
     }
 
+    public static CsmErrorInfo.Severity toSeverity(String severity){
+        if ("error".equals(severity)) { // NOI18N
+            return CsmErrorInfo.Severity.ERROR;
+        } else {
+            return CsmErrorInfo.Severity.WARNING;
+        }
+    }
+    
     @Override
     public AuditPreferences getPreferences() {
         return myPreferences;
     }
+
+    public abstract boolean isSupportedEvent(EditorEvent kind);
     
     public abstract void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response);
 }

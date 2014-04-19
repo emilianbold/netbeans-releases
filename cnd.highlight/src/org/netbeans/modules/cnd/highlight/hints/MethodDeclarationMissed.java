@@ -44,13 +44,13 @@ package org.netbeans.modules.cnd.highlight.hints;
 
 import java.util.EnumSet;
 import org.netbeans.modules.cnd.analysis.api.AnalyzerResponse;
-import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
+import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
@@ -68,6 +68,11 @@ import org.openide.util.lookup.ServiceProvider;
 public class MethodDeclarationMissed extends AbstractCodeAudit {
     private MethodDeclarationMissed(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
         super(id, name, description, defaultSeverity, defaultEnabled, myPreferences);
+    }
+
+    @Override
+    public boolean isSupportedEvent(CsmErrorProvider.EditorEvent kind) {
+        return kind == CsmErrorProvider.EditorEvent.FileBased;
     }
 
     @Override
@@ -103,12 +108,7 @@ public class MethodDeclarationMissed extends AbstractCodeAudit {
                     if (CsmKindUtilities.isFunctionDefinition(referencedObject)) {
                         CsmFunctionDefinition def = (CsmFunctionDefinition) referencedObject;
                         if (def.getDeclaration() == null) {
-                            CsmErrorInfo.Severity severity;
-                            if ("error".equals(minimalSeverity())) { // NOI18N
-                                severity = CsmErrorInfo.Severity.ERROR;
-                            } else {
-                                severity = CsmErrorInfo.Severity.WARNING;
-                            }
+                            CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
                             String message = NbBundle.getMessage(MethodDeclarationMissed.class, "MethodDeclarationMissed.message", def.getName()); // NOI18N
                             if (response instanceof AnalyzerResponse) {
                                 ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, ref.getContainingFile().getFileObject(),

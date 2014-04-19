@@ -69,7 +69,12 @@ class NonVirtualDestructor extends AbstractCodeAudit {
     private NonVirtualDestructor(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
         super(id, name, description, defaultSeverity, defaultEnabled, myPreferences);
     }
-
+    
+    @Override
+    public boolean isSupportedEvent(CsmErrorProvider.EditorEvent kind) {
+        return kind == CsmErrorProvider.EditorEvent.FileBased;
+    }
+    
     @Override
     public void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         CsmFile file = request.getFile();
@@ -102,12 +107,7 @@ class NonVirtualDestructor extends AbstractCodeAudit {
             if (!CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
                 if (!CsmTypeHierarchyResolver.getDefault().getSubTypes(method.getContainingClass(), true).isEmpty()) {
                     String message = NbBundle.getMessage(NonVirtualDestructor.class, "NonVirtualDestructor.message"); // NOI18N
-                    CsmErrorInfo.Severity severity;
-                    if ("error".equals(minimalSeverity())) { // NOI18N
-                        severity = CsmErrorInfo.Severity.ERROR;
-                    } else {
-                        severity = CsmErrorInfo.Severity.WARNING;
-                    }
+                    CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
                     if (response instanceof AnalyzerResponse) {
                         ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, method.getContainingFile().getFileObject(),
                                 new ErrorInfoImpl(getID()+"\n"+message, severity, method.getStartOffset(), method.getParameterList().getEndOffset())); // NOI18N
