@@ -73,7 +73,7 @@ public interface CsmMacroExpansionDocProvider {
      * @param outDoc - result
      * @return - number of expansions
      */
-    public int expand(Document inDoc, int startOffset, int endOffset, Document outDoc, AtomicBoolean canceled);
+    public int expand(Document inDoc, int startOffset, int endOffset, Document outDoc, AtomicBoolean canceled, boolean formatExpansion);
 
     /**
      * Macro expands content of the document.
