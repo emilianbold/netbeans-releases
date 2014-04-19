@@ -509,7 +509,7 @@ abstract public class CsmCompletion {
 
         @Override
         public CharSequence getUniqueName() {
-            return getQualifiedName();
+            return "C:"+getQualifiedName(); // NOI18N
         }
 
         public int getTagOffset() {

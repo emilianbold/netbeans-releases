@@ -63,9 +63,12 @@ import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
@@ -83,6 +86,10 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
         this.project = project;
     }
     
+    @NbBundle.Messages({
+        "WRN_problem_getting_module_list=Problem getting module list.",
+        "TITLE_getting_module_list=Getting module list"
+    })
     public @Override Set<? extends Project> getSubprojects() {
         // XXX could use a special set w/ lazy isEmpty() - cf. #58639 for freeform
         Set<Project> s = new HashSet<Project>();
@@ -91,6 +98,7 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
             ml = project.getModuleList();
         } catch (IOException e) {
             Util.err.notify(ErrorManager.INFORMATIONAL, e);
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor(Bundle.WRN_problem_getting_module_list(), Bundle.TITLE_getting_module_list(), NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.WARNING_MESSAGE, new Object[] {NotifyDescriptor.OK_OPTION}, null));
             return Collections.emptySet();
         }
         Element data = project.getPrimaryConfigurationData();

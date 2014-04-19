@@ -52,6 +52,9 @@ public interface CsmImageName {
     static final String DEFAULT = "org/openide/resources/defaultNode.gif"; // NOI18N
     static final String RESOURCE_BASE = "org/netbeans/modules/cnd/modelutil/resources/types16x16/"; // NOI18N
 
+    static final String DECLARATION_FILTER = RESOURCE_BASE+"declaration_filter.png"; // NOI18N
+    static final String SCOPE_FILTER = RESOURCE_BASE+"scope_filter.png"; // NOI18N
+
     static final String NAMESPACE = RESOURCE_BASE+"namespace_16.png"; // NOI18N
     static final String CLASS = RESOURCE_BASE+"class_16.png"; // NOI18N
     static final String CLASS_FORWARD = RESOURCE_BASE+"class_forward_decl.png"; // NOI18N

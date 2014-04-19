@@ -256,9 +256,11 @@ public class LibraryDeclarationChecker extends HintsProvider {
             final boolean[] passthroughUsage = new boolean[1];
             final Collection<OffsetRange> ranges = new ArrayList<>();
             for (Library lib : declaredLibraries) {
-                Node rootNode = result.root(lib.getNamespace());
+                String usedNamespace = lib.getNamespace();
+                Node rootNode = result.root(usedNamespace);
                 if (lib.getLegacyNamespace() != null && (rootNode == null || rootNode.children().isEmpty())) {
-                    rootNode = result.root(lib.getLegacyNamespace());
+                    usedNamespace = lib.getLegacyNamespace();
+                    rootNode = result.root(usedNamespace);
                 }
                 if (rootNode == null) {
                     continue; //no parse result for this namespace, the namespace is not declared
@@ -276,9 +278,8 @@ public class LibraryDeclarationChecker extends HintsProvider {
                                     return attribute.namespacePrefix() != null;
                                 }
                             })) {
-                                if (passthroughNsPrefix != null
-                                        && LexerUtils.equals(passthroughNsPrefix, attribute.namespacePrefix(), true, true)) {
-                                    // http://java.sun.com/jsf/passthrough used
+                                if (passthroughNsPrefix != null && LexerUtils.equals(passthroughNsPrefix, attribute.namespacePrefix(), true, true)) {
+                                    // http://java.sun.com/jsf/passthrough or http://xmlns.jcp.org/jsf/passthrough used
                                     passthroughUsage[0] = true;
                                 } else if (jsfNsPrefix != null && ot.namespacePrefix() != null
                                         && LexerUtils.equals(jsfNsPrefix, attribute.namespacePrefix(), true, true)) {
@@ -297,17 +298,13 @@ public class LibraryDeclarationChecker extends HintsProvider {
 
                 if (usages[0] == 0) {
                     //unused declaration
-                    addUnusedLibrary(ranges, namespace2Attribute, lib, snapshot, docText);
+                    addUnusedLibrary(ranges, namespace2Attribute, usedNamespace, snapshot, docText);
                 }
             }
 
             //2b. find for unused declaration of http://java.sun.com/jsf/passthrough
             if (NamespaceUtils.containsNsOf(declaredNamespaces, DefaultLibraryInfo.PASSTHROUGH) && !passthroughUsage[0]) {
-                addUnusedLibrary(ranges,
-                        namespace2Attribute,
-                        libs.get(DefaultLibraryInfo.PASSTHROUGH.getLegacyNamespace()),
-                        snapshot,
-                        docText);
+                addUnusedLibrary(ranges, namespace2Attribute, DefaultLibraryInfo.PASSTHROUGH.getNamespace(), snapshot, docText);
             }
 
             //generate remove all unused declarations
@@ -347,9 +344,8 @@ public class LibraryDeclarationChecker extends HintsProvider {
         }
     }
 
-    private void addUnusedLibrary(Collection<OffsetRange> ranges, Map<String, Attribute> namespace2Attribute,
-            Library lib, Snapshot snapshot, CharSequence docText) {
-        Attribute declAttr = NamespaceUtils.getForNs(namespace2Attribute, lib.getNamespace());
+    private void addUnusedLibrary(Collection<OffsetRange> ranges, Map<String, Attribute> namespace2Attribute, String namespace, Snapshot snapshot, CharSequence docText) {
+        Attribute declAttr = NamespaceUtils.getForNs(namespace2Attribute, namespace);
         if (declAttr != null) {
             int from = declAttr.nameOffset();
             int to = declAttr.valueOffset() + declAttr.value().length();

@@ -182,7 +182,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     protected static CharSequence[] getClassOrNspNames(AST ast) {
 	assert CastUtils.isCast(ast);
 	AST child = ast.getFirstChild();
-        if (child != null && child.getType() == CPPTokenTypes.LITERAL_template) {
+        while (child != null && child.getType() == CPPTokenTypes.LITERAL_template) {
             child = AstRenderer.skipTemplateSibling(child);
         }
         child = AstRenderer.getFirstSiblingSkipInline(child);

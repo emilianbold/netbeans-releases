@@ -82,5 +82,3 @@ if (array_key_exists('cancel', $_POST)) {
         Utils::redirect('detail', array('id' => $todo->getId()));
     }
 }
-
-?>

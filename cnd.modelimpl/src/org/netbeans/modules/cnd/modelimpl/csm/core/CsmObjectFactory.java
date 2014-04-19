@@ -182,6 +182,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 aHandler = MEMBER_TYPEDEF;
             } else if (object instanceof ClassImpl.MemberTypeAliasImpl) {
                 aHandler = MEMBER_TYPEALIAS;
+            } else if (object instanceof TypeAliasImpl) {
+                aHandler = TYPEALIAS_IMPL;
             } else {
                 aHandler = TYPEDEF_IMPL;
             }

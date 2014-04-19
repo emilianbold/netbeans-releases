@@ -143,19 +143,32 @@ public final class KarmaUtils {
     @CheckForNull
     public static File findKarma(Project project) {
         // first, project karma
-        FileObject projectKarma = project.getProjectDirectory().getFileObject(KarmaExecutable.PROJECT_KARMA_LONG_PATH);
-        if (projectKarma == null) {
-            projectKarma = project.getProjectDirectory().getFileObject(KarmaExecutable.PROJECT_KARMA_PATH);
-        }
-        if (projectKarma != null
-                && projectKarma.isValid()
-                && projectKarma.isData()) {
+        FileObject projectKarma = findValidFile(project.getProjectDirectory(),
+                KarmaExecutable.PROJECT_KARMA_LONG_PATH_1,
+                KarmaExecutable.PROJECT_KARMA_LONG_PATH_2,
+                KarmaExecutable.PROJECT_KARMA_PATH_1,
+                KarmaExecutable.PROJECT_KARMA_PATH_2);
+        if (projectKarma != null) {
             return FileUtil.toFile(projectKarma);
         }
         // search on user's PATH
         List<String> karmas = FileUtils.findFileOnUsersPath(KarmaExecutable.KARMA_LONG_NAME, KarmaExecutable.KARMA_NAME);
         if (!karmas.isEmpty()) {
             return new File(karmas.get(0));
+        }
+        return null;
+    }
+
+    @CheckForNull
+    private static FileObject findValidFile(FileObject dir, String... names) {
+        assert dir.isFolder() : dir;
+        for (String name : names) {
+            FileObject fo = dir.getFileObject(name);
+            if (fo != null
+                    && fo.isValid()
+                    && fo.isData()) {
+                return fo;
+            }
         }
         return null;
     }

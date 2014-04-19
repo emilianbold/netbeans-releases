@@ -408,7 +408,9 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
                     for (int i = 0; i < typeArgs.length; i++) {
                         typeArgs[i] = wt;
                     }
-                    dt = wc.getTypes().getDeclaredType(te, typeArgs);
+                    dt = dt.getEnclosingType().getKind() == TypeKind.DECLARED
+                            ? wc.getTypes().getDeclaredType((DeclaredType)dt.getEnclosingType(), te, typeArgs)
+                            : wc.getTypes().getDeclaredType(te, typeArgs);
                 }
                 members.add(createEqualsMethod(wc, equalsFields, dt, scope));
             }

@@ -63,7 +63,7 @@ public abstract class AbstractAnalyzer implements Analyzer {
         for (FileObject file : ctx.getScope().getFiles()) {
             doDryRun(file, set);
         }
-        set.processHeaders(cancel);
+        set.processHeaders(cancel, isCompileUnitBased());
         total = set.compileUnits.size();
         ctx.start(total);
 
@@ -118,6 +118,8 @@ public abstract class AbstractAnalyzer implements Analyzer {
         }
     }
 
+    protected abstract boolean isCompileUnitBased();
+    
     protected abstract CsmErrorProvider getErrorProvider(final Preferences context);
     
     protected abstract Collection<? extends ErrorDescription> doRunImpl(final FileObject sr, final Context ctx, final CsmErrorProvider provider, final AtomicBoolean cancel);
@@ -158,6 +160,11 @@ public abstract class AbstractAnalyzer implements Analyzer {
                 singleWarningId = singleWarningId.substring( singleWarningId.indexOf('-')+1);
             }
             return singleWarningId;
+        }
+
+        @Override
+        public CsmErrorProvider.EditorEvent getEvent() {
+            return CsmErrorProvider.EditorEvent.FileBased;
         }
     }
 
@@ -266,25 +273,34 @@ public abstract class AbstractAnalyzer implements Analyzer {
             }
         }
         
-        private void processHeaders(AtomicBoolean cancel){
+        private void processHeaders(AtomicBoolean cancel, boolean isCompileUnitBased){
             for(FileObject fo : headers) {
                 if (cancel.get()) {
                     break;
                 }
                 CsmFile csmFile = CsmUtilities.getCsmFile(fo, false, false);
                 if (csmFile != null) {
-                    for(CsmCompilationUnit cu : CsmFileInfoQuery.getDefault().getCompilationUnits(csmFile, 0)) {
-                        CsmFile startFile = cu.getStartFile();
-                        if (startFile != null) {
-                            NativeFileItem findItem = findItem(startFile);
-                            if (findItem != null) {
-                                if (!compileUnits.contains(findItem)) {
-                                    compileUnits.add(findItem);
+                    if (isCompileUnitBased) {
+                        for(CsmCompilationUnit cu : CsmFileInfoQuery.getDefault().getCompilationUnits(csmFile, 0)) {
+                            CsmFile startFile = cu.getStartFile();
+                            if (startFile != null) {
+                                NativeFileItem findItem = findItem(startFile);
+                                if (findItem != null) {
+                                    if (!compileUnits.contains(findItem)) {
+                                        compileUnits.add(findItem);
+                                    }
+                                    break;
                                 }
-                                break;
+                            }
+
+                        }
+                    } else {
+                        NativeFileItem findItem = findItem(csmFile);
+                        if (findItem != null) {
+                            if (!compileUnits.contains(findItem)) {
+                                compileUnits.add(findItem);
                             }
                         }
-                        
                     }
                 }
             }
