@@ -478,6 +478,9 @@ public class Installer extends ModuleInstall implements Runnable {
 
         closeLogStream();
         closeLogStreamMetrics();
+        synchronized (restored) {
+            restored.set(false);
+        }
     }
     
     static boolean isImmediateWriteOut(LogRecord r) {
