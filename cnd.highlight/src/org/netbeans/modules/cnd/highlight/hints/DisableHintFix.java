@@ -40,15 +40,43 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.model.syntaxerr;
+package org.netbeans.modules.cnd.highlight.hints;
+
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.EnhancedFix;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Alexander Simon
  */
-public interface CodeAuditFactory {
-    // constant to be used for registration of provider
-    // i.e. @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+"ProviderName", service = CodeAuditFactory.class, position = 100)
-    public static final String REGISTRATION_PATH = "CND/CndHintsFactory/"; // NOI18N
-    AbstractCodeAudit create(AuditPreferences preferences);
+public class DisableHintFix implements EnhancedFix {
+    private final CodeAuditInfo info;
+
+    DisableHintFix(CodeAuditInfo error) {
+        this.info = error;
+    }
+
+    @Override
+    public String getText() {
+        return NbBundle.getMessage(DisableHintFix.class, "DisableHint"); // NOI18N
+    }
+
+    @Override
+    public ChangeInfo implement() throws Exception {
+        OptionsDisplayer.getDefault().open("Editor/Hints/text/x-cnd+sourcefile/" + info.getProviderID() + "/" + info.getAuditID()); // NOI18N
+        return null;
+    }
+
+    @Override
+    public CharSequence getSortText() {
+        //Hint opening options dialog should always be the lastest in offered list
+        return Integer.toString(Integer.MAX_VALUE);
+    }
+    
+    public static interface CodeAuditInfo {
+        String getProviderID();
+        String getAuditID();
+    }
 }

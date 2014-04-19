@@ -40,15 +40,26 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.model.syntaxerr;
+package org.netbeans.modules.cnd.highlight.hints;
+
+import java.util.List;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfoHintProvider;
+import org.netbeans.spi.editor.hints.Fix;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Alexander Simon
  */
-public interface CodeAuditFactory {
-    // constant to be used for registration of provider
-    // i.e. @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+"ProviderName", service = CodeAuditFactory.class, position = 100)
-    public static final String REGISTRATION_PATH = "CND/CndHintsFactory/"; // NOI18N
-    AbstractCodeAudit create(AuditPreferences preferences);
+@ServiceProvider(service = CsmErrorInfoHintProvider.class, position = 9100)
+public final class FixProvider extends CsmErrorInfoHintProvider {
+
+    @Override
+    protected List<Fix> doGetFixes(CsmErrorInfo info, List<Fix> alreadyFound) {
+        if (info instanceof DisableHintFix.CodeAuditInfo) {
+            alreadyFound.add(new DisableHintFix((DisableHintFix.CodeAuditInfo) info));
+        }
+        return alreadyFound;
+    }
 }
