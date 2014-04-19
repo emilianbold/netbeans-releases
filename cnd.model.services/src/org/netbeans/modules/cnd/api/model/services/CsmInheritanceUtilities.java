@@ -62,7 +62,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.util.*;
-import org.netbeans.modules.cnd.modelutil.AntiLoop;
+import org.netbeans.modules.cnd.modelutil.ClassifiersAntiLoop;
 
 /**
  * utilities to merge/get inheritance information
@@ -368,7 +368,7 @@ public final class CsmInheritanceUtilities {
             if (res == null) {
                 long resolveTime = System.currentTimeMillis();
                 res = new ArrayList<CsmInheritance>();
-                AntiLoop handledClasses = new AntiLoop();
+                ClassifiersAntiLoop handledClasses = new ClassifiersAntiLoop();
                 if (!findInheritanceChain(child, parent, res, handledClasses)) {
                     res = Collections.emptyList();
                 }
@@ -409,7 +409,7 @@ public final class CsmInheritanceUtilities {
     
     private static boolean findInheritanceChain(CsmClass child, CsmClass parent, 
                                         List<CsmInheritance> res, 
-                                        AntiLoop handledClasses) {
+                                        ClassifiersAntiLoop handledClasses) {
         // remember visited childs
         // quick exit, if already handled before
         if (child == null || !handledClasses.add(child)) {

@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
-import org.netbeans.modules.cnd.modelutil.AntiLoop;
+import org.netbeans.modules.cnd.modelutil.ClassifiersAntiLoop;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 import org.openide.util.Lookup;
@@ -213,15 +213,15 @@ public abstract class CsmVirtualInfoQuery {
             if (method.isVirtual()) {
                 return true;
             }
-            return processClass(method, method.getContainingClass(), new AntiLoop());
+            return processClass(method, method.getContainingClass(), new ClassifiersAntiLoop());
         }
         
         @Override
         public CsmMethod getFirstDestructor(CsmClass cls) {
-            return processClass(cls, new AntiLoop());
+            return processClass(cls, new ClassifiersAntiLoop());
         }
 
-        private CsmMethod processClass(CsmClass cls, AntiLoop antilLoop) {
+        private CsmMethod processClass(CsmClass cls, ClassifiersAntiLoop antilLoop) {
             if (cls == null || antilLoop.contains(cls)) {
                 return null;
             }
@@ -240,7 +240,7 @@ public abstract class CsmVirtualInfoQuery {
             return null;
         }
 
-        private boolean processClass(CsmMethod toSearch, CsmClass cls, AntiLoop antilLoop){
+        private boolean processClass(CsmMethod toSearch, CsmClass cls, ClassifiersAntiLoop antilLoop){
             if (cls == null || antilLoop.contains(cls)) {
                 return false;
             }

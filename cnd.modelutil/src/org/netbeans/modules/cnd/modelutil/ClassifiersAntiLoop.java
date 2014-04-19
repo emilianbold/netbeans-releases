@@ -52,18 +52,18 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
  * Analog of Set<CsmClass> used for anti loop checks
  * @author Vladimir Kvashin
  */
-public class AntiLoop {
+public class ClassifiersAntiLoop {
     
     private Set<Object> set;
     private boolean recursion = false;
 
     private static final int MAX_INHERITANCE_DEPTH = 25;
 
-    public AntiLoop() {
+    public ClassifiersAntiLoop() {
         set = new HashSet<Object>();
     }
     
-    public AntiLoop(int capacity) {
+    public ClassifiersAntiLoop(int capacity) {
         set = new HashSet<Object>(capacity);
     }
     
