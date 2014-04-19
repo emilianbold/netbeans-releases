@@ -1184,9 +1184,13 @@ public final class J2MEProjectProperties {
         while ((dep = eval.getProperty(PROP_LIBLET_PREFIX + i + PROP_LIBLET_DEPENDENCY)) != null) {
             String url = eval.getProperty(PROP_LIBLET_PREFIX + i + PROP_LIBLET_URL); //NOI18N
             String[] splittedDep = dep.split(";"); //NOI18N
-            LibletInfo li = new LibletInfo(LibletInfo.LibletType.valueOf(splittedDep[0].trim().toUpperCase()),
-                    splittedDep[2].trim(), splittedDep[3].trim(), splittedDep[4].trim(),
-                    LibletInfo.Requirement.valueOf(splittedDep[1].trim().toUpperCase()), url);
+            LibletInfo li = new LibletInfo(
+                    LibletInfo.LibletType.valueOf(splittedDep[0].trim().toUpperCase()),
+                    splittedDep[2].trim(),
+                    splittedDep.length > 3 ? splittedDep[3].trim() : "",
+                    splittedDep.length > 4 ? splittedDep[4].trim() : "",
+                    LibletInfo.Requirement.valueOf(splittedDep[1].trim().toUpperCase()),
+                    url);
             model.addElement(li);
 
             i++;
