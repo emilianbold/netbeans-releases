@@ -467,6 +467,14 @@ public final class EvaluationWindow extends TopComponent {
             im.put(ks, NO_ACTION);
         }
     }
+    
+    private final void restrictEvents(InputMap im, int ... events) {
+        final String NO_ACTION = "no-action"; // NOI18N
+        for (int event : events) {
+            final KeyStroke ks = KeyStroke.getKeyStroke(event, 0);
+            im.put(ks, NO_ACTION);
+        }
+    }
 
     private class FormatListener implements ActionListener {
 
@@ -536,6 +544,11 @@ public final class EvaluationWindow extends TopComponent {
         public void actionPerformed(ActionEvent ev) {
             ta.setText(null);
             ta.setCaretPosition(0);
+            
+            restrictEvents(
+                    exprList.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT),
+                    KeyEvent.VK_ENTER, KeyEvent.VK_ESCAPE, KeyEvent.VK_TAB
+            );            
         }
     }
     
