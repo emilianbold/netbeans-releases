@@ -53,6 +53,7 @@ public interface CsmImageName {
     static final String RESOURCE_BASE = "org/netbeans/modules/cnd/modelutil/resources/types16x16/"; // NOI18N
 
     static final String NAMESPACE = RESOURCE_BASE+"namespace_16.png"; // NOI18N
+    static final String SCOPE = RESOURCE_BASE+"scope.png"; // NOI18N
     static final String CLASS = RESOURCE_BASE+"class_16.png"; // NOI18N
     static final String CLASS_FORWARD = RESOURCE_BASE+"class_forward_decl.png"; // NOI18N
     static final String STRUCT_FORWARD = RESOURCE_BASE+"struct_forward_decl.png"; // NOI18N
