@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.callgraph.api.Call;
 import org.netbeans.modules.cnd.callgraph.api.CallModel;
 import org.netbeans.modules.cnd.callgraph.api.Function;
 import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphPreferences;
+import org.netbeans.modules.cnd.support.Interrupter;
 
 /**
  *
@@ -227,7 +228,7 @@ public class CallModelImpl implements CallModel {
             final HashMap<CsmFunction,CsmReference> set = new HashMap<CsmFunction,CsmReference>();
             for(CsmFunction function : functions) {
                 if (CsmKindUtilities.isFunctionDefinition(function) && function.getContainingFile().isValid()) {
-                    final List<CsmOffsetable> list = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks((function).getContainingFile());
+                    final List<CsmOffsetable> list = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks((function).getContainingFile(), Interrupter.DUMMY);
                     references.accept((CsmScope)function, new CsmFileReferences.Visitor() {
                         @Override
                         public void visit(CsmReferenceContext context) {

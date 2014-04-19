@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -218,7 +219,7 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
     private void checkDeadBlocks(final CsmProject project, final CsmFile csmFile, String msg, int[][] expectedDeadBlocks) throws BadLocationException {
         // test for #185712: external modifications breaks dead blocks information in editor
         project.waitParse();
-        List<CsmOffsetable> unusedCodeBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(csmFile);
+        List<CsmOffsetable> unusedCodeBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(csmFile, Interrupter.DUMMY);
         if (unusedCodeBlocks.isEmpty()) {
             System.err.println("NO DEAD BLOCKS");
         } else {

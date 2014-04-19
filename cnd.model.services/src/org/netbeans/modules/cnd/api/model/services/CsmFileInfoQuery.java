@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.util.CharSequences;
@@ -104,12 +105,12 @@ public abstract class CsmFileInfoQuery {
      * NOTE: last offsetable object could have Integer.MAX_VALUE value:
      *  - it means dead block from start offset till the end of file
      */
-    public abstract List<CsmOffsetable> getUnusedCodeBlocks(CsmFile file);
+    public abstract List<CsmOffsetable> getUnusedCodeBlocks(CsmFile file, Interrupter interrupter);
 
     /**
      * @return list of macro's usages in the file
      */
-    public abstract List<CsmReference> getMacroUsages(CsmFile file);
+    public abstract List<CsmReference> getMacroUsages(CsmFile file, Interrupter interrupter);
 
     /**
      * @return dwarf block offset or null if there are no dwarf blocks in file
@@ -214,12 +215,12 @@ public abstract class CsmFileInfoQuery {
         }
 
         @Override
-        public List<CsmOffsetable> getUnusedCodeBlocks(CsmFile file) {
+        public List<CsmOffsetable> getUnusedCodeBlocks(CsmFile file, Interrupter interrupter) {
             return Collections.<CsmOffsetable>emptyList();
         }
 
         @Override
-        public List<CsmReference> getMacroUsages(CsmFile file) {
+        public List<CsmReference> getMacroUsages(CsmFile file, Interrupter interrupter) {
             return Collections.<CsmReference>emptyList();
         }
 

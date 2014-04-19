@@ -151,6 +151,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -1480,7 +1481,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     /* package */ final APTPreprocHandler createPreprocHandlerFromState(CharSequence absPath, APTPreprocHandler.State state) {
-        Collection<APTPreprocHandler> out = createPreprocHandlerFromStates(Collections.singleton(state), absPath);
+        Collection<APTPreprocHandler> out = createPreprocHandlerFromStates(Collections.singleton(state), absPath, Interrupter.DUMMY);
         return out.iterator().next();
     }
 
@@ -1539,7 +1540,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return out;
     }
 
-    public final Collection<APTPreprocHandler> getPreprocHandlersForParse(FileImpl fileImpl) {
+    public final Collection<APTPreprocHandler> getPreprocHandlersForParse(FileImpl fileImpl, Interrupter interrupter) {
         CharSequence fileKey = FileContainer.getFileKey(fileImpl.getAbsolutePath(), false);
         FileContainer.FileEntry entry = getFileContainer().getEntry(fileKey);
         if (entry == null) {
@@ -1564,7 +1565,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
             }
         }
-        Collection<APTPreprocHandler> result = createPreprocHandlerFromStates(states, fileKey);
+        Collection<APTPreprocHandler> result = createPreprocHandlerFromStates(states, fileKey, interrupter);
         return result;
     }
 
@@ -1599,16 +1600,16 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         synchronized (entry.getLock()) {
             states = entry.getPrerocStates();
         }
-        return createPreprocHandlerFromStates(states, absPath);
+        return createPreprocHandlerFromStates(states, absPath, Interrupter.DUMMY);
     }
 
-    private Collection<APTPreprocHandler> createPreprocHandlerFromStates(Collection<State> states, CharSequence absPath) {
+    private Collection<APTPreprocHandler> createPreprocHandlerFromStates(Collection<State> states, CharSequence absPath, Interrupter interrupter) {
         Collection<APTPreprocHandler> result = new ArrayList<>(states.size());
         for (APTPreprocHandler.State state : states) {
             APTPreprocHandler preprocHandler = createEmptyPreprocHandler(absPath);
             if (state != null) {
                 if (state.isCleaned()) {
-                    preprocHandler = restorePreprocHandler(absPath, preprocHandler, state);
+                    preprocHandler = restorePreprocHandler(absPath, preprocHandler, state, interrupter);
                 } else {
                     if (TRACE_PP_STATE_OUT) {
                         System.err.println("copying state for " + absPath);
@@ -3274,7 +3275,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return new StartEntryInfo(preprocHandler, startProject, csmFile);
     }
 
-    private APTPreprocHandler restorePreprocHandler(CharSequence interestedFile, APTPreprocHandler preprocHandler, APTPreprocHandler.State state) {
+    private APTPreprocHandler restorePreprocHandler(CharSequence interestedFile, APTPreprocHandler preprocHandler, APTPreprocHandler.State state, Interrupter interrupter) {
         assert state != null;
         assert state.isCleaned();
         // walk through include stack to restore preproc information
@@ -3289,12 +3290,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             if (TRACE_PP_STATE_OUT) {
                 System.err.println("restoring for " + interestedFile);
             }
-            return restorePreprocHandlerFromIncludeStack(reverseInclStack, interestedFile, preprocHandler, state);
+            return restorePreprocHandlerFromIncludeStack(reverseInclStack, interestedFile, preprocHandler, state, interrupter);
         }
     }
 
-    protected final APTPreprocHandler restorePreprocHandlerFromIncludeStack(LinkedList<APTIncludeHandler.IncludeInfo> reverseInclStack, 
-            CharSequence interestedFile, APTPreprocHandler preprocHandler, APTPreprocHandler.State state) {
+    protected final APTPreprocHandler restorePreprocHandlerFromIncludeStack(LinkedList<APTIncludeHandler.IncludeInfo> reverseInclStack, CharSequence interestedFile, APTPreprocHandler preprocHandler, APTPreprocHandler.State state, final Interrupter interrupter) {
         // we need to reverse includes stack
         assert (!reverseInclStack.isEmpty()) : "state of stack is " + reverseInclStack;
         LinkedList<APTIncludeHandler.IncludeInfo> inclStack = Utils.reverse(reverseInclStack);
@@ -3318,7 +3318,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             int stackSize = inclStack.size();
             // create concurrent entry if absent
             APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(state, Boolean.FALSE);
-            APTWalker walker = new APTRestorePreprocStateWalker(startProject, aptLight, csmFile, preprocHandler, inclStack, FileContainer.getFileKey(interestedFile, false).toString(), cacheEntry);
+            APTWalker walker = new APTRestorePreprocStateWalker(startProject, aptLight, csmFile, preprocHandler, inclStack, FileContainer.getFileKey(interestedFile, false).toString(), cacheEntry) {
+
+                @Override
+                protected boolean isStopped() {
+                    return super.isStopped() || interrupter.cancelled();
+                }
+                
+            };
             walker.visit();
             // we do not remember cache entry because it is stopped before end of file
             // fileImpl.setAPTCacheEntry(handler, cacheEntry, false);
