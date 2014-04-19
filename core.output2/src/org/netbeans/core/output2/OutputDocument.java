@@ -81,7 +81,11 @@ public class OutputDocument implements Document, Element, ChangeListener {
         getLines().addChangeListener(this);
         inBuffer = new StringBuffer();
     }
-    
+
+    OutWriter getWriter() {
+        return writer;
+    }
+
     //#119985
     public int getOutputLength() {
         return getLines().getCharCount();

@@ -55,5 +55,3 @@ Assert::same(0, $calculator->plus(0, 0));
 Assert::same(1, $calculator->plus(0, 1));
 Assert::same(1, $calculator->plus(1, 0));
 Assert::same(2, $calculator->plus(1, 1));
-
-?>

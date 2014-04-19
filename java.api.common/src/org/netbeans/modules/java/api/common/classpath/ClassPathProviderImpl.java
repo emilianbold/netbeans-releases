@@ -58,6 +58,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
@@ -197,7 +198,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             runClasspath,
             runTestClasspath,
             endorsedClasspath,
-            Union2.<String,String[]>createFirst(Builder.DEFAULT_PLATFORM_TYPE));
+            Union2.<String,String[]>createFirst(CommonProjectUtils.J2SE_PLATFORM_TYPE));
     }
 
     private ClassPathProviderImpl(
@@ -253,7 +254,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
      */
     public static final class Builder {
 
-        private static final String DEFAULT_PLATFORM_TYPE = "j2se";   //NOI18N
         private static final String DEFAULT_BUILD_CLASSES_DIR = "build.classes.dir";   //NOI18N
         private static final String DEFAULT_BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
         private static final String DEFAULT_DIST_JAR = "dist.jar"; // NOI18N
@@ -269,7 +269,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         private final SourceRoots sourceRoots;
         private final SourceRoots testSourceRoots;
 
-        private String platformType = DEFAULT_PLATFORM_TYPE;
+        private String platformType = CommonProjectUtils.J2SE_PLATFORM_TYPE;
         private String buildClassesDir = DEFAULT_BUILD_CLASSES_DIR;
         private String buildTestClassesDir = DEFAULT_BUILD_TEST_CLASSES_DIR;
         private String distJar = DEFAULT_DIST_JAR;

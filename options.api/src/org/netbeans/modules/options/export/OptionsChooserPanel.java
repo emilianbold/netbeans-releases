@@ -611,6 +611,7 @@ public final class OptionsChooserPanel extends JPanel {
 	String defaultUserdirRoot = getDefaultUserdirRoot(); // NOI18N
         fileChooserBuilder.setDefaultWorkingDirectory(new File(defaultUserdirRoot));
 	fileChooserBuilder.setFileFilter(new FileNameExtensionFilter("*.zip", "zip"));  //NOI18N
+        fileChooserBuilder.setAcceptAllFileFilterUsed(false);
         String approveText = NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.file.chooser.approve");
         fileChooserBuilder.setApproveText(approveText);
         if (panelType == PanelType.IMPORT) {

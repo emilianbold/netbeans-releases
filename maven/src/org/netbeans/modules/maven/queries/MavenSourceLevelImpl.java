@@ -219,11 +219,7 @@ public class MavenSourceLevelImpl implements SourceLevelQueryImplementation2 {
                 if (args != null) {
                     Xpp3Dom prof = args.getChild("profile");
                     if (prof != null) {
-                        try {
-                            return (String) eval.evaluate(prof.getValue());
-                        } catch (ExpressionEvaluationException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
+                        return prof.getValue();
                     }
                 }
             }

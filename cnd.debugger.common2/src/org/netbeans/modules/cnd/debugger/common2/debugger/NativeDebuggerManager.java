@@ -211,7 +211,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
             get().saveGlobalState();
         }
     }
-    
+
     public static RequestProcessor getRequestProcessor() {
         return RP;
     }
@@ -495,10 +495,6 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
      * Save all global persistent data (in userdir).
      */
     public void saveGlobalState() {
-        Session[] coreSessions = delegate().getSessions();
-        assert coreSessions == null || coreSessions.length == 0 :
-            "Still have sessions when shutting down"; // NOI18N
-
         if (breakpointBag != null && DebuggerOption.SAVE_BREAKPOINTS.isEnabled(globalOptions())) {
             breakpointBag.save();
         }

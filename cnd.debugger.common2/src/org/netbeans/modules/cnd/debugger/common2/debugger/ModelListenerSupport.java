@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
-import java.util.Vector;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -58,7 +58,7 @@ import org.netbeans.spi.viewmodel.ModelEvent;
 
 public class ModelListenerSupport implements ModelListener {
 
-    private final Vector<ModelListener> listeners = new Vector<ModelListener>();
+    private final CopyOnWriteArrayList<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
 
     private String owner;
 

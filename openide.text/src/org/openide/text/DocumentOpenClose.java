@@ -1045,6 +1045,7 @@ final class DocumentOpenClose {
 
         public DocumentRef(StyledDocument doc) {
             super(doc, org.openide.util.Utilities.activeReferenceQueue());
+            Logger.getLogger("TIMER").log(Level.FINE, "TextDocument", doc);
         }
 
         @Override

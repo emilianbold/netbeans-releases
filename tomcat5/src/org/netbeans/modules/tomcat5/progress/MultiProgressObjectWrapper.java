@@ -166,7 +166,7 @@ public class MultiProgressObjectWrapper implements ProgressObject, ProgressListe
     /**
      * Handles the progress events from wrapped objects.
      */
-    public synchronized void handleProgressEvent(ProgressEvent progressEvent) {
+    public void handleProgressEvent(ProgressEvent progressEvent) {
         updateState(progressEvent.getDeploymentStatus().getMessage());
 
         pes.fireHandleProgressEvent(progressEvent.getTargetModuleID(), progressEvent.getDeploymentStatus());

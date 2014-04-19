@@ -89,6 +89,7 @@ import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetBody;
+import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetHeader;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -447,6 +448,14 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                     updateContent(true);
                 }
             });
+        }
+
+        @Override
+        public void styleSheetAdded(StyleSheetHeader header) {
+        }
+
+        @Override
+        public void styleSheetRemoved(String styleSheetId) {
         }
 
     }

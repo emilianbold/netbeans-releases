@@ -47,6 +47,7 @@ package org.netbeans.core.windows.services;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.EventQueue;
+import java.awt.Frame;
 import java.awt.Window;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,6 +60,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -343,6 +345,15 @@ public class DialogDisplayerImplTest extends NbTestCase {
         
         assertFalse ("Leaf is dead", owner.isVisible ());
         assertFalse ("Child is dead too", child.isVisible ());
+    }
+    
+    public void testParent() {
+        DialogDescriptor dd = new DialogDescriptor (pane, "Owner");
+        Dialog dlg = DialogDisplayer.getDefault ().createDialog (dd, null);
+        assertEquals(WindowManager.getDefault().getMainWindow(), dlg.getOwner());
+        Frame frame = new Frame();
+        dlg = DialogDisplayer.getDefault ().createDialog (dd ,frame);
+        assertEquals(frame, dlg.getOwner());
     }
     
     static void postInAwtAndWaitOutsideAwt (final Runnable run) throws Exception {

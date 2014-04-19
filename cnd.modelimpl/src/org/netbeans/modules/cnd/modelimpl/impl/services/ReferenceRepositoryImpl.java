@@ -290,6 +290,14 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
                     out.add(ref);
                 }
             }
+
+            @Override
+            public boolean cancelled() {
+                if (interrupter != null && interrupter.cancelled()){
+                    return true;
+                }
+                return false;
+            }
         };
         CsmFileReferences.getDefault().visit(refs, visitor);
         return out;

@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.javaee.wildfly.ide;
 
 import java.io.File;
@@ -95,19 +94,29 @@ public final class WildflyOutputSupport {
 
     private final InstanceProperties props;
 
-    /** GuardedBy("this") */
+    /**
+     * GuardedBy("this")
+     */
     private boolean started;
 
-    /** GuardedBy("this") */
+    /**
+     * GuardedBy("this")
+     */
     private boolean failed;
 
-    /** GuardedBy("this") */
+    /**
+     * GuardedBy("this")
+     */
     private Future<Integer> processTask;
 
-    /** GuardedBy("this") */
+    /**
+     * GuardedBy("this")
+     */
     private Future<?> profileCheckTask;
 
-    /** GuardedBy("this") */
+    /**
+     * GuardedBy("this")
+     */
     private InputReaderTask fileTask;
 
     private WildflyOutputSupport(InstanceProperties props) {
@@ -168,6 +177,16 @@ public final class WildflyOutputSupport {
             }
 
             processTask = localProcessTask;
+        }
+        failed = !isAlive(serverProcess);
+    }
+
+    private boolean isAlive(Process process) {
+        try {
+            process.exitValue();
+            return false;
+        } catch (Exception e) {
+            return true;
         }
     }
 
@@ -254,7 +273,7 @@ public final class WildflyOutputSupport {
                 fileTask.cancel();
             }
 
-            if(started) {
+            if (started) {
                 LOGGER.log(Level.INFO, "Instance {0} started again without proper stop",
                         props.getProperty(InstanceProperties.DISPLAY_NAME_ATTR));
             }
@@ -293,8 +312,8 @@ public final class WildflyOutputSupport {
             }
             synchronized (WildflyOutputSupport.this) {
                 if (started) {
-                   check = false;
-                   return;
+                    check = false;
+                    return;
                 }
             }
 
@@ -321,16 +340,16 @@ public final class WildflyOutputSupport {
                     || EAP6_STARTING_ML.matcher(line).matches()) { // JBoss 6.0 message // NOI18N
                 LOGGER.log(Level.FINER, "STARTING message fired"); // NOI18N
                 //fireStartProgressEvent(StateType.RUNNING, createProgressMessage("MSG_START_SERVER_IN_PROGRESS")); // NOI18N
-            } else if ( ((line.indexOf("JBoss (MX MicroKernel)") > -1 // JBoss 4.x message // NOI18N
+            } else if (((line.indexOf("JBoss (MX MicroKernel)") > -1 // JBoss 4.x message // NOI18N
                     || line.indexOf("JBoss (Microcontainer)") > -1 // JBoss 5.0 message // NOI18N
                     || line.indexOf("JBossAS") > -1 // JBoss 6.0 message // NOI18N
                     || line.indexOf("JBoss AS") > -1)// JBoss 7.0 message // NOI18N
                     && (line.indexOf("Started in") > -1) // NOI18N
-                        || line.indexOf("started in") > -1 // NOI18N
-                        || line.indexOf("started (with errors) in") > -1) // JBoss 7 with some errors (include wrong deployments) // NOI18N
-                        || JBOSS_7_STARTED_ML.matcher(line).matches()
-                        || WILDFLY_STARTED_ML.matcher(line).matches()
-                        || EAP6_STARTED_ML.matcher(line).matches()) {
+                    || line.indexOf("started in") > -1 // NOI18N
+                    || line.indexOf("started (with errors) in") > -1) // JBoss 7 with some errors (include wrong deployments) // NOI18N
+                    || JBOSS_7_STARTED_ML.matcher(line).matches()
+                    || WILDFLY_STARTED_ML.matcher(line).matches()
+                    || EAP6_STARTED_ML.matcher(line).matches()) {
                 LOGGER.log(Level.FINER, "STARTED message fired"); // NOI18N
 
                 synchronized (WildflyOutputSupport.this) {

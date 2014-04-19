@@ -123,6 +123,7 @@ import org.openide.util.CharSequences;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import static org.netbeans.modules.cnd.completion.impl.xref.Bundle.*;
+import org.netbeans.modules.cnd.support.Interrupter;
 
 /**
  *
@@ -292,7 +293,7 @@ public final class ReferencesSupport {
 
         // fast check, if possible
         // macros have max priority in file
-        List<CsmReference> macroUsages = CsmFileInfoQuery.getDefault().getMacroUsages(csmFile);
+        List<CsmReference> macroUsages = CsmFileInfoQuery.getDefault().getMacroUsages(csmFile, Interrupter.DUMMY);
         CsmObject csmItem = findMacro(macroUsages, offset);
         if (csmItem != null) {
             return csmItem;
