@@ -42,8 +42,8 @@
 
 package org.netbeans.modules.cnd.highlight.hints;
 
-import org.netbeans.modules.cnd.analysis.api.AuditPreferences;
-import org.netbeans.modules.cnd.analysis.api.CodeAudit;
+import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 
 /**

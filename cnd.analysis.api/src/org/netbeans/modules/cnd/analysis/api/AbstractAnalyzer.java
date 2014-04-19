@@ -5,6 +5,7 @@
  */
 package org.netbeans.modules.cnd.analysis.api;
 
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
 import org.netbeans.modules.cnd.analysis.api.options.HintsPanel;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
