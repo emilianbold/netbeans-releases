@@ -952,6 +952,11 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
                 }
 
                 @Override
+                public String getKind() {
+                    return "action"; //NOI18N
+                }
+
+                @Override
                 public void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
                     throw new UnsupportedOperationException();
                 }
@@ -971,6 +976,11 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
                 @Override
                 public boolean isSupportedEvent(CsmErrorProvider.EditorEvent kind) {
                     return true;
+                }
+
+                @Override
+                public String getKind() {
+                    return "action"; //NOI18N
                 }
 
                 @Override
