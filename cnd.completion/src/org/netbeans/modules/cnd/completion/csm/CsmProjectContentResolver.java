@@ -725,16 +725,26 @@ public final class CsmProjectContentResolver {
 
     private void fillFileLocalIncludeNamespaceVariables(CsmNamespace ns, String strPrefix, boolean match,
             CsmFile file, Collection<CsmVariable> out, boolean needDeclFromUnnamedNS) {
-        CsmDeclaration.Kind[] kinds = new CsmDeclaration.Kind[]{
-            CsmDeclaration.Kind.VARIABLE,
-            CsmDeclaration.Kind.VARIABLE_DEFINITION
-        };
-        Collection<CsmScopeElement> se = new ArrayList<CsmScopeElement>();
-        getFileLocalIncludeNamespaceMembers(ns, file, se, needDeclFromUnnamedNS);
-        List<CsmVariable> vars = new ArrayList<CsmVariable>();
-        filterDeclarations(se.iterator(), vars, kinds, strPrefix, match, false);
-        vars = filterVariables(vars);
-        out.addAll(vars);
+        if (!ns.isGlobal()) {
+            CsmDeclaration.Kind[] kinds = new CsmDeclaration.Kind[]{
+                CsmDeclaration.Kind.VARIABLE,
+                CsmDeclaration.Kind.VARIABLE_DEFINITION
+            };
+            Collection<CsmScopeElement> se = new ArrayList<CsmScopeElement>();            
+            getFileLocalIncludeNamespaceMembers(ns, file, se, needDeclFromUnnamedNS);
+            List<CsmVariable> vars = new ArrayList<CsmVariable>();
+            filterDeclarations(se.iterator(), vars, kinds, strPrefix, match, false);
+            vars = filterVariables(vars);
+            out.addAll(vars);            
+        } else {
+            // Global ns doesn't have definitions, so search in file instead
+            List<CsmVariable> allLocalDecls = new ArrayList<CsmVariable>();
+            fillFileLocalVariables(strPrefix, match, file, needDeclFromUnnamedNS, false, allLocalDecls);
+            // Unlike getFileLocalIncludeNamespaceMembers (used in first branch), 
+            // fillFileLocalVariables for some reason returns not only variables without
+            // external linkage, so need to filter results before adding to out.
+            out.addAll(filterFileLocalStaticVariables(allLocalDecls));
+        }
     }
 
     private void fillFileLocalIncludeNamespaceFunctions(CsmNamespace ns, String strPrefix, boolean match,
@@ -1560,6 +1570,16 @@ public final class CsmProjectContentResolver {
             }
         }
         return new ArrayList<CsmVariable>(out.values());
+    }
+    
+    private List<CsmVariable> filterFileLocalStaticVariables(List<CsmVariable> vars) {
+        List<CsmVariable> res = new ArrayList<CsmVariable>();
+        for (CsmVariable var : vars) {
+            if (!CsmBaseUtilities.isGlobalVariable(var)) {
+                res.add(var);
+            }
+        }
+        return res;
     }
 
     ////////////////////////////////////////////////////////////////////////////
