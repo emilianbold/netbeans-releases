@@ -479,19 +479,6 @@ public final class FileSystemProvider {
         FILES_CONTENT,
         RECURSIVE_LS
     }
-    
-    public static void warmup(WarmupMode mode, Collection<FileObject> fileObjects, Collection<String> extensions) {
-        Collection<String> paths = new ArrayList<>();
-        ExecutionEnvironment env = null;
-        for (FileObject fo : fileObjects) {
-            if (env == null) {
-                env = FileSystemProvider.getExecutionEnvironment(fo);
-            } else {
-                RemoteLogger.assertTrue(env.equals(FileSystemProvider.getExecutionEnvironment(fo)));
-            }
-        }
-        warmup(mode, env, paths, extensions);
-    }
 
     public static void warmup(WarmupMode mode, ExecutionEnvironment env, Collection<String> paths, Collection<String> extensions) {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
