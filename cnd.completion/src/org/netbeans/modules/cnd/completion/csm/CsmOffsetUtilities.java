@@ -239,7 +239,13 @@ public class CsmOffsetUtilities {
             if (CsmKindUtilities.isFunctionDefinition(fun)) {
                 CsmFunctionDefinition funDef = (CsmFunctionDefinition) fun;
                 if (CsmOffsetUtilities.isBeforeObject(funDef.getBody(), offset)) {
-                    return false;
+                    if (CsmKindUtilities.isCastOperator(fun)) {
+                        if (CsmOffsetUtilities.isBeforeObject(funDef.getReturnType(), offset)) {
+                            return false;
+                        }
+                    } else {
+                        return false;
+                    }
                 }
             }
             if (CsmKindUtilities.isFunctionDeclaration(fun)) {

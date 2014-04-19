@@ -74,5 +74,5 @@ public final class CsmEntityResolverImpl implements CsmEntityResolverImplementat
     
     private static CsmCompletionQuery getCompletionQuery(CsmOffsetable expression) {
         return CsmCompletionProvider.createCompletionResolver(expression.getContainingFile(), CompletionResolver.QueryScope.GLOBAL_QUERY, null);
-    }    
+    }        
 }
