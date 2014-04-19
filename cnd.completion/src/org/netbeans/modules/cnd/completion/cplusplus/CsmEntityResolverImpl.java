@@ -39,69 +39,40 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.api.model.services;
+package org.netbeans.modules.cnd.completion.cplusplus;
 
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmType;
-import org.netbeans.modules.cnd.spi.model.services.CsmTypeResolverImplementation;
-import org.openide.util.Lookup;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
+import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
+import org.netbeans.modules.cnd.spi.model.services.CsmEntityResolverImplementation;
 
 /**
  *
  * @author petrk
  */
-public final class CsmTypeResolver {
-    
-    /**
-     * Resolves type of expression with the given context (instantiations)
-     * @param expression to resolve
-     * @param instantiations - context
-     * @return type
-     */
-    public static CsmType resolveType(CsmOffsetable expression, List<CsmInstantiation> instantiations) {
-        return DEFAULT.resolveType(expression, instantiations);
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.model.services.CsmEntityResolverImplementation.class)
+public final class CsmEntityResolverImpl implements CsmEntityResolverImplementation {
+
+    @Override
+    public Collection<CsmObject> resolveObjects(CsmOffsetable expression, List<CsmInstantiation> instantiations) {
+        CsmCompletionQuery query = getCompletionQuery(expression);
+        Collection<CsmObject> objects = query.queryObjects(expression, instantiations);
+        return objects;
     }
-    
-//<editor-fold defaultstate="collapsed" desc="impl">
-    
-    private static final CsmTypeResolverImplementation DEFAULT = new Default();
-    
-    private CsmTypeResolver() {
-        throw new AssertionError("Not instantiable"); // NOI18N
+
+    @Override
+    public CsmType resolveType(CsmOffsetable expression, List<CsmInstantiation> instantiations) {
+        CsmCompletionQuery query = getCompletionQuery(expression);
+        CsmType type = query.queryType(expression, instantiations);
+        return type;
     }    
     
-    /**
-     * Default implementation (just a proxy to a real service)
-     */
-    private static final class Default implements CsmTypeResolverImplementation {
-        
-        private final Lookup.Result<CsmTypeResolverImplementation> res;
-        
-        private CsmTypeResolverImplementation delegate;
-        
-        
-        private Default() {
-            res = Lookup.getDefault().lookupResult(CsmTypeResolverImplementation.class);
-        }
-        
-        private CsmTypeResolverImplementation getDelegate(){
-            CsmTypeResolverImplementation service = delegate;
-            if (service == null) {
-                for (CsmTypeResolverImplementation resolver : res.allInstances()) {
-                    service = resolver;
-                    break;
-                }
-                delegate = service;
-            }
-            return service;
-        }
-        
-        @Override
-        public CsmType resolveType(CsmOffsetable expression, List<CsmInstantiation> instantiations) {
-            return getDelegate().resolveType(expression, instantiations);
-        }
-    }
-//</editor-fold>
+    private static CsmCompletionQuery getCompletionQuery(CsmOffsetable expression) {
+        return CsmCompletionProvider.createCompletionResolver(expression.getContainingFile(), CompletionResolver.QueryScope.GLOBAL_QUERY, null);
+    }    
 }
