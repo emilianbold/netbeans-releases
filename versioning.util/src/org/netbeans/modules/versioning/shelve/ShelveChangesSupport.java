@@ -213,11 +213,16 @@ public abstract class ShelveChangesSupport {
         }
 
         @Override
+        @NbBundle.Messages({
+            "ShelveChangesPanel.lblError.slashes=Patch name must not contain \"\\\" or \"/\"."
+        })
         public void actionPerformed (ActionEvent e) {
             String patchName = panel.txtPatchName.getText().trim();
             if (!patchName.isEmpty()) {
                 if (p.matcher(patchName).find()) {
                     setError(org.openide.util.NbBundle.getMessage(ShelveChangesPanel.class, "ShelveChangesPanel.lblError.spaces")); //NOI18N
+                } else if (patchName.contains("\\") || patchName.contains("/")) { //NOI18N
+                    setError(Bundle.ShelveChangesPanel_lblError_slashes());
                 } else if (!PatchStorage.getInstance().containsPatch(patchName)) {
                     button.setEnabled(true);
                 } else {
