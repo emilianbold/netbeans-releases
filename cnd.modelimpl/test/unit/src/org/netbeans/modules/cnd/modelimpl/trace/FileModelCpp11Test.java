@@ -187,4 +187,9 @@ public class FileModelCpp11Test extends TraceModelTestBase {
         // Bug 225045 - C++11 "final" keyword improperly scoped
         performTest("bug225045.cpp");
     }    
+    
+    public void testBug243940() throws Exception {
+        // Bug 243940 - inaccuracy tests (cpp11): forward declaration of enumerations 
+        performTest("bug243940.cpp");
+    }    
 }
