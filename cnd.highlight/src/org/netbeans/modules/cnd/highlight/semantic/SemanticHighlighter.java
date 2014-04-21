@@ -332,7 +332,7 @@ public final class SemanticHighlighter extends HighlighterBase {
                         StringBuilder buf = new StringBuilder();
                         boolean printHeader = false;
                         for (Map.Entry<Thread, StackTraceElement[]> entry : stack) {
-                            if (entry.getKey().getName().startsWith("SemanticHighlighter worker")||
+                            if (entry.getKey().getName().startsWith("SemanticHighlighter worker")|| //NOI18N
                                 entry.getKey().getName().startsWith("Editor Parsing Loop")) { //NOI18N
                                 if (!printHeader) {
                                     buf.append("What have been semantic provider doing for 100 ms after canceling?"); //NOI18N
