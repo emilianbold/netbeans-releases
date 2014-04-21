@@ -467,14 +467,6 @@ public final class EvaluationWindow extends TopComponent {
             im.put(ks, NO_ACTION);
         }
     }
-    
-    private final void restrictEvents(InputMap im, int ... events) {
-        final String NO_ACTION = "no-action"; // NOI18N
-        for (int event : events) {
-            final KeyStroke ks = KeyStroke.getKeyStroke(event, 0);
-            im.put(ks, NO_ACTION);
-        }
-    }
 
     private class FormatListener implements ActionListener {
 
