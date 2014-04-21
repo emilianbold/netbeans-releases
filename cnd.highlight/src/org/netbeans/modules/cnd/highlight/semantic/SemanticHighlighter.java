@@ -43,12 +43,12 @@
  */
 package org.netbeans.modules.cnd.highlight.semantic;
 
-import java.security.Identity;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -75,7 +75,6 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -90,14 +89,20 @@ public final class SemanticHighlighter extends HighlighterBase {
     private static final String FAST_POSITION_BAG = "CndSemanticHighlighterFast"; // NOI18N
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
     private static final RequestProcessor RP = new RequestProcessor("SemanticHighlighter profiler",1); //NOI18N
+    private static final RequestProcessor WORKER = new RequestProcessor("SemanticHighlighter worker",1); //NOI18N
+    private final TaskContext taskContext;
+    private final RequestProcessor.Task task;
     
     private InterrupterImpl interrupter = new InterrupterImpl();
     private Parser.Result lastParserResult;
+    private CountDownLatch latch = new CountDownLatch(1);
     private Set<Map.Entry<Thread, StackTraceElement[]>> stack;
     private AtomicBoolean done = new AtomicBoolean(false);
 
     public SemanticHighlighter(String mimeType) {
         init(mimeType);
+        taskContext = new TaskContext(this);
+        task = WORKER.create(taskContext);
     }
 
     @Override
@@ -152,19 +157,15 @@ public final class SemanticHighlighter extends HighlighterBase {
         }
     }
 
-    private void update(Document doc, final InterrupterImpl interrupter) {
-        if (doc != null) {
-            updateImpl(doc, interrupter);
-        }
-    }
-    
     public static PositionsBag getSemanticBagForTests(Document doc, InterrupterImpl interrupter, boolean fast) {
-        final SemanticHighlighter semanticHighlighter = new SemanticHighlighter(DocumentUtilities.getMimeType(doc));
-        semanticHighlighter.update(doc, interrupter);
+        if (doc != null) {
+            SemanticHighlighter semanticHighlighter = new SemanticHighlighter(DocumentUtilities.getMimeType(doc));
+            updateImpl(semanticHighlighter, doc, interrupter);
+        }
         return getHighlightsBag(doc, fast);
     }
 
-    private void updateImpl(Document doc, final InterrupterImpl interrupter) {
+    private static void updateImpl(SemanticHighlighter provider, Document doc, final InterrupterImpl interrupter) {
         boolean macroExpansionView = (doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) != null);
         PositionsBag newBagFast = new PositionsBag(doc);
         PositionsBag newBagSlow = new PositionsBag(doc);
@@ -192,7 +193,7 @@ public final class SemanticHighlighter extends HighlighterBase {
                     } else {
                         // this is simple entity without collector,
                         // let's add its blocks right now
-                        addHighlightsToBag(doc, newBagFast, se.getBlocks(csmFile, interrupter), se);
+                        provider.addHighlightsToBag(doc, newBagFast, se.getBlocks(csmFile, interrupter), se);
                         i.remove();
                     }
                 } else {
@@ -225,7 +226,7 @@ public final class SemanticHighlighter extends HighlighterBase {
                     }, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE_AND_PREPROCESSOR);
                     // here we apply highlighting to discovered blocks
                     for (int i = 0; i < entities.size(); ++i) {
-                        addHighlightsToBag(doc, newBagSlow, collectors.get(i).getReferences(), entities.get(i));
+                        provider.addHighlightsToBag(doc, newBagSlow, collectors.get(i).getReferences(), entities.get(i));
                     }
                 }
                 if (LOG.isLoggable(Level.FINER)) {
@@ -282,8 +283,11 @@ public final class SemanticHighlighter extends HighlighterBase {
                 return;
             }
             interrupter.cancel();
+            latch.countDown();
+            
             lastParserResult = result;
             interrupter = new InterrupterImpl();
+            latch = new CountDownLatch(1);
         }
         long time = 0;
         if (LOG.isLoggable(Level.FINE)) {
@@ -291,7 +295,14 @@ public final class SemanticHighlighter extends HighlighterBase {
             time = System.currentTimeMillis();
             done = new AtomicBoolean(false);
         }
-        update(result.getSnapshot().getSource().getDocument(false), interrupter);
+        // no sync needed: all these fields are assigned only in this method
+        // and parser API calls this in a single parsing loop thread ("Editor Parsing Loop")
+        taskContext.prepare(result.getSnapshot().getSource().getDocument(false), interrupter, latch);
+        task.schedule(0);
+        try {
+            latch.await();
+        } catch (InterruptedException ex) {
+        }
         if (LOG.isLoggable(Level.FINE)) {
             done.set(true);
             LOG.log(Level.FINE, "SemanticHighlighter finished for {0}ms", System.currentTimeMillis()-time); //NOI18N
@@ -303,6 +314,7 @@ public final class SemanticHighlighter extends HighlighterBase {
         synchronized(this) {
             interrupter.cancel();
             lastParserResult = null;
+            latch.countDown();
         }
         if (LOG.isLoggable(Level.FINE)) {
             RP.post(new Runnable() {
@@ -313,20 +325,27 @@ public final class SemanticHighlighter extends HighlighterBase {
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
+                        //
                     }
                     if (!aDone.get()) {
                         stack = Thread.getAllStackTraces().entrySet();
                         StringBuilder buf = new StringBuilder();
+                        boolean printHeader = false;
                         for (Map.Entry<Thread, StackTraceElement[]> entry : stack) {
-                            if (entry.getKey().getName().startsWith("Editor Parsing Loop")) { //NOI18N
-                                buf.append("What have been semantic provider doing for 100 ms after canceling?\n"); //NOI18N
-                                buf.append("Thread ").append(entry.getKey().getName()); //NOI18N
+                            if (entry.getKey().getName().startsWith("SemanticHighlighter worker")||
+                                entry.getKey().getName().startsWith("Editor Parsing Loop")) { //NOI18N
+                                if (!printHeader) {
+                                    buf.append("What have been semantic provider doing for 100 ms after canceling?"); //NOI18N
+                                }
+                                printHeader = true;
+                                buf.append("\nThread ").append(entry.getKey().getName()); //NOI18N
                                 for (StackTraceElement element : entry.getValue()) {
                                     buf.append("\n\tat " + element.toString()); //NOI18N
                                 }
-                                LOG.log(Level.FINE, buf.toString());
                             }
+                        }
+                        if (buf.length()>0) {
+                            LOG.log(Level.FINE, buf.toString());
                         }
                     }
                 }
@@ -347,4 +366,31 @@ public final class SemanticHighlighter extends HighlighterBase {
     public String toString() {
         return "SemanticHighlighter runner"; //NOI18N
     }
+    
+    private static final class TaskContext implements Runnable {
+        private final SemanticHighlighter provider;
+        private InterrupterImpl interrupter;
+        private Document doc;
+        private CountDownLatch latch;
+        private TaskContext(SemanticHighlighter provider) {
+            this.provider = provider;
+        }
+        
+        private void prepare(Document doc, InterrupterImpl interrupter, CountDownLatch latch) {
+            this.interrupter = interrupter;
+            this.doc = doc;
+            this.latch = latch;
+        }
+
+        @Override
+        public void run() {
+            CountDownLatch aLatch = latch;
+            try {
+                SemanticHighlighter.updateImpl(provider, doc, interrupter);
+            } finally {
+                aLatch.countDown();
+            }
+        }
+    }
+    
 }
