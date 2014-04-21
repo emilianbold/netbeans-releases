@@ -1183,7 +1183,6 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
         (LITERAL___extension__!)? declaration[declOther]
         {action.end_enum_declaration(LT(1));}
         {action.end_simple_declaration(LT(1));}
-        SEMICOLON //{end_of_stmt();}
         { #external_declaration = #(#[CSM_ENUM_FWD_DECLARATION, "CSM_ENUM_FWD_DECLARATION"], #external_declaration); }
     |
 		// Destructor DEFINITION (templated or non-templated)
@@ -2294,20 +2293,20 @@ enum_specifier
         | RCURLY )
     |   
         qid = enum_qualified_id
-                     // elaborated_type_specifier        
+        // elaborated_type_specifier        
         (   (options {greedy=true;} : 
                 COLON ts = type_specifier[dsInvalid, false]
             )?
             (options {greedy=true;} :
                 {action.enum_body(LT(1));}
-                (type_attribute_specification)?
+                        (type_attribute_specification)?
                 LCURLY enumerator_list 
                 {action.end_enum_body(LT(1));}
                 ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
                 | RCURLY )
             )?
         )
-        {endEnumDefinition();}
+    {endEnumDefinition();}
     )
 ;
 
@@ -2533,7 +2532,9 @@ enum_head
     :
         LITERAL_enum 
         (options {greedy=true;} : type_attribute_specification)?
-        (LITERAL_class | LITERAL_struct)? (s = qualified_id)? (COLON ts = type_specifier[dsInvalid, false])?
+        (LITERAL_class | LITERAL_struct)? 
+        (s = enum_qualified_id)? 
+        (COLON ts = type_specifier[dsInvalid, false])?
     ;
 
 // for predicates
