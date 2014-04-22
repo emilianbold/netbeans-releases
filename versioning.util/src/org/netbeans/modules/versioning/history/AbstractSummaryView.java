@@ -635,7 +635,8 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
             } else if (showingFiles == 0) {
                 // not yet 
                 showLessFiles();
-                if (getNextFilesToShowCount() <= 0) {
+                if (entry.getEvents().size() == getDefaultVisibleEventCount()
+                        && entry.getEvents().size() <= nextFilesPaging) {
                     showingFiles = -1;
                     return true;
                 }
