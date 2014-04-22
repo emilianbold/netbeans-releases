@@ -382,6 +382,7 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
         // typedef void foo_type(...);
         if (inTypedef && next.getType() == CPPTokenTypes.CSM_PARMLIST) {
             if (instance != null) {
+                // NB: null passed as scope correspond to null passed to PersistentUtils.readParameters in ctor
                 instance.functionParameters = AstRenderer.renderParameters(next, instance.getContainingFile(), fileContent, null);
             }
             return true;
@@ -656,7 +657,7 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
     public TypeFunPtrImpl(RepositoryDataInput input) throws IOException {
         super(input);
         functionPointerDepth = input.readShort();
-        functionParameters = PersistentUtils.readParameters(input);
+        functionParameters = PersistentUtils.readParameters(input, null);
         scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         returnType = PersistentUtils.readType(input);
     }
