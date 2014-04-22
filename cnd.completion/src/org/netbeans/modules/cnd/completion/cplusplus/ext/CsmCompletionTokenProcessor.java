@@ -2524,6 +2524,10 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     public int getLastSeparatorOffset() {
         return lastSeparatorOffset;
     }
+    
+    void setLastSeparatorOffset(int lastSeparatorOffset) {
+        this.lastSeparatorOffset = lastSeparatorOffset;
+    }
 
     @Override
     public void start(int startOffset, int firstTokenOffset, int lastOffset) {
