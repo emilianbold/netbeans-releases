@@ -62,6 +62,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.LifecycleManager;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
+import org.openide.modules.InstalledFileLocator;
 
 /**
  *
@@ -110,6 +111,12 @@ class AvatarJSExecutor {
             cp = ClassPath.EMPTY;
         }
         String avatarJar = System.getProperty(AVATAR_JAR_PROP);
+        if (avatarJar == null) {
+            File found = InstalledFileLocator.getDefault().locate("avatar/" + AVATAR_JAR_PROP, null, false);
+            if (found != null) {
+                avatarJar = found.getPath();
+            }
+        }
         if (avatarJar != null) {
             try {
                 ClassPath avatarJarCP = ClassPathSupport.createClassPath(avatarJar);
