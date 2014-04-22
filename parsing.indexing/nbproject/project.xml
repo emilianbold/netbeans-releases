@@ -267,6 +267,8 @@
             </test-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.parsing.api.indexing</package>
+                <package>org.netbeans.modules.parsing.spi.indexing</package>
+                <package>org.netbeans.modules.parsing.spi.indexing.support</package>
             </public-packages>
         </data>
     </configuration>

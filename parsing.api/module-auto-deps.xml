@@ -51,11 +51,11 @@ made subject to such option by the copyright holder.
         <description>Separation of Parsing and Indexing APIs</description>
         <transformation>
             <trigger-dependency type="older">
-                <module-dependency codenamebase="org.netbeans.modules.parsing.api" spec="9.0"/>
+                <module-dependency codenamebase="org.netbeans.modules.parsing.api" major="1" spec="9.0"/>
             </trigger-dependency>
             <implies>
                 <result>
-                    <module-dependency codenamebase="org.netbeans.modules.parsing.indexing"/>
+                    <module-dependency codenamebase="org.netbeans.modules.parsing.indexing" spec="9.0"/>
                 </result>
             </implies>
         </transformation>
