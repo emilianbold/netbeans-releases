@@ -101,7 +101,8 @@ public class SourceMap {
      */
     private SourceMap(JSONObject sourceMap) {
         this.sourceMap = sourceMap;
-        String version = (String)sourceMap.get("version"); // NOI18N
+        Object versionValue = sourceMap.get("version"); // NOI18N
+        String version = (versionValue == null) ? null : versionValue.toString();
         if (!SUPPORTED_VERSION.equals(version)) {
             throw new IllegalArgumentException("Unsupported version of the source map: " + version); // NOI18N
         }
