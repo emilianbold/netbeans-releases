@@ -122,7 +122,13 @@ public class Rule {
                 JSONArray array = (JSONArray)selectorList.get("selectors"); // NOI18N
                 selectors = new ArrayList<Selector>(array.size());
                 for (Object o : array) {
-                    selectors.add(new Selector((JSONObject)o));
+                    Selector nextSelector;
+                    if (o instanceof String) {
+                        nextSelector = new Selector((String)o);
+                    } else {
+                        nextSelector = new Selector((JSONObject)o);
+                    }
+                    selectors.add(nextSelector);
                 }
             }
         } else {
