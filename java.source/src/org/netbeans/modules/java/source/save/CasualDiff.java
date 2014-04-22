@@ -325,7 +325,8 @@ public class CasualDiff {
         String originalText = isCUT ? origText : origText.substring(start, end);
         userInfo.putAll(td.diffInfo);
 
-        return td.checkDiffs(DiffUtilities.diff(originalText, resultSrc, start, td.readSections(diffContext.origText.length(), resultSrc.length())));
+        return td.checkDiffs(DiffUtilities.diff(originalText, resultSrc, start, 
+                td.readSections(originalText.length(), resultSrc.length(), lineStart, start), lineStart));
     }
     
     private static class SectKey {
@@ -333,7 +334,19 @@ public class CasualDiff {
         SectKey(int off) { this.off = off; }
     }
     
-    private int[] readSections(int l1, int l2) {
+    /**
+     * Reads the section map. While the printer produced the text matching the region
+     * starting at 'start', the diff will only cover text starting and textStart, which may
+     * be in the middle of the line. the blockSequenceMap was filled by the printer,
+     * so offsets may need to be moved backwards.
+     * 
+     * @param l1 length of the original text
+     * @param l2 length of the new text
+     * @param printerStart printer start
+     * @param diffStart
+     * @return 
+     */
+    private int[] readSections(int l1, int l2, int printerStart, int diffStart) {
         Map<Integer, Integer> seqMap = blockSequenceMap;
         if (seqMap.isEmpty()) {
             return new int[] { l1, l2 };
@@ -341,6 +354,10 @@ public class CasualDiff {
         int[] res = new int[seqMap.size() * 2];
         int p = 0;
         for (Map.Entry<Integer, Integer> en : seqMap.entrySet()) {
+            int point = en.getKey();
+            if (point < printerStart || point > diffStart + l2) {
+                continue;
+            }
             res[p++] = en.getKey();
             res[p++] = en.getValue();
         }
