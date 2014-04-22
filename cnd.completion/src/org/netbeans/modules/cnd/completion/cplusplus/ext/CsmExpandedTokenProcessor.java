@@ -141,6 +141,13 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
                         return false;
                     }
                 } else if (inMacro) {
+                    if (tp instanceof CsmCompletionTokenProcessor) {
+                        List<CsmCompletionExpression> stack = ((CsmCompletionTokenProcessor)tp).getStack();
+                        boolean errorState = ((CsmCompletionTokenProcessor)tp).isErrorState();
+                        if (errorState && stack.isEmpty()) {
+                            ((CsmCompletionTokenProcessor)tp).setLastSeparatorOffset(tokenOffset);
+                        }
+                    }
                     inMacro = false;
                 } else {
                     inMacro = true;
