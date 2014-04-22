@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.avatar_js.project;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -70,7 +71,7 @@ class AvatarJSExecutor {
     
     private static final Logger LOG = Logger.getLogger(AvatarJSExecutor.class.getCanonicalName());
     
-    private static final String AVATAR_SERVER = "net.java.avatar.js.Server";    // NOI18N
+    private static final String AVATAR_SERVER = "com.oracle.avatar.js.Server";    // NOI18N
     private static final String AVATAR_JAR_PROP = "avatar-js.jar";              // NOI18N
     
     private final FileObject js;
@@ -86,9 +87,14 @@ class AvatarJSExecutor {
         Map<String, Object> properties = new HashMap<>();
         properties.put(JavaRunner.PROP_PLATFORM, javaPlatform);
         properties.put(JavaRunner.PROP_CLASSNAME, AVATAR_SERVER);
-        properties.put(JavaRunner.PROP_EXECUTE_CLASSPATH, getClassPath(js));
+        String[] libs = { null };
+        properties.put(JavaRunner.PROP_EXECUTE_CLASSPATH, getClassPath(js, libs));
         properties.put(JavaRunner.PROP_WORK_DIR, js.getParent());
-        properties.put(JavaRunner.PROP_APPLICATION_ARGS, getApplicationArgs(js)); // Collections.singletonList(js.getNameExt()));
+        properties.put(JavaRunner.PROP_APPLICATION_ARGS, getApplicationArgs(js));
+        if (libs[0] != null) {
+            properties.put(JavaRunner.PROP_RUN_JVMARGS, Collections.singletonList("-Djava.library.path=" + libs[0]));
+        }
+        
         ExecutorTask task;
         if (debug) {
             task = JavaRunner.execute(JavaRunner.QUICK_DEBUG, properties);
@@ -98,7 +104,7 @@ class AvatarJSExecutor {
         return new ExecTaskFuture(task);
     }
     
-    private static ClassPath getClassPath(FileObject js) {
+    private static ClassPath getClassPath(FileObject js, String[] libs) {
         ClassPath cp = ClassPath.getClassPath(js, ClassPath.EXECUTE);
         if (cp == null) {
             cp = ClassPath.EMPTY;
@@ -114,6 +120,11 @@ class AvatarJSExecutor {
                 }
             } catch (IllegalArgumentException iaex) {
                 LOG.log(Level.WARNING, avatarJar, iaex);
+            }
+
+            if (libs != null) {
+                int last = avatarJar.lastIndexOf(File.separatorChar);
+                libs[0] = avatarJar.substring(0, last + 1);
             }
         }
         return cp;
