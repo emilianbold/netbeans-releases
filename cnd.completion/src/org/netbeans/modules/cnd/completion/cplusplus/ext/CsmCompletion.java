@@ -233,14 +233,20 @@ abstract public class CsmCompletion {
         return str2PrimitiveType.get(s);
     }
 
-    public static CsmType getPredefinedType(CsmFile containingFile, int start, int end, String s) {
-        BaseType baseType = getPrimitiveType(s);
+    public static CsmType getPredefinedType(CsmFile containingFile, int start, int end, CsmCompletionExpression item) {
+        BaseType baseType = getPrimitiveType(item.getType());
         if (baseType == null) {
-            baseType = str2PredefinedType.get(s);
+            baseType = str2PredefinedType.get(item.getType());
         }
         if (baseType != null) {
             // wrap with correct offsetable information
-            return new OffsetableType(baseType, containingFile, start, end);
+            return new OffsetableType(
+                    baseType, 
+                    containingFile, 
+                    start, 
+                    end,
+                    item.getTokenCount() > 0 ? "0".equals(item.getTokenText(0)) : false // NOI18N
+            );
         } else {
             return null;
         }
@@ -503,7 +509,7 @@ abstract public class CsmCompletion {
 
         @Override
         public CharSequence getUniqueName() {
-            return getQualifiedName();
+            return "C:"+getQualifiedName(); // NOI18N
         }
 
         public int getTagOffset() {
@@ -551,7 +557,7 @@ abstract public class CsmCompletion {
             }
             return order;
         }
-
+        
         @Override
         public int hashCode() {
             return name.hashCode() ^ packageName.hashCode();
@@ -629,7 +635,7 @@ abstract public class CsmCompletion {
 
         BaseType() {
         }
-
+        
         @Override
         public int getArrayDepth() {
             return arrayDepth;
@@ -810,14 +816,20 @@ abstract public class CsmCompletion {
         private final CsmFile container;
         private final int start;
         private final int end;
+        private final boolean zeroConst;
 
-        public OffsetableType(BaseType delegate, CsmFile container, int start, int end) {
+        public OffsetableType(BaseType delegate, CsmFile container, int start, int end, boolean zeroConst) {
             assert delegate != null;
             assert container != null;
             this.delegate = delegate;
             this.container = container;
             this.start = start;
             this.end = end;
+            this.zeroConst = zeroConst;
+        }
+
+        public boolean isZeroConst() {
+            return zeroConst;
         }
 
         @Override

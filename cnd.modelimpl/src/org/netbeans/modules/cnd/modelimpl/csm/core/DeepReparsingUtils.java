@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer.ParentF
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
@@ -188,7 +189,7 @@ public final class DeepReparsingUtils {
             }
         } else {
             if (scheduleParsing) {
-                ParserQueue.instance().add(changedFile, changedFileProject.getPreprocHandlersForParse(changedFile), ParserQueue.Position.HEAD);
+                ParserQueue.instance().add(changedFile, changedFileProject.getPreprocHandlersForParse(changedFile, Interrupter.DUMMY), ParserQueue.Position.HEAD);
             }
         }
     }
@@ -209,7 +210,7 @@ public final class DeepReparsingUtils {
                 coherence.addAll(project.getGraph().getCoherenceFiles(fileImpl).getCoherenceFilesUids());
             } else {
                 if (scheduleParsing) {
-                    ParserQueue.instance().add(fileImpl, project.getPreprocHandlersForParse(fileImpl), ParserQueue.Position.HEAD);
+                    ParserQueue.instance().add(fileImpl, project.getPreprocHandlersForParse(fileImpl, Interrupter.DUMMY), ParserQueue.Position.HEAD);
                 }
             }
         }
@@ -429,7 +430,7 @@ public final class DeepReparsingUtils {
         ProjectBase project = fileImpl.getProjectImpl(true);
         project.markAsParsingPreprocStates(fileImpl);
         fileImpl.markReparseNeeded(invalidateCache);
-        ParserQueue.instance().add(fileImpl, fileImpl.getPreprocHandlersForParse(), ParserQueue.Position.HEAD);
+        ParserQueue.instance().add(fileImpl, fileImpl.getPreprocHandlersForParse(Interrupter.DUMMY), ParserQueue.Position.HEAD);
         if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
             System.out.println("Add file to reparse " + fileImpl.getAbsolutePath() + " from " + project); // NOI18N
         }
@@ -500,7 +501,7 @@ public final class DeepReparsingUtils {
         }
     }
     
-    static String toString(Collection<?> files) {
+    public static String toString(Collection<?> files) {
         StringBuilder out = new StringBuilder();
         for (Object elem : files) {
             if (elem instanceof FileImpl) {

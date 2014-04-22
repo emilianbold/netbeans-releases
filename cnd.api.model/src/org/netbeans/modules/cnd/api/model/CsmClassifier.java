@@ -49,4 +49,7 @@ package org.netbeans.modules.cnd.api.model;
  * @author Vladimir Kvashin
  */
 public interface CsmClassifier extends CsmDeclaration {
+    
+    public static final int SIZEOF_UNKNOWN = -1;
+    
 }

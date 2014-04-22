@@ -90,6 +90,11 @@ class ZipSyncFactory extends BaseSyncFactory {
     }
 
     @Override
+    public boolean isCopying() {
+        return true;
+    }
+    
+    @Override
     public boolean isApplicable(ExecutionEnvironment execEnv) {
         return ENABLE_SCP && ! RemoteUtil.isForeign(execEnv);
     }

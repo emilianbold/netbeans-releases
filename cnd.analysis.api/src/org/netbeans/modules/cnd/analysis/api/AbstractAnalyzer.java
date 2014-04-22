@@ -1,0 +1,318 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.netbeans.modules.cnd.analysis.api;
+
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
+import org.netbeans.modules.cnd.analysis.api.options.HintsPanel;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.prefs.Preferences;
+import javax.swing.text.Document;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.analysis.spi.Analyzer;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.services.CsmCompilationUnit;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.LazyFixList;
+import org.openide.filesystems.FileObject;
+
+/**
+ *
+ * @author Alexander Simon
+ */
+public abstract class AbstractAnalyzer implements Analyzer {
+
+    private final Context ctx;
+    private final AtomicBoolean cancel = new AtomicBoolean(false);
+    private Thread processingThread;
+    private final AtomicInteger count = new AtomicInteger(0);
+    private int total;
+
+    protected AbstractAnalyzer(Context ctx) {
+        this.ctx = ctx;
+    }
+
+    @Override
+    public Iterable<? extends ErrorDescription> analyze() {
+        WorkSet set = new WorkSet();
+        for (FileObject sr : ctx.getScope().getSourceRoots()) {
+            doDryRun(sr, set);
+        }
+        for (NonRecursiveFolder nrf : ctx.getScope().getFolders()) {
+            doDryRun(nrf, set);
+        }
+        for (FileObject file : ctx.getScope().getFiles()) {
+            doDryRun(file, set);
+        }
+        set.processHeaders(cancel, isCompileUnitBased());
+        total = set.compileUnits.size();
+        ctx.start(total);
+
+        List<ErrorDescription> result = new ArrayList<ErrorDescription>();
+        CsmErrorProvider errorProvider = getErrorProvider(ctx.getSettings());
+        for(NativeFileItem item : set.compileUnits) {
+            if (cancel.get()) {
+                break;
+            }
+            if (count.incrementAndGet() < total) {
+                ctx.progress(count.get());
+            }
+            result.addAll(doRunImpl(item.getFileObject(), ctx, errorProvider, cancel));
+        }
+        ctx.finish();
+        return result;
+    }
+
+    @Override
+    public boolean cancel() {
+        cancel.set(true);
+        synchronized (this) {
+            if (processingThread != null) {
+                processingThread.interrupt();
+            }
+        }
+        return false;
+    }
+
+    private void doDryRun(NonRecursiveFolder nrf, WorkSet set) {
+        FileObject sr = nrf.getFolder();
+        for (FileObject fo : sr.getChildren()) {
+            if (cancel.get()) {
+                break;
+            }
+            if (fo.isData()) {
+                set.add(fo);
+            }
+        }
+    }
+
+    private void doDryRun(final FileObject sr, WorkSet set) {
+        if (sr.isData()) {
+            set.add(sr);
+        } else {
+            for (FileObject fo : sr.getChildren()) {
+                if (cancel.get()) {
+                    break;
+                }
+                doDryRun(fo, set);
+            }
+        }
+    }
+
+    protected abstract boolean isCompileUnitBased();
+    
+    protected abstract CsmErrorProvider getErrorProvider(final Preferences context);
+    
+    protected abstract Collection<? extends ErrorDescription> doRunImpl(final FileObject sr, final Context ctx, final CsmErrorProvider provider, final AtomicBoolean cancel);
+
+    protected static AbstractHintsPanel createComponent(CodeAuditProvider provider) {
+        return new HintsPanel(null, provider);
+    }
+
+    protected static class RequestImpl implements CsmErrorProvider.Request, AnalyzerRequest {
+        private final CsmFile csmFile;
+        private final AtomicBoolean cancel;
+        private final Context ctx;
+        public RequestImpl(CsmFile csmFile, Context ctx, AtomicBoolean cancel) {
+            this.csmFile = csmFile;
+            this.cancel = cancel;
+            this.ctx = ctx;
+        }
+
+        @Override
+        public CsmFile getFile() {
+            return csmFile;
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return cancel.get();
+        }
+
+        @Override
+        public Document getDocument() {
+            return null;
+        }
+
+        @Override
+        public String getSingleAuditId() {
+            String singleWarningId = ctx.getSingleWarningId();
+            if (singleWarningId != null && singleWarningId.indexOf('-') > 0) {
+                singleWarningId = singleWarningId.substring( singleWarningId.indexOf('-')+1);
+            }
+            return singleWarningId;
+        }
+
+        @Override
+        public CsmErrorProvider.EditorEvent getEvent() {
+            return CsmErrorProvider.EditorEvent.FileBased;
+        }
+    }
+
+    protected abstract static class AbstractResponse implements CsmErrorProvider.Response, AnalyzerResponse {
+
+        private final FileObject sr;
+        private final ArrayList<ErrorDescription> res;
+        private final AtomicBoolean cancel;
+
+        public AbstractResponse(FileObject sr, ArrayList<ErrorDescription> res, final AtomicBoolean cancel) {
+            this.sr = sr;
+            this.res = res;
+            this.cancel = cancel;
+        }
+
+        @Override
+        public void addError(CsmErrorInfo errorInfo) {
+            ErrorDescription error = addErrorImpl(errorInfo, sr);
+            if (error != null) {
+                res.add(error);
+            }
+        }
+
+        @Override
+        public void addError(AnalyzerSeverity severity, String message, FileObject file, CsmErrorInfo errorInfo) {
+            switch (severity) {
+                case FileError:
+                    // probably file has compile errors
+                    break;
+                case ProjectError:
+                    // project cannot start analyzer
+                    // stop analyzing
+                    cancel.set(true);
+                    break;
+                case ToolError:
+                    // analyzer tool is not found
+                    // stop analyzing
+                    cancel.set(true);
+                    break;
+                case DetectedError:
+                    // problem was detected
+                    break;
+            }
+            ErrorDescription error = addErrorImpl(errorInfo, file);
+            if (error != null) {
+                res.add(error);
+            }
+        }
+
+        @Override
+        public void done() {
+        }
+
+        protected abstract ErrorDescription addErrorImpl(CsmErrorInfo errorInfo, FileObject fo);
+    }
+
+    protected static class LazyFixListImpl implements LazyFixList {
+
+        public LazyFixListImpl() {
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+        }
+
+        @Override
+        public boolean probablyContainsFixes() {
+            return false;
+        }
+
+        @Override
+        public List<Fix> getFixes() {
+            return Collections.<Fix>emptyList();
+        }
+
+        @Override
+        public boolean isComputed() {
+            return false;
+        }
+    }
+    
+    private static class WorkSet {
+        LinkedHashSet<NativeFileItem> compileUnits = new LinkedHashSet<NativeFileItem>();
+        LinkedHashSet<FileObject> headers = new LinkedHashSet<FileObject>();
+        
+        private WorkSet() {
+        }
+        
+        void add(FileObject fo) {
+            String mimeType = fo.getMIMEType();
+            if (MIMENames.isCppOrC(mimeType)) {
+                final Project project = FileOwnerQuery.getOwner(fo);
+                NativeProject np = project.getLookup().lookup(NativeProject.class);
+                if (np != null) {
+                    NativeFileItem item = np.findFileItem(fo);
+                    if (item != null && !item.isExcluded()) {
+                        compileUnits.add(item);
+                    }
+                }
+            } else if (MIMENames.isHeader(mimeType)) {
+                headers.add(fo);
+            }
+        }
+        
+        private void processHeaders(AtomicBoolean cancel, boolean isCompileUnitBased){
+            for(FileObject fo : headers) {
+                if (cancel.get()) {
+                    break;
+                }
+                CsmFile csmFile = CsmUtilities.getCsmFile(fo, false, false);
+                if (csmFile != null) {
+                    if (isCompileUnitBased) {
+                        for(CsmCompilationUnit cu : CsmFileInfoQuery.getDefault().getCompilationUnits(csmFile, 0)) {
+                            CsmFile startFile = cu.getStartFile();
+                            if (startFile != null) {
+                                NativeFileItem findItem = findItem(startFile);
+                                if (findItem != null) {
+                                    if (!compileUnits.contains(findItem)) {
+                                        compileUnits.add(findItem);
+                                    }
+                                    break;
+                                }
+                            }
+
+                        }
+                    } else {
+                        NativeFileItem findItem = findItem(csmFile);
+                        if (findItem != null) {
+                            if (!compileUnits.contains(findItem)) {
+                                compileUnits.add(findItem);
+                            }
+                        }
+                    }
+                }
+            }
+            headers.clear();
+        }
+        
+        private NativeFileItem findItem(CsmFile file) {
+            Object platformProject = file.getProject().getPlatformProject();
+            if (platformProject instanceof NativeProject) {
+                return ((NativeProject)platformProject).findFileItem(file.getFileObject());
+            }
+            return null;
+        }
+    }
+}

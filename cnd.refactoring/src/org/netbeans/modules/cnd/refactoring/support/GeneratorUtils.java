@@ -61,16 +61,18 @@ import javax.swing.text.Position.Bias;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
@@ -218,21 +220,24 @@ public class GeneratorUtils {
 //        return result;
 //    }
 //
-    public static void scanForFieldsAndConstructors(final CsmClass clsPath, final Set<CsmField> initializedFields, final Set<CsmField> uninitializedFields, final List<CsmConstructor> constructors) {
+    public static void scanForFieldsAndConstructors(final CsmClass clsPath, final Set<CsmField> shouldBeInitializedFields, final Set<CsmField> mayBeIninitializedFields,
+            final Set<CsmField> cannotBeInitializedFields, final List<CsmConstructor> constructors) {
         for (CsmMember member : clsPath.getMembers()) {
             if (CsmKindUtilities.isField(member)) {
                 CsmField field = (CsmField) member;
-                if (!field.isStatic()) {
-                    if (field.getInitialValue() == null) {
-                        if (!initializedFields.remove(field)) {
-                            uninitializedFields.add(field);
-                        }
-                    } else {
-                        if (!initializedFields.remove(field)) {
-                            uninitializedFields.add(field);
-                        }
-                    }
+                if (field.isStatic()) {
+                    continue;
                 }
+                CsmType type = field.getType();
+                if (type.getArrayDepth() > 0) {
+                    cannotBeInitializedFields.add(field);
+                    continue;
+                }
+                if (type.isConst() || type.isReference()) {
+                    shouldBeInitializedFields.add(field);
+                    continue;
+                }
+                mayBeIninitializedFields.add(field);
             } else if (CsmKindUtilities.isConstructor(member)) {
                 constructors.add((CsmConstructor)member);
             }
@@ -302,29 +307,231 @@ public class GeneratorUtils {
 //            wc.rewrite(path.getLeaf(), decl);
 //        }
 //    }
-//
-//    public static void generateConstructor(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> initFields, ExecutableElement inheritedConstructor, int index) {
-//        TreeMaker make = wc.getTreeMaker();
-//        ClassTree clazz = (ClassTree)path.getLeaf();
-//        TypeElement te = (TypeElement) wc.getTrees().getElement(path);
-//        GeneratorUtilities gu = GeneratorUtilities.get(wc);
-//        ClassTree decl = make.insertClassMember(clazz, index, gu.createConstructor(te, initFields, inheritedConstructor)); //NOI18N
-//        wc.rewrite(path.getLeaf(), decl);
-//    }
-//
-//    public static void generateConstructors(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> initFields, List<? extends ExecutableElement> inheritedConstructors, int index) {
-//        TreeMaker make = wc.getTreeMaker();
-//        ClassTree clazz = (ClassTree)path.getLeaf();
-//        TypeElement te = (TypeElement) wc.getTrees().getElement(path);
-//        GeneratorUtilities gu = GeneratorUtilities.get(wc);
-//        ClassTree decl = clazz;
-//        for (ExecutableElement inheritedConstructor : inheritedConstructors) {
-//            decl = make.insertClassMember(decl, index, gu.createConstructor(te, initFields, inheritedConstructor)); //NOI18N
-//        }
-//        wc.rewrite(clazz, decl);
-//    }
-//
 
+    public static void generateConstructor(CsmContext path, CsmClass enclosingClass, List<CsmConstructor> inheritedConstructors, List<CsmField> fields) {
+        boolean inlineConstructor = true;
+        if (inlineConstructor) {
+            InsertInfo[] ins = getInsertPositons(path, enclosingClass, InsertPoint.DEFAULT);
+            final InsertInfo def = ins[0];
+            final StringBuilder result = new StringBuilder();
+            final StringBuilder init = new StringBuilder();
+            final StringBuilder superInit = new StringBuilder();
+            final Document doc = path.getDocument();
+            result.append('\n'); // NOI18N
+            result.append(enclosingClass.getName());
+            result.append('('); // NOI18N
+            boolean first = true;
+            for(CsmConstructor constructor : inheritedConstructors) {
+                CsmFunctionParameterList parameterList = constructor.getParameterList();
+                final StringBuilder args = new StringBuilder();
+                for(CsmParameter parameter : parameterList.getParameters()) {
+                    if (!first) {
+                        result.append(", "); // NOI18N
+                    }
+                    result.append(parameter.getType().getCanonicalText());
+                    result.append(' ');
+                    result.append(parameter.getName());
+                    if (args.length()>0) {
+                        args.append(", "); // NOI18N
+                    }
+                    args.append(parameter.getName());
+                    first = false;
+                }
+                if (superInit.length()>0) {
+                    superInit.append(", "); // NOI18N
+                }
+                superInit.append(constructor.getContainingClass().getName());
+                if (CsmKindUtilities.isTemplate(constructor.getContainingClass())) {
+                    final CsmTemplate template = (CsmTemplate)constructor.getContainingClass();
+                    List<CsmTemplateParameter> templateParameters = template.getTemplateParameters();
+                    if (templateParameters.size() > 0) {
+                        superInit.append("<");//NOI18N
+                        boolean afirst = true;
+                        for(CsmTemplateParameter param : templateParameters) {
+                            if (!afirst) {
+                                superInit.append(", "); //NOI18N
+                            }
+                            afirst = false;
+                            superInit.append(param.getName());
+                        }
+                        superInit.append(">");//NOI18N
+                    }
+                }
+                superInit.append('('); // NOI18N
+                superInit.append(args);
+                superInit.append(')'); // NOI18N
+            }
+            for(CsmField field : fields) {
+                if (!first) {
+                    result.append(", "); // NOI18N
+                }
+                result.append(field.getType().getCanonicalText());
+                result.append(' ');
+                result.append(field.getName());
+                if (init.length() > 0) {
+                    init.append(", "); // NOI18N
+                }
+                init.append(field.getName());
+                init.append('('); // NOI18N
+                init.append(field.getName());
+                init.append(')'); // NOI18N
+                first = false;
+            }
+            result.append(')'); // NOI18N
+            if (init.length()>0 || superInit.length()>0) {
+                result.append(':');  // NOI18N
+                result.append('\n');  // NOI18N
+                result.append(superInit);
+                if (superInit.length()>0 &&init.length()>0) {
+                    result.append(", "); // NOI18N
+                }
+                result.append(init);
+            }
+            result.append("{}\n"); // NOI18N
+            Runnable update = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        doc.insertString(def.dot, result.toString(), null);
+                        Reformat format = Reformat.get(doc);
+                        format.lock();
+                        try {
+                            int start = def.start.getOffset();
+                            int end = def.end.getOffset();
+                            format.reformat(start, end);
+                        } finally {
+                            format.unlock();
+                        }
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            };
+            if (doc instanceof BaseDocument) {
+                ((BaseDocument)doc).runAtomicAsUser(update);
+            } else {
+                update.run();
+            }
+        }
+    }
+
+    public static void generateCopyConstructor(CsmContext path, CsmClass enclosingClass, List<CsmConstructor> inheritedConstructors, List<CsmField> fields) {
+        boolean inlineConstructor = true;
+        if (inlineConstructor) {
+            InsertInfo[] ins = getInsertPositons(path, enclosingClass, InsertPoint.DEFAULT);
+            final InsertInfo def = ins[0];
+            final StringBuilder result = new StringBuilder();
+            final Document doc = path.getDocument();
+            result.append('\n'); // NOI18N
+            result.append(enclosingClass.getName());
+            result.append("(const "); // NOI18N
+            result.append(enclosingClass.getName());
+            if (CsmKindUtilities.isTemplate(enclosingClass)) {
+                final CsmTemplate template = (CsmTemplate)enclosingClass;
+                List<CsmTemplateParameter> templateParameters = template.getTemplateParameters();
+                if (templateParameters.size() > 0) {
+                    result.append("<");//NOI18N
+                    boolean afirst = true;
+                    for(CsmTemplateParameter param : templateParameters) {
+                        if (!afirst) {
+                            result.append(", "); //NOI18N
+                        }
+                        afirst = false;
+                        result.append(param.getName());
+                    }
+                    result.append(">");//NOI18N
+                }
+            }
+            result.append("& other) :"); // NOI18N
+            result.append('\n'); // NOI18N
+            boolean first = true;
+            for(CsmConstructor constructor : inheritedConstructors) {
+                if (!first) {
+                    result.append(", "); // NOI18N
+                }
+                result.append(constructor.getContainingClass().getName());
+                result.append("(other)"); // NOI18N
+                first = false;
+            }
+            for(CsmField field : fields) {
+                if (!first) {
+                    result.append(", "); // NOI18N
+                }
+                result.append(field.getName());
+                result.append("(other."); // NOI18N
+                result.append(field.getName());
+                result.append(')'); // NOI18N
+                first = false;
+            }
+            result.append("{}\n"); // NOI18N
+            Runnable update = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        doc.insertString(def.dot, result.toString(), null);
+                        Reformat format = Reformat.get(doc);
+                        format.lock();
+                        try {
+                            int start = def.start.getOffset();
+                            int end = def.end.getOffset();
+                            format.reformat(start, end);
+                        } finally {
+                            format.unlock();
+                        }
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            };
+            if (doc instanceof BaseDocument) {
+                ((BaseDocument)doc).runAtomicAsUser(update);
+            } else {
+                update.run();
+            }
+        }
+    }
+
+    
+    
+    public static void generateOperators(CsmContext path, CsmClass enclosingClass, List<CsmFunction> operators) {
+        boolean inlineConstructor = true;
+        if (inlineConstructor) {
+            InsertInfo[] ins = getInsertPositons(path, enclosingClass, InsertPoint.DEFAULT);
+            final InsertInfo def = ins[0];
+            final StringBuilder result = new StringBuilder();
+            final Document doc = path.getDocument();
+            for(CsmFunction m : operators) {
+                result.append('\n'); // NOI18N
+                result.append(m.getText());
+            }
+            result.append('\n'); // NOI18N
+            Runnable update = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        doc.insertString(def.dot, result.toString(), null);
+                        Reformat format = Reformat.get(doc);
+                        format.lock();
+                        try {
+                            int start = def.start.getOffset();
+                            int end = def.end.getOffset();
+                            format.reformat(start, end);
+                        } finally {
+                            format.unlock();
+                        }
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            };
+            if (doc instanceof BaseDocument) {
+                ((BaseDocument)doc).runAtomicAsUser(update);
+            } else {
+                update.run();
+            }
+        }
+    }
+    
     public static final class InsertInfo {
         public final CloneableEditorSupport ces;
         public final PositionRef start;
@@ -424,7 +631,7 @@ public class GeneratorUtils {
                     }
                 }
             }
-            if (decl != null) {
+            if (decl != null && declPos == -1) {
                 declPos = decl.getEndOffset();
             }
             if (CsmKindUtilities.isClassMember(decl)) {

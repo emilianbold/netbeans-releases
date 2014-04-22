@@ -46,6 +46,7 @@ import java.util.Collection;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.openide.util.NbBundle;
 
 /**
@@ -54,29 +55,34 @@ import org.openide.util.NbBundle;
  */
 /*package*/ class OverrideAnnotation extends BaseAnnotation {
 
-    public OverrideAnnotation(StyledDocument document, CsmFunction decl, 
-            Collection<? extends CsmOffsetableDeclaration> baseDecls, 
-            Collection<? extends CsmOffsetableDeclaration> descDecls,
+    public OverrideAnnotation(StyledDocument document, CsmFunction decl, CsmVirtualInfoQuery.CsmOverrideInfo thisMethod,
+            Collection<CsmVirtualInfoQuery.CsmOverrideInfo> baseDecls, 
+            Collection<CsmVirtualInfoQuery.CsmOverrideInfo> descDecls,
             Collection<? extends CsmOffsetableDeclaration> baseTemplates, 
             Collection<? extends CsmOffsetableDeclaration> templateSpecializations) {
-        super(document, decl, baseDecls, descDecls, baseTemplates, templateSpecializations);
+        super(document, decl, thisMethod, baseDecls, descDecls, baseTemplates, templateSpecializations);
     }
 
     @Override
     public String getShortDescription() {
         String out = "";
-        if (baseUIDs.isEmpty() && !descUIDs.isEmpty()) {
+        if (baseUIDs.isEmpty() && pseudoBaseUIDs.isEmpty() && (!descUIDs.isEmpty() || !pseudoDescUIDs.isEmpty())) {
             out = NbBundle.getMessage(getClass(), "LAB_IsOverriden");
-        } else if (!baseUIDs.isEmpty() && descUIDs.isEmpty()) {
+        } else if ((!baseUIDs.isEmpty() || !pseudoBaseUIDs.isEmpty()) && descUIDs.isEmpty() && pseudoDescUIDs.isEmpty()) {
             CharSequence text = "..."; //NOI18N
             if (baseUIDs.size() == 1) {
                 CsmOffsetableDeclaration obj = baseUIDs.iterator().next().getObject();
                 if (obj != null) {
                     text = obj.getQualifiedName();
                 }
+            } else if (pseudoBaseUIDs.size() == 1) {
+                CsmOffsetableDeclaration obj = pseudoBaseUIDs.iterator().next().getObject();
+                if (obj != null) {
+                    text = obj.getQualifiedName();
+                }
             }
             out = NbBundle.getMessage(getClass(), "LAB_Overrides", text);
-        } else if (!baseUIDs.isEmpty() && !descUIDs.isEmpty()) {
+        } else if ((!baseUIDs.isEmpty() || !pseudoBaseUIDs.isEmpty()) && (!descUIDs.isEmpty() || !pseudoDescUIDs.isEmpty())) {
             out = NbBundle.getMessage(getClass(), "LAB_OverridesAndIsOverriden");
         } else if (baseTemplateUIDs.isEmpty() && specializationUIDs.isEmpty()) { //both are empty
             throw new IllegalArgumentException("Either overrides or overridden should be non empty"); //NOI18N
@@ -90,14 +96,20 @@ import org.openide.util.NbBundle;
         switch (type) {
             case OVERRIDES:
                 return "OVERRIDES"; // NOI18N
+            case OVERRIDES_PSEUDO:
+                return "OVERRIDES_PSEUDO"; // NOI18N
             case IS_OVERRIDDEN:
                 return "OVERRIDDEN"; // NOI18N
+            case IS_OVERRIDDEN_PSEUDO:
+                return "OVERRIDDEN_PSEUDO"; // NOI18N
             case SPECIALIZES:
                 return "SPECIALIZES"; // NOI18N
             case IS_SPECIALIZED:
                 return "IS_SPECIALIZED"; // NOI18N
             case OVERRIDEN_COMBINED:
                 return "OVERRIDES_AND_OVERRIDDEN"; // NOI18N
+            case OVERRIDEN_COMBINED_PSEUDO:
+                return "OVERRIDES_AND_OVERRIDDEN_PSEUDO"; // NOI18N
             case EXTENDED_SPECIALIZES:
                 return "EXTENDED_SPECIALIZES_FUNCTION"; // NOI18N
             case EXTENDED_IS_SPECIALIZED:

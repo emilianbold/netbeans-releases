@@ -96,10 +96,10 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionUtils;
-import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.ParamStr;
+import org.netbeans.modules.cnd.spi.model.services.CsmDocProvider;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.openide.util.Lookup;
@@ -316,8 +316,12 @@ public abstract class CsmResultItem implements CompletionItem {
 
     @Override
     public CompletionTask createDocumentationTask() {
-        CompletionDocumentationProvider p = Lookup.getDefault().lookup(CompletionDocumentationProvider.class);
-        return p != null ? p.createDocumentationTask(this) : null;
+        CsmDocProvider p = Lookup.getDefault().lookup(CsmDocProvider.class);
+        final Object obj = getAssociatedObject();
+        if (p != null && (obj instanceof CsmObject)) {
+            return p.createDocumentationTask((CsmObject) obj);
+        }
+        return null;
     }
 
     @Override

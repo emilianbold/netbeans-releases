@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.callgraph.api.Function;
 import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphPreferences;
+import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.NbBundle;
@@ -175,7 +176,7 @@ public class FunctionImpl implements Function {
         } else {
             displayName = function.getName().toString();
         }
-        displayName = displayName.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
+        displayName = CsmDisplayUtilities.htmlize(displayName);
         if (scopeName == null) {
             scopeName = "";
         }
@@ -184,7 +185,7 @@ public class FunctionImpl implements Function {
             if (CsmKindUtilities.isClassMember(f)) {
                 CsmClass cls = ((CsmMember) f).getContainingClass();
                 if (cls != null && cls.getName().length() > 0) {
-                    String name = cls.getName().toString().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
+                    String name = CsmDisplayUtilities.htmlize(cls.getName().toString()); // NOI18N
                     String in = NbBundle.getMessage(CallImpl.class, "LBL_inClass"); // NOI18N
                     if (isVurtual()){
                         displayName ="<i>"+displayName+"</i>"; // NOI18N

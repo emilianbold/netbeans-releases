@@ -46,14 +46,12 @@ import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -203,9 +201,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
 
     @Override
     public CompletionTask createDocumentationTask() {
-        CompletionDocumentationProvider p = Lookup.getDefault().lookup(CompletionDocumentationProvider.class);
-
-        return p != null ? p.createDocumentationTask(this) : null;
+        return null;
     }
 
     @Override

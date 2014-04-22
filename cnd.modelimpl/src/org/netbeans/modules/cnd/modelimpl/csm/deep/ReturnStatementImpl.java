@@ -45,17 +45,25 @@
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
 
+import java.io.IOException;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 
 
-import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * CsmReturnStatement implementation
  * @author Vladimir Kvashin
  */
 public final class ReturnStatementImpl extends StatementBase implements CsmReturnStatement {
+    
+    private ExpressionBase returnExpr;
 
     private ReturnStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
@@ -66,7 +74,23 @@ public final class ReturnStatementImpl extends StatementBase implements CsmRetur
     }    
 
     public static ReturnStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
-        return new ReturnStatementImpl(ast, file, scope);
+        ReturnStatementImpl result = new ReturnStatementImpl(ast, file, scope);
+        AST returnExprAST = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_EXPRESSION);
+        
+        boolean shouldCreateReturnExpression = false;
+                
+        if (returnExprAST != null) {
+            // Lambda function
+            shouldCreateReturnExpression |= AstUtil.findChildOfType(returnExprAST, CPPTokenTypes.CSM_DECLARATION_STATEMENT) != null;
+            
+            // TODO: check if scope is a function and it is annotated with constexpr.
+            // In such case we should store return expression too.            
+        }
+        
+        if (shouldCreateReturnExpression) {
+            result.returnExpr = ExpressionsFactory.create(returnExprAST, file, scope);
+        }
+        return result;
     }
     
     @Override
@@ -76,7 +100,7 @@ public final class ReturnStatementImpl extends StatementBase implements CsmRetur
 
     @Override
     public CsmExpression getReturnExpression() {
-        return null;
+        return returnExpr;
     }
     
     public static class ReturnStatementBuilder extends StatementBuilder {
@@ -88,4 +112,16 @@ public final class ReturnStatementImpl extends StatementBase implements CsmRetur
         }
     }       
    
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of persistent
+    @Override
+    public void write(RepositoryDataOutput output) throws IOException {
+        super.write(output);
+        PersistentUtils.writeExpression(returnExpr, output);
+    }
+
+    public ReturnStatementImpl(RepositoryDataInput input) throws IOException {
+        super(input);
+        this.returnExpr = (ExpressionBase) PersistentUtils.readExpression(input);
+    }      
 }

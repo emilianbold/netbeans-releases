@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.refactoring.codegen.ui;
 
-import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import java.awt.GridBagConstraints;
 import java.util.Collections;
 import java.util.List;
@@ -52,7 +51,9 @@ import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmField;
+import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import org.netbeans.modules.cnd.refactoring.codegen.ConstructorGenerator;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 /**
@@ -63,52 +64,50 @@ import org.openide.util.NbBundle;
 public class ConstructorPanel extends JPanel {
 
     private JLabel constructorSelectorLabel;
-    private ElementSelectorPanel constructorSelector;
+    private SuperConstructorSelectorPanel constructorSelector;
     private JLabel fieldSelectorLabel;
     private ElementSelectorPanel fieldSelector;
 
     /** Creates new form ConstructorPanel */
     public ConstructorPanel(ElementNode.Description constructorDescription, ElementNode.Description fieldsDescription) {
         initComponents();
-        if (constructorDescription != null) {
-            constructorSelectorLabel = new javax.swing.JLabel();
+        if (fieldsDescription != null) {
+            fieldSelectorLabel = new javax.swing.JLabel();
             GridBagConstraints gridBagConstraints = new GridBagConstraints();
-            gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = 0;
             gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
             gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 12);
-            add(constructorSelectorLabel, gridBagConstraints);
-            constructorSelector = new ElementSelectorPanel(constructorDescription, false, true);
-            gridBagConstraints.gridy = 1;
-            gridBagConstraints.weightx = 0.5;
-            gridBagConstraints.weighty = 1.0;
-            gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
-            add(constructorSelector, gridBagConstraints);
-            constructorSelectorLabel.setText(NbBundle.getMessage(ConstructorGenerator.class, "LBL_super_constructor_select")); //NOI18N
-            constructorSelectorLabel.setLabelFor(constructorSelector);
-        }
-        if (fieldsDescription != null) {
-            fieldSelectorLabel = new javax.swing.JLabel();
-            GridBagConstraints gridBagConstraints = new GridBagConstraints();
-            gridBagConstraints = new java.awt.GridBagConstraints();
-            gridBagConstraints.gridx = 1;
-            gridBagConstraints.gridy = 0;
-            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-            gridBagConstraints.insets = new java.awt.Insets(12, constructorDescription != null ? 0 : 12, 6, 12);
             add(fieldSelectorLabel, gridBagConstraints);
             fieldSelector = new ElementSelectorPanel(fieldsDescription, false, true);
             gridBagConstraints.gridy = 1;
             gridBagConstraints.weightx = 0.5;
             gridBagConstraints.weighty = 1.0;
-            gridBagConstraints.insets = new java.awt.Insets(0, constructorDescription != null ? 0 : 12, 0, 12);
+            gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
             add(fieldSelector, gridBagConstraints);
-            fieldSelectorLabel.setText(NbBundle.getMessage(ConstructorGenerator.class, "LBL_constructor_select")); //NOI18N
+            Mnemonics.setLocalizedText(fieldSelectorLabel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_constructor_select")); //NOI18N
             fieldSelectorLabel.setLabelFor(fieldSelector);
+            fieldSelector.doInitialExpansion(1);
         }
-
+        if (constructorDescription != null) {
+            constructorSelectorLabel = new javax.swing.JLabel();
+            GridBagConstraints gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.gridx = 1;
+            gridBagConstraints.gridy = 0;
+            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+            gridBagConstraints.insets = new java.awt.Insets(12, fieldsDescription != null ? 0 : 12, 6, 12);
+            add(constructorSelectorLabel, gridBagConstraints);
+            constructorSelector = new SuperConstructorSelectorPanel(constructorDescription);
+            gridBagConstraints.gridy = 1;
+            gridBagConstraints.weightx = 0.5;
+            gridBagConstraints.weighty = 1.0;
+            gridBagConstraints.insets = new java.awt.Insets(0, fieldsDescription != null ? 0 : 12, 0, 12);
+            add(constructorSelector, gridBagConstraints);
+            Mnemonics.setLocalizedText(constructorSelectorLabel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_super_constructor_select")); //NOI18N
+            constructorSelectorLabel.setLabelFor(constructorSelector);
+        }
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConstructorGenerator.class, "A11Y_Generate_Constructor"));
     }
 

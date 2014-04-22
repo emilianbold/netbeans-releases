@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.resolver;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -68,14 +69,20 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.api.model.deep.CsmReturnStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheMap;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import static org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver3.LOGGER;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -195,7 +202,9 @@ public final class FileMapsCollector {
                         int incOffset = inc.getStartOffset();
                         gatherMaps(includedFrom, incOffset, out);
                     }
-                    Resolver3.LOGGER.log(Level.FINE, "{0}ms initMapsFromIncludeStack for {1}\n\twith start file {2}\n", new Object[]{System.currentTimeMillis() - allTime, currentFile.getAbsolutePath(), this.startFile.getAbsolutePath()});
+                    if (Resolver3.LOGGER.isLoggable(Level.FINE)) {
+                        Resolver3.LOGGER.log(Level.FINE, "{0}ms initMapsFromIncludeStack for {1}\n\twith start file {2}\n", new Object[]{System.currentTimeMillis() - allTime, currentFile.getAbsolutePath(), this.startFile.getAbsolutePath()});
+                    }
                     // gather all visible by #include directives in this file till offset
                     long incTime = System.currentTimeMillis();
                     for (CsmInclude inc : incBeforeOffset) {
@@ -205,10 +214,14 @@ public final class FileMapsCollector {
                         }
                     }
                     // cache 
-                    Resolver3.LOGGER.log(Level.FINE, "{0}ms initMapsFromIncludes for {1}\n\twith start file {2}\n", new Object[]{System.currentTimeMillis() - incTime, currentFile.getAbsolutePath(), this.startFile.getAbsolutePath()});
+                    if (Resolver3.LOGGER.isLoggable(Level.FINE)) {
+                        Resolver3.LOGGER.log(Level.FINE, "{0}ms initMapsFromIncludes for {1}\n\twith start file {2}\n", new Object[]{System.currentTimeMillis() - incTime, currentFile.getAbsolutePath(), this.startFile.getAbsolutePath()});
+                    }
                     allTime = System.currentTimeMillis() - allTime;
                     if (filesCollectorCache != null) {
-                        LOGGER.log(Level.FINE, "KEEP INCLUDE STACK {0}=>{1} ({2}) Took {3}ms\n", new Object[]{startFile, currentFile, out.needClassifiers(), allTime});
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.log(Level.FINE, "KEEP INCLUDE STACK {0}=>{1} ({2}) Took {3}ms\n", new Object[]{startFile, currentFile, out.needClassifiers(), allTime});
+                        }
                         filesCollectorCache.put(incKey, new FileMapsCacheValue(out, allTime));
                     }                    
                 }
@@ -234,7 +247,9 @@ public final class FileMapsCollector {
             cacheValue.copyTo(maps);
             cacheValue.hits++;
             String kind = (cacheKey.lastSearchedIncudeOffset == INCLUDE_STACK_MARKER) ? "STACK" : "INCLUDE";// NOI18N
-            LOGGER.log(Level.FINE, "HIT {4} {0}=>{1} ({2}) Hits {3}\n", new Object[]{startFile, currentFile, maps.needClassifiers(), cacheValue.hits, kind});
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "HIT {4} {0}=>{1} ({2}) Hits {3}\n", new Object[]{startFile, currentFile, maps.needClassifiers(), cacheValue.hits, kind});
+            }
             return true;
         }        
         return false;
@@ -411,6 +426,25 @@ public final class FileMapsCollector {
                     }
                     if (stopAtOffset < endOfScopeElement || out.needToTraverseDeeper(nsd)) {
                         //currentNamespace = nsd.getNamespace();
+                        if (nsd.getNamespace() instanceof NamespaceImpl) {
+                            NamespaceImpl namespace = (NamespaceImpl) nsd.getNamespace();
+                            for (CsmUID<CsmUsingDirective> directiveUID : namespace.getUsingDirectives()) {
+                                CsmUsingDirective directive = directiveUID.getObject();
+                                if (directive != null && directive.getContainingFile() != null) {
+                                    int stopAtOffsetDirective = directive.getContainingFile().equals(nsd.getContainingFile()) ? stopAtOffset : Integer.MAX_VALUE;
+                                    gatherMaps(directive, directive.getEndOffset(), inLocalContext, stopAtOffsetDirective, out);
+                                }
+                            }
+                            // TODO: this could be rewritten in the way as it is done with using directives to get better performance
+                            Iterator<CsmOffsetableDeclaration> udecls = CsmSelect.getDeclarations(namespace, CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.USING_DECLARATION));
+                            while (udecls.hasNext()) {
+                                final CsmUsingDeclaration usingDecl = (CsmUsingDeclaration) udecls.next();
+                                int stopAtOffsetDecl = usingDecl.getContainingFile().equals(nsd.getContainingFile()) ? stopAtOffset : Integer.MAX_VALUE;
+                                gatherMaps(usingDecl, usingDecl.getEndOffset(), inLocalContext, stopAtOffsetDecl, out);
+                            }
+                        } else {
+                            Resolver3.LOGGER.log(Level.WARNING, "Unexpected implementation of logical namespace: {0}", nsd.getNamespace().getClass()); //NOI18N
+                        }
                         gatherMaps(nsd.getDeclarations().iterator(), inLocalContext, stopAtOffset, out);
                     } else if (out.needClassifiers()) {
                         // VV: removed this phase
@@ -497,7 +531,23 @@ public final class FileMapsCollector {
             if (stopAtOffset < endOfScopeElement || out.needToTraverseDeeper((CsmScope) element)) {
                 gatherMaps(((CsmScope) element).getScopeElements().iterator(), inLocalContext, stopAtOffset, out);
             }
+        } else if (CsmKindUtilities.isVariable(element)) {
+            gatherMaps(((CsmVariable) element).getInitialValue(), inLocalContext, stopAtOffset, out);            
+        } else if (CsmKindUtilities.isReturnStatement(element)) {
+            gatherMaps(((CsmReturnStatement) element).getReturnExpression(), inLocalContext, stopAtOffset, out);
         }
+    }
+    
+    private static void gatherMaps(CsmExpression expr, boolean inLocalContext, int stopAtOffset, MapsCollection out) {
+        if (expr != null && expr.getLambdas() != null) {
+            for (CsmStatement lambdaStmt : expr.getLambdas()) {
+                assert CsmKindUtilities.isDeclarationStatement(lambdaStmt) : "Found lamda statement of type: " + lambdaStmt.getClass(); // NOI18N
+                CsmDeclarationStatement ds = (CsmDeclarationStatement) lambdaStmt;
+                if (ds.getStartOffset() < stopAtOffset) {
+                    gatherMaps(ds.getDeclarators().iterator(), inLocalContext, stopAtOffset, out);
+                }
+            }
+        }        
     }
     
     private static final class FileMapsCacheKey {

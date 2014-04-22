@@ -44,6 +44,9 @@ package org.netbeans.modules.remote.impl.fs.server;
 
 import java.util.LinkedList;
 import java.util.concurrent.ExecutionException;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.impl.fs.HangupEnvList;
+import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
 import org.openide.util.NotImplementedException;
 
 /**
@@ -89,17 +92,19 @@ import org.openide.util.NotImplementedException;
     private final String requestPath;
     private final Disposer<FSSResponse> disposer;
     private final Listener listener;
+    private final ExecutionEnvironment env;
     
     private final Object lock = new Object();
     private final LinkedList<Package> packages = new LinkedList<Package>();
     private ExecutionException exception = null;
-
-    public FSSResponse(FSSRequest request, Disposer<FSSResponse> disposer, Listener listener) {
+    
+    public FSSResponse(FSSRequest request, Disposer<FSSResponse> disposer, Listener listener, ExecutionEnvironment env) {
         this.requestId = request.getId();
         this.requestKind = request.getKind();
         this.requestPath = request.getPath();
         this.disposer = disposer;
         this.listener = listener;
+        this.env = env;
     }
     
     public boolean hasPackages() {
@@ -113,6 +118,18 @@ import org.openide.util.NotImplementedException;
     }
 
     public Package getNextPackage() throws InterruptedException, ExecutionException {
+        if (RemoteFileSystemUtils.isUnitTestMode()) {
+            long timeout = Integer.getInteger("remote.fs_server.timeout", 60000); //NOI18N
+            if (HangupEnvList.isHung(env)) {
+                throw new IllegalStateException("Rejected: timeout on previous attempt get package from " + env); //NOI18N
+            }            
+            Package pkg = getNextPackage(timeout);
+            if (pkg == null) {
+                HangupEnvList.setHung(env);
+                throw new IllegalStateException("Timeout: can't get package for " + env + ":" + requestPath + " in " + timeout + " ms"); //NOI18N
+            }
+            return pkg;
+        }
         return getNextPackage(0);
     }
     

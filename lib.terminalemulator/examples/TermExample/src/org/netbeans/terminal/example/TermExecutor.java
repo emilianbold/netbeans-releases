@@ -107,6 +107,10 @@ public final class TermExecutor {
 		    break;
 	    }
         }
+
+        public void titleChanged(String title) {
+            ;   // ignore - for now
+        }
     }
 
     private static void error(String fmt, Object...args) {

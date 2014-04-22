@@ -448,10 +448,10 @@ public final class ToolUtils {
                 System.err.println("No match for pattern [" + c.getFingerPrintPattern() + "]:"); // NOI18N
                 System.err.println("Run " + path + "/" + c.getNames()[0] + " " + flag + "\n" + s); // NOI18N
             }
-            if (res && matcher.groupCount() >= 1) {
-                String version = matcher.group(1);
-                System.err.println(version);
-            }
+            //if (res && matcher.groupCount() >= 1) {
+            //    String version = matcher.group(1);
+            //    System.err.println(version);
+            //}
             return res;
         }
         return true;

@@ -206,6 +206,10 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
                 f.setScope(this);
             }
         }
+        if (decl instanceof CsmUsingDirective) {
+            NamespaceImpl logicalNs = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(this.namespaceUID);
+            logicalNs.addUsingDirective((CsmUsingDirective) decl);
+        }
         // update repository
         RepositoryUtils.put(this);
     }
@@ -283,11 +287,16 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
             uids = new ArrayList<>(declarations);
             declarations.clear();
             //declarations  = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>());
-        }
-        Utils.disposeAll(decls);            
-        RepositoryUtils.remove(uids);                      
+        }     
         NamespaceImpl ns = _getNamespaceImpl();
-        assert ns != null;
+        assert ns != null;                 
+        for (CsmOffsetableDeclaration decl : decls) {
+            if (decl instanceof CsmUsingDirective) {
+                ns.removeUsingDirective((CsmUsingDirective) decl);
+            }
+        }                        
+        Utils.disposeAll(decls);            
+        RepositoryUtils.remove(uids);                              
         ns.removeNamespaceDefinition(this);
     }
 

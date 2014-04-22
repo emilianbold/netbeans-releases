@@ -102,6 +102,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private final Key declarationsSorageKey;
 
     private final Set<CsmUID<CsmOffsetableDeclaration>> unnamedDeclarations;
+    private final Set<CsmUID<CsmUsingDirective>> usingDirectives;
     
     private final TreeMap<FileNameSortedKey, CsmUID<CsmNamespaceDefinition>> nsDefinitions;
     private final ReadWriteLock nsDefinitionsLock = new ReentrantReadWriteLock();
@@ -126,6 +127,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.projectUID = UIDCsmConverter.projectToUID(project);
         assert this.projectUID != null;
         unnamedDeclarations = Collections.synchronizedSet(new HashSet<CsmUID<CsmOffsetableDeclaration>>());
+        usingDirectives = Collections.synchronizedSet(new HashSet<CsmUID<CsmUsingDirective>>());
         nestedNamespaces = new ConcurrentHashMap<>();
         nsDefinitions = new TreeMap<>(defenitionComparator);
 
@@ -152,6 +154,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.projectUID = UIDCsmConverter.projectToUID(project);
         assert this.projectUID != null;
         unnamedDeclarations = Collections.synchronizedSet(new HashSet<CsmUID<CsmOffsetableDeclaration>>());
+        usingDirectives = Collections.synchronizedSet(new HashSet<CsmUID<CsmUsingDirective>>());
         nestedNamespaces = new ConcurrentHashMap<>();
         nsDefinitions = new TreeMap<>(defenitionComparator);
 
@@ -648,6 +651,28 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         }
     }
     
+    public void addUsingDirective(CsmUsingDirective usingDirective) {
+        synchronized (usingDirectives) {
+            usingDirectives.add(UIDs.get(usingDirective));
+        }
+    }
+    
+    public void removeUsingDirective(CsmUsingDirective usingDirective) {
+        synchronized (usingDirectives) {
+            usingDirectives.remove(UIDs.get(usingDirective));
+        }
+    }
+    
+    public Collection<CsmUID<CsmUsingDirective>> getUsingDirectives() {
+        // add all declarations
+        Collection<CsmUID<CsmUsingDirective>> uids;
+        // add all unnamed declarations
+        synchronized (usingDirectives) {
+            uids = new ArrayList<>(usingDirectives);
+        }
+        return uids;
+    }    
+    
     @SuppressWarnings("unchecked")
     @Override
     public Collection<CsmScopeElement> getScopeElements() {
@@ -770,6 +795,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             nsDefinitionsLock.readLock().unlock();
         }
         theFactory.writeUIDCollection(this.unnamedDeclarations, output, true);
+        theFactory.writeUIDCollection(this.usingDirectives, output, true);
         output.writeInt(inlineDefinitionsCounter);
         output.writeInt(inlineNamespacesCounter.get());
     }
@@ -812,6 +838,13 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             unnamedDeclarations = Collections.synchronizedSet(new HashSet<CsmUID<CsmOffsetableDeclaration>>(collSize));
         }
         theFactory.readUIDCollection(this.unnamedDeclarations, input, collSize);
+        collSize = input.readInt();
+        if (collSize < 0) {
+            usingDirectives = Collections.synchronizedSet(new HashSet<CsmUID<CsmUsingDirective>>(0));
+        } else {
+            usingDirectives = Collections.synchronizedSet(new HashSet<CsmUID<CsmUsingDirective>>(collSize));
+        }        
+        theFactory.readUIDCollection(this.usingDirectives, input, collSize);
         inlineDefinitionsCounter = input.readInt();
         inlineNamespacesCounter = new AtomicInteger(input.readInt());
     }

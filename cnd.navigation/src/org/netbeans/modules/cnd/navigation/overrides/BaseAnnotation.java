@@ -57,9 +57,14 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.OverridesPopup;
@@ -76,8 +81,11 @@ public abstract class BaseAnnotation extends Annotation {
 
     public enum AnnotationType {
         IS_OVERRIDDEN,
+        IS_OVERRIDDEN_PSEUDO,
         OVERRIDES,
+        OVERRIDES_PSEUDO,
         OVERRIDEN_COMBINED,
+        OVERRIDEN_COMBINED_PSEUDO,
         IS_SPECIALIZED,
         SPECIALIZES,
         EXTENDED_IS_SPECIALIZED,
@@ -91,6 +99,8 @@ public abstract class BaseAnnotation extends Annotation {
     protected final AnnotationType type;
     protected final Collection<CsmUID<? extends CsmOffsetableDeclaration>> baseUIDs;
     protected final Collection<CsmUID<? extends CsmOffsetableDeclaration>> descUIDs;
+    protected final Collection<CsmUID<? extends CsmOffsetableDeclaration>> pseudoBaseUIDs;
+    protected final Collection<CsmUID<? extends CsmOffsetableDeclaration>> pseudoDescUIDs;
     protected final Collection<CsmUID<? extends CsmOffsetableDeclaration>> baseTemplateUIDs;
     protected final Collection<CsmUID<? extends CsmOffsetableDeclaration>> specializationUIDs;
     
@@ -134,9 +144,119 @@ public abstract class BaseAnnotation extends Annotation {
         for (CsmOffsetableDeclaration d : baseDecls) {
             baseUIDs.add(UIDs.get(d));
         }
+        pseudoBaseUIDs= Collections.emptyList();
         descUIDs = new ArrayList<CsmUID<? extends CsmOffsetableDeclaration>>(descDecls.size());
         for (CsmOffsetableDeclaration d : descDecls) {
             descUIDs.add(UIDs.get(d));
+        }
+        pseudoDescUIDs= Collections.emptyList();
+        baseTemplateUIDs = new ArrayList<CsmUID<? extends CsmOffsetableDeclaration>>(baseTemplates.size());
+        for (CsmOffsetableDeclaration d : baseTemplates) {
+            baseTemplateUIDs.add(UIDs.get(d));
+        }
+        specializationUIDs = new ArrayList<CsmUID<? extends CsmOffsetableDeclaration>>(templateSpecializations.size());
+        for (CsmOffsetableDeclaration d : templateSpecializations) {
+            specializationUIDs.add(UIDs.get(d));
+        }
+    }
+    
+    protected BaseAnnotation(StyledDocument document, CsmFunction decl, CsmVirtualInfoQuery.CsmOverrideInfo thisMethod, 
+            Collection<CsmVirtualInfoQuery.CsmOverrideInfo> baseDecls,
+            Collection<CsmVirtualInfoQuery.CsmOverrideInfo> descDecls,
+            Collection<? extends CsmOffsetableDeclaration> baseTemplates,
+            Collection<? extends CsmOffsetableDeclaration> templateSpecializations) {
+        assert decl != null;
+        this.document = document;
+        this.pos = getPosition(document, decl.getStartOffset());
+        if (baseTemplates.isEmpty() && templateSpecializations.isEmpty()) {
+            // overrides only 
+            if (baseDecls.isEmpty()) {
+                boolean pseudo = false;
+                if (thisMethod != null) {
+                    pseudo = !thisMethod.isVirtual();
+                }
+                for(CsmVirtualInfoQuery.CsmOverrideInfo info :descDecls) {
+                    if (!info.isVirtual()) {
+                        pseudo = true;
+                        break;
+                    }
+                }
+                if (pseudo) {
+                    type = AnnotationType.IS_OVERRIDDEN_PSEUDO;
+                } else {
+                    type = AnnotationType.IS_OVERRIDDEN;
+                }
+            } else if (descDecls.isEmpty()) {
+                boolean pseudo = false;
+                for(CsmVirtualInfoQuery.CsmOverrideInfo info :baseDecls) {
+                    if (!info.isVirtual()) {
+                        pseudo = true;
+                        break;
+                    }
+                }
+                if (pseudo) {
+                    type =  AnnotationType.OVERRIDES_PSEUDO;
+                } else {
+                    type =  AnnotationType.OVERRIDES;
+                }
+            } else {
+                boolean pseudo = false;
+                for(CsmVirtualInfoQuery.CsmOverrideInfo info :descDecls) {
+                    if (!info.isVirtual()) {
+                        pseudo = true;
+                        break;
+                    }
+                }
+                if (!pseudo) {
+                    for(CsmVirtualInfoQuery.CsmOverrideInfo info :baseDecls) {
+                        if (!info.isVirtual()) {
+                            pseudo = true;
+                            break;
+                        }
+                    }
+                }
+                if (pseudo) {
+                    type = AnnotationType.OVERRIDEN_COMBINED_PSEUDO;
+                } else {
+                    type = AnnotationType.OVERRIDEN_COMBINED;
+                }
+            }
+        } else if (baseDecls.isEmpty() && descDecls.isEmpty()) {
+            // templates only
+            if (baseTemplates.isEmpty()) {
+                type = AnnotationType.IS_SPECIALIZED;
+            } else if (templateSpecializations.isEmpty()) {
+                type = AnnotationType.SPECIALIZES;
+            } else {
+                type = AnnotationType.SPECIALIZES;
+            }
+        } else {
+            assert !baseTemplates.isEmpty() || !templateSpecializations.isEmpty() || !descDecls.isEmpty() || !baseDecls.isEmpty() : "all are empty?";
+            if (baseTemplates.isEmpty()) {
+                type = AnnotationType.EXTENDED_IS_SPECIALIZED;
+            } else if (templateSpecializations.isEmpty()) {
+                type = AnnotationType.EXTENDED_SPECIALIZES;
+            } else {
+                type = AnnotationType.EXTENDED_SPECIALIZES;
+            }
+        }
+        baseUIDs = new ArrayList<CsmUID<? extends CsmOffsetableDeclaration>>(baseDecls.size());
+        pseudoBaseUIDs = new ArrayList<CsmUID<? extends CsmOffsetableDeclaration>>(baseDecls.size());
+        for (CsmVirtualInfoQuery.CsmOverrideInfo info : baseDecls) {
+            if (info.isVirtual()) {
+                baseUIDs.add(UIDs.get(info.getMethod()));
+            } else {
+                pseudoBaseUIDs.add(UIDs.get(info.getMethod()));
+            }
+        }
+        descUIDs = new ArrayList<CsmUID<? extends CsmOffsetableDeclaration>>(descDecls.size());
+        pseudoDescUIDs = new ArrayList<CsmUID<? extends CsmOffsetableDeclaration>>(descDecls.size());
+        for (CsmVirtualInfoQuery.CsmOverrideInfo info : descDecls) {
+            if (info.isVirtual()) {
+                descUIDs.add(UIDs.get(info.getMethod()));
+            } else {
+                pseudoDescUIDs.add(UIDs.get(info.getMethod()));
+            }
         }
         baseTemplateUIDs = new ArrayList<CsmUID<? extends CsmOffsetableDeclaration>>(baseTemplates.size());
         for (CsmOffsetableDeclaration d : baseTemplates) {
@@ -156,15 +276,21 @@ public abstract class BaseAnnotation extends Annotation {
     public String getAnnotationType() {
         switch(getType()) {
             case IS_OVERRIDDEN:
-                return "org-netbeans-modules-editor-annotations-is_overridden"; //NOI18N
+                return "org-netbeans-modules-cnd-navigation-is_overridden"; //NOI18N
+            case IS_OVERRIDDEN_PSEUDO:
+                return "org-netbeans-modules-cnd-navigation-is_overridden_pseudo"; //NOI18N
             case OVERRIDES:
-                return "org-netbeans-modules-editor-annotations-overrides"; //NOI18N
+                return "org-netbeans-modules-cnd-navigation-overrides"; //NOI18N
+            case OVERRIDES_PSEUDO:
+                return "org-netbeans-modules-cnd-navigation-overrides_pseudo"; //NOI18N
+            case OVERRIDEN_COMBINED:
+                return "org-netbeans-modules-cnd-navigation-is_overridden_combined"; //NOI18N
+            case OVERRIDEN_COMBINED_PSEUDO:
+                return "org-netbeans-modules-cnd-navigation-is_overridden_combined_pseudo"; //NOI18N
             case SPECIALIZES:
                 return "org-netbeans-modules-cnd-navigation-specializes"; // NOI18N
             case IS_SPECIALIZED:
                 return "org-netbeans-modules-cnd-navigation-is_specialized"; // NOI18N
-            case OVERRIDEN_COMBINED:
-                return "org-netbeans-modules-editor-annotations-override-is-overridden-combined"; //NOI18N
             case EXTENDED_SPECIALIZES:
                 return "org-netbeans-modules-cnd-navigation-extended_specializes"; // NOI18N
             case EXTENDED_IS_SPECIALIZED:
@@ -296,23 +422,25 @@ public abstract class BaseAnnotation extends Annotation {
         sb.append(' ');
         boolean first = true;
 
-        Comparator<? super CsmOffsetableDeclaration> comparator = new Comparator<CsmOffsetableDeclaration>() {
+        Comparator<CsmOffsetableDeclaration> comparator = new Comparator<CsmOffsetableDeclaration>() {
             @Override
             public int compare(CsmOffsetableDeclaration o1, CsmOffsetableDeclaration o2) {
                 return o1.getQualifiedName().toString().compareTo(o2.getQualifiedName().toString());
             }
 
         };
-        List<? extends CsmOffsetableDeclaration> baseDecls = toDeclarations(baseUIDs);
+        List<CsmOffsetableDeclaration> baseDecls = toDeclarations(baseUIDs);
+        baseDecls.addAll(toDeclarations(pseudoBaseUIDs));
         Collections.sort(baseDecls, comparator);
 
-        List<? extends CsmOffsetableDeclaration> descDecls = toDeclarations(descUIDs);
+        List<CsmOffsetableDeclaration> descDecls = toDeclarations(descUIDs);
+        descDecls.addAll(toDeclarations(pseudoDescUIDs));
         Collections.sort(descDecls, comparator);
 
-        List<? extends CsmOffsetableDeclaration> baseTemplateDecls = toDeclarations(baseTemplateUIDs);
+        List<CsmOffsetableDeclaration> baseTemplateDecls = toDeclarations(baseTemplateUIDs);
         Collections.sort(baseTemplateDecls, comparator);
 
-        List<? extends CsmOffsetableDeclaration> specializationDecls = toDeclarations(specializationUIDs);
+        List<CsmOffsetableDeclaration> specializationDecls = toDeclarations(specializationUIDs);
         Collections.sort(specializationDecls, comparator);
         
         List<CsmOffsetableDeclaration> allDecls = new ArrayList<CsmOffsetableDeclaration>();
@@ -346,10 +474,12 @@ public abstract class BaseAnnotation extends Annotation {
     }
     
     private void performGoToAction(Point position) {
-        if (baseUIDs.size() + descUIDs.size() + baseTemplateUIDs.size() + specializationUIDs.size() == 1) {
+        if (baseUIDs.size() + pseudoBaseUIDs.size() + descUIDs.size() + pseudoDescUIDs.size() +baseTemplateUIDs.size() + specializationUIDs.size() == 1) {
             Collection<CsmUID<? extends CsmOffsetableDeclaration>> all = new ArrayList<CsmUID<? extends CsmOffsetableDeclaration>> (1);
             all.addAll(baseUIDs);
+            all.addAll(pseudoBaseUIDs);
             all.addAll(descUIDs);
+            all.addAll(pseudoDescUIDs);
             all.addAll(baseTemplateUIDs);
             all.addAll(specializationUIDs);
             CsmUID<? extends CsmOffsetableDeclaration> uid = all.iterator().next();
@@ -365,9 +495,10 @@ public abstract class BaseAnnotation extends Annotation {
                 };
                 CsmModelAccessor.getModel().enqueue(run, taskName);
             }
-        } else if (baseUIDs.size() + descUIDs.size() + baseTemplateUIDs.size() + specializationUIDs.size() > 1) { 
+        } else if (baseUIDs.size() + pseudoBaseUIDs.size() + descUIDs.size() + pseudoDescUIDs.size() +baseTemplateUIDs.size() + specializationUIDs.size() > 1) { 
             String caption = getShortDescription();
-            OverridesPopup popup = new OverridesPopup(caption, toDeclarations(baseUIDs), toDeclarations(descUIDs), 
+            OverridesPopup popup = new OverridesPopup(caption, toDeclarations(baseUIDs), toDeclarations(pseudoBaseUIDs),
+                    toDeclarations(descUIDs), toDeclarations(pseudoDescUIDs),
                     toDeclarations(baseTemplateUIDs), toDeclarations(specializationUIDs));
             PopupUtil.showPopup(popup, caption, position.x, position.y, true, 0);
         } else {
@@ -375,7 +506,7 @@ public abstract class BaseAnnotation extends Annotation {
         }
     }
 
-    private static List<? extends CsmOffsetableDeclaration> toDeclarations(Collection<CsmUID<? extends CsmOffsetableDeclaration>> uids) {
+    private static List<CsmOffsetableDeclaration> toDeclarations(Collection<CsmUID<? extends CsmOffsetableDeclaration>> uids) {
         List<CsmOffsetableDeclaration> decls = new ArrayList<CsmOffsetableDeclaration>(uids.size());
         for (CsmUID<? extends CsmOffsetableDeclaration> uid : uids) {
             CsmOffsetableDeclaration decl = uid.getObject();

@@ -69,7 +69,8 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
-import org.netbeans.modules.cnd.modelutil.AntiLoop;
+import org.netbeans.modules.cnd.modelutil.ClassifiersAntiLoop;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Lookup;
 
@@ -132,19 +133,21 @@ public abstract class CsmFileReferences {
            // do nothing
        }
    }
-      /**
-    * visitor inteface
+   
+   /**
+    * visitor interface
     */
-   public interface Visitor {
+   public interface Visitor extends Interrupter {
        /**
         * This method is invoked for every matching reference in the file.
         *
         * @param context  reference with its lexical context
         */
        void visit(CsmReferenceContext context);
+       
    }
 
-   public interface ReferenceVisitor {
+   public interface ReferenceVisitor extends Interrupter {
 
        /**
         * This method is invoked for every matching reference in the file.
@@ -162,18 +165,18 @@ public abstract class CsmFileReferences {
            CsmReference ref = context.getReference(context.size() - 2);
            if (ref != null) {
                if (getDefault().isThis(ref)) {
-                   return hasTemplateBasedAncestors(findContextClass(context), new AntiLoop());
+                   return hasTemplateBasedAncestors(findContextClass(context), new ClassifiersAntiLoop());
                }
                CsmObject refObj = ref.getReferencedObject();
                if (isTemplateParameterInvolved(refObj)) {
                    return true;
                } else {
-                   return hasTemplateBasedAncestors(getType(refObj), new AntiLoop());
+                   return hasTemplateBasedAncestors(getType(refObj), new ClassifiersAntiLoop());
                }
            }
        } else {
            // it isn't a dereference - check current context
-           return hasTemplateBasedAncestors(findContextClass(context), new AntiLoop());
+           return hasTemplateBasedAncestors(findContextClass(context), new ClassifiersAntiLoop());
        }
        return false;
    }
@@ -213,10 +216,10 @@ public abstract class CsmFileReferences {
    }
 
    public static boolean hasTemplateBasedAncestors(CsmType type) {
-       return hasTemplateBasedAncestors(type, new AntiLoop());
+       return hasTemplateBasedAncestors(type, new ClassifiersAntiLoop());
    }
 
-   private static boolean hasTemplateBasedAncestors(CsmType type, AntiLoop handledClasses) {
+   private static boolean hasTemplateBasedAncestors(CsmType type, ClassifiersAntiLoop handledClasses) {
        if( type != null) {
            CsmClassifier cls = type.getClassifier();
            if (CsmKindUtilities.isClass(cls)) {
@@ -226,7 +229,7 @@ public abstract class CsmFileReferences {
        return false;
    }
       
-   private static boolean hasTemplateBasedAncestors(CsmClass cls, AntiLoop handledClasses) {
+   private static boolean hasTemplateBasedAncestors(CsmClass cls, ClassifiersAntiLoop handledClasses) {
        if (cls != null) {
            if (handledClasses.contains(cls)) {
                 return false;
