@@ -1,6 +1,3 @@
-app:CLASS:[PUBLIC]:ESCAPED{app}:
-  graph:CLASS:[PUBLIC]:ESCAPED{graph}:
-    hint:FIELD:[PUBLIC]:ESCAPED{hint}<font color="#999999">ESCAPED{ : }String</font>:
 $:PARAMETER:[PUBLIC]:ESCAPED{$}:
   fn:CLASS:[PUBLIC]:ESCAPED{fn}:
     ovuGraph:METHOD:[PUBLIC]:ESCAPED{ovuGraph}ESCAPED{(}ESCAPED{options}ESCAPED{)}:
@@ -56,3 +53,6 @@ $:PARAMETER:[PUBLIC]:ESCAPED{$}:
         minValue:FIELD:[PUBLIC]:ESCAPED{minValue}:
         scale:FIELD:[PUBLIC]:ESCAPED{scale}:
       settings:CLASS:[PRIVATE]:ESCAPED{settings}:
+app:CLASS:[PUBLIC]:ESCAPED{app}:
+  graph:CLASS:[PUBLIC]:ESCAPED{graph}:
+    hint:FIELD:[PUBLIC]:ESCAPED{hint}<font color="#999999">ESCAPED{ : }String</font>:
