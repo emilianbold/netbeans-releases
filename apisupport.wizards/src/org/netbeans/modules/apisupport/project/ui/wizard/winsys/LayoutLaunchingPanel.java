@@ -128,25 +128,27 @@ implements TaskListener, Runnable, ExplorerManager.Provider {
             try {
                 task = DesignSupport.invokeDesignMode(data.getProject(), userDir, false, !data.isIgnorePreviousRun());
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                setError(ex.getMessage());
             }
-            handle = ProgressHandleFactory.createHandle(Bundle.MSG_LaunchingApplication());
-            JComponent pc = ProgressHandleFactory.createProgressComponent(handle);
-            JLabel ml = ProgressHandleFactory.createMainLabelComponent(handle);
+            if(task != null) {
+                handle = ProgressHandleFactory.createHandle(Bundle.MSG_LaunchingApplication());
+                JComponent pc = ProgressHandleFactory.createProgressComponent(handle);
+                JLabel ml = ProgressHandleFactory.createMainLabelComponent(handle);
 
-            progress.add(ml);
-            progress.add(pc);
+                progress.add(ml);
+                progress.add(pc);
 
-            handle.start();
-            markInvalid();
-            /* XXX what was the purpose of this? cannot do it now, we are in EQ
-            try {
-                DesignSupport.existingModes(data);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                handle.start();
+                markInvalid();
+                /* XXX what was the purpose of this? cannot do it now, we are in EQ
+                try {
+                    DesignSupport.existingModes(data);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                */
+                task.addTaskListener(this);
             }
-            */
-            task.addTaskListener(this);
         }
     }
     
