@@ -80,7 +80,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -1133,7 +1133,7 @@ public final class PathRegistry implements Runnable {
         private URL key;
 
         public WeakValue (ClassPath ref, URL key) {
-            super (ref, Utilities.activeReferenceQueue());
+            super (ref, BaseUtilities.activeReferenceQueue());
             assert key != null;
             this.key = key;
         }

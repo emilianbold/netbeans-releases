@@ -118,7 +118,7 @@ import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.OutputFileManager.InvalidSourcePath;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
-import org.netbeans.modules.parsing.impl.Utilities;
+import org.netbeans.modules.parsing.impl.indexing.IndexingUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -207,7 +207,7 @@ public class TreeLoader extends LazyTreeLoader {
                                     }
                                     if (root != null) {
                                         final FileObject rootFin = root;
-                                        Utilities.runAsScanWork(new Runnable() {
+                                        IndexingUtils.runAsScanWork(new Runnable() {
                                             @Override
                                             public void run() {
                                                 try {

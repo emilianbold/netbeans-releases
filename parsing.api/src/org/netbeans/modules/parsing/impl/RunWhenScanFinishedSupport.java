@@ -49,7 +49,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
@@ -117,8 +116,8 @@ public class RunWhenScanFinishedSupport {
         final DeferredTask r = new DeferredTask (sources,task,sync);
         //0) Add speculatively task to be performed at the end of background scan
         todo.add (r);
-        final Set<? extends RepositoryUpdater.IndexingState> state = Utilities.getIndexingState();
-        if (!state.isEmpty()) {
+        boolean indexing = TaskProcessor.getIndexerBridge().isIndexing();
+        if (indexing) {
             return sync;
         }
         //1) Try to aquire javac lock, if successfull no task is running
@@ -232,7 +231,7 @@ public class RunWhenScanFinishedSupport {
         }
 
         private void checkCaller() {
-            if (RepositoryUpdater.getDefault().isProtectedModeOwner(Thread.currentThread())) {
+            if (TaskProcessor.getIndexerBridge().ownsProtectedMode()) {
                 throw new IllegalStateException("ScanSync.get called by protected mode owner.");    //NOI18N
             }
             //In dev build check also that blocking get is not called from OpenProjectHook -> deadlock

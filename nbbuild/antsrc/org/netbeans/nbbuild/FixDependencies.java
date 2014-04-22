@@ -155,6 +155,7 @@ public class FixDependencies extends Task {
             File script = null;
             Ant task = null;
             Ant cleanTask = null;
+            boolean compiled = !doSanity;
             if (ant != null && tgt != null) {
                 task = (org.apache.tools.ant.taskdefs.Ant)getProject ().createTask ("ant");
                 script = FileUtils.getFileUtils().resolveFile(xml, ant);
@@ -175,16 +176,19 @@ public class FixDependencies extends Task {
                     cleanTask.setDir (script.getParentFile ());
                     cleanTask.setTarget (clean);
                 }
-
                 try {
-                    // before we do anything else, let's verify that we build
-                    if (cleanTask != null) {
-                        log ("Cleaning " + clean + " in " + script, org.apache.tools.ant.Project.MSG_INFO);
-                        cleanTask.execute ();
-                    }
-                    if (doSanity) {
-                        log ("Sanity check executes " + tgt + " in " + script, org.apache.tools.ant.Project.MSG_INFO);
-                        task.execute ();
+                    if (doSanity || strip) {
+                        // before we do anything else, let's verify that we build
+                        if (cleanTask != null) {
+                            log ("Cleaning " + clean + " in " + script, org.apache.tools.ant.Project.MSG_INFO);
+                            cleanTask.execute ();
+                            compiled = false;
+                        }
+                        if (doSanity) {
+                            log ("Sanity check executes " + tgt + " in " + script, org.apache.tools.ant.Project.MSG_INFO);
+                            task.execute ();
+                            compiled = true;
+                        }
                     }
                 } catch (BuildException ex) {
                     if (fail) {
@@ -197,7 +201,7 @@ public class FixDependencies extends Task {
             }
             
             try {
-                boolean change = fix (xml, script, task, cleanTask);
+                boolean change = fix (xml, script, task, cleanTask, compiled);
                 if (!strip || onlyChanged && !change) {
                     continue;
                 }
@@ -211,7 +215,7 @@ public class FixDependencies extends Task {
     /** Modifies the xml file to replace dependencies wiht new ones.
      * @return true if there was a change in the file
      */
-    private boolean fix (File file, File script, org.apache.tools.ant.taskdefs.Ant task, org.apache.tools.ant.taskdefs.Ant cleanTask) throws IOException, BuildException {
+    private boolean fix (File file, File script, org.apache.tools.ant.taskdefs.Ant task, org.apache.tools.ant.taskdefs.Ant cleanTask, boolean compiled) throws IOException, BuildException {
         int s = (int)file.length ();
         byte[] data = new byte[s];
         InputStream is = new FileInputStream(file);
@@ -225,7 +229,6 @@ public class FixDependencies extends Task {
         String old = stream;
         data = null;
 
-        boolean compiled = false;
         try {
             DEPS: for (Replace r : replaces) {
                 int md = stream.indexOf("<module-dependencies");
@@ -343,6 +346,7 @@ public class FixDependencies extends Task {
                                 compiled = true;
                                 continue DEPS;
                             } catch (BuildException ex) {
+                                log ("Compilation failed: ", ex, Project.MSG_INFO);
                                 fw = new FileWriter (file);
                                 fw.write (old);
                                 fw.close ();

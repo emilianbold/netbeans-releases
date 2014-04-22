@@ -70,6 +70,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.openide.util.ProxyURLStreamHandlerFactory;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -124,6 +125,11 @@ public class PathRegistryTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         this.clearWorkDir();
+        try {
+            URL.setURLStreamHandlerFactory(new ProxyURLStreamHandlerFactory());
+        } catch (Error ex) {
+            // nop 
+        }
         final File _wd = this.getWorkDir();
         final FileObject wd = FileUtil.toFileObject(_wd);
 

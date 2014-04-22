@@ -56,7 +56,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 /**
  * Cache for {@link URLMapper#findFileObject} for source roots.
@@ -132,7 +132,7 @@ public final class URLCache {
         CleanReference(
                 @NonNull FileObject referent,
                 @NonNull URI uri) {            
-            super(referent, Utilities.activeReferenceQueue());
+            super(referent, BaseUtilities.activeReferenceQueue());
             assert referent != null;
             assert uri != null;
             this.uri = uri;

@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.parsing.impl.ui;
+package org.netbeans.modules.parsing.indexing.ui;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;

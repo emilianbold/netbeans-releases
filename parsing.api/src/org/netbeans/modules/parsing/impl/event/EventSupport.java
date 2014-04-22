@@ -70,11 +70,9 @@ import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
-import org.netbeans.modules.parsing.impl.indexing.IndexingManagerAccessor;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
@@ -190,8 +188,7 @@ public final class EventSupport {
      * AWT deadlock. Never call this method in other cases.
      */
     public static void releaseCompletionCondition() {
-        if (!IndexingManagerAccessor.getInstance().requiresReleaseOfCompletionLock() ||
-            !IndexingManagerAccessor.getInstance().isCalledFromRefreshIndexAndWait()) {
+        if (!TaskProcessor.getIndexerBridge().canReleaseCompletionLock()) {
             throw new IllegalStateException();
         }
         final boolean wask24 = EditorRegistryListener.k24.getAndSet(false);

@@ -34,6 +34,7 @@
                 <friend>org.apache.tools.ant.module</friend>
                 <friend>org.netbeans.modules.maven</friend>
                 <friend>org.netbeans.modules.parsing.api</friend>
+                <friend>org.netbeans.modules.parsing.indexing</friend>
                 <friend>org.netbeans.modules.projectui</friend>
                 <package>org.netbeans.modules.project.indexingbridge</package>
             </friend-packages>

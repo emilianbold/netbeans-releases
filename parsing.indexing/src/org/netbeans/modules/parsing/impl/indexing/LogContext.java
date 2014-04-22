@@ -52,12 +52,11 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.awt.StatusDisplayer;
 import org.openide.awt.StatusDisplayer.Message;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 /**
  *
@@ -1088,7 +1087,7 @@ import org.openide.util.Utilities;
             for (URI uri : this.fileObjsChanged) {
                 String name;
                 try {
-                    final File f = Utilities.toFile(uri);
+                    final File f = BaseUtilities.toFile(uri);
                     name = f.getAbsolutePath();
                 } catch (IllegalArgumentException iae) {
                     name = uri.toString();

@@ -136,6 +136,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.masterfs.nio2</friend>
                 <friend>org.netbeans.modules.masterfs.windows</friend>
                 <friend>org.netbeans.modules.parsing.api</friend>
+                <friend>org.netbeans.modules.parsing.indexing</friend>
                 <friend>org.netbeans.modules.parsing.lucene</friend>
                 <friend>org.netbeans.modules.versioning.masterfs</friend>
                 <package>org.netbeans.modules.masterfs.providers</package>

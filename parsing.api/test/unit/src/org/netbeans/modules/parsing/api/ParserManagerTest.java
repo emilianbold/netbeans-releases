@@ -58,16 +58,13 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.parsing.impl.Utilities;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater.IndexingState;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdaterTestSupport;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.modules.parsing.spi.TaskFactory;
@@ -145,49 +142,6 @@ public class ParserManagerTest extends NbTestCase {
 
     }
 
-    @RandomlyFails
-    public void testParseWhenScanFinished () throws Exception {
-        RUEmulator emulator = new RUEmulator();
-        Utilities.setIndexingStatus(emulator);
-        emulator.setScanningInProgress(EnumSet.of(IndexingState.STARTING));
-
-        FileUtil.setMIMEType ("foo", "text/foo");
-        final FileObject workDir = FileUtil.toFileObject (getWorkDir ());
-        final FileObject testFile = FileUtil.createData (workDir, "test.foo");
-        final Source source = Source.create (testFile);
-        final Collection<Source> sources = Collections.singleton(source);
-        final TestTask tt = new TestTask();
-        ParserManager.parse(sources, tt);
-        assertEquals(1, tt.called);
-        final Future<Void> future = ParserManager.parseWhenScanFinished(sources, tt);
-        assertEquals(1, tt.called);
-        assertFalse (future.isDone());
-        future.cancel(false);
-        assertFalse (future.isDone());
-        assertTrue(future.isCancelled());
-
-        final TestTask tt2 = new TestTask();
-        final Future<Void> future2 = ParserManager.parseWhenScanFinished(sources, tt2);
-        assertEquals(0, tt2.called);
-        assertFalse (future2.isDone());
-
-        final CountDownLatch countDown = new CountDownLatch(1);
-        final TestTask tt3 = new TestTask(countDown);
-        final Future<Void> future3 = ParserManager.parseWhenScanFinished(sources, tt3);
-        assertEquals(0, tt3.called);
-        assertFalse (future3.isDone());
-        emulator.scan();
-        assertTrue(countDown.await(10, TimeUnit.SECONDS));
-        assertFalse (future.isDone());
-        assertTrue (future2.isDone());
-        assertTrue (future3.isDone());
-
-        final TestTask tt4 = new TestTask();
-        final Future<Void> future4 = ParserManager.parseWhenScanFinished(sources, tt4);
-        assertEquals(1, tt4.called);
-        assertTrue(future4.isDone());
-    }
-
     public void testParseDoesNotScheduleTasks () throws Exception {
         final CountDownLatch l = new CountDownLatch(1);
         MockServices.setServices (MockMimeLookup.class, MyScheduler.class);
@@ -237,61 +191,6 @@ public class ParserManagerTest extends NbTestCase {
 
         assertFalse("Should not schedule the task", l.await(2, TimeUnit.SECONDS));
     }
-
-    private static class TestTask extends UserTask {
-
-        long called = 0;
-        final CountDownLatch latch;
-
-        public TestTask () {
-            latch = null;
-        }
-
-        public TestTask (final CountDownLatch latch) {
-            this.latch = latch;
-        }
-
-        @Override
-        public void run(ResultIterator resultIterator) throws Exception {
-            called++;
-            if (latch != null) {
-                latch.countDown();
-            }
-        }
-
-    }
-
-    private static class RUEmulator implements Runnable, Utilities.IndexingStatus {
-
-        private final Set<IndexingState> scanning = EnumSet.noneOf(IndexingState.class);
-
-        public void setScanningInProgress(final Set<? extends IndexingState> state) {
-            this.scanning.addAll(state);
-        }
-        
-        public void scan () {
-            scanning.add(IndexingState.WORKING);
-            RepositoryUpdaterTestSupport.runAsWork(this);
-        }
-
-        @Override
-        public Set<? extends IndexingState> getIndexingState() {
-            return scanning;
-        }
-
-        @Override
-        public void run() {
-            try {
-                // just to simulate that indexing takes some time
-                Thread.sleep(500);
-            } catch (InterruptedException ex) {
-                // ignore
-            }
-            scanning.clear();
-        }
-
-    }
-
 
     private static class FooParser extends Parser {
 

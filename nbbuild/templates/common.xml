@@ -1319,6 +1319,10 @@ made subject to such option by the copyright holder.
                 <module codenamebase="org.openide.execution" spec="9.0"/>
                 <module codenamebase="org.openide.execution.compat8" spec="9.0"/>
             </replace>
+            <replace codenamebase="org.netbeans.modules.parsing.api" addcompiletime="true">
+                <module codenamebase="org.netbeans.modules.parsing.api" release="1" spec="9.0"/>
+                <module codenamebase="org.netbeans.modules.parsing.indexing" spec="9.0"/>
+            </replace>
             <fileset dir="nbproject" >
                 <include name="project.xml" />
             </fileset>

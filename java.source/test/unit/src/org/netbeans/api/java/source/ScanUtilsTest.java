@@ -66,7 +66,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
-import org.netbeans.modules.parsing.impl.Utilities;
+import org.netbeans.modules.parsing.impl.indexing.IndexingUtils;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -258,7 +258,7 @@ public class ScanUtilsTest extends NbTestCase {
         
         final ScannerBlock block = new ScannerBlock(start, latch);
         
-        Utilities.runAsScanWork(block);
+        IndexingUtils.runAsScanWork(block);
         IndexingManager.getDefault().refreshIndex(testFile1.getParent().getURL(), null);
         
         // wait for the parsing to begin, stop it
@@ -327,7 +327,7 @@ public class ScanUtilsTest extends NbTestCase {
             
         };
         
-        Utilities.runAsScanWork(block);
+        IndexingUtils.runAsScanWork(block);
         IndexingManager.getDefault().refreshIndex(testFile1.getParent().getURL(), null);
         
         // wait for the parsing to begin, stop it
@@ -380,7 +380,7 @@ public class ScanUtilsTest extends NbTestCase {
             
         };
         
-        Utilities.runAsScanWork(block);
+        IndexingUtils.runAsScanWork(block);
         IndexingManager.getDefault().refreshIndex(testFile1.getParent().getURL(), null);
         
         // wait for the parsing to begin, stop it
@@ -436,7 +436,7 @@ public class ScanUtilsTest extends NbTestCase {
             
         };
         
-        Utilities.runAsScanWork(block);
+        IndexingUtils.runAsScanWork(block);
         IndexingManager.getDefault().refreshIndex(testFile1.getParent().getURL(), null);
         
         // wait for the parsing to begin, stop it
@@ -510,7 +510,7 @@ public class ScanUtilsTest extends NbTestCase {
             
         };
         
-        Utilities.runAsScanWork(block);
+        IndexingUtils.runAsScanWork(block);
         IndexingManager.getDefault().refreshIndex(testFile1.getParent().getURL(), null);
         
         // wait for the parsing to begin, stop it
@@ -583,7 +583,7 @@ public class ScanUtilsTest extends NbTestCase {
             
         };
         
-        Utilities.runAsScanWork(block);
+        IndexingUtils.runAsScanWork(block);
         IndexingManager.getDefault().refreshIndex(testFile1.getParent().getURL(), null);
         
         // wait for the parsing to begin, stop it
@@ -668,7 +668,7 @@ public class ScanUtilsTest extends NbTestCase {
             
         };
         
-        Utilities.runAsScanWork(block);
+        IndexingUtils.runAsScanWork(block);
         IndexingManager.getDefault().refreshIndex(testFile1.getParent().getURL(), null);
         
         // wait for the parsing to begin, stop it
