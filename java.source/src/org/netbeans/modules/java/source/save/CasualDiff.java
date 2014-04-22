@@ -437,7 +437,10 @@ public class CasualDiff {
     private int[] readSections(int l1, int l2, int printerStart, int diffStart) {
         Map<Integer, Integer> seqMap = blockSequenceMap;
         if (seqMap.isEmpty()) {
-            return new int[] { l1, l2 };
+            // must offset the lengths, they come from the origtext/resultsrc, which may be already 
+            // only substrings of the printed area.
+            int delta = diffStart - printerStart;
+            return new int[] { l1 + delta, l2 + delta };
         }
         int[] res = new int[seqMap.size() * 2];
         int p = 0;
