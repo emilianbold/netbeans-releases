@@ -536,11 +536,6 @@ public final class EvaluationWindow extends TopComponent {
         public void actionPerformed(ActionEvent ev) {
             ta.setText(null);
             ta.setCaretPosition(0);
-            
-            restrictEvents(
-                    exprList.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT),
-                    KeyEvent.VK_ENTER, KeyEvent.VK_ESCAPE, KeyEvent.VK_TAB
-            );            
         }
     }
     
