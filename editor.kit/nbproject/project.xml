@@ -86,7 +86,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <compile-dependency/>>
+                    <compile-dependency/>
                     <code-name-base>org.netbeans.modules.parsing.api</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
