@@ -2312,13 +2312,15 @@ enum_specifier
 
 enum_qualified_id returns [String qid = ""]
     :
-        ( (literal_ident (SCOPE | LESSTHAN) ) =>
+            (SCOPE literal_ident ) =>
+            qid = qualified_id
+        |
+            (literal_ident (SCOPE | LESSTHAN) ) =>
             qid = qualified_id
         |
             qid = literal_ident     // DW 22/04/03 Suggest qualified_id here to satisfy
 //            {qid = id.getText();}
             {#enum_qualified_id = #(#[CSM_QUALIFIED_ID, qid], #enum_qualified_id);}
-        )
     ;
 
 enumerator_list
