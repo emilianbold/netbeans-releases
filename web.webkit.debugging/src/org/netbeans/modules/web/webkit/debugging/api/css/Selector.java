@@ -56,7 +56,7 @@ public class Selector {
     private final SourceRange range;
 
     /**
-     * Creates a new {@code Selector} that corresponds to the given JSONObject.
+     * Creates a new {@code Selector} that corresponds to the given {@code JSONObject}.
      *
      * @param selector JSONObject describing the selector.
      */
@@ -67,6 +67,16 @@ public class Selector {
         } else {
             range = null;
         }
+    }
+
+    /**
+     * Creates a new {@code Selector} that corresponds to the given {@code String}.
+     * 
+     * @param selector text of the selector.
+     */
+    Selector(String selector) {
+        text = selector;
+        range = null;
     }
 
     /**
