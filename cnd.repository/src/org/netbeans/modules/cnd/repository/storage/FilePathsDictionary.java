@@ -62,7 +62,7 @@ import org.netbeans.modules.cnd.repository.util.IntToValueList;
  * @author akrasny
  */
 /* package */ final class FilePathsDictionary implements Persistent, SelfPersistent{
-    private static final Logger LOG = Logger.getLogger("repository.support.filecreate.logger");
+    private static final Logger LOG = Logger.getLogger("repository.support.filecreate.logger"); //NOI18N
 
     static final String WRONG_PATH = "<WRONG FILE>"; // NOI18N
     private final List<CharSequence> paths;

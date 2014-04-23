@@ -81,7 +81,7 @@ import org.openide.filesystems.FileSystem;
 /* package */ final class IndexedStorageFile {
 
     private static final boolean TRACE = false;
-    private static final Logger LOG = Logger.getLogger("repository.support.filecreate.logger");
+    private static final Logger LOG = Logger.getLogger("repository.support.filecreate.logger"); //NOI18N
     private final boolean writable;
     private final File dataFile;
     private final File indexFile;
