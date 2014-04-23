@@ -43,10 +43,9 @@ package org.netbeans.modules.profiler.nbimpl.actions;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
-import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher.Session;
+import org.netbeans.modules.profiler.v2.ProfilerSession;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.util.Lookup;
@@ -56,6 +55,7 @@ import org.openide.util.lookup.ProxyLookup;
 /**
  *
  * @author Jaroslav Bachorik <jaroslav.bachorik@oracle.com>
+ * @author Jiri Sedlacek
  */
 public class ProjectSensitivePerformer implements ProjectActionPerformer {
     private static final Logger LOG = Logger.getLogger(ProjectSensitivePerformer.class.getName());
@@ -86,20 +86,14 @@ public class ProjectSensitivePerformer implements ProjectActionPerformer {
     }
 
     @Override
-    public void perform(final Project project) {
-        final ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+    public void perform(Project project) {
+        Lookup projectLookup = project.getLookup();
+        ActionProvider ap = projectLookup.lookup(ActionProvider.class);
         if (ap != null) {
-            final Lookup ctx = new ProxyLookup(project.getLookup(), Lookups.fixed(project));
-            
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    Session s = ProfilerLauncher.newSession(command, ctx);
-                    if (s != null) {
-                        s.run();
-                    }
-                }
-            });
+            ProfilerLauncher.Command _command = new ProfilerLauncher.Command(command);
+            Lookup context = new ProxyLookup(projectLookup, Lookups.fixed(project, _command));
+            ProfilerSession session = ProfilerSession.forContext(context);
+            if (session != null) session.requestActive();
         }
     }
     

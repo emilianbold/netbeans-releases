@@ -43,18 +43,15 @@ package org.netbeans.modules.profiler.nbimpl.actions;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.ProfilerLogger;
 import org.netbeans.lib.profiler.common.AttachSettings;
-import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.common.SessionSettings;
-import org.netbeans.lib.profiler.common.event.ProfilingStateAdapter;
-import org.netbeans.lib.profiler.common.event.ProfilingStateEvent;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import org.netbeans.lib.profiler.global.CommonConstants;
 import org.netbeans.lib.profiler.global.Platform;
@@ -69,24 +66,113 @@ import org.netbeans.modules.profiler.nbimpl.providers.JavaPlatformManagerImpl;
 import org.netbeans.modules.profiler.spi.JavaPlatformProvider;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.netbeans.modules.profiler.utils.IDEUtils;
-import org.netbeans.modules.profiler.v2.session.ProjectSession;
-import org.netbeans.modules.profiler.v2.ui.ProfilerWindow;
+import org.netbeans.modules.profiler.v2.ProfilerSession;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Jaroslav Bachorik
+ * @author Jiri Sedlacek
  */
 public class ProfilerLauncher {
     final private static Logger LOG = Logger.getLogger(ProfilerLauncher.class.getName());
     
     final private static String AGENT_ARGS = "agent.jvmargs"; // NOI18N
     final private static String LINUX_THREAD_TIMER_KEY = "-XX:+UseLinuxPosixThreadCPUClocks"; // NOI18N
+    
+    public static final class Command {
+        private final String command;
+        public Command(String command) { this.command = command; }
+        String get() { return command; }
+    }
+    
+    @ServiceProvider(service=ProfilerSession.Provider.class)
+    public static final class SessionProvider extends ProfilerSession.Provider {
+        public ProfilerSession getSession(Lookup context) {
+            return new ProfilerSessionImpl(context);
+        }
+    }
+    
+    final private static class ProfilerSessionImpl extends ProfilerSession {
+        
+        private final Lookup context;
+        private boolean attach;
+        
+        ProfilerSessionImpl(Lookup _context) {
+            super(NetBeansProfiler.getDefaultNB(), _context);
+            context = _context;
+        }
+
+        public void start() {
+            ProfilingSettings pSettings = getProfilingSettings();
+            AttachSettings aSettings = getAttachSettings();
+            
+            if (aSettings != null) {
+                attach = true;
+                getProfiler().attachToApp(pSettings, aSettings);
+            } else {
+                attach = false;
+                Command command = context.lookup(Command.class);
+                Session s = newSession(command.get(), context);
+                if (s != null) {
+                    s.setProfilingSettings(pSettings);
+                    s.run();
+                }
+            }
+        }
+
+        public void modify() {
+            ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
+                public void run() {
+                    getProfiler().modifyCurrentProfiling(getProfilingSettings());
+                }
+            });
+        }
+
+        public void terminate() {
+            ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
+                public void run() {
+                    if (!attach) getProfiler().stopApp();
+                    else getProfiler().detachFromApp();
+                }
+            });
+        }
+        
+        protected synchronized boolean isCompatibleContext(Lookup _context) {
+            // Compare projects
+            if (!super.isCompatibleContext(_context)) return false;
+            
+            // Command and/or file can be changed if not profiling
+            if (!inProgress()) return true;
+            
+            // Compare commands
+            Command c = context.lookup(Command.class);
+            Command _c = _context.lookup(Command.class);
+            if (!Objects.equals(c, _c)) return false;
+            
+            // Compare files
+            FileObject f = context.lookup(FileObject.class);
+            FileObject _f = _context.lookup(FileObject.class);
+            if (!Objects.equals(f, _f)) return false;
+            
+            return true;
+        }
+        
+        public Lookup.Provider getProject() {
+            return getContext().lookup(Project.class);
+        }
+        
+        public FileObject getFile() {
+            return getContext().lookup(FileObject.class);
+        }
+        
+    }
 
     final public static class Session  {
         private SessionSettings ss;
@@ -99,8 +185,6 @@ public class ProfilerLauncher {
         private String command;
         private Lookup context;
         final private Map<String, Object> customProps = new HashMap<String, Object>();
-        
-        private ProjectSession projectSession;
         
         private boolean configured = false;
         private boolean rerun;
@@ -204,27 +288,15 @@ public class ProfilerLauncher {
         
         public boolean configure() {
             if (ss == null || ss.getJavaExecutable() == null) return false; // No platform defined; fail
+            if (ps == null) return false; // Unsupported workflow (lazy settings not supported in this version)
             
             final ProjectProfilingSupport pSupport = ProjectProfilingSupport.get(project);
 
             NetBeansProfiler.getDefaultNB().setProfiledProject(project, fo);
-            
+
 //            // ** display select task panel
 //            ProfilingSettings ps = ProfilingSupport.getDefault().selectTaskForProfiling(project, ss, fo, true);;
 //            if (ps != null) {
-//                this.ps = ps;
-//                this.ps.store(props);
-//                
-//                setupAgentEnv(platform, ss, ProfilerIDESettings.getInstance(), ps, project, props);
-//                pSupport.configurePropertiesForProfiling(props, fo);
-//
-//                rerun = false;
-//                configured = true;
-//            }
-            
-//            System.err.println(">>> ### configure: " + projectSession.getProfilingSettings());
-//            ps = projectSession == null ? null : projectSession.getProfilingSettings();
-            if (ps != null) {
 //                this.ps = ps;
                 this.ps.store(props);
                 
@@ -233,82 +305,17 @@ public class ProfilerLauncher {
 
                 rerun = false;
                 configured = true;
-            }
-            
+//            }
             return configured;
         }
         
         public void run() {
-            projectSession = new ProjectSession(project) {
-                
-                // TODO: FIX, will leak until listener is removed on session end
-                {
-                    NetBeansProfiler.getDefault().addProfilingStateListener(new ProfilingStateAdapter() {
-                        public void profilingStateChanged(ProfilingStateEvent e) {
-                            switch (e.getNewState()) {
-                                case Profiler.PROFILING_STARTED:
-                                    setState(State.STARTED);
-                                    break;
-                                case Profiler.PROFILING_RUNNING:
-                                    setState(State.RUNNING);
-                                    break;
-                                case Profiler.PROFILING_PAUSED:
-                                    setState(State.PAUSED);
-                                    break;
-                                case Profiler.PROFILING_IN_TRANSITION:
-                                    setState(State.TRANSITION);
-                                    break;
-                                case Profiler.PROFILING_STOPPED:
-                                    setState(State.STOPPED);
-                                    break;
-                                default:
-                                    setState(State.INACTIVE);
-                            }
-                        }
-                    });
-                }
-                
-                public ProfilingSettings getProfilingSettings() {
-                    return ps;
-                }
-    
-                public AttachSettings getAttachSettings() {
-                    return null;
-                }
-                
-                public void start(final ProfilingSettings pSettings, AttachSettings aSettings) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            if (launcher != null) {
-                                setProfilingSettings(pSettings);
-                                launcher.launch(rerun);
-                                rerun = true;
-                            }
-                        }
-                    });
-                }
-
-                public void modify(final ProfilingSettings pSettings) {
-                    ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
-                        public void run() {
-                            NetBeansProfiler.getDefault().modifyCurrentProfiling(pSettings);
-                        }
-                    });
-                }
-
-                public void terminate() {
-                    ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
-                        public void run() {
-                            configured = false;
-                            NetBeansProfiler.getDefault().stopApp();
-                        }
-                    });
-                }
-            };
-            
-            ProfilerWindow window = ProfilerWindow.forSession(projectSession);
-            window.open();
-            window.requestActive();
+            if (launcher != null) {
+                launcher.launch(rerun);
+                rerun = true;
+            } else {
+                // LOG
+            }
         }
         
         private void initLauncher() {
