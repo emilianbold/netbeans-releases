@@ -2653,7 +2653,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
             FileBuffer fileBuffer = ModelSupport.createFileBuffer(fo);
             // and all other under lock again
-            boolean putContainer = false;
             synchronized (fileContainerLock) {
                 impl = getFile(absPath, treatSymlinkAsSeparateFile);
                 if (impl == null) {
@@ -2669,7 +2668,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 //                        initial = APTHandlersSupport.createCleanPreprocState(preprocHandler.getState());
 //                    }
                         putFile(impl, initial);
-                        putContainer = true;
                         // NB: parse only after putting into a map
                         if (scheduleParseIfNeed) {
                             APTPreprocHandler.State ppState = preprocHandler.getState();
@@ -2679,9 +2677,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         Notificator.instance().flush();
                     }
                 }
-            }
-            if (putContainer) {
-                getFileContainer().put();
             }
         }
 
@@ -2716,21 +2711,16 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         CsmUID<CsmFile> aUid = null;
         if (impl == null) {
             preprocHandler = createPreprocHandler(nativeFile);
-            boolean putContainer = false;
             synchronized (fileContainerLock) {
                 impl = getFile(absPath, true);
                 if (impl == null) {
                     assert preprocHandler != null;
                     impl = new FileImpl(buf, this, fileType, nativeFile);
                     putFile(impl, preprocHandler.getState());
-                    putContainer = true;
                 } else {
                     aUid = impl.getUID();
                     impl.attachToProject(this);
                 }
-            }
-            if (putContainer) {
-                getFileContainer().put();
             }
         } else {
             aUid = impl.getUID();
