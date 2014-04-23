@@ -231,7 +231,7 @@ public final class SubroutineImpl <T> extends OffsetableDeclarationBase<T>
         assert this.name != null;
 //        this.returnType = PersistentUtils.readType(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        this.parameterList = (DummyParametersListImpl)PersistentUtils.readParameterList(input);
+        this.parameterList = (DummyParametersListImpl)PersistentUtils.readParameterList(input, this);
 
 
         this.rawName = PersistentUtils.readUTF(input, NameCache.getManager());
