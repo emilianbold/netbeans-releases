@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterListImpl;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -77,8 +78,8 @@ public final class DummyParametersListImpl extends ParameterListImpl<DummyParame
     }
 
     @SuppressWarnings("unchecked")
-    public DummyParametersListImpl(RepositoryDataInput input) throws IOException {
-        super(input);
+    public DummyParametersListImpl(RepositoryDataInput input, CsmScope scope) throws IOException {
+        super(input, scope);
     }
 
 }

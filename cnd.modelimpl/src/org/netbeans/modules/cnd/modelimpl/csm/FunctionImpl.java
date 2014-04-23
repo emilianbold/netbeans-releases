@@ -1040,7 +1040,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         this.macroSignature = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         this.returnType = PersistentUtils.readType(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        this.parameterList = (FunctionParameterListImpl) PersistentUtils.readParameterList(input);
+        this.parameterList = (FunctionParameterListImpl) PersistentUtils.readParameterList(input, this);
         this.rawName = PersistentUtils.readUTF(input, NameCache.getManager());
         this.scopeUID = factory.readUID(input);
         this.scopeRef = null;
