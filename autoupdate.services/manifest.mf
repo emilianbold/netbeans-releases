@@ -3,6 +3,5 @@ OpenIDE-Module: org.netbeans.modules.autoupdate.services
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/autoupdate/services/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.45.3
 OpenIDE-Module-Layer: org/netbeans/modules/autoupdate/services/resources/layer.xml
-OpenIDE-Module-Long-Description=For the list of included fixed bugs please check http://wiki.netbeans.org/NetBeans8.0PatchesInfo.
 AutoUpdate-Show-In-Client: false
 AutoUpdate-Essential-Module: true
