@@ -101,7 +101,7 @@ import org.openide.filesystems.FileSystem;
  */
 public class FileContainer extends ProjectComponent implements Persistent, SelfPersistent {
     private static final boolean TRACE_PP_STATE_OUT = DebugUtils.getBoolean("cnd.dump.preproc.state", false);
-    private static final Logger LOG = Logger.getLogger("repository.support.filecreate.logger");
+    private static final Logger LOG = Logger.getLogger("repository.support.filecreate.logger"); //NOI18N
 
     private static final class Lock {}
     private final Object lock = new Lock();
