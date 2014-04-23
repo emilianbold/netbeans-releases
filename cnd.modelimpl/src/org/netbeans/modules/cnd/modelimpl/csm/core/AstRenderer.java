@@ -291,7 +291,6 @@ public class AstRenderer {
                         if (isMemberDefinition(token)) {
                             if(!isFunctionOnlySpecialization(token)) {
                                 ClassImpl spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, language, fileContent, !isRenderingLocalContext(), container);
-                                container.addDeclaration(spec);
                             }
                             FunctionDefinitionImpl<Object> funcDef = FunctionDefinitionImpl.create(token, file, fileContent, currentNamespace, !isRenderingLocalContext(), objects);
                             container.addDeclaration(funcDef);
