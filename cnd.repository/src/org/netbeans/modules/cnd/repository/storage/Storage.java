@@ -90,7 +90,7 @@ import org.openide.util.lookup.Lookups;
 /* package */ final class Storage {
 
     private static boolean PRINT_STACK = CndUtils.getBoolean("cnd.repository.print.stack.wrong.file", true);// NOI18N
-    private static final Logger LOG = Logger.getLogger("repository.support.filecreate.logger");
+    private static final Logger LOG = Logger.getLogger("repository.support.filecreate.logger"); //NOI18N
     // A list of all layers that belong to this Storage.
     private final List<Layer> layers;
     private final List<LayerDescriptor> layerDescriptors;
