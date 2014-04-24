@@ -42,7 +42,6 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.*;
-import jdk.nashorn.internal.objects.PrototypeObject;
 import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -55,7 +54,8 @@ import org.netbeans.modules.javascript2.editor.model.*;
  */
 public class JsObjectImpl extends JsElementImpl implements JsObject {
 
-    final protected HashMap<String, JsObject> properties = new HashMap<String, JsObject>();
+//    final protected HashMap<String, JsObject> properties = new HashMap<String, JsObject>();
+    final protected LinkedHashMap<String, JsObject> properties = new LinkedHashMap<String, JsObject>();
     private Identifier declarationName;
     private JsObject parent;
     final private List<Occurrence> occurrences = new ArrayList<Occurrence>();
@@ -198,6 +198,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         return occurrences;
     }
     
+    @Override
     public void addOccurrence(OffsetRange offsetRange) {
 //        boolean isThere = false;
 //        for (Occurrence occurrence : occurrences) {
@@ -209,7 +210,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
 //        if (!isThere) {
 //            occurrences.add(new OccurrenceImpl(offsetRange, this));
 //        }
-         OccurrenceImpl occurrence = new OccurrenceImpl(offsetRange, this);
+          OccurrenceImpl occurrence = new OccurrenceImpl(offsetRange, this);
          if (!occurrences.contains(occurrence)) {
             occurrences.add(occurrence);
          }
@@ -543,14 +544,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                         || origProperty.getModifiers().contains(Modifier.PROTECTED)) {
                     JsObjectImpl usedProperty = (JsObjectImpl)created.getProperty(origProperty.getName());
                     if (usedProperty != null) {
-                        ((JsObjectImpl)origProperty).addOccurrence(usedProperty.getDeclarationName().getOffsetRange());
-                        for(Occurrence occur : usedProperty.getOccurrences()) {
-                            ((JsObjectImpl)origProperty).addOccurrence(occur.getOffsetRange());
-                        }
-                        usedProperty.clearOccurrences();
-                        if (origProperty.isDeclared() && usedProperty.isDeclared()){
-                            usedProperty.setDeclared(false); // the property is not declared here
-                        }
+                        moveOccurrence((JsObjectImpl)origProperty, usedProperty);
                         moveOccurrenceOfProperties((JsObjectImpl)origProperty, usedProperty);
                     }
                 }
@@ -561,6 +555,17 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             }
         }
         
+    }
+    
+    public static void moveOccurrence(JsObjectImpl original, JsObject created) {
+        original.addOccurrence(created.getDeclarationName().getOffsetRange());
+        for(Occurrence occur : created.getOccurrences()) {
+            original.addOccurrence(occur.getOffsetRange());
+        }
+        ((JsObjectImpl)created).clearOccurrences();
+        if (original.isDeclared() && created.isDeclared()){
+            ((JsObjectImpl)created).setDeclared(false); // the property is not declared here
+        }
     }
     
     /**
@@ -594,6 +599,12 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                                     result.addAll(findPrototypeChain(fObject, alreadyCheck));
                                 }
                             }
+                        }
+                    } else {
+                        JsObject fObject = ModelUtils.findJsObjectByName(global, type.getType());
+                        if (fObject != null) {
+                            result.add(fObject);
+                            result.addAll(findPrototypeChain(fObject, alreadyCheck));
                         }
                     }
                 }

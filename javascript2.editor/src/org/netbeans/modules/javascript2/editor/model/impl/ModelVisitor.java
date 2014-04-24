@@ -1329,7 +1329,7 @@ public class ModelVisitor extends PathNodeVisitor {
         JsObjectImpl currentObject = modelBuilder.getCurrentObject();
         Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(modelBuilder, withNode.getExpression());
         JsWithObjectImpl withObject = new JsWithObjectImpl(currentObject, modelBuilder.getUnigueNameForWithObject(), types, new OffsetRange(withNode.getStart(), withNode.getFinish()), 
-                        new OffsetRange(withNode.getExpression().getStart(), withNode.getExpression().getFinish()),parserResult.getSnapshot().getMimeType(), null);
+                        new OffsetRange(withNode.getExpression().getStart(), withNode.getExpression().getFinish()), modelBuilder.getCurrentWith(), parserResult.getSnapshot().getMimeType(), null);
         currentObject.addProperty(withObject.getName(), withObject);
 //        withNode.getExpression().accept(this); // expression should be visted when the with object is the current object.
         modelBuilder.setCurrentObject(withObject);
