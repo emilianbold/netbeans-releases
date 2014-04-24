@@ -127,6 +127,8 @@ public class J2MERunPanel extends javax.swing.JPanel implements HelpCtx.Provider
         standardRadio = new javax.swing.JRadioButton();
         OTARadio = new javax.swing.JRadioButton();
         labelRunMethod = new javax.swing.JLabel();
+        runNoteLabel = new javax.swing.JLabel();
+        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
         extPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -193,13 +195,13 @@ public class J2MERunPanel extends javax.swing.JPanel implements HelpCtx.Provider
         org.openide.awt.Mnemonics.setLocalizedText(labelCommandlineOptions, NbBundle.getMessage(J2MERunPanel.class, "J2MERunPanel.labelCommandlineOptions.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 5);
         panelJ2MERunOptions.add(labelCommandlineOptions, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -210,7 +212,7 @@ public class J2MERunPanel extends javax.swing.JPanel implements HelpCtx.Provider
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(J2MERunPanel.class, "J2MERunPanel.jLabel2.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         panelJ2MERunOptions.add(jLabel2, gridBagConstraints);
@@ -218,14 +220,14 @@ public class J2MERunPanel extends javax.swing.JPanel implements HelpCtx.Provider
         org.openide.awt.Mnemonics.setLocalizedText(debugTimeoutLabel, org.openide.util.NbBundle.getMessage(J2MERunPanel.class, "J2MERunPanel.debugTimeoutLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(15, 0, 8, 5);
         panelJ2MERunOptions.add(debugTimeoutLabel, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -264,11 +266,25 @@ public class J2MERunPanel extends javax.swing.JPanel implements HelpCtx.Provider
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         panelJ2MERunOptions.add(panelRunMethod, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(runNoteLabel, java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/project/ui/customizer/Bundle").getString("J2MERunPanel.runNoteLabel.text"), new Object[] {})); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 0);
+        panelJ2MERunOptions.add(runNoteLabel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        panelJ2MERunOptions.add(filler1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -358,11 +374,13 @@ public class J2MERunPanel extends javax.swing.JPanel implements HelpCtx.Provider
     private javax.swing.JTextField debugTimeoutField;
     private javax.swing.JLabel debugTimeoutLabel;
     private javax.swing.JPanel extPanel;
+    private javax.swing.Box.Filler filler1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel labelCommandlineOptions;
     private javax.swing.JLabel labelRunMethod;
     private javax.swing.JPanel panelJ2MERunOptions;
     private javax.swing.JPanel panelRunMethod;
+    private javax.swing.JLabel runNoteLabel;
     private javax.swing.JRadioButton standardRadio;
     private javax.swing.JTextField texfieldCmdOptions;
     // End of variables declaration//GEN-END:variables

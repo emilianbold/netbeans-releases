@@ -82,6 +82,10 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
         @Override
         public void appendFrom(FileComponentMacros other) {
         }
+
+        @Override
+        public void addMacro(CsmMacro macro) {
+        }
         
         @Override
         void put() {

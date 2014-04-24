@@ -56,6 +56,8 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -352,9 +354,23 @@ public final class Terminal extends JComponent {
                                                           term.getScreen());
                     postPopupMenu(p);
                 }
-            }
-        };
+         }
+
+
+	};
         term.getScreen().addMouseListener(mouseAdapter);
+	
+	term.getScreen().addMouseWheelListener(new MouseWheelListener() {
+
+	    @Override
+	    public void mouseWheelMoved(final MouseWheelEvent e) {
+		if (e.isAltDown() || e.isAltGraphDown() || e.isControlDown()) {
+		    int change = -e.getWheelRotation();
+		    changeFontSizeBy(change);
+		    e.consume();
+		}
+	    }
+	});
 
 	termListener = new MyTermListener();
 	term.addListener(termListener);
@@ -538,6 +554,44 @@ public final class Terminal extends JComponent {
             term.clear();
         }
     }
+    
+    private void changeFontSizeBy(final int d) {
+	int oldFontSize = termOptions.getFontSize();
+	
+	int newFontSze = oldFontSize + d;
+	if (newFontSze <= TermOptions.MIN_FONT_SIZE) {
+	    newFontSze = TermOptions.MIN_FONT_SIZE;
+	} else if (newFontSze >= TermOptions.MAX_FONT_SIZE) {
+	    newFontSze = TermOptions.MAX_FONT_SIZE;
+	} 
+	
+	TermOptions.getDefault(prefs).setFontSize(newFontSze);
+    }
+    
+    private final class LargerFontAction extends AbstractAction{
+
+	public LargerFontAction() {
+	    super(Catalog.get("CTL_LargerFont")); //NOI18N
+	}
+
+	@Override
+	public void actionPerformed(final ActionEvent e) {
+	    changeFontSizeBy(+1);
+	}
+    }
+    
+    private final class SmallerFontAction extends AbstractAction{
+
+	public SmallerFontAction() {
+	    super(Catalog.get("CTL_SmallerFont")); //NOI18N
+	}
+
+	@Override
+	public void actionPerformed(final ActionEvent e) {
+	    changeFontSizeBy(-1);
+	}
+    }
+    
 
     private final class CloseAction extends AbstractAction {
         public CloseAction() {
@@ -717,6 +771,8 @@ public final class Terminal extends JComponent {
     private final Action wrapAction = new WrapAction();
     private final Action clearAction = new ClearAction();
     private final Action closeAction = new CloseAction();
+    private final Action largerFontAction = new LargerFontAction();
+    private final Action smallerFontAction = new SmallerFontAction();
     private final Action dumpSequencesAction = new DumpSequencesAction();
 
 
@@ -920,6 +976,8 @@ public final class Terminal extends JComponent {
         addMenuItem(menu, findAction);
         addMenuItem(menu, new JSeparator());
         addMenuItem(menu, wrapAction);
+        addMenuItem(menu, largerFontAction);
+        addMenuItem(menu, smallerFontAction);
 	addMenuItem(menu, new JSeparator());
 	addMenuItem(menu, setTitleAction);
         addMenuItem(menu, new JSeparator());

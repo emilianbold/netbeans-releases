@@ -70,5 +70,16 @@ public interface CsmTemplateParameter extends CsmOffsetableDeclaration {
     /** returns true for "...", otherwise false */
     boolean isVarArgs();
     
+    /**
+     * Type based parameters are declared in the next forms:
+     * "typename T", "class T"
+     * and their template modifications.
+     * 
+     * Expression based parameters has the next form:
+     * "Type T" or just "Type"
+     * 
+     * @return true if this parameter denotes type
+     */
+    boolean isTypeBased();
 }
 

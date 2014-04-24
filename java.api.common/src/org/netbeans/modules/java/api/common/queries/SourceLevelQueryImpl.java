@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.java.api.common.queries;
 
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 
@@ -63,7 +64,9 @@ class SourceLevelQueryImpl implements org.netbeans.spi.java.queries.SourceLevelQ
     
     @Override
     public String getSourceLevel(FileObject javaFile) {
-        return SourceLevelQueryImpl2.findSourceLevel(evaluator);
+        return SourceLevelQueryImpl2.findSourceLevel(
+            evaluator,
+            CommonProjectUtils.J2SE_PLATFORM_TYPE);
     }    
     
 }

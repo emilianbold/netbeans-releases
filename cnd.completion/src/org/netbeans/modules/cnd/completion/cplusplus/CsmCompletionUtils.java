@@ -58,7 +58,9 @@ import org.netbeans.modules.editor.NbEditorDocument;
  */
 public class CsmCompletionUtils {
     public static final String CPP_AUTO_COMPLETION_TRIGGERS = "cppAutoCompletionTriggers"; //NOI18N
+    public static final String CPP_AUTO_COMPLETION_TRIGGERS_DEFAULT = ".;->;.*;->*;::;new ;"; //NOI18N
     public static final String PREPRPOC_AUTO_COMPLETION_TRIGGERS = "autoCompletionTriggersPreproc"; //NOI18N
+    public static final String PREPRPOC_AUTO_COMPLETION_TRIGGERS_DEFAULT = "\";<; ;/;"; //NOI18N
     public static final String CPP_AUTO_INSERT_INCLUDE_DIRECTIVES = "autoInsertIncludeDirectives"; //NOI18N
 
     private CsmCompletionUtils() {
@@ -122,5 +124,17 @@ public class CsmCompletionUtils {
         String mimeType = MIMENames.SOURCES_MIME_TYPE; // now all settings are from C++
         Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
         return prefs.getBoolean(CPP_AUTO_INSERT_INCLUDE_DIRECTIVES, true);
+    }
+
+    public static String[] getCppAutoCompletionTrigers() {
+        String mimeType = MIMENames.SOURCES_MIME_TYPE; // now all settings are from C++
+        Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+        return prefs.get(CPP_AUTO_COMPLETION_TRIGGERS, CPP_AUTO_COMPLETION_TRIGGERS_DEFAULT).split(";"); //NOI18N
+    }
+
+    public static String[] getPreprocAutoCompletionTrigers() {
+        String mimeType = MIMENames.SOURCES_MIME_TYPE; // now all settings are from C++
+        Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+        return prefs.get(PREPRPOC_AUTO_COMPLETION_TRIGGERS, PREPRPOC_AUTO_COMPLETION_TRIGGERS_DEFAULT).split(";"); //NOI18N
     }
 }

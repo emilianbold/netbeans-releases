@@ -332,7 +332,7 @@ public class NewJ2MEFileWizardIterator implements WizardDescriptor.AsynchronousI
         AntProjectHelper h = project.getUpdateHelper().getAntProjectHelper();
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String midlets = ep.getProperty(J2MEProjectProperties.MANIFEST_MIDLETS);
-        String[] midletsSplitted = midlets.split("\n"); //NOI18N
+        String[] midletsSplitted = midlets != null ? midlets.split("\n") : new String[0]; //NOI18N
         int midletCount = 0;
         for (String midlet : midletsSplitted) {
             if (midlet != null && midlet.startsWith("MIDlet-")) { //NOI18N
@@ -344,7 +344,10 @@ public class NewJ2MEFileWizardIterator implements WizardDescriptor.AsynchronousI
         midletsUpdate.append(createdMidletName);
         midletsUpdate.append(",,"); //NOI18N
         midletsUpdate.append(createdMidletClass);
-        midletsUpdate.append("\n").append(midlets); //NOI18N
+        midletsUpdate.append("\n");
+        if (midlets != null) {
+            midletsUpdate.append(midlets); //NOI18N
+        }
         ep.put(J2MEProjectProperties.MANIFEST_MIDLETS, midletsUpdate.toString());
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         try {

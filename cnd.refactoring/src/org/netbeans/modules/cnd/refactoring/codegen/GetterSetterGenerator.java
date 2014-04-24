@@ -92,6 +92,11 @@ public class GetterSetterGenerator implements CodeGenerator {
             if (typeElement == null) {
                 return ret;
             }
+            List<CsmObject> pathList = path.getPath();
+            CsmObject last = pathList.get(pathList.size()-1);
+            if (!(CsmKindUtilities.isClass(last) || CsmKindUtilities.isField(last))) {
+                return ret;
+            }
             CsmObject objectUnderOffset = path.getObjectUnderOffset();
             Map<String, List<CsmMethod>> methods = new HashMap<String, List<CsmMethod>>();
             Map<CsmClass, List<ElementNode.Description>> gDescriptions = new LinkedHashMap<CsmClass, List<ElementNode.Description>>();

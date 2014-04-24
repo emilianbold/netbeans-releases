@@ -128,8 +128,8 @@ public class ReplaceConstructorWithFactoryPanel extends javax.swing.JPanel imple
     }
 
     @Override
-    public void requestFocus() {
-        nameField.requestFocus();
+    public boolean requestFocusInWindow() {
+        return nameField.requestFocusInWindow();
     }
 
     @Override

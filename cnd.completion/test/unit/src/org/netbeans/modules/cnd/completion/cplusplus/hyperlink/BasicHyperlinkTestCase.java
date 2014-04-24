@@ -655,7 +655,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ150884.cc", 3, 11, "IZ150884.cc", 3, 9);
         performTest("IZ150884.cc", 3, 28, "IZ150884.cc", 3, 24);
         performTest("IZ150884.cc", 3, 54, "IZ150884.cc", 3, 51);
-        performTest("IZ150884.cc", 9, 20, "IZ150884.cc", 2, 5);
+        performTest("IZ150884.cc", 9, 20, "IZ150884.cc", 4, 7);
         performTest("IZ150884.cc", 12, 17, "IZ150884.cc", 3, 9);
         performTest("IZ150884.cc", 14, 39, "IZ150884.cc", 3, 24);
         performTest("IZ150884.cc", 16, 19, "IZ150884.cc", 3, 51);
@@ -1071,6 +1071,18 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 240482 - parser errors appears if file has 'bool' variable 
         performTest("bug240482.c", 3, 25, "bug240482.c", 3, 16);
     }    
+    
+    public void testBug242284() throws Exception {
+        // Bug 240482 - parser errors appears if file has 'bool' variable 
+        performTest("bug242284.cpp", 7, 37, "bug242284.cpp", 5, 17);
+        performTest("bug242284.cpp", 13, 37, "bug242284.cpp", 10, 17);
+        performTest("bug242284.cpp", 15, 21, "bug242284.cpp", 7, 13);
+        performTest("bug242284.cpp", 15, 26, "bug242284.cpp", 13, 13);        
+    }    
+    
+    public void testBug243594() throws Exception {
+        performTest("bug243594.cpp", 17, 16, "bug243594.cpp", 4, 9);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 

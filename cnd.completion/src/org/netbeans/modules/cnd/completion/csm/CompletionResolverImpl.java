@@ -110,6 +110,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     private boolean sort = false;
     private static final int NOT_INITIALIZED = -1;
     private int contextOffset = NOT_INITIALIZED;
+    private CsmScope contextScope = null;
     private QueryScope queryScope = QueryScope.GLOBAL_QUERY;
     private boolean inIncludeDirective = false;
     private final FileReferencesContext fileReferncesContext;
@@ -125,6 +126,10 @@ public class CompletionResolverImpl implements CompletionResolver {
     public void setContextOffset(int offset) {
         this.contextOffset = offset;
     }
+    
+    public void setContextScope(CsmScope scope) {
+        this.contextScope = scope;
+    }    
 
     @Override
     public QueryScope setResolveScope(QueryScope queryScope) {
@@ -199,7 +204,11 @@ public class CompletionResolverImpl implements CompletionResolver {
         if (file == null) {
             return false;
         }
-        context = CsmOffsetResolver.findContext(file, offset, fileReferncesContext);
+        if (contextScope != null) {
+            context = CsmOffsetResolver.findContextFromScope(file, offset, contextScope);
+        } else {
+            context = CsmOffsetResolver.findContext(file, offset, fileReferncesContext);
+        }
         if (DEBUG) {
             System.out.println("context for offset " + offset + " :\n" + context);//NOI18N
         }
@@ -236,7 +245,7 @@ public class CompletionResolverImpl implements CompletionResolver {
                 result = buildResult(context, resImpl);
                 return;
             }
-            CsmDeclaration cacheDecl = null;
+            CsmObject cacheDecl = null;
             if (fun != null) {
                 cacheDecl = fun;
             } else if (CsmKindUtilities.isVariable(context.getLastObject())) {
@@ -244,6 +253,17 @@ public class CompletionResolverImpl implements CompletionResolver {
                 if (CsmKindUtilities.isParameter(cacheDecl)) {
                     // do not cache parameters, they are local variables as well
                     cacheDecl = null;
+                } else {
+                    // Try to detect context of long chain variables separated by comma.
+                    // This code is not right but allow to fix performance problems.
+                    // TODO: Rework it.
+                    CsmScope scope = ((CsmVariable)cacheDecl).getScope();
+                    if (CsmKindUtilities.isClass(scope) ||
+                        CsmKindUtilities.isEnum(scope)) {
+                        cacheDecl = scope;
+                    } else if (CsmKindUtilities.isNamespace(scope)) {
+                        cacheDecl = scope;
+                    }
                 }
             }
             if (CsmBaseUtilities.isValid(cacheDecl) && fileReferncesContext != null) {
@@ -1183,7 +1203,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             resolveTypes |= RESOLVE_CLASS_ENUMERATORS;
             resolveTypes |= RESOLVE_LIB_ENUMERATORS;
         }
-        if (CsmContextUtilities.isInFunctionBodyOrInitializerList(context, offset)) {
+        if (CsmContextUtilities.isInFunctionBodyOrInitializerListOrCastOperatorType(context, offset)) {
             if (!isInType || !match) {
                 resolveTypes |= RESOLVE_LIB_VARIABLES;
                 resolveTypes |= RESOLVE_GLOB_FUNCTIONS;

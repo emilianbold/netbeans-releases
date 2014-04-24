@@ -70,8 +70,8 @@ import org.openide.nodes.Node;
  */
 class CheckRenderer extends JPanel implements TreeCellRenderer {
 
-    private TristateCheckBox check;
-    private JLabel label;
+    private final TristateCheckBox check;
+    private final JLabel label;
 
     private static final JList LIST_FOR_COLORS = new JList();
 
@@ -126,8 +126,19 @@ class CheckRenderer extends JPanel implements TreeCellRenderer {
 
         label.setText( n.getHtmlDisplayName() );
         label.setIcon( new ImageIcon( n.getIcon(BeanInfo.ICON_COLOR_16x16) ) ); // XXX Ask description directly
-
-        panel.add(check, BorderLayout.WEST );
+        if (check.isVisible()) {
+            panel.add(check, BorderLayout.WEST );
+        } else {
+            JPanel filler = new JPanel();
+            panel.add(filler, BorderLayout.WEST);
+            filler.setPreferredSize(check.getPreferredSize());
+            if (isSelected) {
+                filler.setOpaque(true);
+                filler.setBackground(LIST_FOR_COLORS.getSelectionBackground());
+            } else {
+                filler.setOpaque(false);
+            }
+        }
         panel.add(label, BorderLayout.CENTER );
 
         panel.setPreferredSize(new Dimension(label.getPreferredSize().width + check.getPreferredSize().width, panel.getPreferredSize().height));

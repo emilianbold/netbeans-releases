@@ -51,8 +51,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -73,9 +75,13 @@ import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmEntityResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
@@ -88,6 +94,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.RawNamable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -97,6 +104,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
+import static org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities.UID_SIGNATURE_PREFIX;
 
 /**
  *
@@ -105,13 +113,14 @@ import org.openide.util.CharSequences;
  */
 public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         implements CsmFunction, Disposable, RawNamable, CsmTemplate {
-
-    private static final String OPERATOR = "operator"; // NOI18N;
+     
+    /*package*/ static final String OPERATOR = "operator"; // NOI18N;
 
     private final CharSequence name;
     private CsmType returnType;
     private FunctionParameterListImpl parameterList;
     private CharSequence signature;
+    private CharSequence macroSignature;
 
     // only one of scopeRef/scopeAccessor must be used
     private /*final*/ CsmScope scopeRef;// can be set in onDispose or contstructor only
@@ -130,7 +139,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private static final byte FLAGS_INVALID = 1 << 4;
     protected static final int LAST_USED_FLAG_INDEX = 4;
     private byte flags;
-
+    
     protected FunctionImpl(CharSequence name, CharSequence rawName, CsmScope scope, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
         super(file, startOffset, endOffset);
 
@@ -164,7 +173,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
 
         FunctionImpl<T> functionImpl = new FunctionImpl<>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
-        temporaryRepositoryRegistration(global, functionImpl);
+        temporaryRepositoryRegistration(ast, global, functionImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionImpl, clsTemplateSuffix, global);
@@ -178,6 +187,48 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         postObjectCreateRegistration(global, functionImpl);
         nameHolder.addReference(fileContent, functionImpl);
         return functionImpl;
+    }
+    
+    /**
+     * Method is used to get temporary signature for UID
+     * @return signature field
+     */
+    public CharSequence getSignatureForUID() {
+        return macroSignature;
+    }    
+    
+    protected static CharSequence createSignatureForUID(AST ast) {
+        // Do it only if needed
+        if (AstUtil.hasExpandedTokens(ast)) {
+            AST params = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_PARMLIST);
+            if (params != null) {
+                boolean first = true;
+                StringBuilder sb = new StringBuilder(UID_SIGNATURE_PREFIX); 
+                sb.append("("); // NOI18N
+                AST param = AstUtil.findChildOfType(params, CPPTokenTypes.CSM_PARAMETER_DECLARATION);
+                do {
+                    AST stopAt = AstUtil.findChildOfType(param, CPPTokenTypes.CSM_VARIABLE_DECLARATION);
+                    if (stopAt == null) {
+                        stopAt = AstUtil.findChildOfType(param, CPPTokenTypes.CSM_PARMLIST);
+                    }
+                    ASTSignatureStringizer stringizer = new ASTSignatureStringizer(stopAt);
+                    AstUtil.visitAST(stringizer, param);                    
+                    if (!first) {
+                        sb.append(","); // NOI18N
+                    }
+                    sb.append(stringizer.getText());
+                    first = false;
+                } while ((param = AstUtil.findSiblingOfType(param.getNextSibling(), CPPTokenTypes.CSM_PARAMETER_DECLARATION)) != null);
+                sb.append(")"); // NOI18N
+                return QualifiedNameCache.getManager().getString(sb.toString());
+            }
+        }
+        return null;
+    }
+    
+    protected static<T> void temporaryRepositoryRegistration(AST ast, boolean global, FunctionImpl<T> fun) {
+        fun.macroSignature = createSignatureForUID(ast);
+        temporaryRepositoryRegistration(global, fun);
     }
 
     protected void setTemplateDescriptor(TemplateDescriptor templateDescriptor, CharSequence classTemplateSuffix) {
@@ -509,17 +560,67 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
 
     // method try to find definition in case cast operator definition is declared without scope
+    // Why here? Must be in MethodImpl.
     private CsmDeclaration fixCastOperator(CsmProject prj, String uname) {
-        int i = uname.indexOf("operator "); // NOI18N
+        CsmDeclaration result = null;
+        int i = uname.indexOf(OPERATOR + " "); // NOI18N
         if (i > 0) {
-            String s = uname.substring(i + 9);
-            int j = s.lastIndexOf("::"); // NOI18N
+            String leftPartOfFQN = uname.substring(0, i + 9);
+            String rightPartOfFQN = uname.substring(i + 9);
+            int j = rightPartOfFQN.lastIndexOf(APTUtils.SCOPE);
             if (j > 0) {
-                s = uname.substring(0, i + 9) + " " + s.substring(j + 2); // NOI18N
-                return prj.findDeclaration(s);
+                String simplyfiedFQN = leftPartOfFQN + " " + rightPartOfFQN.substring(j + 2); // NOI18N
+                result = prj.findDeclaration(simplyfiedFQN);
+            }
+            if (result == null && prj instanceof ProjectBase) {
+                CsmClassifier ourClassifier = null;
+                
+                Collection<CsmOffsetableDeclaration> decls = ((ProjectBase) prj).findDeclarationsByPrefix(leftPartOfFQN);
+                
+                for (CsmOffsetableDeclaration candidate : decls) {
+                    if (CsmKindUtilities.isCastOperator(candidate)) {
+                        if (ourClassifier == null) {
+                            ourClassifier = getCastOperatorCastEntity(this);
+                            if (!checkResolvedClassifier(ourClassifier)) {
+                                break;
+                            }
+                        }
+                        
+                        FunctionImpl operator = (FunctionImpl) candidate;
+                        CsmClassifier defClassifier = getCastOperatorCastEntity(operator);
+                        if (checkResolvedClassifier(defClassifier)) {
+                            if (defClassifier.getQualifiedName().toString().equals(ourClassifier.getQualifiedName().toString())) {
+                                result = candidate;
+                                break;
+                            } else if (CsmKindUtilities.isTemplateParameter(ourClassifier) && CsmKindUtilities.isTemplateParameter(defClassifier)) {
+                                result = candidate;
+                                break;
+                            }
+                        }
+                    }
+                }
             }
         }
-        return null;
+        return result;
+    }
+    
+    protected CsmClassifier getCastOperatorCastEntity(CsmFunction operator) {
+        assert CsmKindUtilities.isCastOperator(operator) : "Must be cast operator!"; // NOI18N
+     
+        CsmType retType = operator.getReturnType();
+        CsmClassifier castClassifier = retType != null ? CsmClassifierResolver.getDefault().getTypeClassifier(retType, retType.getContainingFile(), retType.getStartOffset(), true) : null;
+        if (!checkResolvedClassifier(castClassifier) || (CsmKindUtilities.isTemplateParameter(castClassifier) && !retType.isTemplateBased())) {                                
+            retType = CsmEntityResolver.resolveType(retType.getText(), retType.getContainingFile(), retType.getStartOffset(), null);
+            castClassifier = retType != null ? CsmClassifierResolver.getDefault().getTypeClassifier(retType, retType.getContainingFile(), retType.getStartOffset(), true) : null;
+        }                        
+        if (!checkResolvedClassifier(castClassifier)) {
+            castClassifier = null;
+        }
+        return castClassifier;
+    }
+    
+    protected boolean checkResolvedClassifier(CsmClassifier cls) {
+        return CsmBaseUtilities.isValid(cls) || CsmKindUtilities.isBuiltIn(cls);
     }
 
     public static boolean isObjectVisibleInFile(CsmFile currentFile, CsmOffsetableDeclaration item) {
@@ -537,7 +638,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         Collection<CsmOffsetableDeclaration> defs = prj.findDeclarations(uname);
         CsmDeclaration res = null;
         if (defs.isEmpty()) {
-            if (isOperator()) {
+            if (CsmKindUtilities.isCastOperator(this)) {
                 res = fixCastOperator(prj, uname);
             }
         } else if (defs.size() == 1) {
@@ -651,12 +752,13 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
 
     @Override
-    public CharSequence getSignature() {
+    public CharSequence getSignature() {         
         if( signature == null ) {
             signature = QualifiedNameCache.getManager().getString(createSignature(getName(), getParameters(), getOwnTemplateParameters(), isConst()));
         }
+        assert !signature.toString().startsWith(UID_SIGNATURE_PREFIX) : "Signature requested when object is not fully constructed!"; // NOI18N
         return signature;
-    }
+    }   
 
     @Override
     public CsmFunction getDeclaration() {
@@ -667,7 +769,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     public boolean isOperator() {
         return hasFlags(FLAGS_OPERATOR);
     }
-
+    
     @Override
     public OperatorKind getOperatorKind() {
         OperatorKind out = OperatorKind.NONE;
@@ -695,8 +797,12 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                 } else {
                     out = nonBinaryKind;
                 }
+            } else if (binaryKind != OperatorKind.NONE) {
+                out = binaryKind;
+            } else if (nonBinaryKind != OperatorKind.NONE) {
+                out = nonBinaryKind;
             } else {
-                out = (binaryKind != OperatorKind.NONE) ? binaryKind : nonBinaryKind;
+                out = signText.length() > 0 ? OperatorKind.CONVERSION : OperatorKind.NONE;
             }
         }
         return out;
@@ -816,6 +922,25 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         return out;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = super.hashCode();
+        hash = 47 * hash + Objects.hashCode(this.signature);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) {
+            return false;
+        }
+        final FunctionImpl<?> other = (FunctionImpl<?>) obj;
+        if (!Objects.equals(this.signature, other.signature)) {
+            return false;
+        }
+        return true;
+    }
     
     public static class FunctionBuilder extends SimpleDeclarationBuilder {
 
@@ -869,6 +994,24 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     }          
     
+    public static class ASTSignatureStringizer extends AstUtil.ASTTokensStringizer {
+        
+        private final AST stopAt;
+
+        public ASTSignatureStringizer(AST stopAt) {
+            this.stopAt = stopAt;
+        }
+
+        @Override
+        public Action visit(AST token) {
+            if (token == stopAt) {
+                return Action.ABORT;
+            } else if (token.getType() == CPPTokenTypes.LPAREN || token.getType() == CPPTokenTypes.RPAREN) {
+                return Action.CONTINUE;
+            }
+            return super.visit(token);
+        }
+    }
     
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
@@ -878,6 +1021,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         super.write(output);
         assert this.name != null;
         PersistentUtils.writeUTF(name, output);
+        PersistentUtils.writeUTF(macroSignature, output);
         PersistentUtils.writeType(this.returnType, output);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         PersistentUtils.writeParameterList(this.parameterList, output);
@@ -893,9 +1037,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         super(input);
         this.name = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.name != null;
+        this.macroSignature = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         this.returnType = PersistentUtils.readType(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        this.parameterList = (FunctionParameterListImpl) PersistentUtils.readParameterList(input);
+        this.parameterList = (FunctionParameterListImpl) PersistentUtils.readParameterList(input, this);
         this.rawName = PersistentUtils.readUTF(input, NameCache.getManager());
         this.scopeUID = factory.readUID(input);
         this.scopeRef = null;

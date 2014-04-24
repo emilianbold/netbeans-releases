@@ -218,14 +218,16 @@ public class RefactoringPanelContainer extends TopComponent {
     }
     
     public static synchronized RefactoringPanelContainer createRefactoringComponent() {
-        if (refactorings == null)
+        if (refactorings == null) {
             refactorings = new RefactoringPanelContainer(org.openide.util.NbBundle.getMessage(RefactoringPanelContainer.class, "LBL_Refactoring"), true);
+        }
         return refactorings;
     }
     
     public static synchronized RefactoringPanelContainer createUsagesComponent() {
-        if (usages == null)
+        if (usages == null) {
             usages = new RefactoringPanelContainer(org.openide.util.NbBundle.getMessage(RefactoringPanelContainer.class, "LBL_Usages"), false);
+        }
         return usages;
     }
     

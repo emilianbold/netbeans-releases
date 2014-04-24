@@ -304,8 +304,10 @@ import org.openide.util.lookup.Lookups;
             if (layer.removedTableKeySet().contains(layerKey)){
                 return null;
             }
-            log.log(Level.FINE, "will get ByteBuffer from the read capability for the key "
-                    + "with unit id:{0} and behaviour: {1}", new Object[]{key.getUnitId(), key.getBehavior()});//NOI18N
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "will get ByteBuffer from the read capability for the key "
+                        + "with unit id:{0} and behaviour: {1}", new Object[]{key.getUnitId(), key.getBehavior()});//NOI18N
+            }
             ByteBuffer rawData = layer.getReadCapability().read(layerKey);
             if (rawData != null) {
                 return new RepositoryDataInputStream(
@@ -485,8 +487,10 @@ import org.openide.util.lookup.Lookups;
             if (layer.removedTableKeySet().contains(layerKey)) {
                 return null;
             }
-            log.log(Level.FINE, "will get ByteBuffer from the read capability for the key "
-                    + "with unit id:{0} and behaviour: {1}", new Object[]{key.getUnitId(), key.getBehavior()});//NOI18N
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "will get ByteBuffer from the read capability for the key "
+                        + "with unit id:{0} and behaviour: {1}", new Object[]{key.getUnitId(), key.getBehavior()});//NOI18N
+            }
             ByteBuffer rawData = layer.getReadCapability().read(layerKey);
             if (rawData == null) {
                 return null;
@@ -590,7 +594,9 @@ import org.openide.util.lookup.Lookups;
         Integer unmaskedID = storageMask.clientToLayer(unitID);        
         final UnitDescriptor unitDescriptor = clientUnitDescriptorsDictionary.getUnitDescriptor(unmaskedID);
         if (unitDescriptor == null) {
-            log.log(Level.FINE, "unitDescriptor is null for unitID={0}", unitID);//NOI18N
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "unitDescriptor is null for unitID={0}", unitID);//NOI18N
+            }
             return null;
         }
         return unitDescriptor.getName();
@@ -880,7 +886,9 @@ import org.openide.util.lookup.Lookups;
 
         @Override
         public int clientToLayer(int clientUnitID) {
-            log.log(Level.FINE, "UnitIDWriteConverterImpl.clientToLayer ({0})", clientUnitID);
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "UnitIDWriteConverterImpl.clientToLayer ({0})", clientUnitID);
+            }
             int clientShortUnitID = storageMask.clientToLayer(clientUnitID);
             final Integer result;
             synchronized (map) {
@@ -937,7 +945,9 @@ import org.openide.util.lookup.Lookups;
          */
         @Override
         public FileSystem layerToClient(int fileSystemIndexInLayer) {
-            log.log(Level.FINE, "FSReadConverterImpl.clientToLayer ({0})", fileSystemIndexInLayer);
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "FSReadConverterImpl.clientToLayer ({0})", fileSystemIndexInLayer);
+            }
             int clientFileSystemID = -1;
             for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
                 if (entry.getValue().equals(fileSystemIndexInLayer)) {
@@ -1004,7 +1014,9 @@ import org.openide.util.lookup.Lookups;
          */
         @Override
         public int clientToLayer(final FileSystem clientFileSystem) {
-            log.log(Level.FINE, "FSWriteConverterImpl.clientToLayer ({0})", clientFileSystem);
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "FSWriteConverterImpl.clientToLayer ({0})", clientFileSystem);
+            }
             int clientFileSystemID = clientFileSystemsDictionary.getFileSystemID(clientFileSystem);
             Integer result = map.get(clientFileSystemID);
             if (result == null) {

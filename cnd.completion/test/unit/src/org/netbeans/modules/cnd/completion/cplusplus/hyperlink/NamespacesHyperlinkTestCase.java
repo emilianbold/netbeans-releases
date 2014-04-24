@@ -430,6 +430,20 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performNullTargetTest("231548.cc", 24, 5);
     }
     
+    public void testBug235102() throws Exception {
+        performTest("bug235102_ns.cpp", 17, 20, "bug235102_ns.cpp", 4, 13);
+        performTest("bug235102_ns.cpp", 37, 20, "bug235102_ns.cpp", 24, 13);
+    }
+
+    public void testBug235102_2() throws Exception {
+        performTest("bug235102_ns_2.cpp", 8, 12, "bug235102_ns_2.hpp", 12, 13);
+    }    
+
+    public void testBug243087() throws Exception {
+        // Bug 243087 - static variables are unresolved when accessed with scope ("::")
+        performTest("bug243087.cpp", 4, 20, "bug243087.cpp", 1, 1);
+    }        
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

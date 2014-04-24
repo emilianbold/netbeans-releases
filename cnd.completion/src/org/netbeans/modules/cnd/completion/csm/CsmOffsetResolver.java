@@ -44,7 +44,9 @@
 
 package org.netbeans.modules.cnd.completion.csm;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -54,18 +56,19 @@ import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmInitializerListContainer;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmType;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
+import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.utils.MutableObject;
 
@@ -327,6 +330,22 @@ public class CsmOffsetResolver {
     public static CsmContext findContext(CsmFile file, int offset, FileReferencesContext fileReferncesContext) {
         CsmContext context = new CsmContext(file, offset);
         findObjectWithContext(file, offset, context, fileReferncesContext);
+        exploreTypeObject(context, context.getLastObject(), offset);
+        return context;
+    }
+    
+    public static CsmContext findContextFromScope(CsmFile file, int offset, CsmScope contextScope) {
+        CsmContext context = new CsmContext(file, offset);
+        List<CsmScope> scopes = new ArrayList<CsmScope>();
+        scopes.add(contextScope);
+        while (CsmKindUtilities.isScopeElement(contextScope) && !CsmKindUtilities.isFile(contextScope)) {
+            contextScope = ((CsmScopeElement) contextScope).getScope();
+            scopes.add(0, contextScope);
+        }
+        for (CsmScope scope : scopes) {
+            CsmContextUtilities.updateContext(scope, offset, context);
+        }
+        context.setLastObject(context.getLastScope());
         exploreTypeObject(context, context.getLastObject(), offset);
         return context;
     }

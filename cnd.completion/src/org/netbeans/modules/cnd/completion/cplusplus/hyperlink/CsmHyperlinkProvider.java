@@ -48,30 +48,39 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmEntityResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFunctionDefinitionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
@@ -86,6 +95,7 @@ import org.netbeans.modules.cnd.modelutil.OverridesPopup;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.PopupUtil;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
+import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 
 /**
@@ -122,8 +132,10 @@ public class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             }
             if(token.id() instanceof CppTokenId) {
                 switch ((CppTokenId)token.id()) {
+                    case LTLT:
                     case IDENTIFIER:
                     case OPERATOR:
+                    case DELETE:
                     case PROC_DIRECTIVE:
                         return true;
                     case PREPROCESSOR_INCLUDE:
@@ -141,58 +153,254 @@ public class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         if (!preJump(doc, target, offset, "opening-csm-element", type)) { //NOI18N
             return false;
         }
-        TokenItem<TokenId> jumpToken = getJumpToken();
-        CsmObject primary = findTargetObject(doc, jumpToken, offset, false);
-        CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
-        CsmOffsetable item = toJumpObject(primary, csmFile, offset);
-        if (type == HyperlinkType.ALT_HYPERLINK) {
-            if (CsmKindUtilities.isFunction(item)) {
-                CsmFunction decl = CsmBaseUtilities.getFunctionDeclaration((CsmFunction) item);
-                Collection<CsmOffsetableDeclaration> baseTemplates = CsmInstantiationProvider.getDefault().getBaseTemplate(decl);
-                Collection<CsmOffsetableDeclaration> templateSpecializations = CsmInstantiationProvider.getDefault().getSpecializations(decl);
-                boolean inDeclaration = isInDeclaration(decl, csmFile, offset);
-                Collection<? extends CsmMethod> baseMethods = new ArrayList<CsmMethod>(0);
-                Collection<? extends CsmMethod> overriddenMethods = new ArrayList<CsmMethod>(0);
-                if (CsmKindUtilities.isMethod(decl)) {
-                    CsmMethod meth = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration(decl);
-                    if (inDeclaration) {
-                        baseMethods = CsmVirtualInfoQuery.getDefault().getFirstBaseDeclarations(meth);
+        CsmCacheManager.enter();
+        try {
+            TokenItem<TokenId> jumpToken = getJumpToken();
+            CsmObject primary;
+            CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
+            if (jumpToken.id() == CppTokenId.DELETE) {
+                primary = null;
+                String deleteExpr = getRestExpression(doc, offset);
+                CsmType resolvedType = CsmEntityResolver.resolveType(deleteExpr, csmFile, offset, null);
+                if (resolvedType != null) {
+                    CsmClassifier classifier = CsmClassifierResolver.getDefault().getTypeClassifier(resolvedType, csmFile, offset, true);
+                    if (CsmKindUtilities.isClass(classifier)) {
+                        primary = CsmVirtualInfoQuery.getDefault().getFirstDestructor((CsmClass)classifier);
                     }
-                    if (!baseMethods.isEmpty() || CsmVirtualInfoQuery.getDefault().isVirtual(meth)) {
-                        overriddenMethods = CsmVirtualInfoQuery.getDefault().getOverriddenMethods(meth, false);
+                }
+            } else if (jumpToken.id() == CppTokenId.LTLT) {
+                primary = null;
+                int startExpression = getStartExpression(doc, offset);
+                String rightOperand = getRightOperandExpression(doc, offset, CppTokenId.LTLT);
+                CsmType rightType = CsmEntityResolver.resolveType(rightOperand, csmFile, startExpression, null);
+                if (rightType != null) {
+                    CsmClassifier rightClassifier = CsmClassifierResolver.getDefault().getTypeClassifier(rightType, csmFile, offset, true);
+                    if (CsmKindUtilities.isClass(rightClassifier)) {
+                        for(CsmFriend friend : ((CsmClass)rightClassifier).getFriends()) {
+                            if (CsmKindUtilities.isOperator(friend)) {
+                                if (friend.getName().toString().endsWith(CppTokenId.LTLT.fixedText())) {
+                                    primary = friend;
+                                    break;
+                                }
+                            }
+                        }
                     }
-                    baseMethods.remove(meth); // in the case CsmVirtualInfoQuery added function itself (which was previously the case)
-                }
-                if (showOverridesPopup(inDeclaration ? null : decl, baseMethods, overriddenMethods, baseTemplates, templateSpecializations, inDeclaration ? CsmKindUtilities.isFunctionDefinition(item) : true, target, offset)) {
-                    UIGesturesSupport.submit("USG_CND_HYPERLINK_METHOD", type); //NOI18N
-                    return true;
-                }
-            } else if (CsmKindUtilities.isClass(item)) {
-                CsmClass cls = (CsmClass) item;
-                Collection<CsmOffsetableDeclaration> baseTemplates = CsmInstantiationProvider.getDefault().getBaseTemplate(cls);
-                Collection<CsmOffsetableDeclaration> templateSpecializations = CsmInstantiationProvider.getDefault().getSpecializations(cls);
-                Collection<CsmClass> subClasses = new ArrayList<CsmClass>(0);
-             
-                Collection<CsmReference> subRefs = CsmTypeHierarchyResolver.getDefault().getSubTypes(cls, false);
-                if (!subRefs.isEmpty()) {
-                    for (CsmReference ref : subRefs) {
-                        CsmObject obj = ref.getReferencedObject();
-                        CndUtils.assertTrue(obj == null || (obj instanceof CsmClass), "getClassifier() should return either null or CsmClass"); //NOI18N
-                        if (CsmKindUtilities.isClass(obj)) {
-                            subClasses.add((CsmClass) obj);
+                    if (primary == null) {
+                        String leftOperand = getLeftmostOperandExpression(doc, offset, CppTokenId.LTLT);
+                        CsmType leftType = CsmEntityResolver.resolveType(leftOperand, csmFile, startExpression, null);
+                        if (leftType != null) {
+                            CsmClassifier leftClassifier = CsmClassifierResolver.getDefault().getTypeClassifier(leftType, csmFile, offset, true);
+                            if (CsmKindUtilities.isClass(leftClassifier)) {
+                                for(CsmMember member : ((CsmClass)leftClassifier).getMembers()) {
+                                    if (CsmKindUtilities.isOperator(member)) {
+                                        if (member.getName().toString().endsWith(CppTokenId.LTLT.fixedText())) {
+                                            Collection<CsmParameter> parameters = ((CsmFunction)member).getParameters();
+                                            if (parameters.size()==1) {
+                                                CsmParameter par = parameters.iterator().next();
+                                                CsmType aType = par.getType();
+                                                if (isTypeEquals(aType, rightType)) {
+                                                    primary = member;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
-                if (showOverridesPopup(null, Collections.<CsmClass>emptyList(), subClasses, baseTemplates, templateSpecializations, false, target, offset)) {
-                    UIGesturesSupport.submit("USG_CND_HYPERLINK_CLASS", type); //NOI18N
-                    return true;
+            } else {
+                primary = findTargetObject(doc, jumpToken, offset, false);
+            }
+            CsmOffsetable item = toJumpObject(primary, csmFile, offset);
+            if (type == HyperlinkType.ALT_HYPERLINK) {
+                if (CsmKindUtilities.isFunction(item)) {
+                    CsmFunction decl = CsmBaseUtilities.getFunctionDeclaration((CsmFunction) item);
+                    Collection<CsmOffsetableDeclaration> baseTemplates = CsmInstantiationProvider.getDefault().getBaseTemplate(decl);
+                    Collection<CsmOffsetableDeclaration> templateSpecializations = CsmInstantiationProvider.getDefault().getSpecializations(decl);
+                    boolean inDeclaration = isInDeclaration(decl, csmFile, offset);
+                    Collection<? extends CsmMethod> baseMethods = new ArrayList<CsmMethod>(0);
+                    Collection<? extends CsmMethod> overriddenMethods = new ArrayList<CsmMethod>(0);
+                    if (CsmKindUtilities.isMethod(decl)) {
+                        CsmMethod meth = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration(decl);
+                        if (inDeclaration) {
+                            baseMethods = CsmVirtualInfoQuery.getDefault().getFirstBaseDeclarations(meth);
+                        }
+                        if (!baseMethods.isEmpty() || CsmVirtualInfoQuery.getDefault().isVirtual(meth)) {
+                            overriddenMethods = CsmVirtualInfoQuery.getDefault().getOverriddenMethods(meth, false);
+                        }
+                        baseMethods.remove(meth); // in the case CsmVirtualInfoQuery added function itself (which was previously the case)
+                    }
+                    if (showOverridesPopup(inDeclaration ? null : decl, baseMethods, overriddenMethods, baseTemplates, templateSpecializations, inDeclaration ? CsmKindUtilities.isFunctionDefinition(item) : true, target, offset)) {
+                        UIGesturesSupport.submit("USG_CND_HYPERLINK_METHOD", type); //NOI18N
+                        return true;
+                    }
+                } else if (CsmKindUtilities.isClass(item)) {
+                    CsmClass cls = (CsmClass) item;
+                    Collection<CsmOffsetableDeclaration> baseTemplates = CsmInstantiationProvider.getDefault().getBaseTemplate(cls);
+                    Collection<CsmOffsetableDeclaration> templateSpecializations = CsmInstantiationProvider.getDefault().getSpecializations(cls);
+                    Collection<CsmClass> subClasses = new ArrayList<CsmClass>(0);
+
+                    Collection<CsmReference> subRefs = CsmTypeHierarchyResolver.getDefault().getSubTypes(cls, false);
+                    if (!subRefs.isEmpty()) {
+                        for (CsmReference ref : subRefs) {
+                            CsmObject obj = ref.getReferencedObject();
+                            CndUtils.assertTrue(obj == null || (obj instanceof CsmClass), "getClassifier() should return either null or CsmClass"); //NOI18N
+                            if (CsmKindUtilities.isClass(obj)) {
+                                subClasses.add((CsmClass) obj);
+                            }
+                        }
+                    }
+                    if (showOverridesPopup(null, Collections.<CsmClass>emptyList(), subClasses, baseTemplates, templateSpecializations, false, target, offset)) {
+                        UIGesturesSupport.submit("USG_CND_HYPERLINK_CLASS", type); //NOI18N
+                        return true;
+                    }
                 }
             }
-        }
-        UIGesturesSupport.submit("USG_CND_HYPERLINK", type); //NOI18N
-        return postJump(item, "goto_source_source_not_found", "cannot-open-csm-element"); //NOI18N
+            UIGesturesSupport.submit("USG_CND_HYPERLINK", type); //NOI18N
+            return postJump(item, "goto_source_source_not_found", "cannot-open-csm-element"); //NOI18N
+        } finally {
+            CsmCacheManager.leave();
+        }            
     }
 
+    String getRightOperandExpression(final Document doc, final int offset, final CppTokenId endToken) {
+        final AtomicReference<String> out = new AtomicReference<String>();
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                TokenSequence<TokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, offset, true, false);
+                if (cppTokenSequence == null) {
+                    return;
+                }
+                cppTokenSequence.move(offset);
+                if (cppTokenSequence.moveNext() && cppTokenSequence.moveNext()) {
+                    int start = cppTokenSequence.offset();
+                    while(cppTokenSequence.moveNext()) {
+                        Token<TokenId> token = cppTokenSequence.token();
+                        if (token.id() == CppTokenId.SEMICOLON) {
+                            break;
+                        } else if (token.id() == endToken) {
+                            break;
+                        }
+                    }
+                    int end = cppTokenSequence.offset();
+                    try {
+                        out.set(doc.getText(start, end-start).trim());
+                    } catch (BadLocationException ex) {
+                    }
+                }
+            }
+        });
+        return out.get();
+    }
+
+    String getLeftmostOperandExpression(final Document doc, final int offset, final CppTokenId endToken) {
+        final AtomicReference<String> out = new AtomicReference<String>();
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                TokenSequence<TokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, offset, true, false);
+                if (cppTokenSequence == null) {
+                    return;
+                }
+                cppTokenSequence.move(offset);
+                if (cppTokenSequence.movePrevious()) {
+                    int end = cppTokenSequence.offset();
+                    while(cppTokenSequence.movePrevious()) {
+                        Token<TokenId> token = cppTokenSequence.token();
+                        if (token.id() == CppTokenId.SEMICOLON || token.id() == CppTokenId.LBRACE || token.id() == CppTokenId.RBRACE) {
+                            break;
+                        } else if (token.id() == endToken) {
+                            end = cppTokenSequence.offset();
+                        }
+                    }
+                    int start = cppTokenSequence.offset();
+                    try {
+                        out.set(doc.getText(start+1, end -start - 1).trim());
+                    } catch (BadLocationException ex) {
+                    }
+                }
+            }
+        });
+        return out.get();
+    }
+
+    int getStartExpression(final Document doc, final int offset) {
+        final AtomicReference<Integer> out = new AtomicReference<Integer>();
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                TokenSequence<TokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, offset, true, false);
+                if (cppTokenSequence == null) {
+                    return;
+                }
+                cppTokenSequence.move(offset);
+                while (cppTokenSequence.movePrevious()) {
+                    Token<TokenId> token = cppTokenSequence.token();
+                    if (token.id() == CppTokenId.SEMICOLON || token.id() == CppTokenId.LBRACE || token.id() == CppTokenId.RBRACE) {
+                        break;
+                    }
+                }
+                out.set(cppTokenSequence.offset()+1);
+            }
+        });
+        return out.get();
+    }
+
+    private boolean isTypeEquals(CsmType type1, CsmType type2) {
+        if (type1 != null && type2 != null) {
+            CsmClassifier cls1 = type1.getClassifier();
+            if (CsmKindUtilities.isTypedef(cls1)) {
+                CsmType aType = ((CsmTypedef) cls1).getType();
+                if (aType != null) {
+                    type1 = aType;
+                }
+            }
+            CsmClassifier cls2 = type2.getClassifier();
+            if (CsmKindUtilities.isTypedef(cls2)) {
+                CsmType aType = ((CsmTypedef) cls2).getType();
+                if (aType != null) {
+                    type2 = aType;
+                }
+            }
+            String canonicalText1 = type1.getCanonicalText().toString().replace("const const", "const"); //NOI18N
+            String canonicalText2 = type2.getCanonicalText().toString().replace("const const", "const"); //NOI18N
+            return canonicalText1.equals(canonicalText2);
+        }
+        return false;
+    }
+    
+    String getRestExpression(final Document doc, final int offset) {
+        final AtomicReference<String> out = new AtomicReference<String>();
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                TokenSequence<TokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, offset, true, false);
+                if (cppTokenSequence == null) {
+                    return;
+                }
+                cppTokenSequence.move(offset);
+                if (cppTokenSequence.moveNext() && cppTokenSequence.moveNext()) {
+                    int start = cppTokenSequence.offset();
+                    while(cppTokenSequence.moveNext()) {
+                        Token<TokenId> token = cppTokenSequence.token();
+                        if (token.id() == CppTokenId.SEMICOLON) {
+                            break;
+                        }
+                    }
+                    int end = cppTokenSequence.offset();
+                    try {
+                        out.set(doc.getText(start, end-start));
+                    } catch (BadLocationException ex) {
+                    }
+                }
+            }
+        });
+        return out.get();
+    }
+    
     private boolean showOverridesPopup(CsmOffsetableDeclaration mainDeclaration,
             Collection<? extends CsmOffsetableDeclaration> baseDeclarations,
             Collection<? extends CsmOffsetableDeclaration> descendantDeclarations,

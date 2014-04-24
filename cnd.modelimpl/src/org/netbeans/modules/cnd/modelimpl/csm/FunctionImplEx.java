@@ -121,7 +121,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 
         FunctionImplEx<T> functionImplEx = new FunctionImplEx<>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
         functionImplEx.setFlags(FUNC_LIKE_VARIABLE, ast.getType() == CPPTokenTypes.CSM_FUNCTION_LIKE_VARIABLE_DECLARATION);
-        temporaryRepositoryRegistration(global, functionImplEx);
+        temporaryRepositoryRegistration(ast, global, functionImplEx);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionImplEx, clsTemplateSuffix, global);
@@ -154,7 +154,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     }
     
     /** @return either class or namespace */
-    protected CsmObject findOwner() {
+    public CsmObject findOwner() {
 	CharSequence[] cnn = classOrNspNames;
 	if( cnn != null && cnn.length > 0) {
             Resolver resolver = ResolverFactory.createResolver(this);
@@ -182,7 +182,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     protected static CharSequence[] getClassOrNspNames(AST ast) {
 	assert CastUtils.isCast(ast);
 	AST child = ast.getFirstChild();
-        if (child != null && child.getType() == CPPTokenTypes.LITERAL_template) {
+        while (child != null && child.getType() == CPPTokenTypes.LITERAL_template) {
             child = AstRenderer.skipTemplateSibling(child);
         }
         child = AstRenderer.getFirstSiblingSkipInline(child);

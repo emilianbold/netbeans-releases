@@ -458,6 +458,7 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.java.analysis.parfait</friend>
                 <friend>org.netbeans.modules.hudsonfindbugs</friend>
                 <friend>org.netbeans.modules.java.j2sedeploy</friend>
                 <friend>org.netbeans.modules.java.j2seembedded</friend>

@@ -122,22 +122,26 @@ public class ComputeAnnotations {
     }
 
     private void computeAnnotation(CsmFunction func, Collection<BaseAnnotation> toAdd) {
-        Collection<? extends CsmMethod> baseMethods = Collections.<CsmMethod>emptyList();
-        Collection<? extends CsmMethod> overriddenMethods = Collections.<CsmMethod>emptyList();
+        Collection<CsmVirtualInfoQuery.CsmOverrideInfo> baseMethods = Collections.<CsmVirtualInfoQuery.CsmOverrideInfo>emptyList();
+        Collection<CsmVirtualInfoQuery.CsmOverrideInfo> overriddenMethods = Collections.<CsmVirtualInfoQuery.CsmOverrideInfo>emptyList();
+        CsmVirtualInfoQuery.CsmOverrideInfo thisMethod = null;
         if (CsmKindUtilities.isMethod(func)) {
             CsmMethod meth = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration(func);
             if(meth != null) {
-                baseMethods = CsmVirtualInfoQuery.getDefault().getFirstBaseDeclarations(meth);
-                if (!baseMethods.isEmpty() || CsmVirtualInfoQuery.getDefault().isVirtual(meth)) {
-                    overriddenMethods = CsmVirtualInfoQuery.getDefault().getOverriddenMethods(meth, false);
+                CsmVirtualInfoQuery.CsmOverriddenChain chain = CsmVirtualInfoQuery.getDefault().getOverriddenChain(meth);
+                if (!chain.getBaseMethods().isEmpty()) {
+                    baseMethods = chain.getBaseMethods();
                 }
+                if (!chain.getDerivedMethods().isEmpty()) {
+                    overriddenMethods = chain.getDerivedMethods();
+                }
+                thisMethod = chain.getThisMethod();
                 if (BaseAnnotation.LOGGER.isLoggable(Level.FINEST)) {
                     BaseAnnotation.LOGGER.log(Level.FINEST, "Found {0} base decls for {1}", new Object[]{baseMethods.size(), toString(func)});
-                    for (CsmMethod baseMethod : baseMethods) {
-                        BaseAnnotation.LOGGER.log(Level.FINEST, "    {0}", toString(baseMethod));
+                    for (CsmVirtualInfoQuery.CsmOverrideInfo baseMethod : baseMethods) {
+                        BaseAnnotation.LOGGER.log(Level.FINEST, "    {0}", toString(baseMethod.getMethod()));
                     }
                 }
-                baseMethods.remove(meth);
             }
         }
         if (canceled.get()) {
@@ -152,7 +156,7 @@ public class ComputeAnnotations {
             return;
         }
         if (!baseMethods.isEmpty() || !overriddenMethods.isEmpty() || !baseTemplates.isEmpty() || !templateSpecializations.isEmpty()) {
-            toAdd.add(new OverrideAnnotation(doc, func, baseMethods, overriddenMethods, baseTemplates, templateSpecializations));
+            toAdd.add(new OverrideAnnotation(doc, func, thisMethod, baseMethods, overriddenMethods, baseTemplates, templateSpecializations));
         }
     }
 

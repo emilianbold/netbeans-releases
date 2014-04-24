@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -62,6 +63,7 @@ import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
 
 /**
@@ -232,6 +234,11 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
             }
         }
         return sb.toString();
+    }
+
+    @Override
+    public Collection<? extends VariableName> getDeclaredVariables() {
+        return Collections.emptyList();
     }
 
 }

@@ -3286,10 +3286,12 @@ public class Reformatter implements ReformatTask {
                             }
                             if (pendingDiff != null) {
                                 pendingDiff.text = beforeCnt < 0 ? getIndent() : getNewlines(count) + getIndent();
-                                if (!pendingDiff.text.contentEquals(pendingText))
+                                if (!pendingDiff.text.contentEquals(pendingText)) {
                                     addDiff(pendingDiff);
+                                    pendingDiff = null;
+                                }
                             }
-                            String ind = after == 3 ? SPACE : pendingDiff == null || beforeCnt < 0 ? getNewlines(count) + getIndent() : getIndent();
+                            String ind = after == 3 ? SPACE : pendingDiff == null || beforeCnt < 0 ? getNewlines(count) + getIndent() : getIndent();                          
                             if (!ind.contentEquals(text.substring(lastIdx)))
                                 addDiff(new Diff(offset + lastIdx, tokens.offset(), ind));
                             lastToken = null;
@@ -3375,8 +3377,10 @@ public class Reformatter implements ReformatTask {
                             }
                             if (pendingDiff != null) {
                                 pendingDiff.text = beforeCnt < 0 ? getIndent() : getNewlines(count) + getIndent();
-                                if (!pendingDiff.text.contentEquals(pendingText))
+                                if (!pendingDiff.text.contentEquals(pendingText)) {
                                     addDiff(pendingDiff);
+                                    pendingDiff = null;
+                                }
                             }
                             String indent = after == 3 ? SPACE : pendingDiff == null || beforeCnt < 0 ? getNewlines(count) + getIndent() : getIndent();
                             if (!indent.contentEquals(text.substring(lastIdx)))

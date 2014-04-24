@@ -88,11 +88,15 @@ public final class BufferedRWAccess implements FileRWAccess {
     public ByteBuffer readData(long offset, int size) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(size);
         long fileSize = virtualSize - BUFFER_SIZE;
-        log.log(Level.FINE, "will read from the file {0} starting from offset {1} and size {2}"
+        if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "will read from the file {0} starting from offset {1} and size {2}"
                 , new Object[]{path, offset, size});
+        }
         
         if (offset + size <= fileSize) {
-            log.log(Level.FINE, "will read from the channnel, data are already on the disk");
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "will read from the channnel, data are already on the disk");
+            }
             channel.read(buffer, offset);
         } else {
             synchronized (lock) {
@@ -101,7 +105,9 @@ public final class BufferedRWAccess implements FileRWAccess {
                     // System.out.println("DD: flushWriteBuffer [offset = " + offset + " ; filesize = " + fileSize + "] when looks like this could be avoided... ");
                     flushWriteBuffer();
                 }
-                log.log(Level.FINE, "flushed on the disk from the buffer, now will read data from the disk");
+                if (log.isLoggable(Level.FINE)) {
+                    log.log(Level.FINE, "flushed on the disk from the buffer, now will read data from the disk");
+                }
                 channel.read(buffer, offset);
             }
         }

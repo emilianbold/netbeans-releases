@@ -76,10 +76,11 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil.ASTTokenVisitor.Action;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
-import org.netbeans.modules.cnd.modelimpl.csm.deep.DeepUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver.SafeTemplateBasedProvider;
@@ -300,6 +301,14 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         this(null, pointerDepth, reference, arrayDepth, ast, file, null);
      }*/
     
+    public static int getStartOffset(AST node) {
+        if (AstUtil.isElaboratedKeyword(node)) {
+            AST ast = node.getNextSibling();
+            return OffsetableBase.getStartOffset(ast != null ? ast : node);
+        }
+        return OffsetableBase.getStartOffset(node);
+    }
+    
     public static int getEndOffset(AST node) {
         return getEndOffset(node, false);
     }
@@ -313,6 +322,10 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             return OffsetableBase.getEndOffset(ast);
         }
         ast = getLastNode(ast, greedy);
+        if (ast == null && AstUtil.isElaboratedKeyword(node)) {
+            ast = node.getNextSibling();
+            return OffsetableBase.getEndOffset(ast != null ? ast : node);
+        }
         if( ast instanceof OffsetableAST ) {
             return ((OffsetableAST) ast).getEndOffset();
         }
@@ -328,13 +341,17 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                     case CPPTokenTypes.CSM_VARIABLE_LIKE_FUNCTION_DECLARATION:
                     case CPPTokenTypes.CSM_QUALIFIED_ID:
                     case CPPTokenTypes.CSM_ARRAY_DECLARATION:
+                        if (AstUtil.isElaboratedKeyword(last)) {
+                            last = token;
+                            continue;
+                        }
                         return AstUtil.getLastChildRecursively(last);
                         
                     case CPPTokenTypes.LPAREN: 
                         // lparen cannot be last - entity's end should be on the left side of lparen
                         // if there are no type modificators after lparen (*, &, ...)
                         break;
-                        
+                                            
                     default:
                         last = token;
                 }
@@ -493,13 +510,13 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
      * 
      * @param visitor
      * @param ptrOperator
-     * @return true if visiting was finished successfully, false otherwise
+     * @return true if visiting was finished successfully, false if aborted
      */
-    public static boolean visitPointerOperator(DeepUtil.ASTTokenVisitor visitor, AST ptrOperator) {
+    public static boolean visitPointerOperator(AstUtil.ASTTokenVisitor visitor, AST ptrOperator) {
         if (ptrOperator != null && ptrOperator.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) {
             for (AST insideToken = ptrOperator.getFirstChild(); insideToken != null; insideToken = insideToken.getNextSibling()) {
                 if (insideToken.getType() != CPPTokenTypes.CSM_PTR_OPERATOR) {
-                    if (!visitor.visit(insideToken)) {
+                    if (visitor.visit(insideToken) == Action.ABORT) {
                         return false;
                     }                        
                 } else {
@@ -1218,7 +1235,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     }
     
     
-    private static class ASTPointerOperatorQualifiersCollector implements DeepUtil.ASTTokenVisitor {
+    private static class ASTPointerOperatorQualifiersCollector implements AstUtil.ASTTokenVisitor {
         
         private int constQualifiers;
         
@@ -1231,7 +1248,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         }        
 
         @Override
-        public boolean visit(AST token) {
+        public Action visit(AST token) {
             int insideTokenType = token.getType();
 
             if (insideTokenType == CPPTokenTypes.STAR) {
@@ -1240,7 +1257,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                 constQualifiers |= qualifierPosition;
             }
             
-            return true;
+            return Action.CONTINUE;
         }
         
         public int getQualifierPosition() {

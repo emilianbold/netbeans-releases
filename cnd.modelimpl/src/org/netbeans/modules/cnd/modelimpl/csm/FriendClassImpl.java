@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
+import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
@@ -129,8 +130,11 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
     }
     
     public static FriendClassImpl create(AST ast, AST qid, CsmClassForwardDeclaration cfd, FileImpl file, CsmClass parent, boolean register) throws AstRendererException {
-        int startOffset = getStartOffset(ast);
-        int endOffset = getEndOffset(ast);
+        AST fakeParent = new FakeAST();
+        fakeParent.setType(CPPTokenTypes.CSM_CLASS_DECLARATION);
+        fakeParent.addChild(ast);
+        int startOffset = ClassForwardDeclarationImpl.getClassForwardStartOffset(fakeParent);
+        int endOffset = ClassForwardDeclarationImpl.getClassForwardEndOffset(fakeParent);
         FriendClassImpl friendClassImpl = new FriendClassImpl(ast, qid, cfd, file, parent, startOffset, endOffset, register);
         postObjectCreateRegistration(register, friendClassImpl);
         return friendClassImpl;

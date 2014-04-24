@@ -107,7 +107,9 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
 
     @Override
     public Object eval(String expr) {
-        LOG.log(Level.FINE, "\nEvaluating expression \"{0}\"\n", expr); // NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "\nEvaluating expression \"{0}\"\n", expr); // NOI18N
+        }
         
         org.netbeans.modules.cnd.antlr.TokenStream ts = APTTokenStreamBuilder.buildTokenStream(expr, APTLanguageSupport.GNU_CPP);
 
@@ -152,7 +154,9 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
     }
     
     public Object eval(String expr, CsmOffsetableDeclaration decl, CsmFile expressionFile, int startOffset, int endOffset, MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
-        LOG.log(Level.FINE, "\nEvaluating expression \"{0}\"\n", expr); // NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "\nEvaluating expression \"{0}\"\n", expr); // NOI18N
+        }
         
         org.netbeans.modules.cnd.antlr.TokenStream ts = APTTokenStreamBuilder.buildTokenStream(expr, APTLanguageSupport.GNU_CPP);
 
@@ -211,7 +215,14 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
                     Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<>();
                     CsmSpecializationParameter spec = inst.getMapping().get(param);
                     if(CsmKindUtilities.isExpressionBasedSpecalizationParameter(spec)) {
-                        Object o = eval(((CsmExpressionBasedSpecializationParameter) spec).getText().toString(), inst.getTemplateDeclaration(), mapHierarchy);
+                        Object o = eval(
+                                ((CsmExpressionBasedSpecializationParameter) spec).getText().toString(), 
+                                inst.getTemplateDeclaration(), 
+                                spec.getContainingFile(),
+                                spec.getStartOffset(),
+                                spec.getEndOffset(),
+                                mapHierarchy
+                        );
                         CsmSpecializationParameter newSpec = ExpressionBasedSpecializationParameterImpl.create(o.toString(),
                                 spec.getContainingFile(), spec.getStartOffset(), spec.getEndOffset());
                         newMapping.put(param, newSpec);

@@ -107,8 +107,8 @@ public class UseSuperTypePanel extends JPanel implements CustomRefactoringPanel 
     }
 
     @Override
-    public void requestFocus() {
-        superTypeList.requestFocus();
+    public boolean requestFocusInWindow() {
+        return superTypeList.requestFocusInWindow();
     }
     
     @Override

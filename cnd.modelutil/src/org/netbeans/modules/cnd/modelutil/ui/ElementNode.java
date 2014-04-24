@@ -129,7 +129,7 @@ public class ElementNode extends AbstractNode {
 
     @Override
     public String getHtmlDisplayName() {
-        return description.htmlHeader;
+        return description.getDisplayName();
     }
     private static final Action[] EMPTY_ACTIONS = new Action[0];
 
@@ -200,7 +200,11 @@ public class ElementNode extends AbstractNode {
                 htmlHeader = field.getName().toString() + " : " + field.getType().getText(); //NOI18N
             } else if (CsmKindUtilities.isFunction(element)) {
                 CsmFunction method = (CsmFunction) element;
-                htmlHeader = method.getSignature() + " : " + method.getReturnType().getText(); //NOI18N
+                if (CsmKindUtilities.isConstructor(method)) {
+                    htmlHeader = method.getSignature().toString();
+                } else {
+                    htmlHeader = method.getSignature() + " : " + method.getReturnType().getText(); //NOI18N
+                }
             } else if (CsmKindUtilities.isNamespace(element)) {
                 CsmNamespace ns = (CsmNamespace)element;
                 if (!ns.isGlobal()) {
@@ -336,6 +340,10 @@ public class ElementNode extends AbstractNode {
 
         public String getName() {
             return name;
+        }
+        
+        public String getDisplayName() {
+            return htmlHeader;
         }
 
         public static Description deepCopy(Description d) {

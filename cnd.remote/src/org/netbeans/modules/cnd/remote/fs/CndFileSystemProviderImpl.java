@@ -56,13 +56,17 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -305,6 +309,11 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
     }
 
     @Override
+    protected boolean isAbsoluteImpl(FileSystem fs, String path) {
+        return FileSystemProvider.isAbsolute(fs, path);
+    }
+
+    @Override
     protected void removeFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem) {
         synchronized (adapters) {
             for (Iterator<ProblemListenerAdapter> it = adapters.iterator(); it.hasNext(); ) {
@@ -318,6 +327,47 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
                 }                
             }
         }
+    }
+    
+    private static HostInfo getHostInfoIfAvailable(ExecutionEnvironment env) {
+        if (HostInfoUtils.isHostInfoAvailable(env)) {
+            try {
+                return HostInfoUtils.getHostInfo(env);
+            } catch (IOException | ConnectionManager.CancellationException ex) {
+                Exceptions.printStackTrace(ex); // should not be the case since since we checked isHostInfoAvailable
+            }
+        }
+        return null;
+    }
+
+    @Override
+    protected boolean isMacOSImpl(FileSystem fs) {
+       ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(fs);
+       if (env.isLocal()) {
+           return Utilities.isMac();
+       } else {
+           HostInfo hostInfo = getHostInfoIfAvailable(env);
+           if (hostInfo != null) {
+               return hostInfo.getOSFamily() == HostInfo.OSFamily.MACOSX;
+           } else {
+               return false; // if no host info available we suppose that remote is Linux or Solaris
+           }
+       }
+    }
+
+    @Override
+    protected boolean isWindowsImpl(FileSystem fs) {
+       ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(fs);
+       if (env.isLocal()) {
+           return Utilities.isWindows();
+       } else {
+           HostInfo hostInfo = getHostInfoIfAvailable(env);
+           if (hostInfo != null) {
+               return hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS;
+           } else {
+               return false; // remote is not windows
+           }
+       }
     }
 
     private static class ProblemListenerAdapter implements FileSystemProblemListener {

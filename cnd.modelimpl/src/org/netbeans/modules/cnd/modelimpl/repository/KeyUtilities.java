@@ -61,12 +61,17 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.CharSequences;
 
 /**
  * help methods to create repository keys
  * @author Vladimir Voskresensky
  */
 public class KeyUtilities {
+    
+    // This constant is used as delimiter between function name and signature when signature present
+    public static final String UID_SIGNATURE_PREFIX = "###"; // NOI18N
+    
     public static final int NON_INITIALIZED = Integer.MIN_VALUE + 1;
 
     /** Creates a new instance of KeyUtils */
@@ -121,7 +126,7 @@ public class KeyUtilities {
     public static Key createProjectKey(ProjectBase project) {
         return new ProjectKey(project.getUnitId());
     }
-
+    
     public static Key createOffsetableDeclarationKey(OffsetableDeclarationBase<?> obj) {
         assert obj != null;
         return OffsetableDeclarationKey.createOffsetableDeclarationKey(obj);
@@ -211,10 +216,15 @@ public class KeyUtilities {
         }
         return 0;
     }
-
+    
     public static CharSequence getKeyName(Key key) {
+        return getKeyName(key, false);
+    }
+
+    public static CharSequence getKeyName(Key key, boolean internalName) {
         if (key instanceof OffsetableKey) {
-            return ((OffsetableKey) key).getName();
+            CharSequence name = ((OffsetableKey) key).getName();
+            return internalName ? name : filterFunctionSignature(name);
         } else if (key instanceof FileKey) {
             FileKey fk = (FileKey) key;
             return getFileNameByIdSafe(fk.getUnitId(), fk.getProjectFileIndex());
@@ -261,6 +271,11 @@ public class KeyUtilities {
         if (key instanceof OffsetableKey) {
             ((OffsetableKey) key).cacheEndOffset(endOffset);
         }
+    }
+    
+    private static final CharSequence filterFunctionSignature(CharSequence name) {
+        int indexOfSignature = CharSequences.indexOf(name, UID_SIGNATURE_PREFIX);
+        return indexOfSignature >= 0 ? name.subSequence(0, indexOfSignature) : name;
     }
     // have to be public or UID factory does not work
 }

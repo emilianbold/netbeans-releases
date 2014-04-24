@@ -117,7 +117,7 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         } else {
             functionDDImpl = new FunctionDDImpl<>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
         }
-        temporaryRepositoryRegistration(global, functionDDImpl);
+        temporaryRepositoryRegistration(ast, global, functionDDImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionDDImpl, clsTemplateSuffix, global);
@@ -142,6 +142,11 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
 
     protected void setCompoundStatement(CsmCompoundStatement body) {
         this.body = body;
+    }
+
+    @Override
+    public DefinitionKind getDefinitionKind() {
+        return DefinitionKind.REGULAR;
     }
 
     @Override

@@ -59,6 +59,7 @@ import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.OccurrencesSupport;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.spi.Scheduler;
@@ -141,8 +142,10 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
                 }
             }
         }
-        for(JsObject child : object.getProperties().values()) {
-            result.addAll(findMemberUsage(child, fqn, property, offset));
+        if (!(object instanceof JsObjectReference && ModelUtils.isDescendant(object, ((JsObjectReference)object).getOriginal()))) {
+            for(JsObject child : object.getProperties().values()) {
+                result.addAll(findMemberUsage(child, fqn, property, offset));
+            }
         }
         return result;
     }

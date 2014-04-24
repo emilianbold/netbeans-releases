@@ -206,6 +206,12 @@ public class CsmKindUtilities {
         }
     }
     
+    public static boolean isCastOperator(CsmObject obj) {
+        return isFunction(obj) && 
+               ((CsmFunction) obj).isOperator() && 
+               ((CsmFunction) obj).getOperatorKind() == CsmFunction.OperatorKind.CONVERSION;
+    }
+    
     public static boolean isFunctionPointerType(CsmObject obj) {
         return (obj instanceof CsmFunctionPointerType);
     }
@@ -261,6 +267,14 @@ public class CsmKindUtilities {
             return false;
         }          
     }
+    
+    public static boolean isReturnStatement(CsmObject obj) {
+        if (isStatement(obj)) {
+            return ((CsmStatement)obj).getKind() == CsmStatement.Kind.RETURN;
+        } else {
+            return false;
+        }          
+    }    
 
     public static boolean isTryCatchStatement(CsmObject obj) {
         if (isStatement(obj)) {

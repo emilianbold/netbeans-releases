@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -90,6 +91,15 @@ public class CsmBaseUtilities {
         } else {
             return obj != null;
         }
+    }
+    
+    /**
+     * Checks if variable has external linkage
+     * @param var
+     * @return true if variable has external linkage, false otherwise
+     */
+    public static boolean isGlobalVariable(CsmVariable var) {
+        return CsmBaseUtilitiesProvider.getDefault().isGlobalVariable(var);
     }
     
     public static boolean isGlobalNamespace(CsmScope scope) {
@@ -225,7 +235,9 @@ public class CsmBaseUtilities {
             } else if (!classifiers.isEmpty()) {
                 decl = classifiers.iterator().next();
                 def = cls;
-                System.err.printf("not found declaration for self: %s; use %s\n", target, decl);
+                if (TRACE_XREF_REPOSITORY) {
+                    System.err.printf("not found declaration for self: %s; use %s\n", target, decl);
+                }
             } else {
                 decl = target;
                 def = null;
@@ -239,13 +251,7 @@ public class CsmBaseUtilities {
     }
     
     public static CsmClass getFunctionClass(CsmFunction fun) {
-        assert (fun != null) : "must be not null";
-        CsmClass clazz = null;
-        CsmFunction funDecl = getFunctionDeclaration(fun);
-        if (CsmKindUtilities.isClassMember(funDecl)) {
-            clazz = ((CsmMember)funDecl).getContainingClass();
-        }
-        return clazz;
+        return CsmBaseUtilitiesProvider.getDefault().getFunctionClass(fun);
     }   
 
     public static CsmClass getFunctionClassByQualifiedName(CsmFunction fun) {

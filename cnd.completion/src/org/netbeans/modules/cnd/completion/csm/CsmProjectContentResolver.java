@@ -96,7 +96,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
-import org.netbeans.modules.cnd.modelutil.AntiLoop;
+import org.netbeans.modules.cnd.modelutil.ClassifiersAntiLoop;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
@@ -725,16 +725,26 @@ public final class CsmProjectContentResolver {
 
     private void fillFileLocalIncludeNamespaceVariables(CsmNamespace ns, String strPrefix, boolean match,
             CsmFile file, Collection<CsmVariable> out, boolean needDeclFromUnnamedNS) {
-        CsmDeclaration.Kind[] kinds = new CsmDeclaration.Kind[]{
-            CsmDeclaration.Kind.VARIABLE,
-            CsmDeclaration.Kind.VARIABLE_DEFINITION
-        };
-        Collection<CsmScopeElement> se = new ArrayList<CsmScopeElement>();
-        getFileLocalIncludeNamespaceMembers(ns, file, se, needDeclFromUnnamedNS);
-        List<CsmVariable> vars = new ArrayList<CsmVariable>();
-        filterDeclarations(se.iterator(), vars, kinds, strPrefix, match, false);
-        vars = filterVariables(vars);
-        out.addAll(vars);
+        if (!ns.isGlobal()) {
+            CsmDeclaration.Kind[] kinds = new CsmDeclaration.Kind[]{
+                CsmDeclaration.Kind.VARIABLE,
+                CsmDeclaration.Kind.VARIABLE_DEFINITION
+            };
+            Collection<CsmScopeElement> se = new ArrayList<CsmScopeElement>();            
+            getFileLocalIncludeNamespaceMembers(ns, file, se, needDeclFromUnnamedNS);
+            List<CsmVariable> vars = new ArrayList<CsmVariable>();
+            filterDeclarations(se.iterator(), vars, kinds, strPrefix, match, false);
+            vars = filterVariables(vars);
+            out.addAll(vars);            
+        } else {
+            // Global ns doesn't have definitions, so search in file instead
+            List<CsmVariable> allLocalDecls = new ArrayList<CsmVariable>();
+            fillFileLocalVariables(strPrefix, match, file, needDeclFromUnnamedNS, false, allLocalDecls);
+            // Unlike getFileLocalIncludeNamespaceMembers (used in first branch), 
+            // fillFileLocalVariables for some reason returns not only variables without
+            // external linkage, so need to filter results before adding to out.
+            out.addAll(filterFileLocalStaticVariables(allLocalDecls));
+        }
     }
 
     private void fillFileLocalIncludeNamespaceFunctions(CsmNamespace ns, String strPrefix, boolean match,
@@ -1069,7 +1079,7 @@ public final class CsmProjectContentResolver {
             minVisibility = CsmInheritanceUtilities.getContextVisibility(clazz, contextDeclaration, CsmVisibility.PUBLIC, true);
         }
 
-        Map<CharSequence, CsmClass> set = getBaseClasses(clazz, contextDeclaration, strPrefix, match, new AntiLoop(), minVisibility, INIT_INHERITANCE_LEVEL);
+        Map<CharSequence, CsmClass> set = getBaseClasses(clazz, contextDeclaration, strPrefix, match, new ClassifiersAntiLoop(), minVisibility, INIT_INHERITANCE_LEVEL);
         List<CsmClass> res;
         if (set != null && set.size() > 0) {
             res = new ArrayList<CsmClass>(set.values());
@@ -1154,7 +1164,7 @@ public final class CsmProjectContentResolver {
         }
 
         Map<CharSequence, CsmMember> set = getClassMembers(clazz, contextDeclaration, kinds, strPrefix, staticOnly, match,
-                new AntiLoop(), minVisibility, INIT_INHERITANCE_LEVEL, inspectParentClasses, inspectOuterClasses, returnBaseClasses, returnUnnamedMembers);
+                new ClassifiersAntiLoop(), minVisibility, INIT_INHERITANCE_LEVEL, inspectParentClasses, inspectOuterClasses, returnBaseClasses, returnUnnamedMembers);
         List<CsmMember> res;
         if (set != null && set.size() > 0) {
             res = new ArrayList<CsmMember>(set.values());
@@ -1167,7 +1177,7 @@ public final class CsmProjectContentResolver {
     @SuppressWarnings("unchecked")
     private Map<CharSequence, CsmMember> getClassMembers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmDeclaration.Kind kinds[],
             String strPrefix, boolean staticOnly, boolean match,
-            AntiLoop handledClasses, CsmVisibility minVisibility, int inheritanceLevel, boolean inspectParentClasses, boolean inspectOuterClasses,
+            ClassifiersAntiLoop handledClasses, CsmVisibility minVisibility, int inheritanceLevel, boolean inspectParentClasses, boolean inspectOuterClasses,
             boolean returnBaseClasses,
             boolean returnUnnamedMembers) {
         assert (clazz != null);
@@ -1285,21 +1295,24 @@ public final class CsmProjectContentResolver {
                     CsmUsingDeclaration using = (CsmUsingDeclaration) member;
                     CsmDeclaration decl = using.getReferencedDeclaration();
                     if (CsmKindUtilities.isClassMember(decl)) {
-                        VisibilityInfo vInfo = getContextVisibility(((CsmMember)decl).getContainingClass(), member, CsmVisibility.PROTECTED, INIT_INHERITANCE_LEVEL);
-                        if (matchVisibility((CsmMember) decl, vInfo.visibility)) {
-                            if (isKindOf(decl.getKind(), kinds)) {
-                                CharSequence memberName = decl.getName();
-                                if ((matchName(memberName, strPrefix, match)) ||
-                                        (memberName.length() == 0 && returnUnnamedMembers)) {
-                                    CharSequence qname;
-                                    if (CsmKindUtilities.isFunction(decl)) {
-                                        qname = ((CsmFunction) decl).getSignature();
-                                    } else {
-                                        qname = decl.getQualifiedName();
-                                    }
-                                    // do not replace inner objects by outer ones
-                                    if (!res.containsKey(qname)) {
-                                        res.put(qname, (CsmMember) decl);
+                        CsmClass containingClass = ((CsmMember)decl).getContainingClass();
+                        if (containingClass != null) {
+                            VisibilityInfo vInfo = getContextVisibility(containingClass, member, CsmVisibility.PROTECTED, INIT_INHERITANCE_LEVEL);
+                            if (matchVisibility((CsmMember) decl, vInfo.visibility)) {
+                                if (isKindOf(decl.getKind(), kinds)) {
+                                    CharSequence memberName = decl.getName();
+                                    if ((matchName(memberName, strPrefix, match)) ||
+                                            (memberName.length() == 0 && returnUnnamedMembers)) {
+                                        CharSequence qname;
+                                        if (CsmKindUtilities.isFunction(decl)) {
+                                            qname = ((CsmFunction) decl).getSignature();
+                                        } else {
+                                            qname = decl.getQualifiedName();
+                                        }
+                                        // do not replace inner objects by outer ones
+                                        if (!res.containsKey(qname)) {
+                                            res.put(qname, (CsmMember) decl);
+                                        }
                                     }
                                 }
                             }
@@ -1347,7 +1360,7 @@ public final class CsmProjectContentResolver {
 
     @SuppressWarnings("unchecked")
     private Map<CharSequence, CsmClass> getBaseClasses(CsmClass csmClass, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean match,
-            AntiLoop handledClasses, CsmVisibility minVisibility, int inheritanceLevel) {
+            ClassifiersAntiLoop handledClasses, CsmVisibility minVisibility, int inheritanceLevel) {
         assert (csmClass != null);
 
         if (handledClasses.contains(csmClass)) {
@@ -1560,6 +1573,16 @@ public final class CsmProjectContentResolver {
             }
         }
         return new ArrayList<CsmVariable>(out.values());
+    }
+    
+    private List<CsmVariable> filterFileLocalStaticVariables(List<CsmVariable> vars) {
+        List<CsmVariable> res = new ArrayList<CsmVariable>();
+        for (CsmVariable var : vars) {
+            if (!CsmBaseUtilities.isGlobalVariable(var)) {
+                res.add(var);
+            }
+        }
+        return res;
     }
 
     ////////////////////////////////////////////////////////////////////////////

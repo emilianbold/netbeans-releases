@@ -282,6 +282,9 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     public Library getSpringLibrary() {
+        if (springLibrary == null) {
+            return null;
+        }
         return springLibrary.getLibrary();
     }
 
@@ -320,6 +323,7 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
                             springLibrary = springLibs.get(selectedIndex);
                             libsInitialized = true;
                             repaint();
+                            fireChange();
                         }
                     }
                 });

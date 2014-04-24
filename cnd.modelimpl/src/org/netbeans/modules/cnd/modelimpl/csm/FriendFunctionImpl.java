@@ -99,7 +99,7 @@ public final class FriendFunctionImpl extends FunctionImpl<CsmFriendFunction> im
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
 
         FriendFunctionImpl friendFunctionImpl = new FriendFunctionImpl(name, rawName, scope, cls, _static, _const, file, startOffset, endOffset, global);        
-        temporaryRepositoryRegistration(global, friendFunctionImpl);
+        temporaryRepositoryRegistration(ast, global, friendFunctionImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, friendFunctionImpl, clsTemplateSuffix, global);

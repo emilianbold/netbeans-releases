@@ -97,7 +97,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.impl.services.BaseUtilitiesProviderImpl;
-import org.netbeans.modules.cnd.modelutil.AntiLoop;
+import org.netbeans.modules.cnd.modelutil.ClassifiersAntiLoop;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 
@@ -123,6 +123,7 @@ public final class Resolver3 implements Resolver {
     private int interestedKind;
     private boolean resolveInBaseClass;
     private final boolean SUPRESS_RECURSION_EXCEPTION = Boolean.getBoolean("cnd.modelimpl.resolver3.hide.exception"); // NOI18N
+    private final boolean SHOW_EMPTY_NAME_WARNING = Boolean.getBoolean("cnd.modelimpl.resolver3.show.empty_name_warning"); // NOI18N
 
     private CharSequence currName() {
         return (names != null && currNamIdx < names.length) ? names[currNamIdx] : CharSequences.empty();
@@ -304,7 +305,7 @@ public final class Resolver3 implements Resolver {
         if (isRecursionOnResolving(INFINITE_RECURSION)) {
             return null;
         }
-        AntiLoop set = new AntiLoop(100);
+        ClassifiersAntiLoop set = new ClassifiersAntiLoop(100);
         while (true) {
             set.add(orig);
             CsmClassifier resovedClassifier;
@@ -577,7 +578,9 @@ public final class Resolver3 implements Resolver {
                     position = "line=" + lineColumn[0] + ":" + lineColumn[1] + position; // NOI18N
                 }
             }
-            CndUtils.assertTrueInConsole(false, "no names are passed to resolve at " + position); // NOI18N
+            if (SHOW_EMPTY_NAME_WARNING) {
+                CndUtils.assertTrueInConsole(false, "no names are passed to resolve at " + position); // NOI18N
+            }
             return null;
         }
         long time = System.currentTimeMillis();
@@ -599,7 +602,9 @@ public final class Resolver3 implements Resolver {
                 LOGGER.log(Level.FINE, "RESOLVE {0} ({1}) at {2} Took {3}ms\n", new Object[]{fullName, interestedKind, origOffset, time});
             }
             if (nameResolverCache != null) {
-                LOGGER.log(Level.FINE, "KEEP NEW RESOLVED {0} ({1}) at {2}[{4}] Took {3}ms=>{5}\n", new Object[]{fullName, interestedKind, origOffset, time, file.getName(), result});
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "KEEP NEW RESOLVED {0} ({1}) at {2}[{4}] Took {3}ms=>{5}\n", new Object[]{fullName, interestedKind, origOffset, time, file.getName(), result});
+                }
                 nameResolverCache.put(cacheKey, CsmCacheMap.toValue(result, time));
             }
         }

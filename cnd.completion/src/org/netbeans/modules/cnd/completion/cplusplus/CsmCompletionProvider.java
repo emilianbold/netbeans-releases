@@ -45,11 +45,10 @@ package org.netbeans.modules.cnd.completion.cplusplus;
 
 import java.util.*;
 import javax.swing.JToolTip;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
-
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -63,10 +62,10 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
-import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.MethodParamsTipPaintComponent;
+import org.netbeans.modules.cnd.spi.model.services.CsmDocProvider;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
@@ -88,17 +87,14 @@ public class CsmCompletionProvider implements CompletionProvider {
         if (sup == null) {
             return 0;
         }
-        if (!CompletionSupport.needShowCompletionOnTextLite(component, typedText)) {
+        String[] triggers = CsmCompletionUtils.getCppAutoCompletionTrigers();
+        if (!CompletionSupport.needShowCompletionOnTextLite(component, typedText, triggers)) {
             return 0;
         }
         final int dot = component.getCaret().getDot();
         if (CsmCompletionQuery.checkCondition(component.getDocument(), dot, false)) {
-            try {
-                if (CompletionSupport.needShowCompletionOnText(component, typedText)) {
-                    return COMPLETION_QUERY_TYPE;
-                }
-            } catch (BadLocationException ex) {
-                // skip
+            if (CompletionSupport.needShowCompletionOnText(component, typedText, triggers)) {
+                return COMPLETION_QUERY_TYPE;
             }
         }
         return 0;
@@ -142,7 +138,7 @@ public class CsmCompletionProvider implements CompletionProvider {
     public static CsmCompletionQuery createCompletionResolver(CsmFile csmFile, CompletionResolver.QueryScope queryScope, FileReferencesContext fileReferencesContext) {
         return new NbCsmCompletionQuery(csmFile, queryScope, fileReferencesContext, true);
     }
-
+    
     static final class Query extends AsyncCompletionQuery {
 
         private JTextComponent component;
@@ -572,7 +568,7 @@ public class CsmCompletionProvider implements CompletionProvider {
             if (csmFile != null) {
                 CsmObject csmObject = ReferencesSupport.findDeclaration(csmFile, doc, null, caretOffset);
                 if (csmObject != null) {
-                    CompletionDocumentationProvider docProvider = Lookup.getDefault().lookup(CompletionDocumentationProvider.class);
+                    CsmDocProvider docProvider = Lookup.getDefault().lookup(CsmDocProvider.class);
                     if (docProvider != null) {
                         CompletionDocumentation documentation = docProvider.createDocumentation(csmObject, csmFile);
                         if (documentation != null) {

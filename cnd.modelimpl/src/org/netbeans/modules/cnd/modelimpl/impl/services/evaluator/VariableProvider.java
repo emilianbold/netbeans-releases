@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.impl.services.evaluator;
 
-import org.netbeans.modules.cnd.modelimpl.util.MapHierarchy;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -55,10 +55,12 @@ import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunctional;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
@@ -67,8 +69,11 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmEntityResolver;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
@@ -82,6 +87,9 @@ import org.netbeans.modules.cnd.modelimpl.impl.services.ExpressionEvaluator;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
+import org.netbeans.modules.cnd.modelimpl.util.MapHierarchy;
+import org.netbeans.modules.cnd.utils.Antiloop;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  *
@@ -101,7 +109,9 @@ public class VariableProvider {
     
     public VariableProvider(int level) {
         this.level = level;
-        LOG.log(Level.FINE, "\nVARIABLE PROVIDER CREATED WITHOUT MAP HIERARCHY\n"); // NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "\nVARIABLE PROVIDER CREATED WITHOUT MAP HIERARCHY\n"); // NOI18N
+        }
     }
     
     public VariableProvider(CsmOffsetableDeclaration decl, MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping, CsmFile variableFile, int variableStartOffset, int variableEndOffset, int level) {
@@ -111,7 +121,9 @@ public class VariableProvider {
         this.variableStartOffset = variableStartOffset;
         this.variableEndOffset = variableEndOffset;
         this.level = level;
-        LOG.log(Level.FINE, "\nVARIABLE PROVIDER CREATED WITH MAP HIERARCHY:\n{0}\n", mapping); // NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "\nVARIABLE PROVIDER CREATED WITH MAP HIERARCHY:\n{0}\n", mapping); // NOI18N
+        }
     }    
 
     public int getValue(String variableName) {
@@ -120,7 +132,9 @@ public class VariableProvider {
         }
         long time = System.currentTimeMillis();
         try {
-            LOG.log(Level.FINE, "GetValue for {0}:{1}\n", new Object[]{variableName, decl});
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "GetValue for {0}:{1}\n", new Object[]{variableName, decl});
+            }
             if(variableName.equals("true")) { // NOI18N
                 return 1;
             }
@@ -185,7 +199,7 @@ public class VariableProvider {
                             CsmExpression expr = ((CsmField)member).getInitialValue();
                             if(CsmKindUtilities.isInstantiation(member)) {
                                 Object eval = new ExpressionEvaluator(level+1).eval(
-                                        expr.getText().toString(), 
+                                        expr.getExpandedText().toString(), 
                                         member.getContainingClass(), 
                                         expr.getContainingFile(),
                                         expr.getStartOffset(),
@@ -197,7 +211,7 @@ public class VariableProvider {
                                 }
                             } else if (expr != null) {
                                 Object eval = new ExpressionEvaluator(level+1).eval(
-                                        expr.getText().toString(), 
+                                        expr.getExpandedText().toString(), 
                                         member.getContainingClass(), 
                                         expr.getContainingFile(),
                                         expr.getStartOffset(),
@@ -336,9 +350,66 @@ public class VariableProvider {
 
             return Integer.MAX_VALUE;
         } finally {
-            time = System.currentTimeMillis() - time;
-            LOG.log(Level.FINE, "getValue {0} took {1}ms\n", new Object[]{variableName, time}); // NOI18N
+            if (LOG.isLoggable(Level.FINE)) {
+                time = System.currentTimeMillis() - time;
+                LOG.log(Level.FINE, "getValue {0} took {1}ms\n", new Object[]{variableName, time}); // NOI18N
+            }
         }
+    }
+    
+    public int getFunCallValue(String funCall) {
+        return Integer.MAX_VALUE; // Not supported yet
+    }
+    
+    public int getSizeOfValue(String obj) {
+        if (true) {
+            return Integer.MAX_VALUE; // Not supported yet
+        }
+        
+        List<CsmInstantiation> instantiations = null;
+        
+        // TODO: think how to get right isntantiations here
+        if (CsmKindUtilities.isInstantiation(decl)) {
+            instantiations = new ArrayList<>();
+            CsmInstantiation inst = (CsmInstantiation) decl;
+            instantiations.add(inst);
+            while (CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
+                inst = (CsmInstantiation) inst.getTemplateDeclaration();
+                instantiations.add(inst);
+            }
+        } else if (CsmKindUtilities.isTemplate(decl) && !mapping.isEmpty()) {
+            List<Map<CsmTemplateParameter, CsmSpecializationParameter>> maps = mapping.getMaps(new MapHierarchy.NonEmptyFilter());
+            
+            InstantiationProviderImpl ip = (InstantiationProviderImpl) InstantiationProviderImpl.getDefault();
+            
+            CsmObject instantiation = decl;
+            
+            instantiations = new ArrayList<>();
+            
+            for (int i = maps.size() - 1; i >= 0; i--) {
+                instantiation = ip.instantiate((CsmTemplate) instantiation, variableFile, variableStartOffset, maps.get(i), false);
+                instantiations.add(0, (CsmInstantiation) instantiation);
+            }
+        }
+        
+        CsmScope objScope = CsmKindUtilities.isScope(decl) ? (CsmScope) decl : null;
+        
+        CsmType objType = CsmEntityResolver.resolveType(obj, variableFile, variableEndOffset, objScope, instantiations);
+        
+        // This is necessary to resolve classifiers defined in macroses
+        int counter = Antiloop.MAGIC_PLAIN_TYPE_RESOLVING_CONST;
+        while (objType != null && !CsmBaseUtilities.isValid(objType.getClassifier()) && !CharSequenceUtils.isNullOrEmpty(objType.getClassifierText()) && counter > 0) {
+            objType = CsmEntityResolver.resolveType(
+                objType.getClassifierText(), 
+                variableFile, 
+                variableEndOffset, 
+                objScope, 
+                instantiations
+            );
+            counter--;
+        }
+        
+        return Utils.getSizeOfType(objType, variableFile);
     }
     
     private CsmType instantiateType(CsmType type, CsmInstantiation inst) {
@@ -360,7 +431,7 @@ public class VariableProvider {
 
     private MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> getMapping(CsmInstantiation inst) {
         MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping2 = new MapHierarchy<>(inst.getMapping());
-        if(CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
+        while (CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
             inst = (CsmInstantiation) inst.getTemplateDeclaration();
             mapping2.push(inst.getMapping());
         }

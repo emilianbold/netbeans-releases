@@ -80,6 +80,7 @@ class InterpProtoANSIX extends InterpProtoANSI {
 		st_esc_rb.setAction(c, st_esc_rb_N, act_collect);
 	    for (char c = 0; c < 128; c++)
 		st_esc_rb_N.setAction(c, st_esc_rb_N, act_collect);
+            st_esc_rb_N.setRegular(st_esc_rb_N, act_collect);
 	    st_esc_rb_N.setAction((char) 7, st_base, act_done_collect_bel);// BEL
 
             // \ESC[?%dh

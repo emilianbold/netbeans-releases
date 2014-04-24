@@ -77,6 +77,18 @@ public class FileModelTest3 extends TraceModelTestBase {
     public void testResolverClassString_02() throws Exception {
         performTest("resolver_class_string.cc"); // NOI18N
     }
+    
+    public void testBug242674() throws Exception {
+        performTest("bug242674.cpp"); // NOI18N
+    }    
+    
+    public void testBug242861() throws Exception {
+        performTest("bug242861.cpp");
+    }
+    
+    public void testBug243546() throws Exception {
+        performTest("bug243546.cpp");
+    }
 
     @Override
     protected Class<?> getTestCaseDataClass() {

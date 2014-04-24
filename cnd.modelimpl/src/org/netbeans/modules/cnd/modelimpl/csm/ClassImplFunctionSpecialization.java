@@ -61,12 +61,14 @@ import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl.InheritanceBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.parser.OffsetableAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
@@ -218,7 +220,12 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
     }
 
     private static CharSequence getClassName(AST ast) {
-        CharSequence funName = CharSequences.create(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true));
+        CharSequence funName;
+        if (CastUtils.isCast(ast)) {
+            funName = CharSequences.create(CastUtils.getFunctionRawName(ast, APTUtils.SCOPE));
+        } else {
+            funName = CharSequences.create(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true));
+        }
         return getClassNameFromFunctionSpecialicationName(funName);
     }
 
@@ -226,6 +233,9 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
         CharSequence[] nameParts = Utils.splitQualifiedName(functionName.toString());
         StringBuilder className = new StringBuilder("");
         for(int i = 0; i < nameParts.length - 1; i++) {
+            if (FunctionImpl.OPERATOR.equals(nameParts[i].toString())) {
+                break;
+            }
             className.append(nameParts[i]);
         }
         return className;

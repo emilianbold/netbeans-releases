@@ -212,13 +212,20 @@ public class CPPParserEx extends CPPParser {
      * Checks if the rest looks like a ctor
      * @param la
      * @return 
+     * 
+     * TODO: it seems that what goes after qualified id should be checked in grammar,
+     * maybe this function should be eliminated.
      */
-    private int ctorCheck(int lookahead_offset) {
+    private int ctorCheck(int lookahead_offset, int leadingLParens) {
         // Skip over any template qualifiers <...>
         if (LA(lookahead_offset) == LESSTHAN) {
             if ((lookahead_offset = skipTemplateQualifiers(lookahead_offset)) < 0) {
                 return qiInvalid;
             }
+        }
+        while (leadingLParens > 0 && LA(lookahead_offset) == RPAREN) {
+            leadingLParens--;
+            lookahead_offset++;
         }
         if (LA(lookahead_offset) == LPAREN) {
             //printf("support.cpp qualifiedItemIs qiCtor returned\n");
@@ -267,6 +274,14 @@ public class CPPParserEx extends CPPParser {
     private /*QualifiedItem*/ int _qualifiedItemIs(int lookahead_offset) throws TokenStreamException {
         
         int tmp_k = lookahead_offset + 1;
+        
+        // That needed only because for some reason we are trying to see what 
+        // happens after qualified id (ctorCheck is an example). TODO: refactor
+        int leadingLParens = 0;
+        while (LT(tmp_k).getType() == LPAREN) {
+            tmp_k++;
+            leadingLParens++;
+        }
 
         int final_type_idx = 0;
         boolean scope_found = false;
@@ -290,7 +305,7 @@ public class CPPParserEx extends CPPParser {
                     //printf("support.cpp qualifiedItemIs qiInvalid returned\n");
                     return qiInvalid;
                 } else {
-                    return ctorCheck(tmp_k+1);
+                    return ctorCheck(tmp_k+1, leadingLParens);
                 }
             }
 
@@ -331,7 +346,7 @@ public class CPPParserEx extends CPPParser {
                 }
 
                 if (equals(tmp_str, getTokenText(LT(final_type_idx)))) {
-                    return ctorCheck(tmp_k);
+                    return ctorCheck(tmp_k, leadingLParens);
                 } else {
                     //printf("support.cpp qualifiedItemIs qiType returned\n");
                     return qiType;

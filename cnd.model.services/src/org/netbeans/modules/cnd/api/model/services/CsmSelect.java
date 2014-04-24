@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -146,6 +147,36 @@ public class CsmSelect {
         } finally {
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.log(Level.FINE, "getClassMembers took {0}ms:\n\tcls={1}\n\tfilter={2}\n", new Object[]{time, getPosition(cls), filter});
+            }
+        }
+    }
+    
+    public static Iterator<CsmFriend> getClassFrirends(CsmClass cls, CsmFilter filter)  {
+        long time = System.currentTimeMillis();
+        try {
+            Iterator<CsmFriend> out;
+            CsmCacheMap cache = CsmCacheManager.getClientCache(ClassFriendsKey.class, SELECT_INITIALIZER);
+            Object key = new ClassFriendsKey(cls, filter);
+            IteratorWrapper<CsmFriend> wrap = (IteratorWrapper<CsmFriend>) CsmCacheMap.getFromCache(cache, key, null);
+            if (wrap == null) {
+                time = System.currentTimeMillis();
+                Iterator<CsmFriend> orig = getDefault().getClassFriends(cls, filter);
+                time = System.currentTimeMillis() - time;                
+                if (cache != null) {
+                    wrap = new IteratorWrapper<CsmFriend>(orig);
+                    cache.put(key, CsmCacheMap.toValue(wrap, time));
+                    out = wrap.iterator();
+                } else {
+                    out = orig;
+                }
+            } else {
+                out = wrap.iterator();
+                time = System.currentTimeMillis() - time;
+            }
+            return out;
+        } finally {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "getClassFrirends took {0}ms:\n\tcls={1}\n\tfilter={2}\n", new Object[]{time, getPosition(cls), filter});
             }
         }
     }
@@ -354,6 +385,15 @@ public class CsmSelect {
             }
             return null;
         }
+        
+        @Override
+        public Iterator<CsmFriend> getClassFriends(CsmClass cls, CsmFilter filter) {
+            CsmSelectProvider service = getService();
+            if (service != null) {
+                return service.getClassFriends(cls, filter);
+            }
+            return null;
+        }
 
         @Override
         public Iterator<CsmVariable> getStaticVariables(CsmFile file, CsmFilter filter) {
@@ -436,6 +476,42 @@ public class CsmSelect {
                 return false;
             }
             final ClassMembersKey other = (ClassMembersKey) obj;
+            if (!this.filter.equals(other.filter)) {
+                return false;
+            }
+            if (!this.cls.equals(other.cls)) {
+                return false;
+            }
+            return true;
+        }            
+    }
+
+    private static final class ClassFriendsKey {
+        private final CsmClass cls;
+        private final CsmFilter filter;
+
+        public ClassFriendsKey(CsmClass cls, CsmFilter filter) {
+            this.cls = cls;
+            this.filter = filter;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 87 * hash + this.cls.hashCode();
+            hash = 87 * hash + this.filter.hashCode();
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ClassFriendsKey other = (ClassFriendsKey) obj;
             if (!this.filter.equals(other.filter)) {
                 return false;
             }

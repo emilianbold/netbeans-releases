@@ -60,6 +60,8 @@ import java.util.concurrent.Future;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
@@ -67,23 +69,13 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
-
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.openide.cookies.EditorCookie;
-import org.openide.loaders.DataObject;
-import org.openide.text.Annotation;
-import org.openide.text.DataEditorSupport;
-import org.openide.text.Line;
-import org.openide.text.NbDocument;
-import org.openide.text.Line.Part;
-import org.openide.util.RequestProcessor;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.CallStackFrame;
-import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.api.debugger.jpda.Variable;
@@ -101,10 +93,18 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
-
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.openide.cookies.EditorCookie;
+import org.openide.loaders.DataObject;
+import org.openide.text.Annotation;
+import org.openide.text.DataEditorSupport;
+import org.openide.text.Line;
+import org.openide.text.Line.Part;
+import org.openide.text.NbDocument;
+import org.openide.util.RequestProcessor;
 
 
 public class ToolTipAnnotation extends Annotation implements Runnable {
@@ -235,7 +235,16 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                 if (isMethodPtr[0]) {
                     return ; // We do not evaluate methods
                 }
-                v = d.evaluate (expression);
+                String fieldClass = fieldOfPtr[0];
+                if (fieldClass != null) {
+                    CallStackFrame currentCallStackFrame = d.getCurrentCallStackFrame();
+                    if (currentCallStackFrame != null) {
+                        v = findField(currentCallStackFrame, fieldClass, expression);
+                    }
+                }
+                if (v == null) {
+                    v = d.evaluate (expression);
+                }
             }
             if (v == null) {
                 return ; // Something went wrong...
@@ -417,9 +426,6 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                 isMethodPtr[0] = true;
             }
             
-            if (fieldOfPtr[0] != null) {
-                ident = fieldOfPtr[0] + '.' + ident;    // NOI18N
-            }
             return ident;
         } catch (BadLocationException e) {
             return null;
@@ -528,12 +534,25 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                                     ElementKind.INTERFACE.equals(tk)) {*/
                                 if (typeElement instanceof TypeElement) {
                                     String binaryClassName = ElementUtilities.getBinaryName((TypeElement) typeElement);
+                                    fieldOfPtr[0] = binaryClassName;
+                                    /*
+                                    String currentClassName = currentFrame.getClassName();
+                                    TypeElement currentElement = controller.getElements().getTypeElement(currentClassName);
+                                    if (currentElement != null) {
+                                        boolean isParent; // if the binaryClassName is a parent of currentElement
+                                        isParent = testParentOf(controller.getTypes(), currentElement.asType(), typeElement.asType());
+                                        if (isParent) {
+                                            // The field is declared in some parent class, we need to reference it via "this":
+                                            binaryClassName = currentClassName;
+                                        }
+                                    }
                                     boolean isStatic = element.getModifiers().contains(Modifier.STATIC);
                                     fieldOfPtr[0] = findRelativeClassReference(
-                                            currentFrame.getClassName(),
+                                            currentClassName,
                                             binaryClassName,
                                             isStatic);
                                     isFieldStatic[0] = isStatic;
+                                    */
                                 }
                             }
                         }
@@ -662,5 +681,66 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         return result[0];
     }
 
+    /**
+     * Test if typeElement is a parent of currentElement.
+     */
+    private static boolean testParentOf(Types types, TypeMirror currentElement, TypeMirror typeMirror) {
+        List<? extends TypeMirror> directSupertypes = types.directSupertypes(currentElement);
+        for (TypeMirror superType : directSupertypes) {
+            if (superType.equals(typeMirror)) {
+                return true;
+            } else {
+                boolean isParent = testParentOf(types, superType, typeMirror);
+                if (isParent) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Search for a field in a className class, that is accessible from 'this'.
+     * 
+     * @param csf the current stack frame
+     * @param fieldClass the class that declares the field
+     * @param fieldName the name of the field
+     * @return the field, or <code>null</code> when not found.
+     */
+    private Variable findField(CallStackFrame csf, String fieldClass, String fieldName) {
+        This thisVariable = csf.getThisVariable();
+        if (thisVariable == null) {
+            return null;
+        }
+        
+        // Search for the field in parent classes/interfaces first:
+        Field field = thisVariable.getField(fieldName);
+        if (field != null && field.getDeclaringClass().getName().equals(fieldClass)) {
+            return field;
+        }
+        
+        // Test outer classes then:
+        ObjectVariable outer = null;
+        int i;
+        for (i = 0; i < 10; i++) {
+            outer = (ObjectVariable) thisVariable.getField("this$"+i);          // NOI18N
+            if (outer != null) {
+                break;
+            }
+        }
+        while (outer != null) {
+            field = outer.getField(fieldName);
+            if (field != null && field.getDeclaringClass().getName().equals(fieldClass)) {
+                return field;
+            }
+            if (i == 0) {
+                break;
+            }
+            // Go to the next outer class:
+            i--;
+            outer = (ObjectVariable) outer.getField("this$"+i);                 // NOI18N
+        }
+        return null;
+    }
 }
 

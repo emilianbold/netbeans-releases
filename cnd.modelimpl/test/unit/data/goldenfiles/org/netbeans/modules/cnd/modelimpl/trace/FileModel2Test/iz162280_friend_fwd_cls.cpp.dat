@@ -55,7 +55,7 @@ NAMESPACE DEFINITOIN boost [1:1/0-41:2/875] SCOPE: iz162280_friend_fwd_cls.cpp
                     STATEMENT COMPOUND  [29:49/645-31:14/690] SCOPE: getstate_manages_dict 
                         STATEMENT RETURN  [30:17/663-30:30/676] SCOPE: Stmt  [29:49/645-31:14/690] text: 'return false;'
             FRIENDS:
-                CLASS_FRIEND_DECLARATION detail::pickle_suite_registration [14:13/264-14:19/270] FriendClassImpl
+                CLASS_FRIEND_DECLARATION detail::pickle_suite_registration [14:13/264-14:61/312] FriendClassImpl
                     REFERENCED CLASS: S:boost::python::detail::pickle_suite_registration
         NAMESPACE DEFINITOIN detail [34:9/711-39:10/867] SCOPE: iz162280_friend_fwd_cls.cpp
             STRUCT pickle_suite_registration (boost::python::detail::pickle_suite_registration ) [36:13/743-38:14/856] lcurly=776 SCOPE: detail 
@@ -109,7 +109,7 @@ NAMESPACE boost (boost)
                     STATEMENT COMPOUND  [29:49/645-31:14/690] SCOPE: getstate_manages_dict 
                         STATEMENT RETURN  [30:17/663-30:30/676] SCOPE: Stmt  [29:49/645-31:14/690] text: 'return false;'
             FRIENDS:
-                CLASS_FRIEND_DECLARATION detail::pickle_suite_registration [14:13/264-14:19/270] FriendClassImpl
+                CLASS_FRIEND_DECLARATION detail::pickle_suite_registration [14:13/264-14:61/312] FriendClassImpl
                     REFERENCED CLASS: S:boost::python::detail::pickle_suite_registration
         NAMESPACE DEFINITIONS for detail (boost::python::detail) 
             iz162280_friend_fwd_cls.cpp  [5:9/79-7:10/153]

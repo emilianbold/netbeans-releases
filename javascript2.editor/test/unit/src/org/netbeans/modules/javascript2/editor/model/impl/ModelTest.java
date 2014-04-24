@@ -143,6 +143,10 @@ public class ModelTest extends ModelTestBase {
     public void testIssue241171() throws Exception {
         checkModel("testfiles/markoccurences/issue241171.js");
     }
+    
+    public void testIssue242421() throws Exception {
+        checkModel("testfiles/markoccurences/issue242421.js");
+    }
 
     public void testPropertyWithNewAssignments() throws Exception {
         Model model = getModel("testfiles/model/propertyWithNew.js");
@@ -213,6 +217,10 @@ public class ModelTest extends ModelTestBase {
     
     public void testIssue238693() throws Exception {
         checkModel("testfiles/model/issue238693.js");
+    }
+    
+    public void testIssue242408() throws Exception {
+        checkModel("testfiles/model/issue242408.js");
     }
     
     public void testPersonRevert() throws Exception {
