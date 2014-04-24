@@ -85,6 +85,10 @@
                         <recursive/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.parsing.indexing</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.j2ee.metadata.model.support</code-name-base>
                         <recursive/>
                         <compile-dependency/>

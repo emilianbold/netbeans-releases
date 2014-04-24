@@ -79,6 +79,7 @@ import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.javafx2.editor.parser.FxmlParserFactory;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.impl.indexing.IndexingUtils;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater.IndexingState;
 import org.netbeans.modules.xml.text.structure.XMLDocumentModelProvider;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
@@ -250,8 +251,7 @@ public class FXMLCompletionTestBase extends NbTestCase {
                 }
             }
         }, true);
-        Utilities.setCaseSensitive(true);
-        org.netbeans.modules.parsing.impl.Utilities.setIndexingStatus(new org.netbeans.modules.parsing.impl.Utilities.IndexingStatus() {
+        IndexingUtils.setIndexingStatus(new IndexingUtils.IndexingStatus() {
             @Override
             public Set<? extends IndexingState> getIndexingState() {
                 return EnumSet.<IndexingState>noneOf(IndexingState.class);
