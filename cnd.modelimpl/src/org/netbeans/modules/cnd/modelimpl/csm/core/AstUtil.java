@@ -82,6 +82,16 @@ public class AstUtil {
 	return (ast == null || ast.getType() == CPPTokenTypes.EOF);
     }
 
+    public static boolean isElaboratedKeyword(AST ast) {
+        if (ast != null) {
+            return ast.getType() == CPPTokenTypes.LITERAL_struct ||
+                   ast.getType() == CPPTokenTypes.LITERAL_class ||
+                   ast.getType() == CPPTokenTypes.LITERAL_union ||
+                   ast.getType() == CPPTokenTypes.LITERAL_enum;
+        }
+        return false;
+    }
+    
     public static CharSequence getRawNameInChildren(AST ast) {
         return getRawName(findIdToken(ast));
     }
@@ -580,6 +590,7 @@ public class AstUtil {
     }    
     
     public static class ASTTokensStringizer implements ASTTokenVisitor {
+        protected int numStringizedTokens = 0;
     
         protected final StringBuilder sb = new StringBuilder();
 
@@ -587,6 +598,7 @@ public class AstUtil {
         public Action visit(AST token) {
             if (token.getFirstChild() == null) {
                 sb.append(token.getText());
+                numStringizedTokens++;
             }
             return Action.CONTINUE;
         }
@@ -594,6 +606,10 @@ public class AstUtil {
         public String getText() {
             return sb.toString();
         }
+
+        public int getNumberOfStringizedTokens() {
+            return numStringizedTokens;
+        }     
     }        
 }
 

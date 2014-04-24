@@ -417,15 +417,23 @@ public class CSSUtils {
                             String sourcePath = sourceMap.getSourcePath(sourceIndex);
                             folder = sourceMapFob.getParent();
                             final FileObject source = folder.getFileObject(sourcePath);
-                            EventQueue.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    int line = mapping.getOriginalLine();
-                                    int column = mapping.getOriginalColumn();
-                                    CSSUtils.openAtLineAndColumn(source, line, column);
-                                }
-                            });
-                            return true;
+                            boolean validSourceFile = (source != null);
+                            if (validSourceFile) {
+                                EventQueue.invokeLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        int line = mapping.getOriginalLine();
+                                        int column = mapping.getOriginalColumn();
+                                        CSSUtils.openAtLineAndColumn(source, line, column);
+                                    }
+                                });
+                            } else {
+                                // Invalid path in the source map.
+                                Logger.getLogger(CSSUtils.class.getName()).log(Level.INFO,
+                                        "Unable to find the file {0} relative to the source map {1}!",
+                                        new Object[] {sourcePath, sourceMapFob.getPath()});
+                            }
+                            return validSourceFile;
                         }
                     } catch (IOException ioex) {
                         Exceptions.printStackTrace(ioex);

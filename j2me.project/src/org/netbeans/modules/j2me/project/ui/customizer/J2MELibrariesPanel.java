@@ -276,6 +276,7 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
                 } else if (doc.equals(jTextFieldLibletVersionValue.getDocument())) {
                     li.setVersion(jTextFieldLibletVersionValue.getText());
                 }
+                jComboBoxLiblet.repaint();
             }
         };
         jTextFieldLibletNameValue.getDocument().addDocumentListener(documentListener);
@@ -305,6 +306,11 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
                     LibletInfo li = (LibletInfo) jComboBoxLiblet.getSelectedItem();
                     if (li != null) {
                         li.setType(LibletInfo.LibletType.valueOf(button.getActionCommand()));
+                        jTextFieldLibletVendorValue.setText(li.getType() != LibletInfo.LibletType.SERVICE ? li.getVendor() : "");
+                        jTextFieldLibletVersionValue.setText(li.getType() != LibletInfo.LibletType.SERVICE ? li.getVersion() : "");
+                        jTextFieldLibletVendorValue.setEnabled(li.getType() != LibletInfo.LibletType.LIBLET && li.getType() != LibletInfo.LibletType.SERVICE);
+                        jTextFieldLibletVersionValue.setEnabled(li.getType() != LibletInfo.LibletType.SERVICE);
+                        jComboBoxLiblet.repaint();
                     }
                 }
             }
@@ -452,14 +458,15 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
                     }
                 }
             }
-        }
-        if (li != null) {
-            if (liblets.getIndexOf(li) == -1) {
-                liblets.addElement(li);
-            } else if (liblets.getIndexOf(li) != -1) {
-                LibletInfo libletInfo = liblets.getElementAt(liblets.getIndexOf(li));
-                if (libletInfo.getItem() == null) {
-                    libletInfo.setItem(li.getItem());
+
+            if (li != null) {
+                if (liblets.getIndexOf(li) == -1) {
+                    liblets.addElement(li);
+                } else if (liblets.getIndexOf(li) != -1) {
+                    LibletInfo libletInfo = liblets.getElementAt(liblets.getIndexOf(li));
+                    if (libletInfo.getItem() == null) {
+                        libletInfo.setItem(li.getItem());
+                    }
                 }
             }
         }
@@ -1676,11 +1683,12 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
             buttonRemoveLiblet.setEnabled(selected.getType() != LibletInfo.LibletType.LIBLET);
 
             jTextFieldLibletNameValue.setText(selected.getName());
-            jTextFieldLibletVendorValue.setText(selected.getVendor());
-            jTextFieldLibletVersionValue.setText(selected.getVersion());
+            jTextFieldLibletVendorValue.setText(selected.getType() != LibletInfo.LibletType.SERVICE ? selected.getVendor() : "");
+            jTextFieldLibletVersionValue.setText(selected.getType() != LibletInfo.LibletType.SERVICE ? selected.getVersion() : "");
 
             jTextFieldLibletNameValue.setEnabled(selected.getType() != LibletInfo.LibletType.LIBLET);
-            jTextFieldLibletVendorValue.setEnabled(selected.getType() != LibletInfo.LibletType.LIBLET);
+            jTextFieldLibletVendorValue.setEnabled(selected.getType() != LibletInfo.LibletType.LIBLET && selected.getType() != LibletInfo.LibletType.SERVICE);
+            jTextFieldLibletVersionValue.setEnabled(selected.getType() != LibletInfo.LibletType.SERVICE);
         }
     }
 }

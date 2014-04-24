@@ -61,6 +61,8 @@ import java.awt.Rectangle;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -107,6 +109,8 @@ abstract public class JavaComponentInfo implements ComponentInfo {
 
     private static final JavaComponentInfo[] NO_SUBCOMPONENTS = new JavaComponentInfo[]{};
     private static final int MAX_TEXT_LENGTH = 80;
+    private static RequestProcessor RP = new RequestProcessor(JavaComponentInfo.class);
+    
     //private AWTComponentInfo parent;
     private Rectangle bounds;
     private Rectangle windowBounds;
@@ -347,59 +351,7 @@ abstract public class JavaComponentInfo implements ComponentInfo {
                 };
             }
         });
-        // TODO: Try to find out the BeanInfo of the class
-        List<Method> allMethods;
-        Map<String, Method> methodsByName;
-        try {
-            allMethods = ReferenceTypeWrapper.allMethods(ObjectReferenceWrapper.referenceType(component));
-            //System.err.println("Have "+allMethods.size()+" methods.");
-            methodsByName = new HashMap<String, Method>(allMethods.size());
-            for (Method m : allMethods) {
-                String mName = TypeComponentWrapper.name(m);
-                if ((mName.startsWith("get") || mName.startsWith("set")) && mName.length() > 3 ||
-                     mName.startsWith("is") && mName.length() > 2) {
-                    if ((mName.startsWith("get") || mName.startsWith("is")) && m.argumentTypeNames().size() == 0 ||
-                        mName.startsWith("set") && MethodWrapper.argumentTypeNames(m).size() == 1 && "void".equals(MethodWrapper.returnTypeName(m))) {
-
-                        methodsByName.put(mName, m);
-                    }
-                }
-            }
-        } catch (ClassNotPreparedExceptionWrapper cnpex) {
-            // no class - no properties
-            return ;
-        } catch (InternalExceptionWrapper iex) {
-            // no go
-            return ;
-        } catch (ObjectCollectedExceptionWrapper ocex) {
-            // gone
-            return ;
-        } catch (VMDisconnectedExceptionWrapper vmdex) {
-            // gone
-            return ;
-        }
-        Map<String, Property> sortedProperties = new TreeMap<String, Property>();
-        //final List<Property> properties = new ArrayList<Property>();
-        for (String mName : methodsByName.keySet()) {
-            //System.err.println("  Have method '"+name+"'...");
-            if (mName.startsWith("set")) {
-                continue;
-            }
-            String property;
-            String setName;
-            if (mName.startsWith("is")) {
-                property = Character.toLowerCase(mName.charAt(2)) + mName.substring(3);
-                setName = "set" + mName.substring(2);
-            } else { // startsWith("get"):
-                property = Character.toLowerCase(mName.charAt(3)) + mName.substring(4);
-                setName = "set" + mName.substring(3);
-            }
-            Property p = new ComponentProperty(property, methodsByName.get(mName), methodsByName.get(setName),
-                                               this, component, getThread(), getThread().getDebugger(), sType);
-            sortedProperties.put(property, p);
-            //System.err.println("    => property '"+property+"', p = "+p);
-        }
-        final Property[] properties = sortedProperties.values().toArray(new Property[] {});
+        final LazyProperties lazyProperties = new LazyProperties();
         addPropertySet(
             new PropertySet("Properties",
                             NbBundle.getMessage(JavaComponentInfo.class, "MSG_ComponentProps"),
@@ -407,21 +359,116 @@ abstract public class JavaComponentInfo implements ComponentInfo {
 
                 @Override
                 public Property<?>[] getProperties() {
-                    return properties;//.toArray(new Property[] {});
+                    //System.err.println("JavaComponentInfo.Properties PropertySet.getProperties()");
+                    // To fix https://netbeans.org/bugzilla/show_bug.cgi?id=243065
+                    //        https://netbeans.org/bugzilla/show_bug.cgi?id=241154
+                    // Do not compute properties above, compute them on demand in a separate thread now.
+                    // When done, fire Node.PROP_PROPERTY_SETS, null, null.
+                    Property<?>[] props = lazyProperties.getProperties();
+                    //System.err.println("\nprops = "+props.length+"\n");
+                    return props;
                 }
             });
-        Method getTextMethod = methodsByName.get("getText");    // NOI18N
-        if (getTextMethod != null) {
-            try {
-                Value theText = ObjectReferenceWrapper.invokeMethod(component, getThread().getThreadReference(), getTextMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-                if (theText instanceof StringReference) {
-                    setComponentText(StringReferenceWrapper.value((StringReference) theText));
+        try {
+            Method getTextMethod = ClassTypeWrapper.concreteMethodByName(
+                    (ClassType) ObjectReferenceWrapper.referenceType(component), "getText", "()Ljava/lang/String;");
+            //Method getTextMethod = methodsByName.get("getText");    // NOI18N
+            if (getTextMethod != null) {
+                try {
+                    Value theText = ObjectReferenceWrapper.invokeMethod(component, getThread().getThreadReference(), getTextMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                    if (theText instanceof StringReference) {
+                        setComponentText(StringReferenceWrapper.value((StringReference) theText));
+                    }
+                } catch (VMDisconnectedExceptionWrapper vmdex) {
+                    return;
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            } catch (VMDisconnectedExceptionWrapper vmdex) {
-                return;
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
             }
+        } catch (ClassNotPreparedExceptionWrapper | InternalExceptionWrapper |
+                 ObjectCollectedExceptionWrapper | VMDisconnectedExceptionWrapper cnpe) {
+        }
+    }
+    
+    private class LazyProperties implements Runnable {
+        
+        private volatile Reference<Property<?>[]> propertiesRef;
+        
+        Property<?>[] getProperties() {
+            Property<?>[] properties;
+            if (propertiesRef == null) {
+                propertiesRef = new SoftReference<>(null);
+                properties = null;
+            } else {
+                properties = propertiesRef.get();
+            }
+            if (properties == null) {
+                properties = new Property[] {};
+                propertiesRef = new SoftReference<>(properties);
+                RP.post(this);
+            }
+            return properties;
+        }
+
+        @Override
+        public void run() {
+            // TODO: Try to find out the BeanInfo of the class
+            //System.err.println("Computing the component properties...");
+            List<Method> allMethods;
+            Map<String, Method> methodsByName;
+            try {
+                allMethods = ReferenceTypeWrapper.allMethods(ObjectReferenceWrapper.referenceType(component));
+                //System.err.println("Have "+allMethods.size()+" methods.");
+                methodsByName = new HashMap<String, Method>(allMethods.size());
+                for (Method m : allMethods) {
+                    String mName = TypeComponentWrapper.name(m);
+                    if ((mName.startsWith("get") || mName.startsWith("set")) && mName.length() > 3 ||
+                         mName.startsWith("is") && mName.length() > 2) {
+                        if ((mName.startsWith("get") || mName.startsWith("is")) && m.argumentTypeNames().size() == 0 ||
+                            mName.startsWith("set") && MethodWrapper.argumentTypeNames(m).size() == 1 && "void".equals(MethodWrapper.returnTypeName(m))) {
+
+                            methodsByName.put(mName, m);
+                        }
+                    }
+                }
+            } catch (ClassNotPreparedExceptionWrapper cnpex) {
+                // no class - no properties
+                return ;
+            } catch (InternalExceptionWrapper iex) {
+                // no go
+                return ;
+            } catch (ObjectCollectedExceptionWrapper ocex) {
+                // gone
+                return ;
+            } catch (VMDisconnectedExceptionWrapper vmdex) {
+                // gone
+                return ;
+            }
+            Map<String, Property> sortedProperties = new TreeMap<String, Property>();
+            //final List<Property> properties = new ArrayList<Property>();
+            for (String mName : methodsByName.keySet()) {
+                //System.err.println("  Have method '"+name+"'...");
+                if (mName.startsWith("set")) {
+                    continue;
+                }
+                String property;
+                String setName;
+                if (mName.startsWith("is")) {
+                    property = Character.toLowerCase(mName.charAt(2)) + mName.substring(3);
+                    setName = "set" + mName.substring(2);
+                } else { // startsWith("get"):
+                    property = Character.toLowerCase(mName.charAt(3)) + mName.substring(4);
+                    setName = "set" + mName.substring(3);
+                }
+                Property p = new ComponentProperty(property, methodsByName.get(mName), methodsByName.get(setName),
+                                                   JavaComponentInfo.this, component, getThread(), getThread().getDebugger(), sType);
+                sortedProperties.put(property, p);
+                //System.err.println("    => property '"+property+"', p = "+p);
+            }
+            Property<?>[] properties = sortedProperties.values().toArray(new Property[] {});
+            propertiesRef = new SoftReference<>(properties);
+            //System.err.println("Properties Computed: "+properties.length);
+            firePropertyChange(Node.PROP_PROPERTY_SETS, null, null);
         }
     }
     

@@ -1532,6 +1532,10 @@ public class Flow {
                 if (tel == throwableEl) {
                     break;
                 }
+                TypeMirror sup = tel.getSuperclass();
+                if (sup.getKind() != TypeKind.DECLARED) {
+                    break;
+                }
                 dtt = (DeclaredType)tel.getSuperclass();
             } while (dtt != null);
         }

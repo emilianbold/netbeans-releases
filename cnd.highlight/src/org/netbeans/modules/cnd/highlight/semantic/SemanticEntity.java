@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.utils.ui.NamedOption;
  */
 public abstract class SemanticEntity extends NamedOption {
     public abstract List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Interrupter interrupter);
-    public abstract ReferenceCollector getCollector();
+    public abstract ReferenceCollector getCollector(Interrupter interrupter);
     public abstract void updateFontColors(FontColorProvider provider);
     public abstract AttributeSet getAttributes(CsmOffsetable obj, String mimeType);
 }

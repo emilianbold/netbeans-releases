@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
 import org.netbeans.modules.cnd.modelutil.ClassifiersAntiLoop;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Lookup;
 
@@ -133,14 +134,10 @@ public abstract class CsmFileReferences {
        }
    }
    
-   public interface Cancellable {
-       boolean cancelled();
-   }
-   
    /**
     * visitor interface
     */
-   public interface Visitor extends Cancellable {
+   public interface Visitor extends Interrupter {
        /**
         * This method is invoked for every matching reference in the file.
         *
@@ -150,7 +147,7 @@ public abstract class CsmFileReferences {
        
    }
 
-   public interface ReferenceVisitor extends Cancellable {
+   public interface ReferenceVisitor extends Interrupter {
 
        /**
         * This method is invoked for every matching reference in the file.
