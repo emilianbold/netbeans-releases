@@ -512,11 +512,9 @@ public class CSS {
 
     void handleStyleSheetRemoved(JSONObject params) {
         String styleSheetId = (String)params.get("styleSheetId"); // NOI18N
-        Iterator<StyleSheetHeader> iterator = styleSheetHeaders.iterator();
-        while (iterator.hasNext()) {
-            StyleSheetHeader header = iterator.next();
+        for (StyleSheetHeader header : styleSheetHeaders) {
             if (styleSheetId.equals(header.getStyleSheetId())) {
-                iterator.remove();
+                styleSheetHeaders.remove(header);
                 break;
             }
         }
