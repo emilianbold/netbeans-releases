@@ -96,6 +96,7 @@ public final class Tester {
     private static final String TAP_FORMAT_PARAM = "--tap"; // NOI18N
     private static final String SKIP_INFO_PARAM = "-s"; // NOI18N
     private static final String PHP_INI_PARAM = "-c"; // NOI18N
+    private static final String BINARY_EXECUTABLE_PARAM = "-p"; // NOI18N
 
     private final String testerPath;
 
@@ -191,6 +192,7 @@ public final class Tester {
         List<String> params = new ArrayList<>();
         params.add(TAP_FORMAT_PARAM);
         params.add(SKIP_INFO_PARAM);
+        addBinaryExecutable(phpModule, params);
         addPhpIni(phpModule, params);
         if (runInfo.isCoverageEnabled()) {
             // XXX add coverage params once tester supports it
@@ -275,6 +277,19 @@ public final class Tester {
                 //break;
             default:
                 throw new IllegalStateException("Unknown session type: " + runInfo.getSessionType());
+        }
+    }
+
+    private void addBinaryExecutable(PhpModule phpModule, List<String> params) {
+        String binaryExecutable;
+        if (TesterPreferences.isBinaryEnabled(phpModule)) {
+            binaryExecutable = TesterPreferences.getBinaryExecutable(phpModule);
+        } else {
+            binaryExecutable = TesterOptions.getInstance().getBinaryExecutable();
+        }
+        if (StringUtils.hasText(binaryExecutable)) {
+            params.add(BINARY_EXECUTABLE_PARAM);
+            params.add(binaryExecutable);
         }
     }
 
