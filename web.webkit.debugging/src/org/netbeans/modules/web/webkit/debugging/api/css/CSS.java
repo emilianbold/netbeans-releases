@@ -73,7 +73,7 @@ public class CSS {
     /** Cache of style-sheets. */
     private final Map<String, StyleSheetBody> styleSheets = new HashMap<String, StyleSheetBody>();
     /** Style-sheet headers. */
-    private final List<StyleSheetHeader> styleSheetHeaders = new ArrayList<StyleSheetHeader>();
+    private final List<StyleSheetHeader> styleSheetHeaders = new CopyOnWriteArrayList<StyleSheetHeader>();
 
     /**
      * Creates a new wrapper for the CSS domain of WebKit Remote Debugging Protocol.
@@ -506,22 +506,16 @@ public class CSS {
     void handleStyleSheetAdded(JSONObject params) {
         JSONObject headerInJSON = (JSONObject)params.get("header"); // NOI18N
         StyleSheetHeader header = new StyleSheetHeader(headerInJSON);
-        synchronized (this) {
-            styleSheetHeaders.add(header);
-        }
+        styleSheetHeaders.add(header);
         notifyStyleSheetAdded(header);
     }
 
     void handleStyleSheetRemoved(JSONObject params) {
         String styleSheetId = (String)params.get("styleSheetId"); // NOI18N
-        synchronized (this) {
-            Iterator<StyleSheetHeader> iterator = styleSheetHeaders.iterator();
-            while (iterator.hasNext()) {
-                StyleSheetHeader header = iterator.next();
-                if (styleSheetId.equals(header.getStyleSheetId())) {
-                    iterator.remove();
-                    break;
-                }
+        for (StyleSheetHeader header : styleSheetHeaders) {
+            if (styleSheetId.equals(header.getStyleSheetId())) {
+                styleSheetHeaders.remove(header);
+                break;
             }
         }
         notifyStyleSheetRemoved(styleSheetId);
@@ -646,11 +640,9 @@ public class CSS {
             } else if ("CSS.styleSheetRemoved".equals(method)) { // NOI18N
                 handleStyleSheetRemoved(params);
             } else if ("Page.frameNavigated".equals(method)) { // NOI18N
-                synchronized (this) {
-                    // We cannot reset styleSheetHeaders on DOM.documentUpdated because
-                    // CSS.styleSheetAdded events are fired before DOM.documentUpdated.
-                    styleSheetHeaders.clear();
-                }
+                // We cannot reset styleSheetHeaders on DOM.documentUpdated because
+                // CSS.styleSheetAdded events are fired before DOM.documentUpdated.
+                styleSheetHeaders.clear();
             } else if ("DOM.documentUpdated".equals(method)) { // NOI18N
                 synchronized (this) {
                     styleSheets.clear();

@@ -691,6 +691,10 @@ public final class ELTypeUtilities {
                             method = getElementForProperty(info, current, enclosing);
                             if (method == null) {
                                 continue;
+                            } else if (ELStreamCompletionItem.STREAM_METHOD.equals(method.getSimpleName().toString())
+                                    && isIterableElement(info, enclosing)) {
+                                // method is resolved - in case of JDK8 and stream used over iterable
+                                break;
                             } else {
                                 // issue #243833 - use last resolved method if any
                                 lastResolved = method;
