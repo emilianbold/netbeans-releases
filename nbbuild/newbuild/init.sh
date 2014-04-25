@@ -126,9 +126,9 @@ if [ -z ${JDK_BUILDS_HOST} ]; then
     export JDK_BUILDS_HOST
 fi
 
-#JDK7_BUILDS_PATH=http://jre.us.oracle.com/java/re/jdk/7u55/promoted/all
+#JDK7_BUILDS_PATH=http://jre.us.oracle.com/java/re/jdk/7u60/promoted/all
 if [ -z ${JDK7_BUILDS_PATH} ]; then
-    JDK7_BUILDS_PATH=java/re/jdk/7u55/promoted/
+    JDK7_BUILDS_PATH=java/re/jdk/7u60/promoted/
     export JDK7_BUILDS_PATH
 fi
 
