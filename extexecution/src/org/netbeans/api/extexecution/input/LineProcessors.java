@@ -43,7 +43,6 @@
 package org.netbeans.api.extexecution.input;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
@@ -82,10 +81,19 @@ public final class LineProcessors {
      *
      * @param processors processor to which the actions will be ditributed
      * @return the processor acting as a proxy
+     * @deprecated use {@link org.netbeans.api.extexecution.base.input.LineProcessors#proxy(org.netbeans.api.extexecution.base.input.LineProcessor...)}
      */
     @NonNull
     public static LineProcessor proxy(@NonNull LineProcessor... processors) {
-        return new ProxyLineProcessor(processors);
+        org.netbeans.api.extexecution.base.input.LineProcessor[] wrapped = new org.netbeans.api.extexecution.base.input.LineProcessor[processors.length];
+        for (int i = 0; i < processors.length; i++) {
+            if (processors[i] != null) {
+                wrapped[i] = new BaseLineProcessor(processors[i]);
+            } else {
+                wrapped[i] = null;
+            }
+        }
+        return new DelegatingLineProcessor(org.netbeans.api.extexecution.base.input.LineProcessors.proxy(wrapped));
     }
 
     /**
@@ -148,53 +156,11 @@ public final class LineProcessors {
      *             for the first time
      * @return the processor that will wait for the line matching the pattern,
      *             decreasing the latch when such line appears for the first time
+     * @deprecated use {@link LineProcessors#patternWaiting(java.util.regex.Pattern, java.util.concurrent.CountDownLatch)}
      */
     @NonNull
     public static LineProcessor patternWaiting(@NonNull Pattern pattern, @NonNull CountDownLatch latch) {
-        return new WaitingLineProcessor(pattern, latch);
-    }
-
-    private static class ProxyLineProcessor implements LineProcessor {
-
-        private final List<LineProcessor> processors = new ArrayList<LineProcessor>();
-
-        private boolean closed;
-
-        public ProxyLineProcessor(LineProcessor... processors) {
-            for (LineProcessor processor : processors) {
-                if (processor != null) {
-                    this.processors.add(processor);
-                }
-            }
-        }
-
-        public void processLine(String line) {
-            if (closed) {
-                throw new IllegalStateException("Already closed processor");
-            }
-
-            for (LineProcessor processor : processors) {
-                processor.processLine(line);
-            }
-        }
-
-        public void reset() {
-            if (closed) {
-                throw new IllegalStateException("Already closed processor");
-            }
-
-            for (LineProcessor processor : processors) {
-                processor.reset();
-            }
-        }
-
-        public void close() {
-            closed = true;
-
-            for (LineProcessor processor : processors) {
-                processor.close();
-            }
-        }
+        return new DelegatingLineProcessor(org.netbeans.api.extexecution.base.input.LineProcessors.patternWaiting(pattern, latch));
     }
 
     private static class PrintingLineProcessor implements LineProcessor {
@@ -271,48 +237,52 @@ public final class LineProcessors {
             out.close();
         }
     }
+    
+    static class DelegatingLineProcessor implements LineProcessor {
+        
+        private final org.netbeans.api.extexecution.base.input.LineProcessor delegate;
 
-    private static class WaitingLineProcessor implements LineProcessor {
-
-        private final Pattern pattern;
-
-        private final CountDownLatch latch;
-
-        /**<i>GuardedBy("this")</i>*/
-        private boolean processed;
-
-        /**<i>GuardedBy("this")</i>*/
-        private boolean closed;
-
-        public WaitingLineProcessor(Pattern pattern, CountDownLatch latch) {
-            assert pattern != null;
-            assert latch != null;
-
-            this.pattern = pattern;
-            this.latch = latch;
+        public DelegatingLineProcessor(org.netbeans.api.extexecution.base.input.LineProcessor delegate) {
+            this.delegate = delegate;
         }
 
-        public synchronized void processLine(String line) {
-            assert line != null;
-
-            if (closed) {
-                throw new IllegalStateException("Already closed processor");
-            }
-
-            if (!processed && pattern.matcher(line).matches()) {
-                latch.countDown();
-                processed = true;
-            }
+        @Override
+        public void processLine(String line) {
+            delegate.processLine(line);
         }
 
-        public synchronized void reset() {
-            if (closed) {
-                throw new IllegalStateException("Already closed processor");
-            }
+        @Override
+        public void reset() {
+            delegate.reset();
         }
 
-        public synchronized void close() {
-            closed = true;
+        @Override
+        public void close() {
+            delegate.close();
+        }
+    }
+    
+    static class BaseLineProcessor implements org.netbeans.api.extexecution.base.input.LineProcessor {
+        
+        private final LineProcessor delegate;
+
+        public BaseLineProcessor(LineProcessor delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void processLine(String line) {
+            delegate.processLine(line);
+        }
+
+        @Override
+        public void reset() {
+            delegate.reset();
+        }
+
+        @Override
+        public void close() {
+            delegate.close();
         }
     }
 }

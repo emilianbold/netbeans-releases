@@ -74,6 +74,7 @@ import org.openide.util.UserQuestionException;
  *
  * @author Petr Hejl
  * @since 1.28
+ * @deprecated use {@link org.netbeans.api.extexecution.base.ProcessBuilder}
  */
 public final class ProcessBuilder implements Callable<Process> {
 

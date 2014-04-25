@@ -42,103 +42,65 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.extexecution.input;
+package org.netbeans.modules.extexecution.base.input;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputReader;
-import org.netbeans.api.extexecution.input.InputReaders;
+import org.netbeans.api.extexecution.base.input.InputProcessor;
+import org.netbeans.api.extexecution.base.input.InputReader;
 
 /**
  *
  * This class is <i>NotThreadSafe</i>.
- * @author Petr Hejl
+ * @author Petr.Hejl
  */
-public class FileInputReader implements InputReader {
+public class DefaultInputReader implements InputReader {
 
-    private static final Logger LOGGER = Logger.getLogger(FileInputReader.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DefaultInputReader.class.getName());
 
     private static final int BUFFER_SIZE = 512;
 
-    private final InputReaders.FileInput.Provider fileProvider;
+    private final Reader reader;
 
-    private final char[] buffer = new char[BUFFER_SIZE];
+    private final char[] buffer;
 
-    private InputReaders.FileInput currentFile;
-
-    private Reader reader;
-
-    private long fileLength;
+    private final boolean greedy;
 
     private boolean closed;
 
-    public FileInputReader(InputReaders.FileInput.Provider fileProvider) {
-        assert fileProvider != null;
+    public DefaultInputReader(Reader reader, boolean greedy) {
+        assert reader != null;
 
-        this.fileProvider = fileProvider;
+        this.reader = new BufferedReader(reader);
+        this.greedy = greedy;
+        this.buffer = new char[greedy ? BUFFER_SIZE * 2 : BUFFER_SIZE];
     }
 
-    public int readInput(InputProcessor inputProcessor) {
+    public int readInput(InputProcessor inputProcessor) throws IOException {
         if (closed) {
             throw new IllegalStateException("Already closed reader");
         }
 
+        if (!reader.ready()) {
+            return 0;
+        }
+
         int fetched = 0;
-        try {
-            InputReaders.FileInput file = fileProvider.getFileInput();
-
-            if ((currentFile != file && (currentFile == null || !currentFile.equals(file)))
-                    || fileLength > currentFile.getFile().length() || reader == null) {
-
-                if (reader != null) {
-                    reader.close();
-                }
-
-                currentFile = file;
-
-                if (currentFile != null && currentFile.getFile().exists()
-                        && currentFile.getFile().canRead()) {
-
-                    reader = new BufferedReader(new InputStreamReader(
-                            new FileInputStream(currentFile.getFile()), currentFile.getCharset()));
-                }
-                if (fileLength > 0) {
-                    inputProcessor.reset();
-                }
-                fileLength = 0;
-            }
-
-            if (reader == null) {
-                return fetched;
-            }
-
+        // TODO optimization possible
+        StringBuilder builder = new StringBuilder();
+        do {
             int size = reader.read(buffer);
             if (size > 0) {
-                fileLength += size;
+                builder.append(buffer, 0, size);
                 fetched += size;
+            }
+        } while (reader.ready() && greedy);
 
-                if (inputProcessor != null) {
-                    char[] toProcess = new char[size];
-                    System.arraycopy(buffer, 0, toProcess, 0, size);
-                    inputProcessor.processInput(toProcess);
-                }
-            }
-        } catch (Exception ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            // we will try the next loop (if any)
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException iex) {
-                    LOGGER.log(Level.FINE, null, ex);
-                }
-            }
+        if (inputProcessor != null && fetched > 0) {
+            inputProcessor.processInput(builder.toString().toCharArray());
         }
 
         return fetched;
@@ -146,10 +108,8 @@ public class FileInputReader implements InputReader {
 
     public void close() throws IOException {
         closed = true;
-        if (reader != null) {
-            reader.close();
-            reader = null;
-        }
+        reader.close();
+        LOGGER.log(Level.FINEST, "Reader closed");
     }
 
 }

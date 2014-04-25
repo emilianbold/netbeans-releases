@@ -74,12 +74,15 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.extexecution.ProcessInputStream;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
+import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory2;
 import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.InputReaderTask;
 import org.netbeans.api.extexecution.input.InputReaders;
 import org.netbeans.api.extexecution.input.LineProcessors;
+import org.netbeans.modules.extexecution.input.BaseInputProcessor;
+import org.netbeans.modules.extexecution.input.DelegatingInputProcessor;
 import org.openide.util.Cancellable;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -582,6 +585,12 @@ public final class ExecutionService {
         InputProcessorFactory descriptorOutFactory = descriptor.getOutProcessorFactory();
         if (descriptorOutFactory != null) {
             outProcessor = descriptorOutFactory.newInputProcessor(outProcessor);
+        } else {
+            InputProcessorFactory2 descriptorOutFactory2 = descriptor.getOutProcessorFactory2();
+            if (descriptorOutFactory2 != null) {
+                // XXX
+                outProcessor = new DelegatingInputProcessor(descriptorOutFactory2.newInputProcessor(new BaseInputProcessor(outProcessor)));
+            }
         }
 
         return outProcessor;
@@ -601,6 +610,12 @@ public final class ExecutionService {
         InputProcessorFactory descriptorErrFactory = descriptor.getErrProcessorFactory();
         if (descriptorErrFactory != null) {
             errProcessor = descriptorErrFactory.newInputProcessor(errProcessor);
+        } else {
+            InputProcessorFactory2 descriptorErrFactory2 = descriptor.getErrProcessorFactory2();
+            if (descriptorErrFactory2 != null) {
+                // XXX
+                errProcessor = new DelegatingInputProcessor(descriptorErrFactory2.newInputProcessor(new BaseInputProcessor(errProcessor)));
+            }
         }
 
         return errProcessor;
