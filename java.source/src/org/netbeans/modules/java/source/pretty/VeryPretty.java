@@ -391,7 +391,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     public Set<Tree> oldTrees = Collections.emptySet();
     public Set<int[]> reindentRegions = new TreeSet<>(new Comparator<int[]>() {
         @Override public int compare(int[] o1, int[] o2) {
-            return o2[0] - o1[0];
+            return o1[0] - o2[0];
         }
     });
     private final Set<Tree> trailingCommentsHandled = Collections.newSetFromMap(new IdentityHashMap<Tree, Boolean>());
