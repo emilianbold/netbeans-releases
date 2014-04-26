@@ -76,11 +76,11 @@ import org.netbeans.modules.extexecution.ProcessInputStream;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory2;
 import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.api.extexecution.input.InputReaderTask;
-import org.netbeans.api.extexecution.input.InputReaders;
-import org.netbeans.api.extexecution.input.LineProcessors;
+import org.netbeans.api.extexecution.base.input.InputProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessors;
+import org.netbeans.api.extexecution.base.input.InputReaderTask;
+import org.netbeans.api.extexecution.base.input.InputReaders;
+import org.netbeans.api.extexecution.print.LineProcessors;
 import org.netbeans.modules.extexecution.input.BaseInputProcessor;
 import org.netbeans.modules.extexecution.input.DelegatingInputProcessor;
 import org.openide.util.Cancellable;
@@ -578,18 +578,18 @@ public final class ExecutionService {
             outProcessor = InputProcessors.bridge(LineProcessors.printing(writer,
                     convertorFactory != null ? convertorFactory.newLineConvertor() : null, true));
         } else {
-            outProcessor = InputProcessors.printing(writer,
+            outProcessor = org.netbeans.api.extexecution.print.InputProcessors.printing(writer,
                     convertorFactory != null ? convertorFactory.newLineConvertor() : null, true);
         }
 
         InputProcessorFactory descriptorOutFactory = descriptor.getOutProcessorFactory();
         if (descriptorOutFactory != null) {
-            outProcessor = descriptorOutFactory.newInputProcessor(outProcessor);
+            outProcessor = new BaseInputProcessor(descriptorOutFactory.newInputProcessor(
+                    new DelegatingInputProcessor(outProcessor)));
         } else {
             InputProcessorFactory2 descriptorOutFactory2 = descriptor.getOutProcessorFactory2();
             if (descriptorOutFactory2 != null) {
-                // XXX
-                outProcessor = new DelegatingInputProcessor(descriptorOutFactory2.newInputProcessor(new BaseInputProcessor(outProcessor)));
+                outProcessor = descriptorOutFactory2.newInputProcessor(outProcessor);
             }
         }
 
@@ -603,18 +603,18 @@ public final class ExecutionService {
             errProcessor = InputProcessors.bridge(LineProcessors.printing(writer,
                     convertorFactory != null ? convertorFactory.newLineConvertor() : null, false));
         } else {
-            errProcessor = InputProcessors.printing(writer,
+            errProcessor = org.netbeans.api.extexecution.print.InputProcessors.printing(writer,
                     convertorFactory != null ? convertorFactory.newLineConvertor() : null, false);
         }
 
         InputProcessorFactory descriptorErrFactory = descriptor.getErrProcessorFactory();
         if (descriptorErrFactory != null) {
-            errProcessor = descriptorErrFactory.newInputProcessor(errProcessor);
+            errProcessor = new BaseInputProcessor(descriptorErrFactory.newInputProcessor(
+                    new DelegatingInputProcessor(errProcessor)));
         } else {
             InputProcessorFactory2 descriptorErrFactory2 = descriptor.getErrProcessorFactory2();
             if (descriptorErrFactory2 != null) {
-                // XXX
-                errProcessor = new DelegatingInputProcessor(descriptorErrFactory2.newInputProcessor(new BaseInputProcessor(errProcessor)));
+                errProcessor = descriptorErrFactory2.newInputProcessor(errProcessor);
             }
         }
 

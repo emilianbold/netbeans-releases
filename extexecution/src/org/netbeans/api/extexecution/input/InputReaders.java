@@ -58,6 +58,7 @@ import org.openide.util.Parameters;
  * Factory methods for {@link InputReader} classes.
  *
  * @author Petr Hejl
+ * @deprecated use {@link org.netbeans.api.extexecution.base.input.InputReaders}
  */
 public final class InputReaders {
 
