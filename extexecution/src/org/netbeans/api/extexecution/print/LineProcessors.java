@@ -40,14 +40,16 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.api.extexecution.input;
+package org.netbeans.api.extexecution.print;
 
-import java.util.concurrent.CountDownLatch;
+import java.io.IOException;
+import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.base.input.InputProcessor;
+import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -57,38 +59,15 @@ import org.openide.windows.OutputWriter;
  * {@link LineProcessor} is that LineProcessor always process whole lines.
  *
  * @author Petr Hejl
- * @see InputProcessors#bridge(org.netbeans.api.extexecution.input.LineProcessor)
- * @deprecated use {@link org.netbeans.api.extexecution.base.input.LineProcessors}
- *             and {@link org.netbeans.api.extexecution.print.LineProcessors}
+ * @see org.netbeans.api.extexecution.base.input.InputProcessors#bridge(org.netbeans.api.extexecution.base.input.LineProcessor)
+ * @since 1.43
  */
 public final class LineProcessors {
 
+    private static final Logger LOGGER = Logger.getLogger(LineProcessors.class.getName());
+
     private LineProcessors() {
         super();
-    }
-
-    /**
-     * Returns the processor acting as a proxy.
-     * <p>
-     * Any action taken on this processor is distributed to all processors
-     * passed as arguments in the same order as they were passed to this method.
-     * <p>
-     * Returned processor is <i> not thread safe</i>.
-     *
-     * @param processors processor to which the actions will be ditributed
-     * @return the processor acting as a proxy
-     */
-    @NonNull
-    public static LineProcessor proxy(@NonNull LineProcessor... processors) {
-        org.netbeans.api.extexecution.base.input.LineProcessor[] wrapped = new org.netbeans.api.extexecution.base.input.LineProcessor[processors.length];
-        for (int i = 0; i < processors.length; i++) {
-            if (processors[i] != null) {
-                wrapped[i] = new BaseLineProcessor(processors[i]);
-            } else {
-                wrapped[i] = null;
-            }
-        }
-        return new DelegatingLineProcessor(org.netbeans.api.extexecution.base.input.LineProcessors.proxy(wrapped));
     }
 
     /**
@@ -109,7 +88,7 @@ public final class LineProcessors {
      */
     @NonNull
     public static LineProcessor printing(@NonNull OutputWriter out, boolean resetEnabled) {
-        return new DelegatingLineProcessor(org.netbeans.api.extexecution.print.LineProcessors.printing(out, resetEnabled));
+        return printing(out, null, resetEnabled);
     }
 
     /**
@@ -135,73 +114,81 @@ public final class LineProcessors {
      */
     @NonNull
     public static LineProcessor printing(@NonNull OutputWriter out, @NullAllowed LineConvertor convertor, boolean resetEnabled) {
-        return new DelegatingLineProcessor(org.netbeans.api.extexecution.print.LineProcessors.printing(out, convertor, resetEnabled));
+        return new PrintingLineProcessor(out, convertor, resetEnabled);
     }
 
-    /**
-     * Returns the processor that will wait for the line matching the pattern,
-     * decreasing the latch when such line appears for the first time.
-     * <p>
-     * Reset action on the returned processor is noop.
-     * <p>
-     * Returned processor is <i> thread safe</i>.
-     *
-     * @param pattern pattern that line must match in order decrease the latch
-     * @param latch latch to decrease when the line matching the pattern appears
-     *             for the first time
-     * @return the processor that will wait for the line matching the pattern,
-     *             decreasing the latch when such line appears for the first time
-     */
-    @NonNull
-    public static LineProcessor patternWaiting(@NonNull Pattern pattern, @NonNull CountDownLatch latch) {
-        return new DelegatingLineProcessor(org.netbeans.api.extexecution.base.input.LineProcessors.patternWaiting(pattern, latch));
-    }
-    
-    static class DelegatingLineProcessor implements LineProcessor {
-        
-        private final org.netbeans.api.extexecution.base.input.LineProcessor delegate;
+    private static class PrintingLineProcessor implements LineProcessor {
 
-        public DelegatingLineProcessor(org.netbeans.api.extexecution.base.input.LineProcessor delegate) {
-            this.delegate = delegate;
+        private final OutputWriter out;
+
+        private final LineConvertor convertor;
+
+        private final boolean resetEnabled;
+
+        private boolean closed;
+
+        public PrintingLineProcessor(OutputWriter out, LineConvertor convertor, boolean resetEnabled) {
+            assert out != null;
+
+            this.out = out;
+            this.convertor = convertor;
+            this.resetEnabled = resetEnabled;
         }
 
-        @Override
         public void processLine(String line) {
-            delegate.processLine(line);
+            assert line != null;
+
+            if (closed) {
+                throw new IllegalStateException("Already closed processor");
+            }
+
+            LOGGER.log(Level.FINEST, line);
+
+            if (convertor != null) {
+                List<ConvertedLine> convertedLines = convertor.convert(line);
+                if (convertedLines != null) {
+                    for (ConvertedLine converted : convertedLines) {
+                        if (converted.getListener() == null) {
+                            out.println(converted.getText());
+                        } else {
+                            try {
+                                out.println(converted.getText(), converted.getListener());
+                            } catch (IOException ex) {
+                                LOGGER.log(Level.INFO, null, ex);
+                                out.println(converted.getText());
+                            }
+                        }
+                    }
+                } else {
+                    out.println(line);
+                }
+            } else {
+                out.println(line);
+            }
+            out.flush();
         }
 
-        @Override
         public void reset() {
-            delegate.reset();
+            if (closed) {
+                throw new IllegalStateException("Already closed processor");
+            }
+
+            if (!resetEnabled) {
+                return;
+            }
+
+            try {
+                out.reset();
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
         }
 
-        @Override
         public void close() {
-            delegate.close();
-        }
-    }
-    
-    static class BaseLineProcessor implements org.netbeans.api.extexecution.base.input.LineProcessor {
-        
-        private final LineProcessor delegate;
+            closed = true;
 
-        public BaseLineProcessor(LineProcessor delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public void processLine(String line) {
-            delegate.processLine(line);
-        }
-
-        @Override
-        public void reset() {
-            delegate.reset();
-        }
-
-        @Override
-        public void close() {
-            delegate.close();
+            out.flush();
+            out.close();
         }
     }
 }

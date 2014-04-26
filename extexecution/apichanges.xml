@@ -117,6 +117,17 @@ is the proper place.
     <changes>
 
         <change>
+            <summary>Deprecation</summary>
+            <version major="1" minor="43"/>
+            <date day="1" month="6" year="2014"/>
+            <author login="phejl"/>
+            <compatibility addition="yes"/>
+            <description>
+                Splitting the API deprecating major parts.
+            </description>
+            <issue number="XXXXXX"/>
+        </change>
+        <change>
             <api name="extexecution_spi"/>
             <summary>Advice to throw UserQuestionException</summary>
             <version major="1" minor="35"/>

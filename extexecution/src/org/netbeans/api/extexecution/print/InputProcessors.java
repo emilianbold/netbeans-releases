@@ -40,87 +40,30 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.api.extexecution.input;
+package org.netbeans.api.extexecution.print;
 
-import org.netbeans.modules.extexecution.input.BaseInputProcessor;
-import org.netbeans.modules.extexecution.input.DelegatingInputProcessor;
-import java.io.Writer;
+import java.io.IOException;
+import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.base.input.InputProcessor;
+import org.netbeans.modules.extexecution.input.LineParsingHelper;
 import org.openide.windows.OutputWriter;
 
 /**
  * Factory methods for {@link InputProcessor} classes.
  *
  * @author Petr Hejl
- * @deprecated use {@link org.netbeans.api.extexecution.base.input.InputProcessors}
- *             and {@link org.netbeans.api.extexecution.print.InputProcessors}
+ * @since 1.43
  */
 public final class InputProcessors {
 
+    private static final Logger LOGGER = Logger.getLogger(InputProcessors.class.getName());
+
     private InputProcessors() {
         super();
-    }
-
-    /**
-     * Returns the processor converting characters to the whole lines passing
-     * them to the given line processor.
-     * <p>
-     * Any reset or close is delegated to the corresponding method
-     * of line processor.
-     * <p>
-     * Returned processor is <i> not thread safe</i>.
-     *
-     * @param lineProcessor processor consuming parsed lines
-     * @return the processor converting characters to the whole lines
-     */
-    @NonNull
-    public static InputProcessor bridge(@NonNull LineProcessor lineProcessor) {
-        return new DelegatingInputProcessor(org.netbeans.api.extexecution.base.input.InputProcessors.bridge(new LineProcessors.BaseLineProcessor(lineProcessor)));
-    }
-
-    /**
-     * Returns the processor acting as a proxy.
-     * <p>
-     * Any action taken on this processor is distributed to all processors
-     * passed as arguments in the same order as they were passed to this method.
-     * <p>
-     * Returned processor is <i> not thread safe</i>.
-     *
-     * @param processors processor to which the actions will be ditributed
-     * @return the processor acting as a proxy
-     */
-    @NonNull
-    public static InputProcessor proxy(@NonNull InputProcessor... processors) {
-        org.netbeans.api.extexecution.base.input.InputProcessor[] wrapped = new org.netbeans.api.extexecution.base.input.InputProcessor[processors.length];
-        for (int i = 0; i < processors.length; i++) {
-            if (processors[i] != null) {
-                wrapped[i] = new BaseInputProcessor(processors[i]);
-            } else {
-                wrapped[i] = null;
-            }
-        }
-        return new DelegatingInputProcessor(org.netbeans.api.extexecution.base.input.InputProcessors.proxy(wrapped));
-    }
-
-    /**
-     * Returns the processor that writes every character passed for processing
-     * to the given writer.
-     * <p>
-     * Reset action on the returned processor is noop. Processor closes the
-     * writer on {@link InputProcessor#close()}.
-     * <p>
-     * Returned processor is <i> not thread safe</i>.
-     *
-     * @param writer processed characters will be written to this writer
-     * @return the processor that writes every character passed for processing
-     *             to the given writer
-     */
-    @NonNull
-    public static InputProcessor copying(@NonNull Writer writer) {
-        return new DelegatingInputProcessor(org.netbeans.api.extexecution.base.input.InputProcessors.copying(writer));
     }
 
     /**
@@ -141,13 +84,13 @@ public final class InputProcessors {
      */
     @NonNull
     public static InputProcessor printing(@NonNull OutputWriter out, boolean resetEnabled) {
-        return new DelegatingInputProcessor(org.netbeans.api.extexecution.print.InputProcessors.printing(out, resetEnabled));
+        return printing(out, null, resetEnabled);
     }
 
     /**
      * Returns the processor converting <i>whole</i> lines with convertor and
      * printing the result including unterminated tail (if present) to the
-     * given output writer. If the covertor does not handle line passed to it
+     * given output writer. If the convertor does not handle line passed to it
      * (returning <code>null</code>) raw lines are printed.
      * <p>
      * Reset action on the returned processor resets the writer if it is enabled
@@ -168,27 +111,104 @@ public final class InputProcessors {
      */
     @NonNull
     public static InputProcessor printing(@NonNull OutputWriter out, @NullAllowed LineConvertor convertor, boolean resetEnabled) {
-        return new DelegatingInputProcessor(org.netbeans.api.extexecution.print.InputProcessors.printing(out, convertor, resetEnabled));
+        return new PrintingInputProcessor(out, convertor, resetEnabled);
     }
 
-    /**
-     * Returns the processor that strips any
-     * <a href="http://en.wikipedia.org/wiki/ANSI_escape_code">ANSI escape sequences</a>
-     * and passes the result to the delegate.
-     * <p>
-     * Reset and close methods on the returned processor invokes
-     * the corresponding actions on delegate.
-     * <p>
-     * Returned processor is <i> not thread safe</i>.
-     *
-     * @param delegate processor that will receive characters without control
-     *             sequences
-     * @return the processor that strips any ansi escape sequences and passes
-     *             the result to the delegate
-     */
-    @NonNull
-    public static InputProcessor ansiStripping(@NonNull InputProcessor delegate) {
-        return new DelegatingInputProcessor(org.netbeans.api.extexecution.base.input.InputProcessors.ansiStripping(new BaseInputProcessor(delegate)));
+    private static class PrintingInputProcessor implements InputProcessor {
+
+        private final OutputWriter out;
+
+        private final LineConvertor convertor;
+
+        private final boolean resetEnabled;
+
+        private final LineParsingHelper helper = new LineParsingHelper();
+
+        private boolean closed;
+
+        public PrintingInputProcessor(OutputWriter out, LineConvertor convertor,
+                boolean resetEnabled) {
+
+            assert out != null;
+
+            this.out = out;
+            this.convertor = convertor;
+            this.resetEnabled = resetEnabled;
+        }
+
+        public void processInput(char[] chars) {
+            assert chars != null;
+
+            if (closed) {
+                throw new IllegalStateException("Already closed processor");
+            }
+
+// TODO this does not color standard error lines :(
+//            if (convertor == null) {
+//                out.print(String.valueOf(chars));
+//                return;
+//            }
+
+            String[] lines = helper.parse(chars);
+            for (String line : lines) {
+                LOGGER.log(Level.FINEST, "{0}\\n", line);
+
+                convert(line);
+                out.flush();
+            }
+
+            String line = helper.getTrailingLine(true);
+            if (line != null) {
+                LOGGER.log(Level.FINEST, line);
+
+                out.print(line);
+                out.flush();
+            }
+        }
+
+        public void reset() throws IOException {
+            if (closed) {
+                throw new IllegalStateException("Already closed processor");
+            }
+
+            if (!resetEnabled) {
+                return;
+            }
+
+            out.reset();
+        }
+
+        public void close() throws IOException {
+            closed = true;
+
+            out.close();
+        }
+
+        private void convert(String line) {
+            if (convertor == null) {
+                out.println(line);
+                return;
+            }
+
+            List<ConvertedLine> convertedLines = convertor.convert(line);
+            if (convertedLines == null) {
+                out.println(line);
+                return;
+            }
+
+            for (ConvertedLine converted : convertedLines) {
+                if (converted.getListener() == null) {
+                    out.println(converted.getText());
+                } else {
+                    try {
+                        out.println(converted.getText(), converted.getListener());
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                        out.println(converted.getText());
+                    }
+                }
+            }
+        }
     }
     
 }
