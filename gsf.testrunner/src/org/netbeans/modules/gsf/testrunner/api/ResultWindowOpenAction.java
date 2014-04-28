@@ -49,6 +49,7 @@ import javax.swing.AbstractAction;
 import org.openide.util.NbBundle;
 
 /**
+ * TODO: remove
  * Action which opens the Test Results window.
  *
  * @see  ResultWindow
