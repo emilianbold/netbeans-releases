@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,39 +37,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.nette.tester.util;
+package org.netbeans.modules.php.editor.completion;
 
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
-import org.netbeans.modules.php.api.util.FileUtils;
-import org.openide.util.NbBundle;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-public final class TesterUtils {
+/**
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
+ */
+public class PHPCodeCompletion243684Test extends PHPCodeCompletionTestBase {
 
-    public static final String[] BINARY_EXECUTABLES = new String[] {null, "php-cgi", "php"}; // NOI18N
-
-
-    private TesterUtils() {
+    public PHPCodeCompletion243684Test(String testName) {
+        super(testName);
     }
 
-    @NbBundle.Messages("TesterUtils.tester.label=Tester file")
-    @CheckForNull
-    public static String validateTesterPath(String testerPath) {
-        return PhpExecutableValidator.validateCommand(testerPath, Bundle.TesterUtils_tester_label());
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests243684/issue243684.php", "$arrayOfBars[$arrayOfBarArrayIndexes[0]]->^sayHello();", false);
     }
 
-    @NbBundle.Messages("TesterUtils.php.ini.error=Absolute path to file or directory must be set for php.ini.")
-    @CheckForNull
-    public static String validatePhpIniPath(@NullAllowed String phpIniPath) {
-        if (FileUtils.validateDirectory(phpIniPath, false) != null
-                && FileUtils.validateFile(phpIniPath, false) != null) {
-            return Bundle.TesterUtils_php_ini_error();
-        }
-        return null;
+    public void testUseCase2() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests243684/issue243684.php", "$arrayOfBars[getArrayOfIndexes()[0]]->^sayHello();", false);
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests243684/"))
+            })
+        );
     }
 
 }

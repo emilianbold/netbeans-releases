@@ -41,6 +41,8 @@ package org.netbeans.modules.testng;
 import java.awt.Component;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -129,6 +131,10 @@ public final class NewTestWizardIterator implements WizardDescriptor.Instantiati
         /* collect and build necessary data: */
         String name = Templates.getTargetName(wiz);
         FileObject targetFolder = Templates.getTargetFolder(wiz);
+        if(targetFolder == null) {
+            Logger.getLogger(NewTestWizardIterator.class.getName()).log(Level.INFO, "Target folder was null while creating new TestNG file");
+            return null;
+        }
         TestNGSupport.findTestNGSupport(FileOwnerQuery.getOwner(targetFolder)).configureProject(targetFolder);
         
         Map<CommonPlugin.CreateTestParam, Object> params
