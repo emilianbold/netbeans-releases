@@ -89,7 +89,9 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
     Collection<CsmMember> members = null;
     
     private ClassImplFunctionSpecialization(AST ast, NameHolder name, CsmFile file) {
-        super(ast, name, file, getStartOffset(ast), getEndOffset(ast));
+        super(ast, name, file, getStartOffset(ast), getStartOffset(ast));
+        // This instantiation is placed before method decl or def, so 
+        // getStartOffset is called two times.
     }
 
     private ClassImplFunctionSpecialization(NameHolder name, CsmDeclaration.Kind kind, CsmFile file, int start, int end) {
@@ -242,36 +244,40 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
         return className;
     }
 
-    public static int getStartOffset(AST node) {
-        AST id = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_QUALIFIED_ID);
-        node = (id != null) ? id : node;
-        if( node != null ) {
-            OffsetableAST csmAst = AstUtil.getFirstOffsetableAST(node);
-            if( csmAst != null ) {
-                return csmAst.getOffset();
-            }
-        }
-        return 0;
-    }
-
-    public static int getEndOffset(AST node) {
-        AST id = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_QUALIFIED_ID);
-        node = (id != null) ? id : node;
-        if( node != null ) {
-            AST child = node.getFirstChild();
-            if(child != null) {
-                AST gt = AstUtil.findLastSiblingOfType(child, CPPTokenTypes.GREATERTHAN);
-                if( gt instanceof CsmAST ) {
-                    return ((CsmAST) gt).getEndOffset();
-                }
-            }
-            AST lastChild = AstUtil.getLastChildRecursively(node);
-            if( lastChild instanceof CsmAST ) {
-                return ((CsmAST) lastChild).getEndOffset();
-            }
-        }
-        return 0;
-    }
+// #############################################################################
+// # Commented because these specializations should not be inside declarations
+// # and definitions of methods. 
+// #############################################################################
+//    public static int getStartOffset(AST node) {
+//        AST id = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_QUALIFIED_ID);
+//        node = (id != null) ? id : node;
+//        if( node != null ) {
+//            OffsetableAST csmAst = AstUtil.getFirstOffsetableAST(node);
+//            if( csmAst != null ) {
+//                return csmAst.getOffset();
+//            }
+//        }
+//        return 0;
+//    }
+//
+//    public static int getEndOffset(AST node) {
+//        AST id = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_QUALIFIED_ID);
+//        node = (id != null) ? id : node;
+//        if( node != null ) {
+//            AST child = node.getFirstChild();
+//            if(child != null) {
+//                AST gt = AstUtil.findLastSiblingOfType(child, CPPTokenTypes.GREATERTHAN);
+//                if( gt instanceof CsmAST ) {
+//                    return ((CsmAST) gt).getEndOffset();
+//                }
+//            }
+//            AST lastChild = AstUtil.getLastChildRecursively(node);
+//            if( lastChild instanceof CsmAST ) {
+//                return ((CsmAST) lastChild).getEndOffset();
+//            }
+//        }
+//        return 0;
+//    }
 
     
     public static class ClassFunctionSpecializationBuilder extends ClassSpecializationBuilder {
