@@ -2,6 +2,7 @@ Code completion result for source line:
 formatter.println("Result of testFunction: " + ArgumentsContext.testFunction(1, 2).|toString());
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+CLASS      name                            [PUBLIC]   <font color=#999999>argumentsTestFile.js</font>
 CLASS      prototype                       [PUBLIC]   JS Platform
 METHOD     create(O: Object): Object       [PUBLIC,   JS Platform
 METHOD     defineProperties(O: Object, Pr  [PUBLIC,   JS Platform

@@ -115,7 +115,17 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                         if (fo.equals(snapshot.getSource().getFileObject()) && object.getDeclarationName() != null) {
                             int docOffset = LexUtilities.getLexerOffset(jsResult, getDeclarationOffset(object));
                             if (docOffset > -1) {
-                                return new DeclarationLocation(fo, docOffset);
+                                TokenSequence ts = LexUtilities.getTokenSequence(snapshot, caretOffset, language);
+                                if (ts != null) {
+                                    ts.move(offset);
+                                    if (ts.moveNext()) {
+                                        int docTsOffset = LexUtilities.getLexerOffset(jsResult, ts.offset());
+                                        if (!(docTsOffset <= docOffset && docOffset <= (docTsOffset + ts.token().length()))) {
+                                            // return the declaration only if it's not the same identifier
+                                            return new DeclarationLocation(fo, docOffset);
+                                        }
+                                    }
+                                }
                             }
                         } else {
                             // TODO we need to solve to translating model offsets to the doc offset for other files?
