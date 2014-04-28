@@ -263,7 +263,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>com.oracle.tools.ide.projectless.debug.impl</friend>
+                <friend>com.oracle.tools.ide.projectless.debug.impl.dbx</friend>
                 <friend>com.sun.tools.debugger.dbxfacade.tool</friend>
                 <package>org.netbeans.modules.cnd.debugger.dbx.options</package>
                 <package>org.netbeans.modules.cnd.debugger.dbx.rtc</package>
