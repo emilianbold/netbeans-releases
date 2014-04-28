@@ -54,6 +54,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
  * interface has to be responsive to interruption.
  *
  * @author Petr Hejl
+ * @deprecated use {@link org.netbeans.api.extexecution.base.input.InputReader}
  */
 public interface InputReader extends Closeable {
 
@@ -72,6 +73,7 @@ public interface InputReader extends Closeable {
     /**
      * Closes the reader releasing the resources held by it.
      */
+    @Override
     void close() throws IOException;
 
 }

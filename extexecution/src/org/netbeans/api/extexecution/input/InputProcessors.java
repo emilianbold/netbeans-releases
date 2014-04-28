@@ -42,29 +42,23 @@
 
 package org.netbeans.api.extexecution.input;
 
-import java.io.IOException;
+import org.netbeans.modules.extexecution.input.BaseInputProcessor;
+import org.netbeans.modules.extexecution.input.DelegatingInputProcessor;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
-import org.netbeans.modules.extexecution.input.LineParsingHelper;
-import org.openide.util.Parameters;
 import org.openide.windows.OutputWriter;
 
 /**
  * Factory methods for {@link InputProcessor} classes.
  *
  * @author Petr Hejl
+ * @deprecated use {@link org.netbeans.api.extexecution.base.input.InputProcessors}
+ *             and {@link org.netbeans.api.extexecution.print.InputProcessors}
  */
 public final class InputProcessors {
-
-    private static final Logger LOGGER = Logger.getLogger(InputProcessors.class.getName());
 
     private InputProcessors() {
         super();
@@ -84,7 +78,7 @@ public final class InputProcessors {
      */
     @NonNull
     public static InputProcessor bridge(@NonNull LineProcessor lineProcessor) {
-        return new Bridge(lineProcessor);
+        return new DelegatingInputProcessor(org.netbeans.api.extexecution.base.input.InputProcessors.bridge(new LineProcessors.BaseLineProcessor(lineProcessor)));
     }
 
     /**
@@ -100,7 +94,15 @@ public final class InputProcessors {
      */
     @NonNull
     public static InputProcessor proxy(@NonNull InputProcessor... processors) {
-        return new ProxyInputProcessor(processors);
+        org.netbeans.api.extexecution.base.input.InputProcessor[] wrapped = new org.netbeans.api.extexecution.base.input.InputProcessor[processors.length];
+        for (int i = 0; i < processors.length; i++) {
+            if (processors[i] != null) {
+                wrapped[i] = new BaseInputProcessor(processors[i]);
+            } else {
+                wrapped[i] = null;
+            }
+        }
+        return new DelegatingInputProcessor(org.netbeans.api.extexecution.base.input.InputProcessors.proxy(wrapped));
     }
 
     /**
@@ -118,7 +120,7 @@ public final class InputProcessors {
      */
     @NonNull
     public static InputProcessor copying(@NonNull Writer writer) {
-        return new CopyingInputProcessor(writer);
+        return new DelegatingInputProcessor(org.netbeans.api.extexecution.base.input.InputProcessors.copying(writer));
     }
 
     /**
@@ -139,7 +141,7 @@ public final class InputProcessors {
      */
     @NonNull
     public static InputProcessor printing(@NonNull OutputWriter out, boolean resetEnabled) {
-        return printing(out, null, resetEnabled);
+        return new DelegatingInputProcessor(org.netbeans.api.extexecution.print.InputProcessors.printing(out, resetEnabled));
     }
 
     /**
@@ -166,7 +168,7 @@ public final class InputProcessors {
      */
     @NonNull
     public static InputProcessor printing(@NonNull OutputWriter out, @NullAllowed LineConvertor convertor, boolean resetEnabled) {
-        return new PrintingInputProcessor(out, convertor, resetEnabled);
+        return new DelegatingInputProcessor(org.netbeans.api.extexecution.print.InputProcessors.printing(out, convertor, resetEnabled));
     }
 
     /**
@@ -186,297 +188,7 @@ public final class InputProcessors {
      */
     @NonNull
     public static InputProcessor ansiStripping(@NonNull InputProcessor delegate) {
-        return new AnsiStrippingInputProcessor(delegate);
+        return new DelegatingInputProcessor(org.netbeans.api.extexecution.base.input.InputProcessors.ansiStripping(new BaseInputProcessor(delegate)));
     }
-
-    private static class Bridge implements InputProcessor {
-
-        private final LineProcessor lineProcessor;
-
-        private final LineParsingHelper helper = new LineParsingHelper();
-
-        private boolean closed;
-
-        public Bridge(LineProcessor lineProcessor) {
-            Parameters.notNull("lineProcessor", lineProcessor);
-
-            this.lineProcessor = lineProcessor;
-        }
-
-        public final void processInput(char[] chars) {
-            if (closed) {
-                throw new IllegalStateException("Already closed processor");
-            }
-
-            String[] lines = helper.parse(chars);
-            for (String line : lines) {
-                lineProcessor.processLine(line);
-            }
-        }
-
-        public final void reset() {
-            if (closed) {
-                throw new IllegalStateException("Already closed processor");
-            }
-
-            flush();
-            lineProcessor.reset();
-        }
-
-        public final void close() {
-            closed = true;
-
-            flush();
-            lineProcessor.close();
-        }
-
-        private void flush() {
-            String line = helper.getTrailingLine(true);
-            if (line != null) {
-                lineProcessor.processLine(line);
-            }
-        }
-    }
-
-    private static class ProxyInputProcessor implements InputProcessor {
-
-        private final List<InputProcessor> processors = new ArrayList<InputProcessor>();
-
-        private boolean closed;
-
-        public ProxyInputProcessor(InputProcessor... processors) {
-            for (InputProcessor processor : processors) {
-                if (processor != null) {
-                    this.processors.add(processor);
-                }
-            }
-        }
-
-        public void processInput(char[] chars) throws IOException {
-            if (closed) {
-                throw new IllegalStateException("Already closed processor");
-            }
-
-            for (InputProcessor processor : processors) {
-                processor.processInput(chars);
-            }
-        }
-
-        public void reset() throws IOException {
-            if (closed) {
-                throw new IllegalStateException("Already closed processor");
-            }
-
-            for (InputProcessor processor : processors) {
-                processor.reset();
-            }
-        }
-
-        public void close() throws IOException {
-            closed = true;
-
-            for (InputProcessor processor : processors) {
-                processor.close();
-            }
-        }
-    }
-
-    private static class PrintingInputProcessor implements InputProcessor {
-
-        private final OutputWriter out;
-
-        private final LineConvertor convertor;
-
-        private final boolean resetEnabled;
-
-        private final LineParsingHelper helper = new LineParsingHelper();
-
-        private boolean closed;
-
-        public PrintingInputProcessor(OutputWriter out, LineConvertor convertor,
-                boolean resetEnabled) {
-
-            assert out != null;
-
-            this.out = out;
-            this.convertor = convertor;
-            this.resetEnabled = resetEnabled;
-        }
-
-        public void processInput(char[] chars) {
-            assert chars != null;
-
-            if (closed) {
-                throw new IllegalStateException("Already closed processor");
-            }
-
-// TODO this does not color standard error lines :(
-//            if (convertor == null) {
-//                out.print(String.valueOf(chars));
-//                return;
-//            }
-
-            String[] lines = helper.parse(chars);
-            for (String line : lines) {
-                LOGGER.log(Level.FINEST, "{0}\\n", line);
-
-                convert(line);
-                out.flush();
-            }
-
-            String line = helper.getTrailingLine(true);
-            if (line != null) {
-                LOGGER.log(Level.FINEST, line);
-
-                out.print(line);
-                out.flush();
-            }
-        }
-
-        public void reset() throws IOException {
-            if (closed) {
-                throw new IllegalStateException("Already closed processor");
-            }
-
-            if (!resetEnabled) {
-                return;
-            }
-
-            out.reset();
-        }
-
-        public void close() throws IOException {
-            closed = true;
-
-            out.close();
-        }
-
-        private void convert(String line) {
-            if (convertor == null) {
-                out.println(line);
-                return;
-            }
-
-            List<ConvertedLine> convertedLines = convertor.convert(line);
-            if (convertedLines == null) {
-                out.println(line);
-                return;
-            }
-
-            for (ConvertedLine converted : convertedLines) {
-                if (converted.getListener() == null) {
-                    out.println(converted.getText());
-                } else {
-                    try {
-                        out.println(converted.getText(), converted.getListener());
-                    } catch (IOException ex) {
-                        LOGGER.log(Level.INFO, null, ex);
-                        out.println(converted.getText());
-                    }
-                }
-            }
-        }
-    }
-
-    private static class CopyingInputProcessor implements InputProcessor {
-
-        private final Writer writer;
-
-        private boolean closed;
-
-        public CopyingInputProcessor(Writer writer) {
-            this.writer = writer;
-        }
-
-        public void processInput(char[] chars) throws IOException {
-            if (closed) {
-                throw new IllegalStateException("Already closed processor");
-            }
-
-            LOGGER.log(Level.FINEST, Arrays.toString(chars));
-            writer.write(chars);
-            writer.flush();
-        }
-
-        public void reset() {
-            // noop
-        }
-
-        public void close() throws IOException {
-            closed = true;
-
-            writer.close();
-        }
-    }
-
-    private static class AnsiStrippingInputProcessor implements InputProcessor {
-
-        private final InputProcessor delegate;
-
-        private boolean closed;
-
-        public AnsiStrippingInputProcessor(InputProcessor delegate) {
-            this.delegate = delegate;
-        }
-
-        public void processInput(char[] chars) throws IOException {
-            if (closed) {
-                throw new IllegalStateException("Already closed processor");
-            }
-
-            // FIXME optimize me
-            String sequence = new String(chars);
-            if (containsAnsiColors(sequence)) {
-                sequence = stripAnsiColors(sequence);
-            }
-            delegate.processInput(sequence.toCharArray());
-        }
-
-        public void reset() throws IOException {
-            if (closed) {
-                throw new IllegalStateException("Already closed processor");
-            }
-
-            delegate.reset();
-        }
-
-        public void close() throws IOException {
-            closed = true;
-
-            delegate.close();
-        }
-
-        private static boolean containsAnsiColors(String sequence) {
-            // RSpec will color output with ANSI color sequence terminal escapes
-            return sequence.indexOf("\033[") != -1; // NOI18N
-        }
-
-        private static String stripAnsiColors(String sequence) {
-            StringBuilder sb = new StringBuilder(sequence.length());
-            int index = 0;
-            int max = sequence.length();
-            while (index < max) {
-                int nextEscape = sequence.indexOf("\033[", index); // NOI18N
-                if (nextEscape == -1) {
-                    nextEscape = sequence.length();
-                }
-
-                for (int n = (nextEscape == -1) ? max : nextEscape; index < n; index++) {
-                    sb.append(sequence.charAt(index));
-                }
-
-                if (nextEscape != -1) {
-                    for (; index < max; index++) {
-                        char c = sequence.charAt(index);
-                        if (c == 'm') {
-                            index++;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            return sb.toString();
-        }
-    }
+    
 }
