@@ -429,7 +429,9 @@ public final class ExecutionDescriptor {
     /**
      * Returns a descriptor with configured factory for standard output
      * processor. The factory is used by {@link ExecutionService} to create
-     * additional processor for standard output.
+     * additional processor for standard output. <i>The configured value will
+     * be ignored if you previously configured processor via deprecated
+     * {@link #outProcessorFactory(org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory)}.</i>
      * <p>
      * Note that {@link ExecutionService} automatically uses
      * the printing processor created by
@@ -501,7 +503,9 @@ public final class ExecutionDescriptor {
     /**
      * Returns a descriptor with configured factory for standard error output
      * processor. The factory is used by {@link ExecutionService} to create
-     * additional processor for standard error output.
+     * additional processor for standard error output. <i>The configured value will
+     * be ignored if you previously configured processor via deprecated
+     * {@link #errProcessorFactory(org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory)}.</i>
      * <p>
      * Note that {@link ExecutionService} automatically uses
      * the printing processor created by
