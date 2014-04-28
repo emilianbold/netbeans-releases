@@ -59,7 +59,6 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -73,7 +72,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
-import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -330,7 +328,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
             return out;
         }
         if (file != null && file.isParsed()) {
-            CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, position);
+            CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, doc, position);
             if (ref != null && ref.getReferencedObject() != null) {
                 if (interrupter.cancelled()) {
                     return out;
@@ -493,7 +491,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
             ConditionalBlock current = new ConditionalBlock(top);
             ConditionalBlock offsetContainer = null;
             for (TokenSequence<?> ts : ppSequences) {
-                if (interrupter != null && interrupter.cancelled()) {
+                if (interrupter.cancelled()) {
                     return Collections.<CsmReference>emptyList();
                 }
                 @SuppressWarnings("unchecked")
@@ -572,7 +570,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
                 while (!tss.isEmpty()) {
                     ts = tss.removeFirst();
                     while (ts.moveNext()) {
-                        if (interrupter != null && interrupter.cancelled()) {
+                        if (interrupter.cancelled()) {
                             return Collections.<CsmReference>emptyList();
                         }
                         @SuppressWarnings("unchecked")

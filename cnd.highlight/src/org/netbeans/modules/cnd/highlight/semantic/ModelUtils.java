@@ -48,6 +48,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
@@ -96,8 +97,8 @@ public class ModelUtils {
     }
 
 
-    /*package*/ static List<CsmReference> collect(final CsmFile csmFile, final ReferenceCollector collector, final Interrupter interrupter) {
-        CsmFileReferences.getDefault().accept(csmFile, new CsmFileReferences.Visitor() {
+    /*package*/ static List<CsmReference> collect(final CsmFile csmFile, Document doc, final ReferenceCollector collector, final Interrupter interrupter) {
+        CsmFileReferences.getDefault().accept(csmFile, doc, new CsmFileReferences.Visitor() {
             @Override
             public void visit(CsmReferenceContext context) {
                 collector.visit(context.getReference(), csmFile);
@@ -111,11 +112,11 @@ public class ModelUtils {
         return collector.getReferences();
     }
 
-    /*package*/ static List<CsmOffsetable> getInactiveCodeBlocks(CsmFile file, Interrupter interrupter) {
+    /*package*/ static List<CsmOffsetable> getInactiveCodeBlocks(CsmFile file, Document doc, Interrupter interrupter) {
         return CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(file, interrupter);
     }
 
-    /*package*/ static List<CsmReference> getMacroBlocks(CsmFile file, Interrupter interrupter) {
+    /*package*/ static List<CsmReference> getMacroBlocks(CsmFile file, Document doc, Interrupter interrupter) {
         return CsmFileInfoQuery.getDefault().getMacroUsages(file, interrupter);
     }
 
