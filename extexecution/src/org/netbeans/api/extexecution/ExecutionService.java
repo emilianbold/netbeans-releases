@@ -215,10 +215,9 @@ public final class ExecutionService {
         realDescriptor = realDescriptor.postExecution(new ParametrizedRunnable<Integer>() {
 
             @Override
-            public void run(Integer ret) {
+            public void run(Integer parameter) {
                 cleanup(handle, ioData, ioData.getInputOutput() != descriptor.getInputOutput(),
-                        // XXX
-                        descriptor.isFrontWindowOnError() && ret != null && ret.intValue() != 0);
+                        descriptor.isFrontWindowOnError() && parameter != null && parameter != 0);
                 Runnable orig = descriptor.getPostExecution();
                 if (orig != null) {
                     orig.run();
