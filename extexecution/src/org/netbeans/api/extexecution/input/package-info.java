@@ -48,6 +48,7 @@
  * is character or line based.
  *
  * @see org.netbeans.api.extexecution.input.InputReaderTask
+ * @deprecated use {@link org.netbeans.api.extexecution.base.input}
  */
 package org.netbeans.api.extexecution.input;
 
