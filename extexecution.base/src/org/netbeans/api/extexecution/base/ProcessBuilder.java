@@ -90,6 +90,7 @@ import org.openide.util.Parameters;
  *
  * @author Petr Hejl
  */
+// TODO proxy autoconfiguration optional via lookup
 public final class ProcessBuilder implements Callable<Process>, Lookup.Provider {
 
     private final ProcessBuilderImplementation implementation;
