@@ -63,8 +63,8 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory2;
 import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
-import org.netbeans.api.extexecution.base.BackgroundDescriptor;
-import org.netbeans.api.extexecution.base.BackgroundService;
+import org.netbeans.api.extexecution.base.BaseDescriptor;
+import org.netbeans.api.extexecution.base.BaseService;
 import org.netbeans.api.extexecution.base.ParametrizedRunnable;
 import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.netbeans.api.extexecution.base.input.InputProcessors;
@@ -198,7 +198,7 @@ public final class ExecutionService {
         }
         final ExecutedHolder executed = new ExecutedHolder();
 
-        BackgroundDescriptor realDescriptor = new BackgroundDescriptor();
+        BaseDescriptor realDescriptor = new BaseDescriptor();
         realDescriptor = realDescriptor.charset(descriptor.getCharset());
         realDescriptor = realDescriptor.inReader(in);
         realDescriptor = realDescriptor.preExecution(new Runnable() {
@@ -224,14 +224,14 @@ public final class ExecutionService {
                 }
             }
         });
-        realDescriptor = realDescriptor.outProcessorFactory(new BackgroundDescriptor.InputProcessorFactory() {
+        realDescriptor = realDescriptor.outProcessorFactory(new BaseDescriptor.InputProcessorFactory() {
 
             @Override
             public InputProcessor newInputProcessor() {
                 return createOutProcessor(out);
             }
         });
-        realDescriptor = realDescriptor.errProcessorFactory(new BackgroundDescriptor.InputProcessorFactory() {
+        realDescriptor = realDescriptor.errProcessorFactory(new BaseDescriptor.InputProcessorFactory() {
 
             @Override
             public InputProcessor newInputProcessor() {
@@ -239,7 +239,7 @@ public final class ExecutionService {
             }
         });
         
-        BackgroundService service = BackgroundService.newService(processCreator, realDescriptor);
+        BaseService service = BaseService.newService(processCreator, realDescriptor);
         final Future<Integer> delegate = service.run();
         
         final Future<Integer> current = new Future<Integer>() {

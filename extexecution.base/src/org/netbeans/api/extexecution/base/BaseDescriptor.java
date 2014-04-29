@@ -53,7 +53,7 @@ import org.netbeans.api.extexecution.base.input.InputProcessor;
  *
  * @author Petr Hejl
  */
-public final class BackgroundDescriptor {
+public final class BaseDescriptor {
 
     private final Charset charset;
 
@@ -67,11 +67,11 @@ public final class BackgroundDescriptor {
 
     private final Reader inReader;
 
-    public BackgroundDescriptor() {
+    public BaseDescriptor() {
         this(null, null, null, null, null, null);
     }
 
-    private BackgroundDescriptor(Charset charset, Runnable preExecution,
+    private BaseDescriptor(Charset charset, Runnable preExecution,
             ParametrizedRunnable<Integer> postExecution,
             InputProcessorFactory outProcessorFactory,
             InputProcessorFactory errProcessorFactory,
@@ -87,8 +87,8 @@ public final class BackgroundDescriptor {
 
     @NonNull
     @CheckReturnValue
-    public BackgroundDescriptor charset(@NullAllowed Charset charset) {
-        return new BackgroundDescriptor(charset, preExecution, postExecution,
+    public BaseDescriptor charset(@NullAllowed Charset charset) {
+        return new BaseDescriptor(charset, preExecution, postExecution,
                 outProcessorFactory, errProcessorFactory, inReader);
     }
 
@@ -98,8 +98,8 @@ public final class BackgroundDescriptor {
 
     @NonNull
     @CheckReturnValue
-    public BackgroundDescriptor preExecution(@NullAllowed Runnable preExecution) {
-        return new BackgroundDescriptor(charset, preExecution, postExecution,
+    public BaseDescriptor preExecution(@NullAllowed Runnable preExecution) {
+        return new BaseDescriptor(charset, preExecution, postExecution,
                 outProcessorFactory, errProcessorFactory, inReader);
     }
 
@@ -109,8 +109,8 @@ public final class BackgroundDescriptor {
 
     @NonNull
     @CheckReturnValue
-    public BackgroundDescriptor postExecution(@NullAllowed ParametrizedRunnable<Integer> postExecution) {
-        return new BackgroundDescriptor(charset, preExecution, postExecution,
+    public BaseDescriptor postExecution(@NullAllowed ParametrizedRunnable<Integer> postExecution) {
+        return new BaseDescriptor(charset, preExecution, postExecution,
                 outProcessorFactory, errProcessorFactory, inReader);
     }
 
@@ -120,8 +120,8 @@ public final class BackgroundDescriptor {
 
     @NonNull
     @CheckReturnValue
-    public BackgroundDescriptor outProcessorFactory(InputProcessorFactory outProcessorFactory) {
-        return new BackgroundDescriptor(charset, preExecution, postExecution,
+    public BaseDescriptor outProcessorFactory(InputProcessorFactory outProcessorFactory) {
+        return new BaseDescriptor(charset, preExecution, postExecution,
                 outProcessorFactory, errProcessorFactory, inReader);
     }
 
@@ -131,8 +131,8 @@ public final class BackgroundDescriptor {
 
     @NonNull
     @CheckReturnValue
-    public BackgroundDescriptor errProcessorFactory(InputProcessorFactory errProcessorFactory) {
-        return new BackgroundDescriptor(charset, preExecution, postExecution,
+    public BaseDescriptor errProcessorFactory(InputProcessorFactory errProcessorFactory) {
+        return new BaseDescriptor(charset, preExecution, postExecution,
                 outProcessorFactory, errProcessorFactory, inReader);
     }
 
@@ -142,8 +142,8 @@ public final class BackgroundDescriptor {
 
     @NonNull
     @CheckReturnValue
-    public BackgroundDescriptor inReader(Reader inReader) {
-        return new BackgroundDescriptor(charset, preExecution, postExecution,
+    public BaseDescriptor inReader(Reader inReader) {
+        return new BaseDescriptor(charset, preExecution, postExecution,
                 outProcessorFactory, errProcessorFactory, inReader);
     }
 

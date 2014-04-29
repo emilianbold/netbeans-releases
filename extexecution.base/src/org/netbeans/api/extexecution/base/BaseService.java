@@ -64,7 +64,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.extexecution.base.BackgroundDescriptor.InputProcessorFactory;
+import org.netbeans.api.extexecution.base.BaseDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.netbeans.api.extexecution.base.input.InputProcessors;
 import org.netbeans.api.extexecution.base.input.InputReaderTask;
@@ -114,15 +114,15 @@ import org.openide.util.RequestProcessor;
  * @see #newService(java.util.concurrent.Callable, org.netbeans.api.extexecution.ExecutionDescriptor, java.lang.String)
  * @see ExecutionDescriptor
  */
-public final class BackgroundService {
+public final class BaseService {
 
-    private static final Logger LOGGER = Logger.getLogger(BackgroundService.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(BaseService.class.getName());
 
     private static final Set<Process> RUNNING_PROCESSES = new HashSet<Process>();
 
     private static final int EXECUTOR_SHUTDOWN_SLICE = 1000;
 
-    private static final ExecutorService EXECUTOR_SERVICE = new RequestProcessor(BackgroundService.class.getName(), Integer.MAX_VALUE);
+    private static final ExecutorService EXECUTOR_SERVICE = new RequestProcessor(BaseService.class.getName(), Integer.MAX_VALUE);
 
     static {
 
@@ -144,18 +144,18 @@ public final class BackgroundService {
 
     private final Callable<? extends Process> processCreator;
     
-    private final BackgroundDescriptor descriptor;
+    private final BaseDescriptor descriptor;
 
-    public BackgroundService(Callable<? extends Process> processCreator,
-            BackgroundDescriptor descriptor) {
+    public BaseService(Callable<? extends Process> processCreator,
+            BaseDescriptor descriptor) {
         this.processCreator = processCreator;
         this.descriptor = descriptor;
     }
 
     @NonNull
-    public static BackgroundService newService(@NonNull Callable<? extends Process> processCreator,
-            @NonNull BackgroundDescriptor descriptor) {
-        return new BackgroundService(processCreator, descriptor);
+    public static BaseService newService(@NonNull Callable<? extends Process> processCreator,
+            @NonNull BaseDescriptor descriptor) {
+        return new BaseService(processCreator, descriptor);
     }
     
     /**
