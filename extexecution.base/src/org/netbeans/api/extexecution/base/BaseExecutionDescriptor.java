@@ -53,7 +53,7 @@ import org.netbeans.api.extexecution.base.input.InputProcessor;
  *
  * @author Petr Hejl
  */
-public final class BaseDescriptor {
+public final class BaseExecutionDescriptor {
 
     private final Charset charset;
 
@@ -67,11 +67,11 @@ public final class BaseDescriptor {
 
     private final Reader inReader;
 
-    public BaseDescriptor() {
+    public BaseExecutionDescriptor() {
         this(null, null, null, null, null, null);
     }
 
-    private BaseDescriptor(Charset charset, Runnable preExecution,
+    private BaseExecutionDescriptor(Charset charset, Runnable preExecution,
             ParametrizedRunnable<Integer> postExecution,
             InputProcessorFactory outProcessorFactory,
             InputProcessorFactory errProcessorFactory,
@@ -87,8 +87,8 @@ public final class BaseDescriptor {
 
     @NonNull
     @CheckReturnValue
-    public BaseDescriptor charset(@NullAllowed Charset charset) {
-        return new BaseDescriptor(charset, preExecution, postExecution,
+    public BaseExecutionDescriptor charset(@NullAllowed Charset charset) {
+        return new BaseExecutionDescriptor(charset, preExecution, postExecution,
                 outProcessorFactory, errProcessorFactory, inReader);
     }
 
@@ -98,8 +98,8 @@ public final class BaseDescriptor {
 
     @NonNull
     @CheckReturnValue
-    public BaseDescriptor preExecution(@NullAllowed Runnable preExecution) {
-        return new BaseDescriptor(charset, preExecution, postExecution,
+    public BaseExecutionDescriptor preExecution(@NullAllowed Runnable preExecution) {
+        return new BaseExecutionDescriptor(charset, preExecution, postExecution,
                 outProcessorFactory, errProcessorFactory, inReader);
     }
 
@@ -109,8 +109,8 @@ public final class BaseDescriptor {
 
     @NonNull
     @CheckReturnValue
-    public BaseDescriptor postExecution(@NullAllowed ParametrizedRunnable<Integer> postExecution) {
-        return new BaseDescriptor(charset, preExecution, postExecution,
+    public BaseExecutionDescriptor postExecution(@NullAllowed ParametrizedRunnable<Integer> postExecution) {
+        return new BaseExecutionDescriptor(charset, preExecution, postExecution,
                 outProcessorFactory, errProcessorFactory, inReader);
     }
 
@@ -120,8 +120,8 @@ public final class BaseDescriptor {
 
     @NonNull
     @CheckReturnValue
-    public BaseDescriptor outProcessorFactory(InputProcessorFactory outProcessorFactory) {
-        return new BaseDescriptor(charset, preExecution, postExecution,
+    public BaseExecutionDescriptor outProcessorFactory(InputProcessorFactory outProcessorFactory) {
+        return new BaseExecutionDescriptor(charset, preExecution, postExecution,
                 outProcessorFactory, errProcessorFactory, inReader);
     }
 
@@ -131,8 +131,8 @@ public final class BaseDescriptor {
 
     @NonNull
     @CheckReturnValue
-    public BaseDescriptor errProcessorFactory(InputProcessorFactory errProcessorFactory) {
-        return new BaseDescriptor(charset, preExecution, postExecution,
+    public BaseExecutionDescriptor errProcessorFactory(InputProcessorFactory errProcessorFactory) {
+        return new BaseExecutionDescriptor(charset, preExecution, postExecution,
                 outProcessorFactory, errProcessorFactory, inReader);
     }
 
@@ -142,8 +142,8 @@ public final class BaseDescriptor {
 
     @NonNull
     @CheckReturnValue
-    public BaseDescriptor inReader(Reader inReader) {
-        return new BaseDescriptor(charset, preExecution, postExecution,
+    public BaseExecutionDescriptor inReader(Reader inReader) {
+        return new BaseExecutionDescriptor(charset, preExecution, postExecution,
                 outProcessorFactory, errProcessorFactory, inReader);
     }
 

@@ -68,11 +68,11 @@ import org.netbeans.junit.NbTestCase;
  *
  * @author Petr Hejl
  */
-public class BaseServiceTest extends NbTestCase {
+public class BaseExecutionServiceTest extends NbTestCase {
 
     private static final int PROCESS_TIMEOUT = 30000;
 
-    public BaseServiceTest(String name) {
+    public BaseExecutionServiceTest(String name) {
         super(name);
     }
 
@@ -81,8 +81,8 @@ public class BaseServiceTest extends NbTestCase {
         TestCallable callable = new TestCallable();
         callable.addProcess(process);
 
-        BaseDescriptor descriptor = new BaseDescriptor();
-        BaseService service = BaseService.newService(
+        BaseExecutionDescriptor descriptor = new BaseExecutionDescriptor();
+        BaseExecutionService service = BaseExecutionService.newService(
                 callable, descriptor);
 
         Future<Integer> task = service.run();
@@ -101,8 +101,8 @@ public class BaseServiceTest extends NbTestCase {
         TestCallable callable = new TestCallable();
         callable.addProcess(process);
 
-        BaseDescriptor descriptor = new BaseDescriptor();
-        BaseService service = BaseService.newService(
+        BaseExecutionDescriptor descriptor = new BaseExecutionDescriptor();
+        BaseExecutionService service = BaseExecutionService.newService(
                 callable, descriptor);
 
         // first run
@@ -141,7 +141,7 @@ public class BaseServiceTest extends NbTestCase {
         TestCallable callable = new TestCallable();
         callable.addProcess(process);
 
-        BaseDescriptor descriptor = new BaseDescriptor();
+        BaseExecutionDescriptor descriptor = new BaseExecutionDescriptor();
         final CountDownLatch latch = new CountDownLatch(1);
         descriptor = descriptor.preExecution(new Runnable() {
             public void run() {
@@ -153,7 +153,7 @@ public class BaseServiceTest extends NbTestCase {
             }
         });
 
-        BaseService service = BaseService.newService(
+        BaseExecutionService service = BaseExecutionService.newService(
                 callable, descriptor);
 
         // first run
@@ -191,7 +191,7 @@ public class BaseServiceTest extends NbTestCase {
         callable.addProcess(process1);
         callable.addProcess(process2);
 
-        BaseDescriptor descriptor = new BaseDescriptor();
+        BaseExecutionDescriptor descriptor = new BaseExecutionDescriptor();
         final CyclicBarrier barrier = new CyclicBarrier(3);
         descriptor = descriptor.preExecution(new Runnable() {
             public void run() {
@@ -205,7 +205,7 @@ public class BaseServiceTest extends NbTestCase {
             }
         });
 
-        BaseService service = BaseService.newService(
+        BaseExecutionService service = BaseExecutionService.newService(
                 callable, descriptor);
 
         Future<Integer> task1 = service.run();
@@ -255,10 +255,10 @@ public class BaseServiceTest extends NbTestCase {
         TestRunnable preRunnable = new TestRunnable();
         TestParametrizedRunnable postRunnable = new TestParametrizedRunnable();
 
-        BaseDescriptor descriptor = new BaseDescriptor();
+        BaseExecutionDescriptor descriptor = new BaseExecutionDescriptor();
         descriptor = descriptor.preExecution(preRunnable).postExecution(postRunnable);
 
-        BaseService service = BaseService.newService(
+        BaseExecutionService service = BaseExecutionService.newService(
                 callable, descriptor);
 
         Future<Integer> task = service.run();
@@ -284,15 +284,15 @@ public class BaseServiceTest extends NbTestCase {
         callable.addProcess(process);
 
         final TestLineProcessor processor = new TestLineProcessor(false);
-        BaseDescriptor descriptor = new BaseDescriptor().charset(charset).outProcessorFactory(
-                new BaseDescriptor.InputProcessorFactory() {
+        BaseExecutionDescriptor descriptor = new BaseExecutionDescriptor().charset(charset).outProcessorFactory(
+                new BaseExecutionDescriptor.InputProcessorFactory() {
 
             public InputProcessor newInputProcessor() {
                 return InputProcessors.bridge(processor);
             }
         });
 
-        BaseService service = BaseService.newService(
+        BaseExecutionService service = BaseExecutionService.newService(
                 callable, descriptor);
 
         Future<Integer> task = service.run();
