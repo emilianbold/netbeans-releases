@@ -333,7 +333,7 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
     }    
     
     public void testBug244177() throws Exception {
-        // Bug 243171 - No code completion for auto variable
+        // Bug 244177 - Unresolved decltype inside decltype
         performTest("bug244177.cpp", 12, 20, "bug244177.cpp", 3, 9);
     }        
 }
