@@ -47,46 +47,33 @@ import org.netbeans.modules.extexecution.InputOutputManager;
 import org.netbeans.modules.extexecution.StopAction;
 import org.netbeans.modules.extexecution.RerunAction;
 import java.awt.event.ActionEvent;
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
-import java.nio.charset.Charset;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.extexecution.ProcessInputStream;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory2;
 import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
+import org.netbeans.api.extexecution.base.BackgroundDescriptor;
+import org.netbeans.api.extexecution.base.BackgroundService;
+import org.netbeans.api.extexecution.base.ParametrizedRunnable;
 import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.netbeans.api.extexecution.base.input.InputProcessors;
-import org.netbeans.api.extexecution.base.input.InputReaderTask;
-import org.netbeans.api.extexecution.base.input.InputReaders;
 import org.netbeans.api.extexecution.print.LineProcessors;
 import org.netbeans.modules.extexecution.input.BaseInputProcessor;
 import org.netbeans.modules.extexecution.input.DelegatingInputProcessor;
 import org.openide.util.Cancellable;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
@@ -127,12 +114,6 @@ public final class ExecutionService {
 
     private static final Logger LOGGER = Logger.getLogger(ExecutionService.class.getName());
 
-    private static final Set<Process> RUNNING_PROCESSES = new HashSet<Process>();
-
-    private static final int EXECUTOR_SHUTDOWN_SLICE = 1000;
-
-    private static final ExecutorService EXECUTOR_SERVICE = new RequestProcessor(ExecutionService.class.getName(), Integer.MAX_VALUE);
-
     static {
         // rerun accessor
         RerunAction.Accessor.setDefault(new RerunAction.Accessor() {
@@ -140,21 +121,6 @@ public final class ExecutionService {
             @Override
             public Future<Integer> run(ExecutionService service, InputOutput required) {
                 return service.run(required);
-            }
-        });
-
-        // shutdown hook
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-
-            @Override
-            public void run() {
-                EXECUTOR_SERVICE.shutdown();
-
-                synchronized (RUNNING_PROCESSES) {
-                    for (Process process : RUNNING_PROCESSES) {
-                        process.destroy();
-                    }
-                }
             }
         });
     }
@@ -227,135 +193,61 @@ public final class ExecutionService {
         final OutputWriter err = io.getErr();
         final Reader in = io.getIn();
 
-        final CountDownLatch finishedLatch = new CountDownLatch(1);
-
         class ExecutedHolder {
             private boolean executed = false;
         }
         final ExecutedHolder executed = new ExecutedHolder();
 
-        Callable<Integer> callable = new Callable<Integer>() {
-            public Integer call() throws Exception {
+        BackgroundDescriptor realDescriptor = new BackgroundDescriptor();
+        realDescriptor = realDescriptor.charset(descriptor.getCharset());
+        realDescriptor = realDescriptor.inReader(in);
+        realDescriptor = realDescriptor.preExecution(new Runnable() {
 
-                boolean interrupted = false;
-                Process process = null;
-                Integer ret = null;
-                ExecutorService executor = null;
-
-                ProcessInputStream outStream = null;
-                ProcessInputStream errStream = null;
-
-                List<InputReaderTask> tasks = new ArrayList<InputReaderTask>();
-
-                try {
-                    executed.executed = true;
-                    final Runnable pre = descriptor.getPreExecution();
-                    if (pre != null) {
-                        pre.run();
-                    }
-
-                    if (Thread.currentThread().isInterrupted()) {
-                        return null;
-                    }
-
-                    process = processCreator.call();
-                    synchronized (RUNNING_PROCESSES) {
-                        RUNNING_PROCESSES.add(process);
-                    }
-
-                    if (Thread.currentThread().isInterrupted()) {
-                        return null;
-                    }
-
-                    outStream = new ProcessInputStream(process, process.getInputStream());
-                    errStream = new ProcessInputStream(process, process.getErrorStream());
-
-                    executor = Executors.newFixedThreadPool(descriptor.isInputVisible() ? 3 : 2);
-
-                    Charset charset = descriptor.getCharset();
-                    if (charset == null) {
-                        charset = Charset.defaultCharset();
-                    }
-
-                    tasks.add(InputReaderTask.newDrainingTask(
-                        InputReaders.forStream(new BufferedInputStream(outStream), charset),
-                        createOutProcessor(out)));
-                    tasks.add(InputReaderTask.newDrainingTask(
-                        InputReaders.forStream(new BufferedInputStream(errStream), charset),
-                        createErrProcessor(err)));
-                    if (descriptor.isInputVisible()) {
-                        tasks.add(InputReaderTask.newTask(
-                            InputReaders.forReader(in),
-                            createInProcessor(process.getOutputStream())));
-                    }
-                    for (InputReaderTask task : tasks) {
-                        executor.submit(task);
-                    }
-
-                    process.waitFor();
-                } catch (InterruptedException ex) {
-                    LOGGER.log(Level.FINE, null, ex);
-                    interrupted = true;
-                } catch (Throwable t) {
-                    LOGGER.log(Level.INFO, null, t);
-                    throw new WrappedException(t);
-                } finally {
-                    try {
-                        // fully evaluated - we want to clear interrupted status in any case
-                        interrupted = interrupted | Thread.interrupted();
-
-                        if (!interrupted) {
-                            if (outStream != null) {
-                                outStream.close(true);
-                            }
-                            if (errStream != null) {
-                                errStream.close(true);
-                            }
-                        }
-
-                        if (process != null) {
-                            process.destroy();
-                            synchronized (RUNNING_PROCESSES) {
-                                RUNNING_PROCESSES.remove(process);
-                            }
-
-                            try {
-                                ret = process.exitValue();
-                            } catch (IllegalThreadStateException ex) {
-                                LOGGER.log(Level.FINE, "Process not yet exited", ex);
-                            }
-                        }
-                    } catch (Throwable t) {
-                        LOGGER.log(Level.INFO, null, t);
-                        throw new WrappedException(t);
-                    } finally {
-                        try {
-                            cleanup(tasks, executor, handle, ioData,
-                                    ioData.getInputOutput() != descriptor.getInputOutput(),
-                                    descriptor.isFrontWindowOnError() && ret != null && ret.intValue() != 0);
-
-                            final Runnable post = descriptor.getPostExecution();
-                            if (post != null) {
-                                post.run();
-                            }
-                        } finally {
-                            finishedLatch.countDown();
-                            if (interrupted) {
-                                Thread.currentThread().interrupt();
-                            }
-                        }
-                    }
+            @Override
+            public void run() {
+                executed.executed = true;
+                Runnable orig = descriptor.getPreExecution();
+                if (orig != null) {
+                    orig.run();
                 }
-
-                return ret;
             }
-        };
+        });
+        realDescriptor = realDescriptor.postExecution(new ParametrizedRunnable<Integer>() {
 
-        final FutureTask<Integer> current = new FutureTask<Integer>(callable) {
+            @Override
+            public void run(Integer ret) {
+                cleanup(handle, ioData, ioData.getInputOutput() != descriptor.getInputOutput(),
+                        // XXX
+                        descriptor.isFrontWindowOnError() && ret != null && ret.intValue() != 0);
+                Runnable orig = descriptor.getPostExecution();
+                if (orig != null) {
+                    orig.run();
+                }
+            }
+        });
+        realDescriptor = realDescriptor.outProcessorFactory(new BackgroundDescriptor.InputProcessorFactory() {
+
+            @Override
+            public InputProcessor newInputProcessor() {
+                return createOutProcessor(out);
+            }
+        });
+        realDescriptor = realDescriptor.errProcessorFactory(new BackgroundDescriptor.InputProcessorFactory() {
+
+            @Override
+            public InputProcessor newInputProcessor() {
+                return createErrProcessor(err);
+            }
+        });
+        
+        BackgroundService service = BackgroundService.newService(processCreator, realDescriptor);
+        final Future<Integer> delegate = service.run();
+        
+        final Future<Integer> current = new Future<Integer>() {
 
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
-                boolean ret = super.cancel(mayInterruptIfRunning);
+                boolean ret = delegate.cancel(mayInterruptIfRunning);
                 if (!executed.executed) {
                     // not executed at all - passing false to show
                     cleanup(handle, ioData, false);
@@ -379,14 +271,24 @@ public final class ExecutionService {
             }
 
             @Override
-            protected void setException(Throwable t) {
-                if (t instanceof WrappedException) {
-                    super.setException(((WrappedException) t).getCause());
-                } else {
-                    super.setException(t);
-                }
+            public boolean isCancelled() {
+                return delegate.isCancelled();
             }
 
+            @Override
+            public boolean isDone() {
+                return delegate.isDone();
+            }
+
+            @Override
+            public Integer get() throws InterruptedException, ExecutionException {
+                return delegate.get();
+            }
+
+            @Override
+            public Integer get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                return delegate.get(timeout, unit);
+            }
         };
 
         // TODO cleanup
@@ -394,6 +296,7 @@ public final class ExecutionService {
         final RerunAction workingRerunAction = ioData.getRerunAction();
 
         Mutex.EVENT.readAccess(new Runnable() {
+            @Override
             public void run() {
                 if (workingStopAction != null) {
                     synchronized (workingStopAction) {
@@ -416,7 +319,6 @@ public final class ExecutionService {
             cancellable.setTask(current);
         }
 
-        EXECUTOR_SERVICE.execute(current);
         return current;
     }
 
@@ -510,29 +412,9 @@ public final class ExecutionService {
         return handle;
     }
 
-    private void cleanup(final List<InputReaderTask> tasks, final ExecutorService processingExecutor,
-            final ProgressHandle progressHandle, final InputOutputManager.InputOutputData inputOutputData,
+    private void cleanup(final ProgressHandle progressHandle,
+            final InputOutputManager.InputOutputData inputOutputData,
             final boolean managed, final boolean show) {
-
-        boolean interrupted = false;
-        if (processingExecutor != null) {
-            try {
-                AccessController.doPrivileged(new PrivilegedAction<Void>() {
-                    public Void run() {
-                        processingExecutor.shutdown();
-                        return null;
-                    }
-                });
-                for (Cancellable cancellable : tasks) {
-                    cancellable.cancel();
-                }
-                while (!processingExecutor.awaitTermination(EXECUTOR_SHUTDOWN_SLICE, TimeUnit.MILLISECONDS)) {
-                    LOGGER.log(Level.INFO, "Awaiting processing finish");
-                }
-            } catch (InterruptedException ex) {
-                interrupted = true;
-            }
-        }
 
         cleanup(progressHandle, inputOutputData, show);
 
@@ -540,10 +422,6 @@ public final class ExecutionService {
             if (managed) {
                 InputOutputManager.addInputOutput(inputOutputData);
             }
-        }
-
-        if (interrupted) {
-            Thread.currentThread().interrupt();
         }
     }
 
@@ -621,10 +499,6 @@ public final class ExecutionService {
         return errProcessor;
     }
 
-    private InputProcessor createInProcessor(OutputStream os) {
-        return InputProcessors.copying(new OutputStreamWriter(os));
-    }
-
     private static class ProgressCancellable implements Cancellable {
 
         private Future<Integer> task;
@@ -637,6 +511,7 @@ public final class ExecutionService {
             this.task = task;
         }
 
+        @Override
         public synchronized boolean cancel() {
             if (task != null) {
                 task.cancel(true);
@@ -653,16 +528,9 @@ public final class ExecutionService {
             this.io = io;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             io.select();
         }
-    }
-
-    private static class WrappedException extends Exception {
-
-        public WrappedException(Throwable cause) {
-            super(cause);
-        }
-
     }
 }

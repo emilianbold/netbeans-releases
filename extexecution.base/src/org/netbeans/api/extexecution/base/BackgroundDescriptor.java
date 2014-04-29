@@ -59,7 +59,7 @@ public final class BackgroundDescriptor {
 
     private final Runnable preExecution;
 
-    private final Runnable postExecution;
+    private final ParametrizedRunnable<Integer> postExecution;
 
     private final InputProcessorFactory outProcessorFactory;
 
@@ -71,8 +71,11 @@ public final class BackgroundDescriptor {
         this(null, null, null, null, null, null);
     }
 
-    private BackgroundDescriptor(Charset charset, Runnable preExecution, Runnable postExecution,
-            InputProcessorFactory outProcessorFactory, InputProcessorFactory errProcessorFactory, Reader inReader) {
+    private BackgroundDescriptor(Charset charset, Runnable preExecution,
+            ParametrizedRunnable<Integer> postExecution,
+            InputProcessorFactory outProcessorFactory,
+            InputProcessorFactory errProcessorFactory,
+            Reader inReader) {
 
         this.charset = charset;
         this.preExecution = preExecution;
@@ -106,12 +109,12 @@ public final class BackgroundDescriptor {
 
     @NonNull
     @CheckReturnValue
-    public BackgroundDescriptor postExecution(@NullAllowed Runnable postExecution) {
+    public BackgroundDescriptor postExecution(@NullAllowed ParametrizedRunnable<Integer> postExecution) {
         return new BackgroundDescriptor(charset, preExecution, postExecution,
                 outProcessorFactory, errProcessorFactory, inReader);
     }
 
-    Runnable getPostExecution() {
+    ParametrizedRunnable<Integer> getPostExecution() {
         return postExecution;
     }
 

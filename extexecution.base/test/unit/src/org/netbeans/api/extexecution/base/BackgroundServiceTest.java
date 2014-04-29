@@ -242,9 +242,18 @@ public class BackgroundServiceTest extends NbTestCase {
                 executed = true;
             }
         }
+        
+        class TestParametrizedRunnable implements ParametrizedRunnable<Integer> {
+
+            public volatile boolean executed;
+
+            public void run(Integer parameter) {
+                executed = true;
+            }
+        }
 
         TestRunnable preRunnable = new TestRunnable();
-        TestRunnable postRunnable = new TestRunnable();
+        TestParametrizedRunnable postRunnable = new TestParametrizedRunnable();
 
         BackgroundDescriptor descriptor = new BackgroundDescriptor();
         descriptor = descriptor.preExecution(preRunnable).postExecution(postRunnable);

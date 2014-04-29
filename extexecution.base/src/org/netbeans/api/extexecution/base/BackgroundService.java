@@ -146,8 +146,6 @@ public final class BackgroundService {
     
     private final BackgroundDescriptor descriptor;
 
-//    private final AtomicInteger runCount = new AtomicInteger();
-
     public BackgroundService(Callable<? extends Process> processCreator,
             BackgroundDescriptor descriptor) {
         this.processCreator = processCreator;
@@ -197,10 +195,6 @@ public final class BackgroundService {
      */
     @NonNull
     public Future<Integer> run() {
-//        if (runCount.incrementAndGet() > 1) {
-//            throw new IllegalStateException("Run invoked multimple times");
-//        }
-
         final Reader in;
         if (descriptor.getInReader() != null) {
             in = descriptor.getInReader();
@@ -278,7 +272,7 @@ public final class BackgroundService {
                 } finally {
                     try {
                         // fully evaluated - we want to clear interrupted status in any case
-                        interrupted = interrupted | Thread.interrupted();
+                        interrupted |= Thread.interrupted();
 
                         if (!interrupted) {
                             if (outStream != null) {
@@ -308,9 +302,10 @@ public final class BackgroundService {
                         try {
                             cleanup(tasks, executor);
 
-                            final Runnable post = descriptor.getPostExecution();
+                            final ParametrizedRunnable<Integer> post
+                                    = descriptor.getPostExecution();
                             if (post != null) {
-                                post.run();
+                                post.run(ret);
                             }
                         } finally {
                             finishedLatch.countDown();
@@ -347,6 +342,7 @@ public final class BackgroundService {
         if (processingExecutor != null) {
             try {
                 AccessController.doPrivileged(new PrivilegedAction<Void>() {
+                    @Override
                     public Void run() {
                         processingExecutor.shutdown();
                         return null;
