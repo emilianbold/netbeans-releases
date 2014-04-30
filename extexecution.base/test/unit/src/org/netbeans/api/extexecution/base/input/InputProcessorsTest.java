@@ -97,7 +97,7 @@ public class InputProcessorsTest extends NbTestCase {
         assertEquals(1, processor.getResetCount());
 
         bridge.close();
-        assertClosedConditions(bridge);
+        assertClosedConditions(bridge, true);
         assertTrue(processor.isClosed());
     }
 
@@ -131,7 +131,7 @@ public class InputProcessorsTest extends NbTestCase {
         assertEquals(1, processor2.getResetCount());
 
         proxy.close();
-        assertClosedConditions(proxy);
+        assertClosedConditions(proxy, true);
 
         assertTrue(processor1.isClosed());
         assertTrue(processor2.isClosed());
@@ -153,7 +153,7 @@ public class InputProcessorsTest extends NbTestCase {
         processor.processInput("\n".toCharArray());
 
         processor.close();
-        assertClosedConditions(processor);
+        assertClosedConditions(processor, false);
     }
 
     public void testPrintingCloseOrdering() throws IOException {
@@ -184,7 +184,7 @@ public class InputProcessorsTest extends NbTestCase {
 
         processor.close();
         assertEquals("firstsecond\nclosing mark", writer.getPrintedRaw());
-        assertClosedConditions(processor);
+        assertClosedConditions(processor, false);
     }
 
     private static <T> void assertEquals(List<T> expected, List<T> value) {
@@ -194,7 +194,9 @@ public class InputProcessorsTest extends NbTestCase {
         }
     }
 
-    private static void assertClosedConditions(InputProcessor inputProcessor) throws IOException {
+    private static void assertClosedConditions(InputProcessor inputProcessor,
+            boolean reset) throws IOException {
+
         try {
             inputProcessor.processInput(new char[] {'0'});
             fail("Does not throw IllegalStateException after close");
@@ -202,11 +204,13 @@ public class InputProcessorsTest extends NbTestCase {
             // expected
         }
 
-        try {
-            inputProcessor.reset();
-            fail("Does not throw IllegalStateException after close");
-        } catch (IllegalStateException ex) {
-            // expected
+        if (reset) {
+            try {
+                inputProcessor.reset();
+                fail("Does not throw IllegalStateException after close");
+            } catch (IllegalStateException ex) {
+                // expected
+            }
         }
     }
 }
