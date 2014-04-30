@@ -43,6 +43,7 @@
 package org.netbeans.api.extexecution.base;
 
 import java.util.Map;
+import org.netbeans.api.annotations.common.CheckReturnValue;
 import org.netbeans.spi.extexecution.base.ProcessesImplementation;
 import org.openide.util.Lookup;
 
@@ -57,7 +58,7 @@ public final class Processes {
     private Processes() {
         super();
     }
-    
+
     /**
      * Kills the process passed as parameter and <i>attempts</i> to terminate
      * all child processes in process tree.
@@ -74,6 +75,7 @@ public final class Processes {
      *             made; in other words <code>false</code> means only the root
      *             process has been killed via {@link Process#destroy()}
      */
+    @CheckReturnValue
     public static boolean killTree(Process process, Map<String, String> environment) {
         ProcessesImplementation impl = Lookup.getDefault().lookup(ProcessesImplementation.class);
         if (impl != null) {

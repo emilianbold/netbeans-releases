@@ -74,7 +74,7 @@ public final class InputProcessors {
      * Any reset or close is delegated to the corresponding method
      * of line processor.
      * <p>
-     * Returned processor is <i> not thread safe</i>.
+     * Returned processor is <i>not thread safe</i>.
      *
      * @param lineProcessor processor consuming parsed lines
      * @return the processor converting characters to the whole lines
@@ -90,9 +90,9 @@ public final class InputProcessors {
      * Any action taken on this processor is distributed to all processors
      * passed as arguments in the same order as they were passed to this method.
      * <p>
-     * Returned processor is <i> not thread safe</i>.
+     * Returned processor is <i>not thread safe</i>.
      *
-     * @param processors processor to which the actions will be ditributed
+     * @param processors processor to which the actions will be distributed
      * @return the processor acting as a proxy
      */
     @NonNull
@@ -107,7 +107,7 @@ public final class InputProcessors {
      * Reset action on the returned processor is noop. Processor closes the
      * writer on {@link InputProcessor#close()}.
      * <p>
-     * Returned processor is <i> not thread safe</i>.
+     * Returned processor is <i>not thread safe</i>.
      *
      * @param writer processed characters will be written to this writer
      * @return the processor that writes every character passed for processing
@@ -120,17 +120,16 @@ public final class InputProcessors {
 
     /**
      * Returns the processor printing all characters passed for processing to
-     * the given output writer.
+     * the given writer.
      * <p>
-     * Reset action on the returned processor resets the writer if it is enabled
-     * by passing <code>true</code> as <code>resetEnabled</code>. Processor
-     * closes the output writer on {@link InputProcessor#close()}.
+     * Reset action on the returned processor is noop. Processor closes the
+     * writer on {@link InputProcessor#close()}.
      * <p>
-     * Returned processor is <i> not thread safe</i>.
+     * Returned processor is <i>not thread safe</i>.
      *
      * @param out where to print received characters
      * @return the processor printing all characters passed for processing to
-     *             the given output writer
+     *             the given writer
      */
     @NonNull
     public static InputProcessor printing(@NonNull PrintWriter out) {
@@ -145,11 +144,11 @@ public final class InputProcessors {
      * Reset and close methods on the returned processor invokes
      * the corresponding actions on delegate.
      * <p>
-     * Returned processor is <i> not thread safe</i>.
+     * Returned processor is <i>not thread safe</i>.
      *
      * @param delegate processor that will receive characters without control
      *             sequences
-     * @return the processor that strips any ansi escape sequences and passes
+     * @return the processor that strips any ANSI escape sequences and passes
      *             the result to the delegate
      */
     @NonNull
@@ -171,6 +170,7 @@ public final class InputProcessors {
             this.lineProcessor = lineProcessor;
         }
 
+        @Override
         public final void processInput(char[] chars) {
             if (closed) {
                 throw new IllegalStateException("Already closed processor");
@@ -182,6 +182,7 @@ public final class InputProcessors {
             }
         }
 
+        @Override
         public final void reset() {
             if (closed) {
                 throw new IllegalStateException("Already closed processor");
@@ -191,6 +192,7 @@ public final class InputProcessors {
             lineProcessor.reset();
         }
 
+        @Override
         public final void close() {
             closed = true;
 
@@ -220,6 +222,7 @@ public final class InputProcessors {
             }
         }
 
+        @Override
         public void processInput(char[] chars) throws IOException {
             if (closed) {
                 throw new IllegalStateException("Already closed processor");
@@ -230,6 +233,7 @@ public final class InputProcessors {
             }
         }
 
+        @Override
         public void reset() throws IOException {
             if (closed) {
                 throw new IllegalStateException("Already closed processor");
@@ -240,6 +244,7 @@ public final class InputProcessors {
             }
         }
 
+        @Override
         public void close() throws IOException {
             closed = true;
 
@@ -263,6 +268,7 @@ public final class InputProcessors {
             this.out = out;
         }
 
+        @Override
         public void processInput(char[] chars) {
             assert chars != null;
 
@@ -287,12 +293,12 @@ public final class InputProcessors {
             }
         }
 
+        @Override
         public void reset() throws IOException {
-            if (closed) {
-                throw new IllegalStateException("Already closed processor");
-            }
+            // noop
         }
 
+        @Override
         public void close() throws IOException {
             closed = true;
 
@@ -310,6 +316,7 @@ public final class InputProcessors {
             this.writer = writer;
         }
 
+        @Override
         public void processInput(char[] chars) throws IOException {
             if (closed) {
                 throw new IllegalStateException("Already closed processor");
@@ -320,10 +327,12 @@ public final class InputProcessors {
             writer.flush();
         }
 
+        @Override
         public void reset() {
             // noop
         }
 
+        @Override
         public void close() throws IOException {
             closed = true;
 
@@ -341,6 +350,7 @@ public final class InputProcessors {
             this.delegate = delegate;
         }
 
+        @Override
         public void processInput(char[] chars) throws IOException {
             if (closed) {
                 throw new IllegalStateException("Already closed processor");
@@ -354,6 +364,7 @@ public final class InputProcessors {
             delegate.processInput(sequence.toCharArray());
         }
 
+        @Override
         public void reset() throws IOException {
             if (closed) {
                 throw new IllegalStateException("Already closed processor");
@@ -362,6 +373,7 @@ public final class InputProcessors {
             delegate.reset();
         }
 
+        @Override
         public void close() throws IOException {
             closed = true;
 

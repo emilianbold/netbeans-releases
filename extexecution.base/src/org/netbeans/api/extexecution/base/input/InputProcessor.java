@@ -73,7 +73,7 @@ public interface InputProcessor extends Closeable, AutoCloseable {
      * <p>
      * <div class="nonnormative">
      * For example reset is called by reader returned from
-     * {@link InputReaders#forFileInputProvider(org.netbeans.api.extexecution.input.InputReaders.FileInput.Provider)}
+     * {@link InputReaders#forFileInputProvider(org.netbeans.api.extexecution.base.input.InputReaders.FileInput.Provider) }
      * when the provided file is changed.
      * </div>
      *
@@ -84,6 +84,7 @@ public interface InputProcessor extends Closeable, AutoCloseable {
     /**
      * Closes the processor releasing the resources held by it.
      */
+    @Override
     void close() throws IOException;
 
 }
