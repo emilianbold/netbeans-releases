@@ -85,8 +85,8 @@ import org.openide.util.Parameters;
  * configuration accessible via {@link ProcessBuilderImplementation2#getLookup()}
  * it is thread safe as well. Otherwise it is not thread safe.
  * <p>
- * The synchronization mechanism use in this object is the {@link ProcessBuilderImplementation}
- * or {@link ProcessBuilderImplementation} object monitor.
+ * The synchronization mechanism used in this object is the {@link ProcessBuilderImplementation}
+ * object monitor.
  *
  * @author Petr Hejl
  */
@@ -227,7 +227,7 @@ public final class ProcessBuilder implements Callable<Process>, Lookup.Provider 
      * {@link ProcessBuilderImplementation}.
      *
      * @return the associated {@link Lookup}.
-     * @see ProcessBuilderImplementation2#getLookup()
+     * @see ProcessBuilderImplementation#getLookup()
      */
     @Override
     public Lookup getLookup() {
@@ -244,12 +244,6 @@ public final class ProcessBuilder implements Callable<Process>, Lookup.Provider 
      * <p>
      * Actual behavior depends on the builder implementation, but it should
      * respect all the properties configured on this builder.
-     * <p>
-     * Implementors of this method are advised to throw
-     * a {@link org.openide.util.UserQuestionException} in case the execution cannot be
-     * performed and requires additional user confirmation, or configuration.
-     * Callers of this method may check for this exception and handle it
-     * appropriately.
      *
      * @see ProcessBuilderImplementation
      * @return the new {@link Process} based on the properties configured
@@ -257,8 +251,6 @@ public final class ProcessBuilder implements Callable<Process>, Lookup.Provider 
      * @throws IOException if the process could not be created
      * @throws IllegalStateException if there is no executable configured
      *             by {@link #setExecutable(java.lang.String)}
-     * @throws org.openide.util.UserQuestionException if the execution cannot be performed
-     *     without permission from the user
      */
     @NonNull
     @Override

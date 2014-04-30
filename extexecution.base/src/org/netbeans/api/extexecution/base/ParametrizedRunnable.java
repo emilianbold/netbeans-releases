@@ -43,10 +43,17 @@
 package org.netbeans.api.extexecution.base;
 
 /**
+ * The interface representing a runnable code accepting a parameter.
  *
  * @author Petr Hejl
+ * @param <T> the type of required parameter
  */
 public interface ParametrizedRunnable<T> {
     
+    /**
+     * The runnable code itself.
+     *
+     * @param parameter the parameter
+     */
     void run(T parameter);
 }
