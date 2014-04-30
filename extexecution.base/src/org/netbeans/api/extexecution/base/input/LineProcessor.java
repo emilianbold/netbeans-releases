@@ -42,74 +42,47 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.extexecution.input;
+package org.netbeans.api.extexecution.base.input;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputReader;
+import java.io.Closeable;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
+ * Processes the lines fetched by {@link InputReader} usually with help
+ * of the {@link InputProcessors#bridge(LineProcessor)}.
+ * <p>
+ * When the implementation is used just by single bridge it
+ * does not have to be thread safe.
  *
- * This class is <i>NotThreadSafe</i>.
- * @author Petr.Hejl
+ * @author Petr Hejl
+ * @see InputProcessors#bridge(LineProcessor)
+ * @see InputReader
  */
-public class DefaultInputReader implements InputReader {
+public interface LineProcessor extends Closeable, AutoCloseable {
 
-    private static final Logger LOGGER = Logger.getLogger(DefaultInputReader.class.getName());
+    /**
+     * Processes the line.
+     *
+     * @param line the line to process
+     */
+    void processLine(@NonNull String line);
 
-    private static final int BUFFER_SIZE = 512;
+    /**
+     * Notifies the processor that it should reset its state.
+     * <p>
+     * The circumstances when this method is called must be defined by
+     * the code using this class.
+     * <div class="nonnormative">
+     * For example processor created with
+     * {@link InputProcessors#bridge(LineProcessor)} delegates any call
+     * to {@link InputProcessor#reset()} to this method.
+     * </div>
+     */
+    void reset();
 
-    private final Reader reader;
-
-    private final char[] buffer;
-
-    private final boolean greedy;
-
-    private boolean closed;
-
-    public DefaultInputReader(Reader reader, boolean greedy) {
-        assert reader != null;
-
-        this.reader = new BufferedReader(reader);
-        this.greedy = greedy;
-        this.buffer = new char[greedy ? BUFFER_SIZE * 2 : BUFFER_SIZE];
-    }
-
-    public int readInput(InputProcessor inputProcessor) throws IOException {
-        if (closed) {
-            throw new IllegalStateException("Already closed reader");
-        }
-
-        if (!reader.ready()) {
-            return 0;
-        }
-
-        int fetched = 0;
-        // TODO optimization possible
-        StringBuilder builder = new StringBuilder();
-        do {
-            int size = reader.read(buffer);
-            if (size > 0) {
-                builder.append(buffer, 0, size);
-                fetched += size;
-            }
-        } while (reader.ready() && greedy);
-
-        if (inputProcessor != null && fetched > 0) {
-            inputProcessor.processInput(builder.toString().toCharArray());
-        }
-
-        return fetched;
-    }
-
-    public void close() throws IOException {
-        closed = true;
-        reader.close();
-        LOGGER.log(Level.FINEST, "Reader closed");
-    }
+    /**
+     * Closes the processor releasing the resources held by it.
+     */
+    void close();
 
 }

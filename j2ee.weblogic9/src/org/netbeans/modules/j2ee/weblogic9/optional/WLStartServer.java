@@ -65,10 +65,10 @@ import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.api.extexecution.ExternalProcessSupport;
-import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.api.extexecution.input.InputReaderTask;
-import org.netbeans.api.extexecution.input.InputReaders;
+import org.netbeans.api.extexecution.base.Processes;
+import org.netbeans.api.extexecution.base.input.InputProcessors;
+import org.netbeans.api.extexecution.base.input.InputReaderTask;
+import org.netbeans.api.extexecution.base.input.InputReaders;
 import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.modules.j2ee.deployment.plugins.api.CommonServerBridge;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
@@ -335,10 +335,10 @@ public final class WLStartServer extends StartServer {
 
         service.submit(InputReaderTask.newTask(InputReaders.forStream(
                 process.getInputStream(), Charset.defaultCharset()), 
-                InputProcessors.printing(io.getOut(), new ErrorLineConvertor(), true)));
+                org.netbeans.api.extexecution.print.InputProcessors.printing(io.getOut(), new ErrorLineConvertor(), true)));
         service.submit(InputReaderTask.newTask(InputReaders.forStream(
                 process.getErrorStream(), Charset.defaultCharset()), 
-                InputProcessors.printing(io.getErr(), new ErrorLineConvertor(), false)));
+                org.netbeans.api.extexecution.print.InputProcessors.printing(io.getErr(), new ErrorLineConvertor(), false)));
     }
 
     private static void stopService(String uri, final ExecutorService service) {
@@ -412,7 +412,7 @@ public final class WLStartServer extends StartServer {
                 if (process != null) {
                     Map<String, String> mark = new HashMap<String, String>();
                     mark.put(WLStartTask.KEY_UUID, dm.getUri());
-                    ExternalProcessSupport.destroy(process, mark);
+                    Processes.killTree(process, mark);
                 }
             }
         }
@@ -797,7 +797,7 @@ public final class WLStartServer extends StartServer {
                         }
                         Map<String, String> mark = new HashMap<String, String>();
                         mark.put(WLStartTask.KEY_UUID, dm.getUri());
-                        ExternalProcessSupport.destroy(process, mark);
+                        Processes.killTree(process, mark);
                 }
 
                 while ((System.currentTimeMillis() - start) < TIMEOUT) {
@@ -846,7 +846,7 @@ public final class WLStartServer extends StartServer {
                 if (stopProcess != null) {
                     Map<String, String> mark = new HashMap<String, String>();
                     mark.put(KEY_UUID, uuid);
-                    ExternalProcessSupport.destroy(stopProcess, mark);
+                    Processes.killTree(stopProcess, mark);
                     stopService(uri, stopService);
                 }
             }

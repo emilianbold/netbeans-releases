@@ -43,6 +43,8 @@
 package org.netbeans.api.extexecution;
 
 import java.nio.charset.Charset;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckReturnValue;
 import org.netbeans.api.annotations.common.NonNull;
@@ -65,6 +67,8 @@ import org.openide.windows.InputOutput;
  * @see ExecutionService
  */
 public final class ExecutionDescriptor {
+
+    private static final Logger LOGGER = Logger.getLogger(ExecutionDescriptor.class.getName());
 
     // TODO provide constants for common descriptors (are there any?)
 
@@ -95,8 +99,12 @@ public final class ExecutionDescriptor {
     private final LineConvertorFactory errConvertorFactory;
 
     private final InputProcessorFactory outProcessorFactory;
+    
+    private final InputProcessorFactory2 outProcessorFactory2;
 
     private final InputProcessorFactory errProcessorFactory;
+    
+    private final InputProcessorFactory2 errProcessorFactory2;
 
     private final InputOutput inputOutput;
 
@@ -128,7 +136,9 @@ public final class ExecutionDescriptor {
         this.outConvertorFactory = data.outConvertorFactory;
         this.errConvertorFactory = data.errConvertorFactory;
         this.outProcessorFactory = data.outProcessorFactory;
+        this.outProcessorFactory2 = data.outProcessorFactory2;
         this.errProcessorFactory = data.errProcessorFactory;
+        this.errProcessorFactory2 = data.errProcessorFactory2;
         this.inputOutput = data.inputOutput;
         this.rerunCondition = data.rerunCondition;
         this.optionsPath = data.optionsPath;
@@ -403,6 +413,7 @@ public final class ExecutionDescriptor {
      *             <code>null</code> allowed
      * @return new descriptor with configured factory for additional
      *             processor to use for standard output
+     * @deprecated use {@link #outProcessorFactory(org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory2)}
      */
     @NonNull
     @CheckReturnValue
@@ -413,6 +424,45 @@ public final class ExecutionDescriptor {
 
     InputProcessorFactory getOutProcessorFactory() {
         return outProcessorFactory;
+    }
+    
+    /**
+     * Returns a descriptor with configured factory for standard output
+     * processor. The factory is used by {@link ExecutionService} to create
+     * additional processor for standard output. <i>The configured value will
+     * be ignored if you previously configured processor via deprecated
+     * {@link #outProcessorFactory(org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory)}.</i>
+     * <p>
+     * Note that {@link ExecutionService} automatically uses
+     * the printing processor created by
+     * {@link org.netbeans.api.extexecution.input.InputProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.api.extexecution.print.LineConvertor, boolean)}
+     * or
+     * {@link org.netbeans.api.extexecution.input.LineProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.api.extexecution.print.LineConvertor, boolean)}
+     * (in case {@link #outLineBased(boolean)} is configured to <code>true</code>)
+     * if there is no configured factory.
+     * <p>
+     * The default (not configured) value is <code>null</code>.
+     * <p>
+     * All other properties of the returned descriptor are inherited from
+     * <code>this</code>.
+     *
+     * @param outProcessorFactory factory for standard output processor,
+     *             <code>null</code> allowed
+     * @return new descriptor with configured factory for additional
+     *             processor to use for standard output
+     */
+    @NonNull
+    @CheckReturnValue
+    public ExecutionDescriptor outProcessorFactory(@NullAllowed InputProcessorFactory2 outProcessorFactory) {
+        if (errProcessorFactory != null) {
+            LOGGER.log(Level.WARNING, "The factory will be ignored as legacy InputProcessorFactory is already defined");
+        }
+        DescriptorData data = new DescriptorData(this);
+        return new ExecutionDescriptor(data.outProcessorFactory(outProcessorFactory2));
+    }
+
+    InputProcessorFactory2 getOutProcessorFactory2() {
+        return outProcessorFactory2;
     }
 
     /**
@@ -437,6 +487,7 @@ public final class ExecutionDescriptor {
      *             <code>null</code> allowed
      * @return new descriptor with configured factory for additional
      *             processor to use for standard error output
+     * @deprecated use {@link #errProcessorFactory(org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory2)}
      */
     @NonNull
     @CheckReturnValue
@@ -447,6 +498,45 @@ public final class ExecutionDescriptor {
 
     InputProcessorFactory getErrProcessorFactory() {
         return errProcessorFactory;
+    }
+    
+    /**
+     * Returns a descriptor with configured factory for standard error output
+     * processor. The factory is used by {@link ExecutionService} to create
+     * additional processor for standard error output. <i>The configured value will
+     * be ignored if you previously configured processor via deprecated
+     * {@link #errProcessorFactory(org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory)}.</i>
+     * <p>
+     * Note that {@link ExecutionService} automatically uses
+     * the printing processor created by
+     * {@link org.netbeans.api.extexecution.input.InputProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.api.extexecution.print.LineConvertor, boolean)}
+     * or
+     * {@link org.netbeans.api.extexecution.input.LineProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.api.extexecution.print.LineConvertor, boolean)}
+     * (in case {@link #errLineBased(boolean)} is configured to <code>true</code>)
+     * if there is no configured factory.
+     * <p>
+     * The default (not configured) value is <code>null</code>.
+     * <p>
+     * All other properties of the returned descriptor are inherited from
+     * <code>this</code>.
+     *
+     * @param errProcessorFactory factory for standard error output processor,
+     *             <code>null</code> allowed
+     * @return new descriptor with configured factory for additional
+     *             processor to use for standard error output
+     */
+    @NonNull
+    @CheckReturnValue
+    public ExecutionDescriptor errProcessorFactory(@NullAllowed InputProcessorFactory2 errProcessorFactory) {
+        if (errProcessorFactory != null) {
+            LOGGER.log(Level.WARNING, "The factory will be ignored as legacy InputProcessorFactory is already defined");
+        }
+        DescriptorData data = new DescriptorData(this);
+        return new ExecutionDescriptor(data.errProcessorFactory(errProcessorFactory2));
+    }
+
+    InputProcessorFactory2 getErrProcessorFactory2() {
+        return errProcessorFactory2;
     }
 
     /**
@@ -673,6 +763,7 @@ public final class ExecutionDescriptor {
 
     /**
      * Factory creating the input processor.
+     * @deprecated use {@link InputProcessorFactory2}
      */
     public interface InputProcessorFactory {
 
@@ -685,6 +776,23 @@ public final class ExecutionDescriptor {
          */
         @NonNull
         InputProcessor newInputProcessor(@NonNull InputProcessor defaultProcessor);
+
+    }
+    
+    /**
+     * Factory creating the input processor.
+     */
+    public interface InputProcessorFactory2 {
+
+        /**
+         * Creates and returns new input processor.
+         *
+         * @param defaultProcessor default processor created by
+         *             infrastructure that is printing chars to the output window
+         * @return new input processor
+         */
+        @NonNull
+        org.netbeans.api.extexecution.base.input.InputProcessor newInputProcessor(@NonNull org.netbeans.api.extexecution.base.input.InputProcessor defaultProcessor);
 
     }
 
@@ -732,8 +840,12 @@ public final class ExecutionDescriptor {
         private LineConvertorFactory errConvertorFactory;
 
         private InputProcessorFactory outProcessorFactory;
+        
+        private InputProcessorFactory2 outProcessorFactory2;
 
         private InputProcessorFactory errProcessorFactory;
+        
+        private InputProcessorFactory2 errProcessorFactory2;
 
         private InputOutput inputOutput;
 
@@ -823,9 +935,19 @@ public final class ExecutionDescriptor {
             this.outProcessorFactory = outProcessorFactory;
             return this;
         }
+        
+        public DescriptorData outProcessorFactory(InputProcessorFactory2 outProcessorFactory) {
+            this.outProcessorFactory2 = outProcessorFactory2;
+            return this;
+        }
 
         public DescriptorData errProcessorFactory(InputProcessorFactory errProcessorFactory) {
             this.errProcessorFactory = errProcessorFactory;
+            return this;
+        }
+        
+        public DescriptorData errProcessorFactory(InputProcessorFactory2 errProcessorFactory) {
+            this.errProcessorFactory2 = errProcessorFactory2;
             return this;
         }
 
