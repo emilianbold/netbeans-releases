@@ -55,7 +55,7 @@ import org.netbeans.spi.extexecution.open.OptionOpenHandler;
 import org.openide.windows.InputOutput;
 
 /**
- * Descriptor for the execution environment. Describes the runtime attributes
+ * Descriptor for the execution service. Describes the runtime attributes
  * of the {@link ExecutionService}.
  * <p>
  * <i>Thread safety</i> of this class depends on type of objects passed to its
@@ -398,9 +398,9 @@ public final class ExecutionDescriptor {
      * <p>
      * Note that {@link ExecutionService} automatically uses
      * the printing processor created by
-     * {@link org.netbeans.api.extexecution.input.InputProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.api.extexecution.print.LineConvertor, boolean)}
+     * {@link org.netbeans.api.extexecution.print.InputProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.api.extexecution.print.LineConvertor, boolean)}
      * or
-     * {@link org.netbeans.api.extexecution.input.LineProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.api.extexecution.print.LineConvertor, boolean)}
+     * {@link org.netbeans.api.extexecution.print.LineProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.api.extexecution.print.LineConvertor, boolean)}
      * (in case {@link #outLineBased(boolean)} is configured to <code>true</code>)
      * if there is no configured factory.
      * <p>
@@ -435,9 +435,9 @@ public final class ExecutionDescriptor {
      * <p>
      * Note that {@link ExecutionService} automatically uses
      * the printing processor created by
-     * {@link org.netbeans.api.extexecution.input.InputProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.api.extexecution.print.LineConvertor, boolean)}
+     * {@link org.netbeans.api.extexecution.print.InputProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.api.extexecution.print.LineConvertor, boolean)}
      * or
-     * {@link org.netbeans.api.extexecution.input.LineProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.api.extexecution.print.LineConvertor, boolean)}
+     * {@link org.netbeans.api.extexecution.print.LineProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.api.extexecution.print.LineConvertor, boolean)}
      * (in case {@link #outLineBased(boolean)} is configured to <code>true</code>)
      * if there is no configured factory.
      * <p>
@@ -472,9 +472,9 @@ public final class ExecutionDescriptor {
      * <p>
      * Note that {@link ExecutionService} automatically uses
      * the printing processor created by
-     * {@link org.netbeans.api.extexecution.input.InputProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.api.extexecution.print.LineConvertor, boolean)}
+     * {@link org.netbeans.api.extexecution.print.InputProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.api.extexecution.print.LineConvertor, boolean)}
      * or
-     * {@link org.netbeans.api.extexecution.input.LineProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.api.extexecution.print.LineConvertor, boolean)}
+     * {@link org.netbeans.api.extexecution.print.LineProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.api.extexecution.print.LineConvertor, boolean)}
      * (in case {@link #errLineBased(boolean)} is configured to <code>true</code>)
      * if there is no configured factory.
      * <p>
@@ -509,9 +509,9 @@ public final class ExecutionDescriptor {
      * <p>
      * Note that {@link ExecutionService} automatically uses
      * the printing processor created by
-     * {@link org.netbeans.api.extexecution.input.InputProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.api.extexecution.print.LineConvertor, boolean)}
+     * {@link org.netbeans.api.extexecution.print.InputProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.api.extexecution.print.LineConvertor, boolean)}
      * or
-     * {@link org.netbeans.api.extexecution.input.LineProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.api.extexecution.print.LineConvertor, boolean)}
+     * {@link org.netbeans.api.extexecution.print.LineProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.api.extexecution.print.LineConvertor, boolean)}
      * (in case {@link #errLineBased(boolean)} is configured to <code>true</code>)
      * if there is no configured factory.
      * <p>
