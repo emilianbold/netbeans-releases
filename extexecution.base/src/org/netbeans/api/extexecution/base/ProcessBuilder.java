@@ -106,13 +106,7 @@ public final class ProcessBuilder implements Callable<Process>, Lookup.Provider 
     private String workingDirectory;
 
     /**<i>GuardedBy("lock")</i>*/
-    private List<String> arguments = new ArrayList<String>();
-
-    /**<i>GuardedBy("lock")</i>*/
-    private List<String> paths = new ArrayList<String>();
-
-    /**<i>GuardedBy("lock")</i>*/
-    private Map<String, String> envVariables = new HashMap<String, String>();
+    private final List<String> arguments = new ArrayList<String>();
 
     /**<i>GuardedBy("lock")</i>*/
     private boolean redirectErrorStream;
@@ -258,7 +252,6 @@ public final class ProcessBuilder implements Callable<Process>, Lookup.Provider 
         String currentExecutable;
         String currentWorkingDirectory;
         List<String> currentArguments = new ArrayList<String>();
-        List<String> currentPaths = new ArrayList<String>();
         Map<String, String> currentVariables = new HashMap<String, String>();
         boolean currentRedirectErrorStream;
 
@@ -266,13 +259,8 @@ public final class ProcessBuilder implements Callable<Process>, Lookup.Provider 
             currentExecutable = executable;
             currentWorkingDirectory = workingDirectory;
             currentArguments.addAll(arguments);
-            currentPaths.addAll(paths);
             currentRedirectErrorStream = redirectErrorStream;
-            if (implementation != null) {
-                currentVariables.putAll(getEnvironment().values());
-            } else {
-                currentVariables.putAll(envVariables);
-            }
+            currentVariables.putAll(getEnvironment().values());
         }
 
         if (currentExecutable == null) {
