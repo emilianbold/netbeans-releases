@@ -47,8 +47,10 @@ import org.netbeans.spi.extexecution.base.ProcessesImplementation;
 import org.openide.util.Lookup;
 
 /**
+ * The utility class for better processes handling.
  *
  * @author Petr Hejl
+ * @see ProcessesImplementation
  */
 public final class Processes {
 
@@ -56,6 +58,22 @@ public final class Processes {
         super();
     }
     
+    /**
+     * Kills the process passed as parameter and <i>attempts</i> to terminate
+     * all child processes in process tree.
+     * <p>
+     * Any process running in environment containing the same variables
+     * with the same values as those passed in <code>env</code> (all of them)
+     * is supposed to be part of the process tree and may be killed.
+     *
+     * @param process process to kill
+     * @param environment map containing the variables and their values which the
+     *             process must have to be considered being part of
+     *             the tree to kill
+     * @return <code>true</code> if an attempt to kill the whole tree has been
+     *             made; in other words <code>false</code> means only the root
+     *             process has been killed via {@link Process#destroy()}
+     */
     public static boolean killTree(Process process, Map<String, String> environment) {
         ProcessesImplementation impl = Lookup.getDefault().lookup(ProcessesImplementation.class);
         if (impl != null) {
