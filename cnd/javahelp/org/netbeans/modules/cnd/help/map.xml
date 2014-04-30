@@ -388,5 +388,6 @@
 	<mapID target="NewMakeWizardP51" url="WorkingWithCandC++Projects/NewMakeWizardP5.html"/>
 	<mapID target="UsingBreadcrumbs" url="EditingSourceFiles/UsingBreadcrumbs.html"/>
         <mapID target="CreatingCorC++ProjectBinary" url="WorkingWithCandC++Projects/CreatingCorC++ProjectBinary.html"/>
+	<mapID target="ProjectPropsFormatting" url="WorkingWithCandC++Projects/ProjectPropsFormatting.html"/>
 
 </map>

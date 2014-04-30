@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2013 Oracle and/or its affiliates. All rights reserved.
+Copyright &copy; 2014 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
   <head>
@@ -26,12 +26,12 @@ Copyright &copy; 2013 Oracle and/or its affiliates. All rights reserved.
     </h3>
     <p>
        In simple remote development mode,&nbsp;the source files reside primarily on your local
-      host. When you build your project, the source files are delivered on demand to the remote
-      host using SSH File Transfer Protocol (SFTP).
+      host. When you build your project, the source files are delivered to the remote
+      Linux or Oracle Solaris host using SSH File Transfer Protocol (SFTP).
     </p>
     <p>
        Use simple remote development if you develop mostly on local files, but your application is
-      targeted at multiple platforms such as Linux or&nbsp;Oracle Solaris. &nbsp;
+      targeted at platforms such as Linux or&nbsp;Oracle Solaris. &nbsp;
     </p>
     <p>
        Simple mode provides these benefits:
@@ -58,7 +58,7 @@ Copyright &copy; 2013 Oracle and/or its affiliates. All rights reserved.
         <a href="RemoteDevelopmentConfigureHost.html">Set up a remote build host</a>
       </li>
       <li>
-        Set the remote build host's Access Project Files Via property to <b>Automatic Copying</b>.
+          Set the remote build host's Access Project Files Via property to <b>SFTP</b> or <b>Automatic Copying</b>.
       </li>
       <li>
         <a href="RemoteDevelopmentProjects.html">Set up your project to use the remote build
@@ -145,8 +145,8 @@ Copyright &copy; 2013 Oracle and/or its affiliates. All rights reserved.
         <a href="RemoteDevelopmentConfigureHost.html">Set up a remote build host</a>
       </li>
       <li>
-        Set the remote build host's Access Project Files Via property to either Automatic Copying
-        or System-level File Sharing because this property is not relevant in full remote mode.
+        Set the remote build host's Access Project Files Via property to anything
+        because this property is not relevant in full remote mode.
       </li>
       <li>
         Use the <a href="RemoteDevelopmentToolbar.html">Remote Development toolbar</a> to select a
