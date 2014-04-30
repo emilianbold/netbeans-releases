@@ -43,9 +43,9 @@
  */
 
 /**
- * The API supporting execution of an external process in the IDE.
+ * The API supporting execution of an external process.
  *
- * @see org.netbeans.api.extexecution.ExecutionService
+ * @see org.netbeans.api.extexecution.base.BaseExecutionService
  */
 package org.netbeans.api.extexecution.base;
 
