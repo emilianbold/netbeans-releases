@@ -49,6 +49,8 @@ import org.netbeans.modules.extexecution.ProcessBuilderAccessor;
  *
  * @author Petr Hejl
  * @since 1.28
+ * @deprecated use {@link org.netbeans.spi.extexecution.base.ProcessBuilderFactory}
+ *             and {@link org.netbeans.spi.extexecution.base.ProcessBuilderImplementation}
  */
 public class ProcessBuilderFactory {
 

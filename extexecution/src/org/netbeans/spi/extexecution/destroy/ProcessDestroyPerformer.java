@@ -43,6 +43,8 @@
 package org.netbeans.spi.extexecution.destroy;
 
 import java.util.Map;
+import org.netbeans.api.extexecution.base.Processes;
+import org.netbeans.spi.extexecution.base.ProcessesImplementation;
 
 /**
  * A service capable of properly terminating external process along with any
@@ -60,6 +62,7 @@ import java.util.Map;
  *
  * @author mkleint
  * @since 1.16
+ * @deprecated use {@link ProcessesImplementation} and {@link Processes}
  */
 public interface ProcessDestroyPerformer {
 
