@@ -554,7 +554,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         // Figure out dbx command for IDE
         String dbxPath = null;
         if (!NativeDebuggerManager.isStandalone() /*&& !NativeDebuggerManager.isPL()*/) {
-            dbxPath = getDebuggerString((MakeConfiguration)ddi.getConfiguration());
+            dbxPath = getDebuggerString(DbxEngineCapabilityProvider.getDbxEngineType().getDebuggerID(), (MakeConfiguration)ddi.getConfiguration());
         }
         factory = new Dbx.DbxFactory(executor, additionalArgv,
                                      listener, exec32, isShortName(),
