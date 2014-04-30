@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.EditorEvent;
-import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -115,7 +114,7 @@ public final class IdentifierErrorProvider extends AbstractCodeAudit {
                 System.err.println("#@# Error Highlighting update() have started for file " + file.getAbsolutePath());
             }
             CsmFileReferences.getDefault().accept(
-                    request.getFile(), new ReferenceVisitor(request, response),
+                    request.getFile(), request.getDocument(), new ReferenceVisitor(request, response),
                     CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
             if (SHOW_TIMES) {
                 System.err.println("#@# Error Highlighting update() done in "+ (System.currentTimeMillis() - start) +"ms for file " + request.getFile().getAbsolutePath());
