@@ -797,7 +797,7 @@ public final class ExecutionDescriptor {
     }
 
     /**
-     * Factory creating the line covertor.
+     * Factory creating the line convertor.
      */
     public interface LineConvertorFactory {
 

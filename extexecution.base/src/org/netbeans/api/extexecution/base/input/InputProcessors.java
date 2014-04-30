@@ -129,8 +129,6 @@ public final class InputProcessors {
      * Returned processor is <i> not thread safe</i>.
      *
      * @param out where to print received characters
-     * @param resetEnabled determines whether the reset operation will work
-     *             (will reset the writer if so)
      * @return the processor printing all characters passed for processing to
      *             the given output writer
      */

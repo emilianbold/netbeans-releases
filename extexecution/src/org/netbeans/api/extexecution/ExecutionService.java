@@ -78,7 +78,7 @@ import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
 /**
- * Execution service provides the facility to execute the process while
+ * Execution service provides the facility to execute a process while
  * displaying the output and handling the input.
  * <p>
  * It will execute the program with an associated I/O window, with stop and

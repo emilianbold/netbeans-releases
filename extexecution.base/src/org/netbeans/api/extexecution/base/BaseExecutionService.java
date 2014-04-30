@@ -74,45 +74,44 @@ import org.openide.util.Cancellable;
 import org.openide.util.RequestProcessor;
 
 /**
- * Execution service provides the facility to execute the process while
- * displaying the output and handling the input.
- * <p>
- * It will execute the program with an associated I/O window, possibly with
- * stop and restart buttons. It will also obey various descriptor properties
- * such as whether or not to show a progress bar.
+ * Base Execution service provides the facility to execute a process.
  * <p>
  * All processes launched by this class are terminated on VM exit (if
  * these are not finished or terminated earlier).
- * <p>
- * Note that once service is run for the first time, subsequent runs can be
- * invoked by the user (rerun button) if it is allowed to do so
- * ({@link ExecutionDescriptor#isControllable()}).
  *
  * <div class="nonnormative">
  * <p>
  * Sample usage (ls command):
  * <pre>
- *     ExecutionDescriptor descriptor = new ExecutionDescriptor()
- *          .frontWindow(true).controllable(true);
+ *     BaseExecutionDescriptor descriptor = new BaseExecutionDescriptor()
+ *             .outProcessorFactory(new BaseExecutionDescriptor.InputProcessorFactory() {
  *
- *     ExternalProcessBuilder processBuilder = new ExternalProcessBuilder("ls");
+ *         &#64;Override
+ *         public InputProcessor newInputProcessor() {
+ *             return InputProcessors.copying(new BufferedWriter(new OutputStreamWriter(System.out)));
+ *         }
+ *     });
  *
- *     ExecutionService service = ExecutionService.newService(processBuilder, descriptor, "ls command");
+ *     ProcessBuilder processBuilder = ProcessBuilder.getLocal();
+ *     processBuilder.setExecutable(ls);
+ *
+ *     BaseExecutionService service = BaseExecutionService.newService(processBuilder, descriptor);
  *     Future&lt;Integer&gt task = service.run();
  * </pre>
  * <p>
  * Even simpler usage but without displaying output (ls command):
  * <pre>
- *     ExternalProcessBuilder processBuilder = new ExternalProcessBuilder("ls");
+ *     ProcessBuilder processBuilder = ProcessBuilder.getLocal();
+ *     processBuilder.setExecutable(ls);
  *
- *     ExecutionService service = ExecutionService.newService(processBuilder, null, null);
+ *     ExecutionService service = ExecutionService.newService(processBuilder, new BaseExecutionDescriptor());
  *     Future&lt;Integer&gt task = service.run();
  * </pre>
  * </div>
  *
  * @author Petr Hejl
- * @see #newService(java.util.concurrent.Callable, org.netbeans.api.extexecution.ExecutionDescriptor, java.lang.String)
- * @see ExecutionDescriptor
+ * @see #newService(java.util.concurrent.Callable, org.netbeans.api.extexecution.base.BaseExecutionDescriptor)
+ * @see BaseExecutionDescriptor
  */
 public final class BaseExecutionService {
 
@@ -152,6 +151,14 @@ public final class BaseExecutionService {
         this.descriptor = descriptor;
     }
 
+    /**
+     * Creates new execution service. Service will wrap up the processes
+     * created by <code>processCreator</code> and will manage them.
+     *
+     * @param processCreator callable returning the process to wrap up
+     * @param descriptor descriptor describing the configuration of service
+     * @return new execution service
+     */
     @NonNull
     public static BaseExecutionService newService(@NonNull Callable<? extends Process> processCreator,
             @NonNull BaseExecutionDescriptor descriptor) {
@@ -162,33 +169,16 @@ public final class BaseExecutionService {
      * Runs the process described by this service. The call does not block
      * and the task is represented by the returned value. Integer returned
      * as a result of the {@link Future} is exit code of the process.
-     * The ability to call this method multiple times depends on a way
-     * in which the service has been created. Only service created by
-     * {@link #newService(java.util.concurrent.Callable, org.netbeans.api.extexecution.ExecutionDescriptor, java.lang.String)}
-     * may be run more than once.
      * <p>
-     * The output tabs are reused (if caller does not use the custom one,
-     * see {@link ExecutionDescriptor#getInputOutput()} or if it is not being
-     * run without output tab, see {@link #newService(java.util.concurrent.Callable, org.netbeans.api.extexecution.input.LineProcessor, org.netbeans.api.extexecution.input.LineProcessor, java.io.Reader)})
-     * - the tab to reuse (if any) is selected by having the same name
-     * and same buttons (control and option). If there is no output tab to
-     * reuse new one is opened.
-     * <p>
-     * If the service has been created by {@link #newService(java.util.concurrent.Callable, org.netbeans.api.extexecution.input.LineProcessor, org.netbeans.api.extexecution.input.LineProcessor, java.io.Reader)}
-     * this method may be called only once. Subsequent calls will cause an
-     * {@link IllegalStateException} to be thrown.
-     * If the service has been created by {@link #newService(java.util.concurrent.Callable, org.netbeans.api.extexecution.ExecutionDescriptor, java.lang.String)}
-     * this method can be invoked multiple times returning the different and
-     * unrelated {@link Future}s.
-     * <p>
-     * On each call <code>Callable&lt;Process&gt;</code>
-     * passed to {@link #newService(java.util.concurrent.Callable, org.netbeans.api.extexecution.ExecutionDescriptor, java.lang.String)}
+     * This method can be invoked multiple times returning the different and
+     * unrelated {@link Future}s. On each call <code>Callable&lt;Process&gt;</code>
+     * passed to {@link #newService(java.util.concurrent.Callable, org.netbeans.api.extexecution.base.BaseExecutionDescriptor)}
      * is invoked in order to create the process. If the process creation fails
      * (throwing an exception) returned <code>Future</code> will throw
      * {@link java.util.concurrent.ExecutionException} on {@link Future#get()}
      * request.
      * <p>
-     * For details on execution control see {@link ExecutionDescriptor}.
+     * For details on execution control see {@link BaseExecutionDescriptor}.
      *
      * @return task representing the actual run, value representing result
      *             of the {@link Future} is exit code of the process
