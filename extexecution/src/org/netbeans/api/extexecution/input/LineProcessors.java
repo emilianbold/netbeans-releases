@@ -42,16 +42,11 @@
 
 package org.netbeans.api.extexecution.input;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.openide.windows.OutputWriter;
 
@@ -63,10 +58,10 @@ import org.openide.windows.OutputWriter;
  *
  * @author Petr Hejl
  * @see InputProcessors#bridge(org.netbeans.api.extexecution.input.LineProcessor)
+ * @deprecated use {@link org.netbeans.api.extexecution.base.input.LineProcessors}
+ *             and {@link org.netbeans.api.extexecution.print.LineProcessors}
  */
 public final class LineProcessors {
-
-    private static final Logger LOGGER = Logger.getLogger(LineProcessors.class.getName());
 
     private LineProcessors() {
         super();
@@ -85,7 +80,15 @@ public final class LineProcessors {
      */
     @NonNull
     public static LineProcessor proxy(@NonNull LineProcessor... processors) {
-        return new ProxyLineProcessor(processors);
+        org.netbeans.api.extexecution.base.input.LineProcessor[] wrapped = new org.netbeans.api.extexecution.base.input.LineProcessor[processors.length];
+        for (int i = 0; i < processors.length; i++) {
+            if (processors[i] != null) {
+                wrapped[i] = new BaseLineProcessor(processors[i]);
+            } else {
+                wrapped[i] = null;
+            }
+        }
+        return new DelegatingLineProcessor(org.netbeans.api.extexecution.base.input.LineProcessors.proxy(wrapped));
     }
 
     /**
@@ -106,7 +109,7 @@ public final class LineProcessors {
      */
     @NonNull
     public static LineProcessor printing(@NonNull OutputWriter out, boolean resetEnabled) {
-        return printing(out, null, resetEnabled);
+        return new DelegatingLineProcessor(org.netbeans.api.extexecution.print.LineProcessors.printing(out, resetEnabled));
     }
 
     /**
@@ -132,7 +135,7 @@ public final class LineProcessors {
      */
     @NonNull
     public static LineProcessor printing(@NonNull OutputWriter out, @NullAllowed LineConvertor convertor, boolean resetEnabled) {
-        return new PrintingLineProcessor(out, convertor, resetEnabled);
+        return new DelegatingLineProcessor(org.netbeans.api.extexecution.print.LineProcessors.printing(out, convertor, resetEnabled));
     }
 
     /**
@@ -151,168 +154,54 @@ public final class LineProcessors {
      */
     @NonNull
     public static LineProcessor patternWaiting(@NonNull Pattern pattern, @NonNull CountDownLatch latch) {
-        return new WaitingLineProcessor(pattern, latch);
+        return new DelegatingLineProcessor(org.netbeans.api.extexecution.base.input.LineProcessors.patternWaiting(pattern, latch));
     }
+    
+    static class DelegatingLineProcessor implements LineProcessor {
+        
+        private final org.netbeans.api.extexecution.base.input.LineProcessor delegate;
 
-    private static class ProxyLineProcessor implements LineProcessor {
-
-        private final List<LineProcessor> processors = new ArrayList<LineProcessor>();
-
-        private boolean closed;
-
-        public ProxyLineProcessor(LineProcessor... processors) {
-            for (LineProcessor processor : processors) {
-                if (processor != null) {
-                    this.processors.add(processor);
-                }
-            }
+        public DelegatingLineProcessor(org.netbeans.api.extexecution.base.input.LineProcessor delegate) {
+            this.delegate = delegate;
         }
 
+        @Override
         public void processLine(String line) {
-            if (closed) {
-                throw new IllegalStateException("Already closed processor");
-            }
-
-            for (LineProcessor processor : processors) {
-                processor.processLine(line);
-            }
+            delegate.processLine(line);
         }
 
+        @Override
         public void reset() {
-            if (closed) {
-                throw new IllegalStateException("Already closed processor");
-            }
-
-            for (LineProcessor processor : processors) {
-                processor.reset();
-            }
+            delegate.reset();
         }
 
+        @Override
         public void close() {
-            closed = true;
-
-            for (LineProcessor processor : processors) {
-                processor.close();
-            }
+            delegate.close();
         }
     }
+    
+    static class BaseLineProcessor implements org.netbeans.api.extexecution.base.input.LineProcessor {
+        
+        private final LineProcessor delegate;
 
-    private static class PrintingLineProcessor implements LineProcessor {
-
-        private final OutputWriter out;
-
-        private final LineConvertor convertor;
-
-        private final boolean resetEnabled;
-
-        private boolean closed;
-
-        public PrintingLineProcessor(OutputWriter out, LineConvertor convertor, boolean resetEnabled) {
-            assert out != null;
-
-            this.out = out;
-            this.convertor = convertor;
-            this.resetEnabled = resetEnabled;
+        public BaseLineProcessor(LineProcessor delegate) {
+            this.delegate = delegate;
         }
 
+        @Override
         public void processLine(String line) {
-            assert line != null;
-
-            if (closed) {
-                throw new IllegalStateException("Already closed processor");
-            }
-
-            LOGGER.log(Level.FINEST, line);
-
-            if (convertor != null) {
-                List<ConvertedLine> convertedLines = convertor.convert(line);
-                if (convertedLines != null) {
-                    for (ConvertedLine converted : convertedLines) {
-                        if (converted.getListener() == null) {
-                            out.println(converted.getText());
-                        } else {
-                            try {
-                                out.println(converted.getText(), converted.getListener());
-                            } catch (IOException ex) {
-                                LOGGER.log(Level.INFO, null, ex);
-                                out.println(converted.getText());
-                            }
-                        }
-                    }
-                } else {
-                    out.println(line);
-                }
-            } else {
-                out.println(line);
-            }
-            out.flush();
+            delegate.processLine(line);
         }
 
+        @Override
         public void reset() {
-            if (closed) {
-                throw new IllegalStateException("Already closed processor");
-            }
-
-            if (!resetEnabled) {
-                return;
-            }
-
-            try {
-                out.reset();
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, null, ex);
-            }
+            delegate.reset();
         }
 
+        @Override
         public void close() {
-            closed = true;
-
-            out.flush();
-            out.close();
-        }
-    }
-
-    private static class WaitingLineProcessor implements LineProcessor {
-
-        private final Pattern pattern;
-
-        private final CountDownLatch latch;
-
-        /**<i>GuardedBy("this")</i>*/
-        private boolean processed;
-
-        /**<i>GuardedBy("this")</i>*/
-        private boolean closed;
-
-        public WaitingLineProcessor(Pattern pattern, CountDownLatch latch) {
-            assert pattern != null;
-            assert latch != null;
-
-            this.pattern = pattern;
-            this.latch = latch;
-        }
-
-        public synchronized void processLine(String line) {
-            assert line != null;
-
-            if (closed) {
-                throw new IllegalStateException("Already closed processor");
-            }
-
-            if (!processed && pattern.matcher(line).matches()) {
-                latch.countDown();
-                processed = true;
-            }
-        }
-
-        public synchronized void reset() {
-            if (closed) {
-                throw new IllegalStateException("Already closed processor");
-            }
-        }
-
-        public synchronized void close() {
-            closed = true;
+            delegate.close();
         }
     }
 }

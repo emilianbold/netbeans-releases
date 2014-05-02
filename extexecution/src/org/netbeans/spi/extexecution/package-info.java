@@ -46,6 +46,7 @@
  * The support SPI for creation of external processes.
  *
  * @see org.netbeans.spi.extexecution.ProcessBuilderImplementation
+ * @deprecated use {@link org.netbeans.spi.extexecution.base}
  */
 package org.netbeans.spi.extexecution;
 
