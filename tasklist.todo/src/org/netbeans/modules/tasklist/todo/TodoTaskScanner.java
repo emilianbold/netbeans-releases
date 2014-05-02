@@ -89,7 +89,7 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
      *
      */
     TodoTaskScanner( String displayName, String description ) {
-        super( displayName, description, "Advanced/" + ToDoOptionsController.OPTIONS_PATH); //NOI18N
+        super( displayName, description, "Team/" + ToDoOptionsController.OPTIONS_PATH); //NOI18N
     }
 
     public static TodoTaskScanner create() {
