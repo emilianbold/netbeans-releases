@@ -202,25 +202,25 @@ final public class Settings {
     }
   
      public String getLineComment(String fileExtension, String mime) {
-        FileIdentifier identifier = ext2comments.get(fileExtension.toUpperCase());
+        FileIdentifier identifier = mime2comments.get(mime);
         if (null == identifier) {
-            identifier = mime2comments.get(mime);
+            identifier = ext2comments.get(fileExtension.toUpperCase());
         }
         return null == identifier ? null : identifier.getCommentTags().getLineComment();
     }
 
     public String getBlockCommentStart(String fileExtension, String mime) {
-        FileIdentifier identifier = ext2comments.get(fileExtension.toUpperCase());
+        FileIdentifier identifier = mime2comments.get(mime);
         if (null == identifier) {
-            identifier = mime2comments.get(mime);
+            identifier = ext2comments.get(fileExtension.toUpperCase());
         }
         return null == identifier ? null : identifier.getCommentTags().getBlockCommentStart();
     }
 
     public String getBlockCommentEnd(String fileExtension, String mime) {
-        FileIdentifier identifier = ext2comments.get(fileExtension.toUpperCase());
+        FileIdentifier identifier = mime2comments.get(mime);
         if (null == identifier) {
-            identifier = mime2comments.get(mime);
+            identifier = ext2comments.get(fileExtension.toUpperCase());
         }
         return null == identifier ? null : identifier.getCommentTags().getBlockCommentEnd();
     }
