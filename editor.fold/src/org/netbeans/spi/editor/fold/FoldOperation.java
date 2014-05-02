@@ -140,7 +140,6 @@ public final class FoldOperation {
     int startOffset, int endOffset, int startGuardedLength, int endGuardedLength,
     Object extraInfo, FoldHierarchyTransaction transaction)
     throws BadLocationException {
-        Parameters.notNull("type", type);
         Fold fold = impl.createFold(type, description, collapsed,
             startOffset, endOffset, startGuardedLength, endGuardedLength,
             extraInfo
