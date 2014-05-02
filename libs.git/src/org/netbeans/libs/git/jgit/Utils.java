@@ -259,12 +259,16 @@ public final class Utils {
     }
 
     public static RevCommit findCommit (Repository repository, String revision) throws GitException.MissingObjectException, GitException {
+        return findCommit(repository, revision, null);
+    }
+    
+    public static RevCommit findCommit (Repository repository, String revision, RevWalk walk) throws GitException.MissingObjectException, GitException {
         try {
             ObjectId commitId = parseObjectId(repository, revision);
             if (commitId == null) {
                 throw new GitException.MissingObjectException(revision, GitObjectType.COMMIT);
             }
-            return new RevWalk(repository).parseCommit(commitId);
+            return (walk == null ? new RevWalk(repository) : walk).parseCommit(commitId);
         } catch (MissingObjectException ex) {
             throw new GitException.MissingObjectException(revision, GitObjectType.COMMIT, ex);
         } catch (IncorrectObjectTypeException ex) {
