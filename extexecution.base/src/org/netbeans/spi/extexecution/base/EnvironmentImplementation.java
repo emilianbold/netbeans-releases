@@ -48,7 +48,7 @@ import org.netbeans.api.extexecution.base.Environment;
 
 /**
  * The interface representing the implementation
- * of {@link org.netbeans.api.extexecution.Environment}.
+ * of {@link Environment}.
  *
  * @see Environment
  * @author Petr Hejl

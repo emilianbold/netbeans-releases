@@ -45,7 +45,7 @@ import org.netbeans.modules.extexecution.base.ProcessBuilderAccessor;
 
 /**
  * The factory allowing SPI implementors of {@link ProcessBuilderImplementation}
- * to create its API instances {@link org.netbeans.api.extexecution.ProcessBuilder}.
+ * to create its API instances {@link org.netbeans.api.extexecution.base.ProcessBuilder}.
  *
  * @author Petr Hejl
  */
@@ -56,7 +56,7 @@ public class ProcessBuilderFactory {
     }
 
     /**
-     * Creates the instance of {@link org.netbeans.api.extexecution.ProcessBuilder}
+     * Creates the instance of {@link org.netbeans.api.extexecution.base.ProcessBuilder}
      * from its SPI representation.
      *
      * @param impl SPI representation

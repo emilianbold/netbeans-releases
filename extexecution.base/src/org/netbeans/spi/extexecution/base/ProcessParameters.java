@@ -50,7 +50,7 @@ import org.netbeans.modules.extexecution.base.ProcessParametersAccessor;
 /**
  * The parameters configured for process creation.
  *
- * @see ProcessBuilderImplementation2
+ * @see ProcessBuilderImplementation
  * @author Petr Hejl
  */
 public final class ProcessParameters {

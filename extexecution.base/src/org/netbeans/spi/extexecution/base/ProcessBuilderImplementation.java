@@ -48,9 +48,9 @@ import org.openide.util.Lookup;
 
 /**
  * The interface representing the implementation
- * of {@link org.netbeans.api.extexecution.ProcessBuilder}.
+ * of {@link org.netbeans.api.extexecution.base.ProcessBuilder}.
  * 
- * @see org.netbeans.api.extexecution.ProcessBuilder
+ * @see org.netbeans.api.extexecution.base.ProcessBuilder
  * @author Petr Hejl
  */
 public interface ProcessBuilderImplementation extends Lookup.Provider {
@@ -65,9 +65,9 @@ public interface ProcessBuilderImplementation extends Lookup.Provider {
 
     /**
      * Provides an extension point to the implementors. One may enhance the
-     * functionality of {@link org.netbeans.api.extexecution.ProcessBuilder}
-     * by this as the content of this {@link Lookup} is included in
-     * {@link org.netbeans.api.extexecution.ProcessBuilder#getLookup()}
+     * functionality of {@link org.netbeans.api.extexecution.base.ProcessBuilder}
+     * by this as the content of the {@link Lookup} is included in
+     * {@link org.netbeans.api.extexecution.base.ProcessBuilder#getLookup()}
      *
      * @return a lookup providing an extension point
      */
@@ -79,7 +79,7 @@ public interface ProcessBuilderImplementation extends Lookup.Provider {
      * <p>
      * The environment variables stored in parameters are acquired by call to
      * {@link Environment#values()}. So if the implementation does not aim to be
-     * or can't thread safe it may check or use the {@link Environment}
+     * or can't be thread safe it may check or use the {@link Environment}
      * directly.
      *
      * @param parameters the instance describing the process parameters
