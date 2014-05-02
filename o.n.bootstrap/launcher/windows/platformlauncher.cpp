@@ -112,6 +112,12 @@ bool PlatformLauncher::start(char* argv[], int argc, DWORD *retCode) {
         }
     }
     jvmLauncher.getJavaPath(jdkhome);
+    
+    if (!launcherOptions.empty() && jvmLauncher.isPermSizeSupported()) {
+        for (list<string>::iterator launcherOption = launcherOptions.begin(); launcherOption != launcherOptions.end(); launcherOption++) {
+            javaOptions.push_back(*launcherOption);
+        }
+    }
 
     deleteNewClustersFile();
     prepareOptions();
@@ -294,6 +300,8 @@ bool PlatformLauncher::parseArgs(int argc, char *argv[]) {
             if (strncmp(argv[i] + 2, OPT_HEAP_DUMP_PATH, strlen(OPT_HEAP_DUMP_PATH)) == 0) {
                 heapDumpPathOptFound = true;
             }
+        } else if (strncmp("-L", argv[i], 2) == 0) {
+            launcherOptions.push_back(argv[i] + 2);            
         } else {
             if (strcmp(argv[i], "-h") == 0
                     || strcmp(argv[i], "-help") == 0

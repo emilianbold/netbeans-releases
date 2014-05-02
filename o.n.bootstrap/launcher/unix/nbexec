@@ -76,6 +76,8 @@ jargs="$jargs -Dnetbeans.home=\"$plathome\""
 
 args=""
 
+launcher_args=""
+
 prefixcp=""
 postfixcp=""
 
@@ -138,6 +140,7 @@ EOF
         -psn*)
             shift;
             ;;
+	-L*) lopt=`expr "X-$1" : 'X--L\(.*\)'`; launcher_args="$launcher_args '$lopt'";;
         -J*) jopt=`expr "X-$1" : 'X--J\(.*\)'`; jargs="$jargs '$jopt'";;
         *) args="$args \"$1\"" ;;
     esac
@@ -188,6 +191,13 @@ fi
 if [ ! -x "${jdkhome}/bin/java" ] ; then
     echo "Cannot find java. Please use the --jdkhome switch." >&2
     exit 2
+fi
+
+if [ -n "$launcher_args" ] ; then
+    jdk_version=$("${jdkhome}/bin/java" -version 2>&1 | awk -F '"' '/version/ {print substr($2, 1, 3)}')
+    if [ "$jdk_version" = "1.7" ] ; then   
+        jargs="$jargs $launcher_args"
+    fi
 fi
 
 # Make sure native code libraries of jdk7 are found
