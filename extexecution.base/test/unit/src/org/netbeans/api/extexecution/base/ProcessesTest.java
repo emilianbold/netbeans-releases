@@ -76,8 +76,6 @@ public class ProcessesTest extends NbTestCase {
 
         Processes.killTree(process, env);
 
-        assertFalse(process.destroyCalled());
-
         ProcessesImplementation impl = Lookup.getDefault().lookup(ProcessesImplementation.class);
         assertNotNull(impl);
 

@@ -71,19 +71,13 @@ public final class Processes {
      * @param environment map containing the variables and their values which the
      *             process must have to be considered being part of
      *             the tree to kill
-     * @return <code>true</code> if an attempt to kill the whole tree has been
-     *             made; in other words <code>false</code> means only the root
-     *             process has been killed via {@link Process#destroy()}
      */
-    @CheckReturnValue
-    public static boolean killTree(Process process, Map<String, String> environment) {
+    public static void killTree(Process process, Map<String, String> environment) {
         ProcessesImplementation impl = Lookup.getDefault().lookup(ProcessesImplementation.class);
         if (impl != null) {
             impl.killTree(process, environment);
-            return true;
         }
 
         process.destroy();
-        return false;
     }
 }

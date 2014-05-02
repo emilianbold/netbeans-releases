@@ -45,10 +45,30 @@ package org.netbeans.spi.extexecution.base;
 import java.util.Map;
 
 /**
- *
+ * The interface representing the implementation
+ * of {@link org.netbeans.api.extexecution.base.Processes}.
+ * <p>
+ * Implementation of this interface should be published in default lookup
+ * in order to be used by
+ * {@link org.netbeans.api.extexecution.base.Processes}
+ * 
+ * @see org.netbeans.api.extexecution.base.Processes
  * @author Petr Hejl
  */
 public interface ProcessesImplementation {
     
+    /**
+     * Kills the process passed as parameter and <i>attempts</i> to terminate
+     * all child processes in process tree.
+     * <p>
+     * Any process running in environment containing the same variables
+     * with the same values as those passed in <code>env</code> (all of them)
+     * is supposed to be part of the process tree and may be killed.
+     *
+     * @param process process to kill
+     * @param environment map containing the variables and their values which the
+     *             process must have to be considered being part of
+     *             the tree to kill
+     */
     void killTree(Process process, Map<String, String> environment);
 }
