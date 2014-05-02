@@ -72,6 +72,8 @@ public class WildflyPluginUtils {
 
     public static final Version WILDFLY_8_0_0 = new Version("8.0.0"); // NOI18N
 
+    public static final Version WILDFLY_8_1_0 = new Version("8.1.0"); // NOI18N
+
     private static final Logger LOGGER = Logger.getLogger(WildflyPluginUtils.class.getName());
 
     public static final String LIB = "lib" + separatorChar;
@@ -130,10 +132,8 @@ public class WildflyPluginUtils {
         File serverDirectory = new File(serverLocation);
 
         if (isGoodJBServerLocation(serverDirectory)) {
-            Version version = getServerVersion(serverDirectory);
             String[] files = new String[]{"standalone", "domain"};
             File file = serverDirectory;
-
             if (files != null) {
                 for (String file1 : files) {
                     String path = file.getAbsolutePath() + separatorChar + file1;
@@ -185,7 +185,8 @@ public class WildflyPluginUtils {
             return WildflyPluginUtils.isGoodJBServerLocation8x(candidate);
         }
 
-        return ("8".equals(version.getMajorNumber()) && WildflyPluginUtils.isGoodJBServerLocation8x(candidate)); // NOI18N
+        return ("8".equals(version.getMajorNumber())
+                && WildflyPluginUtils.isGoodJBServerLocation8x(candidate)); // NOI18N
     }
 
     /**
@@ -224,8 +225,6 @@ public class WildflyPluginUtils {
 
     public static String getHTTPConnectorPort(String configFile) {
         String defaultPort = "8080"; // NOI18N
-
-
         return defaultPort;
     }
 
@@ -271,6 +270,9 @@ public class WildflyPluginUtils {
                     break;
                 }
             }
+        }
+        if(version == null) {
+            return WILDFLY_8_0_0;
         }
         return version;
     }
@@ -454,6 +456,9 @@ public class WildflyPluginUtils {
          * @param o version to compare with
          */
         public int compareToIgnoreUpdate(Version o) {
+            if(o == null) {
+                return 1;
+            }
             int comparison = majorNumber.compareTo(o.majorNumber);
             if (comparison != 0) {
                 return comparison;
