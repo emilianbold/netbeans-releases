@@ -63,7 +63,7 @@ public interface InputReader extends Closeable, AutoCloseable {
      * Implementation of this method has to be non blocking
      * for safe usage in {@link InputReaderTask}.
      *
-     * @param processor consumer of read characters, mey be <code>null</code>
+     * @param processor consumer of read characters, may be <code>null</code>
      * @return number of characters read
      * @throws IOException if any read or process error occurs
      */
@@ -72,6 +72,7 @@ public interface InputReader extends Closeable, AutoCloseable {
     /**
      * Closes the reader releasing the resources held by it.
      */
+    @Override
     void close() throws IOException;
 
 }

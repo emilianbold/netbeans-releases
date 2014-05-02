@@ -56,7 +56,7 @@ import org.openide.util.Parameters;
  * Task consuming data from the certain reader, processing them with the given
  * processor.
  * <p>
- * When exception occurs while running the task it is terminated.
+ * When exception occurs while the task is running the task is terminated.
  * Task is responsive to interruption. InputReader is closed on finish (includes
  * both cases throwing an exception and interruption).
  * <p>
@@ -125,8 +125,8 @@ public final class InputReaderTask implements Runnable, Cancellable {
     }
 
     /**
-     * Creates the new task. The task will read the data from reader processing
-     * them through processor (if any) until interrupted or cancelled.
+     * Creates a new task. The task will read the data from reader processing
+     * them through processor (if any) until interrupted or canceled.
      * <p>
      * <i>{@link InputReader} must be non blocking.</i>
      *
@@ -143,7 +143,7 @@ public final class InputReaderTask implements Runnable, Cancellable {
 
     /**
      * Creates the new task. The task will read the data from reader processing
-     * them through processor (if any). When interrupted or cancelled task will
+     * them through processor (if any). When interrupted or canceled task will
      * try to read all the remaining <i>available</i> data before exiting.
      * <p>
      * <i>{@link InputReader} must be non blocking.</i>
@@ -165,6 +165,7 @@ public final class InputReaderTask implements Runnable, Cancellable {
      * <p>
      * It is not allowed to invoke run multiple times.
      */
+    @Override
     public void run() {
         synchronized (this) {
             if (running) {
@@ -252,11 +253,12 @@ public final class InputReaderTask implements Runnable, Cancellable {
     }
 
     /**
-     * Cancels the task. If the task is not running or task is already cancelled
+     * Cancels the task. If the task is not running or task is already canceled
      * this is noop.
      *
-     * @return <code>true</code> if the task was successfully cancelled
+     * @return <code>true</code> if the task was successfully canceled
      */
+    @Override
     public boolean cancel() {
         synchronized (this) {
             if (cancelled) {
