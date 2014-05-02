@@ -83,6 +83,7 @@ public interface LineProcessor extends Closeable, AutoCloseable {
     /**
      * Closes the processor releasing the resources held by it.
      */
+    @Override
     void close();
 
 }

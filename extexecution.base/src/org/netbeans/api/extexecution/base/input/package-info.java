@@ -47,7 +47,7 @@
  * provides classes for automated processing of such inputs. The processing
  * is character or line based.
  *
- * @see org.netbeans.api.extexecution.input.InputReaderTask
+ * @see org.netbeans.api.extexecution.base.input.InputReaderTask
  */
 package org.netbeans.api.extexecution.base.input;
 

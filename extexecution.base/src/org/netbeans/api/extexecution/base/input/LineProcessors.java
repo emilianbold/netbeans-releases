@@ -50,7 +50,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 
 /**
  * Factory methods for {@link LineProcessor} classes.
@@ -59,7 +58,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
  * {@link LineProcessor} is that LineProcessor always process whole lines.
  *
  * @author Petr Hejl
- * @see InputProcessors#bridge(org.netbeans.api.extexecution.input.LineProcessor)
+ * @see InputProcessors#bridge(org.netbeans.api.extexecution.base.input.LineProcessor)
  */
 public final class LineProcessors {
 
@@ -75,9 +74,9 @@ public final class LineProcessors {
      * Any action taken on this processor is distributed to all processors
      * passed as arguments in the same order as they were passed to this method.
      * <p>
-     * Returned processor is <i> not thread safe</i>.
+     * Returned processor is <i>not thread safe</i>.
      *
-     * @param processors processor to which the actions will be ditributed
+     * @param processors processor to which the actions will be distributed
      * @return the processor acting as a proxy
      */
     @NonNull
@@ -89,15 +88,11 @@ public final class LineProcessors {
      * Returns the processor printing all lines passed for processing to
      * the given output writer.
      * <p>
-     * Reset action on the returned processor resets the writer if it is enabled
-     * by passing <code>true</code> as <code>resetEnabled</code>. Processor
-     * closes the output writer on {@link InputProcessor#close()}.
+     * Processor closes the output writer on {@link InputProcessor#close()}.
      * <p>
-     * Returned processor is <i> not thread safe</i>.
+     * Returned processor is <i>not thread safe</i>.
      *
      * @param out where to print received lines
-     * @param resetEnabled determines whether the reset operation will work
-     *             (will reset the writer if so)
      * @return the processor printing all lines passed for processing to
      *             the given output writer
      */
@@ -112,7 +107,7 @@ public final class LineProcessors {
      * <p>
      * Reset action on the returned processor is noop.
      * <p>
-     * Returned processor is <i> thread safe</i>.
+     * Returned processor is <i>thread safe</i>.
      *
      * @param pattern pattern that line must match in order decrease the latch
      * @param latch latch to decrease when the line matching the pattern appears
@@ -139,6 +134,7 @@ public final class LineProcessors {
             }
         }
 
+        @Override
         public void processLine(String line) {
             if (closed) {
                 throw new IllegalStateException("Already closed processor");
@@ -149,6 +145,7 @@ public final class LineProcessors {
             }
         }
 
+        @Override
         public void reset() {
             if (closed) {
                 throw new IllegalStateException("Already closed processor");
@@ -159,6 +156,7 @@ public final class LineProcessors {
             }
         }
 
+        @Override
         public void close() {
             closed = true;
 
@@ -180,6 +178,7 @@ public final class LineProcessors {
             this.out = out;
         }
 
+        @Override
         public void processLine(String line) {
             assert line != null;
 
@@ -193,12 +192,14 @@ public final class LineProcessors {
             out.flush();
         }
 
+        @Override
         public void reset() {
             if (closed) {
                 throw new IllegalStateException("Already closed processor");
             }
         }
 
+        @Override
         public void close() {
             closed = true;
 
@@ -227,6 +228,7 @@ public final class LineProcessors {
             this.latch = latch;
         }
 
+        @Override
         public synchronized void processLine(String line) {
             assert line != null;
 
@@ -240,12 +242,14 @@ public final class LineProcessors {
             }
         }
 
+        @Override
         public synchronized void reset() {
             if (closed) {
                 throw new IllegalStateException("Already closed processor");
             }
         }
 
+        @Override
         public synchronized void close() {
             closed = true;
         }
