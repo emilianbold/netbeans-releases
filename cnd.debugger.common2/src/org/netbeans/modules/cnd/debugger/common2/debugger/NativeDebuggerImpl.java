@@ -1603,7 +1603,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	disController().updateBreakpoint(addr, bpt, false);
     }
 
-    public static String getDebuggerString(MakeConfiguration conf) {
+    public static String getDebuggerString(String debuggerID, MakeConfiguration conf) {
         // Figure out dbx command
         // Copied from GdbProfile
         CompilerSet2Configuration csconf = conf.getCompilerSet();
@@ -1632,7 +1632,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
             cs = CompilerSetFactory.getCompilerSet(exEnv, flavor, csname);
         }
         Tool debuggerTool = cs.getTool(PredefinedToolKind.DebuggerTool);
-        if (debuggerTool != null) {
+        if (debuggerTool != null && debuggerID.equals(debuggerTool.getName())) {
             String path = debuggerTool.getPath();
             if (path != null && !path.isEmpty()) {
                 return path;
