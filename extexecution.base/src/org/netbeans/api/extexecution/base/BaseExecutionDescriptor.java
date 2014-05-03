@@ -129,7 +129,7 @@ public final class BaseExecutionDescriptor {
     /**
      * Returns a descriptor with configured pre execution runnable. This
      * runnable is executed <i>before</i> the external execution itself
-     * (when invoked by {@link ExecutionService#run()}).
+     * (when invoked by {@link BaseExecutionService#run()}).
      * <p>
      * The default (not configured) value is <code>null</code>.
      * <p>
@@ -153,7 +153,7 @@ public final class BaseExecutionDescriptor {
     /**
      * Returns a descriptor with configured post execution runnable. This
      * runnable is executed <i>after</i> the external execution itself
-     * (when invoked by {@link ExecutionService#run()}).
+     * (when invoked by {@link BaseExecutionService#run()}).
      * <p>
      * The default (not configured) value is <code>null</code>.
      * <p>

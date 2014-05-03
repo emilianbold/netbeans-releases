@@ -82,7 +82,7 @@ import org.openide.util.Parameters;
  * <p>
  * If the {@link ProcessBuilderImplementation} is used and it is (including
  * {@link EnvironmentImplementation}) thread safe and does not have any mutable
- * configuration accessible via {@link ProcessBuilderImplementation2#getLookup()}
+ * configuration accessible via {@link ProcessBuilderImplementation#getLookup()}
  * it is thread safe as well. Otherwise it is not thread safe.
  * <p>
  * The synchronization mechanism used in this object is the {@link ProcessBuilderImplementation}

@@ -101,14 +101,9 @@ is the proper place.
 
     <!-- First, a list of API names you may use: -->
     <apidefs>
-        <apidef name="extexecution_api">External Execution API</apidef>
-        <apidef name="extexecution_api_input">External Execution Input API</apidef>
-        <apidef name="extexecution_api_print">External Execution Input Printing API</apidef>
-        <apidef name="extexecution_api_startup">External Execution Startup Arguments API</apidef>
-        <apidef name="extexecution_spi">External Execution SPI</apidef>
-        <apidef name="extexecution_spi_destroy">External Execution Process Destroy SPI</apidef>
-        <apidef name="extexecution_spi_open">External Execution Open Handler SPI</apidef>
-        <apidef name="extexecution_spi_startup">External Execution Startup Arguments SPI</apidef>
+        <apidef name="extexecution_base_api">External Execution Base API</apidef>
+        <apidef name="extexecution_base_api_input">External Execution Base Input API</apidef>
+        <apidef name="extexecution_base_spi">External Execution Base SPI</apidef>
         <!-- etc. -->
     </apidefs>
 
@@ -117,147 +112,15 @@ is the proper place.
     <changes>
 
         <change>
-            <api name="extexecution_spi"/>
-            <summary>Advice to throw UserQuestionException</summary>
-            <version major="1" minor="35"/>
-            <date day="21" month="9" year="2012"/>
-            <author login="jtulach"/>
-            <compatibility addition="yes"/>
-            <description>
-                Providers of <code>ProcessBuilderImplementation</code> are
-                advised to throw <code>UserQuestionException</code> in case
-                they need some interaction with user.
-            </description>
-            <class package="org.netbeans.spi.extexecution" name="ProcessBuilderImplementation"/>
-            <class package="org.netbeans.api.extexecution" name="ProcessBuilder"/>
-            <issue number="217874"/>
-        </change>
-        <change>
-            <api name="extexecution_spi_open"/>
-            <summary>SPI to allow to split the API and implementation</summary>
-            <version major="1" minor="33"/>
-            <date day="31" month="8" year="2012"/>
-            <author login="phejl"/>
-            <compatibility addition="yes"/>
-            <description>
-                This API/SPI allow splitting the extexecution to real API
-                and implementation classes.
-            </description>
-            <class package="org.netbeans.spi.extexecution.open" name="OptionOpenHandler"/>
-            <class package="org.netbeans.spi.extexecution.open" name="FileOpenHandler"/>
-            <class package="org.netbeans.spi.extexecution.open" name="HttpOpenHandler"/>
-            <issue number="216882"/>
-        </change>
-        <change>
-            <api name="extexecution_api_startup"/>
-            <summary>SPI to allow extending process startup</summary>
-            <version major="1" minor="30"/>
-            <date day="7" month="2" year="2012"/>
-            <author login="phejl"/>
-            <compatibility addition="yes"/>
-            <description>
-                This API/SPI allow third party plugins (such as JRebel) to
-                register extenders of process startup. The interested clients
-                such as projects or servers may optionaly query such
-                extenders and pass additional arguments to the process.
-            </description>
-            <class package="org.netbeans.api.extexecution.startup" name="StartupExtender"/>
-            <class package="org.netbeans.spi.extexecution.startup" name="StartupExtenderImplementation"/>
-            <issue number="206196"/>
-        </change>
-        <change>
-            <api name="extexecution_api"/>
-            <summary>New API method to open IO tab on error</summary>
-            <version major="1" minor="29"/>
-            <date day="20" month="12" year="2011"/>
-            <author login="phejl"/>
-            <compatibility binary="compatible" source="compatible" semantic="compatible"/>
-            <description>
-                Added configuration method to ExecutionDescriptor to allow
-                opening of output tab on nonzero exit code.
-            </description>
-            <class package="org.netbeans.api.extexecution" name="ExecutionDescriptor"/>
-            <issue number="206254"/>
-        </change>
-        <change>
-            <api name="extexecution_api"/>
-            <summary>New API/SPI to abstract process builder</summary>
-            <version major="1" minor="28"/>
-            <date day="21" month="11" year="2011"/>
-            <author login="phejl"/>
-            <compatibility binary="compatible" source="compatible" semantic="compatible"/>
-            <description>
-                New API/SPI classes to allow different implementations
-                of process builders.
-            </description>
-            <class package="org.netbeans.api.extexecution" name="ProcessBuilder"/>
-            <class package="org.netbeans.spi.extexecution" name="ProcessBuilderFactory"/>
-            <class package="org.netbeans.spi.extexecution" name="ProcessBuilderImplementation"/>
-            <issue number="205104"/>
-        </change>
-        <change>
-            <api name="extexecution_api"/>
-            <summary>New API method to avoid reset of custom IO</summary>
-            <version major="1" minor="20"/>
-            <date day="17" month="2" year="2010"/>
-            <author login="phejl"/>
-            <compatibility binary="compatible" source="compatible" semantic="compatible"/>
-            <description>
-                Added configuration method to ExecutionDescriptor to make
-                reset of IO optional for custom IO.
-            </description>
-            <class package="org.netbeans.api.extexecution" name="ExecutionDescriptor"/>
-            <issue number="180459"/>
-        </change>
-        <change>
-            <api name="extexecution_spi_destroy"/>
-            <summary>New SPI for improved external process termination</summary>
-            <version major="1" minor="16"/>
-            <date day="1" month="7" year="2009"/>
-            <author login="mkleint"/>
-            <compatibility binary="compatible" source="compatible" semantic="compatible"/>
-            <description>
-                Added API/SPI support to kill the whole process tree on
-                Process.destroy().
-            </description>
-            <class package="org.netbeans.api.extexecution" name="ExternalProcessSupport"/>
-            <class package="org.netbeans.spi.extexecution.destroy" name="ProcessDestroyPerformer"/>
-            <issue number="138116"/>
-        </change>
-        <change>
-            <api name="extexecution_api"/>
-            <summary>Configurable charset for process streams</summary>
-            <version major="1" minor="14"/>
-            <date day="7" month="4" year="2008"/>
-            <author login="phejl"/>
-            <compatibility binary="compatible" source="compatible" semantic="compatible"/>
-            <description>
-                Added charset() method to ExecutionDescriptor to configure
-                the charset used to decode process streams.
-            </description>
-            <class package="org.netbeans.api.extexecution" name="ExecutionDescriptor"/>
-            <issue number="161607"/>
-        </change>
-        <change>
-            <api name="extexecution_api"/>
-            <summary>Published as a stable API</summary>
-            <version major="1" minor="13"/>
-            <date day="20" month="11" year="2008"/>
-            <author login="phejl"/>
-            <compatibility binary="incompatible" source="incompatible" semantic="incompatible"/>
-            <description>
-                Published as a stable API. Refactored to API packages.
-            </description>
-        </change>
-        <change>
-            <api name="extexecution_api"/>
+            <api name="extexecution_base_api"/>
             <summary>Initial version released</summary>
-            <version major="1" minor="6"/>
-            <date day="1" month="7" year="2008"/>
+            <version major="1" minor="0"/>
+            <date day="1" month="6" year="2014"/>
             <author login="phejl"/>
             <compatibility addition="yes"/>
             <description>
-                First initial release of the External Execution API.
+                First initial release of the External Execution Base API.
+                Refactored from External Execution API.
             </description>
         </change>
     </changes>
@@ -277,7 +140,7 @@ is the proper place.
 
 -->
     <head>
-      <title>Change History for the External Execution API</title>
+      <title>Change History for the External Execution Base API</title>
       <link rel="stylesheet" href="prose.css" type="text/css"/>
     </head>
     <body>
@@ -286,13 +149,13 @@ is the proper place.
 
 <h1>Introduction</h1>
 
-<p>This document lists changes made to the External Execution API.</p>
+<p>This document lists changes made to the External Execution Base API.</p>
 
 <!-- The actual lists of changes, as summaries and details: -->
 
       <hr/>
       
-      <standard-changelists module-code-name="org.netbeans.modules.extexecution"/>
+      <standard-changelists module-code-name="org.netbeans.modules.extexecution.base"/>
 
       <hr/><p>@FOOTER@</p>
 

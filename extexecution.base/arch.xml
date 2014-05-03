@@ -48,7 +48,7 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="arch-overall">
   <p>
    <i>This API origins in External Execution API and contains set of basic
-   features with minimal dependencies.
+   features with minimal dependencies.</i>
   </p>
   <p>
    The External Execution Base module provides the
@@ -132,145 +132,77 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="arch-usecases">
   <usecase id="execute-process" name="Execution of an external process">
    <p>
-    Client needs to execute an external process and handle process streams and
-    display the output in the output tab.
+    Client needs to execute an external process and handle process streams.
    </p>
    <p>
     In order to achieve this client creates the
-    <a href="@TOP@org/netbeans/api/extexecution/ExecutionDescriptor.html">ExecutionDescriptor</a>.
-    Via this object client configures all the UI behaviour of the subsequent
-    execution. As a next step client creates the
-    <a href="@TOP@org/netbeans/api/extexecution/ExecutionService.html">ExecutionService</a>
+    <a href="@TOP@org/netbeans/api/extexecution/base/BaseExecutionDescriptor.html">BaseExecutionDescriptor</a>.
+    Via this object client configures all the client integration parameters of
+    the execution. As a next step client creates the
+    <a href="@TOP@org/netbeans/api/extexecution/base/BaseExecutionService.html">BaseExecutionService</a>
     itself and calls run to execute the job. Run can be called multiple times.
-    The output and input streams are presented in output tab. Additional
-    processing and printing conversion can be configured in descriptor through
-    interfaces described in following usecases.
+    The output and input streams are handled by the service. Additional
+    processing can be configured in descriptor through interfaces described
+    in following usecases.
    </p>
    <p>
     The creation of the external process is supported by
-    <a href="@TOP@org/netbeans/api/extexecution/ExternalProcessBuilder.html">ExternalProcessBuilder</a>
+    <a href="@TOP@org/netbeans/api/extexecution/base/ProcessBuilder.html">ProcessBuilder</a>
     to make things easier.
    </p>
   </usecase>
   <usecase id="handle-input" name="Processing the input">
    <p>
-    <span style="text-decoration:line-through;">Client needs to process character
-    data coming from stream, file or other source.</span> This usecase should 
-    be solved by External Execution Base API.
+    Client needs to process character data coming from stream, file or other
+    source.
    </p>
    <p>
     To abstract the source of the data client must implement
-    <a href="@TOP@org/netbeans/api/extexecution/input/InputReader.html">InputReader</a>.
+    <a href="@TOP@org/netbeans/api/extexecution/base/input/InputReader.html">InputReader</a>.
     To abstract the data processing client must implement
-    <a href="@TOP@org/netbeans/api/extexecution/input/InputProcessor.html">InputProcessor</a> or
-    <a href="@TOP@org/netbeans/api/extexecution/input/LineProcessor.html">LineProcessor</a>.
+    <a href="@TOP@org/netbeans/api/extexecution/base/input/InputProcessor.html">InputProcessor</a> or
+    <a href="@TOP@org/netbeans/api/extexecution/base/input/LineProcessor.html">LineProcessor</a>.
     For all three interfaces there are prepared common implementations (and bridge
     from character based to line based processing) at these three factory classes:
    </p>
    <ul>
-    <li><a href="@TOP@org/netbeans/api/extexecution/input/InputReaders.html">InputReaders</a></li>
-    <li><a href="@TOP@org/netbeans/api/extexecution/input/InputProcessors.html">InputProcessors</a></li>
-    <li><a href="@TOP@org/netbeans/api/extexecution/input/LineProcessors.html">LineProcessors</a></li>
+    <li><a href="@TOP@org/netbeans/api/extexecution/base/input/InputReaders.html">InputReaders</a></li>
+    <li><a href="@TOP@org/netbeans/api/extexecution/base/input/InputProcessors.html">InputProcessors</a></li>
+    <li><a href="@TOP@org/netbeans/api/extexecution/base/input/LineProcessors.html">LineProcessors</a></li>
    </ul>
    <p>
-    To configure additional functionality specific to <code>org.openide.windows.OutputWriter</code>
-    see the next usecase.
-   </p>
-   <p>
     Once the data source and processing objects are prepared client creates
-    <a href="@TOP@org/netbeans/api/extexecution/input/InputReaderTask.html">InputReaderTask</a>.
-    Factory methods of the <a href="@TOP@org/netbeans/api/extexecution/input/InputReaderTask.html">InputReaderTask</a>
+    <a href="@TOP@org/netbeans/api/extexecution/base/input/InputReaderTask.html">InputReaderTask</a>.
+    Factory methods of the <a href="@TOP@org/netbeans/api/extexecution/base/input/InputReaderTask.html">InputReaderTask</a>
     can create either common task exiting on interruption or cancellation
     or draining task which is trying to drain out all available data before exiting.
    </p>
   </usecase>
-  <usecase id="print-input" name="Printing the input">
-   <p>
-    Client intends to process input lines and print them to <code>org.openide.windows.OutputWriter</code>.
-    In addition printed lines should be transformed (converted) somehow
-    and enriched by line listeners.
-   </p>
-   <p>
-    The both default printing processors provide factory method accepting
-    <a href="@TOP@org/netbeans/api/extexecution/print/LineConvertor.html">LineConvertor</a>.
-    Namely
-    <a href="@TOP@org/netbeans/api/extexecution/print/InputProcessors.html#printing(org.openide.windows.OutputWriter,%20org.netbeans.api.extexecution.print.LineConvertor,%20boolean)">
-     InputProcessors.printing(org.openide.windows.OutputWriter out, LineConvertor convertor, boolean resetEnabled)</a>
-    and
-    <a href="@TOP@org/netbeans/api/extexecution/print/LineProcessors.html#printing(org.openide.windows.OutputWriter,%20org.netbeans.api.extexecution.print.LineConvertor,%20boolean)">
-     LineProcessors.printing(org.openide.windows.OutputWriter out, LineConvertor convertor, boolean resetEnabled)</a>.
-
-    Convertor is then used to convert received lines to printed ones.
-    Common convertors (file, http) are provided in factory class
-    <a href="@TOP@org/netbeans/api/extexecution/print/LineConvertors.html">LineConvertors</a>.
-   </p>
-  </usecase>
   <usecase id="process-builder" name="Custom process builder">
     <p>
-      <span style="text-decoration:line-through;">Third party wants to implement custom process builder to provide
-      additional functionality, such as remote execution.</span>
-      This usecase should be solved by External Execution Base API.
+      Third party wants to implement custom process builder to provide
+      additional functionality, such as remote execution.
     </p>
     <p>
       In order to do so it will implement
-      <a href="@TOP@org/netbeans/spi/extexecution/ProcessBuilderImplementation.html">
-       ProcessBuilderImplementation</a> and pass
-      <a href="@TOP@org/netbeans/api/extexecution/ProcessBuilder.html">
-       ProcessBuilder</a> to its clients. The API instances are created with
+      <a href="@TOP@org/netbeans/spi/extexecution/base/ProcessBuilderImplementation.html">
+      ProcessBuilderImplementation</a> and pass
+      <a href="@TOP@org/netbeans/api/extexecution/base/ProcessBuilder.html">
+      ProcessBuilder</a> to its clients. The API instances are created with
       help of
-      <a href="@TOP@org/netbeans/spi/extexecution/ProcessBuilderFactory.html">ProcessBuilderFactory</a>.
+      <a href="@TOP@org/netbeans/spi/extexecution/base/ProcessBuilderFactory.html">ProcessBuilderFactory</a>.
     </p>
   </usecase>
   <usecase id="destroy-process" name="Destroying a process">
     <p>
-      <span style="text-decoration:line-through;">Client wants to destroy the process, trying to kill whole process tree.</span>
-      This usecase should be solved by External Execution Base API.
+      Client wants to destroy the process, trying to kill whole process tree.
       Method
-      <a href="@TOP@org/netbeans/api/extexecution/ExternalProcessSupport.html#destroy(java.lang.Process,%20java.util.Map)">
-       ExternalProcessSupport.destroy(java.lang.Process process, Map&lt;String,String&gt; env)</a>
+      <a href="@TOP@org/netbeans/api/extexecution/base/Processes.html#killTree(java.lang.Process,%20java.util.Map)">
+      Processes.killTree(java.lang.Process process, Map&lt;String,String&gt; environment)</a>
       is designed for that. It will use a
-      <a href="@TOP@org/netbeans/spi/extexecution/destroy/ProcessDestroyPerformer.html">ProcessDestroyPerformer</a>
+      <a href="@TOP@org/netbeans/spi/extexecution/base/ProcessesImplementation.html">ProcessesImplementation</a>
       registered in default lookup to do so.
     </p>
-  </usecase>
-  <usecase id="startup-extender" name="Extending startup environment">
-   <p>
-    The third party plugin may want to be able provide additional arguments
-    for the process startup in a standardized way. In order to do so it will
-    register a implementation of
-    <a href="@TOP@org/netbeans/spi/extexecution/startup/StartupExtenderImplementation.html">StartupExtenderImplementation</a>
-    to the layer folder StartupExtender. The annotation
-    <a href="@TOP@org/netbeans/spi/extexecution/startup/StartupExtenderImplementation.Registration.html">StartupExtenderImplementation.Registration</a>
-    can be used for that.
-   </p>
-   <p>
-    The clients (for exmaple project or server) may query the extenders via the
-    API class
-    <a href="@TOP@org/netbeans/api/extexecution/startup/StartupExtender.html">StartupExtender</a>
-    and use the additional arguments for the process.
-   </p>
-  </usecase>
-  <usecase id="pluggable-open" name="Making certain open actions pluggable">
-   <p>
-    Some default
-    <a href="@TOP@org/netbeans/api/extexecution/print/LineConvertor.html">LineConvertor</a>s
-    returned by
-    <a href="@TOP@org/netbeans/api/extexecution/print/LineConvertors.html">LineConvertor</a>
-    needs to open file or URL. A bit special case is also options dialog opening
-    required by
-    <a href="@TOP@org/netbeans/api/extexecution/ExecutionService.html">ExecutionService</a>
-    to open options dialog specified by
-    <a href="@TOP@org/netbeans/api/extexecution/ExecutionDescriptor.html">ExecutionDescriptor</a>.
-    To cover this three usecases in a pluggable way while keeping dependencies
-    minimal there are three corresponding SPI classes one may implement.
-    So there is
-    <a href="@TOP@org/netbeans/spi/extexecution/open/FileOpenHandler.html">FileOpenHandler</a>
-    to handle file opening,
-    <a href="@TOP@org/netbeans/spi/extexecution/open/HttpOpenHandler.html">HttpOpenHandler</a>
-    to deal with HTTP URLs and
-    <a href="@TOP@org/netbeans/spi/extexecution/open/OptionOpenHandler.html">OptionOpenHandler</a>
-    to open proper options dialog.
-   </p>
   </usecase>
  </answer>
 
