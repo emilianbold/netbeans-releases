@@ -48,7 +48,8 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="arch-overall">
   <p>
    <i>This API origins in External Execution API and contains set of basic
-   features with minimal dependencies.</i>
+   features with minimal dependencies.</i> For the better integration with
+   the IDE check also original External Execution API.
   </p>
   <p>
    The External Execution Base module provides the
@@ -827,12 +828,11 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-lookup">
   <p>
-   <a href="@TOP@org/netbeans/api/extexecution/ExternalProcessSupport.html">ExternalProcessSupport</a>
-   and processes created by
-   <a href="@TOP@org/netbeans/api/extexecution/ExternalProcessBuilder.html">ExternalProcessBuilder</a>
-   are trying to lookup
-   <a href="@TOP@org/netbeans/spi/extexecution/destroy/ProcessDestroyPerformer.html">ProcessDestroyPerformer</a>
-   as a tool for killing the whole process tree.
+   The class for extended process handling
+   <a href="@TOP@org/netbeans/api/extexecution/base/Processes.html">Processes</a>
+   is trying to lookup an implementation 
+   <a href="@TOP@org/netbeans/spi/extexecution/base/ProcessesImplementation.html">ProcessesImplementation</a>
+   in default lookup.
   </p>
  </answer>
 
