@@ -43,14 +43,12 @@ package org.netbeans.modules.html.ojet.javascript;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.ojet.OJETContext;
 import org.netbeans.modules.html.ojet.data.DataItem;
@@ -69,31 +67,42 @@ public class OJETJsCodeCompletion implements CompletionProvider {
     public List<CompletionProposal> complete(CodeCompletionContext ccContext, CompletionContext jsCompletionContext, String prefix) {
         Document document = ccContext.getParserResult().getSnapshot().getSource().getDocument(true);
         int dOffset = ccContext.getCaretOffset();  // document offset
-        ((AbstractDocument)document).readLock();
+        ((AbstractDocument) document).readLock();
         OJETContext ojContext = OJETContext.UNKNOWN;
         try {
             ojContext = OJETContext.findContext(document, dOffset);
+            System.out.println("ojContext: " + ojContext);
+            List<CompletionProposal> result = new ArrayList<>();
+            switch (ojContext) {
+                case COMP_CONF_COMP_NAME:
+                    Collection<DataItem> components = DataProvider.filterByPrefix(DataProvider.getComponents(), ccContext.getPrefix());
+                    for (DataItem component : components) {
+                        result.add(new OJETCodeCompletionItem.OJETComponentItem(component, ccContext));
+                    }
+                    break;
+                case COMP_CONF:
+                    result.add(new OJETCodeCompletionItem.OJETComponentOptionItem(new DataItem("component", null, null), ccContext));
+                    break;
+                case COMP_CONF_PROP_NAME:
+                    String compName = OJETContext.findComponentName(document, dOffset);
+                    if (compName != null && !compName.isEmpty()) {
+                        Collection<DataItem> options = DataProvider.filterByPrefix(DataProvider.getComponentOptions(compName), ccContext.getPrefix());
+                        for (DataItem option : options) {
+                            result.add(new OJETCodeCompletionItem.OJETComponentOptionItem(option, ccContext));
+                        }
+                    }
+                    break;
+            }
+            return result;
         } finally {
-            ((AbstractDocument)document).readUnlock();
+            ((AbstractDocument) document).readUnlock();
         }
-        System.out.println("ojContext: " + ojContext);
-        switch (ojContext) {
-            case COMP_CONF_COMP_NAME:
-                Collection<DataItem> components = DataProvider.filterByPrefix(DataProvider.getComponents(), ccContext.getPrefix());
-                List<CompletionProposal> result = new ArrayList<>();
-                for (DataItem component : components) {
-                    result.add(new OJETCodeCompletionItem.OJETComponentItem(component, ccContext));
-                }
-                return result;
-
-        }
-        return Collections.EMPTY_LIST;
     }
 
     @Override
     public String getHelpDocumentation(ParserResult info, ElementHandle element) {
         if (element instanceof OJETCodeCompletionItem.DocSimpleElement) {
-            return ((OJETCodeCompletionItem.DocSimpleElement)element).getDocumentation();
+            return ((OJETCodeCompletionItem.DocSimpleElement) element).getDocumentation();
         }
         return null;
     }

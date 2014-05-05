@@ -254,4 +254,17 @@ public class OJETCodeCompletionItem implements CompletionProposal {
 
     }
 
+    public static class OJETComponentOptionItem extends OJETComponentItem {
+        private final DataItem option;
+        
+        public OJETComponentOptionItem(DataItem option, CodeCompletionContext ccContext) {
+            super(option, ccContext);
+            this.option = option;
+        }
+        
+        @Override
+        public String getCustomInsertTemplate() {
+            return option.getName() + ": ";
+        }
+    }
 }

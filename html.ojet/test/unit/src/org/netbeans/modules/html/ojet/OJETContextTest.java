@@ -102,6 +102,15 @@ public class OJETContextTest extends JsTestBase{
        checkContext("testfiles/context/example01.html", "<button id= \"cancel-button\" data-bind=\"click: toogleCommitPanel, ^\"><!-- test 09  -->", OJETContext.DATA_BINDING);
     }
     
+    public void testContext10()  throws Exception {
+       checkContext("testfiles/context/example01.html", "<input type=\"button\" data-bind=\"ojComponent: {component: 'ojButton', lab^el : ''}\"/><!-- test 10  -->", OJETContext.COMP_CONF_PROP_NAME);
+    }
+    
+    
+    public void testComponentName01()  throws Exception {
+       checkComponentName("testfiles/context/example01.html", "<input type=\"button\" data-bind=\"ojComponent: {component: 'ojButton', ^}\"/><!-- test 04  -->", "ojButton");
+    }
+    
     private void checkContext(final String file, final String caretLine, final OJETContext expected) throws Exception {
         
         Source testSource = getTestSource(getTestFile(file));
@@ -128,6 +137,36 @@ public class OJETContextTest extends JsTestBase{
                     ((AbstractDocument)document).readUnlock();
                 }
                 assertEquals(expected, result);
+            }
+        });
+    }
+    
+    private void checkComponentName(final String file, final String caretLine, final String expectedName) throws Exception {
+        
+        Source testSource = getTestSource(getTestFile(file));
+
+        final int caretOffset;
+        if (caretLine != null) {
+            caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(), caretLine);
+            enforceCaretOffset(testSource, caretOffset);
+        } else {
+            caretOffset = -1;
+        }
+
+        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
+            public @Override void run(ResultIterator resultIterator) throws Exception {
+                Parser.Result r = caretOffset == -1 ? resultIterator.getParserResult() : resultIterator.getParserResult(caretOffset);
+                assertTrue(r instanceof ParserResult);
+                ParserResult info = (ParserResult) r;
+                Document document = info.getSnapshot().getSource().getDocument(true);
+                ((AbstractDocument)document).readLock();
+                String name = null;
+                try {
+                     name = OJETContext.findComponentName(info.getSnapshot().getSource().getDocument(false), caretOffset);
+                } finally {
+                    ((AbstractDocument)document).readUnlock();
+                }
+                assertEquals(expectedName, name);
             }
         });
     }

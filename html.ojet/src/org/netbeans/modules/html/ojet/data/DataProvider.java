@@ -80,4 +80,25 @@ public class DataProvider {
         }
         return result;
     }
+
+    public static Collection<DataItem> getComponentOptions(String compName) {
+        List<DataItem> result = new ArrayList<>();
+        if (compName.equals("ojButton")) {
+            result.add(new DataItem("contextMenu", null, null));
+            result.add(new DataItem("disabled", null, null));
+            result.add(new DataItem("display", null, null));
+            result.add(new DataItem("icons", null, null));
+            result.add(new DataItem("label", null, null));
+            result.add(new DataItem("menu", null, null));
+            result.add(new DataItem("rootAttributes", null, null));
+        } else if (compName.equals("ojButtonset")) {
+            result.add(new DataItem("contextMenu", null, null));
+            result.add(new DataItem("disabled", null, null));
+            result.add(new DataItem("checked", null, null));
+            result.add(new DataItem("focusManagement", null, null));
+            result.add(new DataItem("rootAttributes", null, null));
+        }
+        
+        return result;
+    }
 }

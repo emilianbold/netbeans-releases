@@ -76,7 +76,7 @@ public enum OJETContext {
     UNKNOWN;
 
     private static String COMPONENT = "component";
-    
+
     public static OJETContext findContext(Document document, int offset) {
         TokenHierarchy th = TokenHierarchy.get(document);
         TokenSequence<HTMLTokenId> ts = LexerUtils.getTokenSequence(th, offset, HTMLTokenId.language(), false);
@@ -97,9 +97,9 @@ public enum OJETContext {
                         if (etoken.id() == KODataBindTokenId.KEY) {
                             //ke|
                             return DATA_BINDING;
-                        } 
-                        etoken = LexerUtils.followsToken(dataBindTs, 
-                                Arrays.asList(KODataBindTokenId.COLON, KODataBindTokenId.COMMA, KODataBindTokenId.VALUE), 
+                        }
+                        etoken = LexerUtils.followsToken(dataBindTs,
+                                Arrays.asList(KODataBindTokenId.COLON, KODataBindTokenId.COMMA, KODataBindTokenId.VALUE),
                                 true, false, KODataBindTokenId.WS);
                         if (etoken == null) {
                             // we are at the beginning of the value
@@ -107,12 +107,12 @@ public enum OJETContext {
                         }
                         if (etoken.id() == KODataBindTokenId.VALUE) {
                             etoken = LexerUtils.followsToken(dataBindTs, KODataBindTokenId.KEY, true, true, KODataBindTokenId.COLON);
-                            if (!(etoken != null && etoken.id() == KODataBindTokenId.KEY 
+                            if (!(etoken != null && etoken.id() == KODataBindTokenId.KEY
                                     && OJETUtils.OJ_COMPONENT.equals(etoken.text().toString()))) {
                                 // continue only if we are in the value
                                 return UNKNOWN;
                             }
-                        } 
+                        }
                         if (etoken.id() == KODataBindTokenId.COMMA) {
                             return DATA_BINDING;
                         }
@@ -128,15 +128,15 @@ public enum OJETContext {
                 if (jsToken.id() == JsTokenId.UNKNOWN && !jsTs.movePrevious()) {
                     return UNKNOWN;
                 }
-                jsToken = LexerUtils.followsToken(jsTs, 
-                        Arrays.asList(JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.OPERATOR_COLON, JsTokenId.OPERATOR_COMMA), true, false, true, 
-                        JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.STRING, JsTokenId.STRING_BEGIN);
+                jsToken = LexerUtils.followsToken(jsTs,
+                        Arrays.asList(JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.OPERATOR_COLON, JsTokenId.OPERATOR_COMMA), true, false, true,
+                        JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.STRING, JsTokenId.STRING_BEGIN, JsTokenId.IDENTIFIER);
                 if (jsToken == null) {
                     return UNKNOWN;
                 }
                 if (jsToken.id() == JsTokenId.BRACKET_LEFT_CURLY) {
                     return COMP_CONF;
-                } else if (jsToken.id() == JsTokenId.OPERATOR_COLON){
+                } else if (jsToken.id() == JsTokenId.OPERATOR_COLON) {
                     // we are in the valeu
                     // find the name of property
                     jsToken = LexerUtils.followsToken(jsTs, Arrays.asList(JsTokenId.IDENTIFIER), true, false, JsTokenId.WHITESPACE, JsTokenId.EOL);
@@ -150,9 +150,44 @@ public enum OJETContext {
                     return COMP_CONF_PROP_NAME;
                 }
             }
-            
+
         }
 
         return UNKNOWN;
+    }
+
+    /**
+     * Can return null, if there is no component property defined
+     *
+     * @param document
+     * @param dOffset
+     */
+    public static String findComponentName(Document document, int offset) {
+        String name = null;
+        TokenHierarchy th = TokenHierarchy.get(document);
+        if (th == null) {
+            return name;
+        }
+        TokenSequence<JsTokenId> ts = LexerUtils.getTokenSequence(th, offset, JsTokenId.javascriptLanguage(), false);
+        if (ts != null) {
+            // try to find from beginning
+            ts.moveStart();
+            if (ts.movePrevious() || ts.moveNext()) {
+                Token<JsTokenId> jsToken = LexerUtils.followsToken(ts, JsTokenId.IDENTIFIER, false, false, 
+                        JsTokenId.WHITESPACE, JsTokenId.BRACKET_LEFT_CURLY);
+                if (jsToken != null && jsToken.id() == JsTokenId.IDENTIFIER) {
+                    if (COMPONENT.equals(jsToken.text().toString())) {
+                        // we found the component property, now to find the value
+                        jsToken = LexerUtils.followsToken(ts, JsTokenId.STRING, false, false, 
+                        JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.EOL, JsTokenId.OPERATOR_COLON, JsTokenId.STRING_BEGIN);
+                        if (jsToken != null && jsToken.id() == JsTokenId.STRING) {
+                            return jsToken.text().toString();
+                        }
+                    }
+                }
+            }
+
+        }
+        return name;
     }
 }
