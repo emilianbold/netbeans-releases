@@ -98,6 +98,10 @@ public class OJETContextTest extends JsTestBase{
        checkContext("testfiles/context/example01.html", "<input type=\"button\" data-bind=\"ojComponent: {component: 'oj^}\"/><!-- test 08  -->", OJETContext.COMP_CONF_COMP_NAME);
     }
     
+    public void testContext09()  throws Exception {
+       checkContext("testfiles/context/example01.html", "<button id= \"cancel-button\" data-bind=\"click: toogleCommitPanel, ^\"><!-- test 09  -->", OJETContext.DATA_BINDING);
+    }
+    
     private void checkContext(final String file, final String caretLine, final OJETContext expected) throws Exception {
         
         Source testSource = getTestSource(getTestFile(file));

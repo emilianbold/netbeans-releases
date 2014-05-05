@@ -112,8 +112,9 @@ public enum OJETContext {
                                 // continue only if we are in the value
                                 return UNKNOWN;
                             }
-                        } else {
-                            // try to find, whether there is already 
+                        } 
+                        if (etoken.id() == KODataBindTokenId.COMMA) {
+                            return DATA_BINDING;
                         }
                     }
                 }
