@@ -124,7 +124,7 @@ public enum OJETContext {
             int diff = jsTs.move(offset);
             if (diff == 0 && jsTs.movePrevious() || jsTs.moveNext()) {
                 Token<JsTokenId> jsToken = LexerUtils.followsToken(jsTs, 
-                        Arrays.asList(JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.OPERATOR_COLON), true, false, 
+                        Arrays.asList(JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.OPERATOR_COLON, JsTokenId.OPERATOR_COMMA), true, false, 
                         JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.STRING, JsTokenId.STRING_BEGIN);
                 if (jsToken == null) {
                     return UNKNOWN;
@@ -140,6 +140,9 @@ public enum OJETContext {
                             return COMP_CONF_COMP_NAME;
                         }
                     }
+                }
+                if (jsToken.id() == JsTokenId.OPERATOR_COMMA) {
+                    return COMP_CONF_PROP_NAME;
                 }
             }
             

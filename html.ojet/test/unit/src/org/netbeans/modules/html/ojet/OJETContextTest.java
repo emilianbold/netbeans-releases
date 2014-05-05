@@ -47,9 +47,7 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import static org.netbeans.modules.csl.api.test.CslTestBase.getCaretOffset;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.CompletionContextFinder;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
-import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -76,6 +74,10 @@ public class OJETContextTest extends JsTestBase{
     
     public void testContext03()  throws Exception {
        checkContext("testfiles/context/example01.html", "<input type=\"button\" data-bind=\" ^\"/><!-- test 03  -->", OJETContext.DATA_BINDING);
+    }
+    
+    public void testContext04()  throws Exception {
+       checkContext("testfiles/context/example01.html", "<input type=\"button\" data-bind=\"ojComponent: {component: 'ojButton', ^}\"/><!-- test 04  -->", OJETContext.COMP_CONF_PROP_NAME);
     }
     
     private void checkContext(final String file, final String caretLine, final OJETContext expected) throws Exception {
