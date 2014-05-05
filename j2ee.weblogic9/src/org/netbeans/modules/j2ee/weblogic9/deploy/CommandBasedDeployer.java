@@ -49,7 +49,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -66,12 +69,12 @@ import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.api.extexecution.base.BaseExecutionDescriptor;
+import org.netbeans.api.extexecution.base.BaseExecutionService;
+import org.netbeans.api.extexecution.base.input.InputProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessors;
+import org.netbeans.api.extexecution.base.input.LineProcessor;
+import org.netbeans.api.extexecution.base.input.LineProcessors;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
@@ -88,14 +91,12 @@ import org.netbeans.modules.j2ee.weblogic9.config.WLDatasource;
 import org.netbeans.modules.j2ee.weblogic9.config.WLMessageDestination;
 import org.netbeans.modules.j2ee.weblogic9.dd.model.WebApplicationModel;
 import org.netbeans.modules.j2ee.weblogic9.ui.FailedAuthenticationSupport;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.windows.InputOutput;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -109,8 +110,6 @@ public final class CommandBasedDeployer extends AbstractDeployer {
     private static final Logger LOGGER = Logger.getLogger(CommandBasedDeployer.class.getName());
 
     private static final RequestProcessor URL_WAIT_RP = new RequestProcessor("Weblogic URL Wait", 10); // NOI18N
-
-    private static final boolean SHOW_CONSOLE = Boolean.getBoolean(CommandBasedDeployer.class.getName() + ".showConsole");;
 
     public CommandBasedDeployer(WLDeploymentManager deploymentManager) {
         super(deploymentManager);
@@ -151,7 +150,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                 LastLineProcessor lineProcessor = new LastLineProcessor();
                 for (TargetModuleID module : targetModuleID) {
                     String name = module.getModuleID();
-                    ExecutionService service = createService("-undeploy", lineProcessor, "-name", name);
+                    BaseExecutionService service = createService("-undeploy", lineProcessor, "-name", name);
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.RUNNING,
                             NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeploying", name)));
@@ -219,7 +218,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                 LastLineProcessor lineProcessor = new LastLineProcessor();
                 for (TargetModuleID module : targetModuleID) {
                     String name = module.getModuleID();
-                    ExecutionService service = createService("-start", lineProcessor, "-name", name);
+                    BaseExecutionService service = createService("-start", lineProcessor, "-name", name);
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.START, StateType.RUNNING,
                             NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Starting", name)));
@@ -288,7 +287,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                 LastLineProcessor lineProcessor = new LastLineProcessor();
                 for (TargetModuleID module : targetModuleID) {
                     String name = module.getModuleID();
-                    ExecutionService service = createService("-stop", lineProcessor, "-name", name);
+                    BaseExecutionService service = createService("-stop", lineProcessor, "-name", name);
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
                             NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stopping", name)));
@@ -372,7 +371,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                         LOGGER.log(Level.INFO, "Could not deploy {0}", appModule.getName());
                         continue;
                     }
-                    ExecutionService service = createService("-deploy", lineProcessor, "-name",
+                    BaseExecutionService service = createService("-deploy", lineProcessor, "-name",
                             appModule.getName(), "-upload", appModule.getOrigin().getAbsolutePath());
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.START, StateType.RUNNING,
@@ -445,7 +444,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                 boolean failed = false;
                 LastLineProcessor lineProcessor = new LastLineProcessor();
                 for (File library : libraries) {
-                    ExecutionService service = createService("-deploy", lineProcessor,
+                    BaseExecutionService service = createService("-deploy", lineProcessor,
                             "-library" , library.getAbsolutePath()); // NOI18N
                     Future<Integer> result = service.run();
                     try {
@@ -518,7 +517,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                 }
 
                 LastLineProcessor lineProcessor = new LastLineProcessor();
-                ExecutionService service = createService("-deploy", lineProcessor, execParams); // NOI18N
+                BaseExecutionService service = createService("-deploy", lineProcessor, execParams); // NOI18N
                 Future<Integer> result = service.run();
                 try {
                     Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
@@ -578,7 +577,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                     if (parameters.length > 0) {
                         System.arraycopy(parameters, 0, execParams, 2, parameters.length);
                     }
-                    ExecutionService service = createService("-redeploy", lineProcessor, execParams); // NOI18N
+                    BaseExecutionService service = createService("-redeploy", lineProcessor, execParams); // NOI18N
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
                             NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeploying", name)));
@@ -632,7 +631,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         return progress;
     }
 
-    private ExecutionService createService(final String command,
+    private BaseExecutionService createService(final String command,
             final LineProcessor processor, String... parameters) {
 
         InstanceProperties ip = getDeploymentManager().getInstanceProperties();
@@ -646,41 +645,49 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         String host = parts[0];
         String port = parts.length > 1 ? parts[1] : "";
 
-        ExternalProcessBuilder builder = new ExternalProcessBuilder(getJavaBinary())
-                .redirectErrorStream(true);
+        org.netbeans.api.extexecution.base.ProcessBuilder builder = org.netbeans.api.extexecution.base.ProcessBuilder.getLocal();
+        builder.setExecutable(getJavaBinary());
+        builder.setRedirectErrorStream(true);
+        List<String> arguments = new ArrayList<String>();
         // NB supports only JDK6+ while WL 9, only JDK 5
         if (getDeploymentManager().getDomainVersion() == null
                 || !getDeploymentManager().getDomainVersion().isAboveOrEqual(WLDeploymentFactory.VERSION_10)) {
-            builder= builder.addArgument("-Dsun.lang.ClassLoader.allowArraySyntax=true"); // NOI18N
+            arguments.add("-Dsun.lang.ClassLoader.allowArraySyntax=true"); // NOI18N
         }
-        builder = builder.addArgument("-cp") // NOI18N
-                .addArgument(getClassPath())
-                .addArgument("weblogic.Deployer") // NOI18N
-                .addArgument("-adminurl") // NOI18N
-                .addArgument("t3://" + host + ":" + port) // NOI18N
-                .addArgument("-username") // NOI18N
-                .addArgument(username)
-                .addArgument("-password") // NOI18N
-                .addArgument(password)
-                .addArgument(command);
+        arguments.add("-cp"); // NOI18N
+        arguments.add(getClassPath());
+        arguments.add("weblogic.Deployer"); // NOI18N
+        arguments.add("-adminurl"); // NOI18N
+        arguments.add("t3://" + host + ":" + port); // NOI18N
+        arguments.add("-username"); // NOI18N
+        arguments.add(username);
+        arguments.add("-password"); // NOI18N
+        arguments.add(password);
+        arguments.add(command);
+        
+        arguments.addAll(Arrays.asList(parameters));
+        builder.setArguments(arguments);
 
-        for (String param : parameters) {
-            builder = builder.addArgument(param);
+        final LineProcessor realProcessor;
+        if (processor != null || LOGGER.isLoggable(Level.FINEST)) {
+            if (processor == null) {
+                realProcessor = new LoggingLineProcessor(Level.FINEST);
+            } else if (!LOGGER.isLoggable(Level.FINEST)) {
+                realProcessor = processor;
+            } else {
+                realProcessor = LineProcessors.proxy(processor, new LoggingLineProcessor(Level.FINEST));
+            }
+        } else {
+            realProcessor = null;
         }
+        BaseExecutionDescriptor descriptor = new BaseExecutionDescriptor().outProcessorFactory(new BaseExecutionDescriptor.InputProcessorFactory() {
 
-        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputVisible(true).outLineBased(true);
-        if (processor != null) {
-            descriptor = descriptor.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
-
-                public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                    return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(processor));
-                }
-            });
-        }
-        if (!SHOW_CONSOLE) {
-            descriptor = descriptor.inputOutput(InputOutput.NULL);
-        }
-        return ExecutionService.newService(builder, descriptor, "weblogic.Deployer " + command);
+            @Override
+            public InputProcessor newInputProcessor() {
+                return InputProcessors.bridge(realProcessor);
+            }
+        });
+        return BaseExecutionService.newService(builder, descriptor);
     }
 
     private String getClassPath() {
@@ -905,7 +912,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         }
     }
 
-    private static class LastLineProcessor implements LineProcessor {
+    private static class LastLineProcessor implements org.netbeans.api.extexecution.base.input.LineProcessor {
 
         private static final Pattern STACK_TRACE_PATTERN = Pattern.compile("^\\s+((at)|(\\.\\.\\.)).*$"); // NOI18N
 
@@ -920,6 +927,28 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
         public synchronized String getLastLine() {
             return last;
+        }
+
+        @Override
+        public void reset() {
+        }
+
+        @Override
+        public void close() {
+        }
+    }
+    
+    private static class LoggingLineProcessor implements org.netbeans.api.extexecution.base.input.LineProcessor {
+
+        private final Level level;
+
+        public LoggingLineProcessor(Level level) {
+            this.level = level;
+        }
+        
+        @Override
+        public void processLine(String line) {
+            LOGGER.log(level, line);
         }
 
         @Override
