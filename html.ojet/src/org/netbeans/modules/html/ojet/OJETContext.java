@@ -124,7 +124,8 @@ public enum OJETContext {
             int diff = jsTs.move(offset);
             if (diff == 0 && jsTs.movePrevious() || jsTs.moveNext()) {
                 Token<JsTokenId> jsToken = LexerUtils.followsToken(jsTs, 
-                        Arrays.asList(JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.OPERATOR_COLON), true, false, JsTokenId.WHITESPACE, JsTokenId.EOL);
+                        Arrays.asList(JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.OPERATOR_COLON), true, false, 
+                        JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.STRING, JsTokenId.STRING_BEGIN);
                 if (jsToken == null) {
                     return UNKNOWN;
                 }

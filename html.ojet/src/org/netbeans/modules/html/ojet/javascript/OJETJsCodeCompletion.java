@@ -75,8 +75,7 @@ public class OJETJsCodeCompletion implements CompletionProvider {
                 Collection<DataItem> components = DataProvider.filterByPrefix(DataProvider.getComponents(), ccContext.getPrefix());
                 List<CompletionProposal> result = new ArrayList<>();
                 for (DataItem component : components) {
-                    ElementHandle element = new OJETCodeCompletionItem.SimpleElement(component.getName(), ElementKind.CLASS);
-                    result.add(new OJETCodeCompletionItem(element, dOffset));
+                    result.add(new OJETCodeCompletionItem.OJETComponentItem(component, ccContext));
                 }
                 return result;
 
@@ -86,6 +85,9 @@ public class OJETJsCodeCompletion implements CompletionProvider {
 
     @Override
     public String getHelpDocumentation(ParserResult info, ElementHandle element) {
+        if (element instanceof OJETCodeCompletionItem.DocSimpleElement) {
+            return ((OJETCodeCompletionItem.DocSimpleElement)element).getDocumentation();
+        }
         return null;
     }
 

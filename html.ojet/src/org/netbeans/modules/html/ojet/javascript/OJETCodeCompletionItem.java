@@ -39,12 +39,15 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.html.ojet.javascript;
 
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.ImageIcon;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -52,6 +55,10 @@ import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.html.ojet.OJETUtils;
+import org.netbeans.modules.html.ojet.data.DataItem;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -59,15 +66,15 @@ import org.openide.filesystems.FileObject;
  * @author Petr Pisl
  */
 public class OJETCodeCompletionItem implements CompletionProposal {
-    
+
     private final int anchorOffset;
     private final ElementHandle element;
-    
+
     public OJETCodeCompletionItem(final ElementHandle element, final int anchorOffset) {
         this.anchorOffset = anchorOffset;
         this.element = element;
     }
-    
+
     @Override
     public int getAnchorOffset() {
         return anchorOffset;
@@ -132,7 +139,7 @@ public class OJETCodeCompletionItem implements CompletionProposal {
     public String getRhsHtml(HtmlFormatter formatter) {
         return "";
     }
-    
+
     public static class SimpleElement implements ElementHandle {
 
         private final String name;
@@ -142,8 +149,7 @@ public class OJETCodeCompletionItem implements CompletionProposal {
             this.name = name;
             this.kind = kind;
         }
-        
-        
+
         @Override
         public FileObject getFileObject() {
             return null;
@@ -184,11 +190,11 @@ public class OJETCodeCompletionItem implements CompletionProposal {
             return OffsetRange.NONE;
         }
     }
-    
+
     public static class DocSimpleElement extends SimpleElement {
-        
+
         private final String documentation;
-        
+
         public DocSimpleElement(String name, String documentation, ElementKind kind) {
             super(name, kind);
             this.documentation = documentation;
@@ -198,4 +204,54 @@ public class OJETCodeCompletionItem implements CompletionProposal {
             return documentation;
         }
     }
+
+    public static class OJETComponentItem extends OJETCodeCompletionItem {
+
+        private final DataItem component;
+        private final CodeCompletionContext context;
+
+        public OJETComponentItem(DataItem component, CodeCompletionContext ccContext) {
+            super(new DocSimpleElement(component.getName(), component.getDocumentation(), ElementKind.CLASS), ccContext.getCaretOffset());
+            this.component = component;
+            this.context = ccContext;
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            return OJETUtils.OJET_ICON;
+        }
+
+        @Override
+        public int getAnchorOffset() {
+            return context.getCaretOffset() - context.getPrefix().length();
+        }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            String result = component.getName();
+            TokenHierarchy th = TokenHierarchy.get(context.getParserResult().getSnapshot().getSource().getDocument(true));
+            if (th != null) {
+                TokenSequence<JsTokenId> ts = LexerUtils.getTokenSequence(th, context.getCaretOffset(), JsTokenId.javascriptLanguage(), false);
+                if (ts != null) {
+                    int diff = ts.move(context.getCaretOffset());
+                    if (diff == 0 && ts.movePrevious() || ts.moveNext()) {
+                        Token<JsTokenId> token = ts.token();
+                        JsTokenId id = token.id();
+                        if (id == JsTokenId.UNKNOWN && ts.movePrevious()) {
+                            token = ts.token();
+                            id = token.id();
+                        }
+
+                        boolean isInString = (id == JsTokenId.STRING_BEGIN || id == JsTokenId.STRING);
+                        if (!isInString) {
+                            result = '\'' + result + '\'';
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+    }
+
 }

@@ -61,8 +61,9 @@ public class DataProvider {
 
     public static Collection<DataItem> getComponents() {
         List<DataItem> result = new ArrayList<>();
-        result.add(new DataItem("button", null, null));
-        result.add(new DataItem("tab", null, null));
+        result.add(new DataItem("ojButton", "Help for ojButton", null));
+        result.add(new DataItem("ojTab", "Help for ojTab", null));
+        result.add(new DataItem("ojButtonset", "Help for ojButtonset", null));
         return result;
     }
 
