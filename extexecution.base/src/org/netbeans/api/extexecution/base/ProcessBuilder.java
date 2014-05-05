@@ -132,6 +132,8 @@ public final class ProcessBuilder implements Callable<Process>, Lookup.Provider 
     /**
      * Returns the {@link ProcessBuilder} creating the OS process on local
      * machine. Returned implementation is <code>thread safe</code>.
+     * The returned builder also attempts to properly configure HTTP proxy
+     * for the process.
      *
      * @return the {@link ProcessBuilder} creating the OS process on local
      *             machine
