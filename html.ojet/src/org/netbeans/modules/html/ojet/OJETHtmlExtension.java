@@ -48,16 +48,10 @@ import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
-import org.netbeans.modules.html.knockout.api.KODataBindTokenId;
 import org.netbeans.modules.html.ojet.data.DataItem;
 import org.netbeans.modules.html.ojet.data.DataProvider;
 import org.netbeans.modules.html.ojet.data.DataProviderImpl;
-import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 
 /**
@@ -90,40 +84,6 @@ public class OJETHtmlExtension extends HtmlExtension {
                     }
                     return result;
             }
-            /*            TokenHierarchy tokenHierarchy = TokenHierarchy.get(document);
-             TokenSequence<HTMLTokenId> ts = LexerUtils.getTokenSequence(tokenHierarchy, context.getOriginalOffset(), HTMLTokenId.language(), false);
-             if (ts != null) {
-             int diff = ts.move(context.getOriginalOffset());
-             if (diff == 0 && ts.movePrevious() || ts.moveNext()) {
-             Token<HTMLTokenId> token = ts.token();
-             if (token.id() == HTMLTokenId.VALUE) {
-             TokenSequence<KODataBindTokenId> embedded = ts.embedded(KODataBindTokenId.language());
-             if (embedded != null) {
-             if (embedded.isEmpty()) {
-             //no prefix
-             List<CompletionItem> result = new ArrayList();
-             result.add(new OJETCompletionHtmlItem(context.getCCItemStartOffset()));
-             return result;
-             }
-             int ediff = embedded.move(context.getOriginalOffset());
-             if (ediff == 0 && embedded.movePrevious() || embedded.moveNext()) {
-             //we are on a token of ko-data-bind token sequence
-             Token<KODataBindTokenId> etoken = embedded.token();
-             if (etoken.id() == KODataBindTokenId.KEY) {
-             //ke|
-             CharSequence prefix = ediff == 0 ? etoken.text() : etoken.text().subSequence(0, ediff);
-             if (OJETUtils.OJ_COMPONENT.startsWith(prefix.toString())) {
-             List<CompletionItem> result = new ArrayList();
-             result.add(new OJETCompletionHtmlItem(embedded.offset()));
-             return result;
-             }
-             }
-             }
-             }
-             }
-             }*/
-//                System.out.println(ts.toString());
-//            }
         }
         return Collections.emptyList();
     }
