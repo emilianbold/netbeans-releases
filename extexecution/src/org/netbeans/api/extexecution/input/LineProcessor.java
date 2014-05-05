@@ -57,6 +57,7 @@ import org.netbeans.api.annotations.common.NonNull;
  * @author Petr Hejl
  * @see InputProcessors#bridge(LineProcessor)
  * @see InputReader
+ * @deprecated use {@link org.netbeans.api.extexecution.base.input.LineProcessor}
  */
 public interface LineProcessor extends Closeable {
 

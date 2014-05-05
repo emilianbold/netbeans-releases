@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,26 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.spi.extexecution.base;
 
-package org.netbeans.modules.extexecution.destroy;
-
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.processtreekiller.ProcessTreeKiller;
-import org.netbeans.spi.extexecution.destroy.ProcessDestroyPerformer;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.extexecution.base.ProcessParametersAccessor;
 
 /**
  *
- * @author mkleint
+ * @author Petr Hejl
  */
-@ServiceProvider(service=ProcessDestroyPerformer.class)
-public class ProcessTreeDestroyPerformer implements ProcessDestroyPerformer {
+public class ProcessParametersTest extends NbTestCase {
 
-    @Override
-    public void destroy(Process process, Map<String, String> env) {
-        ProcessTreeKiller.get().kill(process, env);
+    public ProcessParametersTest(String name) {
+        super(name);
     }
 
+    public void testParameters() {
+        Map<String, String> variables = new HashMap<String, String>();
+        variables.put("key1", "value1");
+        variables.put("key2", "value2");
+
+        ProcessParameters params = ProcessParametersAccessor.getDefault().createProcessParameters(
+                "ls", "/home", Collections.singletonList("argument"), true, variables);
+
+        assertEquals("ls", params.getExecutable());
+        assertEquals("/home", params.getWorkingDirectory());
+        assertTrue(params.isRedirectErrorStream());
+
+        assertEquals(1, params.getArguments().size());
+        assertEquals("argument", params.getArguments().get(0));
+
+        assertEquals(2, params.getEnvironmentVariables().size());
+        assertEquals("value1", params.getEnvironmentVariables().get("key1"));
+        assertEquals("value2", params.getEnvironmentVariables().get("key2"));
+    }
 }
