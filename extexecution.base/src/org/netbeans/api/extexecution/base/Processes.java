@@ -43,7 +43,6 @@
 package org.netbeans.api.extexecution.base;
 
 import java.util.Map;
-import org.netbeans.api.annotations.common.CheckReturnValue;
 import org.netbeans.spi.extexecution.base.ProcessesImplementation;
 import org.openide.util.Lookup;
 
