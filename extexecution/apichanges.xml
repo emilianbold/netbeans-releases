@@ -133,7 +133,7 @@ is the proper place.
             <package name="org.netbeans.api.extexecution.input"/>
             <package name="org.netbeans.spi.extexecution"/>
             <package name="org.netbeans.spi.extexecution.destroy"/>
-            <issue number="XXXXXX"/>
+            <issue number="244308"/>
         </change>
         <change>
             <api name="extexecution_spi"/>

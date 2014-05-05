@@ -122,6 +122,7 @@ is the proper place.
                 First initial release of the External Execution Base API.
                 Refactored from External Execution API.
             </description>
+            <issue number="244308"/>
         </change>
     </changes>
 
