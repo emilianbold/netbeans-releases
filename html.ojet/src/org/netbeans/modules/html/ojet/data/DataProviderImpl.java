@@ -42,7 +42,6 @@
 package org.netbeans.modules.html.ojet.data;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.html.ojet.OJETUtils;
@@ -51,52 +50,53 @@ import org.netbeans.modules.html.ojet.OJETUtils;
  *
  * @author Petr Pisl
  */
-public class DataProvider {
+public class DataProviderImpl extends DataProvider {
 
-    public static Collection<DataItem> getBindingOptions() {
-        List<DataItem> result = new ArrayList(1);
-        result.add(new DataItem(OJETUtils.OJ_COMPONENT, null, null));
-        return result;
-    }
-
-    public static Collection<DataItem> getComponents() {
-        List<DataItem> result = new ArrayList<>();
-        result.add(new DataItem("ojButton", "Help for ojButton", null));
-        result.add(new DataItem("ojTab", "Help for ojTab", null));
-        result.add(new DataItem("ojButtonset", "Help for ojButtonset", null));
-        return result;
-    }
-
-    public static Collection<DataItem> filterByPrefix(Collection<? extends DataItem> data, String prefix) {
-        List<DataItem> result = new ArrayList<>();
-        if (prefix == null || prefix.isEmpty()) {
-            result.addAll(data);
-        } else {
-            for (DataItem dataItem : data) {
-                if (dataItem.getName().startsWith(prefix)) {
-                    result.add(dataItem);
-                }
-            }
+    private static DataProviderImpl instance = null;
+    
+    synchronized public static DataProvider getInstance() {
+        if (instance == null) {
+            instance = new DataProviderImpl();
         }
+        return instance;
+    }
+    
+    @Override
+    public Collection<DataItem> getBindingOptions() {
+        List<DataItem> result = new ArrayList(1);
+        result.add(new DataItemImpl(OJETUtils.OJ_COMPONENT, null, null));
         return result;
     }
 
-    public static Collection<DataItem> getComponentOptions(String compName) {
+    @Override
+    public Collection<DataItem> getComponents() {
         List<DataItem> result = new ArrayList<>();
-        if (compName.equals("ojButton")) {
-            result.add(new DataItem("contextMenu", null, null));
-            result.add(new DataItem("disabled", null, null));
-            result.add(new DataItem("display", null, null));
-            result.add(new DataItem("icons", null, null));
-            result.add(new DataItem("label", null, null));
-            result.add(new DataItem("menu", null, null));
-            result.add(new DataItem("rootAttributes", null, null));
-        } else if (compName.equals("ojButtonset")) {
-            result.add(new DataItem("contextMenu", null, null));
-            result.add(new DataItem("disabled", null, null));
-            result.add(new DataItem("checked", null, null));
-            result.add(new DataItem("focusManagement", null, null));
-            result.add(new DataItem("rootAttributes", null, null));
+        result.add(new DataItemImpl("ojButton", "Help for ojButton", null));
+        result.add(new DataItemImpl("ojTab", "Help for ojTab", null));
+        result.add(new DataItemImpl("ojButtonset", "Help for ojButtonset", null));
+        return result;
+    }
+
+    @Override
+    public Collection<DataItem> getComponentOptions(String compName) {
+        List<DataItem> result = new ArrayList<>();
+        switch (compName) {
+            case "ojButton":
+                result.add(new DataItemImpl("contextMenu", null, null));
+                result.add(new DataItemImpl("disabled", null, null));
+                result.add(new DataItemImpl("display", null, null));
+                result.add(new DataItemImpl("icons", null, null));
+                result.add(new DataItemImpl("label", null, null));
+                result.add(new DataItemImpl("menu", null, null));
+                result.add(new DataItemImpl("rootAttributes", null, null));
+                break;
+            case "ojButtonset":
+                result.add(new DataItemImpl("contextMenu", null, null));
+                result.add(new DataItemImpl("disabled", null, null));
+                result.add(new DataItemImpl("checked", null, null));
+                result.add(new DataItemImpl("focusManagement", null, null));
+                result.add(new DataItemImpl("rootAttributes", null, null));
+                break;
         }
         
         return result;

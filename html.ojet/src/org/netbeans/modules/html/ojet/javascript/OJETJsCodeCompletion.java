@@ -52,7 +52,9 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.ojet.OJETContext;
 import org.netbeans.modules.html.ojet.data.DataItem;
+import org.netbeans.modules.html.ojet.data.DataItemImpl;
 import org.netbeans.modules.html.ojet.data.DataProvider;
+import org.netbeans.modules.html.ojet.data.DataProviderImpl;
 import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
 import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
 
@@ -75,18 +77,18 @@ public class OJETJsCodeCompletion implements CompletionProvider {
             List<CompletionProposal> result = new ArrayList<>();
             switch (ojContext) {
                 case COMP_CONF_COMP_NAME:
-                    Collection<DataItem> components = DataProvider.filterByPrefix(DataProvider.getComponents(), ccContext.getPrefix());
+                    Collection<DataItem> components = DataProvider.filterByPrefix(DataProviderImpl.getInstance().getComponents(), ccContext.getPrefix());
                     for (DataItem component : components) {
                         result.add(new OJETCodeCompletionItem.OJETComponentItem(component, ccContext));
                     }
                     break;
                 case COMP_CONF:
-                    result.add(new OJETCodeCompletionItem.OJETComponentOptionItem(new DataItem("component", null, null), ccContext));
+                    result.add(new OJETCodeCompletionItem.OJETComponentOptionItem(new DataItemImpl("component", null, null), ccContext));
                     break;
                 case COMP_CONF_PROP_NAME:
                     String compName = OJETContext.findComponentName(document, dOffset);
                     if (compName != null && !compName.isEmpty()) {
-                        Collection<DataItem> options = DataProvider.filterByPrefix(DataProvider.getComponentOptions(compName), ccContext.getPrefix());
+                        Collection<DataItem> options = DataProvider.filterByPrefix(DataProviderImpl.getInstance().getComponentOptions(compName), ccContext.getPrefix());
                         for (DataItem option : options) {
                             result.add(new OJETCodeCompletionItem.OJETComponentOptionItem(option, ccContext));
                         }

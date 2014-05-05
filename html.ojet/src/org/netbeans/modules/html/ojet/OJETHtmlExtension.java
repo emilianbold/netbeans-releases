@@ -56,6 +56,7 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.knockout.api.KODataBindTokenId;
 import org.netbeans.modules.html.ojet.data.DataItem;
 import org.netbeans.modules.html.ojet.data.DataProvider;
+import org.netbeans.modules.html.ojet.data.DataProviderImpl;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 
@@ -82,7 +83,7 @@ public class OJETHtmlExtension extends HtmlExtension {
             switch (ojContext) {
                 case DATA_BINDING:
                     String prefix = OJETUtils.getPrefix(ojContext, document, offset);
-                    Collection<DataItem> data = DataProvider.filterByPrefix(DataProvider.getBindingOptions(), prefix);
+                    Collection<DataItem> data = DataProvider.filterByPrefix(DataProviderImpl.getInstance().getBindingOptions(), prefix);
                     List<CompletionItem> result = new ArrayList();
                     for (DataItem item : data) {
                         result.add(new OJETCompletionHtmlItem(item, context.getCCItemStartOffset()));

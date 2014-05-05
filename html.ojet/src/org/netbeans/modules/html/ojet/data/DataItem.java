@@ -46,28 +46,14 @@ package org.netbeans.modules.html.ojet.data;
  *
  * @author Petr Pisl
  */
-public class DataItem {
+public interface DataItem {
     
-    private final String name;
-    private final String documentation;
-    private final String docUrl;
+    public String getName();
 
-    public DataItem(String name, String documentation, String docUrl) {
-        this.name = name;
-        this.documentation = documentation;
-        this.docUrl = docUrl;
-    }
+    public String getDocumentation();
 
-    public String getName() {
-        return name;
-    }
-
-    public String getDocumentation() {
-        return documentation;
-    }
-
-    public String getDocUrl() {
-        return docUrl;
-    }
+    public String getDocUrl();
+    
+    public String getTemplate();
     
 }
