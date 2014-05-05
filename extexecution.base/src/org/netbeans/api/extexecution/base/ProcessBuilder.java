@@ -273,20 +273,20 @@ public final class ProcessBuilder implements Callable<Process>, Lookup.Provider 
         return implementation.createProcess(params);
     }
 
-    /**
-     * Marks an object from which it is possible to get a {@link ProcessBuilder}.
-     */
-    public static interface Provider {
-
-        /**
-         * Returns the {@link ProcessBuilder} for the object.
-         *
-         * @return the {@link ProcessBuilder} for the object
-         * @throws IOException if there was a problem with the provision
-         */
-        ProcessBuilder getProcessBuilder() throws IOException;
-
-    }
+//    /**
+//     * Marks an object from which it is possible to get a {@link ProcessBuilder}.
+//     */
+//    public static interface Provider {
+//
+//        /**
+//         * Returns the {@link ProcessBuilder} for the object.
+//         *
+//         * @return the {@link ProcessBuilder} for the object
+//         * @throws IOException if there was a problem with the provision
+//         */
+//        ProcessBuilder getProcessBuilder() throws IOException;
+//
+//    }
 
     private static class LocalProcessBuilder implements ProcessBuilderImplementation {
 
