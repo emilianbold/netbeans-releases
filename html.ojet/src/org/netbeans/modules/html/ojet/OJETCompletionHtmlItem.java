@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,55 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.knockout;
 
-import org.netbeans.modules.html.knockout.api.KODataBindTokenId;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.logging.Level;
-import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.spi.lexer.LanguageEmbedding;
-import org.netbeans.spi.lexer.LanguageHierarchy;
-import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerRestartInfo;
+package org.netbeans.modules.html.ojet;
+
+import javax.swing.ImageIcon;
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
+import org.netbeans.modules.html.ojet.data.DataItem;
+
 
 /**
  *
- * @author marekfukala
+ * @author Petr Pisl
  */
-public class KODataBindLanguageHierarchy extends LanguageHierarchy<KODataBindTokenId> {
-
-    @Override
-    protected Collection<KODataBindTokenId> createTokenIds() {
-        return EnumSet.allOf(KODataBindTokenId.class);
+public class OJETCompletionHtmlItem extends HtmlCompletionItem.Attribute {
+   
+    public OJETCompletionHtmlItem(final DataItem data, final int substituteOffset) {
+        super(data.getName(), substituteOffset, true, "");
     }
-
+    
     @Override
-    protected Lexer<KODataBindTokenId> createLexer(LexerRestartInfo<KODataBindTokenId> info) {
-        return new KODataBindLexer(info);
+    protected ImageIcon getIcon() {
+        return OJETUtils.OJET_ICON;
     }
-
+    
     @Override
-    protected String mimeType() {
-        return KOUtils.KO_DATA_BIND_MIMETYPE;
+    protected String getLeftHtmlText() {
+        return new StringBuilder()
+                .append("<font color=#628FB5>") //NOI18N
+                .append(getItemText())
+                .append("</font>").toString();  //NOI18N
     }
-
+    
     @Override
-    protected LanguageEmbedding embedding(
-            Token<KODataBindTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
-        switch (token.id()) {
-            case VALUE:
-                Language lang = Language.find(KOUtils.JAVASCRIPT_MIMETYPE);
-                if (lang != null) {
-                    return LanguageEmbedding.create(lang, 0, 0, false);
-                }
-            default:
-                return null;
-        }
+    protected String getSubstituteText() {
+        return new StringBuilder().append(OJETUtils.OJ_COMPONENT).append(": {component: }").toString(); //NOI18N
     }
+    
+    
 }

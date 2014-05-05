@@ -39,53 +39,44 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.knockout;
+package org.netbeans.modules.html.ojet.javascript;
 
-import org.netbeans.modules.html.knockout.api.KODataBindTokenId;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.logging.Level;
-import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.spi.lexer.LanguageEmbedding;
-import org.netbeans.spi.lexer.LanguageHierarchy;
-import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerRestartInfo;
+import org.netbeans.modules.javascript2.editor.model.JsArray;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
 
 /**
  *
- * @author marekfukala
+ * @author Petr Pisl
  */
-public class KODataBindLanguageHierarchy extends LanguageHierarchy<KODataBindTokenId> {
-
-    @Override
-    protected Collection<KODataBindTokenId> createTokenIds() {
-        return EnumSet.allOf(KODataBindTokenId.class);
-    }
-
-    @Override
-    protected Lexer<KODataBindTokenId> createLexer(LexerRestartInfo<KODataBindTokenId> info) {
-        return new KODataBindLexer(info);
-    }
-
-    @Override
-    protected String mimeType() {
-        return KOUtils.KO_DATA_BIND_MIMETYPE;
-    }
-
-    @Override
-    protected LanguageEmbedding embedding(
-            Token<KODataBindTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
-        switch (token.id()) {
-            case VALUE:
-                Language lang = Language.find(KOUtils.JAVASCRIPT_MIMETYPE);
-                if (lang != null) {
-                    return LanguageEmbedding.create(lang, 0, 0, false);
+public class ModelUtils {
+    // TODO this class shouldnot be there. The model utils should be a part
+    // of the editor API. This is copy paste from ModelUtils
+    
+    public static JsObject findJsObject(JsObject object, int offset) {
+        JsObject jsObject = object;
+        JsObject result = null;
+        JsObject tmpObject = null;
+        if (jsObject.getOffsetRange().containsInclusive(offset)) {
+            result = jsObject;
+            for (JsObject property : jsObject.getProperties().values()) {
+                JsElement.Kind kind = property.getJSKind();
+                if (kind == JsElement.Kind.OBJECT || kind == JsElement.Kind.ANONYMOUS_OBJECT || kind == JsElement.Kind.OBJECT_LITERAL
+                        || kind == JsElement.Kind.FUNCTION || kind == JsElement.Kind.METHOD || kind == JsElement.Kind.CONSTRUCTOR
+                        || kind == JsElement.Kind.WITH_OBJECT) {
+                    tmpObject = findJsObject(property, offset);
                 }
-            default:
-                return null;
+                if (tmpObject != null) {
+                    if (tmpObject instanceof JsArray) {
+                        tmpObject = null;
+                        result = tmpObject;
+                    } else {
+                        result = tmpObject;
+                        break;
+                    }
+                }
+            }
         }
+        return result;
     }
 }

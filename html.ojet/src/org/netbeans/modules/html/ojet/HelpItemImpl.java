@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,55 +37,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.knockout;
 
-import org.netbeans.modules.html.knockout.api.KODataBindTokenId;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.logging.Level;
-import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.spi.lexer.LanguageEmbedding;
-import org.netbeans.spi.lexer.LanguageHierarchy;
-import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerRestartInfo;
+package org.netbeans.modules.html.ojet;
+
+import java.net.URL;
+import org.netbeans.modules.html.editor.lib.api.HelpItem;
+import org.netbeans.modules.html.editor.lib.api.HelpResolver;
 
 /**
  *
- * @author marekfukala
+ * @author Pet Pisl
  */
-public class KODataBindLanguageHierarchy extends LanguageHierarchy<KODataBindTokenId> {
+public class HelpItemImpl implements HelpItem{
 
     @Override
-    protected Collection<KODataBindTokenId> createTokenIds() {
-        return EnumSet.allOf(KODataBindTokenId.class);
+    public String getHelpHeader() {
+        return null;
     }
 
     @Override
-    protected Lexer<KODataBindTokenId> createLexer(LexerRestartInfo<KODataBindTokenId> info) {
-        return new KODataBindLexer(info);
+    public String getHelpContent() {
+        return "Oracle JET doc - not available yet";
     }
 
     @Override
-    protected String mimeType() {
-        return KOUtils.KO_DATA_BIND_MIMETYPE;
+    public URL getHelpURL() {
+        return null;
     }
 
     @Override
-    protected LanguageEmbedding embedding(
-            Token<KODataBindTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
-        switch (token.id()) {
-            case VALUE:
-                Language lang = Language.find(KOUtils.JAVASCRIPT_MIMETYPE);
-                if (lang != null) {
-                    return LanguageEmbedding.create(lang, 0, 0, false);
-                }
-            default:
-                return null;
-        }
+    public HelpResolver getHelpResolver() {
+        return null;
     }
+    
 }

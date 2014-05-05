@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,55 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.knockout;
 
-import org.netbeans.modules.html.knockout.api.KODataBindTokenId;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.logging.Level;
-import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.spi.lexer.LanguageEmbedding;
-import org.netbeans.spi.lexer.LanguageHierarchy;
-import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerRestartInfo;
+package org.netbeans.modules.html.ojet.data;
 
 /**
  *
- * @author marekfukala
+ * @author Petr Pisl
  */
-public class KODataBindLanguageHierarchy extends LanguageHierarchy<KODataBindTokenId> {
+public class DataItem {
+    
+    private final String name;
+    private final String documentation;
+    private final String docUrl;
 
-    @Override
-    protected Collection<KODataBindTokenId> createTokenIds() {
-        return EnumSet.allOf(KODataBindTokenId.class);
+    public DataItem(String name, String documentation, String docUrl) {
+        this.name = name;
+        this.documentation = documentation;
+        this.docUrl = docUrl;
     }
 
-    @Override
-    protected Lexer<KODataBindTokenId> createLexer(LexerRestartInfo<KODataBindTokenId> info) {
-        return new KODataBindLexer(info);
+    public String getName() {
+        return name;
     }
 
-    @Override
-    protected String mimeType() {
-        return KOUtils.KO_DATA_BIND_MIMETYPE;
+    public String getDocumentation() {
+        return documentation;
     }
 
-    @Override
-    protected LanguageEmbedding embedding(
-            Token<KODataBindTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
-        switch (token.id()) {
-            case VALUE:
-                Language lang = Language.find(KOUtils.JAVASCRIPT_MIMETYPE);
-                if (lang != null) {
-                    return LanguageEmbedding.create(lang, 0, 0, false);
-                }
-            default:
-                return null;
-        }
+    public String getDocUrl() {
+        return docUrl;
     }
+    
 }

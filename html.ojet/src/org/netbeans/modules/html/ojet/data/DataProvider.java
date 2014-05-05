@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,14 +24,8 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version , indicate your decision by adding
+ * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
  * under the [CDDL or GPL Version 2] license." If you do not indicate a
  * single choice of license, a recipient has the option to distribute
@@ -40,43 +34,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.knockout;
+package org.netbeans.modules.html.ojet.data;
 
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.TokenId;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import org.netbeans.modules.html.ojet.OJETUtils;
 
 /**
- * key: value, key: value, ...
  *
- * @author Marek Fukala
+ * @author Petr Pisl
  */
-public enum KODataBindTokenId implements TokenId {
-    
-    KEY("key"),
-    VALUE("value"),
-    COLON("operator"),
-    COMMA("operator"),
-    ERROR("error"),
-    WS("whitespace"); //NOI18N
+public class DataProvider {
 
-    private static final Language<KODataBindTokenId> language = new KODataBindLanguageHierarchy().language();
-    
-    @MimeRegistration(mimeType = KOUtils.KO_DATA_BIND_MIMETYPE, service = Language.class)
-    public static Language<KODataBindTokenId> language() {
-        return language;
+    public static Collection<DataItem> getBindingOptions() {
+        List<DataItem> result = new ArrayList(1);
+        result.add(new DataItem(OJETUtils.OJ_COMPONENT, null, null));
+        return result;
     }
-    
-    private String category;
 
-    private KODataBindTokenId(String category) {
-        this.category = category;
+    public static Collection<DataItem> getComponents() {
+        List<DataItem> result = new ArrayList<>();
+        result.add(new DataItem("button", null, null));
+        result.add(new DataItem("tab", null, null));
+        return result;
     }
-    
-    @Override
-    public String primaryCategory() {
-        return category;
+
+    public static Collection<DataItem> filterByPrefix(Collection<? extends DataItem> data, String prefix) {
+        List<DataItem> result = new ArrayList<>();
+        if (prefix == null || prefix.isEmpty()) {
+            result.addAll(data);
+        } else {
+            for (DataItem dataItem : data) {
+                if (dataItem.getName().startsWith(prefix)) {
+                    result.add(dataItem);
+                }
+            }
+        }
+        return result;
     }
-    
 }

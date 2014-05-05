@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,55 +37,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.knockout;
+package org.netbeans.modules.html.ojet;
 
-import org.netbeans.modules.html.knockout.api.KODataBindTokenId;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.logging.Level;
-import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.LanguagePath;
+import javax.swing.ImageIcon;
+import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.spi.lexer.LanguageEmbedding;
-import org.netbeans.spi.lexer.LanguageHierarchy;
-import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerRestartInfo;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.html.knockout.api.KODataBindTokenId;
+import org.netbeans.modules.web.common.api.LexerUtils;
+import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author marekfukala
+ * @author Petr Pisl
  */
-public class KODataBindLanguageHierarchy extends LanguageHierarchy<KODataBindTokenId> {
+public class OJETUtils {
 
-    @Override
-    protected Collection<KODataBindTokenId> createTokenIds() {
-        return EnumSet.allOf(KODataBindTokenId.class);
-    }
+    public static String OJ_COMPONENT = "ojComponent";  //NOI18N
 
-    @Override
-    protected Lexer<KODataBindTokenId> createLexer(LexerRestartInfo<KODataBindTokenId> info) {
-        return new KODataBindLexer(info);
-    }
+    public static final ImageIcon OJET_ICON
+            = ImageUtilities.loadImageIcon("org/netbeans/modules/html/ojet/ojet-icon.png", false); // NOI18N
 
-    @Override
-    protected String mimeType() {
-        return KOUtils.KO_DATA_BIND_MIMETYPE;
-    }
-
-    @Override
-    protected LanguageEmbedding embedding(
-            Token<KODataBindTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
-        switch (token.id()) {
-            case VALUE:
-                Language lang = Language.find(KOUtils.JAVASCRIPT_MIMETYPE);
-                if (lang != null) {
-                    return LanguageEmbedding.create(lang, 0, 0, false);
-                }
-            default:
-                return null;
+    public static String getPrefix(OJETContext ojContext, Document document, int offset) {
+        TokenHierarchy th = TokenHierarchy.get(document);
+        String empty = "";
+        switch (ojContext) {
+            case DATA_BINDING:
+                TokenSequence<KODataBindTokenId> ts = LexerUtils.getTokenSequence(th, offset, KODataBindTokenId.language(), false);
+                if (ts != null) {
+                    int diff = ts.move(offset);
+                    if (diff == 0 && ts.movePrevious() || ts.moveNext()) {
+                        //we are on a token of ko-data-bind token sequence
+                        Token<KODataBindTokenId> etoken = ts.token();
+                        if (etoken.id() == KODataBindTokenId.KEY) {
+                            //ke|
+                            CharSequence prefix = diff == 0 ? etoken.text() : etoken.text().subSequence(0, diff);
+                            return prefix.toString();
+                        }
+                    }
+                    break;
+                } 
         }
+        return empty;
     }
+
 }
