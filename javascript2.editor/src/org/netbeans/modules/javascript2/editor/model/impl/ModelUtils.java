@@ -902,7 +902,7 @@ public class ModelUtils {
                                 lastResolvedTypes.addAll(((JsArray) lObject).getTypesInArray());
                             } else {
                                 // just property
-                                Collection<? extends Type> lastTypeAssignment = lObject.getAssignmentForOffset(offset);
+                                 Collection<? extends Type> lastTypeAssignment = lObject.getAssignmentForOffset(offset);
                                 // we need to process the object later anyway. To get learning cc, see issue #224453
                                 lastResolvedObjects.add(lObject);
                                 if (!lastTypeAssignment.isEmpty()) {

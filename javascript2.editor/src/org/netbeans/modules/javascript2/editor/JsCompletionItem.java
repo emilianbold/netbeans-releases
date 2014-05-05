@@ -112,7 +112,11 @@ public class JsCompletionItem implements CompletionProposal {
             if (elementFo != null && sourceFo != null && sourceFo.equals(elementFo)) {
                 sb.append("1");     //NOI18N
             } else {
-                sb.append("9");     //NOI18N
+                if (OffsetRange.NONE.equals(element.getOffsetRange(request.result))) {
+                    sb.append("8");
+                } else {
+                    sb.append("9");     //NOI18N
+                }
             }
         }
         sb.append(getName());    
@@ -159,7 +163,14 @@ public class JsCompletionItem implements CompletionProposal {
         }
 
         formatter.reset();
+        boolean isgues = OffsetRange.NONE.equals(element.getOffsetRange(request.result));
+        if (isgues) {
+            formatter.appendHtml("<font color=#999999>");
+        }
         formatter.appendText(location);
+        if (isgues) {
+            formatter.appendHtml("</font>");
+        }
         return formatter.getText();
     }
 
@@ -188,7 +199,16 @@ public class JsCompletionItem implements CompletionProposal {
 
     @Override
     public int getSortPrioOverride() {
-        return (element != null && ((JsElement)element).isPlatform()) ? 0 : 100;
+        int order = 100;
+        if (element != null) {
+            if (((JsElement)element).isPlatform()) {
+                order = 0;
+            }
+            if (OffsetRange.NONE.equals(element.getOffsetRange(request.result))) {
+                order = 120;
+            }
+        }
+        return order;
     }
 
     @Override
