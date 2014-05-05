@@ -49,8 +49,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
  * This class is <i>NotThreadSafe</i>.
+ * 
  * @author Petr Hejl
  */
 public final class LineParsingHelper {

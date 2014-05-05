@@ -53,8 +53,8 @@ import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.netbeans.api.extexecution.base.input.InputReader;
 
 /**
- *
  * This class is <i>NotThreadSafe</i>.
+ *
  * @author Petr.Hejl
  */
 public class DefaultInputReader implements InputReader {
@@ -79,6 +79,7 @@ public class DefaultInputReader implements InputReader {
         this.buffer = new char[greedy ? BUFFER_SIZE * 2 : BUFFER_SIZE];
     }
 
+    @Override
     public int readInput(InputProcessor inputProcessor) throws IOException {
         if (closed) {
             throw new IllegalStateException("Already closed reader");
@@ -106,6 +107,7 @@ public class DefaultInputReader implements InputReader {
         return fetched;
     }
 
+    @Override
     public void close() throws IOException {
         closed = true;
         reader.close();

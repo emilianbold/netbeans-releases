@@ -56,8 +56,8 @@ import org.netbeans.api.extexecution.base.input.InputReader;
 import org.netbeans.api.extexecution.base.input.InputReaders;
 
 /**
- *
  * This class is <i>NotThreadSafe</i>.
+ *
  * @author Petr Hejl
  */
 public class FileInputReader implements InputReader {
@@ -84,6 +84,7 @@ public class FileInputReader implements InputReader {
         this.fileProvider = fileProvider;
     }
 
+    @Override
     public int readInput(InputProcessor inputProcessor) {
         if (closed) {
             throw new IllegalStateException("Already closed reader");
@@ -144,6 +145,7 @@ public class FileInputReader implements InputReader {
         return fetched;
     }
 
+    @Override
     public void close() throws IOException {
         closed = true;
         if (reader != null) {
