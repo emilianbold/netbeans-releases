@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CompletionProposal;
@@ -68,7 +69,13 @@ public class OJETJsCodeCompletion implements CompletionProvider {
     public List<CompletionProposal> complete(CodeCompletionContext ccContext, CompletionContext jsCompletionContext, String prefix) {
         Document document = ccContext.getParserResult().getSnapshot().getSource().getDocument(true);
         int dOffset = ccContext.getCaretOffset();  // document offset
-        OJETContext ojContext = OJETContext.findContext(document, dOffset);
+        ((AbstractDocument)document).readLock();
+        OJETContext ojContext = OJETContext.UNKNOWN;
+        try {
+            ojContext = OJETContext.findContext(document, dOffset);
+        } finally {
+            ((AbstractDocument)document).readUnlock();
+        }
         System.out.println("ojContext: " + ojContext);
         switch (ojContext) {
             case COMP_CONF_COMP_NAME:

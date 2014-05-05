@@ -123,8 +123,12 @@ public enum OJETContext {
         if (jsTs != null) {
             int diff = jsTs.move(offset);
             if (diff == 0 && jsTs.movePrevious() || jsTs.moveNext()) {
-                Token<JsTokenId> jsToken = LexerUtils.followsToken(jsTs, 
-                        Arrays.asList(JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.OPERATOR_COLON, JsTokenId.OPERATOR_COMMA), true, false, 
+                Token<JsTokenId> jsToken = jsTs.token();
+                if (jsToken.id() == JsTokenId.UNKNOWN && !jsTs.movePrevious()) {
+                    return UNKNOWN;
+                }
+                jsToken = LexerUtils.followsToken(jsTs, 
+                        Arrays.asList(JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.OPERATOR_COLON, JsTokenId.OPERATOR_COMMA), true, false, true, 
                         JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.STRING, JsTokenId.STRING_BEGIN);
                 if (jsToken == null) {
                     return UNKNOWN;

@@ -43,6 +43,8 @@
 package org.netbeans.modules.html.ojet;
 
 import java.util.Collections;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.Document;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import static org.netbeans.modules.csl.api.test.CslTestBase.getCaretOffset;
@@ -80,6 +82,22 @@ public class OJETContextTest extends JsTestBase{
        checkContext("testfiles/context/example01.html", "<input type=\"button\" data-bind=\"ojComponent: {component: 'ojButton', ^}\"/><!-- test 04  -->", OJETContext.COMP_CONF_PROP_NAME);
     }
     
+    public void testContext05()  throws Exception {
+       checkContext("testfiles/context/example01.html", "<input type=\"button\" data-bind=\"ojComponent: {component: ^}\"/><!-- test 05  -->", OJETContext.COMP_CONF_COMP_NAME);
+    }
+    
+    public void testContext06()  throws Exception {
+       checkContext("testfiles/context/example01.html", "<input type=\"button\" data-bind=\"ojComponent: {component: '^'}\"/><!-- test 06  -->", OJETContext.COMP_CONF_COMP_NAME);
+    }
+    
+    public void testContext07()  throws Exception {
+       checkContext("testfiles/context/example01.html", "<input type=\"button\" data-bind=\"ojComponent: {component: 'oj^'}\"/><!-- test 07  -->", OJETContext.COMP_CONF_COMP_NAME);
+    }
+    
+    public void testContext08()  throws Exception {
+       checkContext("testfiles/context/example01.html", "<input type=\"button\" data-bind=\"ojComponent: {component: 'oj^}\"/><!-- test 08  -->", OJETContext.COMP_CONF_COMP_NAME);
+    }
+    
     private void checkContext(final String file, final String caretLine, final OJETContext expected) throws Exception {
         
         Source testSource = getTestSource(getTestFile(file));
@@ -97,8 +115,14 @@ public class OJETContextTest extends JsTestBase{
                 Parser.Result r = caretOffset == -1 ? resultIterator.getParserResult() : resultIterator.getParserResult(caretOffset);
                 assertTrue(r instanceof ParserResult);
                 ParserResult info = (ParserResult) r;
-
-                OJETContext result = OJETContext.findContext(info.getSnapshot().getSource().getDocument(false), caretOffset);
+                Document document = info.getSnapshot().getSource().getDocument(true);
+                ((AbstractDocument)document).readLock();
+                OJETContext result = OJETContext.UNKNOWN;
+                try {
+                     result = OJETContext.findContext(info.getSnapshot().getSource().getDocument(false), caretOffset);
+                } finally {
+                    ((AbstractDocument)document).readUnlock();
+                }
                 assertEquals(expected, result);
             }
         });
