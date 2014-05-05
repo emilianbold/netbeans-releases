@@ -2663,20 +2663,30 @@ public class Reformatter implements ReformatTask {
         public Boolean visitConditionalExpression(ConditionalExpressionTree node, Void p) {
             int alignIndent = cs.alignMultilineTernaryOp() ? col : -1;
             scan(node.getCondition(), p);
-            if (cs.wrapAfterTernaryOps()) {
-                boolean containedNewLine = spaces(cs.spaceAroundTernaryOps() ? 1 : 0, false);
-                accept(QUESTION);
-                if (containedNewLine)
-                    newline();
-                wrapTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getTrueExpression());
-                containedNewLine = spaces(cs.spaceAroundTernaryOps() ? 1 : 0, false);
-                accept(COLON);
-                if (containedNewLine)
-                    newline();
-                wrapTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getFalseExpression());
-            } else {
-                wrapOperatorAndTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getTrueExpression());
-                wrapOperatorAndTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getFalseExpression());
+            boolean old = continuationIndent;
+            int oldIndent = indent;
+            try {
+                if (isLastIndentContinuation) {
+                    indent = indent();
+                }
+                if (cs.wrapAfterTernaryOps()) {
+                    boolean containedNewLine = spaces(cs.spaceAroundTernaryOps() ? 1 : 0, false);
+                    accept(QUESTION);
+                    if (containedNewLine)
+                        newline();
+                    wrapTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getTrueExpression());
+                    containedNewLine = spaces(cs.spaceAroundTernaryOps() ? 1 : 0, false);
+                    accept(COLON);
+                    if (containedNewLine)
+                        newline();
+                    wrapTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getFalseExpression());
+                } else {
+                    wrapOperatorAndTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getTrueExpression());
+                    wrapOperatorAndTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getFalseExpression());
+                }
+            } finally {
+                indent = oldIndent;
+                continuationIndent = old;
             }
             return true;
         }
