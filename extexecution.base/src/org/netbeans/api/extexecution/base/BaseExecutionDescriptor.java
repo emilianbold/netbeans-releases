@@ -73,7 +73,7 @@ public final class BaseExecutionDescriptor {
 
     private final InputProcessorFactory errProcessorFactory;
 
-    private final Reader inReader;
+    private final ReaderFactory inReaderFactory;
 
     /**
      * Creates the new descriptor. All properties are initialized to
@@ -87,14 +87,14 @@ public final class BaseExecutionDescriptor {
             ParametrizedRunnable<Integer> postExecution,
             InputProcessorFactory outProcessorFactory,
             InputProcessorFactory errProcessorFactory,
-            Reader inReader) {
+            ReaderFactory inReaderFactory) {
 
         this.charset = charset;
         this.preExecution = preExecution;
         this.postExecution = postExecution;
         this.outProcessorFactory = outProcessorFactory;
         this.errProcessorFactory = errProcessorFactory;
-        this.inReader = inReader;
+        this.inReaderFactory = inReaderFactory;
     }
 
     /**
@@ -119,7 +119,7 @@ public final class BaseExecutionDescriptor {
     @CheckReturnValue
     public BaseExecutionDescriptor charset(@NullAllowed Charset charset) {
         return new BaseExecutionDescriptor(charset, preExecution, postExecution,
-                outProcessorFactory, errProcessorFactory, inReader);
+                outProcessorFactory, errProcessorFactory, inReaderFactory);
     }
 
     Charset getCharset() {
@@ -143,7 +143,7 @@ public final class BaseExecutionDescriptor {
     @CheckReturnValue
     public BaseExecutionDescriptor preExecution(@NullAllowed Runnable preExecution) {
         return new BaseExecutionDescriptor(charset, preExecution, postExecution,
-                outProcessorFactory, errProcessorFactory, inReader);
+                outProcessorFactory, errProcessorFactory, inReaderFactory);
     }
 
     Runnable getPreExecution() {
@@ -167,7 +167,7 @@ public final class BaseExecutionDescriptor {
     @CheckReturnValue
     public BaseExecutionDescriptor postExecution(@NullAllowed ParametrizedRunnable<Integer> postExecution) {
         return new BaseExecutionDescriptor(charset, preExecution, postExecution,
-                outProcessorFactory, errProcessorFactory, inReader);
+                outProcessorFactory, errProcessorFactory, inReaderFactory);
     }
 
     ParametrizedRunnable<Integer> getPostExecution() {
@@ -191,9 +191,9 @@ public final class BaseExecutionDescriptor {
      */
     @NonNull
     @CheckReturnValue
-    public BaseExecutionDescriptor outProcessorFactory(InputProcessorFactory outProcessorFactory) {
+    public BaseExecutionDescriptor outProcessorFactory(@NullAllowed InputProcessorFactory outProcessorFactory) {
         return new BaseExecutionDescriptor(charset, preExecution, postExecution,
-                outProcessorFactory, errProcessorFactory, inReader);
+                outProcessorFactory, errProcessorFactory, inReaderFactory);
     }
 
     InputProcessorFactory getOutProcessorFactory() {
@@ -217,9 +217,9 @@ public final class BaseExecutionDescriptor {
      */
     @NonNull
     @CheckReturnValue
-    public BaseExecutionDescriptor errProcessorFactory(InputProcessorFactory errProcessorFactory) {
+    public BaseExecutionDescriptor errProcessorFactory(@NullAllowed InputProcessorFactory errProcessorFactory) {
         return new BaseExecutionDescriptor(charset, preExecution, postExecution,
-                outProcessorFactory, errProcessorFactory, inReader);
+                outProcessorFactory, errProcessorFactory, inReaderFactory);
     }
 
     InputProcessorFactory getErrProcessorFactory() {
@@ -227,28 +227,29 @@ public final class BaseExecutionDescriptor {
     }
 
     /**
-     * Returns a descriptor with configured reader that should be attached
-     * to standard input of the process.
+     * Returns a descriptor with configured factory for standard input reader.
+     * The factory is used by {@link BaseExecutionService} to create
+     * a reader providing input to the process.
      * <p>
      * The default (not configured) value is <code>null</code>.
      * <p>
      * All other properties of the returned descriptor are inherited from
      * <code>this</code>.
      *
-     * @param inReader reader that should be attached to standard input of
-     *             the process, <code>null</code> allowed
-     * @return new descriptor with configured reader for standard input of the
-     *             process
+     * @param inReaderFactory  factory for standard input reader,
+     *             <code>null</code> allowed
+     * @return new descriptor with configured factory for reader to use
+     *             for standard input
      */
     @NonNull
     @CheckReturnValue
-    public BaseExecutionDescriptor inReader(Reader inReader) {
+    public BaseExecutionDescriptor inReaderFactory(@NullAllowed ReaderFactory inReaderFactory) {
         return new BaseExecutionDescriptor(charset, preExecution, postExecution,
-                outProcessorFactory, errProcessorFactory, inReader);
+                outProcessorFactory, errProcessorFactory, inReaderFactory);
     }
 
-    Reader getInReader() {
-        return inReader;
+    ReaderFactory getInReaderFactory() {
+        return inReaderFactory;
     }
 
     /**
@@ -264,6 +265,19 @@ public final class BaseExecutionDescriptor {
         @NonNull
         InputProcessor newInputProcessor();
 
+    }
+
+    /**
+     * Factory creating the reader.
+     */
+    public interface ReaderFactory {
+
+        /**
+         * Creates and returns new reader.
+         *
+         * @return new reader
+         */
+        Reader newReader();
     }
 
 }

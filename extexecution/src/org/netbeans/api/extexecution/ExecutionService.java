@@ -200,7 +200,13 @@ public final class ExecutionService {
 
         BaseExecutionDescriptor realDescriptor = new BaseExecutionDescriptor();
         realDescriptor = realDescriptor.charset(descriptor.getCharset());
-        realDescriptor = realDescriptor.inReader(in);
+        realDescriptor = realDescriptor.inReaderFactory(new BaseExecutionDescriptor.ReaderFactory() {
+
+            @Override
+            public Reader newReader() {
+                return in;
+            }
+        });
         realDescriptor = realDescriptor.preExecution(new Runnable() {
 
             @Override

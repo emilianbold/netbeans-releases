@@ -186,8 +186,9 @@ public final class BaseExecutionService {
     @NonNull
     public Future<Integer> run() {
         final Reader in;
-        if (descriptor.getInReader() != null) {
-            in = descriptor.getInReader();
+        BaseExecutionDescriptor.ReaderFactory factory = descriptor.getInReaderFactory();
+        if (factory != null) {
+            in = factory.newReader();
         } else {
             in = null;
         }
