@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.extexecution;
+package org.netbeans.modules.extexecution.base;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;

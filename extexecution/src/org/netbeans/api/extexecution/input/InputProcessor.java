@@ -54,6 +54,7 @@ import org.netbeans.api.annotations.common.NonNull;
  *
  * @author Petr Hejl
  * @see InputReader
+ * @deprecated use {@link org.netbeans.api.extexecution.base.input.InputProcessor}
  */
 public interface InputProcessor extends Closeable {
 

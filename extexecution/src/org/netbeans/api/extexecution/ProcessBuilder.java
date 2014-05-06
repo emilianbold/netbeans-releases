@@ -41,7 +41,6 @@
  */
 package org.netbeans.api.extexecution;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,6 +49,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.extexecution.base.Environment;
 import org.netbeans.modules.extexecution.ProcessBuilderAccessor;
 import org.netbeans.spi.extexecution.ProcessBuilderImplementation;
 import org.openide.util.NbBundle;
@@ -74,6 +74,7 @@ import org.openide.util.UserQuestionException;
  *
  * @author Petr Hejl
  * @since 1.28
+ * @deprecated use {@link org.netbeans.api.extexecution.base.ProcessBuilder}
  */
 public final class ProcessBuilder implements Callable<Process> {
 
@@ -88,13 +89,13 @@ public final class ProcessBuilder implements Callable<Process> {
     private String workingDirectory;
 
     /**<i>GuardedBy("this")</i>*/
-    private List<String> arguments = new ArrayList<String>();
+    private final List<String> arguments = new ArrayList<String>();
 
     /**<i>GuardedBy("this")</i>*/
-    private List<String> paths = new ArrayList<String>();
+    private final List<String> paths = new ArrayList<String>();
 
     /**<i>GuardedBy("this")</i>*/
-    private Map<String, String> envVariables = new HashMap<String, String>();
+    private final Map<String, String> envVariables = new HashMap<String, String>();
 
     /**<i>GuardedBy("this")</i>*/
     private boolean redirectErrorStream;
@@ -232,7 +233,7 @@ public final class ProcessBuilder implements Callable<Process> {
      * <p>
      * Since version 1.35 implementors of this method are advised to throw
      * a {@link UserQuestionException} in case the execution cannot be
-     * performed and requires additional user confirmation, or configuration. 
+     * performed and requires additional user confirmation, or configuration.
      * Callers of this method may check for this exception and handle it
      * appropriately.
      *
@@ -278,20 +279,18 @@ public final class ProcessBuilder implements Callable<Process> {
         public Process createProcess(String executable, String workingDirectory, List<String> arguments,
                 List<String> paths, Map<String, String> environment, boolean redirectErrorStream) throws IOException {
 
-            ExternalProcessBuilder builder = new ExternalProcessBuilder(executable);
-            if (workingDirectory != null) {
-                builder = builder.workingDirectory(new File(workingDirectory));
-            }
-            for (String argument : arguments) {
-                builder = builder.addArgument(argument);
-            }
+            org.netbeans.api.extexecution.base.ProcessBuilder builder = org.netbeans.api.extexecution.base.ProcessBuilder.getLocal();
+            builder.setExecutable(executable);
+            builder.setWorkingDirectory(workingDirectory);
+            builder.setArguments(arguments);
+            builder.setRedirectErrorStream(redirectErrorStream);
+            Environment env  = builder.getEnvironment();
             for (String path : paths) {
-                builder = builder.prependPath(new File(path));
+                env.prependPath("PATH", path);
             }
             for (Map.Entry<String, String> entry : environment.entrySet()) {
-                builder = builder.addEnvironmentVariable(entry.getKey(), entry.getValue());
+                env.setVariable(entry.getKey(), entry.getValue());
             }
-            builder = builder.redirectErrorStream(redirectErrorStream);
 
             return builder.call();
         }
