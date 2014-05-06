@@ -37,8 +37,9 @@
  * therefore, elected the GPL Version 2 license, then the option applies only
  * if the new code is made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.parsing.impl;
+package org.netbeans.modules.parsing.nb;
 
+import org.netbeans.modules.parsing.implspi.TaskProcessorControl;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
@@ -48,12 +49,6 @@ import org.openide.windows.WindowManager;
  * often not needed at all.
  */
 public class Installer extends ModuleInstall {
-
-    private static final int DEFAULT_MAX_FILE_SIZE = 50*(1<<20);
-    public static final int MAX_FILE_SIZE = Integer.getInteger(
-            "parse.max.file.size",  //NOI18N
-            DEFAULT_MAX_FILE_SIZE);
-
     private static volatile boolean closed;
 
     public static boolean isClosed() {
@@ -69,7 +64,7 @@ public class Installer extends ModuleInstall {
                 RequestProcessor.getDefault().post(new Runnable() {
                     @Override
                     public void run() {
-                        Schedulers.init();
+                        TaskProcessorControl.initialize();
                     }
                 });
             }

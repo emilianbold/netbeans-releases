@@ -62,6 +62,9 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_EXT;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_MIME;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_SOURCES;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
@@ -80,11 +83,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tomas Zezula
  */
-public class IndexingSupportACIDTest extends NbTestCase {
-
-    private static final String FOO_EXT = "foo";    //NOI18N
-    private static final String FOO_MIME = "text/x-foo";    //NOI18N
-    private static final String FOO_SOURCES = "foo-src";    //NOI18N
+public class IndexingSupportACIDTest extends IndexingTestBase {
 
     private final Map<String, Map<ClassPath,Void>> registeredClasspaths = new HashMap<String, Map<ClassPath,Void>>();
 
@@ -119,7 +118,6 @@ public class IndexingSupportACIDTest extends NbTestCase {
         FileUtil.setMIMEType(FOO_EXT, FOO_MIME);
         cp1 = ClassPathSupport.createClassPath(src1);
         cp2 = ClassPathSupport.createClassPath(src2);
-        MockServices.setServices(FooPathRecognizer.class);
         MockMimeLookup.setInstances(MimePath.get(FOO_MIME), new FooIndexerFactory());
         RepositoryUpdaterTest.setMimeTypes(FOO_MIME);
         RepositoryUpdaterTest.waitForRepositoryUpdaterInit();

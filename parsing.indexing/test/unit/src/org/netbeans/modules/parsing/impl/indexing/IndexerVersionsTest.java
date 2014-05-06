@@ -80,7 +80,7 @@ import org.openide.filesystems.URLMapper;
  *
  * @author Tomas Zezula
  */
-public class IndexerVersionsTest extends NbTestCase {
+public class IndexerVersionsTest extends IndexingTestBase {
 
     private static final String MIME = "text/test";
     private static final String INDEXER_NAME = "Test";
@@ -99,6 +99,11 @@ public class IndexerVersionsTest extends NbTestCase {
     }
 
     @Override
+    protected void getAdditionalServices(List<Class> clazz) {
+        clazz.add(MockPathRecognizer.class);
+    }
+
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         this.clearWorkDir();
@@ -107,7 +112,6 @@ public class IndexerVersionsTest extends NbTestCase {
         final FileObject cache = wd.createFolder("cache");
         CacheFolder.setCacheFolder(cache);
 
-        MockServices.setServices(MockPathRecognizer.class);
         indexerFactory = new MockIndexerFactory(1);
         MockMimeLookup.setInstances(MimePath.get(MIME), indexerFactory);
         Set<String> mt = new HashSet<String>();

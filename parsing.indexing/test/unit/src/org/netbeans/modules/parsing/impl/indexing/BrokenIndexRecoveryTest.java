@@ -43,13 +43,10 @@ package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -62,15 +59,14 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_EXT;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_MIME;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_SOURCES;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
-import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -83,11 +79,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tomas Zezula
  */
-public class BrokenIndexRecoveryTest extends NbTestCase {
-
-    private static final String FOO_EXT = "foo";    //NOI18N
-    private static final String FOO_MIME = "text/x-foo";    //NOI18N
-    private static final String FOO_SOURCES = "foo-src";    //NOI18N
+public class BrokenIndexRecoveryTest extends IndexingTestBase {
 
     private final Map<String, Map<ClassPath,Void>> registeredClasspaths = new HashMap<String, Map<ClassPath,Void>>();
 
@@ -118,7 +110,6 @@ public class BrokenIndexRecoveryTest extends NbTestCase {
 
         FileUtil.setMIMEType(FOO_EXT, FOO_MIME);
         cp1 = ClassPathSupport.createClassPath(src1);
-        MockServices.setServices(FooPathRecognizer.class);
         MockMimeLookup.setInstances(MimePath.get(FOO_MIME), new FooIndexerFactory());
         RepositoryUpdaterTest.setMimeTypes(FOO_MIME);
         RepositoryUpdaterTest.waitForRepositoryUpdaterInit();
@@ -240,28 +231,6 @@ public class BrokenIndexRecoveryTest extends NbTestCase {
     }
 
 
-    public static final class FooPathRecognizer extends PathRecognizer {
-
-        @Override
-        public Set<String> getSourcePathIds() {
-            return Collections.<String>singleton(FOO_SOURCES);
-        }
-
-        @Override
-        public Set<String> getLibraryPathIds() {
-            return Collections.<String>emptySet();
-        }
-
-        @Override
-        public Set<String> getBinaryLibraryPathIds() {
-            return Collections.<String>emptySet();
-        }
-
-        @Override
-        public Set<String> getMimeTypes() {
-            return Collections.<String>singleton(FOO_MIME);
-        }
-    }
 
     private static class FooIndexerFactory extends CustomIndexerFactory {
 

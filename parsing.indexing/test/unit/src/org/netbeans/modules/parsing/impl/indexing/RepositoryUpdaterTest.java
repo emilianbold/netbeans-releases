@@ -59,7 +59,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -70,7 +69,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -86,7 +84,6 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import junit.framework.Test;
@@ -111,9 +108,7 @@ import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.RunWhenScanFinishedSupport;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
-import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.netbeans.modules.parsing.impl.Utilities;
-import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.DownloadedIndexPatcher;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexDownloader;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
@@ -159,7 +154,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Zezula
  */
-public class RepositoryUpdaterTest extends NbTestCase {
+public class RepositoryUpdaterTest extends IndexingTestBase {
 
 
     public static final int TIME = Integer.getInteger("RepositoryUpdaterTest.timeout", 5000);                 //NOI18N
@@ -185,10 +180,10 @@ public class RepositoryUpdaterTest extends NbTestCase {
     private FileObject unknown1;
     private FileObject unknown2;
     private FileObject unknownSrc2;
-    private FileObject srcRootWithFiles1;
+    protected FileObject srcRootWithFiles1;
 
     FileObject f1;
-    FileObject f3;
+    protected FileObject f3;
 
     private URL[] customFiles;
     private URL[] embeddedFiles;
@@ -213,6 +208,22 @@ public class RepositoryUpdaterTest extends NbTestCase {
     }
 
     @Override
+    protected void getAdditionalServices(List<Class> serv) {
+        super.getAdditionalServices(serv);
+        serv.addAll(
+                Arrays.asList(new Class[] {
+                    FooPathRecognizer.class,
+                    EmbPathRecognizer.class,
+                    SFBQImpl.class,
+                    ClassPathProviderImpl.class,
+                    Visibility.class,
+                    IndexDownloaderImpl.class,
+                    IndexPatcherImpl.class
+                })
+        );
+    }
+    
+    @Override
     protected void setUp() throws Exception {
 //        TopLogging.initializeQuietly();
         super.setUp();
@@ -222,14 +233,6 @@ public class RepositoryUpdaterTest extends NbTestCase {
         final FileObject cache = wd.createFolder("cache");
         CacheFolder.setCacheFolder(cache);
 
-        MockServices.setServices(
-                FooPathRecognizer.class,
-                EmbPathRecognizer.class,
-                SFBQImpl.class,
-                ClassPathProviderImpl.class,
-                Visibility.class,
-                IndexDownloaderImpl.class,
-                IndexPatcherImpl.class);
         MockMimeLookup.setInstances(MimePath.EMPTY, binIndexerFactory);
 //        MockMimeLookup.setInstances(MimePath.get(JARMIME), jarIndexerFactory);
         MockMimeLookup.setInstances(MimePath.get(MIME), indexerFactory);
@@ -1051,69 +1054,6 @@ public class RepositoryUpdaterTest extends NbTestCase {
         eindexerFactory.indexer.awaitIndex();
         eindexerFactory.indexer.awaitDeleted();
         assertFalse(eindexerFactory.indexer.broken);
-    }
-
-    public void testAWTIndexAndWaitDeadlock() throws Exception {
-        final Class<EventSupport.EditorRegistryListener> erlc = EventSupport.EditorRegistryListener.class;        
-        final Field k24Field = erlc.getDeclaredField("k24");   //NOI18N
-        assertNotNull (k24Field);
-        k24Field.setAccessible(true);
-        final AtomicBoolean cond = (AtomicBoolean) k24Field.get(null);
-        
-        final Source source = Source.create(f3);
-        assertNotNull(source);
-
-        Runnable action = new Runnable() {
-            public void run() {
-                try {
-                    TaskProcessor.resetState(source, false, true);
-                    cond.set(true);
-                } catch (/*ReflectiveOperation*/Exception e) {
-                    Exceptions.printStackTrace(e);
-                }
-            }
-        };
-        if (SwingUtilities.isEventDispatchThread()) {
-            action.run();
-        }
-        else {
-            SwingUtilities.invokeAndWait(action);
-        }
-
-        action = new Runnable() {
-            public void run() {
-                try {
-                    IndexingManager.getDefault().refreshIndexAndWait(srcRootWithFiles1.getURL(), null);
-                } catch (FileStateInvalidException e) {
-                    Exceptions.printStackTrace(e);
-                }
-            }
-        };
-        if (SwingUtilities.isEventDispatchThread()) {
-            action.run();
-        }
-        else {
-            SwingUtilities.invokeAndWait(action);
-        }
-
-
-        action = new Runnable() {
-            public void run() {
-                try {
-                    cond.set(false);
-                    TaskProcessor.resetStateImpl(source);
-                } catch (/*ReflectiveOperation*/Exception e) {
-                    Exceptions.printStackTrace(e);
-                }
-            }
-        };
-        if (SwingUtilities.isEventDispatchThread()) {
-            action.run();
-        }
-        else {
-            SwingUtilities.invokeAndWait(action);
-        }
-
     }
 
     public void testFileListWorkVsRefreshWork() throws IOException {

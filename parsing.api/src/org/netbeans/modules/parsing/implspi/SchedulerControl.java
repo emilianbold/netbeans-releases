@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,67 +34,35 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl;
-
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
+package org.netbeans.modules.parsing.implspi;
 
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.parsing.spi.SourceModificationEvent;
-import org.openide.util.lookup.ServiceProvider;
-
 
 /**
- *
- * @author Jan Jancura
+ * Allows the environment implementation to reschedule tasks for a
+ * source. The instance is passed to {@link SourceEnvironment#attachScheduler}.
+ * @author sdedic
  */
-@ServiceProvider(service=Scheduler.class)
-public class CurrentDocumentScheduler extends CurrentEditorTaskScheduler {
-    
-    private Document        currentDocument;
-    
-    protected void setEditor (JTextComponent editor) {
-        if (editor != null) {
-            Document document = editor.getDocument ();
-            if (currentDocument == document) return;
-            currentDocument = document;
-            final Source source = Source.create (currentDocument);
-            schedule (source, new SchedulerEvent (this) {});
-        }
-        else {
-            currentDocument = null;            
-            schedule(null, null);
-        }
-    }
-
+public interface SchedulerControl {
     /**
-     * for tests only
-     * @param source
+     * Provides access to the controlled Scheduler
+     * @return the scheduler instance
      */
-    void schedule (Source source) {
-        schedule (source, new SchedulerEvent (this) {});
-    }
+    public Scheduler getScheduler();
     
-    @Override
-    public String toString () {
-        return "CurrentDocumentScheduler";
-    }
-
-    @Override
-    protected SchedulerEvent createSchedulerEvent (SourceModificationEvent event) {
-        if (event.getModifiedSource () == getSource())
-            return new SchedulerEvent (this) {};
-        return null;
-    }
+    /**
+     * Notifies about Source change. Should be called when the scheduler
+     * should reschedule source's tasks or when the Source itself changes, i.e.
+     * file is moved/renamed etc.
+     * 
+     * @param newSource the current Source for the Scheduler
+     */
+    public void sourceChanged(Source newSource);
 }
-
-
-

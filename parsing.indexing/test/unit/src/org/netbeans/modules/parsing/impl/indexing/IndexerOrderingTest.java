@@ -43,13 +43,11 @@
 package org.netbeans.modules.parsing.impl.indexing;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,8 +57,6 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -73,8 +69,10 @@ import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
-import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.modules.parsing.spi.indexing.SourceIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.support.EmbeddedPathRecognizer;
+import static org.netbeans.modules.parsing.spi.indexing.support.EmbeddedPathRecognizer.EXT_EMB;
+import static org.netbeans.modules.parsing.spi.indexing.support.EmbeddedPathRecognizer.SRC_EMB;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -85,14 +83,12 @@ import org.openide.util.test.TestFileUtils;
  *
  * @author Tomas Zezula
  */
-public class IndexerOrderingTest extends NbTestCase {
+public class IndexerOrderingTest extends IndexingTestBase {
 
-    private static final String MIME_FOO = "text/x-foo";    //NOI18N
-    private static final String EXT_FOO = "foo";            //NOI18N
-    private static final String SRC_FOO = "foo-src";        //NOI18N
-    private static final String MIME_EMB = "text/x-emb";    //NOI18N
-    private static final String EXT_EMB = "emb";            //NOI18N
-    private static final String SRC_EMB = "emb-src";        //NOI18N
+    private static final String MIME_FOO = FooPathRecognizer.FOO_MIME;    //NOI18N
+    private static final String EXT_FOO = FooPathRecognizer.FOO_EXT;            //NOI18N
+    private static final String SRC_FOO = FooPathRecognizer.FOO_SOURCES;        //NOI18N
+    private static final String MIME_EMB = EmbeddedPathRecognizer.EMB_MIME;    //NOI18N
 
     private static final Queue<SourceIndexerFactory> calls =
         new ConcurrentLinkedQueue<SourceIndexerFactory>();
@@ -101,7 +97,6 @@ public class IndexerOrderingTest extends NbTestCase {
         new HashMap<String, Map<ClassPath,Void>>();
     private FileObject froot;
     private FileObject eroot;
-
 
     public IndexerOrderingTest(@NonNull final String name) {
         super(name);
@@ -119,7 +114,6 @@ public class IndexerOrderingTest extends NbTestCase {
         final FileObject emb = FileUtil.createData(eroot, "test.emb");  //NOI18N
         TestFileUtils.writeFile(FileUtil.toFile(emb), "emb");   //NOI18N
 
-        MockServices.setServices(FooPaths.class, EmbPaths.class);
         MockMimeLookup.setInstances(MimePath.get(MIME_FOO),
             new CustomIndexerFactoryImpl("CI1",1),
             new CustomIndexerFactoryImpl("CI2",2),
@@ -407,52 +401,6 @@ public class IndexerOrderingTest extends NbTestCase {
         @Override
         public Parser createParser(Collection<Snapshot> snapshots) {
             return new EmbParser();
-        }
-    }
-
-    public static final class FooPaths extends PathRecognizer {
-
-        @Override
-        public Set<String> getSourcePathIds() {
-            return Collections.singleton(SRC_FOO);
-        }
-
-        @Override
-        public Set<String> getLibraryPathIds() {
-            return Collections.<String>emptySet();
-        }
-
-        @Override
-        public Set<String> getBinaryLibraryPathIds() {
-            return Collections.<String>emptySet();
-        }
-
-        @Override
-        public Set<String> getMimeTypes() {
-            return Collections.singleton(MIME_FOO);
-        }
-    }
-
-    public static final class EmbPaths extends PathRecognizer {
-
-        @Override
-        public Set<String> getSourcePathIds() {
-            return Collections.singleton(SRC_EMB);
-        }
-
-        @Override
-        public Set<String> getLibraryPathIds() {
-            return Collections.<String>emptySet();
-        }
-
-        @Override
-        public Set<String> getBinaryLibraryPathIds() {
-            return Collections.<String>emptySet();
-        }
-
-        @Override
-        public Set<String> getMimeTypes() {
-            return Collections.singleton(MIME_EMB);
         }
     }
 

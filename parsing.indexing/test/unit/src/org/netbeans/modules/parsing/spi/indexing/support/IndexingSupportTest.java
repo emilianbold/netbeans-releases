@@ -51,9 +51,10 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.*;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_MIME;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_SOURCES;
 import org.netbeans.modules.parsing.impl.indexing.lucene.DocumentBasedIndexManager;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LayeredDocumentIndex;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
@@ -71,11 +72,8 @@ import org.openide.util.Exceptions;
  *
  * @author Tomas Zezula
  */
-public class IndexingSupportTest extends NbTestCase {
+public class IndexingSupportTest extends IndexingTestBase {
     
-    private static final String MIME = "text/x-foo";    //NOI18N
-    private static final String SCP = "FOO-SOURCES"; //NOI18N
-
     private FileObject root;
     private FileObject cache;
     private FileObject f1;
@@ -89,6 +87,7 @@ public class IndexingSupportTest extends NbTestCase {
 
     @Override
     public void setUp () throws Exception {
+        super.setUp();
         this.clearWorkDir();
         final File wdf = getWorkDir();
         final FileObject wd = FileUtil.toFileObject(wdf);
@@ -106,7 +105,8 @@ public class IndexingSupportTest extends NbTestCase {
         assert f3 != null;
         f4 = FileUtil.createData(root,"folder/c.foo");
         assert f4 != null;
-        FileUtil.setMIMEType("foo", MIME);  //NOI18N
+        FileUtil.setMIMEType("foo", FOO_MIME);  //NOI18N
+        RepositoryUpdater.getDefault().start(false);
     }
 
     @Override
@@ -483,12 +483,18 @@ public class IndexingSupportTest extends NbTestCase {
         qs2.query("", "", QuerySupport.Kind.EXACT);
         assertFalse("Expecting getIndex not called", lif.getIndexCalled);
     }
+
+    @Override
+    protected void getAdditionalServices(List<Class> clazz) {
+        super.getAdditionalServices(clazz);
+        clazz.add(CPP.class);
+    }
     
     public void testTransientUpdates() throws Exception {
-        MockMimeLookup.setInstances(MimePath.get(MIME), new CIF());
-        MockServices.setServices(PR.class, CPP.class);
+        MockMimeLookup.setInstances(MimePath.get(FOO_MIME), new CIF());
+//        MockServices.setServices(PR.class, CPP.class);
         CPP.scp = ClassPathSupport.createClassPath(root);
-        RepositoryUpdaterTest.setMimeTypes(MIME);
+        RepositoryUpdaterTest.setMimeTypes(FOO_MIME);
         Map<URL,Map<String,Collection<String>>> attrs = new HashMap<URL, Map<String, Collection<String>>>();
         Map<String,Collection<String>> ca = new HashMap<String, Collection<String>>();
         ca.put("name",Collections.<String>singleton(f1.getName()));            //NOI18N
@@ -499,7 +505,7 @@ public class IndexingSupportTest extends NbTestCase {
         ca.put("class",Collections.<String>singleton(f2.getName()));           //NOI18N
         attrs.put(f2.toURL(), ca);
         CI.attrs = attrs;
-        GlobalPathRegistry.getDefault().register(SCP, new ClassPath[]{CPP.scp});
+        GlobalPathRegistry.getDefault().register(FOO_SOURCES, new ClassPath[]{CPP.scp});
         try {
             IndexingManager.getDefault().refreshIndexAndWait(root.toURL(), null);
             final QuerySupport qs = QuerySupport.forRoots("fooIndexer", 1, root);   //NOI18N
@@ -642,7 +648,7 @@ public class IndexingSupportTest extends NbTestCase {
             
             
         } finally {
-            GlobalPathRegistry.getDefault().unregister(SCP, new ClassPath[]{CPP.scp});
+            GlobalPathRegistry.getDefault().unregister(FOO_SOURCES, new ClassPath[]{CPP.scp});
         }
     }
     
@@ -715,37 +721,13 @@ public class IndexingSupportTest extends NbTestCase {
         }
     }
     
-    public static class PR extends PathRecognizer {
-
-        @Override
-        public Set<String> getSourcePathIds() {
-            return Collections.<String>singleton(SCP);
-        }
-
-        @Override
-        public Set<String> getLibraryPathIds() {
-            return Collections.<String>emptySet();
-        }
-
-        @Override
-        public Set<String> getBinaryLibraryPathIds() {
-            return Collections.<String>emptySet();
-        }
-
-        @Override
-        public Set<String> getMimeTypes() {
-            return Collections.<String>singleton(MIME);
-        }
-        
-    }
-    
     public static class CPP implements ClassPathProvider {
         
         static volatile ClassPath scp;
 
         @Override
         public ClassPath findClassPath(FileObject file, String type) {
-            if (SCP.equals(type) && scp != null && scp.contains(file)) {
+            if (FOO_SOURCES.equals(type) && scp != null && scp.contains(file)) {
                 return scp;
             }
             return null;

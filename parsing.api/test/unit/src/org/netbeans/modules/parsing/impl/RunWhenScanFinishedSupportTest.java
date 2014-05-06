@@ -55,8 +55,10 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.TestEnvironmentFactory;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -92,9 +94,9 @@ public class RunWhenScanFinishedSupportTest extends NbTestCase {
         final FileObject wd = FileUtil.toFileObject(getWorkDir());
         final FileObject file = FileUtil.createData(wd, "test.foo");    //NOI18N
         assertNotNull(file);
+        MockLookup.setInstances(new MockMimeLookup(), new TestEnvironmentFactory(), new IndexerEmulator());
         src = Source.create(file);
         assertNotNull(src);
-        MockLookup.setInstances(new IndexerEmulator());
         handler = new TestHandler();
         log = Logger.getLogger(RunWhenScanFinishedSupport.class.getName());
         log.setLevel(Level.FINE);

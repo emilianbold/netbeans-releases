@@ -42,8 +42,8 @@
 
 package org.netbeans.modules.parsing.api;
 
+import org.netbeans.modules.parsing.spi.LowMemoryWatcher;
 import java.lang.ref.Reference;
-import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,9 +55,7 @@ import java.util.concurrent.Future;
 import org.netbeans.api.annotations.common.NonNull;
 
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.parsing.impl.*;
-import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
@@ -429,7 +427,8 @@ public final class ParserManager {
      * @return set of MIME types.
      */
     public static Set<String> getAllMimeTypes () {
-        return allMimeTypes != null ? allMimeTypes : EditorSettings.getDefault().getAllMimeTypes();
+        return allMimeTypes != null ? allMimeTypes : 
+                Utilities.getAllMimeTypes();
     }
 
     /**
@@ -480,7 +479,7 @@ public final class ParserManager {
 
         return true;
     }
-
+    
     //where
     private static Map<String,Reference<Parser>> cachedParsers = new HashMap<String,Reference<Parser>>();    
 }

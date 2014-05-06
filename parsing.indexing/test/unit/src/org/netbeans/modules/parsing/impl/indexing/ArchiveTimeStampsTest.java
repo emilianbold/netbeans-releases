@@ -65,7 +65,7 @@ import org.openide.util.Utilities;
  *
  * @author Tomas Zezula
  */
-public class ArchiveTimeStampsTest extends NbTestCase {
+public class ArchiveTimeStampsTest extends IndexingTestBase {
 
     public ArchiveTimeStampsTest(final String name) {
         super(name);
@@ -73,6 +73,7 @@ public class ArchiveTimeStampsTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        super.setUp();
         clearWorkDir();
         final FileObject wd = FileUtil.toFileObject(getWorkDir());
         CacheFolder.setCacheFolder(wd);

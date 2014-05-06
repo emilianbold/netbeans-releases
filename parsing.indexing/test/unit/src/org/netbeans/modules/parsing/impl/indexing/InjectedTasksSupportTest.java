@@ -52,6 +52,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -92,7 +93,7 @@ import org.openide.util.Parameters;
  *
  * @author Tomas Zezula
  */
-public class InjectedTasksSupportTest extends NbTestCase {
+public class InjectedTasksSupportTest extends IndexingTestBase {
 
     private static final String KEY_NAME = "name";  //NOI18N
     private static final String KEY_EXT = "ext";    //NOI18N
@@ -123,6 +124,11 @@ public class InjectedTasksSupportTest extends NbTestCase {
         super (name);
     }
 
+    @Override
+    protected void getAdditionalServices(List<Class> clazz) {
+        clazz.add(FooBarDmyPathRecognizer.class);
+    }
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -157,7 +163,6 @@ public class InjectedTasksSupportTest extends NbTestCase {
         MockMimeLookup.setInstances(MimePath.get(MIME_FOO), new CustomIndexerFactoryImpl(EXT_FOO, 1));
         MockMimeLookup.setInstances(MimePath.get(MIME_BAR), new CustomIndexerFactoryImpl(EXT_BAR, 1));
         MockMimeLookup.setInstances(MimePath.get(MIME_DMY), new CustomIndexerFactoryImpl(EXT_DMY, 1));
-        MockServices.setServices(FooBarDmyPathRecognizer.class);
         RepositoryUpdaterTest.setMimeTypes(MIME_FOO, MIME_BAR, MIME_DMY);
         RepositoryUpdaterTest.waitForRepositoryUpdaterInit();
 

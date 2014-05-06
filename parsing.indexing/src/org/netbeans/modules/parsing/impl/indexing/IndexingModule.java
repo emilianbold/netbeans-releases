@@ -55,6 +55,12 @@ import org.openide.util.Exceptions;
  * @author sdedic
  */
 public class IndexingModule extends ModuleInstall {
+    private static volatile boolean closed;
+
+    public static boolean isClosed() {
+        return closed;
+    }
+
     @Override
     public void restored () {
         super.restored();
@@ -71,6 +77,7 @@ public class IndexingModule extends ModuleInstall {
     @Override
     public void close() {
         super.close();
+        closed = true;
         final CountDownLatch done = new CountDownLatch(1);
         final Runnable postTask = new Runnable() {
             private AtomicBoolean started = new AtomicBoolean();

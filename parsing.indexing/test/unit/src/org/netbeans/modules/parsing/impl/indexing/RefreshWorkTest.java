@@ -55,7 +55,6 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
@@ -70,7 +69,7 @@ import org.openide.util.Utilities;
  *
  * @author vita
  */
-public class RefreshWorkTest  extends NbTestCase {
+public class RefreshWorkTest  extends IndexingTestBase {
 
     public RefreshWorkTest(String name) {
         super(name);

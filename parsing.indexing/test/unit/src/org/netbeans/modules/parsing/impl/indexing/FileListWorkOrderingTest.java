@@ -60,9 +60,11 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_EXT;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_MIME;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_SOURCES;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
@@ -76,11 +78,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Tomas Zezula
  */
-public class FileListWorkOrderingTest extends NbTestCase {
-
-    private static final String FOO_EXT = "foo";    //NOI18N
-    private static final String FOO_MIME = "text/x-foo";    //NOI18N
-    private static final String FOO_SOURCES = "foo-src";    //NOI18N
+public class FileListWorkOrderingTest extends IndexingTestBase {
 
     private final Map<String, Map<ClassPath,Void>> registeredClasspaths = new HashMap<String, Map<ClassPath,Void>>();
 
@@ -120,7 +118,6 @@ public class FileListWorkOrderingTest extends NbTestCase {
 
         FileUtil.setMIMEType(FOO_EXT, FOO_MIME);
         cp1 = ClassPathSupport.createClassPath(src1,src2);
-        MockServices.setServices(FooPathRecognizer.class);
         MockMimeLookup.setInstances(MimePath.get(FOO_MIME), new FooIndexerFactory());
         RepositoryUpdaterTest.setMimeTypes(FOO_MIME);
         RepositoryUpdaterTest.waitForRepositoryUpdaterInit();

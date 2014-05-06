@@ -64,8 +64,9 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_EXT;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_MIME;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_SOURCES;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
@@ -83,11 +84,7 @@ import org.openide.util.Lookup;
  *
  * @author Tomas Zezula
  */
-public class VisibilityChangeTest extends NbTestCase {
-
-    private static final String FOO_EXT = "foo";    //NOI18N
-    private static final String FOO_MIME = "text/x-foo";    //NOI18N
-    private static final String FOO_SOURCES = "foo-src";    //NOI18N
+public class VisibilityChangeTest extends IndexingTestBase {
 
     private final Map<String, Map<ClassPath,Void>> registeredClasspaths = new HashMap<String, Map<ClassPath,Void>>();
 
@@ -111,6 +108,12 @@ public class VisibilityChangeTest extends NbTestCase {
         super(name);
     }
 
+    @Override
+    protected void getAdditionalServices(List<Class> clazz) {
+        super.getAdditionalServices(clazz); 
+        clazz.add(MockVisibilityQuery.class);
+    }
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -151,7 +154,6 @@ public class VisibilityChangeTest extends NbTestCase {
 
         FileUtil.setMIMEType(FOO_EXT, FOO_MIME);
         cp1 = ClassPathSupport.createClassPath(src1,src2,src3,src4);
-        MockServices.setServices(FooPathRecognizer.class, MockVisibilityQuery.class);
         MockMimeLookup.setInstances(MimePath.get(FOO_MIME), new FooIndexerFactory());
         RepositoryUpdaterTest.setMimeTypes(FOO_MIME);
         RepositoryUpdaterTest.waitForRepositoryUpdaterInit();

@@ -68,7 +68,7 @@ import org.openide.util.Exceptions;
  *
  * @author vita
  */
-public class SourceTest extends NbTestCase {
+public class SourceTest extends ParsingTestBase {
 
     public SourceTest(String name) {
         super(name);
@@ -302,7 +302,7 @@ public class SourceTest extends NbTestCase {
                         try {
                             startLatch1.await();
                             startLatch2.countDown();
-                            SourceAccessor.getINSTANCE().getEventSupport(source).resetState(true, false, 0, 0, false);
+                            SourceAccessor.getINSTANCE().getEnvControl(source).sourceChanged(false);
                         } catch (InterruptedException ex) {
                             Exceptions.printStackTrace(ex);
                         }

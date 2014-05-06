@@ -37,7 +37,7 @@
  * therefore, elected the GPL Version 2 license, then the option applies only
  * if the new code is made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.parsing.impl;
+package org.netbeans.modules.parsing.nb;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,7 +50,7 @@ import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
-class ALanguageHierarchy extends LanguageHierarchy<ALanguageHierarchy.ATokenId> {
+public class ALanguageHierarchy extends LanguageHierarchy<ALanguageHierarchy.ATokenId> {
 
     private List<ATokenId> tokenIds = Arrays.asList (new ATokenId[]{new ATokenId ("whitespace", 1), new ATokenId ("word", 2)});
 

@@ -71,7 +71,6 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.core.startup.TopLogging;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -98,7 +97,6 @@ import org.openide.util.Lookup;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
-import org.openide.util.test.MockLookup;
 
 /**
  * todo:
@@ -107,7 +105,7 @@ import org.openide.util.test.MockLookup;
  *
  * @author vita
  */
-public class RepositoryUpdater2Test extends NbTestCase {
+public class RepositoryUpdater2Test extends IndexingTestBase {
 
     public RepositoryUpdater2Test(String name) {
         super(name);
@@ -118,8 +116,18 @@ public class RepositoryUpdater2Test extends NbTestCase {
     private final Map<String, Set<ClassPath>> registeredClasspaths = new HashMap<String, Set<ClassPath>>();
 
     @Override
+    protected void getAdditionalServices(List<Class> clazz) {
+        super.getAdditionalServices(clazz);
+        clazz.add(FixedClassPathProvider.class);
+        clazz.add(testRootsWorkCancelling_PathRecognizer.class);
+        clazz.add(testClasspathDeps1_PathRecognizer.class);
+        clazz.add(testAddIndexingJob_PathRecognizer.class);
+    }
+    
+    
+
+    @Override
     protected void setUp() throws Exception {
-        MockLookup.init();
         TopLogging.initializeQuietly();
         
         super.setUp();
@@ -147,6 +155,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
         }
 
         MockMimeLookup.setInstances(MimePath.parse("text/plain"));
+        dependencies.clear();;
         super.tearDown();
     }
 
@@ -197,7 +206,6 @@ public class RepositoryUpdater2Test extends NbTestCase {
                 return 0;
             }
         };
-        MockLookup.setInstances(new testAddIndexingJob_PathRecognizer());
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), factory);
         RepositoryUpdaterTest.setMimeTypes("text/plain");
 
@@ -334,8 +342,6 @@ public class RepositoryUpdater2Test extends NbTestCase {
         final FileObject file3 = srcRoot3.createData("file3.txt");
         url2file.put(srcRoot3.getURL(), srcRoot3);
 
-        MockLookup.setInstances(new testRootsWorkCancelling_PathRecognizer());
-
         final testRootsWorkCancelling_CustomIndexer indexer = new testRootsWorkCancelling_CustomIndexer();
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), new testRootsWorkCancelling_CustomIndexerFactory(indexer));
         RepositoryUpdaterTest.setMimeTypes("text/plain");
@@ -389,7 +395,6 @@ public class RepositoryUpdater2Test extends NbTestCase {
         final FileObject file3 = srcRoot3.createData("file3.txt");
         url2file.put(srcRoot3.getURL(), srcRoot3);
 
-        MockLookup.setInstances(new testRootsWorkCancelling_PathRecognizer());
         final AtomicInteger counter = new AtomicInteger(0);
         final CountDownLatch[] awaitIndexer = new CountDownLatch[] {
             new CountDownLatch(1),
@@ -732,9 +737,9 @@ public class RepositoryUpdater2Test extends NbTestCase {
         allDeps.put(srcRoot1, deps1);
         allDeps.put(srcRoot2, deps2);
 //        allDeps.put(srcRoot3, deps3);
-
-        final FixedClassPathProvider cpProvider = new FixedClassPathProvider(allDeps);
-        MockLookup.setInstances(cpProvider, new testClasspathDeps1_PathRecognizer());
+        
+        dependencies.clear();
+        dependencies.putAll(allDeps);
 
         final testClasspathDeps1_Indexer indexer = new testClasspathDeps1_Indexer();
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer));
@@ -778,7 +783,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
 
     }
 
-    private static final class testClasspathDeps1_PathRecognizer extends PathRecognizer {
+    public static final class testClasspathDeps1_PathRecognizer extends PathRecognizer {
 
         public static final String CP1 = "testClasspathDeps1_PathRecognizer/CP1";
         public static final String CP2 = "testClasspathDeps1_PathRecognizer/CP2";
@@ -816,17 +821,16 @@ public class RepositoryUpdater2Test extends NbTestCase {
         }
     
     } // End of testClasspathDeps1_Indexer class
+    
+    private static Map<FileObject, Map<String, ClassPath>> dependencies = new HashMap<>();
 
-    private static final class FixedClassPathProvider implements ClassPathProvider {
+    public static final class FixedClassPathProvider implements ClassPathProvider {
 
-        private final Map<FileObject, Map<String, ClassPath>> map = new HashMap<FileObject, Map<String, ClassPath>>();
-
-        public FixedClassPathProvider(Map<FileObject, Map<String, ClassPath>> dependencies) {
-            this.map.putAll(dependencies);
+        public FixedClassPathProvider() {
         }
         
         public ClassPath findClassPath(FileObject file, String type) {
-            Map<String, ClassPath> classpaths = map.get(file);
+            Map<String, ClassPath> classpaths = dependencies.get(file);
             if (classpaths != null) {
                 return classpaths.get(type);
             } else {
@@ -853,8 +857,8 @@ public class RepositoryUpdater2Test extends NbTestCase {
         allDeps.put(root, Collections.singletonMap(testRootsWorkCancelling_PathRecognizer.SOURCEPATH, cp));
         allDeps.put(nestedRoot, Collections.singletonMap(testRootsWorkCancelling_PathRecognizer.SOURCEPATH, cp));
 
-        final FixedClassPathProvider cpProvider = new FixedClassPathProvider(allDeps);
-        MockLookup.setInstances(cpProvider, new testRootsWorkCancelling_PathRecognizer());
+        dependencies.clear();
+        dependencies.putAll(allDeps);
 
         final TestCustomIndexer indexer = new TestCustomIndexer();
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer), new FixedParserFactory(new EmptyParser()));
@@ -899,9 +903,9 @@ public class RepositoryUpdater2Test extends NbTestCase {
 
         Map<FileObject, Map<String, ClassPath>> allDeps = new HashMap<FileObject, Map<String, ClassPath>>();
         allDeps.put(root, Collections.singletonMap(testRootsWorkCancelling_PathRecognizer.SOURCEPATH, cp));
-
-        final FixedClassPathProvider cpProvider = new FixedClassPathProvider(allDeps);
-        MockLookup.setInstances(cpProvider, new testRootsWorkCancelling_PathRecognizer());
+        
+        dependencies.clear();
+        dependencies.putAll(allDeps);
 
         final TestCustomIndexer indexer = new TestCustomIndexer();
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer), new FixedParserFactory(new EmptyParser()));

@@ -97,13 +97,13 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.*;
 import org.netbeans.modules.parsing.impl.Utilities;
-import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.impl.indexing.IndexerCache.IndexerInfo;
 import org.netbeans.modules.parsing.impl.indexing.errors.TaskCache;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.DownloadedIndexPatcher;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexDownloader;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingActivityInterceptor;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
+import org.netbeans.modules.parsing.implspi.SourceControl;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.support.Index;
@@ -3355,9 +3355,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             final Source source = getActiveSource();
             if (source != null) {
                 LOGGER.fine ("Invalidating source: " + source + " due to RootsWork");   //NOI18N
-                final EventSupport support = SourceAccessor.getINSTANCE().getEventSupport(source);
-                assert support != null;
-                support.resetState(true, false, -1, -1, false);
+                // FIXME: hack through impl dependency. Q: how to distribute the Source.EnvControl just to
+                // privileged clients ?
+                Utilities.revalidate(source);
             }
         }
 

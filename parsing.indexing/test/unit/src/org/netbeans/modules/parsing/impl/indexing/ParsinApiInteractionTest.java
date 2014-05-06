@@ -70,7 +70,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.editor.plain.PlainKit;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -95,14 +94,12 @@ import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
-import org.openide.util.Utilities;
-import org.openide.util.test.MockLookup;
 
 /**
  *
  * @author sdedic
  */
-public class ParsinApiInteractionTest extends NbTestCase {
+public class ParsinApiInteractionTest extends IndexingTestBase {
 
     private static final int NEGATIVE_TIME = Integer.getInteger("RunWhenScanFinishedSupportTest.negative.timeout",5000);
     

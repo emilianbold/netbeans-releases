@@ -47,17 +47,12 @@ import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -77,7 +72,7 @@ import org.openide.loaders.DataObject;
  *
  * @author tom
  */
-public class ParserManagerTest extends NbTestCase {
+public class ParserManagerTest extends ParsingTestBase {
 
     public ParserManagerTest (String name) {
         super (name);
@@ -85,9 +80,9 @@ public class ParserManagerTest extends NbTestCase {
 
     @Override
     public void setUp () throws Exception {
+        super.setUp();
         clearWorkDir ();
         // 1) register tasks and parsers
-        MockServices.setServices (MockMimeLookup.class);
         MockMimeLookup.setInstances (
             MimePath.get ("text/foo"), new FooParserFactory());
     }
@@ -144,7 +139,7 @@ public class ParserManagerTest extends NbTestCase {
 
     public void testParseDoesNotScheduleTasks () throws Exception {
         final CountDownLatch l = new CountDownLatch(1);
-        MockServices.setServices (MockMimeLookup.class, MyScheduler.class);
+        MockServices.setServices (MockMimeLookup.class, TestEnvironmentFactory.class, MyScheduler.class);
         MockMimeLookup.setInstances (
             MimePath.get ("text/foo"), new FooParserFactory(),
                         new TaskFactory () {

@@ -91,7 +91,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.impl.indexing.IndexingManagerAccessor;
 import org.netbeans.modules.parsing.impl.indexing.LogContext;
 import org.netbeans.modules.parsing.impl.indexing.IndexingUtils;
@@ -299,7 +298,7 @@ public final class IndexingManager {
                 if (!IndexingManagerAccessor.getInstance().isCalledFromRefreshIndexAndWait()) {
                     throw new IllegalStateException();
                 }
-                EventSupport.releaseCompletionCondition();
+                IndexingManagerAccessor.getInstance().releaseCompletionCondition();
             }
             if (!RepositoryUpdater.getDefault().isIndexer()) {
                 addIndexingJob(root, files, false, checkEditor, true, fullRescan, false);

@@ -51,7 +51,6 @@ import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.IndexingAwareTestCase;
@@ -85,10 +84,14 @@ public class CaretSchelulerTest extends IndexingAwareTestCase {
         super (testName);
     }
 
+    @Override
+    protected Class[] getServices() {
+        return new Class[] { MyScheduler.class };
+    }
+    
     public void testCaretScheduler () throws Exception {
 
         // 1) register tasks and parsers
-        MockServices.setServices (MockMimeLookup.class, MyScheduler.class);
         final CountDownLatch        latch1 = new CountDownLatch (1);
         final int[]                 fooParser = {1};
         final int[]                 fooParserResult = {1};

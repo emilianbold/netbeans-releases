@@ -50,7 +50,6 @@ import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.junit.MockServices;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -75,10 +74,16 @@ public class VyletelaZezulickaTest extends IndexingAwareTestCase {
         super (testName);
     }
 
+    @Override
+    protected Class[] getServices() {
+        return new Class[] { MyScheduler.class };
+    }
+    
+    
+
     public void testEmbedding () throws Exception {
         
         // 1) register tasks and parsers
-        MockServices.setServices (MockMimeLookup.class, MyScheduler.class);
         final Counter counter = new Counter (8);
         MockMimeLookup.setInstances (
             MimePath.get ("text/foo"), 

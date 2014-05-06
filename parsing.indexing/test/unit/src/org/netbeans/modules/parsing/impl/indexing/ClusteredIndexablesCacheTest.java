@@ -48,11 +48,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -62,10 +60,11 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_EXT;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_MIME;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_SOURCES;
 import org.netbeans.modules.parsing.impl.indexing.lucene.DocumentBasedIndexManager;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
@@ -80,7 +79,6 @@ import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
-import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
@@ -96,11 +94,7 @@ import org.openide.util.Parameters;
  *
  * @author Tomas Zezula
  */
-public class ClusteredIndexablesCacheTest extends NbTestCase {
-
-    private static final String FOO_EXT = "foo";    //NOI18N
-    private static final String FOO_MIME = "text/x-foo";    //NOI18N
-    private static final String FOO_SOURCES = "foo-src";    //NOI18N
+public class ClusteredIndexablesCacheTest extends IndexingTestBase {
 
     private static final String EMB_EXT = "emb";            //NOI18N
     private static final String EMB_MIME = "text/x-emb";    //NOI18N
@@ -158,7 +152,6 @@ public class ClusteredIndexablesCacheTest extends NbTestCase {
         FileUtil.setMIMEType(EMB_EXT, EMB_MIME);
         cp1 = ClassPathSupport.createClassPath(src1);
         cp2 = ClassPathSupport.createClassPath(src2);
-        MockServices.setServices(FooPathRecognizer.class, EmbPathRecognizer.class);
         MockMimeLookup.setInstances(MimePath.get(FOO_MIME), new FooIndexerFactory());
         MockMimeLookup.setInstances(MimePath.get(EMB_MIME), new EmbIndexerFactory(), new EmbParserFactory());
         RepositoryUpdaterTest.setMimeTypes(FOO_MIME, EMB_MIME);
@@ -287,52 +280,6 @@ public class ClusteredIndexablesCacheTest extends NbTestCase {
         }
     }
 
-
-    public static final class FooPathRecognizer extends PathRecognizer {
-
-        @Override
-        public Set<String> getSourcePathIds() {
-            return Collections.<String>singleton(FOO_SOURCES);
-        }
-
-        @Override
-        public Set<String> getLibraryPathIds() {
-            return Collections.<String>emptySet();
-        }
-
-        @Override
-        public Set<String> getBinaryLibraryPathIds() {
-            return Collections.<String>emptySet();
-        }
-
-        @Override
-        public Set<String> getMimeTypes() {
-            return Collections.<String>singleton(FOO_MIME);
-        }
-    }
-
-    public static final class EmbPathRecognizer extends PathRecognizer {
-
-        @Override
-        public Set<String> getSourcePathIds() {
-            return Collections.<String>singleton(EMB_SOURCES);
-        }
-
-        @Override
-        public Set<String> getLibraryPathIds() {
-            return Collections.<String>emptySet();
-        }
-
-        @Override
-        public Set<String> getBinaryLibraryPathIds() {
-            return Collections.<String>emptySet();
-        }
-
-        @Override
-        public Set<String> getMimeTypes() {
-            return Collections.<String>singleton(EMB_MIME);
-        }
-    }
 
     private static class FooIndexerFactory extends CustomIndexerFactory {
 

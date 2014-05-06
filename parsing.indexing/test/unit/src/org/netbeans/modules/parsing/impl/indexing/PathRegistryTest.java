@@ -67,10 +67,11 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.openide.util.ProxyURLStreamHandlerFactory;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_BINARY;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_PLATFORM;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_SOURCES;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -85,11 +86,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Tomas Zezula
  */
-public class PathRegistryTest extends NbTestCase {
-
-    private static final String SOURCES = "FOO_SOURCES";
-    private static final String PLATFORM = "FOO_PLATFORM";
-    private static final String LIBS = "FOO_LIBS";
+public class PathRegistryTest extends IndexingTestBase {
 
     private FileObject srcRoot1;
     private FileObject srcRoot2;
@@ -107,6 +104,12 @@ public class PathRegistryTest extends NbTestCase {
 
     public PathRegistryTest (String name) {
         super (name);
+    }
+
+    @Override
+    protected void getAdditionalServices(List<Class> clazz) {
+        clazz.add(SFBQImpl.class);
+        clazz.add(DeadLockSFBQImpl.class);
     }
 
     public static NbTestSuite suite() {
@@ -132,8 +135,6 @@ public class PathRegistryTest extends NbTestCase {
         }
         final File _wd = this.getWorkDir();
         final FileObject wd = FileUtil.toFileObject(_wd);
-
-        MockServices.setServices(FooPathRecognizer.class, SFBQImpl.class, DeadLockSFBQImpl.class);
 
         assertNotNull("No masterfs",wd);
         srcRoot1 = wd.createFolder("src1");
@@ -179,7 +180,7 @@ public class PathRegistryTest extends NbTestCase {
         mcpi1.addResource(this.srcRoot1);
         PRListener l = new PRListener();
         ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
-        regs.register(SOURCES,new ClassPath[]{cp1});
+        regs.register(FOO_SOURCES,new ClassPath[]{cp1});
         assertTrue(l.await());
         result = collectResults ();
         assertEquals(1,result.size());
@@ -206,7 +207,7 @@ public class PathRegistryTest extends NbTestCase {
         MutableClassPathImplementation mcpi2 = new MutableClassPathImplementation ();
         mcpi2.addResource(srcRoot1);
         ClassPath cp2 = ClassPathFactory.createClassPath(mcpi2);
-        regs.register (SOURCES, new ClassPath[] {cp2});
+        regs.register (FOO_SOURCES, new ClassPath[] {cp2});
         assertTrue(l.await());
         result = collectResults ();        
         assertEquals(2,result.size());
@@ -222,7 +223,7 @@ public class PathRegistryTest extends NbTestCase {
         
         //Testing removing ClassPath
         l = new PRListener();
-        regs.unregister(SOURCES,new ClassPath[] {cp2});
+        regs.unregister(FOO_SOURCES,new ClassPath[] {cp2});
         assertTrue(l.await());
         result = collectResults ();
         assertEquals(1,result.size());
@@ -231,7 +232,7 @@ public class PathRegistryTest extends NbTestCase {
         //Testing registering classpath with SFBQ - register PLATFROM
         l = new PRListener();
         ClassPath cp3 = ClassPathSupport.createClassPath(new FileObject[] {bootRoot1,bootRoot2});
-        regs.register(PLATFORM,new ClassPath[] {cp3});
+        regs.register(FOO_PLATFORM,new ClassPath[] {cp3});
         assertTrue(l.await());        
         result = PathRegistry.getDefault().getSources();
         assertNotNull (result);
@@ -242,12 +243,12 @@ public class PathRegistryTest extends NbTestCase {
         assertEquals(1,result.size());
         assertEquals(new FileObject[] {bootSrc1},result);
         
-        //Testing registering classpath with SFBQ - register LIBS
+        //Testing registering classpath with SFBQ - register FOO_BINARY
         l = new PRListener();
         MutableClassPathImplementation mcpi4 = new MutableClassPathImplementation ();
         mcpi4.addResource (compRoot1);
         ClassPath cp4 = ClassPathFactory.createClassPath(mcpi4);
-        regs.register(LIBS,new ClassPath[] {cp4});
+        regs.register(FOO_BINARY,new ClassPath[] {cp4});
         assertTrue(l.await());
         result = PathRegistry.getDefault().getSources();
         assertNotNull (result);
@@ -258,7 +259,7 @@ public class PathRegistryTest extends NbTestCase {
         assertEquals(2,result.size());
         assertEquals(new FileObject[] {bootSrc1, compSrc1},result);
 
-        //Testing registering classpath with SFBQ - add into LIBS
+        //Testing registering classpath with SFBQ - add into FOO_BINARY
         l = new PRListener();
         mcpi4.addResource(compRoot2);
         assertTrue(l.await());
@@ -267,7 +268,7 @@ public class PathRegistryTest extends NbTestCase {
         assertEquals(3,result.size());
         assertEquals(new FileObject[] {bootSrc1, compSrc1, compSrc2},result);
         
-        //Testing registering classpath with SFBQ - remove from LIBS
+        //Testing registering classpath with SFBQ - remove from FOO_BINARY
         l = new PRListener();
         mcpi4.removeResource(compRoot1);
         assertTrue(l.await());
@@ -276,9 +277,9 @@ public class PathRegistryTest extends NbTestCase {
         assertEquals(2,result.size());
         assertEquals(new FileObject[] {bootSrc1, compSrc2},result);
         
-        //Testing registering classpath with SFBQ - unregister PLATFORM
+        //Testing registering classpath with SFBQ - unregister FOO_PLATFORM
         l = new PRListener();
-        regs.unregister(PLATFORM,new ClassPath[] {cp3});
+        regs.unregister(FOO_PLATFORM,new ClassPath[] {cp3});
         result = PathRegistry.getDefault().getSources();
         assertNotNull (result);
         assertEquals(1,result.size());
@@ -304,7 +305,9 @@ public class PathRegistryTest extends NbTestCase {
         result = PathRegistry.getDefault().getLibraries();
         assertNotNull (result);
         assertEquals(1,result.size());
-        assertEquals(new FileObject[] {compSrc2},result);        
+        assertEquals(new FileObject[] {compSrc2},result);       
+        
+        RepositoryUpdaterTest.waitForRepositoryUpdaterInit();
     }
     
     /**
@@ -324,7 +327,7 @@ public class PathRegistryTest extends NbTestCase {
                             wk_ready.countDown();
                             mt_ready.await();
                             Thread.sleep(1000);
-                            GlobalPathRegistry.getDefault().register(LIBS, new ClassPath[] {cp});
+                            GlobalPathRegistry.getDefault().register(FOO_BINARY, new ClassPath[] {cp});
                         } 
                     } catch (InterruptedException e) {                        
                     }
@@ -333,7 +336,7 @@ public class PathRegistryTest extends NbTestCase {
             ClassPath cp = ClassPathSupport.createClassPath(new FileObject[] {unknown1});
             wk_ready.await();
             mt_ready.countDown();
-            GlobalPathRegistry.getDefault().register(LIBS, new ClassPath[] {cp});
+            GlobalPathRegistry.getDefault().register(FOO_BINARY, new ClassPath[] {cp});
         } finally {
             es.shutdownNow();
         }
@@ -367,10 +370,10 @@ public class PathRegistryTest extends NbTestCase {
                     } catch (InterruptedException ie) {}
                 }
             });
-            regs.register(SOURCES, new ClassPath[] {ClassPathSupport.createClassPath(new URL[] {new URL("file:///foo1/")})});
+            regs.register(FOO_SOURCES, new ClassPath[] {ClassPathSupport.createClassPath(new URL[] {new URL("file:///foo1/")})});
             state_1.countDown();
             state_2.await();
-            regs.register(SOURCES, new ClassPath[] {ClassPathSupport.createClassPath(new URL[] {new URL("file:///foo2/")})});
+            regs.register(FOO_SOURCES, new ClassPath[] {ClassPathSupport.createClassPath(new URL[] {new URL("file:///foo2/")})});
             state_3.countDown();
             state_4.await();
             assertEquals("Race condition",initialSize+2,gcp.getSources().size());
@@ -407,10 +410,10 @@ public class PathRegistryTest extends NbTestCase {
                     } catch (InterruptedException ie) {}
                 }
             });
-            regs.register(SOURCES, new ClassPath[] {ClassPathSupport.createClassPath(new URL[] {new URL("file:///foo3/")})});
+            regs.register(FOO_SOURCES, new ClassPath[] {ClassPathSupport.createClassPath(new URL[] {new URL("file:///foo3/")})});
             state_1.countDown();
             state_2.await();
-            regs.register(SOURCES, new ClassPath[] {ClassPathSupport.createClassPath(new URL[] {new URL("file:///foo4/")})});
+            regs.register(FOO_SOURCES, new ClassPath[] {ClassPathSupport.createClassPath(new URL[] {new URL("file:///foo4/")})});
             state_3.countDown();
             state_4.await();
             assertEquals("Race condition",initialSize+2, gcp.getSources().size());
@@ -420,12 +423,12 @@ public class PathRegistryTest extends NbTestCase {
     }
 
     public void testBinaryPath () throws Exception {
-        Set<ClassPath> cps = GlobalPathRegistry.getDefault().getPaths(SOURCES);
-        GlobalPathRegistry.getDefault().unregister(SOURCES, cps.toArray(new ClassPath[cps.size()]));
-        cps = GlobalPathRegistry.getDefault().getPaths(PLATFORM);
-        GlobalPathRegistry.getDefault().unregister(PLATFORM, cps.toArray(new ClassPath[cps.size()]));
-        cps = GlobalPathRegistry.getDefault().getPaths(LIBS);
-        GlobalPathRegistry.getDefault().unregister(LIBS, cps.toArray(new ClassPath[cps.size()]));
+        Set<ClassPath> cps = GlobalPathRegistry.getDefault().getPaths(FOO_SOURCES);
+        GlobalPathRegistry.getDefault().unregister(FOO_SOURCES, cps.toArray(new ClassPath[cps.size()]));
+        cps = GlobalPathRegistry.getDefault().getPaths(FOO_PLATFORM);
+        GlobalPathRegistry.getDefault().unregister(FOO_PLATFORM, cps.toArray(new ClassPath[cps.size()]));
+        cps = GlobalPathRegistry.getDefault().getPaths(FOO_BINARY);
+        GlobalPathRegistry.getDefault().unregister(FOO_BINARY, cps.toArray(new ClassPath[cps.size()]));
         Collection<? extends URL> sources = PathRegistry.getDefault().getSources();
         Collection<? extends URL> binaryLibraries = PathRegistry.getDefault().getBinaryLibraries();
         assertEquals (0,sources.size());
@@ -436,9 +439,9 @@ public class PathRegistryTest extends NbTestCase {
         ClassPath libs = ClassPathSupport.createClassPath(new FileObject[] {compRoot1, compRoot2});
         ClassPath platform = ClassPathSupport.createClassPath(new FileObject[] {bootRoot1, bootRoot2});
 
-        GlobalPathRegistry.getDefault().register(SOURCES, new ClassPath[] {src});
-        GlobalPathRegistry.getDefault().register(LIBS, new ClassPath[] {libs});
-        GlobalPathRegistry.getDefault().register(PLATFORM, new ClassPath[] {platform});
+        GlobalPathRegistry.getDefault().register(FOO_SOURCES, new ClassPath[] {src});
+        GlobalPathRegistry.getDefault().register(FOO_BINARY, new ClassPath[] {libs});
+        GlobalPathRegistry.getDefault().register(FOO_PLATFORM, new ClassPath[] {platform});
 
         Collection <? extends URL>  res = PathRegistry.getDefault().getSources();
         assertEquals(new FileObject[] {srcRoot1, srcRoot2, srcRoot3}, res);
@@ -448,7 +451,7 @@ public class PathRegistryTest extends NbTestCase {
         assertEquals(new FileObject[] {bootRoot2}, res);
 
         ClassPath compile2 = ClassPathSupport.createClassPath(new FileObject[] {unknown1, unknown2});
-        GlobalPathRegistry.getDefault().register(LIBS, new ClassPath[] {compile2});
+        GlobalPathRegistry.getDefault().register(FOO_BINARY, new ClassPath[] {compile2});
 
         res = PathRegistry.getDefault().getSources();
         assertEquals(new FileObject[] {srcRoot1, srcRoot2, srcRoot3}, res);
@@ -735,14 +738,14 @@ public class PathRegistryTest extends NbTestCase {
         
         @Override
         public Set<String> getSourcePathIds() {
-            return Collections.singleton(SOURCES);
+            return Collections.singleton(FOO_SOURCES);
         }
 
         @Override
         public Set<String> getBinaryLibraryPathIds() {
             final Set<String> res = new HashSet<String>();
-            res.add(PLATFORM);
-            res.add(LIBS);
+            res.add(FOO_PLATFORM);
+            res.add(FOO_BINARY);
             return res;
         }
 

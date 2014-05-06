@@ -202,11 +202,12 @@ public class JavaSourceTest extends NbTestCase {
     public static Test suite() {
 //        TestSuite suite = new NbTestSuite(JavaSourceTest.class);
         TestSuite suite = new NbTestSuite ();
-        suite.addTest(new JavaSourceTest("testPhaseCompletionTask"));
-        suite.addTest(new JavaSourceTest("testCompileControlJob"));
+//        suite.addTest(new JavaSourceTest("testPhaseCompletionTask"));
+//        suite.addTest(new JavaSourceTest("testCompileControlJob"));
         suite.addTest(new JavaSourceTest("testModificationJob"));
-        suite.addTest(new JavaSourceTest("testInterference"));
+//        suite.addTest(new JavaSourceTest("testInterference"));
         suite.addTest(new JavaSourceTest("testDocumentChanges"));
+        /*
         suite.addTest(new JavaSourceTest("testParsingDelay"));
 //        suite.addTest(new JavaSourceTest("testJavaSourceIsReclaimable"));     fails in trunk
         suite.addTest(new JavaSourceTest("testChangeInvalidates"));
@@ -230,6 +231,7 @@ public class JavaSourceTest extends NbTestCase {
         suite.addTest(new JavaSourceTest("testCreateTaggedController"));
         suite.addTest(new JavaSourceTest("testInvalidate"));
         suite.addTest(new JavaSourceTest("testWrongClassPathWhileParsingClassFile"));
+        */
         return suite;
     }
 

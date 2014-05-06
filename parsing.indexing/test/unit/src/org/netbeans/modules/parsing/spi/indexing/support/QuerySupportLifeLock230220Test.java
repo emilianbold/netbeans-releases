@@ -62,6 +62,8 @@ import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
+import org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer;
+import org.netbeans.modules.parsing.impl.indexing.IndexingTestBase;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdaterTest;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LayeredDocumentIndex;
@@ -91,7 +93,7 @@ import org.openide.util.test.TestFileUtils;
  *
  * @author Tomas Zezula
  */
-public class QuerySupportLifeLock230220Test extends NbTestCase {
+public class QuerySupportLifeLock230220Test extends IndexingTestBase {
 
     private FileObject sources;
     private FileObject srcFile;
@@ -102,23 +104,26 @@ public class QuerySupportLifeLock230220Test extends NbTestCase {
     }
 
     @Override
+    protected void getAdditionalServices(List<Class> clazz) {
+        super.getAdditionalServices(clazz);
+        clazz.add(ClassPathProviderImpl.class);
+    }
+
+    @Override
     protected void setUp() throws Exception {
+        super.setUp();
         clearWorkDir();
         final FileObject wd = FileUtil.toFileObject(getWorkDir());
         final FileObject cache = FileUtil.createFolder(wd, "cache"); //NOI18N
         CacheFolder.setCacheFolder(cache);
 
-        MockServices.setServices(
-            FooPathRecognizer.class,
-            EmbPathRecognizer.class,
-            ClassPathProviderImpl.class);
         MockMimeLookup.setInstances(
             MimePath.get(FooPathRecognizer.FOO_MIME),
             new FooParser.Factory(),
             new EmbEmbeddingProvider.Factory(),
             new FooIndexer.Factory());
         MockMimeLookup.setInstances(
-            MimePath.get(EmbPathRecognizer.EMB_MIME),
+            MimePath.get(EmbeddedPathRecognizer.EMB_MIME),
             new EmbParser.Factory(),
             new EmbIndexer.Factory());
 
@@ -135,7 +140,7 @@ public class QuerySupportLifeLock230220Test extends NbTestCase {
         FileUtil.setMIMEType("foo", FooPathRecognizer.FOO_MIME);    //NOI18N
         RepositoryUpdaterTest.setMimeTypes(
             FooPathRecognizer.FOO_MIME,
-            EmbPathRecognizer.EMB_MIME);
+            EmbeddedPathRecognizer.EMB_MIME);
         RepositoryUpdaterTest.waitForRepositoryUpdaterInit();
     }
 
@@ -258,7 +263,7 @@ public class QuerySupportLifeLock230220Test extends NbTestCase {
         public List<Embedding> getEmbeddings(final Snapshot snapshot) {
             try {
                 final FileObject file = snapshot.getSource().getFileObject();
-                final ClassPath scp = ClassPath.getClassPath(file, FooPathRecognizer.SOURCES);
+                final ClassPath scp = ClassPath.getClassPath(file, FooPathRecognizer.FOO_SOURCES);
                 final FileObject root = scp.findOwnerRoot(file);
                 QuerySupport qs = QuerySupport.forRoots(EmbIndexer.EMB_INDEXER_NAME, EmbIndexer.EMB_INDEXER_VERSION, root);
                 Collection<? extends IndexResult> res = qs.query(
@@ -280,7 +285,7 @@ public class QuerySupportLifeLock230220Test extends NbTestCase {
                     public void run(ResultIterator resultIterator) throws Exception {
                         final Parser.Result res = resultIterator.getParserResult();
                         for (CharSequence cs : ((FooParser.R)res).getEmbeddings()) {
-                            result.add(snapshot.create(cs, EmbPathRecognizer.EMB_MIME));
+                            result.add(snapshot.create(cs, EmbeddedPathRecognizer.EMB_MIME));
                         }
                     }
             });
@@ -435,64 +440,13 @@ public class QuerySupportLifeLock230220Test extends NbTestCase {
 
     }
 
-    public static final class FooPathRecognizer extends PathRecognizer {
-
-        public static final String SOURCES = "src"; //NOI18N
-        public static final String FOO_MIME = "text/x-foo";  //NOI18N
-
-        @Override
-        public Set<String> getSourcePathIds() {
-            return Collections.singleton(SOURCES);
-        }
-
-        @Override
-        public Set<String> getLibraryPathIds() {
-            return Collections.<String>emptySet();
-        }
-
-        @Override
-        public Set<String> getBinaryLibraryPathIds() {
-            return Collections.<String>emptySet();
-        }
-
-        @Override
-        public Set<String> getMimeTypes() {
-            return Collections.singleton(FOO_MIME);
-        }
-    }
-
-    public static final class EmbPathRecognizer extends PathRecognizer {
-
-        public static final String EMB_MIME = "text/x-emb";  //NOI18N
-
-        @Override
-        public Set<String> getSourcePathIds() {
-            return Collections.singleton(FooPathRecognizer.SOURCES);
-        }
-
-        @Override
-        public Set<String> getLibraryPathIds() {
-            return Collections.<String>emptySet();
-        }
-
-        @Override
-        public Set<String> getBinaryLibraryPathIds() {
-            return Collections.<String>emptySet();
-        }
-
-        @Override
-        public Set<String> getMimeTypes() {
-            return Collections.singleton(EMB_MIME);
-        }
-    }
-
     public static final class ClassPathProviderImpl implements ClassPathProvider {
 
         private volatile Pair<FileObject[],ClassPath> roots2cp;
 
         @Override
         public ClassPath findClassPath(FileObject file, String type) {
-            if (FooPathRecognizer.SOURCES.equals(type)) {
+            if (FooPathRecognizer.FOO_SOURCES.equals(type)) {
                 final Pair<FileObject[],ClassPath> _roots2cp = roots2cp;
                 if (_roots2cp != null) {
                     for (FileObject root : _roots2cp.first()) {

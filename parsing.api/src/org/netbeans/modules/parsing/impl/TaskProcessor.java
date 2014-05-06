@@ -404,6 +404,13 @@ public class TaskProcessor {
         final Request r = rst.getAndSet(null);
         currentRequest.cancelCompleted(r);
         if (source != null) {
+            final boolean reschedule2 = SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.RESCHEDULE_FINISHED_TASKS);
+
+            if (reschedule2) {
+                // moved from EventSupport.rescheduleImpl(), was done when RESCHEDULE_FINISHED_TASKS was set; call outside lock.
+                SourceAccessor.getINSTANCE ().getCache (source).sourceModified ();
+            }
+            
             synchronized (INTERNAL_LOCK) {
                 final boolean reschedule = SourceAccessor.getINSTANCE().testAndCleanFlags(source,SourceFlags.RESCHEDULE_FINISHED_TASKS,
                             EnumSet.of(SourceFlags.RESCHEDULE_FINISHED_TASKS, SourceFlags.CHANGE_EXPECTED));
@@ -1146,7 +1153,7 @@ public class TaskProcessor {
         private final SchedulerTask task;
         
         public RemovedTask(final @NonNull Source src, final @NonNull SchedulerTask task) {
-            super (src, org.openide.util.Utilities.activeReferenceQueue());
+            super (src, org.openide.util.BaseUtilities.activeReferenceQueue());
             Parameters.notNull("src", src);     //NOI18N
             Parameters.notNull("task", task);   //NOI18N
             this.task = task;            

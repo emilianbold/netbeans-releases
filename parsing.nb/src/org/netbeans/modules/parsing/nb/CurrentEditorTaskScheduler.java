@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl;
+package org.netbeans.modules.parsing.nb;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -49,6 +49,7 @@ import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.parsing.api.Source;
+
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.filesystems.FileObject;
@@ -87,7 +88,7 @@ public abstract class CurrentEditorTaskScheduler extends Scheduler {
                 currentEditor = editor;
                 if (currentEditor != null) {
                     Document document = currentEditor.getDocument ();
-                    FileObject fileObject = Utilities.getFileObject (document);
+                    FileObject fileObject = DataObjectEnvFactory.getFileObject (document);
                     if (fileObject == null) {
 //                        System.out.println("no file object for " + document);
                         return;
@@ -103,7 +104,7 @@ public abstract class CurrentEditorTaskScheduler extends Scheduler {
                 setEditor(null);
             } else if (propName.equals("document") && currentEditor != null) {   //NOI18N
                 final Document document = currentEditor.getDocument();
-                final FileObject fileObject = Utilities.getFileObject(document);
+                final FileObject fileObject = DataObjectEnvFactory.getFileObject(document);
                 if (fileObject != null && fileObject.isValid()) {
                     final Source src = Source.create(document);
                     schedule(src, new SchedulerEvent(this){});

@@ -39,9 +39,12 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.parsing.impl;
+package org.netbeans.modules.parsing.nb;
 
+import org.netbeans.modules.parsing.nb.CurrentDocumentScheduler;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenHierarchy;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
@@ -52,14 +55,22 @@ import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.IndexingAwareTestCase;
 import org.netbeans.modules.parsing.api.MyScheduler;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.nb.ALanguageHierarchy;
+import org.netbeans.modules.parsing.nb.CurrentDocumentScheduler;
+import org.netbeans.modules.parsing.impl.SchedulerTestAccess;
+import org.netbeans.modules.parsing.impl.Schedulers;
+import org.netbeans.modules.parsing.impl.TestComparator;
+import org.netbeans.modules.parsing.impl.TestComparator;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -79,17 +90,17 @@ import org.openide.filesystems.FileUtil;
  *
  * @author hanz
  */
-public class DocumentModificationNoLexerTest extends IndexingAwareTestCase {
+public class DocumentModification1Test extends IndexingAwareTestCase {
     
-    public DocumentModificationNoLexerTest (String testName) {
+    public DocumentModification1Test (String testName) {
         super (testName);
     }
-
 
     /**
      * @throws java.lang.Exception
      */
-    public void testDocumentModification2 () throws Exception {
+    @RandomlyFails
+    public void testDocumentModification () throws Exception {
 
         // 1) register tasks and parsers
         MockServices.setServices (MockMimeLookup.class, MyScheduler.class);
@@ -104,8 +115,10 @@ public class DocumentModificationNoLexerTest extends IndexingAwareTestCase {
         final int[]                 booParserResult = {1};
         final int[]                 booTask = {1};
         final TestComparator        test = new TestComparator (
-            "1\n" +
+            "1 - reschedule all schedulers\n" +
             "foo get embeddings 1 (Snapshot 1), \n" +
+            "Snapshot 1: Toto je testovaci file, na kterem se budou delat hnusne pokusy!!!, \n" +
+            "Snapshot 2: stovaci fi, \n" +
             "foo parse 1 (Snapshot 1, FooParserResultTask 1, SourceModificationEvent -1:-1), \n" +
             "foo get result 1 (FooParserResultTask 1), \n" +
             "foo task 1 (FooResult 1 (Snapshot 1), SchedulerEvent 1), \n" +
@@ -114,28 +127,33 @@ public class DocumentModificationNoLexerTest extends IndexingAwareTestCase {
             "boo get result 1 (BooParserResultTask 1), \n" +
             "boo task 1 (BooResult 1 (Snapshot 2), SchedulerEvent 1), \n" +
             "boo invalidate 1, \n" +
-            "2\n" +
+            "2 - insert 14 chars on offset 22\n" +
             "foo get embeddings 1 (Snapshot 3), \n" +
-            "foo parse 1 (Snapshot 3, FooParserResultTask 1, SourceModificationEvent 41:45), \n" +
+            "Snapshot 3: Toto je testovaci file (druha verze), na kterem se budou delat hnusne pokusy!!!, \n" +
+            "Snapshot 4: stovaci fi, \n" +
+            "foo parse 1 (Snapshot 3, FooParserResultTask 1, SourceModificationEvent 18:37), \n" +
             "foo get result 1 (FooParserResultTask 1), \n" +
             "foo task 1 (FooResult 2 (Snapshot 3), SchedulerEvent 1), \n" +
             "foo invalidate 2, \n" +
-            "boo parse 1 (Snapshot 4, BooParserResultTask 1, SourceModificationEvent -1:-1), \n" + //?!?!?!
+            "boo parse 1 (Snapshot 4, BooParserResultTask 1, SourceModificationEvent -1:-1), \n" + //!! source unchanged
             "boo get result 1 (BooParserResultTask 1), \n" +
             "boo task 1 (BooResult 2 (Snapshot 4), SchedulerEvent 1), \n" +
             "boo invalidate 2, \n" +
-            "3\n" +
+            "3 - remove 5 chars on offset 44\n" +
             "foo get embeddings 1 (Snapshot 5), \n" +
-            "foo parse 1 (Snapshot 5, FooParserResultTask 1, SourceModificationEvent 44:44), \n" +
+            "Snapshot 5: Toto je testovaci file (druha verze), na ktee budou delat hnusne pokusy!!!, \n" +
+            "Snapshot 6: stovaci fi, \n" +
+            "foo parse 1 (Snapshot 5, FooParserResultTask 1, SourceModificationEvent 41:45), \n" +
             "foo get result 1 (FooParserResultTask 1), \n" +
             "foo task 1 (FooResult 3 (Snapshot 5), SchedulerEvent 2), \n" +
             "foo invalidate 3, \n" +
-            "boo parse 1 (Snapshot 6, BooParserResultTask 1, SourceModificationEvent -1:-1), \n" +
+            "boo parse 1 (Snapshot 6, BooParserResultTask 1, SourceModificationEvent -1:-1), \n" + //!! source unchanged
             "boo get result 1 (BooParserResultTask 1), \n" +
             "boo task 1 (BooResult 3 (Snapshot 6), SchedulerEvent 2), \n" +
             "boo invalidate 3, \n" +
-            "4\n"
+            "4 - end\n"
         );
+
         MockMimeLookup.setInstances (
             MimePath.get ("text/foo"),
             new ParserFactory () {
@@ -185,8 +203,10 @@ public class DocumentModificationNoLexerTest extends IndexingAwareTestCase {
 
                             public List<Embedding> getEmbeddings (Snapshot snapshot) {
                                 test.check ("foo get embeddings " + i + " (Snapshot " + test.get (snapshot) + "), \n");
+                                test.check ("Snapshot " + test.get (snapshot) + ": " + snapshot.getText () + ", \n");
                                 Embedding embedding = snapshot.create (10, 10, "text/boo");
                                 test.get (embedding.getSnapshot ());
+                                test.check ("Snapshot " + test.get (embedding.getSnapshot ()) + ": " + embedding.getSnapshot ().getText () + ", \n");
                                 return Arrays.asList (new Embedding[] {
                                     embedding
                                 });
@@ -315,24 +335,26 @@ public class DocumentModificationNoLexerTest extends IndexingAwareTestCase {
         Source source = Source.create (testFile);
         Document document = source.getDocument (true);
         document.putProperty ("mimeType", "text/foo");
-        test.check ("1\n");
+        document.putProperty (Language.class, new ALanguageHierarchy ().language ());
+        TokenHierarchy th = TokenHierarchy.get (document);
+        TokenSequence ts = th.tokenSequence();
+        ts.tokenCount ();
+        test.check ("1 - reschedule all schedulers\n");
 
         // 3) shcedulle CurrentDocumentScheduler
-        for (Scheduler scheduler : Schedulers.getSchedulers ())
-            if (scheduler instanceof CurrentDocumentScheduler)
-                ((CurrentDocumentScheduler) scheduler).schedule (source);
+        SchedulerTestAccess.getScheduler(CurrentDocumentScheduler.class).schedule(source);
         latch1.await ();
-        test.check ("2\n");
+        test.check ("2 - insert 14 chars on offset 22\n");
 
         document.insertString (22, " (druha verze)", null);
-        document.insertString (41, " (2)", null);
         latch2.await ();
-        test.check ("3\n");
+        test.check ("3 - remove 5 chars on offset 44\n");
 
         document.remove (44, 5);
         latch3.await ();
-        test.check ("4\n");
-        assertEquals ("", test.getResult( ));
+        test.check ("4 - end\n");
+
+        assertEquals ("", test.getResult ());
     }
 }
 

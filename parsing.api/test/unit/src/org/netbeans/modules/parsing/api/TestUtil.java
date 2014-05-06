@@ -43,7 +43,6 @@
 package org.netbeans.modules.parsing.api;
 
 import org.netbeans.modules.parsing.impl.SourceAccessor;
-import org.netbeans.modules.parsing.impl.event.EventSupport;
 
 /**
  *
@@ -52,16 +51,20 @@ import org.netbeans.modules.parsing.impl.event.EventSupport;
 public class TestUtil {
 
     public static int getReparseDelay () {
-        return EventSupport.getReparseDelay(false);
+//        return EventSupport.getReparseDelay(false);
+        throw new UnsupportedOperationException();
     }
 
     public static void setReparseDelay (final Source src, final int reparseDelay, final boolean reset) {
+        throw new UnsupportedOperationException();
+        /*
         EventSupport.setReparseDelays(
             reparseDelay,
             Math.min(EventSupport.getReparseDelay(true), reparseDelay));
         if (reset) {
-            SourceAccessor.getINSTANCE().getEventSupport(src).resetState(true, false, -1, -1, false);
+            SourceAccessor.getINSTANCE().getEnvControl(src).sourceChanged(false);
         }
+                */
     }
 
 }

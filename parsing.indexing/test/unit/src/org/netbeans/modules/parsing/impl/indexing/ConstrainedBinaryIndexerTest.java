@@ -42,7 +42,6 @@
 package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
@@ -60,8 +59,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_MIME;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.ConstrainedBinaryIndexer;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -75,9 +73,8 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Tomas Zezula
  */
-public class ConstrainedBinaryIndexerTest extends NbTestCase {
+public class ConstrainedBinaryIndexerTest extends IndexingTestBase {
 
-    private static final String MIME_FOO = "text/x-foo";    //NOI18N
     private static final String MIME_JAR = "application/java-archive";  //NOI18N
     private static final String PATH_LIB = "lib";   //NOI18N
     private static final Logger LOG = Logger.getLogger(ConstrainedBinaryIndexerTest.class.getName());
@@ -89,6 +86,11 @@ public class ConstrainedBinaryIndexerTest extends NbTestCase {
     }
 
     @Override
+    protected void getAdditionalServices(List<Class> clazz) {
+        clazz.add(Recognizer.class);
+    }
+
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         this.clearWorkDir();
@@ -97,12 +99,9 @@ public class ConstrainedBinaryIndexerTest extends NbTestCase {
         final FileObject cache = wd.createFolder("cache");
         CacheFolder.setCacheFolder(cache);
 
-        MockServices.setServices(
-                Recognizer.class);
-
         assertNotNull("No masterfs",wd);        //NOI18N
         FileUtil.setMIMEType("jar", MIME_JAR);  //NOI18N
-        FileUtil.setMIMEType("foo", MIME_FOO);  //NOI18N
+        FileUtil.setMIMEType("foo", FOO_MIME);  //NOI18N
 
         RepositoryUpdaterTest.waitForRepositoryUpdaterInit();
     }
@@ -116,7 +115,6 @@ public class ConstrainedBinaryIndexerTest extends NbTestCase {
 
         super.tearDown();
     }
-
 
     /**
      * Tests ConstrainedBinaryIndexer without any predicate.
@@ -256,7 +254,7 @@ public class ConstrainedBinaryIndexerTest extends NbTestCase {
      */
     public void testRequiredMimePredicate_mime_exists() throws Exception {
         final MockConstrainedIndexer indexer = new MockConstrainedIndexer();
-        registerProxyBinaryIndexer(indexer,null,new String[]{MIME_FOO},null);
+        registerProxyBinaryIndexer(indexer,null,new String[]{FOO_MIME},null);
         final URL root = createArchive (getWorkDir(), "mimePred.jar", new String[]{"test.foo"}); //NOI18N
         final ClassPath cp = ClassPathSupport.createClassPath(root);
 
@@ -264,7 +262,7 @@ public class ConstrainedBinaryIndexerTest extends NbTestCase {
         indexer.expect(MockConstrainedIndexer.Event.STARTED, MockConstrainedIndexer.Event.INDEXED, MockConstrainedIndexer.Event.FINISHED);
         globalPathRegistry_register(PATH_LIB, cp);
         assertTrue(indexer.await(5));
-        assertTrue(indexer.hasResources(new HashMap<String, Set<String>>(){{put(MIME_FOO,Collections.singleton("test.foo"));}}));   //NOI18N
+        assertTrue(indexer.hasResources(new HashMap<String, Set<String>>(){{put(FOO_MIME,Collections.singleton("test.foo"));}}));   //NOI18N
 
         //Jar unregistered rootsRemoved should be called
         indexer.expect(MockConstrainedIndexer.Event.REMOVED);
@@ -290,7 +288,7 @@ public class ConstrainedBinaryIndexerTest extends NbTestCase {
         indexer.setVote(false);
         globalPathRegistry_register(PATH_LIB, cp);
         assertTrue(indexer.await(5));
-        assertTrue(indexer.hasResources(new HashMap<String, Set<String>>(){{put(MIME_FOO,Collections.singleton("test.foo"));}}));   //NOI18N
+        assertTrue(indexer.hasResources(new HashMap<String, Set<String>>(){{put(FOO_MIME,Collections.singleton("test.foo"));}}));   //NOI18N
 
         //Jar unregistered rootsRemoved should be called
         indexer.expect(MockConstrainedIndexer.Event.REMOVED);
@@ -304,7 +302,7 @@ public class ConstrainedBinaryIndexerTest extends NbTestCase {
      */
     public void testRequiredMimePredicate_mime_does_not_exist() throws Exception {
         final MockConstrainedIndexer indexer = new MockConstrainedIndexer();
-        registerProxyBinaryIndexer(indexer,null,new String[]{MIME_FOO},null);
+        registerProxyBinaryIndexer(indexer,null,new String[]{FOO_MIME},null);
         final URL root = createArchive (getWorkDir(), "mimePredFalse.jar", new String[0]); //NOI18N
         final ClassPath cp = ClassPathSupport.createClassPath(root);
 

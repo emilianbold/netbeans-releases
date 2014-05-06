@@ -39,29 +39,31 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.parsing.impl;
+package org.netbeans.modules.parsing.nb;
 
+import org.netbeans.modules.parsing.nb.CurrentDocumentScheduler;
+import javax.swing.text.Document;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.MockServices;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.IndexingAwareTestCase;
 import org.netbeans.modules.parsing.api.MyScheduler;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.impl.SchedulerTestAccess;
+import org.netbeans.modules.parsing.impl.Schedulers;
+import org.netbeans.modules.parsing.impl.TestComparator;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -81,25 +83,23 @@ import org.openide.filesystems.FileUtil;
  *
  * @author hanz
  */
-public class FileModificationTest extends IndexingAwareTestCase {
+public class DocumentModificationNoLexerTest extends IndexingAwareTestCase {
     
-    public FileModificationTest (String testName) {
+    public DocumentModificationNoLexerTest (String testName) {
         super (testName);
     }
 
-    @Override
-    protected Level logLevel() {
-        return Level.INFO;
-    }
 
     /**
      * @throws java.lang.Exception
      */
-    public void testFileModification () throws Exception {
+    public void testDocumentModification2 () throws Exception {
+
         // 1) register tasks and parsers
         MockServices.setServices (MockMimeLookup.class, MyScheduler.class);
         final CountDownLatch        latch1 = new CountDownLatch (1);
         final CountDownLatch        latch2 = new CountDownLatch (2);
+        final CountDownLatch        latch3 = new CountDownLatch (3);
         final int[]                 fooParser = {1};
         final int[]                 fooParserResult = {1};
         final int[]                 fooEmbeddingProvider = {1};
@@ -108,29 +108,38 @@ public class FileModificationTest extends IndexingAwareTestCase {
         final int[]                 booParserResult = {1};
         final int[]                 booTask = {1};
         final TestComparator        test = new TestComparator (
-            "1 - reschedulle all schedulers\n" +
+            "1\n" +
             "foo get embeddings 1 (Snapshot 1), \n" +
-            "foo parse 1 (Snapshot 1, FooParserResultTask 1, SourceModificationEvent -1:-1 1), \n" +
+            "foo parse 1 (Snapshot 1, FooParserResultTask 1, SourceModificationEvent -1:-1), \n" +
             "foo get result 1 (FooParserResultTask 1), \n" +
             "foo task 1 (FooResult 1 (Snapshot 1), SchedulerEvent 1), \n" +
             "foo invalidate 1, \n" +
-            "boo parse 1 (Snapshot 2, BooParserResultTask 1, SourceModificationEvent -1:-1 1), \n" +
+            "boo parse 1 (Snapshot 2, BooParserResultTask 1, SourceModificationEvent -1:-1), \n" +
             "boo get result 1 (BooParserResultTask 1), \n" +
             "boo task 1 (BooResult 1 (Snapshot 2), SchedulerEvent 1), \n" +
             "boo invalidate 1, \n" +
-            "2 - change file\n" +
+            "2\n" +
             "foo get embeddings 1 (Snapshot 3), \n" +
-            "foo parse 1 (Snapshot 3, FooParserResultTask 1, SourceModificationEvent -1:-1 2), \n" +
+            "foo parse 1 (Snapshot 3, FooParserResultTask 1, SourceModificationEvent 41:45), \n" +
             "foo get result 1 (FooParserResultTask 1), \n" +
             "foo task 1 (FooResult 2 (Snapshot 3), SchedulerEvent 1), \n" +
             "foo invalidate 2, \n" +
-            "boo parse 1 (Snapshot 4, BooParserResultTask 1, SourceModificationEvent -1:-1 1), \n" +///ERROR!!!!
+            "boo parse 1 (Snapshot 4, BooParserResultTask 1, SourceModificationEvent -1:-1), \n" + //?!?!?!
             "boo get result 1 (BooParserResultTask 1), \n" +
             "boo task 1 (BooResult 2 (Snapshot 4), SchedulerEvent 1), \n" +
             "boo invalidate 2, \n" +
-            "3 - end\n"
+            "3\n" +
+            "foo get embeddings 1 (Snapshot 5), \n" +
+            "foo parse 1 (Snapshot 5, FooParserResultTask 1, SourceModificationEvent 44:44), \n" +
+            "foo get result 1 (FooParserResultTask 1), \n" +
+            "foo task 1 (FooResult 3 (Snapshot 5), SchedulerEvent 2), \n" +
+            "foo invalidate 3, \n" +
+            "boo parse 1 (Snapshot 6, BooParserResultTask 1, SourceModificationEvent -1:-1), \n" +
+            "boo get result 1 (BooParserResultTask 1), \n" +
+            "boo task 1 (BooResult 3 (Snapshot 6), SchedulerEvent 2), \n" +
+            "boo invalidate 3, \n" +
+            "4\n"
         );
-
         MockMimeLookup.setInstances (
             MimePath.get ("text/foo"),
             new ParserFactory () {
@@ -141,7 +150,7 @@ public class FileModificationTest extends IndexingAwareTestCase {
                         private int             i = fooParser [0]++;
 
                         public void parse (Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-                            test.check ("foo parse " + i + " (Snapshot " + test.get (snapshot) + ", " + task + ", " + event + " " + test.get (event) + "), \n");
+                            test.check ("foo parse " + i + " (Snapshot " + test.get (snapshot) + ", " + task + ", " + event + "), \n");
                             last = snapshot;
                         }
 
@@ -193,11 +202,6 @@ public class FileModificationTest extends IndexingAwareTestCase {
 
                             public void cancel () {
                             }
-                            
-                            @Override
-                            public String toString () {
-                                return "BooEmbedingProvider " + i;
-                            }
                         },
                         new ParserResultTask () {
 
@@ -228,7 +232,6 @@ public class FileModificationTest extends IndexingAwareTestCase {
                     });
                 }
             }
-
         );
         MockMimeLookup.setInstances (
             MimePath.get ("text/boo"),
@@ -240,7 +243,7 @@ public class FileModificationTest extends IndexingAwareTestCase {
                         private int i = booParser [0]++;
 
                         public void parse (Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-                            test.check ("boo parse " + i + " (Snapshot " + test.get (snapshot) + ", " + task + ", " + event + " " + test.get (event) + "), \n");
+                            test.check ("boo parse " + i + " (Snapshot " + test.get (snapshot) + ", " + task + ", " + event + "), \n");
                             last = snapshot;
                         }
 
@@ -251,6 +254,7 @@ public class FileModificationTest extends IndexingAwareTestCase {
                                     test.check ("boo invalidate " + i + ", \n");
                                     latch1.countDown ();
                                     latch2.countDown ();
+                                    latch3.countDown ();
                                 }
 
                                 private int i = booParserResult [0]++;
@@ -313,24 +317,30 @@ public class FileModificationTest extends IndexingAwareTestCase {
         writer.append ("Toto je testovaci file, na kterem se budou delat hnusne pokusy!!!");
         writer.close ();
         Source source = Source.create (testFile);
-        test.check ("1 - reschedulle all schedulers\n");
+        Document document = source.getDocument (true);
+        document.putProperty ("mimeType", "text/foo");
+        test.check ("1\n");
 
-        // 3) schedule CurrentDocumentScheduler
-        for (Scheduler scheduler : Schedulers.getSchedulers ())
-            if (scheduler instanceof CurrentDocumentScheduler)
-                ((CurrentDocumentScheduler) scheduler).schedule (source);
+        // 3) shcedulle CurrentDocumentScheduler
+        SchedulerTestAccess.getScheduler(CurrentDocumentScheduler.class).schedule(source);
         latch1.await ();
-        test.check ("2 - change file\n");
+        test.check ("2\n");
 
-        // 4) change file
-        outputStream = testFile.getOutputStream ();
-        writer = new OutputStreamWriter (outputStream);
-        writer.append ("Toto je testovaci file (druha verze), na kterem se budou delat hnusne pokusy!!!");
-        writer.close ();
+        document.insertString (22, " (druha verze)", null);
+        document.insertString (41, " (2)", null);
         latch2.await ();
-        test.check ("3 - end\n");
+        test.check ("3\n");
 
-        // 5) compare output
-        assertEquals ("", test.getResult ());
+        document.remove (44, 5);
+        latch3.await ();
+        test.check ("4\n");
+        assertEquals ("", test.getResult( ));
     }
 }
+
+
+
+
+
+
+

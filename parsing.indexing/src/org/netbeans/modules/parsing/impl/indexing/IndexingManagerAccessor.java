@@ -85,4 +85,21 @@ public abstract class IndexingManagerAccessor {
         final Boolean result = requiresReleaseOfCompletionLock;
         return result != null ? result : SwingUtilities.isEventDispatchThread();
     }
+    
+    public boolean canReleaseCompletionLock() {
+        return requiresReleaseOfCompletionLock()  &&
+               isCalledFromRefreshIndexAndWait();
+    }
+
+    public final void releaseCompletionCondition() {
+        releaseCompletionCondition.run();
+    }
+    
+    private static volatile Runnable releaseCompletionCondition = new Runnable() { public void run() {}};
+    
+    public static void setReleaseCompletion(Runnable r) {
+        assert r != null && releaseCompletionCondition.getClass().getName().startsWith(IndexingManagerAccessor.class.getName());
+        
+        releaseCompletionCondition = r;
+    }
 }

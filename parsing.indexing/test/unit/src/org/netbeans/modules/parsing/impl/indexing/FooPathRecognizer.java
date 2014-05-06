@@ -40,40 +40,46 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.api.indexing;
+package org.netbeans.modules.parsing.impl.indexing;
 
-import java.io.File;
-import java.io.IOException;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.parsing.impl.event.EventSupport;
-import org.netbeans.modules.parsing.impl.indexing.IndexingManagerAccessor;
-import org.openide.util.BaseUtilities;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 
 /**
  *
  * @author sdedic
  */
-public class IndexingManagerTest extends NbTestCase {
+public final class FooPathRecognizer extends PathRecognizer {
 
-    public IndexingManagerTest(String name) {
-        super(name);
+    public static final String FOO_EXT = "foo";    //NOI18N
+    public static final String FOO_MIME = "text/x-foo";    //NOI18N
+    public static final String FOO_SOURCES = "foo-src";    //NOI18N
+    public static final String FOO_BINARY = "foo-bin";      //NOI18N
+    public static final String FOO_PLATFORM = "foo-platform";      //NOI18N
+
+    @Override
+    public Set<String> getSourcePathIds() {
+        return Collections.<String>singleton(FOO_SOURCES);
+    }
+
+    @Override
+    public Set<String> getLibraryPathIds() {
+        return Collections.<String>emptySet();
+    }
+
+    @Override
+    public Set<String> getBinaryLibraryPathIds() {
+        Set<String> s = new HashSet<>();
+        s.add(FOO_PLATFORM);
+        s.add(FOO_BINARY);
+        return s;
+    }
+
+    @Override
+    public Set<String> getMimeTypes() {
+        return Collections.<String>singleton(FOO_MIME);
     }
     
-    public void testReleaseCompletionCondition () throws IOException {
-        IndexingManagerAccessor.requiresReleaseOfCompletionLock = Boolean.TRUE;
-        try {
-            EventSupport.releaseCompletionCondition();
-            assertTrue("IllegalStateException expected when calling EventSupport.releaseCompletionCondition directly",false);  //NOI18N
-        } catch (IllegalStateException ae) {
-        }
-        final File wd = getWorkDir();
-        final File src = new File (wd,"src");
-        src.mkdirs();
-        try {
-            IndexingManager.getDefault().refreshIndexAndWait(BaseUtilities.toURI(src).toURL(), null);
-        } catch (IllegalStateException ae) {
-            assertTrue("IllegalStateException not expected when EventSupport.releaseCompletionCondition called by IndexingManager.refreshIndexAndWait", false);
-        }
-
-    }
 }

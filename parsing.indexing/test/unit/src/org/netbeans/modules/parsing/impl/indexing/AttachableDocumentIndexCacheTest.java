@@ -44,6 +44,7 @@ package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -75,7 +76,7 @@ import org.openide.util.Pair;
  *
  * @author Tomas Zezula
  */
-public class AttachableDocumentIndexCacheTest extends NbTestCase {
+public class AttachableDocumentIndexCacheTest extends IndexingTestBase {
 
     private static final String PATH_SRC = "SRC";               //NOI18N
     private static final String MIME_FOO = "text/x-foo";        //NOI18N
@@ -90,6 +91,12 @@ public class AttachableDocumentIndexCacheTest extends NbTestCase {
     }
 
     @Override
+    protected void getAdditionalServices(List<Class> clazz) {
+        clazz.add(CPProviderImpl.class);
+        clazz.add(FooRecognizer.class);
+    }
+    
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
@@ -97,9 +104,6 @@ public class AttachableDocumentIndexCacheTest extends NbTestCase {
             MimePath.get(MIME_FOO),
             new Indexer1.Factory(),
             new Indexer2.Factory());
-        MockServices.setServices(
-            CPProviderImpl.class,
-            FooRecognizer.class);
         final FileObject wd = FileUtil.toFileObject(getWorkDir());
         src = FileUtil.createFolder(wd,"src");                          //NOI18N
         FileUtil.createData(src, "file.foo"); //NOI18N

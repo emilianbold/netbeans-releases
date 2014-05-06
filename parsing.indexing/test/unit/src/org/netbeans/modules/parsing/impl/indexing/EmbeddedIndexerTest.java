@@ -52,7 +52,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
@@ -68,8 +67,6 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.editor.GuardedDocument;
-import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.lib2.EditorApiPackageAccessor;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -119,7 +116,7 @@ import org.openide.util.test.TestFileUtils;
  *
  * @author Tomas Zezula
  */
-public class EmbeddedIndexerTest extends NbTestCase {
+public class EmbeddedIndexerTest extends IndexingTestBase {
 
     private static final String EXT_TOP = "top";                //NOI18N
     private static final String MIME_TOP = "text/x-top";        //NOI18N
@@ -133,6 +130,13 @@ public class EmbeddedIndexerTest extends NbTestCase {
 
     public EmbeddedIndexerTest(@NonNull final String name) {
         super(name);
+    }
+
+    @Override
+    protected void getAdditionalServices(List<Class> clazz) {
+        clazz.add(TopPathRecognizer.class);
+        clazz.add(TopLoader.class);
+        clazz.add(ClassPathProviderImpl.class);
     }
 
     @Override
@@ -155,10 +159,6 @@ public class EmbeddedIndexerTest extends NbTestCase {
                 MimePath.get(MIME_INNER),
                 new InnerParser.Factory(),
                 new InnerIndexer.Factory());
-        MockServices.setServices(
-                TopPathRecognizer.class,
-                ClassPathProviderImpl.class,
-                TopLoader.class);
         srcRoot = wd.createFolder("src");   //NOI18N
         srcFile = FileUtil.toFileObject(
             TestFileUtils.writeFile(
@@ -214,56 +214,7 @@ public class EmbeddedIndexerTest extends NbTestCase {
         assertEquals(Integer.valueOf(2), count.get(1));
         assertEquals(Integer.valueOf(1), count.get(2));
 
-        //Symulate EditorRegistry
-        final Source src = Source.create(srcFile);
-        ParserManager.parse(Collections.<Source>singleton(src), new UserTask() {
-            @Override
-            public void run(ResultIterator resultIterator) throws Exception {
-            }
-        });
-        final DataObject dobj = DataObject.find(srcFile);
-        final EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
-        final StyledDocument doc = ec.openDocument();
-        SwingUtilities.invokeAndWait(new Runnable() {
-            @Override
-            public void run() {
-                final JEditorPane jp = new JEditorPane() {
-                    @Override
-                    public boolean isFocusOwner() {
-                        return true;
-                    }
-                };
-                jp.setDocument(doc);
-                EditorApiPackageAccessor.get().register(jp);
-            }
-        });
-
-        //Do modification
-        NbDocument.runAtomic(doc, new Runnable() {
-            @Override
-            public void run() {
-                try {                    
-                    doc.insertString(doc.getLength(), "<C>", null); //NOI18N
-                } catch (Exception e) {
-                    Exceptions.printStackTrace(e);
-                }
-            }
-        });
-
-        //Query should be updated
-        sup = QuerySupport.forRoots(TopIndexer.NAME, TopIndexer.VERSION, srcRoot);
-        res = sup.query("_sn", srcFile.getNameExt(), QuerySupport.Kind.EXACT, (String[]) null);
-        assertEquals(1,res.size());
-        assertEquals(Boolean.TRUE.toString(), res.iterator().next().getValue("valid")); //NOI18N
-
-        sup = QuerySupport.forRoots(InnerIndexer.NAME, InnerIndexer.VERSION, srcRoot);
-        res = sup.query("_sn", srcFile.getNameExt(), QuerySupport.Kind.EXACT, (String[]) null);
-        assertEquals(5,res.size());
-        count = countModes(res);
-        assertEquals(Integer.valueOf(1), count.get(0));
-        assertEquals(Integer.valueOf(2), count.get(1));
-        assertEquals(Integer.valueOf(1), count.get(2));
-        assertEquals(Integer.valueOf(1), count.get(3));
+        // test for changed Document was moved to parsing.nb module
     }
 
     public void testEmbeddingIndexerQueryOnInnerOnly() throws Exception {
@@ -300,51 +251,7 @@ public class EmbeddedIndexerTest extends NbTestCase {
         assertEquals(Integer.valueOf(2), count.get(1));
         assertEquals(Integer.valueOf(1), count.get(2));
 
-        //Symulate EditorRegistry
-        final Source src = Source.create(srcFile);
-        ParserManager.parse(Collections.<Source>singleton(src), new UserTask() {
-            @Override
-            public void run(ResultIterator resultIterator) throws Exception {
-            }
-        });
-        final DataObject dobj = DataObject.find(srcFile);
-        final EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
-        final StyledDocument doc = ec.openDocument();
-        SwingUtilities.invokeAndWait(new Runnable() {
-            @Override
-            public void run() {
-                final JEditorPane jp = new JEditorPane() {
-                    @Override
-                    public boolean isFocusOwner() {
-                        return true;
-                    }
-                };
-                jp.setDocument(doc);
-                EditorApiPackageAccessor.get().register(jp);
-            }
-        });
-
-        //Do modification
-        NbDocument.runAtomic(doc, new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    doc.insertString(doc.getLength(), "<C>", null); //NOI18N
-                } catch (Exception e) {
-                    Exceptions.printStackTrace(e);
-                }
-            }
-        });
-
-        //Query should be updated
-        sup = QuerySupport.forRoots(InnerIndexer.NAME, InnerIndexer.VERSION, srcRoot);
-        res = sup.query("_sn", srcFile.getNameExt(), QuerySupport.Kind.EXACT, (String[]) null);
-        assertEquals(5,res.size());
-        count = countModes(res);
-        assertEquals(Integer.valueOf(1), count.get(0));
-        assertEquals(Integer.valueOf(2), count.get(1));
-        assertEquals(Integer.valueOf(1), count.get(2));
-        assertEquals(Integer.valueOf(1), count.get(3));
+        // test for changed Document was moved to parsing.nb module
     }
 
     private static Map<? extends Integer, ? extends Integer> countModes(@NonNull final Collection<? extends IndexResult> docs)  {
@@ -626,6 +533,7 @@ public class EmbeddedIndexerTest extends NbTestCase {
         @Override
         protected void index(Indexable indexable, Parser.Result parserResult, Context context) {
             try {
+                System.err.println("Indexable: " + indexable);
                 final IndexingSupport support = IndexingSupport.getInstance(context);
                 final InnerParser.InnerResult ir = (InnerParser.InnerResult) parserResult;
                 if (!indexable.equals(f.lastIndexable)) {

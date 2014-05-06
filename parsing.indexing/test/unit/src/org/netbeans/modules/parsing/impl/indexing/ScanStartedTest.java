@@ -46,6 +46,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -57,8 +58,10 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_BINARY;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_EXT;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_MIME;
+import static org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer.FOO_SOURCES;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -76,13 +79,8 @@ import org.openide.util.Pair;
  *
  * @author Tomas Zezula
  */
-public class ScanStartedTest extends NbTestCase {
+public class ScanStartedTest extends IndexingTestBase {
     
-    public static final String FOO_EXT = "foo";          //NOI18N
-    public static final String FOO_MIME = "text/x-foo";  //NOI18N
-    public static final String FOO_SOURCE = "foo-sources";  //NOI18N
-    public static final String FOO_BINARY = "foo-bin";      //NOI18N
-
     private final Map<String, Map<ClassPath,Void>> registeredClasspaths = new HashMap<String, Map<ClassPath,Void>>();
     
     private IndexerFactory factory1;
@@ -104,6 +102,14 @@ public class ScanStartedTest extends NbTestCase {
         super(name);
     }
 
+    @Override
+    protected void getAdditionalServices(List<Class> clazz) {
+        super.getAdditionalServices(clazz);
+        clazz.add(FooCPP.class);
+    }
+
+    final TestHandler handler = new TestHandler();
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -135,17 +141,20 @@ public class ScanStartedTest extends NbTestCase {
         FooCPP.roots2cps = Collections.unmodifiableMap(
                 new HashMap() {
                     {
-                        put(src1, Collections.singletonMap(FOO_SOURCE, cp1));
+                        put(src1, Collections.singletonMap(FOO_SOURCES, cp1));
                         put(bin1, Collections.singletonMap(FOO_BINARY, bcp1));
                     }
                 });
-        MockServices.setServices(
-                FooCPP.class,
-                FooPathRecognizer.class);
         MockMimeLookup.setInstances(MimePath.EMPTY, binFactory1, binFactory2, binFactory3);
         MockMimeLookup.setInstances(MimePath.get(FOO_MIME), factory1, factory2, factory3);
         RepositoryUpdaterTest.setMimeTypes(FOO_MIME);
+
         RepositoryUpdaterTest.waitForRepositoryUpdaterInit();
+        
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+
     }
 
     @Override
@@ -168,15 +177,13 @@ public class ScanStartedTest extends NbTestCase {
 
 
     public void testScanFinishedAfterScanStarted() throws Exception {
-        assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_SOURCE).isEmpty());
-        final TestHandler handler = new TestHandler();
-        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
-        logger.setLevel (Level.FINEST);
-        logger.addHandler(handler);
+        assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_SOURCES).isEmpty());
 
         //Testing classpath registration
-        globalPathRegistry_register(FOO_SOURCE,new ClassPath[]{cp1});
+        globalPathRegistry_register(FOO_SOURCES,new ClassPath[]{cp1});
+
         assertTrue (handler.await());
+
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
         assertEquals(this.src1.toURL(), handler.getSources().get(0));
@@ -190,16 +197,12 @@ public class ScanStartedTest extends NbTestCase {
 
 
     public void testScanFinishedAfterScanStartedWithException() throws Exception {
-        assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_SOURCE).isEmpty());
-        final TestHandler handler = new TestHandler();
-        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
-        logger.setLevel (Level.FINEST);
-        logger.addHandler(handler);
+        assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_SOURCES).isEmpty());
 
         factory2.throwFromScanStarted = new RuntimeException();
 
         //Testing classpath registration
-        globalPathRegistry_register(FOO_SOURCE,new ClassPath[]{cp1});
+        globalPathRegistry_register(FOO_SOURCES,new ClassPath[]{cp1});
         assertTrue (handler.await());
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
@@ -213,16 +216,12 @@ public class ScanStartedTest extends NbTestCase {
     }
 
     public void testScanFinishedWithExceptionAfterScanStarted() throws Exception {
-        assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_SOURCE).isEmpty());
-        final TestHandler handler = new TestHandler();
-        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
-        logger.setLevel (Level.FINEST);
-        logger.addHandler(handler);
+        assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_SOURCES).isEmpty());
 
         factory2.throwFromScanFinished = new RuntimeException();
 
         //Testing classpath registration
-        globalPathRegistry_register(FOO_SOURCE,new ClassPath[]{cp1});
+        globalPathRegistry_register(FOO_SOURCES,new ClassPath[]{cp1});
         assertTrue (handler.await());
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
@@ -237,18 +236,14 @@ public class ScanStartedTest extends NbTestCase {
 
 
     public void testScanFinishedAfterScanStartedWithInternalException() throws Exception {
-        assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_SOURCE).isEmpty());
-        final TestHandler handler = new TestHandler();
-        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
-        logger.setLevel (Level.FINEST);
-        logger.addHandler(handler);
+        assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_SOURCES).isEmpty());
 
         handler.internalException = Pair.<String,RuntimeException>of(
                 factory2.getIndexerName(),
                 new RuntimeException());    //Symulate internal exception
 
         //Testing classpath registration
-        globalPathRegistry_register(FOO_SOURCE,new ClassPath[]{cp1});
+        globalPathRegistry_register(FOO_SOURCES,new ClassPath[]{cp1});
         assertFalse(handler.await(RepositoryUpdaterTest.NEGATIVE_TIME));
         assertEquals(0, handler.getBinaries().size());
         assertNull(handler.getSources());
@@ -262,14 +257,11 @@ public class ScanStartedTest extends NbTestCase {
 
     public void testBinaryScanFinishedAfterScanStarted() throws Exception {
         assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_BINARY).isEmpty());
-        final TestHandler handler = new TestHandler();
-        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
-        logger.setLevel (Level.FINEST);
-        logger.addHandler(handler);
 
         //Testing classpath registration
         globalPathRegistry_register(FOO_BINARY,new ClassPath[]{bcp1});
         assertTrue (handler.await());
+        
         assertEquals(1, handler.getBinaries().size());
         assertEquals(0, handler.getSources().size());
         assertEquals(this.bin1.toURL(), handler.getBinaries().iterator().next());
@@ -283,10 +275,6 @@ public class ScanStartedTest extends NbTestCase {
 
     public void testBinaryScanFinishedAfterScanStartedWithException() throws Exception {
         assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_BINARY).isEmpty());
-        final TestHandler handler = new TestHandler();
-        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
-        logger.setLevel (Level.FINEST);
-        logger.addHandler(handler);
 
         binFactory2.throwFromScanStarted = new RuntimeException();
 
@@ -306,10 +294,6 @@ public class ScanStartedTest extends NbTestCase {
 
     public void testBinaryScanFinishedWithExceptionAfterScanStarted() throws Exception {
         assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_BINARY).isEmpty());
-        final TestHandler handler = new TestHandler();
-        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
-        logger.setLevel (Level.FINEST);
-        logger.addHandler(handler);
 
         binFactory2.throwFromScanFinished = new RuntimeException();
 
@@ -365,7 +349,7 @@ public class ScanStartedTest extends NbTestCase {
 
         @Override
         public Set<String> getSourcePathIds() {
-            return Collections.<String>singleton(FOO_SOURCE);
+            return Collections.<String>singleton(FOO_SOURCES);
         }
 
         @Override

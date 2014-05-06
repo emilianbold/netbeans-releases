@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,37 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.parsing.impl.event;
 
-import java.io.File;
-import java.io.IOException;
-import org.netbeans.junit.NbTestCase;
-import org.openide.util.Utilities;
+package org.netbeans.modules.parsing.spi.indexing.support;
+
+import java.util.Collections;
+import java.util.Set;
+import org.netbeans.modules.parsing.impl.indexing.FooPathRecognizer;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 
 /**
  *
- * @author Tomas Zezula
+ * @author sdedic
  */
-public class EventSupportTest extends NbTestCase {
+public final class EmbeddedPathRecognizer extends PathRecognizer {
+    public static final String EMB_MIME = "text/x-emb"; //NOI18N
+    public static final String EXT_EMB = "emb";            //NOI18N
+    public static final String SRC_EMB = "emb-src";        //NOI18N
 
-    public EventSupportTest(final String name) {
-        super(name);
+    @Override
+    public Set<String> getSourcePathIds() {
+        return Collections.singleton(SRC_EMB);
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        this.clearWorkDir();
+    public Set<String> getLibraryPathIds() {
+        return Collections.<String>emptySet();
     }
 
-
-    public void testReleaseCompletionCondition () throws IOException {
-        try {
-            EventSupport.releaseCompletionCondition();
-            assertTrue("IllegalStateException expected when calling EventSupport.releaseCompletionCondition directly",false);  //NOI18N
-        } catch (IllegalStateException ae) {
-        }
+    @Override
+    public Set<String> getBinaryLibraryPathIds() {
+        return Collections.<String>emptySet();
     }
+
+    @Override
+    public Set<String> getMimeTypes() {
+        return Collections.singleton(EMB_MIME);
+    }
+    
 }

@@ -110,6 +110,28 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="Parsing.Netbeans.Cleanup">
+          <api name="ParsingAPI"/>
+          <summary>Parsing API cleaned up from IDE dependencies</summary>
+          <version major="9" minor="1"/>
+          <date day="6" month="5" year="2014"/>
+          <author login="sdedic"/>
+          <compatibility source="compatible" binary="compatible" semantic="incompatible" modification="yes"/>
+          <description>
+              <p>
+                The Parsing API dependended on Windows System, Editor Registry, Data Systems and other IDE artifacts. All those
+                dependencies were externalized as 'private SPIs' in the package <code>org.netbeans.modules.parsing.impspi</code>.
+                The implementation that uses the other NetBeans IDE APIs resides in module <code>parsing.nb</code>.
+                No API change was done, but the execution now relies on a proper binding to be present in the running application
+                or a testsuite.
+              </p>
+              <p>
+                Basic testing environment was provided in unit tests, which implements basic of the externalized functions. However
+                if a test need to check reparsing after document change, or data object change. Full implementation may be needed -
+                the implementor can use a <code>test-dependency</code> to the <code>org.netbeans.modules.parsing.nb</code> module.
+              </p>
+          </description>
+      </change>
       <change id="Separate.Parsing.Indexing">
           <api name="ParsingAPI"/>
           <summary>Indexing API separated to its own module</summary>

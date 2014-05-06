@@ -73,25 +73,24 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.parsing.impl.Installer;
 import org.netbeans.modules.parsing.impl.SchedulerAccessor;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceCache;
+import org.netbeans.modules.parsing.impl.SourceChangeSupport;
 import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.netbeans.modules.parsing.impl.Utilities;
-import org.netbeans.modules.parsing.impl.event.EventSupport;
+import org.netbeans.modules.parsing.implspi.SchedulerControl;
+import org.netbeans.modules.parsing.implspi.SourceControl;
+import org.netbeans.modules.parsing.implspi.SourceEnvironment;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Parameters;
-import org.openide.util.UserQuestionException;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -114,7 +113,7 @@ import org.openide.util.UserQuestionException;
  * @author Tomas Zezula
  */
 public final class Source {
-    
+
     /**
      * Gets a <code>Source</code> instance for a file. The <code>FileObject</code>
      * passed to this method has to be a valid data file. There is no <code>Source</code>
@@ -254,31 +253,13 @@ public final class Source {
             }
         }
         if (document != null) return document;
-        EditorCookie ec = null;
-
+        assert fileObject != null;
         try {
-            DataObject dataObject = DataObject.find (fileObject);
-            ec = dataObject.getLookup ().lookup (EditorCookie.class);
-        } catch (DataObjectNotFoundException ex) {
-            //DataobjectNotFoundException may happen in case of deleting opened file
-            //handled by returning null
+            return sourceEnv.readDocument(fileObject, forceOpen);
+        } catch (IOException ioe) {
+            LOG.log (Level.WARNING, null, ioe);
+            return null;
         }
-
-        if (ec == null) return null;
-        Document doc = ec.getDocument ();
-        if (doc == null && forceOpen) {
-            try {
-                try {
-                    doc = ec.openDocument ();
-                } catch (UserQuestionException uqe) {
-                    uqe.confirmed ();
-                    doc = ec.openDocument ();
-                }
-            } catch (IOException ioe) {
-                LOG.log (Level.WARNING, null, ioe);
-            }
-        }
-        return doc;
     }
     
     /**
@@ -329,7 +310,7 @@ public final class Source {
                 // but they usually don't and this should be good enough for Snapshots.
                 try {
                     if (fileObject.isValid ()) {
-                        if (fileObject.getSize() <= Installer.MAX_FILE_SIZE) {
+                        if (fileObject.getSize() <= Utilities.getMaxFileSize()) {
                             final InputStream is = fileObject.getInputStream ();
                             assert is != null : "FileObject.getInputStream() returned null for FileObject: " + FileUtil.getFileDisplayName(fileObject); //NOI18N
                             try {
@@ -396,7 +377,7 @@ public final class Source {
                                 new Object[]{
                                     FileUtil.getFileDisplayName(fileObject),
                                     fileObject.getSize(),
-                                    Installer.MAX_FILE_SIZE
+                                    Utilities.getMaxFileSize()
                                 });
                         }
                     }
@@ -493,11 +474,21 @@ public final class Source {
     private Map<Class<? extends Scheduler>, SchedulerEvent> schedulerEvents;
     //GuardedBy(this)
     private SourceCache     cache;
-    //GuardedBy(this)
+    //GuardedBy(flags)
     private volatile long eventId;
     //Changes handling
-    private final EventSupport support = new EventSupport (this);
 
+    /**
+     * Binding of source to its environment
+     */
+    private SourceEnvironment sourceEnv;
+    
+    /**
+     * Transforms FileObject and Parser changes to Source invalidations
+     */
+    private SourceChangeSupport changeSupport;
+
+    @SuppressWarnings("LeakingThisInConstructor")
     private Source (
         String              mimeType,
         Document            document,
@@ -506,6 +497,8 @@ public final class Source {
         this.mimeType =     mimeType;
         this.document =     document;
         this.fileObject =   fileObject;
+        
+        sourceEnv = Utilities.createEnvironment(this, ctrl);
     }
 
     private static Source _get(String mimeType, FileObject fileObject) {
@@ -527,24 +520,101 @@ public final class Source {
             return source;
         }
     }
-
+    
+    /**
+     * True if the source has been initialized nad listeners attached
+     */
+    // @GuardedBy(TaskProcessor.INTERNAL_LOCK)
+    private volatile boolean initialized;
+    
     private void assignListeners () {
         boolean listen = !suppressListening.get();
         if (listen) {
-            support.init();
+            if (initialized) {
+                return;
+            }
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
+                if (initialized) {
+                    return;
+                }
+                final FileObject fo = getFileObject();
+                final Parser parser = getCache().getParser ();
+                changeSupport = new SourceChangeSupport(ctrl, fo);
+                changeSupport.activate(parser);
+                initialized = true;
+            }
+            // CHECK: moved outside of the synchronized section
+            sourceEnv.activate();
+        }
+    }
+    
+    private void setFlags(final Set<SourceFlags> flags) {
+        // synchronized because of eventId
+        synchronized (flags) {
+            this.flags.addAll(flags);
+            eventId++;
         }
     }
 
+    private void setSourceModification (boolean sourceChanged, int startOffset, int endOffset) {
+        ASourceModificationEvent oldSourceModificationEvent;
+        ASourceModificationEvent newSourceModificationEvent;
+        do {
+            oldSourceModificationEvent = sourceModificationEvent.get();
+            boolean mergedChange = sourceChanged | (oldSourceModificationEvent == null ? false : oldSourceModificationEvent.sourceChanged());
+            newSourceModificationEvent = new ASourceModificationEvent (this, mergedChange, startOffset, endOffset);                
+        } while (!sourceModificationEvent.compareAndSet(oldSourceModificationEvent, newSourceModificationEvent));
+    }
+
+    private void mimeTypeMayChanged() {
+        final FileObject file = getFileObject();
+        if (file != null && !Objects.equals(getMimeType(), file.getMIMEType())) {
+            synchronized (Source.class) {
+                instances.remove(file);
+            }
+        }
+    }
+    
+    private SourceCache getCache() {
+        synchronized (TaskProcessor.INTERNAL_LOCK) {
+            if (cache == null)
+                cache = new SourceCache (this, null);
+            return cache;
+        }
+    }
+    
+    private static final RequestProcessor RP = new RequestProcessor ("parsing-event-collector",1, false, false);       //NOI18N
+    
+    private final RequestProcessor.Task resetTask = RP.create(new Runnable() {
+        @Override
+        public void run() {
+            revalidateImpl();
+        }
+    });
+
+    /**
+     * Schedules taskprocessor reset after the specified delay.
+     * @param delay 
+     */
+    private void revalidate(int delay) {
+        resetTask.schedule(delay);
+    }
+    
+    private void revalidateImpl() {
+        if (sourceEnv.isReparseBlocked()) {
+            return;
+        }
+        TaskProcessor.resetStateImpl(this);
+    }
+
+    @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject") // accessing internals is accessor's job
     private static class MySourceAccessor extends SourceAccessor {
         
         @Override
         public void setFlags (final Source source, final Set<SourceFlags> flags)  {
             assert source != null;
             assert flags != null;
-            synchronized (source.flags) {
-                source.flags.addAll(flags);
-                source.eventId++;
-            }
+            source.setFlags(flags);
         }
 
         @Override
@@ -557,7 +627,7 @@ public final class Source {
         @Override
         public boolean cleanFlag (final Source source, final SourceFlags flag) {
             assert source != null;
-            assert flag != null;            
+            assert flag != null;  
             return source.flags.remove(flag);            
         }
 
@@ -587,6 +657,11 @@ public final class Source {
         }
 
         @Override
+        public void revalidate(Source source, int delay) {
+            source.revalidate(delay);
+        }
+
+        @Override
         public boolean invalidate(Source source, long id, Snapshot snapshot) {
             assert source != null;
             synchronized (TaskProcessor.INTERNAL_LOCK) {
@@ -596,9 +671,7 @@ public final class Source {
                 else {
                     //The eventId and flags are bound
                     long eventId;
-                    synchronized (source.flags) {
-                        eventId = source.eventId;
-                    }
+                    eventId = source.eventId;
                     if (id != eventId) {
                         return false;
                     }
@@ -611,6 +684,11 @@ public final class Source {
                     }
                 }
             }
+        }
+
+        @Override
+        public void attachScheduler(Source src, SchedulerControl sched, boolean attach) {
+            src.sourceEnv.attachScheduler(sched, attach);
         }
         
         @Override
@@ -638,9 +716,9 @@ public final class Source {
         }
         
         @Override
-        public EventSupport getEventSupport (final Source source) {
+        public SourceControl getEnvControl(final Source source) {
             assert source != null;
-            return source.support;
+            return source.ctrl;
         }
 
         @Override
@@ -652,24 +730,13 @@ public final class Source {
         @Override
         public void setSourceModification (Source source, boolean sourceChanged, int startOffset, int endOffset) {
             assert source != null;
-            ASourceModificationEvent oldSourceModificationEvent;
-            ASourceModificationEvent newSourceModificationEvent;
-            do {
-                oldSourceModificationEvent = source.sourceModificationEvent.get();
-                boolean mergedChange = sourceChanged | (oldSourceModificationEvent == null ? false : oldSourceModificationEvent.sourceChanged());
-                newSourceModificationEvent = new ASourceModificationEvent (source, mergedChange, startOffset, endOffset);                
-            } while (!source.sourceModificationEvent.compareAndSet(oldSourceModificationEvent, newSourceModificationEvent));
+            source.setSourceModification(sourceChanged, startOffset, endOffset);
         }
 
         @Override
         public void mimeTypeMayChanged(@NonNull final Source source) {
             assert source != null;
-            final FileObject file = source.getFileObject();
-            if (file != null && !Objects.equals(source.getMimeType(), file.getMIMEType())) {
-                synchronized (Source.class) {
-                    instances.remove(file);
-                }
-            }
+            source.mimeTypeMayChanged();
         }
 
         @Override
@@ -737,11 +804,7 @@ public final class Source {
         @Override
         public SourceCache getCache (final Source source) {
             assert source != null;
-            synchronized (TaskProcessor.INTERNAL_LOCK) {
-                if (source.cache == null)
-                    source.cache = new SourceCache (source, null);
-                return source.cache;
-            }
+            return source.getCache();
         }
 
         @Override
@@ -810,7 +873,7 @@ public final class Source {
 
     } // End of MySourceAccessor class
         
-    static class ASourceModificationEvent extends SourceModificationEvent {
+    private static class ASourceModificationEvent extends SourceModificationEvent {
 
         private int         startOffset;
         private int         endOffset;
@@ -840,4 +903,82 @@ public final class Source {
             return "SourceModificationEvent " + startOffset + ":" + endOffset;
         }
     }
+
+    /**
+     * Provides SPI to invalidate source
+     */
+    private final SourceControl ctrl = new ControlImpl(this);
+
+    private static final class ControlImpl implements SourceControl {
+
+        private final Reference<Source> ref;
+
+        ControlImpl(Source s) {
+            ref = new WeakReference(s);
+        }
+
+        @Override
+        public Source getSource() {
+            return ref.get();
+        }
+
+        @Override
+        public void sourceChanged(boolean mimeChanged) {
+            Source s = getSource();
+            if (s == null) {
+                return;
+            }
+            final Set<SourceFlags> flags = EnumSet.of(SourceFlags.CHANGE_EXPECTED, SourceFlags.INVALID, SourceFlags.RESCHEDULE_FINISHED_TASKS);
+            if (mimeChanged) {
+                s.mimeTypeMayChanged();
+            }
+            s.setSourceModification(true, -1, -1);
+            s.setFlags(flags);
+            TaskProcessor.resetState(s, true, true);
+        }
+
+        @Override
+        public void regionChanged(int startOffset, int endOffset) {
+            Source s = getSource();
+            if (s == null) {
+                return;
+            }
+            final Set<SourceFlags> flags = EnumSet.of(SourceFlags.CHANGE_EXPECTED, SourceFlags.INVALID, SourceFlags.RESCHEDULE_FINISHED_TASKS);
+            s.setSourceModification(true, startOffset, endOffset);
+            s.setFlags(flags);
+            TaskProcessor.resetState(s, true, true);
+        }
+
+        @Override
+        public void cancelParsing() {
+            Source s = getSource();
+            if (s == null) {
+                return;
+            }
+            TaskProcessor.resetState(s, true, true);
+        }
+
+        @Override
+        public void stateChanged() {
+            Source s = getSource();
+            if (s == null) {
+                return;
+            }
+            final Set<SourceFlags> flags = EnumSet.of(SourceFlags.CHANGE_EXPECTED);
+            s.setSourceModification(false, -1, -1);
+            s.setFlags(flags);
+            TaskProcessor.resetState(s, false, true);
+        }
+
+        @Override
+        public void revalidate(int delay) {
+            Source s = getSource();
+            if (s == null) {
+                return;
+            }
+            s.revalidate(delay);
+        }
+
+    }
+
 }

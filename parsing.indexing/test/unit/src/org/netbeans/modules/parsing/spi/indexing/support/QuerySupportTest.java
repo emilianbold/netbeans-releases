@@ -59,6 +59,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.parsing.impl.indexing.IndexingTestBase;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdaterTest;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
@@ -75,7 +76,7 @@ import org.openide.util.Pair;
  *
  * @author Tomas Zezula
  */
-public class QuerySupportTest extends NbTestCase {
+public class QuerySupportTest extends IndexingTestBase {
 
     private final Map<String, Set<ClassPath>> registeredClasspaths = new HashMap<String, Set<ClassPath>>();
 
@@ -84,14 +85,19 @@ public class QuerySupportTest extends NbTestCase {
     }
 
     @Override
+    protected void getAdditionalServices(List<Class> clazz) {
+        super.getAdditionalServices(clazz);
+        clazz.add(JavaLikePathRecognizer.class);
+        clazz.add(ScriptingLikePathRecognizer.class);
+        clazz.add(ClassPathProviderImpl.class);
+        clazz.add(SourceForBinaryQueryImpl.class);
+
+    }
+
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
-        MockServices.setServices(
-                JavaLikePathRecognizer.class,
-                ScriptingLikePathRecognizer.class,
-                ClassPathProviderImpl.class,
-                SourceForBinaryQueryImpl.class);
         RepositoryUpdaterTest.waitForRepositoryUpdaterInit();
     }
 

@@ -81,8 +81,7 @@ public class IndexerControl implements BackgroundTaskControl, IndexerBridge{
 
     @Override
     public boolean canReleaseCompletionLock() {
-        return IndexingManagerAccessor.getInstance().requiresReleaseOfCompletionLock()  &&
-               IndexingManagerAccessor.getInstance().isCalledFromRefreshIndexAndWait();
+        return IndexingManagerAccessor.getInstance().canReleaseCompletionLock();
     }
     
 }

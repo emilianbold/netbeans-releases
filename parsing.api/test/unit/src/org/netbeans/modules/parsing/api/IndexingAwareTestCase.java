@@ -49,7 +49,7 @@ import org.netbeans.modules.parsing.spi.ParserResultTask;
  * should wait until scan finished.
  * @author Tomas Zezula
  */
-public class IndexingAwareTestCase extends NbTestCase {
+public class IndexingAwareTestCase extends ParsingTestBase {
     
     /**
      * Creates {@link NbTestCase} in backward compatible mode,

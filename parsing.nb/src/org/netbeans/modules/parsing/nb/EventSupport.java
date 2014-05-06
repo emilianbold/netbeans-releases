@@ -38,24 +38,64 @@
  * Contributor(s):
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *//*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.event;
+package org.netbeans.modules.parsing.nb;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -63,17 +103,19 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.impl.SourceAccessor;
-import org.netbeans.modules.parsing.impl.SourceFlags;
-import org.netbeans.modules.parsing.impl.TaskProcessor;
-import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.indexing.IndexingManagerAccessor;
+import org.netbeans.modules.parsing.implspi.SchedulerControl;
+import org.netbeans.modules.parsing.implspi.SourceControl;
+import org.netbeans.modules.parsing.implspi.SourceEnvironment;
+import org.netbeans.modules.parsing.implspi.TaskProcessorControl;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -85,6 +127,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.util.UserQuestionException;
 import org.openide.util.WeakListeners;
 
 
@@ -92,7 +135,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Tomas Zezula
  */
-public final class EventSupport {
+final class EventSupport extends SourceEnvironment {
     
     private static final Logger LOGGER = Logger.getLogger(EventSupport.class.getName());
     private static final RequestProcessor RP = new RequestProcessor ("parsing-event-collector",1, false, false);       //NOI18N
@@ -104,83 +147,115 @@ public final class EventSupport {
     private static int reparseDelay = DEFAULT_REPARSE_DELAY;
     private static int immediateReparseDelay = IMMEDIATE_REPARSE_DELAY;
 
-    private final Source source;
     private volatile boolean initialized;
+
     private DocListener docListener;
-    private FileChangeListener fileChangeListener;
     private DataObjectListener dobjListener;
     private ChangeListener parserListener;
     
-    private final RequestProcessor.Task resetTask = RP.create(new Runnable() {
-        @Override
-        public void run() {
-            resetStateImpl();
-        }
-    });
+    private final SourceControl envControl;
+    
+//    private final RequestProcessor.Task resetTask = RP.create(new Runnable() {
+//        @Override
+//        public void run() {
+//            resetStateImpl();
+//        }
+//    });
 
     private static final EditorRegistryListener editorRegistryListener  = new EditorRegistryListener();
     
-    public EventSupport (final Source source) {
-        assert source != null;
-        this.source = source;
+    public EventSupport (final SourceControl sourceControl) {
+        assert sourceControl != null;
+        this.envControl = sourceControl;
+        source2Event.put(sourceControl.getSource(), this);
+    }
+
+    @Override
+    public Document readDocument(FileObject fileObject, boolean forceOpen) {
+        EditorCookie ec = null;
+        
+        try {
+            DataObject dataObject = DataObject.find (fileObject);
+            ec = dataObject.getLookup ().lookup (EditorCookie.class);
+        } catch (DataObjectNotFoundException ex) {
+            //DataobjectNotFoundException may happen in case of deleting opened file
+            //handled by returning null
+        }
+
+        if (ec == null) return null;
+        Document doc = ec.getDocument ();
+        if (doc == null && forceOpen) {
+            try {
+                try {
+                    doc = ec.openDocument ();
+                } catch (UserQuestionException uqe) {
+                    uqe.confirmed ();
+                    doc = ec.openDocument ();
+                }
+            } catch (IOException ioe) {
+                LOGGER.log (Level.WARNING, null, ioe);
+            }
+        }
+        return doc;
+    }
+
+    public FileObject getFileObject(Document d) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void activate() {
+        init();
+    }
+
+    @Override
+    public boolean isReparseBlocked() {
+        return EditorRegistryListener.k24.get();
     }
     
     public void init () {
         if (initialized) {
             return;
         }
-        final Parser parser = SourceAccessor.getINSTANCE ().getCache (source).getParser ();
-        synchronized (TaskProcessor.INTERNAL_LOCK) {
-            if (!initialized) {
-                Document doc;
-                final FileObject fo = source.getFileObject();                
-                if (fo != null) {
-                    try {
-                        fileChangeListener = new FileChangeListenerImpl();
-                        fo.addFileChangeListener(FileUtil.weakFileChangeListener(this.fileChangeListener,fo));
-                        DataObject dObj = DataObject.find(fo);
-                        assignDocumentListener (dObj);
-                        dobjListener = new DataObjectListener(dObj);
-                        parserListener = new ParserListener();                        
-                        if (parser != null) {
-                            parser.addChangeListener(parserListener);
-                        }
-                    } catch (DataObjectNotFoundException e) {
-                        LOGGER.log(Level.WARNING, "Ignoring events non existent file: {0}", FileUtil.getFileDisplayName(fo));     //NOI18N
-                    }
-                } else if ((doc=source.getDocument(false)) != null) {
-                    docListener = new DocListener (doc);
-                    parserListener = new ParserListener();                        
-                    if (parser != null) {
-                        parser.addChangeListener(parserListener);
-                    }
-                }
-                initialized = true;
+        // WARNING: this was synchronized by TaskProcessor.INTERNAL_LOCK.
+        synchronized (this) {
+            if (initialized) {
+                return;
             }
+            final Source source = envControl.getSource();
+            Document doc;
+            final FileObject fo = source.getFileObject();                
+            if (fo != null) {
+                try {
+                    DataObject dObj = DataObject.find(fo);
+                    assignDocumentListener (dObj);
+                    dobjListener = new DataObjectListener(dObj);
+                } catch (DataObjectNotFoundException e) {
+                    LOGGER.log(Level.WARNING, "Ignoring events non existent file: {0}", FileUtil.getFileDisplayName(fo));     //NOI18N
+                }
+            } else if ((doc=source.getDocument(false)) != null) {
+                docListener = new DocListener (doc);
+            }
+            initialized = true;
         }
     }
-
+    
     public void resetState (
         final boolean           invalidate,
         final boolean           mimeChanged,
         final int               startOffset,
         final int               endOffset,
         final boolean           fast) {
-        final Set<SourceFlags> flags = EnumSet.of(SourceFlags.CHANGE_EXPECTED);
         if (invalidate) {
-            flags.add(SourceFlags.INVALID);
-            flags.add(SourceFlags.RESCHEDULE_FINISHED_TASKS);            
+            if (startOffset == -1 || endOffset == -1) {
+                envControl.sourceChanged(mimeChanged);
+            } else {
+                envControl.regionChanged(startOffset, endOffset);
+            }
+        } else {
+            envControl.stateChanged();
         }
-        SourceAccessor.getINSTANCE().setSourceModification (source, invalidate, startOffset, endOffset);
-        SourceAccessor.getINSTANCE().setFlags(this.source, flags);
-        if (mimeChanged) {
-            SourceAccessor.getINSTANCE().mimeTypeMayChanged(source);
-        }
-        TaskProcessor.resetState (this.source,invalidate,true);
-
-        if (!EditorRegistryListener.k24.get()) {
-            resetTask.schedule(getReparseDelay(fast));
-        }
+        envControl.revalidate(getReparseDelay(fast));
     }
 
     /**
@@ -188,12 +263,13 @@ public final class EventSupport {
      * AWT deadlock. Never call this method in other cases.
      */
     public static void releaseCompletionCondition() {
-        if (!TaskProcessor.getIndexerBridge().canReleaseCompletionLock()) {
+        if (!IndexingManagerAccessor.getInstance().requiresReleaseOfCompletionLock() ||
+            !IndexingManagerAccessor.getInstance().isCalledFromRefreshIndexAndWait()) {
             throw new IllegalStateException();
         }
         final boolean wask24 = EditorRegistryListener.k24.getAndSet(false);
         if (wask24) {
-            TaskProcessor.resetStateImpl(null);
+            TaskProcessorControl.resetState();
         }
     }
 
@@ -223,20 +299,16 @@ public final class EventSupport {
     /**
      * Not synchronized, only sets the atomic state and clears the listeners
      *
-     */
     private void resetStateImpl() {
         if (!EditorRegistryListener.k24.get()) {
-            //todo: threading flags cleaned in the TaskProcessor.resetStateImpl
-            final boolean reschedule = SourceAccessor.getINSTANCE().testFlag (source, SourceFlags.RESCHEDULE_FINISHED_TASKS);
-            if (reschedule) {
-                //S ystem.out.println("reschedule");
-                SourceAccessor.getINSTANCE ().getCache (source).sourceModified ();
-                //S ystem.out.println("reschedule end");
+            Source source = envControl.getSource();
+            if (source == null) {
+                return;
             }
-            assert this.source != null;
-            TaskProcessor.resetStateImpl (this.source);
+            envControl.reset();
         }
     }
+     */
     
     private void assignDocumentListener(final DataObject od) {
         EditorCookie.Observable ec = od.getCookie(EditorCookie.Observable.class);
@@ -256,6 +328,8 @@ public final class EventSupport {
             assert ec != null;
             this.ec = ec;
             this.ec.addPropertyChangeListener(WeakListeners.propertyChange(this, this.ec));
+            final Source source = envControl.getSource();
+            assert source != null;
             final Document doc = source.getDocument(false);
             if (doc != null) {
                 assignDocumentListener(doc);
@@ -280,6 +354,10 @@ public final class EventSupport {
                     thListener = null;
                     docListener = null;
                 }                
+                Source source = envControl.getSource();
+                if (source == null) {
+                    return;
+                }
                 Document doc = source.getDocument(false);
                 if (doc != null) {
                     assignDocumentListener(doc);
@@ -314,29 +392,6 @@ public final class EventSupport {
         @Override
         public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
             resetState (true, false, evt.affectedStartOffset(), evt.affectedEndOffset(), false);
-        }
-    }
-    
-    private class ParserListener implements ChangeListener {
-        
-        @Override
-        public void stateChanged(final ChangeEvent e) {
-            resetState(true, false, -1, -1, false);
-        }
-    }
-    
-    private class FileChangeListenerImpl extends FileChangeAdapter {                
-        
-        @Override
-        public void fileChanged(final FileEvent fe) {
-            resetState(true, false, -1, -1, false);
-        }        
-
-        @Override
-        public void fileRenamed(final FileRenameEvent fe) {
-            final String oldExt = fe.getExt();
-            final String newExt = fe.getFile().getExt();
-            resetState(true, !Objects.equals(oldExt, newExt), -1, -1, false);
         }
     }
     
@@ -400,6 +455,15 @@ public final class EventSupport {
             }
         }        
     }
+    
+    // EventSupport contains only WeakReference to the source, through the Control object.
+    private static final Map<Source, EventSupport>    source2Event = new WeakHashMap<>();
+    
+    private static EventSupport getEventSupport(Source s) {
+        synchronized (source2Event) {
+            return source2Event.get(s);
+        }
+    }
 
     //Public because of test
     public static class EditorRegistryListener implements CaretListener, PropertyChangeListener {
@@ -439,7 +503,7 @@ public final class EventSupport {
                     if (doc != null && mimeType != null) {
                         final Source source = Source.create (doc);
                         if (source != null)
-                            SourceAccessor.getINSTANCE().getEventSupport(source).resetState(true, false, -1, -1, true);
+                            getEventSupport(source).resetState(true, false, -1, -1, true);
                     }
                 }
             }
@@ -454,7 +518,7 @@ public final class EventSupport {
                 if (doc != null && mimeType != null) {
                     Source source = Source.create(doc);
                     if (source != null) {
-                        SourceAccessor.getINSTANCE().getEventSupport(source).resetState(false, false, -1, -1, false);
+                        getEventSupport(source).resetState(false, false, -1, -1, false);
                     }
                 }
             }
@@ -485,16 +549,108 @@ public final class EventSupport {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, "completion-active={0} for {1}", new Object [] { rawValue, source }); //NOI18N
             }
+            final EventSupport support = getEventSupport(source);
             if (rawValue instanceof Boolean && ((Boolean) rawValue).booleanValue()) {
-                TaskProcessor.resetState(source, false, true);
                 k24.set(true);
+                support.envControl.cancelParsing();
             } else {
-                final EventSupport support = SourceAccessor.getINSTANCE().getEventSupport(source);
                 k24.set(false);
-                support.resetTask.schedule(0);
+                support.envControl.revalidate(0);
             }
         }
     }
 
     // </editor-fold>
+
+    /**
+     * Each scheduler may be mapped to a DObj Pchange listener. When primary file
+     * changes, the scheduler fires a its tasks with the Source object created
+     * for the new file.
+     */
+    private final static Map<Scheduler, SchedL> scheduledSources = new HashMap<>(7);
+    
+    private static class SchedL implements PropertyChangeListener {
+        /**
+         * The controlled scheduler
+         */
+        SchedulerControl               control;
+        
+        /**
+         * The current source attached to the scheduler
+         */
+        Source                      source;
+        
+        /**
+         * WeakListener last in effect
+         */
+        PropertyChangeListener      weakListener;
+
+        public SchedL(SchedulerControl control) {
+            this.control = control;
+        }
+        
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
+                final DataObject dobj = (DataObject) evt.getSource();
+                final Source newSource = Source.create(dobj.getPrimaryFile());
+                if (newSource != null) {
+                    LOGGER.log(
+                        Level.FINE,
+                        "Rescheduling {0} due to change of primary file.",  //NOI18N
+                        dobj.getPrimaryFile());
+                    
+                    control.sourceChanged(newSource);
+                }
+            }
+        }
+        
+        public synchronized void attachSource(Source s, boolean attach) {
+            if (source != null) {
+                assert (attach || source == s) && weakListener != null;
+                final FileObject fo = source.getFileObject();
+                if (fo != null) {
+                    try {
+                        final DataObject dobj = DataObject.find(fo);
+                        dobj.removePropertyChangeListener(weakListener);
+                    } catch (DataObjectNotFoundException nfe) {
+                        //No DataObject for file - ignore
+                    }
+                }
+                weakListener = null;
+                this.source = null;
+            }
+            if (attach) {
+                final FileObject fo = s.getFileObject();
+                if (fo != null) {
+                    try {
+                        final DataObject dobj = DataObject.find(fo);
+                        weakListener = WeakListeners.propertyChange(this, dobj);
+                        dobj.addPropertyChangeListener(weakListener);
+                    } catch (DataObjectNotFoundException ex) {
+                        //No DataObject for file - ignore
+                    }
+                }
+                this.source = s;
+            }
+        }
+    }
+    
+    @Override
+    public void attachScheduler(SchedulerControl s, boolean attach) {
+        SchedL l;
+        Source now = envControl.getSource();
+        
+        synchronized (scheduledSources) {
+            Scheduler sched = s.getScheduler();
+             l = scheduledSources.get(sched);
+            if (attach && l == null) {
+                l = new SchedL(s);
+                scheduledSources.put(sched, l);
+            }
+        }
+        if (l != null) {
+            l.attachSource(now, attach);
+        }
+    }
 }
