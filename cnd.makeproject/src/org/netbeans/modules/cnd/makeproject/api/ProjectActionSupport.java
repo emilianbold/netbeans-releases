@@ -665,6 +665,7 @@ public class ProjectActionSupport {
         
         private final String FILE_LOCATIONS[] = {
             "/usr/bin", //NOI18N
+            "/usr/bin", //NOI18N
             "/bin" //NOI18N
         };    
 
