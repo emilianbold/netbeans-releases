@@ -41,10 +41,16 @@
  */
 package org.netbeans.modules.html.ojet.data;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import org.netbeans.modules.html.ojet.OJETUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 
 /**
  *
@@ -53,52 +59,57 @@ import org.netbeans.modules.html.ojet.OJETUtils;
 public class DataProviderImpl extends DataProvider {
 
     private static DataProviderImpl instance = null;
-    
+    private static final String zipURL = "docs/ojetdocs.zip";
+    private static final HashMap<String, DataItemImpl.DataItemComponent> data = new HashMap<>();
+    private static FileObject docRoot = null;
+
     synchronized public static DataProvider getInstance() {
         if (instance == null) {
             instance = new DataProviderImpl();
+            File zipFile = InstalledFileLocator.getDefault().locate(zipURL, "org.netbeans.modules.html.ojet", false); //NOI18N
+            if (zipFile.exists()) {
+                docRoot = FileUtil.toFileObject(zipFile);
+                docRoot = FileUtil.getArchiveRoot(docRoot);
+                if (docRoot != null) {
+                    FileObject folder = docRoot.getFileObject("docs"); // NOI18N
+                    if (folder != null && folder.isValid()) {
+                        for (FileObject child : folder.getChildren()) {
+                            String name = child.getName();
+                            if (name.startsWith("oj.oj")) {
+                                name = name.substring(3);
+                                
+                                data.put(name, new DataItemImpl.DataItemComponent(name, child.toURL().toString()));
+                            }
+                        }
+                    }
+                }
+            }
         }
         return instance;
     }
-    
+
     @Override
     public Collection<DataItem> getBindingOptions() {
         List<DataItem> result = new ArrayList(1);
-        result.add(new DataItemImpl(OJETUtils.OJ_COMPONENT, null, null));
+        result.add(new DataItemImpl(OJETUtils.OJ_COMPONENT, null));
         return result;
     }
 
     @Override
     public Collection<DataItem> getComponents() {
         List<DataItem> result = new ArrayList<>();
-        result.add(new DataItemImpl("ojButton", "Help for ojButton", null));
-        result.add(new DataItemImpl("ojTab", "Help for ojTab", null));
-        result.add(new DataItemImpl("ojButtonset", "Help for ojButtonset", null));
+        for (DataItem component : data.values()) {
+            result.add(component);
+        }
         return result;
     }
 
     @Override
     public Collection<DataItem> getComponentOptions(String compName) {
-        List<DataItem> result = new ArrayList<>();
-        switch (compName) {
-            case "ojButton":
-                result.add(new DataItemImpl("contextMenu", null, null));
-                result.add(new DataItemImpl("disabled", null, null));
-                result.add(new DataItemImpl("display", null, null));
-                result.add(new DataItemImpl("icons", null, null));
-                result.add(new DataItemImpl("label", null, null));
-                result.add(new DataItemImpl("menu", null, null));
-                result.add(new DataItemImpl("rootAttributes", null, null));
-                break;
-            case "ojButtonset":
-                result.add(new DataItemImpl("contextMenu", null, null));
-                result.add(new DataItemImpl("disabled", null, null));
-                result.add(new DataItemImpl("checked", null, null));
-                result.add(new DataItemImpl("focusManagement", null, null));
-                result.add(new DataItemImpl("rootAttributes", null, null));
-                break;
+        DataItemImpl.DataItemComponent component = data.get(compName);
+        if (component != null) {
+            return component.getOptions();
         }
-        
-        return result;
+        return Collections.emptyList();
     }
 }
