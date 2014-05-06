@@ -50,7 +50,7 @@ import org.netbeans.modules.extexecution.base.EnvironmentAccessor;
  *
  * @author Petr Hejl
  */
-public class EnvironmentFactory {
+public final class EnvironmentFactory {
 
     private EnvironmentFactory() {
         super();

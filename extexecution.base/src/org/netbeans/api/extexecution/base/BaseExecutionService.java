@@ -145,7 +145,7 @@ public final class BaseExecutionService {
 
     private final BaseExecutionDescriptor descriptor;
 
-    public BaseExecutionService(Callable<? extends Process> processCreator,
+    private BaseExecutionService(Callable<? extends Process> processCreator,
             BaseExecutionDescriptor descriptor) {
         this.processCreator = processCreator;
         this.descriptor = descriptor;

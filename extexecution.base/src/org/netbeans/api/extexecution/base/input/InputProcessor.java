@@ -83,6 +83,8 @@ public interface InputProcessor extends Closeable, AutoCloseable {
 
     /**
      * Closes the processor releasing the resources held by it.
+     *
+     * @throws IOException if error occurs while closing
      */
     @Override
     void close() throws IOException;

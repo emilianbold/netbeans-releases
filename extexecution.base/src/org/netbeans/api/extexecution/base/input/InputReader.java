@@ -71,6 +71,8 @@ public interface InputReader extends Closeable, AutoCloseable {
 
     /**
      * Closes the reader releasing the resources held by it.
+     *
+     * @throws IOException if error occurs while closing
      */
     @Override
     void close() throws IOException;

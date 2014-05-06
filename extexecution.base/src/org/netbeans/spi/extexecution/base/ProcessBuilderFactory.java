@@ -49,7 +49,7 @@ import org.netbeans.modules.extexecution.base.ProcessBuilderAccessor;
  *
  * @author Petr Hejl
  */
-public class ProcessBuilderFactory {
+public final class ProcessBuilderFactory {
 
     private ProcessBuilderFactory() {
         super();
