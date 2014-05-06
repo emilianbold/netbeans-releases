@@ -187,7 +187,7 @@ public final class LineProcessors {
             }
 
             LOGGER.log(Level.FINEST, line);
-            
+
             out.println(line);
             out.flush();
         }

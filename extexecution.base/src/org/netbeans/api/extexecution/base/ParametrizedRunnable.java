@@ -49,7 +49,7 @@ package org.netbeans.api.extexecution.base;
  * @param <T> the type of required parameter
  */
 public interface ParametrizedRunnable<T> {
-    
+
     /**
      * The runnable code itself.
      *

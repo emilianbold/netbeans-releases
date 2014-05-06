@@ -133,7 +133,7 @@ public final class Environment {
      * Removes a variable with the given name. The subsequent call to
      * {@link #getVariable(java.lang.String)} with the same argument will return
      * <code>null</code>.
-     * 
+     *
      * @param name the name of the variable
      */
     public void removeVariable(@NonNull String name) {

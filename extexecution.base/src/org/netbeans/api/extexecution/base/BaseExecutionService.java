@@ -142,7 +142,7 @@ public final class BaseExecutionService {
     }
 
     private final Callable<? extends Process> processCreator;
-    
+
     private final BaseExecutionDescriptor descriptor;
 
     public BaseExecutionService(Callable<? extends Process> processCreator,
@@ -164,7 +164,7 @@ public final class BaseExecutionService {
             @NonNull BaseExecutionDescriptor descriptor) {
         return new BaseExecutionService(processCreator, descriptor);
     }
-    
+
     /**
      * Runs the process described by this service. The call does not block
      * and the task is represented by the returned value. Integer returned
@@ -374,7 +374,7 @@ public final class BaseExecutionService {
 
         return errProcessor;
     }
-    
+
     private InputProcessor createInProcessor(OutputStream os, Charset charset) {
         return InputProcessors.copying(new OutputStreamWriter(os, charset));
     }

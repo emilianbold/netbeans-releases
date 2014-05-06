@@ -49,7 +49,7 @@ import org.openide.util.Lookup;
 /**
  * The interface representing the implementation
  * of {@link org.netbeans.api.extexecution.base.ProcessBuilder}.
- * 
+ *
  * @see org.netbeans.api.extexecution.base.ProcessBuilder
  * @author Petr Hejl
  */

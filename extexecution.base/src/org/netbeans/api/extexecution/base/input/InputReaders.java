@@ -219,7 +219,7 @@ public final class InputReaders {
         /**
          * Provides the file input.
          *
-         * @see InputReaders#forFileInputProvider(org.netbeans.api.extexecution.base.input.InputReaders.FileInput.Provider) 
+         * @see InputReaders#forFileInputProvider(org.netbeans.api.extexecution.base.input.InputReaders.FileInput.Provider)
          */
         public interface Provider {
 

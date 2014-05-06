@@ -51,12 +51,12 @@ import java.util.Map;
  * Implementation of this interface should be published in default lookup
  * in order to be used by
  * {@link org.netbeans.api.extexecution.base.Processes}
- * 
+ *
  * @see org.netbeans.api.extexecution.base.Processes
  * @author Petr Hejl
  */
 public interface ProcessesImplementation {
-    
+
     /**
      * Kills the process passed as parameter and <i>attempts</i> to terminate
      * all child processes in process tree.
