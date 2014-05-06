@@ -69,6 +69,13 @@ public class OJETCompletionHtmlItem extends HtmlCompletionItem.Attribute {
                 .append(getItemText())
                 .append("</font>").toString();  //NOI18N
     }
+
+    @Override
+    public int getAnchorOffset() {
+        return substitutionOffset - 3;
+    }
+
+    
     
     @Override
     protected String getSubstituteText() {

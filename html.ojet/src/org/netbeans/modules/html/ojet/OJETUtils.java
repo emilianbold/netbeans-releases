@@ -84,4 +84,25 @@ public class OJETUtils {
         return empty;
     }
 
+    public static int getPrefixOffset(OJETContext ojContext, Document document, int offset) {
+        TokenHierarchy th = TokenHierarchy.get(document);
+        int result = offset;
+        switch (ojContext) {
+            case DATA_BINDING:
+                TokenSequence<KODataBindTokenId> ts = LexerUtils.getTokenSequence(th, offset, KODataBindTokenId.language(), false);
+                if (ts != null) {
+                    int diff = ts.move(offset);
+                    if (diff == 0 && ts.movePrevious() || ts.moveNext()) {
+                        //we are on a token of ko-data-bind token sequence
+                        Token<KODataBindTokenId> etoken = ts.token();
+                        if (etoken.id() == KODataBindTokenId.KEY) {
+                            //ke
+                            return ts.offset();
+                        }
+                    }
+                    break;
+                } 
+        }
+        return result;
+    }
 }

@@ -80,7 +80,7 @@ public class OJETHtmlExtension extends HtmlExtension {
                     Collection<DataItem> data = DataProvider.filterByPrefix(DataProviderImpl.getInstance().getBindingOptions(), prefix);
                     List<CompletionItem> result = new ArrayList();
                     for (DataItem item : data) {
-                        result.add(new OJETCompletionHtmlItem(item, context.getCCItemStartOffset()));
+                        result.add(new OJETCompletionHtmlItem(item, OJETUtils.getPrefixOffset(ojContext, document, offset)));
                     }
                     return result;
             }
