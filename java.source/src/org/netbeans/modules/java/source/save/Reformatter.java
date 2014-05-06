@@ -3201,11 +3201,11 @@ public class Reformatter implements ReformatTask {
             if (checkWrap != null && col > rightMargin && checkWrap.pos >= lastNewLineOffset) {
                 throw checkWrap;
             }
-            int maxCount = maxPreservedBlankLines;
+            int maxCount = bof ? 0 : maxPreservedBlankLines;
             if (maxCount < count) {
                 count = maxCount;
             }
-            if (templateEdit && maxCount < 1) {
+            if (!bof && templateEdit && maxCount < 1) {
                 maxCount = 1;
             }
             if (lastBlankLinesTokenIndex < 0) {
