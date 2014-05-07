@@ -64,7 +64,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Petr Pisl
  */
-@FunctionInterceptor.Registration(priority = 301)
+@FunctionInterceptor.Registration(priority = 351)
 public class ConfigInterceptor implements FunctionInterceptor {
 
     private final static Pattern PATTERN = Pattern.compile("requirejs\\.config");  //NOI18N

@@ -72,7 +72,7 @@ import org.openide.util.Exceptions;
  *
  * @author Petr Pisl
  */
-@FunctionInterceptor.Registration(priority = 300)
+@FunctionInterceptor.Registration(priority = 350)
 public class DefineInterceptor implements FunctionInterceptor {
 
     private final static Pattern PATTERN = Pattern.compile("define");  //NOI18N
