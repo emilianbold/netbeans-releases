@@ -48,11 +48,9 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -60,9 +58,9 @@ import org.openide.filesystems.FileObject;
  */
 public class EditorUtils {
 
-    public static String DEFINE = "define";    //NOI18N
-    public static String REQUIRE = "require";    //NOI18N
-    public static String PATHS = "paths";        //NOI18N
+    public static final String DEFINE = "define";    //NOI18N
+    public static final String REQUIRE = "require";    //NOI18N
+    public static final String PATHS = "paths";        //NOI18N
 
     /**
      * Returns true if at the offset there is a string and the string is in a

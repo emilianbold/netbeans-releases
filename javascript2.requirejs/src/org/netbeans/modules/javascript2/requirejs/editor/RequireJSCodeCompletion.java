@@ -87,25 +87,23 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                     writtenPath = text.substring(0, offset - ts.offset());
                 }
             }
-            
+
         }
-        
+
         FileObject fo = ccContext.getParserResult().getSnapshot().getSource().getFileObject();
         if (fo != null && EditorUtils.isFileReference(ts, offset)) {
             List<FileObject> relativeTo = new ArrayList<FileObject>();
-            if (fo != null) {
-                Collection<String> usedFileInDefine = EditorUtils.getUsedFileInDefine(snapshot, offset);
-                for (String path : usedFileInDefine) {
-                    if (writtenPath.isEmpty() || path.startsWith(writtenPath)) {
-                        FileObject targetFO = FSCompletionUtils.findFileObject(path, fo);
-                        if (targetFO != null) {
-                            String[] folders = path.split("/");
-                            for (int i = 0; i < folders.length; i++) {
-                                targetFO = targetFO.getParent();
-                            }
-                            if (!relativeTo.contains(targetFO)) {
-                                relativeTo.add(targetFO);
-                            }
+            Collection<String> usedFileInDefine = EditorUtils.getUsedFileInDefine(snapshot, offset);
+            for (String path : usedFileInDefine) {
+                if (writtenPath.isEmpty() || path.startsWith(writtenPath)) {
+                    FileObject targetFO = FSCompletionUtils.findFileObject(path, fo);
+                    if (targetFO != null) {
+                        String[] folders = path.split("/");
+                        for (int i = 0; i < folders.length; i++) {
+                            targetFO = targetFO.getParent();
+                        }
+                        if (!relativeTo.contains(targetFO)) {
+                            relativeTo.add(targetFO);
                         }
                     }
                 }
@@ -129,23 +127,26 @@ public class RequireJSCodeCompletion implements CompletionProvider {
 
     @Override
     public String getHelpDocumentation(ParserResult info, ElementHandle element) {
-        if (element instanceof FSCompletionItem.FSElementHandle) {
-            String path = element.getFileObject().getPath();
-            String[] parts = path.split("/");
-            StringBuilder sb = new StringBuilder();
-            sb.append("<pre>"); // NOI18N
-            int length = 0;
-            for (String part : parts) {
-                if ((length + part.length()) > 50) {
-                    sb.append("\n    "); // NOI18N
-                    length = 4;
+        if (element != null && element instanceof FSCompletionItem.FSElementHandle) {
+            FileObject fo = element.getFileObject();
+            if (fo != null) {
+                String path = fo.getPath();
+                String[] parts = path.split("/");
+                StringBuilder sb = new StringBuilder();
+                sb.append("<pre>"); // NOI18N
+                int length = 0;
+                for (String part : parts) {
+                    if ((length + part.length()) > 50) {
+                        sb.append("\n    "); // NOI18N
+                        length = 4;
+                    }
+                    sb.append(part).append('/');
+                    length += part.length() + 1;
                 }
-                sb.append(part).append('/');
-                length += part.length() + 1;
+                sb.deleteCharAt(sb.length() - 1);
+                sb.append("</pre>"); // NOI18N
+                return sb.toString();
             }
-            sb.deleteCharAt(sb.length() - 1);
-            sb.append("</pre>"); // NOI18N
-            return sb.toString();
         }
         return null;
     }

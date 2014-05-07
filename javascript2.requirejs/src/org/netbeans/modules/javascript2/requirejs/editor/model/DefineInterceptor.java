@@ -96,6 +96,7 @@ public class DefineInterceptor implements FunctionInterceptor {
                 case ARRAY:
                     modules = arg;
                     break;
+                default:
             }
         }
 
@@ -115,6 +116,9 @@ public class DefineInterceptor implements FunctionInterceptor {
                     Source source = Source.create(fo);
                     List<String> paths = new ArrayList<String>();
                     TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(source.createSnapshot().getTokenHierarchy(), array.getOffset());
+                    if (ts == null) {
+                        return;
+                    }
                     ts.move(array.getOffset());
                     if (ts.moveNext()) {
                         Token<? extends JsTokenId> token = ts.token();

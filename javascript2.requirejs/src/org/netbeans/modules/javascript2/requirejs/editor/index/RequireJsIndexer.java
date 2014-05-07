@@ -112,9 +112,9 @@ public class RequireJsIndexer extends EmbeddingIndexer {
         if (mappings != null && !mappings.isEmpty()) {
             Map<String, String> pathMappings = mappings.remove(fo.toURI());
             if (pathMappings != null && !pathMappings.isEmpty()) {
-                for(String path: pathMappings.keySet()) {
+                for (Map.Entry<String, String> entry : pathMappings.entrySet()) {
                     StringBuilder sb = new StringBuilder();
-                        sb.append(path).append(";").append(pathMappings.get(path)); //NOI18N
+                        sb.append(entry.getKey()).append(";").append(entry.getValue()); //NOI18N
                         elementDocument.addPair(FIELD_PATH_MAP, sb.toString(), true, true);
                 }
                 storeDocument = true;
@@ -131,7 +131,6 @@ public class RequireJsIndexer extends EmbeddingIndexer {
         if (map == null) {
             throw new IllegalStateException("RequireJsIndexer.addControllers can be called only from scanner thread.");  //NOI18N
         }
-        Collection<? extends TypeUsage> types = map.get(uri);
         map.put(uri, exported);
     }
 
