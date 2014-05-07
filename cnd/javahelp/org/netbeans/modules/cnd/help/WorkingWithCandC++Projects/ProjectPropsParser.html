@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2007, 2013 Oracle and/or its affiliates. All rights reserved.
+Copyright &copy; 2007, 2014 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
   <head>
@@ -84,10 +84,16 @@ Copyright &copy; 2007, 2013 Oracle and/or its affiliates. All rights reserved.
     </p>
     
     <p>
-       <b>Include Directories and Headers.</b> Type the absolute or relative path to the
+       <b>Include Directories.</b> Type the absolute or relative path to the
       directories containing headers for your project, or click the button to browse to the
       directories and add them. On the file browser dialog box, you can specify Absolute or
-      Relative path.
+      Relative path. 
+    </p>
+      <p>
+       <b>Include Headers.</b> Type the filename of the header file to include
+       or click the button to browse to the file and add it. This option causes
+       the compiler to treat the filename as if it appears in your source files as an #include 
+       directive. 
     </p>
     <p>
        <b>Preprocessor Definitions.</b> Add definitions for macros used by the project. Click the
@@ -99,14 +105,15 @@ Copyright &copy; 2007, 2013 Oracle and/or its affiliates. All rights reserved.
       text field or the button to open the Preprocessor Undefined dialog box to add definitions.
     </p>
     <p>
-       <b>C Standard.</b> Specifies whether project sources should be parsed as&nbsp;C89 code or
-      C99 code. This setting is inherited from the project level to the folder level and file
+       <b>C Standard.</b> Specifies whether project sources should be parsed as&nbsp;C89, 
+       C99, or C11 code. When set to Default, use the compiler's default C standard. This setting is inherited from the project level to the folder level and file
       level, and can be overridden by changing the C&nbsp;Standard setting in the properties of a
-      folder or file.
+      folder or file. 
     </p>
     <p>
        <b>C++ Standard.</b> Specifies whether project sources should be parsed as&nbsp;C++98 code
-      or C++11 code. This setting is inherited from the project level to the folder level and file
+      or C++11 code. When set to Default, use the compiler's default C++ standard.
+      This setting is inherited from the project level to the folder level and file
       level, and can be overridden by changing the C++&nbsp;Standard setting in the properties of a
       folder or file.
     </p>
