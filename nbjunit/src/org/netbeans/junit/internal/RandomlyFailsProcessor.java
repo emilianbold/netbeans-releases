@@ -62,7 +62,7 @@ import org.openide.util.lookup.ServiceProvider;
  * Just verifies usage.
  */
 @ServiceProvider(service=Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class RandomlyFailsProcessor extends AbstractProcessor {
 
     public @Override Set<String> getSupportedAnnotationTypes() {

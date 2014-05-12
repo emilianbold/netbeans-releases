@@ -67,7 +67,7 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponent.Description;
 import org.openide.windows.TopComponent.Registration;
 
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 @ServiceProvider(service=Processor.class)
 public final class TopComponentProcessor extends LayerGeneratingProcessor {
     public TopComponentProcessor() {
