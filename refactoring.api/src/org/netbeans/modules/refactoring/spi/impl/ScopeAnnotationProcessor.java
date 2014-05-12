@@ -64,7 +64,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Ralph Benjamin Ruijs <ralphbenjamin@netbeans.org>
  */
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedAnnotationTypes({"org.netbeans.modules.refactoring.spi.ui.ScopeDescription",
 "org.netbeans.modules.refactoring.spi.ui.ScopeReference",
 "org.netbeans.modules.refactoring.spi.ui.ScopeReferences"})
