@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,76 +34,41 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.extexecution.input;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.Reader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputReader;
 
 /**
  *
- * This class is <i>NotThreadSafe</i>.
- * @author Petr.Hejl
+ * @author Petr Hejl
  */
-public class DefaultInputReader implements InputReader {
+public class DelegatingInputProcessor implements InputProcessor {
+    private final org.netbeans.api.extexecution.base.input.InputProcessor delegate;
 
-    private static final Logger LOGGER = Logger.getLogger(DefaultInputReader.class.getName());
-
-    private static final int BUFFER_SIZE = 512;
-
-    private final Reader reader;
-
-    private final char[] buffer;
-
-    private final boolean greedy;
-
-    private boolean closed;
-
-    public DefaultInputReader(Reader reader, boolean greedy) {
-        assert reader != null;
-
-        this.reader = new BufferedReader(reader);
-        this.greedy = greedy;
-        this.buffer = new char[greedy ? BUFFER_SIZE * 2 : BUFFER_SIZE];
+    public DelegatingInputProcessor(org.netbeans.api.extexecution.base.input.InputProcessor delegate) {
+        this.delegate = delegate;
     }
 
-    public int readInput(InputProcessor inputProcessor) throws IOException {
-        if (closed) {
-            throw new IllegalStateException("Already closed reader");
-        }
-
-        if (!reader.ready()) {
-            return 0;
-        }
-
-        int fetched = 0;
-        // TODO optimization possible
-        StringBuilder builder = new StringBuilder();
-        do {
-            int size = reader.read(buffer);
-            if (size > 0) {
-                builder.append(buffer, 0, size);
-                fetched += size;
-            }
-        } while (reader.ready() && greedy);
-
-        if (inputProcessor != null && fetched > 0) {
-            inputProcessor.processInput(builder.toString().toCharArray());
-        }
-
-        return fetched;
+    @Override
+    public void processInput(char[] chars) throws IOException {
+        delegate.processInput(chars);
     }
 
+    @Override
+    public void reset() throws IOException {
+        delegate.reset();
+    }
+
+    @Override
     public void close() throws IOException {
-        closed = true;
-        reader.close();
-        LOGGER.log(Level.FINEST, "Reader closed");
+        delegate.close();
     }
-
+    
 }
