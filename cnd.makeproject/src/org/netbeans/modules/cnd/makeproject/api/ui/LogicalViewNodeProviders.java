@@ -50,21 +50,21 @@ import org.openide.util.Lookup;
 
 public class LogicalViewNodeProviders {
 
-    private static LogicalViewNodeProviders instance = null;
-    private List<LogicalViewNodeProvider> providers = null;
+    private static final LogicalViewNodeProviders instance = new LogicalViewNodeProviders();
+    private final List<LogicalViewNodeProvider> providers = new ArrayList<>(0);
 
+    private LogicalViewNodeProviders(){
+    }
+    
     public static LogicalViewNodeProviders getInstance() {
-        if (instance == null) {
-            instance = new LogicalViewNodeProviders();
-        }
         return instance;
     }
 
     public List<LogicalViewNodeProvider> getProviders() {
-        if (providers == null) {
-            providers = new ArrayList<>();
+        List<LogicalViewNodeProvider> actualProviders;
+        synchronized (providers) {
+            actualProviders = new ArrayList<>(providers);
         }
-        List<LogicalViewNodeProvider> actualProviders = new ArrayList<>(providers);
         Collection<? extends LogicalViewNodeProvider> mwc = Lookup.getDefault().lookupAll(LogicalViewNodeProvider.class);
         for (LogicalViewNodeProvider lvnp : mwc) {
             if (lvnp != null) {
@@ -80,14 +80,14 @@ public class LogicalViewNodeProviders {
     }
 
     public void addProvider(LogicalViewNodeProvider provider) {
-        synchronized (getProviders()) {
-            getProviders().add(provider);
+        synchronized (providers) {
+            providers.add(provider);
         }
     }
 
     public void removeProvider(LogicalViewNodeProvider provider) {
-        synchronized (getProviders()) {
-            getProviders().remove(provider);
+        synchronized (providers) {
+            providers.remove(provider);
         }
     }
 }
