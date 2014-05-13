@@ -43,6 +43,7 @@
 package org.netbeans.core.nativeaccess;
 
 import com.sun.jna.platform.WindowUtils;
+import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
@@ -96,11 +97,10 @@ public class NativeWindowSystemImpl extends NativeWindowSystem {
         GraphicsConfiguration gc = w.getGraphicsConfiguration();
         GraphicsDevice gd = gc.getDevice();
         //check if JDK APIs are supported
-        if (gc.getDevice().getFullScreenWindow() != w) {
+        if (gc.getDevice().getFullScreenWindow() != w && isUndecorated(w)) {
             if (gd.isWindowTranslucencySupported(GraphicsDevice.WindowTranslucency.TRANSLUCENT) ) {
                 try {
                     w.setOpacity(alpha);
-                    return;
                 } catch( Exception e ) {
                     //ignore, we'll try JNA
                 }
@@ -114,6 +114,16 @@ public class NativeWindowSystemImpl extends NativeWindowSystem {
         } catch( Throwable e ) {
             LOG.log(Level.INFO, null, e);
         }
+    }
+    
+    private static boolean isUndecorated( Window w ) {
+        if( w instanceof Dialog ) {
+            return ((Dialog)w).isUndecorated();
+        }
+        if( w instanceof Frame ) {
+            return ((Frame)w).isUndecorated();
+        }            
+        return true;
     }
 
     @Override

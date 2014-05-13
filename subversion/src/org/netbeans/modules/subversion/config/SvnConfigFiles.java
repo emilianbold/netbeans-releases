@@ -709,7 +709,7 @@ public class SvnConfigFiles {
     }
 
     private String getProxyPassword(String key) {
-        char[] pwd = KeyringSupport.read(key, null);
+        char[] pwd = KeyringSupport.read("", key);
         return pwd == null ? "" : new String(pwd); //NOI18N
     }
     

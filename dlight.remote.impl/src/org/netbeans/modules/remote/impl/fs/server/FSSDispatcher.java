@@ -81,7 +81,6 @@ import org.netbeans.modules.remote.impl.fs.RefreshManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -104,7 +103,7 @@ import org.openide.util.RequestProcessor;
     private static final int REFRESH_INTERVAL = Integer.getInteger("remote.fs_server.refresh", 0); // NOI18N
     private static final int VERBOSE = Integer.getInteger("remote.fs_server.verbose", 0); // NOI18N
     private static final boolean LOG = Boolean.getBoolean("remote.fs_server.log");
-    private static final String SERVER_PERSISTENCE_ROOT = System.getProperty("remote.fs_server.remote.cache.root");
+    private static final String SERVER_CACHE = System.getProperty("remote.fs_server.remote.cache");
 
     // Actually this RP should have only 2 tasks: one reads error, another stdout;
     // but in the case of, say, connection failure and reconnect, old task can still be alive,
@@ -604,7 +603,7 @@ import org.openide.util.RequestProcessor;
         private final String path;
         private final String[] args;
 
-        public FsServer(String path) throws IOException {
+        public FsServer(String path) throws IOException, ConnectionManager.CancellationException {
             this.path = path;
             NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(env);
             processBuilder.setExecutable(this.path);            
@@ -613,7 +612,7 @@ import org.openide.util.RequestProcessor;
             argsList.add("4"); // NOI18N
             argsList.add("-p"); // NOI18N
             argsList.add("-d"); // NOI18N
-            argsList.add(getSubdir());
+            argsList.add(getCacheDirectory());
             if (REFRESH_INTERVAL > 0) {
                 argsList.add("-r"); // NOI18N
                 argsList.add("" + REFRESH_INTERVAL);
@@ -651,14 +650,16 @@ import org.openide.util.RequestProcessor;
             }
         }
         
-        private String getSubdir() {
-            String tmp = env.toString() + '/' + Places.getUserDirectory().getAbsolutePath(); // NOI18N
-            String subdir = Integer.toString(tmp.hashCode()).replace('-', '0');
-            if (SERVER_PERSISTENCE_ROOT == null) {
-                return subdir;
+        private String getCacheDirectory() throws IOException, ConnectionManager.CancellationException {
+            if (SERVER_CACHE != null) {
+                return SERVER_CACHE;
             } else {
-                String root = SERVER_PERSISTENCE_ROOT.trim();                
-                return  root + (root.endsWith("/") ? "" : "/") + subdir; // NOI18N
+                HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+                String path = hostInfo.getTempDir().trim();
+                if (!path.endsWith("/")) { //NOI18N
+                    path += "/"; //NOI18N
+                }
+                return path + "fs_server_cache"; //NOI18N
             }
         }
 

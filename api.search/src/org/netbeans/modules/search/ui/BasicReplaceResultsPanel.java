@@ -97,7 +97,7 @@ public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
                 replace();
             }
         });
-        setButtonText();
+        updateReplaceButton();
         leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.PAGE_AXIS));
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout(FlowLayout.LEADING, 2, 1));
@@ -154,6 +154,9 @@ public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
     @Override
     public void searchFinished() {
         super.searchFinished(); 
+        if (resultModel.isValid()) {
+            updateReplaceButton();
+        }
         if (replaceButton.isVisible() && replaceButton.isEnabled()){
             replaceButton.requestFocusInWindow();
         }
@@ -174,15 +177,15 @@ public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
                         && Boolean.TRUE.equals(evt.getNewValue())) {
                     setFinalRootNodeText();
                 }
-                setButtonText();
+                updateReplaceButton();
             }
         }
     }
 
-    private void setButtonText() {
+    private void updateReplaceButton() {
         int matches = resultModel.getSelectedMatchesCount();
         Mnemonics.setLocalizedText(replaceButton, NbBundle.getMessage(ResultView.class, "TEXT_BUTTON_REPLACE", matches));//NOI18N
-        replaceButton.setEnabled(matches > 0);
+        replaceButton.setEnabled(matches > 0 && isFinished());
     }
 
     /**
