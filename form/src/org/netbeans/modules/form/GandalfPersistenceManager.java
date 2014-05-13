@@ -3063,7 +3063,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     }                    
                 }
                 if (ResourceSupport.PROP_AUTO_RESOURCING.equals(settingName)
-                        && (ResourceSupport.AUTO_RESOURCING == value || ResourceSupport.AUTO_INJECTION == value)
+                        && value instanceof Number
+                        && (ResourceSupport.AUTO_RESOURCING == ((Number)value).intValue() || 
+                            ResourceSupport.AUTO_INJECTION == ((Number)value).intValue()
+                        )
                         && !swingappAvailable()) {
                     // Swing Application Framework support has been discontinued
                     // => changing the setting to I18N. It is just a fallback
