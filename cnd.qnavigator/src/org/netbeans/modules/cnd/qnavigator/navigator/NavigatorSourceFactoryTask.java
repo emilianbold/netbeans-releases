@@ -61,6 +61,7 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.parsing.spi.TaskIndexingMode;
+import org.netbeans.modules.parsing.spi.support.CancelSupport;
 
 /**
  *
@@ -68,6 +69,7 @@ import org.netbeans.modules.parsing.spi.TaskIndexingMode;
  */
 public class NavigatorSourceFactoryTask extends IndexingAwareParserResultTask<Parser.Result> {
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
+    private final CancelSupport cancel = CancelSupport.create(this);
     private AtomicBoolean canceled = new AtomicBoolean(false);
     
     public NavigatorSourceFactoryTask() {
@@ -79,6 +81,9 @@ public class NavigatorSourceFactoryTask extends IndexingAwareParserResultTask<Pa
         synchronized (this) {
             canceled.set(true);
             canceled = new AtomicBoolean(false);
+        }
+        if (cancel.isCancelled()) {
+            return;
         }
         if (!(event instanceof CursorMovedSchedulerEvent)) {
             return;
