@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.extexecution.input;
+package org.netbeans.modules.extexecution.base.input;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -51,13 +51,13 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputReader;
-import org.netbeans.api.extexecution.input.InputReaders;
+import org.netbeans.api.extexecution.base.input.InputProcessor;
+import org.netbeans.api.extexecution.base.input.InputReader;
+import org.netbeans.api.extexecution.base.input.InputReaders;
 
 /**
- *
  * This class is <i>NotThreadSafe</i>.
+ *
  * @author Petr Hejl
  */
 public class FileInputReader implements InputReader {
@@ -84,6 +84,7 @@ public class FileInputReader implements InputReader {
         this.fileProvider = fileProvider;
     }
 
+    @Override
     public int readInput(InputProcessor inputProcessor) {
         if (closed) {
             throw new IllegalStateException("Already closed reader");
@@ -144,6 +145,7 @@ public class FileInputReader implements InputReader {
         return fetched;
     }
 
+    @Override
     public void close() throws IOException {
         closed = true;
         if (reader != null) {

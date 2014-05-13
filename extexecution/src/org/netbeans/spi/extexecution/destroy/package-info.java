@@ -46,6 +46,7 @@
  * The support SPI for terminating external processes.
  *
  * @see org.netbeans.spi.extexecution.destroy.ProcessDestroyPerformer
+ * @deprecated use {@link org.netbeans.spi.extexecution.base}
  */
 package org.netbeans.spi.extexecution.destroy;
 

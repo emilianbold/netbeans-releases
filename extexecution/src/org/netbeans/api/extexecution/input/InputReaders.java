@@ -42,21 +42,23 @@
 
 package org.netbeans.api.extexecution.input;
 
+import org.netbeans.modules.extexecution.input.BaseInputProcessor;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.extexecution.input.FileInputReader;
-import org.netbeans.modules.extexecution.input.DefaultInputReader;
+import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.openide.util.Parameters;
 
 /**
  * Factory methods for {@link InputReader} classes.
  *
  * @author Petr Hejl
+ * @deprecated use {@link org.netbeans.api.extexecution.base.input.InputReaders}
  */
 public final class InputReaders {
 
@@ -82,7 +84,19 @@ public final class InputReaders {
      */
     @NonNull
     public static InputReader forReader(@NonNull Reader reader) {
-        return new DefaultInputReader(reader, true);
+        final org.netbeans.api.extexecution.base.input.InputReader delegate = org.netbeans.api.extexecution.base.input.InputReaders.forReader(reader);
+        return new InputReader() {
+
+            @Override
+            public int readInput(org.netbeans.api.extexecution.input.InputProcessor processor) throws IOException {
+                return delegate.readInput(processor == null ? null : new BaseInputProcessor(processor));
+            }
+
+            @Override
+            public void close() throws IOException {
+                delegate.close();
+            }
+        };
     }
 
     /**
@@ -157,10 +171,29 @@ public final class InputReaders {
      * @return input reader for the given provider
      */
     @NonNull
-    public static InputReader forFileInputProvider(@NonNull FileInput.Provider fileProvider) {
+    public static InputReader forFileInputProvider(@NonNull final FileInput.Provider fileProvider) {
         Parameters.notNull("fileProvider", fileProvider);
 
-        return new FileInputReader(fileProvider);
+        final org.netbeans.api.extexecution.base.input.InputReader delegate = org.netbeans.api.extexecution.base.input.InputReaders.forFileInputProvider(new org.netbeans.api.extexecution.base.input.InputReaders.FileInput.Provider() {
+
+            @Override
+            public org.netbeans.api.extexecution.base.input.InputReaders.FileInput getFileInput() {
+                FileInput input = fileProvider.getFileInput();
+                return new org.netbeans.api.extexecution.base.input.InputReaders.FileInput(input.getFile(), input.getCharset());
+            }
+        });
+        return new InputReader() {
+
+            @Override
+            public int readInput(org.netbeans.api.extexecution.input.InputProcessor processor) throws IOException {
+                return delegate.readInput(processor == null ? null : new BaseInputProcessor(processor));
+            }
+
+            @Override
+            public void close() throws IOException {
+                delegate.close();
+            }
+        };
     }
 
     /**
