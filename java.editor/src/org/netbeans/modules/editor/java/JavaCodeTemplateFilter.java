@@ -84,7 +84,8 @@ import org.openide.util.NbBundle;
 public class JavaCodeTemplateFilter implements CodeTemplateFilter {
     
     private static final Logger LOG = Logger.getLogger(JavaCodeTemplateFilter.class.getName());
-    private static final String EXPRESSION = "{EXPRESSION}"; //NOI18N
+    private static final String EXPRESSION = "EXPRESSION"; //NOI18N
+    private static final String CLASS_HEADER = "CLASS_HEADER"; //NOI18N
     
     private Tree.Kind treeKindCtx = null;
     private String stringCtx = null;
@@ -144,6 +145,7 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter {
                                             int idx = headerText.indexOf('{'); //NOI18N
                                             if (idx < 0) {
                                                 treeKindCtx = null;
+                                                stringCtx = CLASS_HEADER;
                                             }
                                         }
                                     }
@@ -192,10 +194,12 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter {
         @Override
         public List<String> getSupportedContexts() {
             Tree.Kind[] values = Tree.Kind.values();
-            List<String> contexts = new ArrayList<>(values.length);
+            List<String> contexts = new ArrayList<>(values.length + 1);
             for (Tree.Kind value : values) {
                 contexts.add(value.name());
             }
+            contexts.add(CLASS_HEADER);
+            Collections.sort(contexts);
             return contexts;
         }
     }
