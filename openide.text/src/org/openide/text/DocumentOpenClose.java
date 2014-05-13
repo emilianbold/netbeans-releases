@@ -727,7 +727,7 @@ final class DocumentOpenClose {
                         // but there may be listeners that request document open sychronously
                         // and it's unclear how to solve openDocument() request 
                         // over a document being just reloaded.
-                        ces.getPositionManager().processPositions(false);
+                        ces.getPositionManager().documentClosed();
                         ces.updateLineSet(true);
                     }
 
@@ -770,7 +770,7 @@ final class DocumentOpenClose {
 
                 // opening the document, inform position manager
                 if (reload && reloadOpenPanes != null) {
-                    ces.getPositionManager().processPositions(true);
+                    ces.getPositionManager().documentOpened(new WeakReference<StyledDocument>(loadDoc));
                 }
 
                 // create new description of lines
