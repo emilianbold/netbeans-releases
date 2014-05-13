@@ -44,7 +44,9 @@ package org.netbeans.modules.java.hints.spiimpl.pm;
 
 import org.netbeans.modules.java.hints.spiimpl.pm.BulkSearch.BulkPattern;
 import org.netbeans.modules.java.hints.spiimpl.pm.BulkSearch.EncodingContext;
+
 import com.sun.source.util.TreePath;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -60,7 +62,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
+
 import javax.swing.text.Document;
+
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;

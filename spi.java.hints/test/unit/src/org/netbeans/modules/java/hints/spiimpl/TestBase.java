@@ -43,7 +43,9 @@
 package org.netbeans.modules.java.hints.spiimpl;
 
 import java.io.File;
+
 import javax.swing.text.Document;
+
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;

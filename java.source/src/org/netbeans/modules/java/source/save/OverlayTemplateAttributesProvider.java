@@ -44,6 +44,8 @@ package org.netbeans.modules.java.source.save;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.java.source.FileObjectFromTemplateCreator;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -57,18 +59,18 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=CreateFromTemplateAttributesProvider.class)
 public class OverlayTemplateAttributesProvider implements CreateFromTemplateAttributesProvider {
 
-    public static final String ATTR_ORIG_FILE = OverlayTemplateAttributesProvider.class.getName() + "-orig-file";
-
     @Override
     public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {
-        DataFolder origFile = (DataFolder) target.getPrimaryFile().getAttribute(ATTR_ORIG_FILE);
-
+        FileObject origFile = (FileObject) target.getPrimaryFile().getAttribute(FileObjectFromTemplateCreator.ATTR_ORIG_FILE);
         if (origFile == null) return null;
+        
+        DataFolder origDF = DataFolder.findFolder(origFile);
+        if (origDF == null) return null;
 
         Map<String, Object> all = new HashMap<String, Object>();
         
         for (CreateFromTemplateAttributesProvider provider : Lookup.getDefault().lookupAll(CreateFromTemplateAttributesProvider.class)) {
-            Map<String, ? extends Object> map = provider.attributesFor(template, origFile, name);
+            Map<String, ? extends Object> map = provider.attributesFor(template, origDF, name);
             if (map != null) {
                 for (Map.Entry<String, ? extends Object> e : map.entrySet()) {
                     all.put(e.getKey(), e.getValue());

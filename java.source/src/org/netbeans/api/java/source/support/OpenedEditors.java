@@ -57,11 +57,13 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.swing.JEditorPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.java.source.JavaSourceSupportAccessor;

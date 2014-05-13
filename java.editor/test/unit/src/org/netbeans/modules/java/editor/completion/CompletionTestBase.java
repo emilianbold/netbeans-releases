@@ -63,8 +63,10 @@ import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
+
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
+
 import junit.framework.Assert;
 
 import org.netbeans.api.editor.mimelookup.MimeLookup;

@@ -44,6 +44,7 @@
 package org.netbeans.modules.java.hints.infrastructure;
 
 import com.sun.source.util.TreePath;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
@@ -54,7 +55,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
+
 import javax.swing.text.Document;
+
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;

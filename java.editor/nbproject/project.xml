@@ -244,6 +244,14 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.java.source.base</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.java.sourceui</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -527,7 +535,7 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.java.source</code-name-base>
+                        <code-name-base>org.netbeans.modules.java.source.base</code-name-base>
                         <recursive/>
                         <compile-dependency/>
                         <test/>

@@ -44,8 +44,10 @@
 package org.netbeans.api.java.source.support;
 
 import java.util.List;
+
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;

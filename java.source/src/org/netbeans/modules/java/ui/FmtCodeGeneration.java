@@ -77,7 +77,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
-import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
+import static org.netbeans.modules.java.ui.CategorySupport.OPTION_ID;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.openide.util.NbBundle;
@@ -458,7 +458,7 @@ public class FmtCodeGeneration extends javax.swing.JPanel implements Runnable, L
     private javax.swing.JList visibilityOrderList;
     // End of variables declaration//GEN-END:variables
 
-        private static final class CodeGenCategorySupport extends DocumentCategorySupport {
+        private static final class CodeGenCategorySupport extends CategorySupport.DocumentCategorySupport {
 
         private CodeGenCategorySupport(Preferences preferences, JPanel panel) {
             super(preferences, "code-generation", panel, NbBundle.getMessage(FmtCodeGeneration.class, "SAMPLE_CodeGen"), //NOI18N

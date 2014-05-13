@@ -44,10 +44,8 @@
 
 package org.netbeans.modules.java.ui;
 
-import org.netbeans.api.java.source.CodeStyle.WrapStyle;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
-import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
-import org.netbeans.modules.java.ui.FmtOptions.CategorySupport;
+import static org.netbeans.modules.java.ui.CategorySupport.OPTION_ID;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 
 
