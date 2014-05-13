@@ -175,6 +175,8 @@ public class ResultsOutlineSupport {
         FontMetrics fm = outlineView.getOutline().getFontMetrics(font);
         outlineView.getOutline().setRowHeight(
                 Math.max(16, fm.getHeight()) + VERTICAL_ROW_SPACE);
+        outlineView.setTreeHorizontalScrollBarPolicy(
+                OutlineView.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         setTooltipHidingBehavior();
     }
 
