@@ -86,6 +86,7 @@ import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.support.CancelSupport;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
 import org.openide.filesystems.FileObject;
@@ -101,6 +102,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
     private static final ConcurrentHashMap<String,AttributeSet> defaultColors = new ConcurrentHashMap<String, AttributeSet>();
     
+    private final CancelSupport cancel = CancelSupport.create(this);
     private InterrupterImpl interrupter = new InterrupterImpl();
 
     public static PositionsBag getHighlightsBag(Document doc) {
@@ -154,6 +156,9 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         synchronized(this) {
             interrupter.cancel();
             this.interrupter = new InterrupterImpl();
+        }
+        if (cancel.isCancelled()) {
+            return;
         }
         if (!(event instanceof CursorMovedSchedulerEvent)) {
             return;
