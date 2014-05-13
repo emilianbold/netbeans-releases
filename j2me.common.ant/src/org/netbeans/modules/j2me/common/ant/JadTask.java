@@ -108,7 +108,7 @@ public class JadTask extends Task {
     private static final String DEFAULT_ENCODING = "UTF-8"; // NOI18N
     private static final String JAR_URL_KEY = "Jar-URL"; // NOI18N
     private static final String JAR_SIZE_KEY = "Jar-Size"; // NOI18N
-    private static final String JAR_RSA_SHA1 = "Jar-RSA-SHA1"; // NOI18N
+    private static final String JAR_RSA_SHA1 = "Jar-RSA-SHA1-{0}"; // NOI18N
     private static final String CERTIFICATE = "Certificate-{0}-{1}"; // NOI18N
     private static final String SHA1withRSA = "SHA1withRSA"; // NOI18N
     private static final String MIDLET_1 = "MIDlet-1"; // NOI18N
@@ -272,8 +272,8 @@ public class JadTask extends Task {
                     stream.close();
                 }
 
-                hash.remove(jarRsaSha1AttrName);
                 for (int a = 1;; a++) {
+                    hash.remove(MessageFormat.format(jarRsaSha1AttrName, Integer.toString(a)));
                     int b = 1;
                     for (;; b++) {
                         if (hash.remove(MessageFormat.format(certificateAttrName, new Object[]{Integer.toString(a), Integer.toString(b)})) == null) {
@@ -347,8 +347,8 @@ public class JadTask extends Task {
                         }
                     }
                     final byte signed[] = signature.sign();
-                    log(Bundle.getMessage("MSG_AddingSignAttr", jarRsaSha1AttrName), Project.MSG_INFO); // NOI18N
-                    hash.put(jarRsaSha1AttrName, Base64.encode(signed));
+                    log(Bundle.getMessage("MSG_AddingSignAttr", MessageFormat.format(jarRsaSha1AttrName, "1")), Project.MSG_INFO); // NOI18N
+                    hash.put(MessageFormat.format(jarRsaSha1AttrName, "1"), Base64.encode(signed)); // NOI18N
                 } catch (SignatureException e) {
                     throw new BuildException(e);
                 } finally {
