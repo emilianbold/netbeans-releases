@@ -1274,7 +1274,7 @@ public class JavacParser extends Parser {
                 if (doc != null) {
                     if (doc == focusedDoc) {
                         positions.clear();
-                    } else {
+                    } else if (ciImpl != null) {
                         ciImpl.dispose();
                     }
                 }
