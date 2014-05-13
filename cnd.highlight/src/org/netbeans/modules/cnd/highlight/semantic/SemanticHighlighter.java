@@ -295,6 +295,7 @@ public final class SemanticHighlighter extends HighlighterBase {
             latch = new CountDownLatch(1);
         }
         if (cancel.isCancelled()) {
+            LOG.log(Level.FINE, "SemanticHighlighter have been canceled before start, Task={0}, Result={1}", new Object[]{System.identityHashCode(this), System.identityHashCode(result)}); //NOI18N
             return;
         }
         long time = 0;
