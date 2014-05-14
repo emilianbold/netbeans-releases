@@ -1125,15 +1125,20 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         // stuff to engine.
 
 
-        if ( /* OLD ConsoleTopComponent.getDefault() != null && */
-                getIOPack() != null &&
-                // getIOPack().console() != null &&
+        if ( /* OLD ConsoleTopComponent.getDefault() != null && */getIOPack() != null
+                && // getIOPack().console() != null &&
                 getIOPack().console().getTerm() != null) {
 
-            String warn = debuggerType() + " terminated\n"; // NOI18N
-            char[] warnArray = warn.toCharArray();
-            getIOPack().console().getTerm().putChars(warnArray,
-                    0, warnArray.length);
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    String warn = debuggerType() + " terminated\n"; // NOI18N
+                    char[] warnArray = warn.toCharArray();
+                    getIOPack().console().getTerm().putChars(warnArray,
+                            0, warnArray.length);
+                }
+            });
         }
         // Close if no more sessions
         NativeSession[] sessions = NativeDebuggerManager.get().getSessions();
