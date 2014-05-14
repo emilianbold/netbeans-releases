@@ -51,13 +51,11 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Action;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Item;
 import org.openide.util.RequestProcessor;
@@ -148,10 +146,12 @@ public final class Watcher extends AnnotationProvider {
     public @Override String annotateNameHtml(String name, Set<? extends FileObject> files) {
         return null;
     }
-    public @Override Action[] actions(Set<? extends FileObject> files) {
+
+    @Override
+    public Lookup findExtrasFor(Set<? extends FileObject> files) {
         return null;
     }
-
+    
     public @Override InterceptionListener getInterceptionListener() {
         return ext;
     }

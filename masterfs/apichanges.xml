@@ -49,6 +49,23 @@ made subject to such option by the copyright holder.
         <apidef name="masterfs">MasterFileSystem API</apidef>
     </apidefs>
     <changes>
+        <change id="actions.for.files">
+            <api name="masterfs"/>
+            <summary>Deprecating actions(Set of FileObjects)</summary>
+            <version major="2" minor="48"/>
+            <date day="14" month="5" year="2014"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes" binary="compatible" 
+                source="compatible" semantic="compatible" 
+                deprecation="no" deletion="no" modification="no"
+            />
+            <description>
+                Adding <code>findExtrasFor</code> method to replace
+                direct reference to <code>javax.swing.Actions</code>.
+            </description>
+            <class package="org.netbeans.modules.masterfs.providers" name="AnnotationProvider"/>
+            <issue number="243265"/>
+        </change>
         <change id="org.netbeans.io.suspend">
             <api name="masterfs"/>
             <summary>A property to suspend native listeners</summary>

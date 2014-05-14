@@ -288,7 +288,10 @@ public class MultiFileSystem extends FileSystem {
     }
 
     /** Merge actions from all delegates.
-    */
+     * @deprecated actions should be provided by higher level parts of the
+     * system, not something as low level as filesystems
+     */
+    @Deprecated
     public @Override SystemAction[] getActions() {
         List<SystemAction> al = new ArrayList<SystemAction>(101); // randomly choosen constant
         Set<SystemAction> uniq = new HashSet<SystemAction>(101); // not that randommly choosen
@@ -312,6 +315,13 @@ public class MultiFileSystem extends FileSystem {
         return al.toArray(new SystemAction[al.size()]);
     }
 
+    /**
+     * Merge actions from all delegates.
+     *
+     * @deprecated actions should be provided by higher level parts of the
+     * system, not something as low level as filesystems
+     */
+    @Deprecated
     public @Override SystemAction[] getActions(final Set<FileObject> foSet) {
         List<SystemAction> al = new ArrayList<SystemAction>(101); // randomly choosen constant
         Set<SystemAction> uniq = new HashSet<SystemAction>(101); // not that randommly choosen

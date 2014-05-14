@@ -48,13 +48,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.ProvidedExtensionsProxy;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.BaseFileObj;
@@ -69,7 +70,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * @author Radek Matous
@@ -238,18 +239,8 @@ public final class FileBasedFileSystem extends FileSystem {
     }
 
     @Override
-    public SystemAction[] getActions() {
-        return new SystemAction[] {};
-    }
-
-    @Override
-    public final SystemAction[] getActions(final Set<FileObject> foSet) {
-        SystemAction[] some = status.getActions (foSet);
-        if (some != null) {
-            return some;
-        }        
-        return new SystemAction[] {};
-
+    public Lookup findExtrasFor(Set<FileObject> objects) {
+        return status.findExtrasFor(objects);
     }
     
     @Override
@@ -313,25 +304,15 @@ public final class FileBasedFileSystem extends FileSystem {
             previousProviders = now;
         }
 
-        public SystemAction[] getActions(Set<FileObject> foSet) {
-
-            javax.swing.Action[] retVal = null;
-            java.util.Iterator<? extends AnnotationProvider> it = annotationProviders.allInstances().iterator();
-            while (retVal == null && it.hasNext()) {
-                AnnotationProvider ap = it.next();
-                retVal = ap.actions(foSet);
-            }
-            if (retVal != null) {
-                // right now we handle just SystemAction, it can be changed if necessary
-                SystemAction[] ret = new SystemAction[retVal.length];
-                for (int i = 0; i < retVal.length; i++) {
-                    if (retVal[i] instanceof SystemAction) {
-                        ret[i] = (SystemAction) retVal[i];
-                    }
+        public Lookup findExtrasFor(Set<FileObject> foSet) {
+            List<Lookup> arr = new ArrayList<Lookup>();
+            for (AnnotationProvider ap : annotationProviders.allInstances()) {
+                final Lookup lkp = ap.findExtrasFor(foSet);
+                if (lkp != null) {
+                    arr.add(lkp);
                 }
-                return ret;
             }
-            return null;
+            return new ProxyLookup(arr.toArray(new Lookup[arr.size()]));
         }
 
         @Override

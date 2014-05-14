@@ -467,26 +467,58 @@ public abstract class FileSystem implements Serializable {
     public FileObject createTempFile(FileObject parent, String prefix, String suffix, boolean deleteOnExit) throws IOException {
         throw new IOException("Unsupported operation"); // NOI18N
     }
-        
-    /** Returns an array of actions that can be invoked on any file in
-    * this filesystem.
-    * These actions should preferably
-    * support the {@link org.openide.util.actions.Presenter.Menu Menu},
-    * {@link org.openide.util.actions.Presenter.Popup Popup},
-    * and {@link org.openide.util.actions.Presenter.Toolbar Toolbar} presenters.
-    *
-    * @return array of available actions
-    */
-    public abstract SystemAction[] getActions();
+    
+    /** 
+     * FileSystems and their implementation 
+     * should stay UI independent. Should there be a UI related extensions
+     * they can be communicated via {@link #findExtrasFor(java.util.Set)} method.
+     * <p>
+     * Returns an array of actions that should somehow be applicable to 
+     * this file system. These actions should preferably
+     * support the {@link org.openide.util.actions.Presenter.Menu Menu},
+     * {@link org.openide.util.actions.Presenter.Popup Popup},
+     * and {@link org.openide.util.actions.Presenter.Toolbar Toolbar} presenters.
+     *
+     * @return array of available actions
+     * @deprecated Actions should be provided by higher level parts of the
+     *   system, not directly by file system layer.
+     */
+    @Deprecated
+    public SystemAction[] getActions() {
+        return new SystemAction[0];
+    }
 
-    /**
-     * Get actions appropriate to a certain file selection.
+    /** 
+     * FileSystems and their implementation 
+     * should stay UI independent. Should there be UI related extensions
+     * they can be communicated via {@link #findExtrasFor(java.util.Set)} method.
+     * In case of actions it should be enough to call:<pre>
+     * actions = fs.{@link #findExtrasFor(java.util.Set) findUI}(foSet).{@link Lookup#lookupAll(java.lang.Class) lookupAll}({@link javax.swing.Action});
+     * </pre>
+     * Used to get actions appropriate to a certain file selection.
      * By default, returns the same list as {@link #getActions()}.
      * @param foSet one or more files which may be selected
      * @return zero or more actions appropriate to those files
+     * @deprecated Actions should be provided by higher level parts of the
+     *   system, not directly by file system layer.
      */
+    @Deprecated
     public SystemAction[] getActions(Set<FileObject> foSet) {
         return this.getActions();
+    }
+
+    /** Finds various extensions for set of file objects coming from
+     * this file system.
+     * For example actions should be obtainable as:<pre>
+     * actions = fs.{@link #findExtrasFor(java.util.Set) findExtrasFor}(foSet).{@link Lookup#lookupAll(java.lang.Class) lookupAll}({@link javax.swing.Action});
+     * </pre>
+     * @param objects the set of objects
+     * @return the lookup providing various extensions (usually visual) 
+     * for these objects
+     * @since 8.12
+     */
+    public Lookup findExtrasFor(Set<FileObject> objects) {
+        return new FileExtrasLkp(this, objects);
     }
 
     /** Reads object from stream and creates listeners.

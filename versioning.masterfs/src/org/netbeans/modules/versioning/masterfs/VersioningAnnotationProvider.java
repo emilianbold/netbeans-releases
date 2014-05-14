@@ -43,15 +43,16 @@
  */
 package org.netbeans.modules.versioning.masterfs;
 
-import org.netbeans.modules.masterfs.providers.InterceptionListener;
-import org.netbeans.modules.masterfs.providers.AnnotationProvider;
-import org.openide.filesystems.*;
-
-import javax.swing.*;
-import java.util.*;
 import java.awt.Image;
+import java.util.*;
+import javax.swing.*;
+import org.netbeans.modules.masterfs.providers.AnnotationProvider;
+import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor;
 import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor.VCSAnnotationEvent;
+import org.openide.filesystems.*;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Plugs into IDE filesystem and delegates annotation work to registered versioning systems.
@@ -76,8 +77,9 @@ public final class VersioningAnnotationProvider extends AnnotationProvider {
     }
 
     @Override
-    public Action[] actions(Set files) {
-        return VCSFilesystemInterceptor.actions(files);
+    public Lookup findExtrasFor(Set<? extends FileObject> files) {
+        Action[] arr = VCSFilesystemInterceptor.actions(files);
+        return arr == null ? null : Lookups.fixed((Object[]) arr);
     }
     
     @Override

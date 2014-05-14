@@ -49,6 +49,28 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="getActionsDeprecated">
+            <api name="filesystems"/>
+            <summary>Deprecating FileSystem.getActions</summary>
+            <version major="8" minor="12"/>
+            <date year="2014" month="5" day="14"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Deprecating <code>getActions</code> method in preparation
+                    of splitting filesystems API into UI (e.g. depending
+                    on Swing) and non-UI part (that can run on JDK8 compact
+                    profile). Introducing general replacement 
+                    <a href="@TOP@org/openide/filesystems/FileSystem.html#findExtrasFor(java.util.Set)">findExtrasFor</a>
+                    instead...
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileSystem"/>
+            <class package="org.openide.filesystems" name="AbstractFileSystem"/>
+            <class package="org.openide.filesystems" name="MultiFileSystem"/>
+            <issue number="243265"/>
+        </change>
         <change id="MultiFileObject.revealEntriesAttribute">
             <api name="filesystems"/>
             <summary>Allowed to reveal deleted files, or original files overriden by writable layer</summary>
