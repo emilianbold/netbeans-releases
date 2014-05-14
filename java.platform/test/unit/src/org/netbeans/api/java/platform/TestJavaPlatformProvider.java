@@ -41,11 +41,11 @@
  */
 package org.netbeans.api.java.platform;
 
+import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.openide.util.Lookup;
 
 /**

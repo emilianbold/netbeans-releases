@@ -54,7 +54,7 @@ import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
-import org.netbeans.modules.java.platform.JavaPlatformProvider;
+import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
@@ -63,7 +63,7 @@ import org.openide.modules.SpecificationVersion;
  * Testing Java platform provider, just enough to check ClassPath.BOOT usage.
  * @author Jesse Glick
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.java.platform.JavaPlatformProvider.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.java.platform.implspi.JavaPlatformProvider.class)
 public final class DummyJavaPlatformProvider implements JavaPlatformProvider {
     
     private final JavaPlatform jdk14 = new DummyJavaPlatform("1.4");

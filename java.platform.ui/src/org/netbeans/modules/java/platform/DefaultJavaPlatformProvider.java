@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.java.platform;
 
+import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -56,7 +57,7 @@ import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.java.platform.JavaPlatformProvider.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.java.platform.implspi.JavaPlatformProvider.class)
 public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileChangeListener {
 
     private static final String PLATFORM_STORAGE = "Services/Platforms/org-netbeans-api-java-Platform";  //NOI18N

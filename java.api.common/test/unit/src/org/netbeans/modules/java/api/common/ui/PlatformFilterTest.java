@@ -55,7 +55,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.platform.JavaPlatformProvider;
+import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntBasedTestUtil;
 import org.openide.filesystems.FileObject;

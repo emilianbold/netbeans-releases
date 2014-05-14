@@ -227,3 +227,4 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-openide-filesystems-compat8}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-openide-filesystems-compat8"/>
 <link href="${javadoc.docs.org-netbeans-modules-parsing-indexing}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-parsing-indexing"/>
 <link href="${javadoc.docs.org-netbeans-modules-extexecution-base}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-extexecution-base"/>
+<link href="${javadoc.docs.org-netbeans-modules-java-platform-ui}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-java-platform-ui"/>

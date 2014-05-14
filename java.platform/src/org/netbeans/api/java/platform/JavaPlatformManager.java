@@ -44,6 +44,7 @@
 
 package org.netbeans.api.java.platform;
 
+import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
@@ -52,10 +53,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.java.platform.FallbackDefaultJavaPlatform;
-import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.LookupEvent;
@@ -237,6 +240,19 @@ public final class JavaPlatformManager {
                 };
             }
             Collection<? extends JavaPlatformProvider> instances = this.providers.allInstances();
+            boolean assertsOn = false;
+            assert assertsOn = true;
+            Iterator<? extends JavaPlatformProvider> it = instances.iterator();
+            while(it.hasNext()) {
+                JavaPlatformProvider jp = it.next();
+                if (!assertsOn) {
+                    if(!"org.netbeans.modules.java.platform.DefaultJavaPlatformProvider".equals(jp.getClass().getName())) {
+                        throw new IllegalStateException("the only accepted JavaPlatformProvider instance is org.netbeans.modules.java.platform.DefaultJavaPlatformProvider");
+                    } 
+                } else {
+                    Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Unexpected JavaPlatformProvider instance: {0}", jp.getClass());
+                }
+            }
             Collection<JavaPlatformProvider> toAdd = new HashSet<JavaPlatformProvider>(instances);
             toAdd.removeAll (this.lastProviders);
             Collection<JavaPlatformProvider> toRemove = new HashSet<JavaPlatformProvider>(this.lastProviders);

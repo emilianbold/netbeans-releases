@@ -37,6 +37,7 @@
  */
 package org.netbeans.modules.java.platform;
 
+import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.concurrent.Semaphore;
