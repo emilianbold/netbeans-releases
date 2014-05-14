@@ -85,7 +85,7 @@ public final class MemberResolverImpl {
 
     private Iterator<CsmMember> getDeclarations(CsmClassifier cls, CharSequence name, boolean first) {
         if (CsmKindUtilities.isOffsetable(cls)) {
-            if (CharSequenceUtils.indexOf(name, '(') >= 0 || CharSequenceUtils.indexOf(name, ':') >= 0) {
+            if (CharSequenceUtils.indexOf(name, ':') >= 0) {
                 //TODO Fix Evaluator.g
                 CndUtils.assertTrueInConsole(false, "Attempt to find member \""+name+"\" in the class "+cls.getQualifiedName()); // NOI18N
                 return Collections.<CsmMember>emptyList().iterator();
