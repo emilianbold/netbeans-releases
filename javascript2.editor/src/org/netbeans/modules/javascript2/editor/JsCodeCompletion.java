@@ -900,6 +900,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         }
         for (JsObject property : jsObject.getProperties().values()) {
             if (!(property instanceof JsFunction && ((JsFunction) property).isAnonymous())
+                    && !(ModelUtils.getDisplayName(property.getName()).isEmpty())
                     && !property.getModifiers().contains(Modifier.PRIVATE)
                     && !property.getJSKind().isPropertyGetterSetter()) {
                 addPropertyToMap(request, addedProperties, property);
@@ -926,7 +927,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
     
     private void addPropertyToMap(CompletionRequest request, Map<String, List<JsElement>> addedProperties, JsElement property) {    
         String name = property.getName();
-        if (startsWith(name, request.prefix)) {
+        if (startsWith(name, request.prefix) && !(ModelUtils.getDisplayName(property.getName()).isEmpty())) {
             if (!(name.equals(request.prefix) && !property.isDeclared() && request.anchor == property.getOffset())) { // don't include just the prefix
                 List<JsElement> elements = addedProperties.get(name);
                 if (elements == null || elements.isEmpty()) {
