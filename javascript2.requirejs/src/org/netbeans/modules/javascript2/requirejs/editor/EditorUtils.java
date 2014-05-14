@@ -60,6 +60,7 @@ public class EditorUtils {
 
     public static final String DEFINE = "define";    //NOI18N
     public static final String REQUIRE = "require";    //NOI18N
+    public static final String REQUIREJS = "requirejs"; // NOI18N
     public static final String PATHS = "paths";        //NOI18N
 
     /**
@@ -80,7 +81,7 @@ public class EditorUtils {
                 if (token.id() == JsTokenId.BRACKET_LEFT_BRACKET) {
                     token = LexUtilities.findPreviousToken(ts, Arrays.asList(JsTokenId.IDENTIFIER));
                     if (token.id() == JsTokenId.IDENTIFIER
-                            && (DEFINE.equals(token.text().toString()) || REQUIRE.equals(token.text().toString()))) {
+                            && (DEFINE.equals(token.text().toString()) || REQUIRE.equals(token.text().toString()) || REQUIREJS.equals(token.text().toString()))) {
                         return true;
                     }
                 }
