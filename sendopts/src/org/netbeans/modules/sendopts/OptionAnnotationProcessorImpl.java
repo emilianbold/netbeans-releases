@@ -64,7 +64,7 @@ import org.openide.filesystems.annotations.LayerGenerationException;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 final class OptionAnnotationProcessorImpl extends LayerGeneratingProcessor {
 
     @Override

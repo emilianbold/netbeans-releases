@@ -76,7 +76,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Jan Horvath <jhorvath@netbeans.org>
  */
 @ServiceProvider(service=Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class NodesAnnotationProcessor extends LayerGeneratingProcessor {
 
     public NodesAnnotationProcessor() {

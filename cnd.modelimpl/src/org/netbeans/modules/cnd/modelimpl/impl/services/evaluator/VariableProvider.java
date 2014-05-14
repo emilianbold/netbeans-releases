@@ -192,9 +192,8 @@ public class VariableProvider {
                 if(CsmKindUtilities.isClass(decl)) {
                     final CsmClass clazz = (CsmClass) decl;
                     MemberResolverImpl r = new MemberResolverImpl();
-                    final Iterator<CsmMember> classMembers = r.getDeclarations(clazz, variableName);
-                    if (classMembers.hasNext()) {
-                        CsmMember member = classMembers.next();
+                    final CsmMember member = r.getDeclaration(clazz, variableName);
+                    if (member != null) {
                         if(member.isStatic() && CsmKindUtilities.isField(member) && member.getName().toString().equals(variableName)) {
                             CsmExpression expr = ((CsmField)member).getInitialValue();
                             if(CsmKindUtilities.isInstantiation(member)) {

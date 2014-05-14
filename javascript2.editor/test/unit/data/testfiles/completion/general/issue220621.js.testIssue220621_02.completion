@@ -3,3 +3,4 @@ script.m|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     mozMatchesSelector(): undefine  [PUBLIC,   JS Platform
+METHOD     mozRequestFullScreen(): undefi  [PUBLIC,   JS Platform

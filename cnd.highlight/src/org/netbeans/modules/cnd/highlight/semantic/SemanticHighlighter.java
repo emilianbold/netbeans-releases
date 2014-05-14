@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.utils.ui.NamedOption;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.support.CancelSupport;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
 import org.openide.util.RequestProcessor;
 
@@ -93,6 +94,7 @@ public final class SemanticHighlighter extends HighlighterBase {
     private final TaskContext taskContext;
     private final RequestProcessor.Task task;
     
+    private final CancelSupport cancel = CancelSupport.create(this);
     private InterrupterImpl interrupter = new InterrupterImpl();
     private Parser.Result lastParserResult;
     private CountDownLatch latch = new CountDownLatch(1);
@@ -291,6 +293,10 @@ public final class SemanticHighlighter extends HighlighterBase {
             lastParserResult = result;
             interrupter = new InterrupterImpl();
             latch = new CountDownLatch(1);
+        }
+        if (cancel.isCancelled()) {
+            LOG.log(Level.FINE, "SemanticHighlighter have been canceled before start, Task={0}, Result={1}", new Object[]{System.identityHashCode(this), System.identityHashCode(result)}); //NOI18N
+            return;
         }
         long time = 0;
         if (LOG.isLoggable(Level.FINE)) {
