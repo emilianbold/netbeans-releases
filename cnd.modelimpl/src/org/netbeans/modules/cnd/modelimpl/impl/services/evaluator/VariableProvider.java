@@ -190,7 +190,7 @@ public class VariableProvider {
                     }
                 }
                 if(CsmKindUtilities.isClass(decl)) {
-                    String varName = variableName.replaceAll(".*::(.*)", "$1");
+                    String varName = variableName.replaceAll(".*::(.*)", "$1"); // NOI18N
                     final CsmClass clazz = (CsmClass) decl;
                     MemberResolverImpl r = new MemberResolverImpl();
                     final CsmMember member = r.getDeclaration(clazz, varName);
