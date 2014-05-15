@@ -41,22 +41,16 @@
  */
 package org.netbeans.modules.javascript2.requirejs.editor;
 
-import java.io.IOException;
 import java.util.Arrays;
-import java.util.Map;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.spi.DeclarationFinder;
-import org.netbeans.modules.javascript2.requirejs.editor.index.RequireJsIndex;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -92,7 +86,7 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
                 if (token.id() == JsTokenId.BRACKET_LEFT_PAREN) {
                     token = LexUtilities.findPreviousToken(ts, Arrays.asList(JsTokenId.IDENTIFIER));
                     if (token.id() == JsTokenId.IDENTIFIER
-                            && (EditorUtils.DEFINE.equals(token.text().toString()) || EditorUtils.REQUIRE.equals(token.text().toString()))) {
+                            && (EditorUtils.DEFINE.equals(token.text().toString()) || EditorUtils.REQUIRE.equals(token.text().toString()) || EditorUtils.REQUIREJS.equals(token.text().toString()))) {
                         // we found define method
                         token = LexUtilities.findNextToken(ts, Arrays.asList(JsTokenId.BRACKET_LEFT_BRACKET, JsTokenId.KEYWORD_FUNCTION, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_PAREN));
                         if (token.id() == JsTokenId.BRACKET_LEFT_BRACKET) {

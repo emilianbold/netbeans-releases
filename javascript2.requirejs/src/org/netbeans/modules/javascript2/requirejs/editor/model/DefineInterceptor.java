@@ -62,6 +62,7 @@ import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
+import org.netbeans.modules.javascript2.requirejs.editor.EditorUtils;
 import org.netbeans.modules.javascript2.requirejs.editor.index.RequireJsIndex;
 import org.netbeans.modules.javascript2.requirejs.editor.index.RequireJsIndexer;
 import org.netbeans.modules.parsing.api.Source;
@@ -75,7 +76,7 @@ import org.openide.util.Exceptions;
 @FunctionInterceptor.Registration(priority = 350)
 public class DefineInterceptor implements FunctionInterceptor {
 
-    private final static Pattern PATTERN = Pattern.compile("define");  //NOI18N
+    private final static Pattern PATTERN = Pattern.compile("define|requirejs|require");  //NOI18N
 
     @Override
     public Pattern getNamePattern() {
@@ -107,9 +108,11 @@ public class DefineInterceptor implements FunctionInterceptor {
             if (fo != null && posibleFunc != null && posibleFunc instanceof JsFunction) {
                 JsFunction defFunc = (JsFunction) posibleFunc;
                 if (RequireJsIndexer.Factory.isScannerThread()) {
-                    // save to the index the return types
-                    Collection<? extends TypeUsage> returnTypes = defFunc.getReturnTypes();
-                    RequireJsIndexer.addTypes(fo.toURI(), returnTypes);
+                    if (EditorUtils.DEFINE.equals(name)) {
+                        // save to the index the return types
+                        Collection<? extends TypeUsage> returnTypes = defFunc.getReturnTypes();
+                        RequireJsIndexer.addTypes(fo.toURI(), returnTypes);
+                    }
                 } else if (modules != null && modules.getValue() instanceof JsArray) {
                     // add assignments for the parameters
                     JsArray array = (JsArray) modules.getValue();
