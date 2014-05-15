@@ -91,8 +91,20 @@ public class RequireJSCodeCompletionTest extends JsCodeCompletionBase {
     }
     
     public void testFSCompletion04() throws Exception {
-        checkAppliedCompletion("TestProject1/js/main3.js", "requirejs(['^']);", "requirejs(['folder1/^']);", "folder1", false);
+        checkAppliedCompletion("TestProject1/js/fileCC/main3.js", "requirejs(['^']);", "requirejs(['folder1/^']);", "folder1", false);
         
+    }
+    
+    public void testFSCompletion05() throws Exception {
+        checkAppliedCompletion("TestProject1/js/fileCC/main4.js", "requirejs(['fold^']);", "requirejs(['folder1/^']);", "folder1", false);        
+    }
+    
+    public void testFSCompletion06() throws Exception {
+        checkAppliedCompletion("TestProject1/js/fileCC/main5.js", "requirejs(['folder1/^']);", "requirejs(['folder1/module2^']);", "module2", false);        
+    }
+    
+    public void testFSCompletion07() throws Exception {
+        checkAppliedCompletion("TestProject1/js/fileCC/main6.js", "requirejs(['folder1/mo^']);", "requirejs(['folder1/module2^']);", "module2", false);        
     }
     
     public void checkAppliedCompletion(final String file, final String caretLine, final String expectedLine, final String itemToComplete, final boolean includeModifiers) throws Exception {

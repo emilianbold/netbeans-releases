@@ -134,7 +134,7 @@ public class FSCompletionUtils {
 
                 if (VisibilityQuery.getDefault().isVisible(current) && current.getNameExt().toLowerCase().startsWith(filePrefix.toLowerCase()) && filter.accept(current)) {
                     int newAnchor = pathPrefix == null ? 
-                            anchor - prefix.length() : anchor - (prefix.length() - pathPrefix.length() - 2);
+                            anchor - prefix.length() : anchor - Math.max(0, prefix.length() - pathPrefix.length() - 1);
                     result.add(new FSCompletionItem(current, pathPrefix != null ? pathPrefix + "/" : "./", newAnchor)); //NOI18N
                 }
             }
