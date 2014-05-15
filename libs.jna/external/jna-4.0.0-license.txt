@@ -1,5 +1,5 @@
 Name: Java Native Access
-Version: 3.4.0
+Version: 4.0.0
 License: LGPL-2.1
 OSR: 7755
 Description: Dynamically access native libraries from Java without JNI.
