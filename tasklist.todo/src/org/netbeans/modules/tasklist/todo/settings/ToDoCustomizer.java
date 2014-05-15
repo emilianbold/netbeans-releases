@@ -319,8 +319,8 @@ class ToDoCustomizer extends javax.swing.JPanel implements DocumentListener{
         if (elementAt instanceof FileIdentifier) {
             FileIdentifier identifier = (FileIdentifier) elementAt;            
             CommentTags tag = identifier.getCommentTags();
-            CommentTags commentTag = new CommentTags(chbLine.isSelected() ? txtLine.getText().trim() : "", 
-                    chbBlock.isSelected() ? txtBlockStart.getText().trim() : "", chbBlock.isSelected() ? txtBlockEnd.getText().trim() : "");
+            CommentTags commentTag = new CommentTags(chbLine.isSelected() ? txtLine.getText().trim() : "", chbLine.isSelected(),
+                    chbBlock.isSelected() ? txtBlockStart.getText().trim() : "", chbBlock.isSelected() ? txtBlockEnd.getText().trim() : "", chbBlock.isSelected());
             String id = identifier.getId();
             // check if there is a difference from the saved in Preferences and the currently showing in the UI state
             if (tag.isBlockCommentEnabled() != commentTag.isBlockCommentEnabled()

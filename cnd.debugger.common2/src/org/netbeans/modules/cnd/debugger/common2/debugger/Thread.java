@@ -105,6 +105,19 @@ public abstract class Thread implements DebuggingView.DVThread {
 	    return current_function;
 	} 
     }
+    
+   @Override
+    public boolean equals(Object obj) {
+        if ( !(obj instanceof Thread) ) {
+            return false;
+        }
+        return getName().equals(((Thread)obj).getName());
+    }
+
+    @Override
+    public int hashCode() {
+        return getName().hashCode();
+    }
 
     public String getAddress() {
 	// Got 0x-10f2288 for some reason!

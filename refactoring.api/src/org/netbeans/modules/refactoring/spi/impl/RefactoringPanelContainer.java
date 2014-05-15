@@ -192,7 +192,7 @@ public class RefactoringPanelContainer extends TopComponent {
             usages = (RefactoringPanelContainer) WindowManager.getDefault().findTopComponent( "find-usages" ); //NOI18N
             if (usages == null) {
                 // #156401: WindowManager.findTopComponent may fail
-                usages = new RefactoringPanelContainer(org.openide.util.NbBundle.getMessage(RefactoringPanelContainer.class, "LBL_Usages"), false);
+                usages = createUsagesComponent();
             }
         } 
         return usages;
@@ -203,10 +203,24 @@ public class RefactoringPanelContainer extends TopComponent {
             refactorings = (RefactoringPanelContainer) WindowManager.getDefault().findTopComponent( "refactoring-preview" ); //NOI18N
             if (refactorings == null) {
                 // #156401: WindowManager.findTopComponent may fail
-                refactorings = new RefactoringPanelContainer(org.openide.util.NbBundle.getMessage(RefactoringPanelContainer.class, "LBL_Refactoring"), true);
+                refactorings = createRefactoringComponent();
             }
         } 
         return refactorings;
+    }
+    
+    public static synchronized RefactoringPanelContainer createRefactoringComponent() {
+        if (refactorings == null) {
+            refactorings = new RefactoringPanelContainer(org.openide.util.NbBundle.getMessage(RefactoringPanelContainer.class, "LBL_Refactoring"), true);
+        }
+        return refactorings;
+    }
+    
+    public static synchronized RefactoringPanelContainer createUsagesComponent() {
+        if (usages == null) {
+            usages = new RefactoringPanelContainer(org.openide.util.NbBundle.getMessage(RefactoringPanelContainer.class, "LBL_Usages"), false);
+        }
+        return usages;
     }
     
     @Override

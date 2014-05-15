@@ -68,6 +68,9 @@ public class ComponentNode extends AbstractNode {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+                if (Node.PROP_PROPERTY_SETS.equals(evt.getPropertyName())) {
+                    firePropertySetsChange(null, null);
+                }
             }
         });
         

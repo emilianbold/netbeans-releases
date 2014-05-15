@@ -106,6 +106,7 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.parsing.spi.TaskIndexingMode;
+import org.netbeans.modules.parsing.spi.support.CancelSupport;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -124,6 +125,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result> {
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
+    private final CancelSupport cancel = CancelSupport.create(this);
     private AtomicBoolean canceled = new AtomicBoolean(false);
     
     public LineFactoryTask() {
@@ -135,6 +137,9 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
         synchronized (this) {
             canceled.set(true);
             canceled = new AtomicBoolean(false);
+        }
+        if (cancel.isCancelled()) {
+            return;
         }
         Collection<CodeAudit> audits = SuggestionProvider.getInstance().getAudits();
         boolean enabled = false;

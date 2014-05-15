@@ -46,9 +46,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -210,16 +207,7 @@ public final class Utils {
     }
 
     public static Path getLinkPath (final Path p) throws IOException {
-        try {
-            return AccessController.doPrivileged(new PrivilegedExceptionAction<Path>() {
-                @Override
-                public Path run () throws IOException {
-                    return Files.readSymbolicLink(p);
-                }
-            });
-        } catch (PrivilegedActionException e) {
-            throw (IOException) e.getException();
-        }
+        return Files.readSymbolicLink(p);
     }
 
     private static String getRelativePath (File repo, final File file, boolean canonicalized) {
@@ -271,12 +259,16 @@ public final class Utils {
     }
 
     public static RevCommit findCommit (Repository repository, String revision) throws GitException.MissingObjectException, GitException {
+        return findCommit(repository, revision, null);
+    }
+    
+    public static RevCommit findCommit (Repository repository, String revision, RevWalk walk) throws GitException.MissingObjectException, GitException {
         try {
             ObjectId commitId = parseObjectId(repository, revision);
             if (commitId == null) {
                 throw new GitException.MissingObjectException(revision, GitObjectType.COMMIT);
             }
-            return new RevWalk(repository).parseCommit(commitId);
+            return (walk == null ? new RevWalk(repository) : walk).parseCommit(commitId);
         } catch (MissingObjectException ex) {
             throw new GitException.MissingObjectException(revision, GitObjectType.COMMIT, ex);
         } catch (IncorrectObjectTypeException ex) {

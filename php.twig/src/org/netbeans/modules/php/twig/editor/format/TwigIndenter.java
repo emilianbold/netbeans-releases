@@ -221,7 +221,8 @@ public class TwigIndenter extends AbstractIndenter<TwigTopTokenId> {
     }
 
     private static boolean isShortedBlockMacro(Token<TwigTopTokenId> token) {
-        return token.text().toString().endsWith("/"); //NOI18N
+        String tokenText = token.text().toString();
+        return tokenText.endsWith("/") || (tokenText.contains("set") && tokenText.contains("=")); //NOI18N
     }
 
     private String getMarkupTokenName(Token<TwigTopTokenId> token) {

@@ -126,6 +126,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.FileInfoQueryImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
+import org.netbeans.modules.cnd.modelimpl.platform.CsmEventDispatcher;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.ClassifierContainerKey;
 import org.netbeans.modules.cnd.modelimpl.repository.FileContainerKey;
@@ -150,6 +151,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -810,46 +812,75 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }    
 
     public final void enableProjectListeners(boolean enable) {
-        synchronized (projectListenerLock) {
-            if (projectListener != null) {
-                projectListener.enableListening(enable);
+        if (TraceFlags.MERGE_EVENTS) {
+            if (platformProject instanceof NativeProject) {
+                // should be in ProjectImpl, but leaving it here makes diff more clear
+                CsmEventDispatcher.getInstance().enableListening(this, enable);
+            }
+        } else {
+            synchronized (projectListenerLock) {
+                if (projectListener != null) {
+                    projectListener.enableListening(enable);
+                }
             }
         }
     }
 
     protected final void registerProjectListeners() {
-        synchronized (projectListenerLock) {
-            if (platformProject instanceof NativeProject) {
-                if (projectListener == null) {
-                    projectListener = new NativeProjectListenerImpl(getModel(), (NativeProject) platformProject, this);
-                }
+        if (platformProject instanceof NativeProject) {
+            if (TraceFlags.MERGE_EVENTS) {
+                // should be in ProjectImpl, but leaving it here makes diff more clear
+                CsmEventDispatcher.getInstance().registerProject(this);
                 NativeProject nativeProject = (NativeProject) platformProject;
-                nativeProject.addProjectItemsListener(projectListener);
                 for (FileSystem fs : getIncludesFileSystems(nativeProject)) {
                     CndFileSystemProvider.addFileSystemProblemListener(this, fs);
+                }
+            } else {
+                synchronized (projectListenerLock) {
+                    if (platformProject instanceof NativeProject) {
+                        if (projectListener == null) {
+                            projectListener = new NativeProjectListenerImpl(getModel(), (NativeProject) platformProject, this);
+                        }
+                        NativeProject nativeProject = (NativeProject) platformProject;
+                        nativeProject.addProjectItemsListener(projectListener);
+                        for (FileSystem fs : getIncludesFileSystems(nativeProject)) {
+                            CndFileSystemProvider.addFileSystemProblemListener(this, fs);
+                        }
+                    }
                 }
             }
         }
     }
 
     protected final void unregisterProjectListeners() {
-        synchronized (projectListenerLock) {
-            if (projectListener != null) {
-                if (platformProject instanceof NativeProject) {
-                    NativeProject nativeProject = (NativeProject) platformProject;
-                    nativeProject.removeProjectItemsListener(projectListener);
-                    for (FileSystem fs : getIncludesFileSystems(nativeProject)) {
-                        CndFileSystemProvider.removeFileSystemProblemListener(this, fs);
+        if (platformProject instanceof NativeProject) {
+            if (TraceFlags.MERGE_EVENTS) {
+                // should be in ProjectImpl, but leaving it here makes diff more clear
+                CsmEventDispatcher.getInstance().unregisterProject(this);
+                NativeProject nativeProject = (NativeProject) platformProject;
+                for (FileSystem fs : getIncludesFileSystems(nativeProject)) {
+                    CndFileSystemProvider.removeFileSystemProblemListener(this, fs);
+                }
+            } else {
+                synchronized (projectListenerLock) {
+                    if (projectListener != null) {
+                        if (platformProject instanceof NativeProject) {
+                            NativeProject nativeProject = (NativeProject) platformProject;
+                            nativeProject.removeProjectItemsListener(projectListener);
+                            for (FileSystem fs : getIncludesFileSystems(nativeProject)) {
+                                CndFileSystemProvider.removeFileSystemProblemListener(this, fs);
+                            }
+                        }
+                        projectListener = null;
                     }
                 }
-                projectListener = null;
             }
         }
     }
 
     /*package*/ final void scheduleReparse() {
         ensureFilesCreated();
-        DeepReparsingUtils.reparseOnEdit(this.getAllFileImpls(), this, true);
+        //DeepReparsingUtils.reparseOnEdit(this.getAllFileImpls(), this, true);
     }
 
     private final Object fileCreateLock = new Object();
@@ -1450,7 +1481,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     /* package */ final APTPreprocHandler createPreprocHandlerFromState(CharSequence absPath, APTPreprocHandler.State state) {
-        Collection<APTPreprocHandler> out = createPreprocHandlerFromStates(Collections.singleton(state), absPath);
+        Collection<APTPreprocHandler> out = createPreprocHandlerFromStates(Collections.singleton(state), absPath, Interrupter.DUMMY);
         return out.iterator().next();
     }
 
@@ -1509,7 +1540,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return out;
     }
 
-    public final Collection<APTPreprocHandler> getPreprocHandlersForParse(FileImpl fileImpl) {
+    public final Collection<APTPreprocHandler> getPreprocHandlersForParse(FileImpl fileImpl, Interrupter interrupter) {
         CharSequence fileKey = FileContainer.getFileKey(fileImpl.getAbsolutePath(), false);
         FileContainer.FileEntry entry = getFileContainer().getEntry(fileKey);
         if (entry == null) {
@@ -1534,7 +1565,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
             }
         }
-        Collection<APTPreprocHandler> result = createPreprocHandlerFromStates(states, fileKey);
+        Collection<APTPreprocHandler> result = createPreprocHandlerFromStates(states, fileKey, interrupter);
         return result;
     }
 
@@ -1569,16 +1600,16 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         synchronized (entry.getLock()) {
             states = entry.getPrerocStates();
         }
-        return createPreprocHandlerFromStates(states, absPath);
+        return createPreprocHandlerFromStates(states, absPath, Interrupter.DUMMY);
     }
 
-    private Collection<APTPreprocHandler> createPreprocHandlerFromStates(Collection<State> states, CharSequence absPath) {
+    private Collection<APTPreprocHandler> createPreprocHandlerFromStates(Collection<State> states, CharSequence absPath, Interrupter interrupter) {
         Collection<APTPreprocHandler> result = new ArrayList<>(states.size());
         for (APTPreprocHandler.State state : states) {
             APTPreprocHandler preprocHandler = createEmptyPreprocHandler(absPath);
             if (state != null) {
                 if (state.isCleaned()) {
-                    preprocHandler = restorePreprocHandler(absPath, preprocHandler, state);
+                    preprocHandler = restorePreprocHandler(absPath, preprocHandler, state, interrupter);
                 } else {
                     if (TRACE_PP_STATE_OUT) {
                         System.err.println("copying state for " + absPath);
@@ -2465,28 +2496,37 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         return removedFromProject;
     }
-    
+
     public final void onFileObjectExternalCreate(FileObject file) {
+        onFileObjectExternalCreate(Arrays.asList(file));
+    }
+
+    public final void onFileObjectExternalCreate(Collection<FileObject> files) {
         try {
             ParserQueue.instance().onStartAddingProjectFiles(this);
             CndFileUtils.clearFileExistenceCache();
             // #196664 - Code Model ignores the generated files"
             // when external file was created and assigned to this project => 
             // create csm file for it if possible
-            NativeFileItem nativeFileItem = null;
+            List<NativeFileItem> nativeFileItems = new ArrayList<>();
             // Try to find native file
             if (getPlatformProject() instanceof NativeProject) {
                 NativeProject prj = (NativeProject) getPlatformProject();
-                if (prj != null) {
-                    nativeFileItem = prj.findFileItem(file);
+                for (FileObject fo : files) {
+                    if (prj != null) {
+                        NativeFileItem item = prj.findFileItem(fo);
+                        if (item != null) {
+                            nativeFileItems.add(item);
+                        }
+                    }
                 }
             }
             // schedule reparse like added NFI
-            if (nativeFileItem != null) {
-                onFileItemsAdded(Collections.singletonList(nativeFileItem));
+            if (!nativeFileItems.isEmpty()) {
+                onFileItemsAdded(nativeFileItems);
             }
             // allow to fix broken includes
-            DeepReparsingUtils.reparseOnAdded(file, this);
+            DeepReparsingUtils.reparseOnAdded(nativeFileItems, this);
         } finally {
             ParserQueue.instance().onEndAddingProjectFiles(this);   
         }
@@ -2613,7 +2653,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
             FileBuffer fileBuffer = ModelSupport.createFileBuffer(fo);
             // and all other under lock again
-            boolean putContainer = false;
             synchronized (fileContainerLock) {
                 impl = getFile(absPath, treatSymlinkAsSeparateFile);
                 if (impl == null) {
@@ -2629,7 +2668,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 //                        initial = APTHandlersSupport.createCleanPreprocState(preprocHandler.getState());
 //                    }
                         putFile(impl, initial);
-                        putContainer = true;
                         // NB: parse only after putting into a map
                         if (scheduleParseIfNeed) {
                             APTPreprocHandler.State ppState = preprocHandler.getState();
@@ -2639,9 +2677,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         Notificator.instance().flush();
                     }
                 }
-            }
-            if (putContainer) {
-                getFileContainer().put();
             }
         }
 
@@ -2676,21 +2711,16 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         CsmUID<CsmFile> aUid = null;
         if (impl == null) {
             preprocHandler = createPreprocHandler(nativeFile);
-            boolean putContainer = false;
             synchronized (fileContainerLock) {
                 impl = getFile(absPath, true);
                 if (impl == null) {
                     assert preprocHandler != null;
                     impl = new FileImpl(buf, this, fileType, nativeFile);
                     putFile(impl, preprocHandler.getState());
-                    putContainer = true;
                 } else {
                     aUid = impl.getUID();
                     impl.attachToProject(this);
                 }
-            }
-            if (putContainer) {
-                getFileContainer().put();
             }
         } else {
             aUid = impl.getUID();
@@ -3235,7 +3265,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return new StartEntryInfo(preprocHandler, startProject, csmFile);
     }
 
-    private APTPreprocHandler restorePreprocHandler(CharSequence interestedFile, APTPreprocHandler preprocHandler, APTPreprocHandler.State state) {
+    private APTPreprocHandler restorePreprocHandler(CharSequence interestedFile, APTPreprocHandler preprocHandler, APTPreprocHandler.State state, Interrupter interrupter) {
         assert state != null;
         assert state.isCleaned();
         // walk through include stack to restore preproc information
@@ -3250,12 +3280,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             if (TRACE_PP_STATE_OUT) {
                 System.err.println("restoring for " + interestedFile);
             }
-            return restorePreprocHandlerFromIncludeStack(reverseInclStack, interestedFile, preprocHandler, state);
+            return restorePreprocHandlerFromIncludeStack(reverseInclStack, interestedFile, preprocHandler, state, interrupter);
         }
     }
 
-    protected final APTPreprocHandler restorePreprocHandlerFromIncludeStack(LinkedList<APTIncludeHandler.IncludeInfo> reverseInclStack, 
-            CharSequence interestedFile, APTPreprocHandler preprocHandler, APTPreprocHandler.State state) {
+    protected final APTPreprocHandler restorePreprocHandlerFromIncludeStack(LinkedList<APTIncludeHandler.IncludeInfo> reverseInclStack, CharSequence interestedFile, APTPreprocHandler preprocHandler, APTPreprocHandler.State state, final Interrupter interrupter) {
         // we need to reverse includes stack
         assert (!reverseInclStack.isEmpty()) : "state of stack is " + reverseInclStack;
         LinkedList<APTIncludeHandler.IncludeInfo> inclStack = Utils.reverse(reverseInclStack);
@@ -3279,7 +3308,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             int stackSize = inclStack.size();
             // create concurrent entry if absent
             APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(state, Boolean.FALSE);
-            APTWalker walker = new APTRestorePreprocStateWalker(startProject, aptLight, csmFile, preprocHandler, inclStack, FileContainer.getFileKey(interestedFile, false).toString(), cacheEntry);
+            APTWalker walker = new APTRestorePreprocStateWalker(startProject, aptLight, csmFile, preprocHandler, inclStack, FileContainer.getFileKey(interestedFile, false).toString(), cacheEntry) {
+
+                @Override
+                protected boolean isStopped() {
+                    return super.isStopped() || interrupter.cancelled();
+                }
+                
+            };
             walker.visit();
             // we do not remember cache entry because it is stopped before end of file
             // fileImpl.setAPTCacheEntry(handler, cacheEntry, false);
@@ -3585,7 +3621,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private static final class FileContainerLock {}
     private final Object fileContainerLock = new FileContainerLock();
     private final Key graphStorageKey;
+
+    // remove as soon as TraceFlags.MERGE_EVENTS is removed
     private volatile NativeProjectListenerImpl projectListener;
+    // remove as soon as TraceFlags.MERGE_EVENTS is removed
     private final Object projectListenerLock = new Object();
     
     // test variables.

@@ -87,6 +87,7 @@ import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils.InsertInfo;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult.Difference;
 import org.netbeans.modules.cnd.refactoring.ui.EncapsulateFieldPanel.InsertPoint;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.openide.filesystems.FileObject;
@@ -659,7 +660,7 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
             fo = fo != null ? fo : CsmUtilities.getFileObject(csmFile);
             ces = ces != null ? ces : CsmUtilities.findCloneableEditorSupport(csmFile);
             // do not interrupt refactoring
-            Collection<CsmReference> refs = CsmReferenceRepository.getDefault().getReferences(field, csmFile, CsmReferenceKind.ALL, null);
+            Collection<CsmReference> refs = CsmReferenceRepository.getDefault().getReferences(field, csmFile, CsmReferenceKind.ALL, Interrupter.DUMMY);
             if (refs.size() > 0) {
                 List<CsmReference> sortedRefs = new ArrayList<CsmReference>(refs);
                 Collections.sort(sortedRefs, new Comparator<CsmReference>() {

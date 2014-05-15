@@ -49,6 +49,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
 import org.netbeans.modules.cnd.api.model.CsmKnRName;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
@@ -175,8 +176,8 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
     }
 
     @SuppressWarnings("unchecked")
-    public FunctionParameterListImpl(RepositoryDataInput input) throws IOException {
-        super(input);
+    public FunctionParameterListImpl(RepositoryDataInput input, CsmScope scope) throws IOException {
+        super(input, scope);
     }
 
     /**
@@ -210,9 +211,9 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
         }
 
         @SuppressWarnings("unchecked")
-        public FunctionKnRParameterListImpl(RepositoryDataInput input) throws IOException {
-            super(input);
-            this.krList = (ParameterListImpl<CsmParameterList<CsmKnRName>, CsmKnRName>) PersistentUtils.readParameterList(input);
+        public FunctionKnRParameterListImpl(RepositoryDataInput input, CsmScope scope) throws IOException {
+            super(input, scope);
+            this.krList = (ParameterListImpl<CsmParameterList<CsmKnRName>, CsmKnRName>) PersistentUtils.readParameterList(input, scope);
         }
     }
 }

@@ -59,6 +59,8 @@ import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.modelutil.ClassifiersAntiLoop;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  *
@@ -69,8 +71,25 @@ public final class MemberResolverImpl {
     public MemberResolverImpl(){
     }
     
+    public CsmMember getDeclaration(CsmClassifier cls, CharSequence name) {
+        Iterator<CsmMember> declarations = getDeclarations(cls, name, true);
+        if (declarations.hasNext()) {
+            return declarations.next();
+        }
+        return null;
+    }       
+
     public Iterator<CsmMember> getDeclarations(CsmClassifier cls, CharSequence name) {
+        return getDeclarations(cls, name, false);
+    }       
+
+    private Iterator<CsmMember> getDeclarations(CsmClassifier cls, CharSequence name, boolean first) {
         if (CsmKindUtilities.isOffsetable(cls)) {
+            if (CharSequenceUtils.indexOf(name, ':') >= 0) {
+                //TODO Fix Evaluator.g
+                CndUtils.assertTrueInConsole(false, "Attempt to find member \""+name+"\" in the class "+cls.getQualifiedName()); // NOI18N
+                return Collections.<CsmMember>emptyList().iterator();
+            }
             Resolver aResolver = ResolverFactory.createResolver((CsmOffsetable) cls);
             try {
                 cls = aResolver.getOriginalClassifier(cls);
@@ -79,26 +98,32 @@ public final class MemberResolverImpl {
             }
             if (CsmKindUtilities.isClass(cls)){
                 List<CsmMember> res = new ArrayList<>();
-                getClassMembers((CsmClass)cls, name, res);
-                getSuperClasses((CsmClass)cls, name, res, new ClassifiersAntiLoop());
+                getClassMembers((CsmClass)cls, name, res, first);
+                getSuperClasses((CsmClass)cls, name, res, first, new ClassifiersAntiLoop());
                 return res.iterator();
             }
         }
         return Collections.<CsmMember>emptyList().iterator();
     }       
 
-    private void getClassMembers(CsmClass cls, CharSequence name, List<CsmMember> res){
+    private void getClassMembers(CsmClass cls, CharSequence name, List<CsmMember> res, boolean first){
         Iterator<CsmMember> it = CsmSelect.getClassMembers(cls,
                     CsmSelect.getFilterBuilder().createNameFilter(name, true, true, false));
         while(it.hasNext()){
             CsmMember m = it.next();
             if (CsmSortUtilities.matchName(m.getName(), name, true, true)){
                 res.add(m);
+                if (first) {
+                    return;
+                }
             }
         }
     }
 
-    private void getSuperClasses(CsmClass cls, CharSequence name, List<CsmMember> res, ClassifiersAntiLoop antiLoop){
+    private void getSuperClasses(CsmClass cls, CharSequence name, List<CsmMember> res, boolean first, ClassifiersAntiLoop antiLoop){
+        if (first && !res.isEmpty()) {
+            return;
+        }
         if (antiLoop.contains(cls)){
             return;
         }
@@ -111,9 +136,12 @@ public final class MemberResolverImpl {
                 default:
                     CsmClass base = CsmInheritanceUtilities.getCsmClass(inh);
                     if (base != null) {
-                        getClassMembers(base, name, res);
-                        getSuperClasses(base, name, res, antiLoop);
+                        getClassMembers(base, name, res, first);
+                        getSuperClasses(base, name, res, first, antiLoop);
                     }
+            }
+            if (first && !res.isEmpty()) {
+                return;
             }
         }
     }

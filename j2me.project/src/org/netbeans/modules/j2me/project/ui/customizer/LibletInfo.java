@@ -103,8 +103,7 @@ public class LibletInfo {
             LibletInfo lib = (LibletInfo) obj;
             return this.type == lib.getType()
                     && this.name.equals(lib.getName())
-                    && this.vendor.equals(lib.getVendor())
-                    && this.version.equals(lib.getVersion());
+                    && this.vendor.equals(lib.getVendor());
         }
         return false;
     }
@@ -115,7 +114,6 @@ public class LibletInfo {
         hash = 47 * hash + Objects.hashCode(this.type);
         hash = 47 * hash + Objects.hashCode(this.name);
         hash = 47 * hash + Objects.hashCode(this.vendor);
-        hash = 47 * hash + Objects.hashCode(this.version);
         return hash;
     }
 

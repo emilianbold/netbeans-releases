@@ -935,7 +935,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     }
 
     private String selectBinaryFile(String path) {
-        FileFilter[] filters = FileFilterFactory.getBinaryFilters();
+        FileFilter[] filters = FileFilterFactory.getBinaryFilters(fileSystem);
         if (path.isEmpty() && HostInfoUtils.isHostInfoAvailable(env)) { 
             try {  
                 path = HostInfoUtils.getHostInfo(env).getUserDir();

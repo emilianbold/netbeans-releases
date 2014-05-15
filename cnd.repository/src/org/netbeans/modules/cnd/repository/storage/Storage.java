@@ -57,6 +57,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.repository.api.FilePath;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryException;
@@ -88,6 +89,8 @@ import org.openide.util.lookup.Lookups;
  */
 /* package */ final class Storage {
 
+    private static boolean PRINT_STACK = CndUtils.getBoolean("cnd.repository.print.stack.wrong.file", true);// NOI18N
+    private static final Logger LOG = Logger.getLogger("repository.support.filecreate.logger"); //NOI18N
     // A list of all layers that belong to this Storage.
     private final List<Layer> layers;
     private final List<LayerDescriptor> layerDescriptors;
@@ -565,14 +568,23 @@ import org.openide.util.lookup.Lookups;
                 fsDict = filePathDictionaries.get(clientShortUnitID);
             }            
         }
-        return fsDict.getFilePath(fileIdx);
+        CharSequence res = fsDict.getFilePath(fileIdx);
+        if (FilePathsDictionary.WRONG_PATH == res) {
+            if (PRINT_STACK){
+                System.err.println("Path by index "+fileIdx+"/"+clientShortUnitID+" not found. Index size is "+fsDict.size()); //NOI18N
+                CndUtils.threadsDump();
+                // only once
+                PRINT_STACK = false;
+            }
+        }
+        return res;
     }
 
     int getFileID(int clientUnitID, CharSequence fileName) {
         Integer clientShortUnitID = storageMask.clientToLayer(clientUnitID);
         FilePathsDictionary fsDict;
-        int size = 0;
-        int result = 0;
+        int size;
+        int result;
         synchronized (filePathDictionaries) {
             fsDict = filePathDictionaries.get(clientShortUnitID);
             if (fsDict == null) {
@@ -580,7 +592,7 @@ import org.openide.util.lookup.Lookups;
                 fsDict = filePathDictionaries.get(clientShortUnitID);
             }
             size = fsDict.size();
-            result = fsDict.getFileID(fileName);
+            result = fsDict.getFileID(fileName, clientShortUnitID);
         }
         //each time add to the quue to write
         if (fsDict.size() > size) {

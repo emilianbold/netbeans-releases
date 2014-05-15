@@ -50,6 +50,9 @@ import org.openide.util.NbBundle;
 
 public final class TesterUtils {
 
+    public static final String[] BINARY_EXECUTABLES = new String[] {null, "php-cgi", "php"}; // NOI18N
+
+
     private TesterUtils() {
     }
 

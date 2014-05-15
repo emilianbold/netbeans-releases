@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.util.CharSequences;
 
 /**
- * TODO: cache resolved type for last instantitations.
+ * TODO: cache resolved type for last instantiations.
  * 
  * @author petrk
  */
@@ -78,7 +78,9 @@ public class DeclTypeImpl extends TypeImpl {
     
     private final CsmExpression typeExpression;
     
-    private transient List<CsmInstantiation> instantiations;
+    private final ThreadLocal<List<CsmInstantiation>> instantiations = new ThreadLocal<List<CsmInstantiation>>();
+    
+    private volatile CsmType cachedType; 
     
 
     DeclTypeImpl(AST ast, CsmFile file, CsmScope scope, int pointerDepth, int reference, int arrayDepth, int constQualifiers, int startOffset, int endOffset) {
@@ -93,28 +95,10 @@ public class DeclTypeImpl extends TypeImpl {
 
     @Override
     protected CsmClassifier _getClassifier() {
-        CsmClassifier classifier = null;
-        
-        if (canUseCache()) {
-            classifier = super._getClassifier();
-        }
-        
+        CsmType type = resolve();
+        CsmClassifier classifier = type != null ? type.getClassifier() : null;
         if (classifier == null) {
-            synchronized (this) {
-                if (!isClassifierInitialized() || !canUseCache()) {
-                    CsmType type = CsmEntityResolver.resolveType(typeExpression, instantiations);
-                    classifier = type != null ? type.getClassifier() : null;
-                    if (classifier == null) {
-                        classifier = BuiltinTypes.getBuiltIn(DECLTYPE); // Unresolved?
-                    }
-                    if (canUseCache()) {
-                        initClassifier(classifier);
-                    }
-                } else {
-                    classifier = super._getClassifier();
-                    assert (classifier != null);
-                }
-            }
+            classifier = BuiltinTypes.getBuiltIn(DECLTYPE); // Unresolved?
         }
         return classifier;
     }
@@ -123,10 +107,10 @@ public class DeclTypeImpl extends TypeImpl {
     public CsmClassifier getClassifier(List<CsmInstantiation> instantiations, boolean specialize) {    
         CsmClassifier classifier;
         try {
-            this.instantiations = instantiations;
+            this.instantiations.set(instantiations);
             classifier = super.getClassifier(instantiations, specialize);
         } finally {
-            this.instantiations = null;
+            this.instantiations.set(null);
         }
         return classifier;
     }    
@@ -137,7 +121,7 @@ public class DeclTypeImpl extends TypeImpl {
     }
     
     public boolean isPointer(List<CsmInstantiation> instantiations) {
-        CsmType type = CsmEntityResolver.resolveType(typeExpression, instantiations);
+        CsmType type = resolve();
         return type != null ? type.isPointer() : false;
     }
 
@@ -147,7 +131,7 @@ public class DeclTypeImpl extends TypeImpl {
     }
     
     public boolean isReference(List<CsmInstantiation> instantiations) {
-        CsmType type = CsmEntityResolver.resolveType(typeExpression, instantiations);
+        CsmType type = resolve();
         return type != null ? type.isReference() : false;
     }
 
@@ -157,7 +141,7 @@ public class DeclTypeImpl extends TypeImpl {
     }
     
     public boolean isConst(List<CsmInstantiation> instantiations) {
-        CsmType type = CsmEntityResolver.resolveType(typeExpression, instantiations);
+        CsmType type = resolve();
         return type != null ? type.isConst() : false;
     }    
 
@@ -167,13 +151,38 @@ public class DeclTypeImpl extends TypeImpl {
     }
     
     public boolean isRValueReference(List<CsmInstantiation> instantiations) {
-        CsmType type = CsmEntityResolver.resolveType(typeExpression, instantiations);
+        CsmType type = resolve();
         return type != null ? type.isRValueReference(): false;
     }
 
     private boolean canUseCache() {
         // We are allowed to use cache only if context is null
-        return instantiations == null;
+        return instantiations.get() == null;
+    }
+    
+    private CsmType resolve() {
+        CsmType type = null;
+        
+        if (canUseCache()) {
+            type = cachedType;
+        }
+        
+        if (type == null) {
+            if (canUseCache()) {
+                synchronized (this) {
+                    if (cachedType == null) {
+                        type = CsmEntityResolver.resolveType(typeExpression, instantiations.get());
+                        cachedType = type;
+                    } else {
+                        type = cachedType;
+                    }
+                }
+            } else {
+                type = CsmEntityResolver.resolveType(typeExpression, instantiations.get());
+            }
+        }
+        
+        return type;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -187,6 +196,5 @@ public class DeclTypeImpl extends TypeImpl {
     public DeclTypeImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.typeExpression = (ExpressionBase) PersistentUtils.readExpression(input);
-        this.instantiations = null;
     }    
 }

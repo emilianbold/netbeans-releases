@@ -251,10 +251,12 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
                                         if (definition == null) {
                                             items.add(CsmImplementsMethodCompletionItem.createImplementItem(queryAnchorOffset, caretOffset, cls, method));
                                         } else if (method == definition){
-                                            final CsmImplementsMethodCompletionItem item =
-                                                    CsmImplementsMethodCompletionItem.createExtractBodyItem(queryAnchorOffset, caretOffset, cls, method);
-                                            if (item != null) {
-                                                items.add(item);
+                                            if (definition.getDefinitionKind() == CsmFunctionDefinition.DefinitionKind.REGULAR) {
+                                                final CsmImplementsMethodCompletionItem item =
+                                                        CsmImplementsMethodCompletionItem.createExtractBodyItem(queryAnchorOffset, caretOffset, cls, method);
+                                                if (item != null) {
+                                                    items.add(item);
+                                                }
                                             }
                                         }
                                     }
@@ -266,10 +268,12 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
                                         if (definition == null) {
                                             items.add(CsmImplementsMethodCompletionItem.createImplementItem(queryAnchorOffset, caretOffset, cls, method));
                                         } else if (method == definition){
-                                            final CsmImplementsMethodCompletionItem item =
-                                                    CsmImplementsMethodCompletionItem.createExtractBodyItem(queryAnchorOffset, caretOffset, cls, method);
-                                            if (item != null) {
-                                                items.add(item);
+                                            if (definition.getDefinitionKind() == CsmFunctionDefinition.DefinitionKind.REGULAR) {
+                                                final CsmImplementsMethodCompletionItem item =
+                                                        CsmImplementsMethodCompletionItem.createExtractBodyItem(queryAnchorOffset, caretOffset, cls, method);
+                                                if (item != null) {
+                                                    items.add(item);
+                                                }
                                             }
                                         }
                                     }

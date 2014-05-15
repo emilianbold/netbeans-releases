@@ -413,7 +413,8 @@ public class CasualDiff {
         String originalText = isCUT ? origText : origText.substring(start, end);
         userInfo.putAll(td.diffInfo);
 
-        return td.checkDiffs(DiffUtilities.diff(originalText, resultSrc, start, td.readSections(diffContext.origText.length(), resultSrc.length())));
+        return td.checkDiffs(DiffUtilities.diff(originalText, resultSrc, start, 
+                td.readSections(originalText.length(), resultSrc.length(), lineStart, start), lineStart));
     }
     
     private static class SectKey {
@@ -421,14 +422,33 @@ public class CasualDiff {
         SectKey(int off) { this.off = off; }
     }
     
-    private int[] readSections(int l1, int l2) {
+    /**
+     * Reads the section map. While the printer produced the text matching the region
+     * starting at 'start', the diff will only cover text starting and textStart, which may
+     * be in the middle of the line. the blockSequenceMap was filled by the printer,
+     * so offsets may need to be moved backwards.
+     * 
+     * @param l1 length of the original text
+     * @param l2 length of the new text
+     * @param printerStart printer start
+     * @param diffStart
+     * @return 
+     */
+    private int[] readSections(int l1, int l2, int printerStart, int diffStart) {
         Map<Integer, Integer> seqMap = blockSequenceMap;
         if (seqMap.isEmpty()) {
-            return new int[] { l1, l2 };
+            // must offset the lengths, they come from the origtext/resultsrc, which may be already 
+            // only substrings of the printed area.
+            int delta = diffStart - printerStart;
+            return new int[] { l1 + delta, l2 + delta };
         }
         int[] res = new int[seqMap.size() * 2];
         int p = 0;
         for (Map.Entry<Integer, Integer> en : seqMap.entrySet()) {
+            int point = en.getKey();
+            if (point < printerStart || point > diffStart + l2) {
+                continue;
+            }
             res[p++] = en.getKey();
             res[p++] = en.getValue();
         }
@@ -2545,7 +2565,15 @@ public class CasualDiff {
             Name oldEnclClassName = printer.enclClassName;
             printer.enclClassName = null;
             suppressParameterTypes = newT.paramKind == JCLambda.ParameterKind.IMPLICIT;
-            localPointer = diffParameterList(oldT.params, newT.params, null, posHint, Measure.MEMBER);
+            // check, if there are already written parenthesis
+            JavaTokenId[] parens = null;
+            if(newT.params.size() > 1) {
+                JavaTokenId id = moveFwdToOneOfTokens(tokenSequence, oldT.params.isEmpty() ? posHint : endPos(oldT.params.last()), LAMBDA_PARAM_END_TOKENS);
+                if (id != JavaTokenId.RPAREN) {
+                    parens = new JavaTokenId[] { JavaTokenId.LPAREN, JavaTokenId.RPAREN };
+                }
+            }
+            localPointer = diffParameterList(oldT.params, newT.params, parens, posHint, Measure.MEMBER);
             suppressParameterTypes = false;
             printer.enclClassName = oldEnclClassName;
             parameterPrint = false;
@@ -3053,7 +3081,7 @@ public class CasualDiff {
             return pos;
         }
         ResultItem<JCTree>[] result = matcher.getResult();
-        if (printParens && oldList.isEmpty()) {
+        if (printParens/* && oldList.isEmpty()*/) {
             printer.print(makeAround[0].fixedText());
         }
         int oldIndex = 0;
@@ -3161,7 +3189,7 @@ public class CasualDiff {
 //                printer.print(";");
             }
         }
-        if (printParens && oldList.isEmpty()) {
+        if (printParens/* && oldList.isEmpty()*/) {
             printer.print(makeAround[1].fixedText());
         }
         if (oldList.isEmpty()) {
@@ -4643,6 +4671,18 @@ public class CasualDiff {
         if (printer.handlePossibleOldTrees(Collections.singletonList(newT), true)) {
             return getCommentCorrectedEndPos(oldT);
         }
+        
+        boolean handleImplicitLambda = parent != null && parent.hasTag(Tag.LAMBDA) && ((JCLambda)parent).params.size() == 1
+                && ((JCLambda)parent).params.get(0) == oldT &&((JCLambda)parent).paramKind == JCLambda.ParameterKind.IMPLICIT
+                && newT.hasTag(Tag.VARDEF) && ((JCVariableDecl)newT).getType() != null;
+        if (handleImplicitLambda) {
+            tokenSequence.move(getOldPos(parent));
+            if (tokenSequence.moveNext() && tokenSequence.token().id() == JavaTokenId.LPAREN) {
+                handleImplicitLambda = false;
+            } else {
+                printer.print("(");
+            }
+        }
 
         // if comments are the same, diffPredComments will skip them so that printer.print(newT) will
         // not emit them from the new element. But if printer.print() won't be used (the newT will be merged in rather
@@ -4891,6 +4931,9 @@ public class CasualDiff {
                   ((com.sun.source.tree.Tree)oldT).getKind().toString() +
                   " " + oldT.getClass().getName();
               throw new AssertionError(msg);
+        }
+        if (handleImplicitLambda) {
+            printer.print(")");
         }
         return diffTrailingComments(oldT, newT, retVal);
     }

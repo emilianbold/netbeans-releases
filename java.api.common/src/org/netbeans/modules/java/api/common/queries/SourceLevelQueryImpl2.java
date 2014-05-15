@@ -57,7 +57,6 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
 /**
@@ -74,11 +73,16 @@ class SourceLevelQueryImpl2 implements SourceLevelQueryImplementation2 {
     private static final Pattern SUPPORTS_PROFILES = Pattern.compile("(1\\.)?8");    //NOI18N
 
     private final PropertyEvaluator eval;
+    private final String platformType;
     private final Result result;
 
-    SourceLevelQueryImpl2(final @NonNull PropertyEvaluator eval) {
-        Parameters.notNull("eval", eval);   //NOI18N
+    SourceLevelQueryImpl2(
+        @NonNull final PropertyEvaluator eval,
+        @NonNull final String platformType) {
+        assert eval != null;
+        assert platformType != null;
         this.eval = eval;
+        this.platformType = platformType;
         this.result = new R();
     }
 
@@ -89,23 +93,26 @@ class SourceLevelQueryImpl2 implements SourceLevelQueryImplementation2 {
 
     @CheckForNull
     static String findSourceLevel (
-            @NonNull final PropertyEvaluator eval) {
-        return findValue(eval, JAVAC_SOURCE, DEFAULT_SOURCE_LEVEL);
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final String platformType) {
+        return findValue(eval, platformType, JAVAC_SOURCE, DEFAULT_SOURCE_LEVEL);
     }
 
     @CheckForNull
     private static String findTargetLevel(
-            @NonNull final PropertyEvaluator eval) {
-        return findValue(eval, JAVAC_TARGET, DEFAULT_TARGET_LEVEL);
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final String platformType) {
+        return findValue(eval, platformType, JAVAC_TARGET, DEFAULT_TARGET_LEVEL);
     }
 
     @CheckForNull
     private static String findValue(
             @NonNull final PropertyEvaluator eval,
+            @NonNull final String platformType,
             @NonNull final String prop,
             @NonNull final String fallBack) {
         final String activePlatform = eval.getProperty(PLATFORM_ACTIVE);
-        if (CommonProjectUtils.getActivePlatform(activePlatform) != null) {
+        if (CommonProjectUtils.getActivePlatform(activePlatform, platformType) != null) {
             String sl = eval.getProperty(prop);
             if (sl != null && !sl.isEmpty()) {
                 return sl;
@@ -121,9 +128,10 @@ class SourceLevelQueryImpl2 implements SourceLevelQueryImplementation2 {
     }
 
     private static SourceLevelQuery.Profile findProfile(
-            @NonNull final PropertyEvaluator eval) {
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final String platformType) {
         SourceLevelQuery.Profile res;
-        if (supportsProfiles(findTargetLevel(eval))) {
+        if (supportsProfiles(findTargetLevel(eval, platformType))) {
             final String profile = eval.getProperty(JAVAC_PROFILE);
             res = SourceLevelQuery.Profile.forName(profile);
             if (res != null) {
@@ -151,12 +159,12 @@ class SourceLevelQueryImpl2 implements SourceLevelQueryImplementation2 {
 
         @Override
         public String getSourceLevel() {
-            return findSourceLevel(eval);
+            return findSourceLevel(eval, platformType);
         }
 
         @Override
         public SourceLevelQuery.Profile getProfile() {
-            return findProfile(eval);
+            return findProfile(eval, platformType);
         }
 
         @Override

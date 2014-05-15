@@ -958,18 +958,20 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                         }
                         if (dep == null) {
                             dep = model.getFactory().createDependency();
-                            dep.setArtifactId(directArt.getArtifactId());
                             dep.setGroupId(directArt.getGroupId());
-                            dep.setType(directArt.getType());
+                            dep.setArtifactId(directArt.getArtifactId());
                             dep.setVersion(directArt.getVersion());
+                            if (!"jar".equals(directArt.getType())) {
+                                dep.setType(directArt.getType());
+                            }
                             model.getProject().addDependency(dep);
                             //mkleint: TODO why is the dependency being added? i forgot already..
                         }
                         Exclusion ex = dep.findExclusionById(art.getGroupId(), art.getArtifactId());
                         if (ex == null) {
                             Exclusion exclude = model.getFactory().createExclusion();
-                            exclude.setArtifactId(art.getArtifactId());
                             exclude.setGroupId(art.getGroupId());
+                            exclude.setArtifactId(art.getArtifactId());
                             dep.addExclusion(exclude);
                         }
                     }
@@ -1106,10 +1108,12 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                         }
                         if (dep == null) {
                             dep = model.getFactory().createDependency();
-                            dep.setArtifactId(art.getArtifactId());
                             dep.setGroupId(art.getGroupId());
-                            dep.setType(art.getType());
+                            dep.setArtifactId(art.getArtifactId());
                             dep.setVersion(art.getVersion());
+                            if (!"jar".equals(art.getType())) {
+                                dep.setType(art.getType());
+                            }
                             if (!Artifact.SCOPE_COMPILE.equals(art.getScope())) {
                                 dep.setScope(art.getScope());
                             }

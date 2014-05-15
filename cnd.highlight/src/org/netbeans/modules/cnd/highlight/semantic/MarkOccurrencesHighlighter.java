@@ -59,7 +59,6 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -73,7 +72,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
-import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -88,6 +86,7 @@ import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.support.CancelSupport;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
 import org.openide.filesystems.FileObject;
@@ -103,6 +102,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
     private static final ConcurrentHashMap<String,AttributeSet> defaultColors = new ConcurrentHashMap<String, AttributeSet>();
     
+    private final CancelSupport cancel = CancelSupport.create(this);
     private InterrupterImpl interrupter = new InterrupterImpl();
 
     public static PositionsBag getHighlightsBag(Document doc) {
@@ -156,6 +156,9 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         synchronized(this) {
             interrupter.cancel();
             this.interrupter = new InterrupterImpl();
+        }
+        if (cancel.isCancelled()) {
+            return;
         }
         if (!(event instanceof CursorMovedSchedulerEvent)) {
             return;
@@ -330,7 +333,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
             return out;
         }
         if (file != null && file.isParsed()) {
-            CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, position);
+            CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, doc, position);
             if (ref != null && ref.getReferencedObject() != null) {
                 if (interrupter.cancelled()) {
                     return out;
@@ -493,7 +496,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
             ConditionalBlock current = new ConditionalBlock(top);
             ConditionalBlock offsetContainer = null;
             for (TokenSequence<?> ts : ppSequences) {
-                if (interrupter != null && interrupter.cancelled()) {
+                if (interrupter.cancelled()) {
                     return Collections.<CsmReference>emptyList();
                 }
                 @SuppressWarnings("unchecked")
@@ -572,7 +575,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
                 while (!tss.isEmpty()) {
                     ts = tss.removeFirst();
                     while (ts.moveNext()) {
-                        if (interrupter != null && interrupter.cancelled()) {
+                        if (interrupter.cancelled()) {
                             return Collections.<CsmReference>emptyList();
                         }
                         @SuppressWarnings("unchecked")

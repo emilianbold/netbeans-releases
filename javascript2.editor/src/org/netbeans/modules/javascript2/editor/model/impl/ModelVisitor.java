@@ -600,6 +600,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 return null;
             }
             String funcName = functionNode.isAnonymous() ? functionNode.getName() : functionNode.getIdent().getName();
+//            String funcName = functionNode.getIdent().getName();            
             name.add(new IdentifierImpl(funcName, new OffsetRange(start, end)));
             if (pathSize > 2 && getPath().get(pathSize - 2) instanceof FunctionNode) {
                 isPrivate = true;
@@ -663,13 +664,14 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 }
             }
-        } else {
+        } 
+//        else {
             for(FunctionNode cFunction: functionNode.getFunctions()) {
                 if (cFunction.isAnonymous()) {
-                    cFunction.setName(scriptName + cFunction.getName());
+                    cFunction.setName(scriptName + cFunction.getIdent().getName());
                 }
             }
-        }
+//        }
         if (fncScope != null) {
             JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
             // create variables that are declared in the function
@@ -1327,7 +1329,7 @@ public class ModelVisitor extends PathNodeVisitor {
         JsObjectImpl currentObject = modelBuilder.getCurrentObject();
         Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(modelBuilder, withNode.getExpression());
         JsWithObjectImpl withObject = new JsWithObjectImpl(currentObject, modelBuilder.getUnigueNameForWithObject(), types, new OffsetRange(withNode.getStart(), withNode.getFinish()), 
-                        new OffsetRange(withNode.getExpression().getStart(), withNode.getExpression().getFinish()),parserResult.getSnapshot().getMimeType(), null);
+                        new OffsetRange(withNode.getExpression().getStart(), withNode.getExpression().getFinish()), modelBuilder.getCurrentWith(), parserResult.getSnapshot().getMimeType(), null);
         currentObject.addProperty(withObject.getName(), withObject);
 //        withNode.getExpression().accept(this); // expression should be visted when the with object is the current object.
         modelBuilder.setCurrentObject(withObject);
