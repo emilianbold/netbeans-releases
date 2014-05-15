@@ -951,6 +951,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 	prop_set("DBX_scope_look_aside", "on"); // NOI18N
         prop_set("DBX_macro_expand", "on"); // NOI18N
         prop_set("DBX_macro_source", "skim_unless_compiler"); // NOI18N
+        prop_set("DBX_output_pretty_print", "on"); // NOI18N
 	// prop_set("DBX_output_inherited_members", "off"); // NOI18N
 
 	// Arrange for dbx victims to run under the Pio
