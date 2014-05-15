@@ -146,7 +146,7 @@ public enum OJETContext {
                         }
                     }
                 }
-                if (jsToken.id() == JsTokenId.OPERATOR_COMMA) {
+                if (jsToken != null && jsToken.id() == JsTokenId.OPERATOR_COMMA) {
                     return COMP_CONF_PROP_NAME;
                 }
             }
