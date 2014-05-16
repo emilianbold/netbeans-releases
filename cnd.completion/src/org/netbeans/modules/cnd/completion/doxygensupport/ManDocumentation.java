@@ -259,9 +259,9 @@ public class ManDocumentation {
             exitStatus = NativeProjectSupport.execute(np, "man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH}, name); // NOI18N
         } else if (platformName.contains("Solaris")) { // NOI18N
             NativeExitStatus es = NativeProjectSupport.execute(np, "man", new String[]{}, "-l", name); // NOI18N
-            String section = getSection(es.output, "(2");
+            String section = getSection(es.output, "(2"); // NOI18N
             if (section == null) {
-                section = getSection(es.output, "(3");
+                section = getSection(es.output, "(3"); // NOI18N
             }
             if (section != null) {
                 exitStatus = NativeProjectSupport.execute(np, "man", null, "-s" + section, name); // NOI18N
