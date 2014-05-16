@@ -97,16 +97,7 @@ import org.xml.sax.SAXException;
 public final class WLPluginProperties {
 
     public static final String WEBLOGIC_JAR = "server/lib/weblogic.jar"; // NOI18N
-    
-    private static final Collection EXPECTED_FILES = new ArrayList();
 
-
-    static {
-        EXPECTED_FILES.add("common"); // NOI18N
-        EXPECTED_FILES.add("server/bin"); // NOI18N
-        EXPECTED_FILES.add(WEBLOGIC_JAR);    
-    }
-    
     private static final Logger LOGGER = Logger.getLogger(WLPluginProperties.class.getName());
 
     private static final String CONFIG_XML = "config/config.xml"; //NOI18N
@@ -580,27 +571,6 @@ public final class WLPluginProperties {
 
     private static Preferences getPreferences() {
         return NbPreferences.forModule(WLPluginProperties.class);
-    }
-
-    public static boolean isGoodServerLocation(File candidate){
-        if (null == candidate ||
-                !candidate.exists() ||
-                !candidate.canRead() ||
-                !candidate.isDirectory()  ||
-                !hasRequiredChildren(candidate, EXPECTED_FILES)) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Checks whether the server root contains weblogic.jar of version 9, 10 or 11.
-     */
-    public static boolean isSupportedVersion(Version version) {
-        return version != null && (Integer.valueOf(9).equals(version.getMajor())
-                    || Integer.valueOf(10).equals(version.getMajor())
-                    || Integer.valueOf(11).equals(version.getMajor())
-                    || Integer.valueOf(12).equals(version.getMajor()));
     }
 
     public static File[] getClassPath(WLDeploymentManager manager) {

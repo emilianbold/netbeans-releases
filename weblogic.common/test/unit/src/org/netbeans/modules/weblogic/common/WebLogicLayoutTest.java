@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.weblogic.common;
 
+import org.netbeans.modules.weblogic.common.api.WebLogicLayout;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -65,9 +66,9 @@ import org.openide.filesystems.FileUtil;
  *
  * @author sherold
  */
-public class WebLogicUtilsTest extends NbTestCase {
+public class WebLogicLayoutTest extends NbTestCase {
 
-    public WebLogicUtilsTest(String testName) {
+    public WebLogicLayoutTest(String testName) {
         super(testName);
     }
 
@@ -78,7 +79,7 @@ public class WebLogicUtilsTest extends NbTestCase {
 
         File file = new File(libFolder, "weblogic.jar");
         createJar(file, "Implementation-Version: 10.0.0.1");
-        Version version = WebLogicUtils.getServerVersion(baseFolder);
+        Version version = WebLogicLayout.getServerVersion(baseFolder);
         assertEquals("10.0.0.1", version.toString());
         assertEquals(10, version.getMajor().intValue());
         assertEquals(1, version.getUpdate().intValue());
@@ -91,13 +92,13 @@ public class WebLogicUtilsTest extends NbTestCase {
         libFolder.mkdirs();
         File file = new File(libFolder, "weblogic.jar");
         createJar(file, "Implementation-Version: 10.0.0.0");
-        assertTrue(WebLogicUtils.isSupportedVersion(WebLogicUtils.getServerVersion(baseFolder)));
+        assertTrue(WebLogicLayout.isSupportedVersion(WebLogicLayout.getServerVersion(baseFolder)));
         createJar(file, "Implementation-Version: 9.0.0.0");
-        assertTrue(WebLogicUtils.isSupportedVersion(WebLogicUtils.getServerVersion(baseFolder)));
+        assertTrue(WebLogicLayout.isSupportedVersion(WebLogicLayout.getServerVersion(baseFolder)));
         createJar(file, "Implementation-Version: 8.0.0.0");
-        assertFalse(WebLogicUtils.isSupportedVersion(WebLogicUtils.getServerVersion(baseFolder)));
+        assertFalse(WebLogicLayout.isSupportedVersion(WebLogicLayout.getServerVersion(baseFolder)));
         createJar(file, "Missing-Implementation-Version: 10.0.0.0");
-        assertFalse(WebLogicUtils.isSupportedVersion(WebLogicUtils.getServerVersion(baseFolder)));
+        assertFalse(WebLogicLayout.isSupportedVersion(WebLogicLayout.getServerVersion(baseFolder)));
     }
 
     public void testGetWeblogicJar() throws Exception {
@@ -107,12 +108,12 @@ public class WebLogicUtilsTest extends NbTestCase {
 
         File file = new File(libFolder, "weblogic.jar");
 
-        File wlJar = WebLogicUtils.getWeblogicJar(baseFolder);
+        File wlJar = WebLogicLayout.getWeblogicJar(baseFolder);
         assertNotNull(wlJar);
         assertEquals(file, wlJar);
 
         createJar(file, "Implementation-Version: 9.0.0.0");
-        wlJar = WebLogicUtils.getWeblogicJar(baseFolder);
+        wlJar = WebLogicLayout.getWeblogicJar(baseFolder);
         assertNotNull(wlJar);
         assertEquals(file, wlJar);
     }
@@ -130,7 +131,7 @@ public class WebLogicUtilsTest extends NbTestCase {
 
         copyFile(registry, out);
 
-        String[] ret = WebLogicUtils.getRegisteredDomainPaths(wlServer.getAbsolutePath());
+        String[] ret = WebLogicLayout.getRegisteredDomainPaths(wlServer.getAbsolutePath());
         assertEquals(1, ret.length);
         assertEquals("/home/test/software/wls12120/user_projects/domains/mydomain", ret[0]);
 
@@ -139,7 +140,7 @@ public class WebLogicUtilsTest extends NbTestCase {
         FileObject folder = FileUtil.createFolder(FileUtil.toFileObject(wlServer), "common/nodemanager");
         copyFile(nodeManager, new File(FileUtil.toFile(folder), nodeManager.getName()));
 
-        ret = WebLogicUtils.getRegisteredDomainPaths(wlServer.getAbsolutePath());
+        ret = WebLogicLayout.getRegisteredDomainPaths(wlServer.getAbsolutePath());
         assertEquals(1, ret.length);
         assertEquals("/home/test/software/wls1036_dev/user_projects/domains/base_domain", ret[0]);
     }

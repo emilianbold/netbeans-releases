@@ -62,8 +62,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
-import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.weblogic.common.api.Version;
+import org.netbeans.modules.weblogic.common.api.WebLogicLayout;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -120,15 +121,15 @@ public class ServerLocationVisual extends JPanel {
         }
         location = serverRoot.getPath();
 
-        Version version = WLPluginProperties.getServerVersion(serverRoot);
+        Version version = WebLogicLayout.getServerVersion(serverRoot);
 
-        if (!WLPluginProperties.isSupportedVersion(version)) {
+        if (!WebLogicLayout.isSupportedVersion(version)) {
             String msg = NbBundle.getMessage(ServerLocationVisual.class, "ERR_INVALID_SERVER_VERSION");  // NOI18N
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, WLInstantiatingIterator.decorateMessage(msg));
             return false;
         }
 
-        if (!WLPluginProperties.isGoodServerLocation(serverRoot)) {
+        if (!WebLogicLayout.isSupportedLayout(serverRoot)) {
             String msg = NbBundle.getMessage(ServerLocationVisual.class, "ERR_INVALID_SERVER_ROOT");  // NOI18N
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, WLInstantiatingIterator.decorateMessage(msg));
             return false;
@@ -146,7 +147,7 @@ public class ServerLocationVisual extends JPanel {
     }
 
     public static File findServerLocation(File candidate, WizardDescriptor wizardDescriptor) {
-        if (WLPluginProperties.isGoodServerLocation(candidate)) {
+        if (WebLogicLayout.isSupportedLayout(candidate)) {
             return candidate;
         }
         else {
@@ -155,7 +156,7 @@ public class ServerLocationVisual extends JPanel {
                 for (File file : files) {
                     String fileName = file.getName();
                     if (fileName.startsWith("wlserver")) { // NOI18N
-                        if (WLPluginProperties.isGoodServerLocation(file)){
+                        if (WebLogicLayout.isSupportedLayout(file)){
                             String msg = NbBundle.getMessage(ServerLocationVisual.class,
                                     "WARN_CHILD_SERVER_ROOT", candidate.getPath(), // NOI18N
                                     file.getPath());

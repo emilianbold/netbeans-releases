@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.weblogic.common;
+package org.netbeans.modules.weblogic.common.api;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -70,6 +70,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.weblogic.common.api.Version;
+import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
 import org.openide.filesystems.FileUtil;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -79,7 +80,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-public final class WebLogicUtils {
+public final class WebLogicLayout {
 
     private static final String WEBLOGIC_JAR = "server/lib/weblogic.jar"; // NOI18N
 
@@ -93,24 +94,14 @@ public final class WebLogicUtils {
         EXPECTED_FILES.add(WEBLOGIC_JAR);
     }
 
-    private static final Logger LOGGER = Logger.getLogger(WebLogicUtils.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(WebLogicLayout.class.getName());
 
-    // additional properties that are stored in the InstancePropeties object
-    public static final String SERVER_ROOT_ATTR = "serverRoot";        // NOI18N
-    public static final String DOMAIN_ROOT_ATTR = "domainRoot";        // NOI18N
-    //public static final String IS_LOCAL_ATTR = "isLocal";              // NOI18N
-    public static final String HOST_ATTR = "host";                     // NOI18N
-    public static final String PORT_ATTR = "port";                     // NOI18N
-    public static final String REMOTE_ATTR = "remote";                 // NOI18N
-    public static final String DEBUGGER_PORT_ATTR = "debuggerPort";    // NOI18N
-    public static final String ADMIN_SERVER_NAME= "adminName";      // NOI18N
-    public static final String DOMAIN_NAME = "domainName";          // NOI18N
-    public static final String PRODUCTION_MODE = "productionMode";  // NOI18N
-    public static final String DOMAIN_VERSION = "domainVersion";  // NOI18N
-
-    public static final String VENDOR   = "vendor";                 // NOI18N
-    public static final String JAVA_OPTS="java_opts";               // NOI18N
-    public static final String MEM_OPTS = "mem_opts";               // NOI18N
+    public static final String DOMAIN_HOST = "host"; // NOI18N
+    public static final String DOMAIN_PORT = "port"; // NOI18N
+    public static final String ADMIN_SERVER_NAME= "adminName"; // NOI18N
+    public static final String DOMAIN_NAME = "domainName"; // NOI18N
+    public static final String PRODUCTION_MODE = "productionMode"; // NOI18N
+    public static final String DOMAIN_VERSION = "domainVersion"; // NOI18N
 
     private static final Pattern LISTEN_ADDRESS_PATTERN =
         Pattern.compile("(?:[a-z]+\\:)?listen-address");            // NOI18N
@@ -131,32 +122,45 @@ public final class WebLogicUtils {
 
     private static final String DOMAIN_REGISTRY = "domain-registry.xml"; // NOI18N
 
-    private WebLogicUtils() {
-        super();
+    private final WebLogicConfiguration config;
+
+    WebLogicLayout(WebLogicConfiguration config) {
+        this.config = config;
     }
 
     @CheckForNull
-    public static File getDomainConfigFile(@NonNull File domainHome) {
-        return FileUtil.normalizeFile(new File(domainHome,
+    public File getDomainConfigFile() {
+        if (config.isRemote()) {
+            return null;
+        }
+        return FileUtil.normalizeFile(new File(config.getDomainHome(),
                 "config" + File.separator + "config.xml")); // NOI18N
     }
 
     @CheckForNull
-    public static File getServerLibDirectory(@NonNull File serverHome) {
-        File serverLib = new File(serverHome, "server" + File.separator + "lib"); // NOI18N
-        if (serverLib.exists() && serverLib.isDirectory()) {
+    public File getServerLibDirectory() {
+        File serverLib = new File(config.getServerHome(), "server" + File.separator + "lib"); // NOI18N
+        if (serverLib.isDirectory()) {
             return serverLib;
         }
         return null;
     }
 
     @CheckForNull
-    public static File getDomainLibDirectory(@NonNull File domainHome) {
-        File domainLib = new File(domainHome, "lib"); // NOI18N
+    public File getDomainLibDirectory() {
+        if (config.isRemote()) {
+            return null;
+        }
+        File domainLib = new File(config.getDomainHome(), "lib"); // NOI18N
         if (domainLib.exists() && domainLib.isDirectory()) {
             return domainLib;
         }
         return null;
+    }
+
+    @NonNull
+    public File getWeblogicJar() {
+        return getWeblogicJar(config.getServerHome());
     }
 
     @NonNull
@@ -298,8 +302,8 @@ public final class WebLogicUtils {
                 admin = servers.entrySet().iterator().next().getValue();
             }
             if (admin != null) {
-                properties.put(PORT_ATTR, admin.getPort());
-                properties.put(HOST_ATTR, admin.getHost());
+                properties.put(DOMAIN_PORT, admin.getPort());
+                properties.put(DOMAIN_HOST, admin.getHost());
                 properties.put(ADMIN_SERVER_NAME, admin.getName());
             }
         } catch (IOException e) {
@@ -318,23 +322,11 @@ public final class WebLogicUtils {
         return properties;
     }
 
-//    @CheckForNull
-//    public static String getDefaultPlatformHome() {
-//        Collection<FileObject> instFolders = JavaPlatformManager.getDefault().
-//                getDefaultPlatform().getInstallFolders();
-//        return instFolders.isEmpty() ? null : FileUtil.toFile(
-//                instFolders.iterator().next()).getAbsolutePath();
-//    }
-
-    public static boolean isGoodServerLocation(File candidate){
-        if (null == candidate ||
-                !candidate.exists() ||
-                !candidate.canRead() ||
-                !candidate.isDirectory()  ||
-                !hasRequiredChildren(candidate, EXPECTED_FILES)) {
-            return false;
-        }
-        return true;
+    public static boolean isSupportedLayout(File candidate){
+        return null != candidate
+                && candidate.canRead()
+                && candidate.isDirectory()
+                && hasRequiredChildren(candidate, EXPECTED_FILES);
     }
 
     /**
@@ -348,11 +340,11 @@ public final class WebLogicUtils {
     }
 
     @NonNull
-    public static File[] getClassPath(@NonNull File serverHome) {
-        File weblogicJar = WebLogicUtils.getWeblogicJar(serverHome);
+    public File[] getClassPath() {
+        File weblogicJar = getWeblogicJar();
         if (!weblogicJar.exists()) {
             LOGGER.log(Level.INFO, "File {0} does not exist for {1}",
-                    new Object[] {weblogicJar.getAbsolutePath(), serverHome});
+                    new Object[] {weblogicJar.getAbsolutePath(), config.getServerHome()});
             return new File[] {weblogicJar};
         }
 
@@ -373,7 +365,7 @@ public final class WebLogicUtils {
                             File ref = new File(weblogicJar.getParentFile(), element);
                             if (!ref.exists()) {
                                 LOGGER.log(Level.INFO, "Broken {0} classpath file {1} for {2}",
-                                        new Object[] {weblogicJar.getAbsolutePath(), ref.getAbsolutePath(), serverHome});
+                                        new Object[] {weblogicJar.getAbsolutePath(), ref.getAbsolutePath(), config.getServerHome()});
                             }
                             serverModulesJar = element;
                             // last element of ../../../modules/something
@@ -397,7 +389,7 @@ public final class WebLogicUtils {
 
         if (serverModulesJar != null) {
             // XXX cache values
-            File mwHome = getMiddlewareHome(serverHome);
+            File mwHome = getMiddlewareHome(config.getServerHome());
             if (mwHome != null) {
                 File serverModuleFile = FileUtil.normalizeFile(new File(mwHome,
                         serverModulesJar.replaceAll("/", Matcher.quoteReplacement(File.separator)))); // NOI18N
@@ -408,8 +400,14 @@ public final class WebLogicUtils {
         return new File[] {weblogicJar};
     }
 
-    public static Version getServerVersion(File serverRoot) {
-        File weblogicJar = WebLogicUtils.getWeblogicJar(serverRoot);
+    @CheckForNull
+    public Version getServerVersion() {
+        return getServerVersion(config.getServerHome());
+    }
+
+    @CheckForNull
+    public static Version getServerVersion(@NonNull File serverHome) {
+        File weblogicJar = getWeblogicJar(serverHome);
         if (!weblogicJar.exists()) {
             return null;
         }
@@ -440,17 +438,18 @@ public final class WebLogicUtils {
         return null;
     }
 
-    public static Version getDomainVersion(File domainHome) {
+    @CheckForNull
+    public Version getDomainVersion() {
         // Domain config file
-        File config = getDomainConfigFile(domainHome);
+        File configFile = getDomainConfigFile();
 
         // Check if the file exists
-        if (config == null || !config.exists()) {
+        if (configFile == null || !configFile.exists()) {
             return null;
         }
 
         try {
-            InputSource source = new InputSource(new FileInputStream(config));
+            InputSource source = new InputSource(new FileInputStream(configFile));
             Document d = XMLUtil.parse(source, false, false, null, null);
 
             // Retrieve domain version
@@ -458,13 +457,16 @@ public final class WebLogicUtils {
                 String strVersion = d.getElementsByTagName("domain-version").item(0).getTextContent();
                 return  strVersion != null ? Version.fromJsr277OrDottedNotationWithFallback(strVersion) : null;
             }
-        } catch(IOException e) {
-            LOGGER.log(Level.INFO, null, e);
-        } catch(SAXException e) {
+        } catch(IOException | SAXException e) {
             LOGGER.log(Level.INFO, null, e);
         }
 
         return null;
+    }
+
+    @CheckForNull
+    public File getMiddlewareHome() {
+        return getMiddlewareHome(config.getServerHome());
     }
 
     @CheckForNull
@@ -490,7 +492,7 @@ public final class WebLogicUtils {
     }
 
     @CheckForNull
-    public static File getMiddlewareHome(@NonNull File serverHome, @NullAllowed String mwHome) {
+    private static File getMiddlewareHome(@NonNull File serverHome, @NullAllowed String mwHome) {
         File middleware = null;
         if (mwHome != null) {
             middleware = new File(mwHome);
@@ -603,8 +605,6 @@ public final class WebLogicUtils {
                     }
                 }
             }
-        } catch (FileNotFoundException e) {
-            LOGGER.log(Level.INFO, null, e);
         } catch (IOException e) {
             LOGGER.log(Level.INFO, null, e);
         } catch (ParserConfigurationException e) {

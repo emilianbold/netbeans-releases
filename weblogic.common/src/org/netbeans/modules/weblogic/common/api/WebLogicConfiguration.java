@@ -64,6 +64,9 @@ public final class WebLogicConfiguration {
 
     private final int port;
 
+    // @GuardedBy("this")
+    private WebLogicLayout layout;
+
     private WebLogicConfiguration(File serverHome, String username, String password,
             File domainHome, String host, int port) {
         this.serverHome = serverHome;
@@ -93,11 +96,6 @@ public final class WebLogicConfiguration {
         return serverHome;
     }
 
-    @NonNull
-    public File getMiddlewareHome() {
-        return null;
-    }
-
     @NullUnknown
     public File getDomainHome() {
         return domainHome;
@@ -111,5 +109,13 @@ public final class WebLogicConfiguration {
     @NonNull
     public String getSiteURL() {
         return null;
+    }
+
+    @NonNull
+    public synchronized WebLogicLayout getLayout() {
+        if (layout == null) {
+            layout = new WebLogicLayout(this);
+        }
+        return layout;
     }
 }
