@@ -62,7 +62,7 @@ import org.openide.modules.PatchedPublic;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class PatchedPublicProcessor extends AbstractProcessor {
 
     public @Override Set<String> getSupportedAnnotationTypes() {

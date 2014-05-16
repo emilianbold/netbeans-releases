@@ -145,6 +145,11 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
     }
 
     @Override
+    public DefinitionKind getDefinitionKind() {
+        return DefinitionKind.REGULAR;
+    }
+
+    @Override
     public void dispose() {
         super.dispose();
         if (body instanceof Disposable) {

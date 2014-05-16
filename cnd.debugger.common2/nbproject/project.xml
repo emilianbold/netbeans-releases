@@ -356,6 +356,8 @@
             </test-dependencies>
             <friend-packages>
                 <friend>com.oracle.tools.ide.projectless.debug.impl</friend>
+                <friend>com.oracle.tools.ide.projectless.debug.impl.dbx</friend>
+                <friend>com.oracle.tools.ide.projectless.debug.impl.gdb</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>com.sun.tools.debugger.dbxfacade.tool</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>

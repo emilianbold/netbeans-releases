@@ -231,7 +231,7 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
             ast.getType() == CPPTokenTypes.CSM_ENUM_FWD_DECLARATION) {
             AST child = ast.getFirstChild();
             if (child == null) {
-                CndUtils.assertTrueInConsole(false, "incomplete enum", ast);
+                CndUtils.assertTrueInConsole(false, "incomplete enum ", ast);
                 return false;
             }
             ast = child;
@@ -239,7 +239,7 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         while (ast.getType() != CPPTokenTypes.LITERAL_enum) {
             AST sibling = ast.getNextSibling();
             if (sibling == null) {
-                CndUtils.assertTrueInConsole(false, "incomplete enum", ast);
+                CndUtils.assertTrueInConsole(false, "incomplete enum ", ast);
                 return false;
             }
             ast = sibling;

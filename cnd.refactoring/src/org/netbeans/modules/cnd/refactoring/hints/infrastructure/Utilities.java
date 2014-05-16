@@ -82,7 +82,7 @@ public class Utilities {
     }
 
     public static String guessName(CsmContext info) {
-        CsmReference ref = CsmReferenceResolver.getDefault().findReference(info.getFile(), info.getStartOffset());
+        CsmReference ref = CsmReferenceResolver.getDefault().findReference(info.getFile(), info.getDocument(), info.getStartOffset());
         if (ref != null) {
             return ref.getText().toString();
         } else {

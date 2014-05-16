@@ -51,8 +51,43 @@ import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
  * @author Vladimir Kvashin
  */
 public interface CsmFunctionDefinition extends CsmFunction {
+    
+    public static enum DefinitionKind {
+        // normal compound statement
+        REGULAR((byte) 0),
+        
+        // = default (only for members)
+        DEFAULT((byte) 1), 
+        
+        // = delete  (only for members)
+        DELETE((byte) 2);  
+        
+        //<editor-fold defaultstate="collapsed" desc="impl">
+        public static DefinitionKind fromByte(byte val) {
+             for (DefinitionKind kind : values()) {
+                 if (val == kind.toByte()) {
+                     return kind;
+                 }
+             }
+             return REGULAR;
+        }
+        
+        public byte toByte() {
+            return value;
+        }        
+        
+        private final byte value;
+        
+        private DefinitionKind(byte value) {
+            this.value = value;
+        }
+        //</editor-fold>
+    }
 
     /** Gets this function body */
     CsmCompoundStatement getBody();
+    
+    /** Gets definition kind */
+    DefinitionKind getDefinitionKind();
 
 }

@@ -70,7 +70,7 @@ public class TraceModelBase {
         openideLogger.setLevel(Level.SEVERE);
         Logger.getLogger("org.openide.filesystems.FileUtil").setLevel(Level.OFF); // NOI18N
         model = createModel();
-        model.startup();
+        model.startup(); // 2-nd time? it was already called from ModelImpl ctor
         if (clearCache) {
             RepositoryTestUtils.deleteDefaultCacheLocation();
         }

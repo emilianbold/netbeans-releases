@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.api.model.services;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.text.Document;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -70,7 +71,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
 import org.netbeans.modules.cnd.modelutil.ClassifiersAntiLoop;
-import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.openide.util.Lookup;
 
 /**
@@ -82,13 +83,13 @@ public abstract class CsmFileReferences {
    /**
     * Provides visiting of the identifiers of the CsmFile
     */
-   public abstract void accept(CsmScope csmScope, Visitor visitor);
+   public abstract void accept(CsmScope csmScope, Document doc, Visitor visitor);
 
    /**
     * Provides visiting of the identifiers of the CsmFile and point prefered
     * kinds of references
     */
-   public abstract void accept(CsmScope csmScope, Visitor visitor, Set<CsmReferenceKind> preferedKinds);
+   public abstract void accept(CsmScope csmScope, Document doc, Visitor visitor, Set<CsmReferenceKind> preferedKinds);
 
    public abstract void visit(Collection<CsmReference> refs, ReferenceVisitor visitor);
 
@@ -119,11 +120,11 @@ public abstract class CsmFileReferences {
        }
 
        @Override
-       public void accept(CsmScope csmScope, Visitor visitor) {
+       public void accept(CsmScope csmScope, Document doc, Visitor visitor) {
            // do nothing
        }
               @Override
-       public void accept(CsmScope csmScope, Visitor visitor, Set<CsmReferenceKind> kinds) {
+       public void accept(CsmScope csmScope, Document doc, Visitor visitor, Set<CsmReferenceKind> preferedKinds) {
            // do nothing
        }
 
@@ -132,19 +133,21 @@ public abstract class CsmFileReferences {
            // do nothing
        }
    }
-      /**
-    * visitor inteface
+   
+   /**
+    * visitor interface
     */
-   public interface Visitor {
+   public interface Visitor extends Interrupter {
        /**
         * This method is invoked for every matching reference in the file.
         *
         * @param context  reference with its lexical context
         */
        void visit(CsmReferenceContext context);
+       
    }
 
-   public interface ReferenceVisitor {
+   public interface ReferenceVisitor extends Interrupter {
 
        /**
         * This method is invoked for every matching reference in the file.

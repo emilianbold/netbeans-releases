@@ -123,6 +123,7 @@ public final class Resolver3 implements Resolver {
     private int interestedKind;
     private boolean resolveInBaseClass;
     private final boolean SUPRESS_RECURSION_EXCEPTION = Boolean.getBoolean("cnd.modelimpl.resolver3.hide.exception"); // NOI18N
+    private final boolean SHOW_EMPTY_NAME_WARNING = Boolean.getBoolean("cnd.modelimpl.resolver3.show.empty_name_warning"); // NOI18N
 
     private CharSequence currName() {
         return (names != null && currNamIdx < names.length) ? names[currNamIdx] : CharSequences.empty();
@@ -577,7 +578,9 @@ public final class Resolver3 implements Resolver {
                     position = "line=" + lineColumn[0] + ":" + lineColumn[1] + position; // NOI18N
                 }
             }
-            CndUtils.assertTrueInConsole(false, "no names are passed to resolve at " + position); // NOI18N
+            if (SHOW_EMPTY_NAME_WARNING) {
+                CndUtils.assertTrueInConsole(false, "no names are passed to resolve at " + position); // NOI18N
+            }
             return null;
         }
         long time = System.currentTimeMillis();

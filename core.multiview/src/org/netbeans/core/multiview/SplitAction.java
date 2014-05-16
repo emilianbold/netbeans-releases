@@ -132,7 +132,7 @@ public class SplitAction extends AbstractAction implements Presenter.Menu, Prese
 	    final TopComponent tc = WindowManager.getDefault().getRegistry().getActivated();
 	    if (tc != null) {
 		setEnabled(true);
-		if (tc instanceof Splitable) {
+		if (tc instanceof Splitable && ((Splitable)tc).canSplit()) {
 		    JMenuItem item = new JMenuItem(new SplitDocumentAction(tc, JSplitPane.VERTICAL_SPLIT));
 		    Mnemonics.setLocalizedText(item, item.getText());
 		    add(item);

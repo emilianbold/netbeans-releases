@@ -13,7 +13,7 @@ METHOD     getInfo(): String               [PUBLIC]   methodChainSimple.js
 METHOD     getOwnPropertyDescriptor(O: Ob  [PUBLIC,   JS Platform
 METHOD     getOwnPropertyNames(O: Object)  [PUBLIC,   JS Platform
 METHOD     getPrototypeOf(O: Object): Obj  [PUBLIC,   JS Platform
-METHOD     getVersion(): Number            [PUBLIC]   methodChainSimple.js
+METHOD     getVersion(): Number|version    [PUBLIC]   methodChainSimple.js
 METHOD     hasOwnProperty(V: String): Boo  [PUBLIC]   JS Platform
 METHOD     isExtensible(O: Object): Boole  [PUBLIC,   JS Platform
 METHOD     isFrozen(O: Object): Boolean    [PUBLIC,   JS Platform

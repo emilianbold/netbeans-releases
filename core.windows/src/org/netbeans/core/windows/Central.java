@@ -2096,7 +2096,24 @@ final class Central implements ControllerHandler {
     @Override
     public void userClosedMode(ModeImpl mode) {
         if(mode != null) {
-            closeMode(mode);
+            boolean allAreClosable = true;
+            for( TopComponent tc : mode.getOpenedTopComponents() ) {
+                if( !Switches.isClosingEnabled(tc) ) {
+                    allAreClosable = false;
+                    break;
+                }
+            }
+            if( allAreClosable ) {
+                closeMode(mode);
+            } else {
+                ArrayList<TopComponent> tcs = new ArrayList<>(mode.getOpenedTopComponents());
+                for( TopComponent tc : tcs ) {
+                    if( Switches.isClosingEnabled(tc) ) {
+                        userClosedTopComponent(mode, tc);
+                    }
+                }
+                
+            }
             // Unmaximize if necessary.
             if(mode.getOpenedTopComponents().isEmpty()
                 && mode == getCurrentMaximizedMode()) 
@@ -3094,6 +3111,7 @@ final class Central implements ControllerHandler {
             return;
         ModeImpl newMode = attachModeToSide( currentMode, null, currentMode.getKind() );
         moveTopComponentIntoMode( newMode, tc );
+        updateViewAfterDnD( true );
         tc.requestActive();
         WindowManagerImpl.getInstance().doFirePropertyChange(
             WindowManager.PROP_MODES, null, null);

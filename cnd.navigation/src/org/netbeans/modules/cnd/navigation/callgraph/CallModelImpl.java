@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.callgraph.api.Call;
 import org.netbeans.modules.cnd.callgraph.api.CallModel;
 import org.netbeans.modules.cnd.callgraph.api.Function;
 import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphPreferences;
+import org.netbeans.modules.cnd.support.Interrupter;
 
 /**
  *
@@ -105,7 +106,12 @@ public class CallModelImpl implements CallModel {
     public Function getRoot() {
         CsmFunction root = uin.getFunction();
         if (root != null) {
-            return new FunctionImpl(root);
+            CsmCacheManager.enter();
+            try {
+                return new FunctionImpl(root);
+            } finally {
+                CsmCacheManager.leave();
+            }
         }
         return null;
     }
@@ -152,7 +158,7 @@ public class CallModelImpl implements CallModel {
             HashMap<CsmMacro,CsmReference> macros = new HashMap<CsmMacro,CsmReference>();
             for(CsmFunction function : functions) {
                 if (CsmKindUtilities.isFunction(function) && function.getContainingFile().isValid()) {
-                    for(CsmReference r : repository.getReferences(function, project, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE, null)){
+                    for(CsmReference r : repository.getReferences(function, project, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE, Interrupter.DUMMY)){
                         if (r == null) {
                             continue;
                         }
@@ -173,7 +179,7 @@ public class CallModelImpl implements CallModel {
                 }
             }
             for(Map.Entry<CsmMacro,CsmReference> entry : macros.entrySet()) {
-                for(CsmReference r : repository.getReferences(entry.getKey(), project, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE, null)){
+                for(CsmReference r : repository.getReferences(entry.getKey(), project, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE, Interrupter.DUMMY)){
                     if (r == null) {
                         continue;
                     }
@@ -222,8 +228,8 @@ public class CallModelImpl implements CallModel {
             final HashMap<CsmFunction,CsmReference> set = new HashMap<CsmFunction,CsmReference>();
             for(CsmFunction function : functions) {
                 if (CsmKindUtilities.isFunctionDefinition(function) && function.getContainingFile().isValid()) {
-                    final List<CsmOffsetable> list = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks((function).getContainingFile());
-                    references.accept((CsmScope)function, new CsmFileReferences.Visitor() {
+                    final List<CsmOffsetable> list = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks((function).getContainingFile(), Interrupter.DUMMY);
+                    references.accept((CsmScope)function, null, new CsmFileReferences.Visitor() {
                         @Override
                         public void visit(CsmReferenceContext context) {
                             CsmReference r = context.getReference();
@@ -250,6 +256,11 @@ public class CallModelImpl implements CallModel {
                             } catch (Exception e) {
                                 e.printStackTrace(System.err);
                             }
+                        }
+
+                        @Override
+                        public boolean cancelled() {
+                            return false;
                         }
                     }, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
                 }

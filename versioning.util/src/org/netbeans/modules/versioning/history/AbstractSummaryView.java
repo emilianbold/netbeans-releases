@@ -600,7 +600,8 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
         }
 
         private boolean canShowLessEvents() {
-            return revisionExpanded && showingFiles > NEXT_FILES_INITIAL_PAGING || isAllEventsVisible();
+            return revisionExpanded && showingFiles > NEXT_FILES_INITIAL_PAGING || isAllEventsVisible()
+                    && Math.min(NEXT_FILES_INITIAL_PAGING, getDefaultVisibleEventCount()) < entry.getEvents().size();
         }
 
         int getNextFilesToShowCount () {
@@ -634,6 +635,11 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
             } else if (showingFiles == 0) {
                 // not yet 
                 showLessFiles();
+                if (entry.getEvents().size() == getDefaultVisibleEventCount()
+                        && entry.getEvents().size() <= nextFilesPaging) {
+                    showingFiles = -1;
+                    return true;
+                }
             }
             int visibleCount = 0;
             boolean visible = false;

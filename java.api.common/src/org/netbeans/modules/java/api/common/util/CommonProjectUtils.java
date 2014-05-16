@@ -74,6 +74,12 @@ import org.openide.util.Parameters;
  */
 public final class CommonProjectUtils {
 
+    /**
+     * J2SE Java Platform Type.
+     * @since 1.72
+     */
+    public static final String J2SE_PLATFORM_TYPE ="j2se";  //NOI18N
+
     private CommonProjectUtils() {
     }
 
@@ -106,7 +112,7 @@ public final class CommonProjectUtils {
         @NullAllowed final String activePlatformId,
         @NullAllowed String platformType) {
         if (platformType == null) {
-            platformType = "j2se";  //NOI18N
+            platformType = J2SE_PLATFORM_TYPE;
         }
         final JavaPlatformManager pm = JavaPlatformManager.getDefault();
         if (activePlatformId == null) {
@@ -216,7 +222,7 @@ public final class CommonProjectUtils {
         Parameters.notNull("mavendeps", mavendeps);  //NOI18N
         Parameters.notNull("mavenrepos", mavenrepos);   //NOI18N
         final LibraryImplementation3 impl = LibrariesSupport.createLibraryImplementation3(
-                "j2se",         //NOI18N
+                J2SE_PLATFORM_TYPE,
                 "classpath",    //NOI18N
                 "src",          //NOI18N
                 "javadoc"       //NOI18N

@@ -44,6 +44,7 @@ package org.netbeans.modules.web.webkit.debugging.api.css;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -71,6 +72,8 @@ public class CSS {
     private final List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
     /** Cache of style-sheets. */
     private final Map<String, StyleSheetBody> styleSheets = new HashMap<String, StyleSheetBody>();
+    /** Style-sheet headers. */
+    private final List<StyleSheetHeader> styleSheetHeaders = new CopyOnWriteArrayList<StyleSheetHeader>();
 
     /**
      * Creates a new wrapper for the CSS domain of WebKit Remote Debugging Protocol.
@@ -108,7 +111,10 @@ public class CSS {
         Response response = transport.sendBlockingCommand(new Command("CSS.getAllStyleSheets")); // NOI18N
         if (response != null) {
             JSONObject result = response.getResult();
-            if (result != null) {
+            if (result == null) {
+                // CSS.getAllStyleSheets is not in the latest versions of the protocol
+                sheets = Collections.unmodifiableList(styleSheetHeaders);
+            } else {
                 JSONArray headers = (JSONArray)result.get("headers"); // NOI18N
                 for (Object o : headers) {
                     JSONObject header = (JSONObject)o;
@@ -462,6 +468,28 @@ public class CSS {
         }
     }
 
+    /**
+     * Notify listeners about {@code styleSheetAdded} event.
+     * 
+     * @param header meta-information of the added style-sheet.
+     */
+    private void notifyStyleSheetAdded(StyleSheetHeader header) {
+        for (Listener listener : listeners) {
+            listener.styleSheetAdded(header);
+        }
+    }
+
+    /**
+     * Notify listeners about {@code styleSheetRemoved} event.
+     * 
+     * @param styleSheetId identifier of the modified style-sheet.
+     */
+    private void notifyStyleSheetRemoved(String styleSheetId) {
+        for (Listener listener : listeners) {
+            listener.styleSheetRemoved(styleSheetId);
+        }
+    }
+
     void handleMediaQuertResultChanged(JSONObject params) {
         notifyMediaQuertResultChanged();
     }
@@ -475,11 +503,30 @@ public class CSS {
         notifyStyleSheetChanged(styleSheetId);
     }
 
+    void handleStyleSheetAdded(JSONObject params) {
+        JSONObject headerInJSON = (JSONObject)params.get("header"); // NOI18N
+        StyleSheetHeader header = new StyleSheetHeader(headerInJSON);
+        styleSheetHeaders.add(header);
+        notifyStyleSheetAdded(header);
+    }
+
+    void handleStyleSheetRemoved(JSONObject params) {
+        String styleSheetId = (String)params.get("styleSheetId"); // NOI18N
+        for (StyleSheetHeader header : styleSheetHeaders) {
+            if (styleSheetId.equals(header.getStyleSheetId())) {
+                styleSheetHeaders.remove(header);
+                break;
+            }
+        }
+        notifyStyleSheetRemoved(styleSheetId);
+    }
+
     /**
      * Resets cached data.
      */
     public synchronized void reset() {
         styleSheets.clear();
+        styleSheetHeaders.clear();
         classForHover = null;
     }
 
@@ -554,6 +601,20 @@ public class CSS {
          */
         void styleSheetChanged(String styleSheetId);
 
+        /**
+         * Fired whenever an active document's style-sheet is added.
+         * 
+         * @param header meta-information of the added style-sheet.
+         */
+        void styleSheetAdded(StyleSheetHeader header);
+
+        /**
+         * Fired whenever an active document's style-sheet is removed.
+         * 
+         * @param styleSheetId identifier of the removed style-sheet.
+         */
+        void styleSheetRemoved(String styleSheetId);
+
     }
 
     /**
@@ -574,6 +635,14 @@ public class CSS {
                 handleMediaQuertResultChanged(params);
             } else if ("CSS.styleSheetChanged".equals(method)) { // NOI18N
                 handleStyleSheetChanged(params);
+            } else if ("CSS.styleSheetAdded".equals(method)) { // NOI18N
+                handleStyleSheetAdded(params);
+            } else if ("CSS.styleSheetRemoved".equals(method)) { // NOI18N
+                handleStyleSheetRemoved(params);
+            } else if ("Page.frameNavigated".equals(method)) { // NOI18N
+                // We cannot reset styleSheetHeaders on DOM.documentUpdated because
+                // CSS.styleSheetAdded events are fired before DOM.documentUpdated.
+                styleSheetHeaders.clear();
             } else if ("DOM.documentUpdated".equals(method)) { // NOI18N
                 synchronized (this) {
                     styleSheets.clear();

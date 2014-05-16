@@ -53,10 +53,12 @@ import javax.swing.*;
 import java.io.File;
 import java.util.Set;
 import java.util.logging.Level;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.repository.Repository;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.mercurial.ui.repository.RepositoryConnection;
 import org.netbeans.modules.mercurial.ui.wizards.CloneRepositoryWizardPanel;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -150,18 +152,22 @@ public class PushOtherAction extends ContextAction {
                 return;
             }
 
-            push(context, root, pushPath);
+            push(context, root, pushPath, repository.getRepositoryConnection());
         }
     }
 
-    public static void push(final VCSContext ctx, final File root, final HgURL pushPath) {
+    private static void push(final VCSContext ctx, final File root, final HgURL pushPath, final RepositoryConnection rc) {
         if (root == null || pushPath == null) return;
         final String fromPrjName = HgProjectUtils.getProjectName(root);
         final String toPrjName = NbBundle.getMessage(PushAction.class, "MSG_EXTERNAL_REPOSITORY"); // NOI18N
          
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
+            @Override
             public void perform() { 
+                if (rc != null) {
+                    HgModuleConfig.getDefault().insertRecentUrl(rc);
+                }
                PushAction.performPush(root, pushPath, fromPrjName, toPrjName, null, null, this.getLogger(), false);
             } 
         };

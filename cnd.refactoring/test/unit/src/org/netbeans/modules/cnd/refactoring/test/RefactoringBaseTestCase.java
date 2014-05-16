@@ -80,7 +80,7 @@ public class RefactoringBaseTestCase extends ProjectBasedTestCase {
         File testSourceFile = super.getDataFile(source);
         int offset = super.getOffset(testSourceFile, line, column);
         CsmFile csmFile = super.getCsmFile(testSourceFile);
-        CsmReference ref = CsmReferenceResolver.getDefault().findReference(csmFile, offset);
+        CsmReference ref = CsmReferenceResolver.getDefault().findReference(csmFile, null, offset);
         return ref;
     }
 }

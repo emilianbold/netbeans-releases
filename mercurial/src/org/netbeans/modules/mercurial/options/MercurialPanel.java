@@ -145,6 +145,7 @@ final class MercurialPanel extends javax.swing.JPanel {
         cbOpenOutputWindow = new javax.swing.JCheckBox();
         cbAskBeforeCommitAfterMerge = new javax.swing.JCheckBox();
         cbInternalMergeToolEnabled = new javax.swing.JCheckBox();
+        lblWarning = new javax.swing.JLabel();
 
         jLabel1.setLabelFor(userNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.jLabel1.text")); // NOI18N
@@ -199,6 +200,9 @@ final class MercurialPanel extends javax.swing.JPanel {
             }
         });
 
+        lblWarning.setForeground(javax.swing.UIManager.getDefaults().getColor("nb.errorForeground"));
+        org.openide.awt.Mnemonics.setLocalizedText(lblWarning, " "); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -252,6 +256,9 @@ final class MercurialPanel extends javax.swing.JPanel {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(92, 92, 92)
                         .addComponent(jSeparator2))))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(lblWarning)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -294,7 +301,9 @@ final class MercurialPanel extends javax.swing.JPanel {
                 .addComponent(cbInternalMergeToolEnabled)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(excludeNewFiles)
-                .addContainerGap())
+                .addGap(18, 18, 18)
+                .addComponent(lblWarning)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {addButton, annotationTextField, jLabel3});
@@ -382,18 +391,6 @@ final class MercurialPanel extends javax.swing.JPanel {
         HgModuleConfig.getDefault().setInternalMergeToolEnabled(cbInternalMergeToolEnabled.isSelected());
         HgModuleConfig.getDefault().setExcludeNewFiles(excludeNewFiles.isSelected());
     }
-    
-    boolean valid() {
-        // TODO check whether form is consistent and complete
-        //return true;
-        String username = userNameTextField.getText();
-        Boolean valid;
-        valid =  HgModuleConfig.getDefault().isUserNameValid(username);
-        if (!valid) return false;
-        String execpath = executablePathTextField.getText();
-        valid = HgModuleConfig.getDefault().isExecPathValid(execpath);
-        return valid;
-    }
  
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JButton addButton = new javax.swing.JButton();
@@ -415,8 +412,17 @@ final class MercurialPanel extends javax.swing.JPanel {
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTextPane jTextPane1;
+    private javax.swing.JLabel lblWarning;
     final javax.swing.JButton manageButton = new javax.swing.JButton();
     final javax.swing.JTextField userNameTextField = new javax.swing.JTextField();
     // End of variables declaration//GEN-END:variables
+
+    void showError (String message) {
+        if (message == null) {
+            lblWarning.setText(" "); //NOI18N
+        } else {
+            lblWarning.setText(message);
+        }
+    }
     
 }

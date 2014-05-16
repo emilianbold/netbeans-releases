@@ -60,7 +60,6 @@ import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheCheckout;
 import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.errors.CheckoutConflictException;
-import org.eclipse.jgit.internal.storage.file.WindowCache;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.FileMode;
@@ -370,7 +369,7 @@ public class CheckoutTest extends AbstractGitTestCase {
         DirCacheEntry e = cache.getEntry("large.dat");
         WindowCacheConfig cfg = new WindowCacheConfig();
         cfg.setStreamFileThreshold((int) large.length() - 1);
-        WindowCache.reconfigure(cfg);
+        cfg.install();
         DirCacheCheckout.checkoutEntry(repository, large, e);
     }
     

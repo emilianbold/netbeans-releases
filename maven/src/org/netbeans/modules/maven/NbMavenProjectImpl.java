@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -106,6 +107,7 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -730,25 +732,31 @@ public final class NbMavenProjectImpl implements Project {
 
     private static class PackagingTypeDependentLookup extends ProxyLookup implements PropertyChangeListener {
 
-        private final NbMavenProject watcher;
+        //#243866 both NbMavenProject and PackagingTypeDependentLookup are hard referenced from NbMavenProjectImpl
+        //it should be safe to weak reference here, all should be GCed together.
+        private final WeakReference<NbMavenProject> watcherRef;
         private String packaging;
         private final Lookup general;
 
         @SuppressWarnings("LeakingThisInConstructor")
         PackagingTypeDependentLookup(NbMavenProject watcher) {
-            this.watcher = watcher;
+            this.watcherRef = new WeakReference<NbMavenProject>(watcher);
             //needs to be kept around to prevent recreating instances
             general = Lookups.forPath("Projects/org-netbeans-modules-maven/Lookup"); //NOI18N
             check();
-            watcher.addPropertyChangeListener(this);
+            watcher.addPropertyChangeListener(WeakListeners.propertyChange(this, watcher));
         }
 
         private void check() {
             //this call effectively calls project.getLookup(), when called in constructor will get back to the project's baselookup only.
             // but when called from propertyChange() then will call on entire composite lookup, is it a problem?  #230469
-            String newPackaging = watcher.getPackagingType(); 
-            if (newPackaging == null) {
-                newPackaging = NbMavenProject.TYPE_JAR;
+            NbMavenProject watcher = watcherRef.get();
+            String newPackaging = packaging != null ? packaging : NbMavenProject.TYPE_JAR;
+            if (watcher != null) {
+                newPackaging = watcher.getPackagingType(); 
+                if (newPackaging == null) {
+                    newPackaging = NbMavenProject.TYPE_JAR;
+                }
             }
             if (!newPackaging.equals(packaging)) {
                 packaging = newPackaging;
