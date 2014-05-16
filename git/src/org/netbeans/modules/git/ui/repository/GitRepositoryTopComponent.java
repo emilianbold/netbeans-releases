@@ -133,6 +133,7 @@ public class GitRepositoryTopComponent extends TopComponent implements Externali
     }
 
     void selectRepository (File repository) {
+        repositoryPanel.requestFocusInWindow();
         repositoryPanel.selectRepository(repository);
     }
 
