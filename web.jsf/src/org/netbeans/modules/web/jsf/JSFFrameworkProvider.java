@@ -460,7 +460,11 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 }
             }
 
-            WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
+            WebApp ddRoot = null;
+            // issue #244100 - obviously the web project's profile can be unrecognized and the DD needn't still exist
+            if (dd != null) {
+                ddRoot = DDProvider.getDefault().getDDRoot(dd);
+            }
 
             //Add Faces Servlet and servlet-mapping into web.xml
             if (ddRoot != null && ddRoot.getStatus() == WebApp.STATE_VALID) {
