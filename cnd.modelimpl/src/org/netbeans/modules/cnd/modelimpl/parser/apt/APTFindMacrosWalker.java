@@ -92,7 +92,7 @@ import org.openide.filesystems.FileSystem;
  * @author Sergey Grinev
  * @author Vladimir Voskresensky
  */
-public final class APTFindMacrosWalker extends APTSelfWalker {
+public class APTFindMacrosWalker extends APTSelfWalker {
     private final List<CsmReference> references = new ArrayList<>();
     private final CsmFile csmFile;
     public APTFindMacrosWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {

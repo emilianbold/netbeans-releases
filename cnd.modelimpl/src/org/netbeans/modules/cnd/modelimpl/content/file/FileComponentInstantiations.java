@@ -74,6 +74,10 @@ public class FileComponentInstantiations extends FileComponent implements Persis
     private static final FileComponentInstantiations EMPTY = new FileComponentInstantiations() {
 
         @Override
+        public void addInstantiation(CsmInstantiation inst) {
+        }
+
+        @Override
         void put() {
         }
     };

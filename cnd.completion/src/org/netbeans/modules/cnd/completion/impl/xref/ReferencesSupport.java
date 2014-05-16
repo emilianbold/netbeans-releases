@@ -123,6 +123,7 @@ import org.openide.util.CharSequences;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import static org.netbeans.modules.cnd.completion.impl.xref.Bundle.*;
+import org.netbeans.modules.cnd.support.Interrupter;
 
 /**
  *
@@ -158,23 +159,6 @@ public final class ReferencesSupport {
      */
     public static int getDocumentOffset(BaseDocument doc, int lineIndex, int colIndex) {
         return Utilities.getRowStartFromLineOffset(doc, lineIndex - 1) + (colIndex - 1);
-    }
-
-    private static BaseDocument getBaseDocument(FileObject fileObject) throws DataObjectNotFoundException, IOException {
-        if (fileObject == null || !fileObject.isValid()) {
-            return null;
-        }
-        DataObject dataObject = DataObject.find(fileObject);
-        EditorCookie cookie = dataObject.getLookup().lookup(EditorCookie.class);
-        if (cookie == null) {
-            throw new IllegalStateException("Given file (\"" + dataObject.getName() + // NOI18N
-                                            "\", data object is instance of class " + dataObject.getClass().getName() + // NOI18N
-                                            ") does not have EditorCookie."); // NOI18N
-        }
-
-        StyledDocument doc = CsmUtilities.openDocument(cookie);
-
-        return doc instanceof BaseDocument ? (BaseDocument) doc : null;
     }
 
     public CsmObject findReferencedObject(CsmFile csmFile, BaseDocument doc, int offset) {
@@ -292,7 +276,7 @@ public final class ReferencesSupport {
 
         // fast check, if possible
         // macros have max priority in file
-        List<CsmReference> macroUsages = CsmFileInfoQuery.getDefault().getMacroUsages(csmFile);
+        List<CsmReference> macroUsages = CsmFileInfoQuery.getDefault().getMacroUsages(csmFile, Interrupter.DUMMY);
         CsmObject csmItem = findMacro(macroUsages, offset);
         if (csmItem != null) {
             return csmItem;
@@ -637,39 +621,6 @@ public final class ReferencesSupport {
         return false;
     }
 
-    private static class FileToDoc {
-        BaseDocument doc;
-        CsmFile file;
-        FileToDoc(BaseDocument doc, CsmFile file){
-            this.doc = doc;
-            this.file = file;
-        }
-    }
-    private static Reference<FileToDoc> lastCsmFile = null;
-
-    static BaseDocument getDocument(CsmFile file) {
-        BaseDocument doc = null;
-        try {
-            Reference<FileToDoc> lcf = lastCsmFile;
-            if (lcf != null) {
-                FileToDoc pair = lcf.get();
-                if (pair != null && pair.file == file) {
-                    return pair.doc;
-                }
-            }
-            doc = ReferencesSupport.getBaseDocument(file.getFileObject());
-        } catch (DataObjectNotFoundException ex) {
-            ex.printStackTrace(System.err);
-        } catch (IOException ex) {
-            ex.printStackTrace(System.err);
-        }
-        if (doc != null) {
-            lastCsmFile = new WeakReference<FileToDoc>(new FileToDoc(doc,file));
-        }
-        return doc;
-    }
-
-   
     static CsmReferenceKind getReferenceUsageKind(final CsmReference ref) {
         CsmReferenceKind kind = CsmReferenceKind.DIRECT_USAGE;
         if (ref instanceof ReferenceImpl) {

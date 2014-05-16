@@ -51,6 +51,26 @@ made subject to such option by the copyright holder.
 </apidefs>
 <changes>
 
+    <change id="DialogParent">
+        <api name="dialogs"/>
+        <summary>Allow to specify dialog parent window when using DialogDisplayer.</summary>
+        <version major="7" minor="38"/>
+        <date day="18" month="4" year="2014"/>
+        <author login="saubrecht"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+            When a document window is floated (decoupled from the main IDE window)
+            and has focus then a new dialog window will use it as a parent window by default.
+            That means such non-modal dialogs will close when that document window is closed.
+            To avoid such situation pass <code>WindowManager.getDefault().getMainWindow()</code> as
+            dialog parent window when creating the dialog instance.
+            </p>
+        </description>
+        <class package="org.openide" name="DialogDisplayer"/>
+        <issue number="242854"/>
+    </change>
+
     <change id="NoDefaultClose">
         <api name="dialogs"/>
         <summary>Added an option to disable the closing of a dialog with ESC key

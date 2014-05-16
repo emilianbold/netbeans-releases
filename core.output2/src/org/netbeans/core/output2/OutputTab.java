@@ -201,6 +201,15 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         }
         // get new OutWriter
         outWriter = io.out();
+
+        // Workaround for bug 242979.
+        Document actualDocument = getDocument();
+        if (actualDocument instanceof OutputDocument) {
+            OutputDocument od = (OutputDocument) actualDocument;
+            if (od.getWriter() == outWriter) {
+                return;
+            }
+        }
         setDocument(new OutputDocument(outWriter));
         applyOptions();
     }

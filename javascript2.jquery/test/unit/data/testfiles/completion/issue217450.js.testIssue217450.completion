@@ -4,7 +4,7 @@ $("#text").|
 ------------------------------------
 METHOD     Callbacks(flags): Callbacks     [PUBLIC]   jquery-api.xml
 METHOD     Deferred(beforeStart, deferred  [PUBLIC]   jquery-api.xml
-METHOD     add(jQuery object): jQuery      [PUBLIC]   jquery-api.xml
+METHOD     add(html): jQuery               [PUBLIC]   jquery-api.xml
 METHOD     addBack(selector): jQuery       [PUBLIC]   jquery-api.xml
 METHOD     addClass(className): jQuery     [PUBLIC]   jquery-api.xml
 METHOD     after(content): jQuery          [PUBLIC]   jquery-api.xml
@@ -20,22 +20,22 @@ METHOD     ajaxSuccess(handler(event, XML  [PUBLIC]   jquery-api.xml
 METHOD     ajaxTransport(dataType, handle  [PUBLIC]   jquery-api.xml
 METHOD     andSelf(): jQuery               [PUBLIC]   jquery-api.xml
 METHOD     animate(properties, options, n  [PUBLIC]   jquery-api.xml
-METHOD     append(function(index, html)):  [PUBLIC]   jquery-api.xml
+METHOD     append(content): jQuery         [PUBLIC]   jquery-api.xml
 METHOD     appendTo(target): jQuery        [PUBLIC]   jquery-api.xml
 METHOD     attr(attributes): jQuery        [PUBLIC]   jquery-api.xml
-METHOD     before(function): jQuery        [PUBLIC]   jquery-api.xml
-METHOD     bind(events): jQuery            [PUBLIC]   jquery-api.xml
-METHOD     blur(eventData, handler(eventO  [PUBLIC]   jquery-api.xml
-METHOD     change(eventData, handler(even  [PUBLIC]   jquery-api.xml
+METHOD     before(content): jQuery         [PUBLIC]   jquery-api.xml
+METHOD     bind(eventType, eventData, han  [PUBLIC]   jquery-api.xml
+METHOD     blur(): jQuery                  [PUBLIC]   jquery-api.xml
+METHOD     change(): jQuery                [PUBLIC]   jquery-api.xml
 METHOD     children(selector): jQuery      [PUBLIC]   jquery-api.xml
 METHOD     clearQueue(queueName): jQuery   [PUBLIC]   jquery-api.xml
 METHOD     click(): jQuery                 [PUBLIC]   jquery-api.xml
 METHOD     clone(withDataAndEvents): jQue  [PUBLIC]   jquery-api.xml
-METHOD     closest(selectors, context): A  [PUBLIC]   jquery-api.xml
+METHOD     closest(selector): jQuery       [PUBLIC]   jquery-api.xml
 METHOD     contains(container, contained)  [PUBLIC]   jquery-api.xml
 METHOD     contents(): jQuery              [PUBLIC]   jquery-api.xml
-METHOD     css(propertyName, function(ind  [PUBLIC]   jquery-api.xml
-METHOD     data(obj): jQuery               [PUBLIC]   jquery-api.xml
+METHOD     css(properties): jQuery         [PUBLIC]   jquery-api.xml
+METHOD     data(element, key): Object      [PUBLIC]   jquery-api.xml
 METHOD     dblclick(): jQuery              [PUBLIC]   jquery-api.xml
 METHOD     delay(duration, queueName): jQ  [PUBLIC]   jquery-api.xml
 METHOD     delegate(selector, eventType,   [PUBLIC]   jquery-api.xml
@@ -46,17 +46,17 @@ METHOD     each(collection, callback(inde  [PUBLIC]   jquery-api.xml
 METHOD     empty(): jQuery                 [PUBLIC]   jquery-api.xml
 METHOD     end(): jQuery                   [PUBLIC]   jquery-api.xml
 METHOD     eq(index): jQuery               [PUBLIC]   jquery-api.xml
-METHOD     error(eventData, handler(event  [PUBLIC]   jquery-api.xml
+METHOD     error(handler(eventObject)): j  [PUBLIC]   jquery-api.xml
 METHOD     extend(target, object1, object  [PUBLIC]   jquery-api.xml
 METHOD     fadeIn(options, now, tween, an  [PUBLIC]   jquery-api.xml
-METHOD     fadeOut(duration, easing, comp  [PUBLIC]   jquery-api.xml
+METHOD     fadeOut(options, now, tween, a  [PUBLIC]   jquery-api.xml
 METHOD     fadeTo(duration, opacity, comp  [PUBLIC]   jquery-api.xml
 METHOD     fadeToggle(options, now, tween  [PUBLIC]   jquery-api.xml
-METHOD     filter(jQuery object): jQuery   [PUBLIC]   jquery-api.xml
+METHOD     filter(function(index)): jQuer  [PUBLIC]   jquery-api.xml
 METHOD     find(selector): jQuery          [PUBLIC]   jquery-api.xml
 METHOD     finish(queue): jQuery           [PUBLIC]   jquery-api.xml
 METHOD     first(): jQuery                 [PUBLIC]   jquery-api.xml
-METHOD     focus(eventData, handler(event  [PUBLIC]   jquery-api.xml
+METHOD     focus(): jQuery                 [PUBLIC]   jquery-api.xml
 METHOD     focusin(handler(eventObject)):  [PUBLIC]   jquery-api.xml
 METHOD     focusout(handler(eventObject))  [PUBLIC]   jquery-api.xml
 METHOD     get(url, data, success(data, t  [PUBLIC]   jquery-api.xml
@@ -70,10 +70,10 @@ METHOD     hasData(element): Boolean       [PUBLIC]   jquery-api.xml
 METHOD     height(value): jQuery           [PUBLIC]   jquery-api.xml
 METHOD     hide(options, now, tween, anim  [PUBLIC]   jquery-api.xml
 METHOD     holdReady(hold): undefined      [PUBLIC]   jquery-api.xml
-METHOD     hover(handlerInOut(eventObject  [PUBLIC]   jquery-api.xml
-METHOD     html(function(index, oldhtml))  [PUBLIC]   jquery-api.xml
+METHOD     hover(handlerIn(eventObject),   [PUBLIC]   jquery-api.xml
+METHOD     html(htmlString): jQuery        [PUBLIC]   jquery-api.xml
 METHOD     inArray(value, array, fromInde  [PUBLIC]   jquery-api.xml
-METHOD     index(element): Number          [PUBLIC]   jquery-api.xml
+METHOD     index(selector): Number         [PUBLIC]   jquery-api.xml
 METHOD     innerHeight(): Integer          [PUBLIC]   jquery-api.xml
 METHOD     innerWidth(): Integer           [PUBLIC]   jquery-api.xml
 METHOD     insertAfter(target): jQuery     [PUBLIC]   jquery-api.xml
@@ -86,29 +86,29 @@ METHOD     isNumeric(value): Boolean       [PUBLIC]   jquery-api.xml
 METHOD     isPlainObject(object): Boolean  [PUBLIC]   jquery-api.xml
 METHOD     isWindow(obj): boolean          [PUBLIC]   jquery-api.xml
 METHOD     isXMLDoc(node): Boolean         [PUBLIC]   jquery-api.xml
-METHOD     jQuery(html, attributes): jQue  [PUBLIC]   jquery-api.xml
-METHOD     keydown(eventData, handler(eve  [PUBLIC]   jquery-api.xml
-METHOD     keypress(eventData, handler(ev  [PUBLIC]   jquery-api.xml
-METHOD     keyup(eventData, handler(event  [PUBLIC]   jquery-api.xml
+METHOD     jQuery(callback): jQuery        [PUBLIC]   jquery-api.xml
+METHOD     keydown(): jQuery               [PUBLIC]   jquery-api.xml
+METHOD     keypress(): jQuery              [PUBLIC]   jquery-api.xml
+METHOD     keyup(): jQuery                 [PUBLIC]   jquery-api.xml
 METHOD     last(): jQuery                  [PUBLIC]   jquery-api.xml
-METHOD     live(events): jQuery            [PUBLIC]   jquery-api.xml
+METHOD     live(events, handler(eventObje  [PUBLIC]   jquery-api.xml
 METHOD     load(url, data, complete(respo  [PUBLIC]   jquery-api.xml
 METHOD     makeArray(obj): Array           [PUBLIC]   jquery-api.xml
 METHOD     map(array, callback(elementOfA  [PUBLIC]   jquery-api.xml
 METHOD     merge(first, second): Array     [PUBLIC]   jquery-api.xml
-METHOD     mousedown(eventData, handler(e  [PUBLIC]   jquery-api.xml
+METHOD     mousedown(): jQuery             [PUBLIC]   jquery-api.xml
 METHOD     mouseenter(): jQuery            [PUBLIC]   jquery-api.xml
 METHOD     mouseleave(): jQuery            [PUBLIC]   jquery-api.xml
 METHOD     mousemove(): jQuery             [PUBLIC]   jquery-api.xml
 METHOD     mouseout(): jQuery              [PUBLIC]   jquery-api.xml
 METHOD     mouseover(): jQuery             [PUBLIC]   jquery-api.xml
-METHOD     mouseup(eventData, handler(eve  [PUBLIC]   jquery-api.xml
+METHOD     mouseup(): jQuery               [PUBLIC]   jquery-api.xml
 METHOD     next(selector): jQuery          [PUBLIC]   jquery-api.xml
 METHOD     nextAll(selector): jQuery       [PUBLIC]   jquery-api.xml
 METHOD     nextUntil(selector, filter): j  [PUBLIC]   jquery-api.xml
 METHOD     noConflict(removeAll): Object   [PUBLIC]   jquery-api.xml
 METHOD     noop(): undefined               [PUBLIC]   jquery-api.xml
-METHOD     not(jQuery object): jQuery      [PUBLIC]   jquery-api.xml
+METHOD     not(elements): jQuery           [PUBLIC]   jquery-api.xml
 METHOD     now(): Number                   [PUBLIC]   jquery-api.xml
 METHOD     off(events, selector): jQuery   [PUBLIC]   jquery-api.xml
 METHOD     offset(): Object                [PUBLIC]   jquery-api.xml
@@ -117,10 +117,10 @@ METHOD     on(events, selector, data): jQ  [PUBLIC]   jquery-api.xml
 METHOD     one(events, data, handler(even  [PUBLIC]   jquery-api.xml
 METHOD     outerHeight(includeMargin): In  [PUBLIC]   jquery-api.xml
 METHOD     outerWidth(includeMargin): Int  [PUBLIC]   jquery-api.xml
-METHOD     param(obj, traditional): Strin  [PUBLIC]   jquery-api.xml
+METHOD     param(obj): String              [PUBLIC]   jquery-api.xml
 METHOD     parent(selector): jQuery        [PUBLIC]   jquery-api.xml
 METHOD     parents(selector): jQuery       [PUBLIC]   jquery-api.xml
-METHOD     parentsUntil(element, filter):  [PUBLIC]   jquery-api.xml
+METHOD     parentsUntil(selector, filter)  [PUBLIC]   jquery-api.xml
 METHOD     parseHTML(data, context, keepS  [PUBLIC]   jquery-api.xml
 METHOD     parseJSON(json): Object         [PUBLIC]   jquery-api.xml
 METHOD     parseXML(data): XMLDocument     [PUBLIC]   jquery-api.xml
@@ -130,12 +130,12 @@ METHOD     prepend(content): jQuery        [PUBLIC]   jquery-api.xml
 METHOD     prependTo(target): jQuery       [PUBLIC]   jquery-api.xml
 METHOD     prev(selector): jQuery          [PUBLIC]   jquery-api.xml
 METHOD     prevAll(selector): jQuery       [PUBLIC]   jquery-api.xml
-METHOD     prevUntil(element, filter): jQ  [PUBLIC]   jquery-api.xml
+METHOD     prevUntil(selector, filter): j  [PUBLIC]   jquery-api.xml
 METHOD     promise(type, target): Promise  [PUBLIC]   jquery-api.xml
 METHOD     prop(propertyName, function(in  [PUBLIC]   jquery-api.xml
 METHOD     proxy(context, name): Function  [PUBLIC]   jquery-api.xml
-METHOD     pushStack(elements, name, argu  [PUBLIC]   jquery-api.xml
-METHOD     queue(queueName, callback( nex  [PUBLIC]   jquery-api.xml
+METHOD     pushStack(elements): jQuery     [PUBLIC]   jquery-api.xml
+METHOD     queue(element, queueName, call  [PUBLIC]   jquery-api.xml
 METHOD     ready(handler): jQuery          [PUBLIC]   jquery-api.xml
 METHOD     remove(selector): jQuery        [PUBLIC]   jquery-api.xml
 METHOD     removeAttr(attributeName): jQu  [PUBLIC]   jquery-api.xml
@@ -143,9 +143,9 @@ METHOD     removeClass(className): jQuery  [PUBLIC]   jquery-api.xml
 METHOD     removeData(name): jQuery        [PUBLIC]   jquery-api.xml
 METHOD     removeProp(propertyName): jQue  [PUBLIC]   jquery-api.xml
 METHOD     replaceAll(target): jQuery      [PUBLIC]   jquery-api.xml
-METHOD     replaceWith(function): jQuery   [PUBLIC]   jquery-api.xml
-METHOD     resize(eventData, handler(even  [PUBLIC]   jquery-api.xml
-METHOD     scroll(eventData, handler(even  [PUBLIC]   jquery-api.xml
+METHOD     replaceWith(newContent): jQuer  [PUBLIC]   jquery-api.xml
+METHOD     resize(): jQuery                [PUBLIC]   jquery-api.xml
+METHOD     scroll(): jQuery                [PUBLIC]   jquery-api.xml
 METHOD     scrollLeft(value): jQuery       [PUBLIC]   jquery-api.xml
 METHOD     scrollTop(value): jQuery        [PUBLIC]   jquery-api.xml
 METHOD     select(): jQuery                [PUBLIC]   jquery-api.xml
@@ -158,25 +158,25 @@ METHOD     slice(start, end): jQuery       [PUBLIC]   jquery-api.xml
 METHOD     slideDown(options, now, tween,  [PUBLIC]   jquery-api.xml
 METHOD     slideToggle(options, now, twee  [PUBLIC]   jquery-api.xml
 METHOD     slideUp(options, now, tween, a  [PUBLIC]   jquery-api.xml
-METHOD     stop(queue, clearQueue, jumpTo  [PUBLIC]   jquery-api.xml
+METHOD     stop(clearQueue, jumpToEnd): j  [PUBLIC]   jquery-api.xml
 METHOD     sub(): jQuery                   [PUBLIC]   jquery-api.xml
 METHOD     submit(): jQuery                [PUBLIC]   jquery-api.xml
-METHOD     text(function(index, text)): j  [PUBLIC]   jquery-api.xml
+METHOD     text(textString): jQuery        [PUBLIC]   jquery-api.xml
 METHOD     toArray(): Array                [PUBLIC]   jquery-api.xml
-METHOD     toggle(duration, easing, compl  [PUBLIC]   jquery-api.xml
+METHOD     toggle(options, now, tween, an  [PUBLIC]   jquery-api.xml
 METHOD     toggleClass(className): jQuery  [PUBLIC]   jquery-api.xml
 METHOD     trigger(eventType, extraParame  [PUBLIC]   jquery-api.xml
 METHOD     triggerHandler(eventType, extr  [PUBLIC]   jquery-api.xml
 METHOD     trim(str): String               [PUBLIC]   jquery-api.xml
 METHOD     type(obj): String               [PUBLIC]   jquery-api.xml
 METHOD     unbind(event): jQuery           [PUBLIC]   jquery-api.xml
-METHOD     undelegate(namespace): jQuery   [PUBLIC]   jquery-api.xml
+METHOD     undelegate(selector, eventType  [PUBLIC]   jquery-api.xml
 METHOD     unique(array): Array            [PUBLIC]   jquery-api.xml
 METHOD     unload(handler(eventObject)):   [PUBLIC]   jquery-api.xml
 METHOD     unwrap(): jQuery                [PUBLIC]   jquery-api.xml
-METHOD     val(function(index, value)): j  [PUBLIC]   jquery-api.xml
+METHOD     val(value): jQuery              [PUBLIC]   jquery-api.xml
 METHOD     when(deferreds): Promise        [PUBLIC]   jquery-api.xml
 METHOD     width(value): jQuery            [PUBLIC]   jquery-api.xml
 METHOD     wrap(wrappingElement): jQuery   [PUBLIC]   jquery-api.xml
 METHOD     wrapAll(wrappingElement): jQue  [PUBLIC]   jquery-api.xml
-METHOD     wrapInner(function(index)): jQ  [PUBLIC]   jquery-api.xml
+METHOD     wrapInner(wrappingElement): jQ  [PUBLIC]   jquery-api.xml

@@ -123,6 +123,9 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
     }    
 
     protected final void initQualifiedName(AST ast, CsmScope scope, boolean register, CsmFile file) throws AstRendererException {
+        if (CastUtils.isCast(ast)) {
+            ast = CastUtils.transform(ast);
+        }
         AST qIdToken = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
         if (qIdToken == null) {
             throw AstRendererException.throwAstRendererException((FileImpl) file, ast, getStartOffset(), "Empty class specialization name."); // NOI18N

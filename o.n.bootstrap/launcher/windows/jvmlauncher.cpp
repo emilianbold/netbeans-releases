@@ -96,7 +96,7 @@ bool JvmLauncher::checkJava(const char *path, const char *prefix) {
         if (!fileExists(javawExePath.c_str())) {
             logMsg("javaw.exe not exists, forcing java.exe");
             javawExePath = javaExePath;
-        }
+        }        
         return true;
     }
 
@@ -106,6 +106,7 @@ bool JvmLauncher::checkJava(const char *path, const char *prefix) {
     javawExePath.clear();
     javaClientDllPath.clear();
     javaServerDllPath.clear();
+    javaVersion.clear();
     return false;
 }
 
@@ -123,6 +124,42 @@ bool JvmLauncher::getJavaPath(string &path) {
     logMsg("JvmLauncher::getJavaPath()");
     path = javaPath;
     return !javaPath.empty();
+}
+
+/**
+ * Checks Java version - if 1.7 then PermSize and
+ * MaxPermSize are supported
+ * 
+ * Should be removed as soon as 1.7 is not supported
+ * 
+ * @return 
+ */
+bool JvmLauncher::isPermSizeSupported() {
+    // Run "java -version" only if the version is unknown
+    // unknown - it's when Java is specified in netbeans.conf
+    // or by --jdkhome
+    if (javaVersion.empty()) {
+        string cmd = "\"" + javaExePath + "\" -version 2>&1";
+        FILE* pipe = popen(cmd.c_str(), "r");
+        if (!pipe) return false;
+        char buffer[128];
+        std::string result = "";
+        while (!feof(pipe)) {
+            if(fgets(buffer, 128, pipe) != NULL)
+                    result += buffer;
+        }
+        pclose(pipe);
+        
+        if (result.size() > 17 ) {                    
+            return result.substr(14, 3) == "1.7";
+        }
+    } else {
+        if (javaVersion.size() >= 3) {
+            return javaVersion.substr(0, 3) == "1.7";
+        }
+    }
+    
+    return false;
 }
 
 bool JvmLauncher::start(const char *mainClassName, const list<string> &args, const list<string> &options, bool &separateProcess, DWORD *retCode) {
@@ -147,7 +184,7 @@ bool JvmLauncher::start(const char *mainClassName, const list<string> &args, con
                 return false;
             }
         }
-    }
+    }  
 
     if (!separateProcess) {
         // both client/server found, check option which should be used
@@ -446,7 +483,7 @@ bool JvmLauncher::findJava(const char *javaKey, const char *prefix, const char *
             if (getStringFromRegistry(HKEY_LOCAL_MACHINE, (string(javaKey) + "\\" + value).c_str(), JAVA_HOME_NAME, path)) {
                 if (*path.rbegin() == '\\') {
                     path.erase(path.length() - 1, 1);
-                }
+                }                
                 result = checkJava(path.c_str(), prefix);
             }
         }
@@ -465,5 +502,10 @@ bool JvmLauncher::findJava(const char *javaKey, const char *prefix, const char *
         }
     } 
     // probably also need to check 32bit registry when launcher becomes 64-bit but is not the case now.
+    
+    if (result) {
+        javaVersion = value;
+    }
+    
     return result;    
 }

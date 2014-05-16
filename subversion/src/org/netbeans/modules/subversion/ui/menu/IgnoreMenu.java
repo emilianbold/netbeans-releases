@@ -48,6 +48,7 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.netbeans.modules.subversion.Annotator;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.ui.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
 import org.openide.util.NbBundle;
@@ -95,16 +96,18 @@ public final class IgnoreMenu extends DynamicMenu {
             Actions.connect(item, action, false);
             menu.add(item);
         } else {
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class),
-                    SystemAction.get(IgnoreAction.class).getActionStatus(nodes) == IgnoreAction.UNIGNORING
-                    ? NbBundle.getMessage(Annotator.class, "CTL_PopupMenuItem_Unignore") //NOI18N
-                    : NbBundle.getMessage(Annotator.class, "CTL_PopupMenuItem_Ignore"), lkp)); //NOI18N
-            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(ExcludeFromCommitAction.class),
-                    SystemAction.get(ExcludeFromCommitAction.class).getActionStatus(nodes) == ExcludeFromCommitAction.INCLUDING
-                    ? NbBundle.getMessage(Annotator.class, "CTL_PopupMenuItem_IncludeInCommit") //NOI18N
-                    : NbBundle.getMessage(Annotator.class, "CTL_PopupMenuItem_ExcludeFromCommit"), lkp)); //NOI18N
-            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            if (Subversion.getInstance().getStatusCache().ready()) {
+                item = menu.add(SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class),
+                        SystemAction.get(IgnoreAction.class).getActionStatus(nodes) == IgnoreAction.UNIGNORING
+                        ? NbBundle.getMessage(Annotator.class, "CTL_PopupMenuItem_Unignore") //NOI18N
+                        : NbBundle.getMessage(Annotator.class, "CTL_PopupMenuItem_Ignore"), lkp)); //NOI18N
+                org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+                item = menu.add(SystemActionBridge.createAction(SystemAction.get(ExcludeFromCommitAction.class),
+                        SystemAction.get(ExcludeFromCommitAction.class).getActionStatus(nodes) == ExcludeFromCommitAction.INCLUDING
+                        ? NbBundle.getMessage(Annotator.class, "CTL_PopupMenuItem_IncludeInCommit") //NOI18N
+                        : NbBundle.getMessage(Annotator.class, "CTL_PopupMenuItem_ExcludeFromCommit"), lkp)); //NOI18N
+                org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            }
         }        
         return menu;
     }

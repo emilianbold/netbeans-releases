@@ -209,10 +209,11 @@ public class UnnecessaryBoxing {
     private static boolean checkBinaryOp(CompilationInfo ci, TreePath expr, Tree prev) {
         BinaryTree bt = (BinaryTree)expr.getLeaf();
         Tree other = prev == bt.getLeftOperand() ? bt.getRightOperand() : bt.getLeftOperand();
-        if (checkTwoArguments(ci, expr, other, prev)) {
+        Boolean b = checkTwoArguments(ci, expr, other, prev);
+        if (Boolean.TRUE == b) {
             return true;
         }
-        if (other == null) {
+        if (b == null) {
             return false;
         }
         TypeMirror tm  = ci.getTrees().getTypeMirror(new TreePath(expr, other));
@@ -225,9 +226,9 @@ public class UnnecessaryBoxing {
         return false;
     }
     
-    private static boolean checkTwoArguments(CompilationInfo ci, TreePath expr, Tree other, Tree prev) {
+    private static Boolean checkTwoArguments(CompilationInfo ci, TreePath expr, Tree other, Tree prev) {
         if (other == null || prev == null) {
-            return false;
+            return null;
         }
         TreePath otherPath = new TreePath(expr, other);
         TreePath prevPath = new TreePath(expr, prev);
@@ -235,10 +236,13 @@ public class UnnecessaryBoxing {
         TypeMirror pt = Utilities.unboxIfNecessary(ci, ci.getTrees().getTypeMirror(prevPath)); // assume boxed
         TypeMirror ot = Utilities.unboxIfNecessary(ci, ci.getTrees().getTypeMirror(otherPath));
         if (pt == null || ot == null) {
-            return false;
+            return null;
         }
-        ExpectedTypeResolver res = new ExpectedTypeResolver(expr, ci);
+        ExpectedTypeResolver res = new ExpectedTypeResolver(expr, prevPath, ci);
         List<? extends TypeMirror> types = res.scan(expr, null);
+        if (types == null) {
+            return null;
+        }
         for (TypeMirror m : types) {
             if (ci.getTypes().isAssignable(pt, m)) {
                 return true;
@@ -264,7 +268,7 @@ public class UnnecessaryBoxing {
         TreePath prevPath = new TreePath(expr, prev);
         
         TypeMirror pt = Utilities.unboxIfNecessary(ci, ci.getTrees().getTypeMirror(prevPath)); // assume boxed
-        ExpectedTypeResolver res = new ExpectedTypeResolver(expr, ci);
+        ExpectedTypeResolver res = new ExpectedTypeResolver(expr, prevPath, ci);
         List<? extends TypeMirror> types = res.scan(expr, null);
         if (types == null) {
             // cannot determine the type -> no hint, probably an error

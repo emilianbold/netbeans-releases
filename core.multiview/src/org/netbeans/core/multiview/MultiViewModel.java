@@ -281,6 +281,14 @@ class MultiViewModel {
     void setFreezeTabButtons( boolean freeze ) {
         this.freezeButtons = freeze;
     }
+    
+    boolean canSplit() {
+        for( MultiViewDescription mvd : getDescriptions() ) {
+            if( !(mvd instanceof ContextAwareDescription) )
+                return false;
+        }
+        return true;
+    }
 
     /**
      * listener for changes in model's selected element.

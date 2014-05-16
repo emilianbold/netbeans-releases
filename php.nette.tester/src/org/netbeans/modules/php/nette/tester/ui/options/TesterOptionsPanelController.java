@@ -64,7 +64,7 @@ import org.openide.util.Lookup;
 public class TesterOptionsPanelController extends OptionsPanelController implements ChangeListener {
 
     static final String ID = "nette-tester"; // NOI18N
-    public static final String OPTIONS_SUB_PATH = UiUtils.FRAMEWORKS_AND_TOOLS_SUB_PATH+"/"+ID; // NOI18N
+    public static final String OPTIONS_SUB_PATH = UiUtils.FRAMEWORKS_AND_TOOLS_SUB_PATH + "/" + ID; // NOI18N
     public static final String OPTIONS_PATH = UiUtils.OPTIONS_PATH + "/" + OPTIONS_SUB_PATH; // NOI18N
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
@@ -78,10 +78,11 @@ public class TesterOptionsPanelController extends OptionsPanelController impleme
     @Override
     public void update() {
         assert EventQueue.isDispatchThread();
-        if(firstOpening || !isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+        if (firstOpening || !isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
             firstOpening = false;
             getPanel().setTesterPath(getTesterOptions().getTesterPath());
             getPanel().setPhpIniPath(getTesterOptions().getPhpIniPath());
+            getPanel().setBinaryExecutable(getTesterOptions().getBinaryExecutable());
         }
         changed = false;
     }
@@ -93,6 +94,7 @@ public class TesterOptionsPanelController extends OptionsPanelController impleme
             public void run() {
                 getTesterOptions().setTesterPath(getPanel().getTesterPath());
                 getTesterOptions().setPhpIniPath(getPanel().getPhpIniPath());
+                getTesterOptions().setBinaryExecutable(getPanel().getBinaryExecutable());
                 changed = false;
             }
         });
@@ -100,9 +102,10 @@ public class TesterOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public void cancel() {
-        if(isChanged()) { // if panel is modified by the user and options window closes, discard any changes
+        if (isChanged()) { // if panel is modified by the user and options window closes, discard any changes
             getPanel().setTesterPath(getTesterOptions().getTesterPath());
             getPanel().setPhpIniPath(getTesterOptions().getPhpIniPath());
+            getPanel().setBinaryExecutable(getTesterOptions().getBinaryExecutable());
         }
     }
 
@@ -132,12 +135,20 @@ public class TesterOptionsPanelController extends OptionsPanelController impleme
     public boolean isChanged() {
         String saved = getTesterOptions().getTesterPath();
         String current = getPanel().getTesterPath().trim();
-        if(saved == null ? !current.isEmpty() : !saved.equals(current)) {
+        if (saved == null ? !current.isEmpty() : !saved.equals(current)) {
             return true;
         }
         saved = getTesterOptions().getPhpIniPath();
         current = getPanel().getPhpIniPath().trim();
-        return saved == null ? !current.isEmpty() : !saved.equals(current);
+        if (saved == null ? !current.isEmpty() : !saved.equals(current)) {
+            return true;
+        }
+        saved = getTesterOptions().getBinaryExecutable();
+        current = getPanel().getBinaryExecutable();
+        if (current != null) {
+            current = current.trim();
+        }
+        return saved == null ? current != null && !current.isEmpty() : !saved.equals(current);
     }
 
     @Override

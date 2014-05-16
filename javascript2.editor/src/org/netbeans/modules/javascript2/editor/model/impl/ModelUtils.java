@@ -1383,9 +1383,11 @@ public class ModelUtils {
         for (int i = 0; i < parts.length; i++) {
             part = parts[i];
             boolean add = true;
-            if (part.startsWith(generated)) {
+            if (part.startsWith(generated) || (i == 0 && part.contains(generated))) {
+//            if (part.startsWith(generated)) {
                 try {
-                    Integer.parseInt(part.substring(generated.length()));
+                    Integer.parseInt(part.substring(part.indexOf(generated) + generated.length()));
+//                    Integer.parseInt(part.substring(generated.length()));
                     add = false;
                 } catch (NumberFormatException nfe) {
                     // do nothing

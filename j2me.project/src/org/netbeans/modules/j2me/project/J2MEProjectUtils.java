@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.j2me.project;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -49,7 +51,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.StringTokenizer;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ButtonGroup;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -60,6 +67,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Profile;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2me.project.ui.PlatformsComboBoxModel;
 import org.netbeans.modules.j2me.project.ui.SourceLevelComboBoxModel.SourceLevelListCellRenderer;
 import org.netbeans.modules.java.api.common.ui.PlatformFilter;
@@ -98,6 +106,33 @@ public class J2MEProjectUtils {
 
     public static ArrayList<JCheckBox> getOptionalPackages() {
         return optionalPackages;
+    }
+
+    public static HashMap<J2MEPlatform.Device, List<String>> getOptionalPackagesForDevices() {
+        final HashMap<J2MEPlatform.Device, List<String>> devices2packages = new HashMap<>();
+        final JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(
+                null,
+                new Specification(
+                        J2MEPlatform.SPECIFICATION_NAME,
+                        new SpecificationVersion("8.0") //NOI18N
+                )
+        );
+        for (JavaPlatform jp : platforms) {
+            if (jp instanceof J2MEPlatform) {
+                J2MEPlatform.Device[] devices = ((J2MEPlatform) jp).getDevices();
+                for (J2MEPlatform.Device device : devices) {
+                    List<String> deviceProfiles = new ArrayList<>();
+                    devices2packages.put(device, deviceProfiles);
+                    J2MEPlatform.J2MEProfile[] profiles = device.getProfiles();
+                    for (J2MEPlatform.J2MEProfile profile : profiles) {
+                        if (profile.getType().equals(J2MEPlatform.J2MEProfile.TYPE_OPTIONAL)) {
+                            deviceProfiles.add(profile.toString());
+                        }
+                    }
+                }
+            }
+        }
+        return devices2packages;
     }
 
     public static HashMap<String, J2MEPlatform.J2MEProfile> getNameToProfileMap() {
@@ -266,5 +301,39 @@ public class J2MEProjectUtils {
 
     public static SourceLevelListCellRenderer createSourceLevelListCellRenderer() {
         return new SourceLevelListCellRenderer();
+    }
+
+    /**
+     * Checks whether given file is LIBlet.
+     * @param file to check
+     * @return <code>true</code> if file is LIBlet, <code>false</code> otherwise.
+     */
+    public static boolean isLibraryLiblet(File file) {
+        if (file.exists()) {
+            try {
+                JarFile jar = new JarFile(file);
+                Attributes manifestAttributes = jar.getManifest().getMainAttributes();
+                return manifestAttributes.containsKey(new Attributes.Name("LIBlet-Name")); //NOI18N
+            } catch (IOException ex) {
+                Logger.getLogger(J2MEProjectUtils.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks whether given Project is LIBlet.
+     * @param project to check
+     * @return <code>true</code> if project is LIBlet, <code>false</code> otherwise.
+     */
+    public static boolean isLibraryLiblet(Project project) {
+        if (project != null && project instanceof J2MEProject) {
+            J2MEProject j2meProj = (J2MEProject) project;
+            String propVal = j2meProj.evaluator().getProperty("manifest.is.liblet"); //NOI18N
+            if (propVal != null) {
+                return Boolean.parseBoolean(propVal);
+            }
+        }
+        return false;
     }
 }

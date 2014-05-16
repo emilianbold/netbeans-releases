@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
             Collection<? extends CsmOffsetableDeclaration> descDecls,
             Collection<? extends CsmOffsetableDeclaration> baseTemplates,
             Collection<? extends CsmOffsetableDeclaration> templateSpecializations) {
-        super(document, decl, true, Collections.<CsmOffsetableDeclaration>emptyList(), descDecls, baseTemplates, templateSpecializations);
+        super(document, decl, Collections.<CsmOffsetableDeclaration>emptyList(), descDecls, baseTemplates, templateSpecializations);
     }
 
 

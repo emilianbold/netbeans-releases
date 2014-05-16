@@ -50,6 +50,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.java.api.IntroduceLocalExtensionRefactoring;
@@ -62,7 +63,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
 
     private StringBuilder sb;
     public IntroduceLocalExtensionTest(String name) {
-        super(name);
+        super(name, "1.8");
         sb = new StringBuilder();
         //<editor-fold defaultstate="collapsed" desc="Source">
         sb.append("/*")
@@ -394,6 +395,23 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("    }")
                 .append("\n").append("}");
         //</editor-fold>
+    }
+    
+    static {
+        JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
+    }
+    
+    public void testDefault() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A { public static void main(String[] args) { Thing thing; } }"),
+                new File("t/Thing.java","package t; public class Thing implements Some { }"),
+                new File("t/Some.java", "package t; public interface Some { double E = 2.718282; void doIt(); default void doItNow() { }; }"));
+        performIntroduceLocalExtension("MyList", true, true, "t", IntroduceLocalExtensionRefactoring.Equality.DELEGATE);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A { public static void main(String[] args) { MyList thing; } }"),
+                new File("t/Thing.java","package t; public class Thing implements Some { }"),
+                new File("t/Some.java", "package t; public interface Some { double E = 2.718282; void doIt(); default void doItNow() { }; }"),
+                new File("t/MyList.java", "/* * Refactoring License */ package t; /** * * @author junit */ public class MyList implements Some { private Thing delegate; public MyList(Thing delegate) { this.delegate = delegate; } public MyList() { this.delegate = new Thing(); } @Override public void doIt() { delegate.doIt(); } @Override public void doItNow() { delegate.doItNow(); } public boolean equals(Object o) { Object target = o; if (o instanceof MyList) { target = ((MyList) o).delegate; } return this.delegate.equals(target); } public int hashCode() { return this.delegate.hashCode(); } } "));
     }
     
     public void testGenericSuperClass() throws Exception {
@@ -894,6 +912,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("import java.util.Iterator;")
                 .append("\n").append("import java.util.List;")
                 .append("\n").append("import java.util.ListIterator;")
+                .append("\n").append("import java.util.Objects;")
                 .append("\n").append("")
                 .append("\n").append("/**")
                 .append("\n").append(" *")
@@ -1223,7 +1242,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("            return false;")
                 .append("\n").append("        }")
                 .append("\n").append("        final MyList<E> other = (MyList<E>) obj;")
-                .append("\n").append("        if (this.delegate != other.delegate && (this.delegate == null || !this.delegate.equals(other.delegate))) {")
+                .append("\n").append("        if (!Objects.equals(this.delegate, other.delegate)) {")
                 .append("\n").append("            return false;")
                 .append("\n").append("        }")
                 .append("\n").append("        return true;")
@@ -1231,7 +1250,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 sb1.append("\n").append("")
                 .append("\n").append("    @Override public int hashCode() {")
                 .append("\n").append("       int hash = 1;")
-                .append("\n").append("       hash = 1 * hash + (this.delegate != null ? this.delegate.hashCode() : 0);")
+                .append("\n").append("       hash = 1 * hash + Objects.hashCode(this.delegate);")
                 .append("\n").append("       return hash;")
                 .append("\n").append("    }")
                 .append("\n").append("}")

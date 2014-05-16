@@ -136,6 +136,7 @@ public final class HighlightProvider  {
         switch( info.getSeverity() ) {
             case ERROR:     return org.netbeans.spi.editor.hints.Severity.ERROR;
             case WARNING:   return org.netbeans.spi.editor.hints.Severity.WARNING;
+            case HINT:   return org.netbeans.spi.editor.hints.Severity.HINT;
             default:        throw new IllegalArgumentException("Unexpected severity: " + info.getSeverity()); //NOI18N
         }
     }
@@ -152,7 +153,7 @@ public final class HighlightProvider  {
             if (interrupter.cancelled()) {
                 return;
             }
-            if (provider.supportedEvents().contains(event)) {
+            if (provider.isSupportedEvent(event)) {
                 list.add(provider);
             }
         }
@@ -173,7 +174,7 @@ public final class HighlightProvider  {
         }
         
         final List<ResponseImpl> responces = new ArrayList<ResponseImpl>();
-        final RequestImpl request = new RequestImpl(file, doc, interrupter);
+        final RequestImpl request = new RequestImpl(file, doc, event, interrupter);
         final CountDownLatch wait = new CountDownLatch(list.size());
         for(final CsmErrorProvider provider : list) {
             if (interrupter.cancelled()) {
@@ -232,11 +233,13 @@ public final class HighlightProvider  {
         private final CsmFile file;
         private final Interrupter interrupter;
         private final Document document;
+        private final EditorEvent event;
         
-        public RequestImpl(CsmFile file, Document doc, Interrupter interrupter) {
+        public RequestImpl(CsmFile file, Document doc, EditorEvent event, Interrupter interrupter) {
             this.file = file;
             this.interrupter = interrupter;
             this.document = doc;
+            this.event = event;
         }
 
         @Override
@@ -252,6 +255,11 @@ public final class HighlightProvider  {
         @Override
         public Document getDocument() {
             return document;
+        }
+
+        @Override
+        public EditorEvent getEvent() {
+            return event;
         }
     }
 

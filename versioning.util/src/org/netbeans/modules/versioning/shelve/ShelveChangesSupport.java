@@ -182,7 +182,7 @@ public abstract class ShelveChangesSupport {
         private final Timer timer;
         private final ShelveChangesPanel panel;
         private final Dialog dialog;
-        private static final Pattern p = Pattern.compile("\\s+"); //NOI18N
+        private static final Pattern p = Pattern.compile("([\\\\/:\\*\\?\"\\<\\>\\|\\s])"); //NOI18N
 
         private PatchNameListener (ShelveChangesPanel panel, JButton okButton, Dialog dialog) {
             this.panel = panel;
@@ -213,11 +213,15 @@ public abstract class ShelveChangesSupport {
         }
 
         @Override
+        @NbBundle.Messages({
+            "# {0} - invalid character", "ShelveChangesPanel.lblError.invalidCharacters=Patch name must not contain \"{0}\"."
+        })
         public void actionPerformed (ActionEvent e) {
             String patchName = panel.txtPatchName.getText().trim();
             if (!patchName.isEmpty()) {
-                if (p.matcher(patchName).find()) {
-                    setError(org.openide.util.NbBundle.getMessage(ShelveChangesPanel.class, "ShelveChangesPanel.lblError.spaces")); //NOI18N
+               Matcher m = p.matcher(patchName);
+               if (m.find()) {
+                    setError(Bundle.ShelveChangesPanel_lblError_invalidCharacters(m.group(1)));
                 } else if (!PatchStorage.getInstance().containsPatch(patchName)) {
                     button.setEnabled(true);
                 } else {

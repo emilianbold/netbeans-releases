@@ -684,21 +684,28 @@ public final class ELTypeUtilities {
                         //no such class on the classpath
                         return;
                     }
-                    ExecutableElement method = null;
+                    ExecutableElement method, lastResolved = null;
                     for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
                         Node current = parent.jjtGetChild(i);
                         if (enclosing != null && (current instanceof AstDotSuffix || NodeUtil.isMethodCall(current))) {
                             method = getElementForProperty(info, current, enclosing);
                             if (method == null) {
                                 continue;
+                            } else if (ELStreamCompletionItem.STREAM_METHOD.equals(method.getSimpleName().toString())
+                                    && isIterableElement(info, enclosing)) {
+                                // method is resolved - in case of JDK8 and stream used over iterable
+                                break;
+                            } else {
+                                // issue #243833 - use last resolved method if any
+                                lastResolved = method;
                             }
                             enclosing = info.info().getTypes().asElement(getReturnType(info, method));
                         }
                     }
-                    if (method == null) {
+                    if (lastResolved == null) {
                         return;
                     }
-                    TypeMirror returnType = getReturnType(info, method);
+                    TypeMirror returnType = getReturnType(info, lastResolved);
                     //XXX: works just for generic collections, i.e. the assumption is
                     // that variables refer to collections, which is not always the case
 

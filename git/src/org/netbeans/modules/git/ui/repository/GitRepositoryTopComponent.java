@@ -132,6 +132,12 @@ public class GitRepositoryTopComponent extends TopComponent implements Externali
         return PREFERRED_ID;
     }
 
+    @Override
+    public void requestActive () {
+        super.requestActive();
+        repositoryPanel.requestFocusInWindow();
+    }
+
     void selectRepository (File repository) {
         repositoryPanel.selectRepository(repository);
     }

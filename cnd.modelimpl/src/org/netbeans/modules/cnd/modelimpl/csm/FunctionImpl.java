@@ -75,7 +75,6 @@ import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
-import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmEntityResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
@@ -115,12 +114,13 @@ import static org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities.UID_SIG
 public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         implements CsmFunction, Disposable, RawNamable, CsmTemplate {
      
-    protected static final String OPERATOR = "operator"; // NOI18N;
+    /*package*/ static final String OPERATOR = "operator"; // NOI18N;
 
     private final CharSequence name;
     private CsmType returnType;
     private FunctionParameterListImpl parameterList;
     private CharSequence signature;
+    private CharSequence macroSignature;
 
     // only one of scopeRef/scopeAccessor must be used
     private /*final*/ CsmScope scopeRef;// can be set in onDispose or contstructor only
@@ -194,10 +194,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
      * @return signature field
      */
     public CharSequence getSignatureForUID() {
-        return signature != null && signature.toString().startsWith(UID_SIGNATURE_PREFIX) ? signature : null;
+        return macroSignature;
     }    
     
-    protected static String createSignatureForUID(AST ast) {
+    protected static CharSequence createSignatureForUID(AST ast) {
         // Do it only if needed
         if (AstUtil.hasExpandedTokens(ast)) {
             AST params = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_PARMLIST);
@@ -220,20 +220,15 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                     first = false;
                 } while ((param = AstUtil.findSiblingOfType(param.getNextSibling(), CPPTokenTypes.CSM_PARAMETER_DECLARATION)) != null);
                 sb.append(")"); // NOI18N
-                return sb.toString();
+                return QualifiedNameCache.getManager().getString(sb.toString());
             }
         }
         return null;
     }
     
     protected static<T> void temporaryRepositoryRegistration(AST ast, boolean global, FunctionImpl<T> fun) {
-        if (fun.signature == null) {
-            fun.signature = createSignatureForUID(ast);
-        }
+        fun.macroSignature = createSignatureForUID(ast);
         temporaryRepositoryRegistration(global, fun);
-        if (fun.signature != null && fun.signature.toString().startsWith(UID_SIGNATURE_PREFIX)) {
-            fun.signature = null;
-        }
     }
 
     protected void setTemplateDescriptor(TemplateDescriptor templateDescriptor, CharSequence classTemplateSuffix) {
@@ -1026,6 +1021,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         super.write(output);
         assert this.name != null;
         PersistentUtils.writeUTF(name, output);
+        PersistentUtils.writeUTF(macroSignature, output);
         PersistentUtils.writeType(this.returnType, output);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         PersistentUtils.writeParameterList(this.parameterList, output);
@@ -1041,9 +1037,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         super(input);
         this.name = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.name != null;
+        this.macroSignature = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         this.returnType = PersistentUtils.readType(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        this.parameterList = (FunctionParameterListImpl) PersistentUtils.readParameterList(input);
+        this.parameterList = (FunctionParameterListImpl) PersistentUtils.readParameterList(input, this);
         this.rawName = PersistentUtils.readUTF(input, NameCache.getManager());
         this.scopeUID = factory.readUID(input);
         this.scopeRef = null;
