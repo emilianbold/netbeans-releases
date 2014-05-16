@@ -915,13 +915,31 @@ public class ExtKit extends BaseKit {
                             }
 
                             int lineCount = Utilities.getRowCount(doc, startPos, endPos);
-                            boolean comment = forceComment != null ? forceComment : !allComments(doc, startPos, lineCount);
-
-                            if (comment) {
-                                comment(doc, startPos, lineCount);
+                            if (forceComment != null) {
+                                //comment/uncomment action
+                                if (forceComment) {
+                                    comment(doc, startPos, lineCount);
+                                } else {
+                                    uncomment(doc, startPos, lineCount);
+                                }
                             } else {
-                                uncomment(doc, startPos, lineCount);
+                                //toggle comment action -> toggles comment at each line separately
+                                int pos = endPos;
+                                int startPosOfLine;
+                                do {
+                                    startPosOfLine = Utilities.getRowStart(doc, pos);
+                                    final boolean isCommentAtLine = allComments(doc, startPosOfLine, 1);
+                                    if (!isCommentAtLine) {
+                                        comment(doc, startPosOfLine, 1);
+                                    } else {
+                                        uncomment(doc, startPosOfLine, 1);
+                                    }
+                                    pos = startPosOfLine - 1;
+
+                                } while (startPosOfLine>startPos);
+
                             }
+
                             NavigationHistory.getEdits().markWaypoint(target, startPos, false, true);
                         } catch (BadLocationException e) {
                             target.getToolkit().beep();
