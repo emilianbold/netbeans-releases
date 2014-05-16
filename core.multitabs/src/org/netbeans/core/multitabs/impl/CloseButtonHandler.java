@@ -83,7 +83,7 @@ class CloseButtonHandler extends MouseAdapter {
                     TabData tab = table.getTabAt( p );
                     if( null != tab ) {
                         int tabIndex = displayer.getModel().indexOf( tab );
-                        if( tabIndex >= 0 ) {
+                        if( tabIndex >= 0 && e.getButton() == MouseEvent.BUTTON1 ) {
                             TabActionEvent tae = null;
                             if( (e.getModifiersEx()& MouseEvent.SHIFT_DOWN_MASK) > 0 ) {
                                 tae = new TabActionEvent( displayer, TabbedContainer.COMMAND_CLOSE_ALL, tabIndex );
