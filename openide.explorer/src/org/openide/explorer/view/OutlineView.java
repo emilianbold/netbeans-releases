@@ -1382,7 +1382,11 @@ public class OutlineView extends JScrollPane {
 
         @Override
         public void valueChanged(javax.swing.event.ListSelectionEvent listSelectionEvent) {
+            if (listSelectionEvent.getValueIsAdjusting()) {
+                return ;
+            }
             int selectedRows[] = outline.getSelectedRows();
+            //System.err.println("TableSelectionListener.valueChanged(): selected rows = "+Arrays.toString(selectedRows));
             ArrayList<Node> selectedNodes = new ArrayList<Node> (selectedRows.length);
             for (int i = 0; i < selectedRows.length;i++) {
                 Node n = getNodeFromRow(selectedRows[i]);
@@ -1390,6 +1394,7 @@ public class OutlineView extends JScrollPane {
                     selectedNodes.add(n);
                 }
             }
+            //System.err.println("  => selectedNodes = "+selectedNodes);
             callSelectionChanged(selectedNodes.toArray (new Node[selectedNodes.size ()]));
         }
 
