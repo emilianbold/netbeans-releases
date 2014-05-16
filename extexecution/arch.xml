@@ -53,6 +53,11 @@ Microsystems, Inc. All Rights Reserved.
    integration.
   </p>
   <p>
+   <b>To see the simplest usage of this API to handle external process
+   including input and output integration see documentation of
+   <a href="@TOP@org/netbeans/api/extexecution/ExecutionService.html">ExecutionService</a></b>
+  </p>
+  <p>
    The External Execution module provides the
    <api group="java" name="ExternalExecutionAPI" type="export" category="stable" url="@TOP@org/netbeans/api/extexecution/package-summary.html"/>
    that contains support for execution of external processes in the IDE. It also

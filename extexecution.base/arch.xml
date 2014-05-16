@@ -52,6 +52,11 @@ Microsystems, Inc. All Rights Reserved.
    the IDE check also original External Execution API.
   </p>
   <p>
+   <b>To see the simplest usage of this API to handle external process see
+   documentation of
+   <a href="@TOP@org/netbeans/api/extexecution/base/BaseExecutionService.html">BaseExecutionService</a></b>
+  </p>
+  <p>
    The External Execution Base module provides the
    <api group="java" name="ExternalExecutionBaseAPI" type="export" category="stable" url="@TOP@org/netbeans/api/extexecution/base/package-summary.html"/>
    that contains support for execution of external processes. There is also

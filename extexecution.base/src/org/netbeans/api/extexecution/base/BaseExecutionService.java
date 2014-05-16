@@ -96,7 +96,7 @@ import org.openide.util.RequestProcessor;
  *     processBuilder.setExecutable(ls);
  *
  *     BaseExecutionService service = BaseExecutionService.newService(processBuilder, descriptor);
- *     Future&lt;Integer&gt task = service.run();
+ *     Future&lt;Integer&gt; task = service.run();
  * </pre>
  * <p>
  * Even simpler usage but without displaying output (ls command):
@@ -105,7 +105,7 @@ import org.openide.util.RequestProcessor;
  *     processBuilder.setExecutable(ls);
  *
  *     ExecutionService service = ExecutionService.newService(processBuilder, new BaseExecutionDescriptor());
- *     Future&lt;Integer&gt task = service.run();
+ *     Future&lt;Integer&gt; task = service.run();
  * </pre>
  * </div>
  *

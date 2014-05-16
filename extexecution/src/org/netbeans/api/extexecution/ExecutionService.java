@@ -102,7 +102,7 @@ import org.openide.windows.OutputWriter;
  *     ExternalProcessBuilder processBuilder = new ExternalProcessBuilder("ls");
  *
  *     ExecutionService service = ExecutionService.newService(processBuilder, descriptor, "ls command");
- *     Future&lt;Integer&gt task = service.run();
+ *     Future&lt;Integer&gt; task = service.run();
  * </pre>
  * </div>
  *
