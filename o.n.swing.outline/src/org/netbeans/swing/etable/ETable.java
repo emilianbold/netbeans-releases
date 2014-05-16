@@ -1877,11 +1877,14 @@ public class ETable extends JTable {
                 //System.err.println(" SETTING INV.PERMUT. = "+Arrays.toString(invRes));
                 sortingPermutation = res;
                 inverseSortingPermutation = invRes;
-                adjustSelectedRows(oldRes, oldInvRes, res, invRes);
+                //adjustSelectedRows(oldRes, oldInvRes, res, invRes);
             }
         }
     }
     
+    /**
+     * Adjusts selected rows when sorting changes.
+     *
     protected final void adjustSelectedRows(int[] oldSortingPermutation, int[] oldInverseSortingPermutation,
                                             int[] newSortingPermutation, int[] newInverseSortingPermutation) {
         if (true) return ;
@@ -1936,6 +1939,7 @@ public class ETable extends JTable {
                             newSelectedRows, newLead, newAnchor);
         
     }
+    */
     
     /**
      * Determines whether the given row should be displayed or not.

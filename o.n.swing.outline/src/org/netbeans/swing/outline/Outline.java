@@ -524,7 +524,7 @@ public class Outline extends ETable {
                 //System.err.println(" SETTING INV.PERMUT. = "+Arrays.toString(invRes));
                 sortingPermutation = res;
                 inverseSortingPermutation = invRes;
-                adjustSelectedRows(oldRes, oldInvRes, res, invRes);
+                //adjustSelectedRows(oldRes, oldInvRes, res, invRes);
             }
         }
     }
