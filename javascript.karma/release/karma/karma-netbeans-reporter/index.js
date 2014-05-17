@@ -106,6 +106,7 @@ var NetBeansReporter = function(baseReporterDecorator) {
             }
             self.printMessage(self.BROWSER_END, browserResult.name);
         });
+        self.browserResults = {};
     };
 
     this.checkBrowser = function(browserId) {

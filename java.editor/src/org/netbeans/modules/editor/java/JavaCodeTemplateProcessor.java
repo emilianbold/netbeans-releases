@@ -91,6 +91,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     public static final String UNCAUGHT_EXCEPTION_TYPE = "uncaughtExceptionType"; //NOI18N
     public static final String UNCAUGHT_EXCEPTION_CATCH_STATEMENTS = "uncaughtExceptionCatchStatements"; //NOI18N
     public static final String CURRENT_CLASS_NAME = "currClassName"; //NOI18N
+    public static final String CURRENT_METHOD_NAME = "currMethodName"; //NOI18N
 
     private static final String TRUE = "true"; //NOI18N
     private static final String NULL = "null"; //NOI18N
@@ -131,6 +132,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                         || CAST.equals(hint)
                         || NEW_VAR_NAME.equals(hint)
                         || CURRENT_CLASS_NAME.equals(hint)
+                        || CURRENT_METHOD_NAME.equals(hint)
                         || ITERABLE_ELEMENT_TYPE.equals(hint)
                         || UNCAUGHT_EXCEPTION_TYPE.equals(hint)) {
                     initParsing();
@@ -511,6 +513,9 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             } else if (CURRENT_CLASS_NAME.equals(entry.getKey())) {
                 param2hints.put(param, CURRENT_CLASS_NAME);
                 return owningClassName();
+            } else if (CURRENT_METHOD_NAME.equals(entry.getKey())) {
+                param2hints.put(param, CURRENT_METHOD_NAME);
+                return owningMethodName();
             } else if (NAMED.equals(entry.getKey())) {
                 name = param.getName();
             } else if (UNCAUGHT_EXCEPTION_TYPE.equals(entry.getKey())) {
@@ -883,6 +888,23 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 while ((path = Utilities.getPathElementOfKind (TreeUtilities.CLASS_TREE_KINDS, path)) != null) {
                     ClassTree tree = (ClassTree) path.getLeaf();
                     String result = tree.getSimpleName().toString();
+                    if (result.length() > 0)
+                        return result;
+                    path = path.getParentPath();
+                }
+                return null;
+            }
+        } catch (Exception e) {
+        }
+        return null;
+    }
+    private String owningMethodName() {
+        try {
+            if (cInfo != null) {
+                TreePath path = treePath;
+                while ((path = Utilities.getPathElementOfKind (Tree.Kind.METHOD, path)) != null) {
+                    MethodTree tree = (MethodTree) path.getLeaf();
+                    String result = tree.getName().toString();
                     if (result.length() > 0)
                         return result;
                     path = path.getParentPath();
