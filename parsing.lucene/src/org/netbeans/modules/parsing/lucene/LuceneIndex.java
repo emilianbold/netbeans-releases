@@ -93,6 +93,7 @@ import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexReaderInjection;
 import org.netbeans.modules.parsing.lucene.support.StoppableConvertor;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -735,7 +736,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                 if (txWriter.get() == writer) {
                     LOGGER.log(Level.FINE, "TX writer cleared for {0}", this);
                     txWriter.remove();
-                    owner.clear();
+                    owner.release();
                     try {
                         if (!success) {
                             if ((lockFactory instanceof RecordOwnerLockFactory) &&
@@ -885,7 +886,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                     return true;
                 } finally {
                     txWriter.remove();
-                    owner.clear();
+                    owner.release();
                 }
             } else {
                 return false;
@@ -893,8 +894,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
         }
         
         void beginTx() {
-            owner.assertNoModifiedWriter();
-            owner.setOwner(Thread.currentThread());
+            owner.acquire();
         }
         
         /**
@@ -1172,19 +1172,24 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
             return result;
         }
                 
-        private final class OwnerReference {
+        private static final class OwnerReference {
             
             //@GuardedBy("this")
-            private Thread txThread;
+            private Pair<Thread,Pair<Long,Exception>> txThread;
             //@GuardedBy("this")
             private boolean modified;
             
-            synchronized void setOwner (@NullAllowed final Thread thread) {
-                txThread = thread;
+            synchronized void acquire () {
+                assertNoModifiedWriter();
+                txThread = Pair.of(
+                    Thread.currentThread(),
+                    assertsEnabled() ?
+                        Pair.of(System.currentTimeMillis(), new Exception("Owner stack")) :  //NOI18N
+                        null);
                 modified = false;
             }
             
-            synchronized void clear() {
+            synchronized void release() {
                 txThread = null;
                 modified = false;
             }
@@ -1192,35 +1197,49 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
             synchronized void modified() {
                 modified = true;
             }
-            
-            synchronized void assertNoModifiedWriter() {
-                if (txThread != null && modified) {
-                    final Throwable t = new Throwable(String.format(
-                        "Using stale writer, possibly forgotten call to store, " +  //NOI18N
-                        "old owner Thread %s, " +           //NOI18N
-                        "new owner Thread %s .",            //NOI18N
-                            txThread,
-                            Thread.currentThread()));
-                    LOGGER.log(
-                        Level.WARNING,
-                        "Using stale writer",   //NOI18N
-                        t);
-                }
-            }
-            
+
             synchronized void assertSingleThreadWriter() {
-                if (txThread != null && txThread != Thread.currentThread()) {
+                if (txThread != null && txThread.first() != Thread.currentThread()) {
                     final Throwable t = new Throwable(String.format(
                         "Other thread using opened writer, " +       //NOI18N
                         "old owner Thread %s , " +          //NOI18N
                         "new owner Thread %s.",             //NOI18N
-                            txThread,
+                            txThread.first(),
                             Thread.currentThread()));
                     LOGGER.log(
                         Level.WARNING,
                         "Multiple writers",   //NOI18N
                         t);
                 }
+            }
+
+            private void assertNoModifiedWriter() {
+                assert Thread.holdsLock(this);
+                if (assertsEnabled() && txThread != null && modified) {
+                    final Throwable t = new Throwable(
+                        String.format(
+                            "Using stale writer, possibly forgotten call to store, " +  //NOI18N
+                            "old owner Thread %s(%d) enter time: %d, " +           //NOI18N
+                            "new owner Thread %s(%d) enter time: %d.",            //NOI18N
+                                txThread.first(),
+                                txThread.first().getId(),
+                                txThread.second().first(),
+                                Thread.currentThread(),
+                                Thread.currentThread().getId(),
+                                System.currentTimeMillis()),
+                        txThread.second().second());
+                    LOGGER.log(
+                        Level.WARNING,
+                        "Using stale writer",   //NOI18N
+                        t);
+                }
+            }
+
+            @SuppressWarnings("AssertWithSideEffects")
+            private static boolean assertsEnabled() {
+                boolean ae = false;
+                assert ae = true;
+                return ae;
             }
         }
         
