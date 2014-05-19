@@ -63,7 +63,8 @@ import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 @DebuggerServiceRegistration(types=LazyDebuggerManagerListener.class)
 public class TruffleDebugManager extends DebuggerManagerAdapter {
     
-    public static final String TRUFFLE_CLASS_DebugManager = "com.oracle.truffle.api.debug.DebugManager";
+    //public static final String TRUFFLE_CLASS_DebugManager = "com.oracle.truffle.debug.DebugManager";
+    public static final String TRUFFLE_CLASS_DebugManager = "com.oracle.truffle.js.engine.TruffleJSEngine";
     
     private ClassLoadUnloadBreakpoint debugManagerLoadBP;
     private final Map<JPDADebugger, DebugManagerHandler> dmHandlers = new HashMap<>();

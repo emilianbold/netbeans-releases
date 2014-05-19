@@ -168,12 +168,14 @@ class DebugManagerHandler implements JPDABreakpointListener {
                     boolean success = PrimitiveValueWrapper.booleanValue((PrimitiveValue) ret);
                     RemoteServices.setAccessLoopStarted(t.getDebugger(), success);
                     if (!success) {
+                        LOG.log(Level.WARNING, "Could not start the access loop of "+serviceClass);
                         return ;
                     }
                 }
                 Method debugManagerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, ACCESSOR_SET_UP_DEBUG_MANAGER, "()Lorg/netbeans/modules/debugger/jpda/backend/truffle/JPDATruffleDebugManager;");
                 ret = ClassTypeWrapper.invokeMethod(serviceClass, tr, debugManagerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                 if (!(ret instanceof ObjectReference)) {
+                    LOG.log(Level.WARNING, "Could not start up debugger manager of "+serviceClass);
                     return ;
                 }
                 debugManager = (ObjectReference) ret;

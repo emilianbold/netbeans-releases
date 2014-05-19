@@ -126,7 +126,7 @@ public class RemoteServices {
     
     private static final Logger logger = Logger.getLogger(RemoteServices.class.getName());
     
-    private static final String REMOTE_CLASSES_ZIPFILE = "/org/netbeans/modules/debugger/jpda/truffle/resources/JPDATruffleBackend.zip";
+    private static final String REMOTE_CLASSES_ZIPFILE = "/org/netbeans/modules/debugger/jpda/truffle/resources/JPDATruffleBackend.jar";
     
     private static final Map<JPDADebugger, ClassObjectReference> remoteServiceClasses = new WeakHashMap<JPDADebugger, ClassObjectReference>();
     private static final Map<JPDADebugger, Boolean> remoteServiceAccess = new WeakHashMap<JPDADebugger, Boolean>();
@@ -251,7 +251,7 @@ public class RemoteServices {
                             uploaded = false;
                             while (!uploaded) {
                                 theUploadedClass = (ClassObjectReference) ObjectReferenceWrapper.invokeMethod(cl, tawt, defineClass, Arrays.asList(nameMirror, byteArray, vm.mirrorOf(0), vm.mirrorOf(rc.bytes.length)), ObjectReference.INVOKE_SINGLE_THREADED);
-                                if (basicClass == null && rc.name.indexOf('$') < 0 && rc.name.endsWith("Service")) {
+                                if (basicClass == null && rc.name.indexOf('$') < 0 && rc.name.endsWith("Accessor")) {
                                     try {
                                         // Disable collection only of the basic class
                                         ObjectReferenceWrapper.disableCollection(theUploadedClass);
