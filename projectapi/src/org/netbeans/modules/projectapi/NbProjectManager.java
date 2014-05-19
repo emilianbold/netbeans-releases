@@ -65,8 +65,6 @@ import javax.swing.Icon;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.*;
 import org.netbeans.api.project.ProjectManager.Result;
-import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
-import org.netbeans.modules.projectapi.TimedWeakReference;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectFactory2;
@@ -832,6 +830,7 @@ public final class NbProjectManager implements ProjectManagerImplementation {
                     }
                 } :
                 a;
+        }
         private <E extends Exception> void saveProjects(@NonNull final Class<E> clz) throws E {
             final Queue<Exception> causes = new ArrayDeque<Exception>();
             for (Project prj : projects) {
@@ -852,59 +851,6 @@ public final class NbProjectManager implements ProjectManagerImplementation {
                     throw new IllegalStateException(e);
                 }
             }
-    /**
-     *  A result (immutable) object returned from {@link org.netbeans.api.project.ProjectManager#isProject2} method.
-     *  To be created by {@link org.netbeans.spi.project.ProjectFactory2} project factories.
-     *  @since org.netbeans.modules.projectapi 1.22
-     */
-    public static final class Result {
-        private Icon icon;
-        private final String displayName;
-        private final String projectType;
-
-        public Result(Icon icon) {
-            this(null, null, icon);
         }
-
-        /**
-         * C'tor.  
-         * @param displayName a display name or null if not available
-         * @param projectType a project type or null if not available
-         * @param icon an icon or null if not available
-         * @since org.netbeans.modules.projectapi 1.60
-         */
-        public Result(String displayName, String projectType, Icon icon) {
-            this.icon = icon;
-            this.displayName = displayName;
-            this.projectType = projectType;
-        }
-
-        /**
-          * Get a human-readable display name for the project.
-          * May contain spaces, international characters, etc.
-          * @return a display name for the project or null if the display name cannot be found this way.
-          * @since org.netbeans.modules.projectapi 1.60
-          */
-        public String getDisplayName() {
-            return displayName;
-        }
-         
-        /**
-         * Get the project type e.g. {@code "org-netbeans-modules-java-j2seproject"}
-         * @return the project type or null if the project type cannot be found this way.
-         * @since org.netbeans.modules.projectapi 1.60
-         */
-        public String getProjectType() {
-            return projectType;
-        }
-         
-        /**
-         * Get the project icon.
-         * @return project type icon for the result or null if the icon cannot be found this way.
-         */
-        public Icon getIcon() {
-            return icon;
-        }
-
     }
 }

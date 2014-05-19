@@ -893,7 +893,7 @@ public class TaskProcessor {
             SourceFlags.INVALID);
         boolean scanAffinity = true;
         if (checkScan) {
-            final boolean scanInProgress = IndexingManager.getDefault().isIndexing();
+            final boolean scanInProgress = getIndexerBridge().isIndexing();
             final boolean canRunDuringScan = (task instanceof IndexingAwareParserResultTask)
                 && ((IndexingAwareParserResultTask)task).getIndexingMode() == TaskIndexingMode.ALLOWED_DURING_SCAN;
             final boolean compatMode = "true".equals(System.getProperty(COMPAT_MODE));  //NOI18N
