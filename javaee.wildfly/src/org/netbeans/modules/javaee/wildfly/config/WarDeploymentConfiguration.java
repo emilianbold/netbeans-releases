@@ -134,6 +134,13 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
             String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_CannotReadContextRoot", jbossWebFile.getAbsolutePath());
             throw new ConfigurationException(msg);
         }
+        if(jbossWeb.getContextRoot() == null || jbossWeb.getContextRoot().isEmpty()) {
+            try {
+                return j2eeModule.getArchive().getName();
+            } catch (IOException ex) {
+                return jbossWeb.getContextRoot();
+            }
+        }
         return jbossWeb.getContextRoot();
     }
 
