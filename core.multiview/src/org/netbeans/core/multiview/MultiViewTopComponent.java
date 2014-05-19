@@ -48,6 +48,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import javax.swing.Action;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
@@ -161,12 +163,19 @@ public final class MultiViewTopComponent
     public Action[] getActions() {
         //TEMP don't delegate to element's actions..
         Action[] superActions = superActions4Tests == null ? super.getActions() : superActions4Tests;
-        Action[] acts = peer.peerGetActions(superActions);
-        Action[] myActions = new Action[acts.length + 3];
-        System.arraycopy(acts, 0, myActions, 0, acts.length);
-        myActions[acts.length + 1] = new EditorsAction();
-        myActions[acts.length + 2] = new SplitAction(true);
-        return myActions;
+        List<Action> acts = new ArrayList<Action>(Arrays.asList(peer.peerGetActions(superActions)));
+        if( !acts.isEmpty() )
+            acts.add(null);
+        acts.add(new EditorsAction());
+        if( canSplit() ) {
+            acts.add(new SplitAction(true));
+        }
+        return acts.toArray(new Action[acts.size()]);
+    }
+    
+    @Override
+    public boolean canSplit() {
+        return null != peer.model && peer.model.canSplit();
     }
     
     /** Just for unit tests, allows to set actions coming from

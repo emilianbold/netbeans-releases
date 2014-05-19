@@ -194,7 +194,13 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         match = runningPattern.matcher(line);
         if (match.matches()) {
             if (runningTestClass != null && outputDir != null) {
-                if(!surefireRunningInParallel) {
+                // match.group(1) should be the FQN of a running test class but let's check to be on the safe side
+                // If the matcher matches it means that we have a new test class running,
+                // if not it probably means that this is user's text, e.g. "Running my cool test", so we can safely ignore it
+                if (!isFullJavaId(match.group(1))) {
+                    return;
+                }
+                if (!surefireRunningInParallel) {
                     // tests are running sequentially, so update Test Results Window
                     generateTest();
                 }
@@ -206,6 +212,16 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                 runningTestClasses.add(runningTestClass);
             }
         }
+    }
+    
+    private static final String JAVA_ID_START_REGEX = "\\p{javaJavaIdentifierStart}"; //NOI18N
+    private static final String JAVA_ID_PART_REGEX = "\\p{javaJavaIdentifierPart}"; //NOI18N
+    private static final String JAVA_ID_REGEX = "(?:" + JAVA_ID_START_REGEX + ')' + "(?:" + JAVA_ID_PART_REGEX + ")*"; //NOI18N
+    private static final String JAVA_ID_REGEX_FULL = JAVA_ID_REGEX + "(?:\\." + JAVA_ID_REGEX + ")*"; //NOI18N
+    private static final Pattern fullJavaIdPattern = Pattern.compile(JAVA_ID_REGEX_FULL);
+    
+    static boolean isFullJavaId(String possibleNewRunningTestClass) {
+        return fullJavaIdPattern.matcher(possibleNewRunningTestClass).matches();
     }
 
     public @Override void sequenceStart(String sequenceId, OutputVisitor visitor) {

@@ -120,12 +120,6 @@ class TabsComponent extends JPanel {
         add(bar, BorderLayout.NORTH);
         startToggling();
         setToolbarBarVisible(toolVis);
-
-        if( SplitAction.isSplitingEnabled() ) {
-            layerUI = new SplitLayerUI( componentPanel );
-        } else {
-            layerUI = null;
-        }
     }
 
 
@@ -139,9 +133,11 @@ class TabsComponent extends JPanel {
         cardLayout = new CardLayout();
         componentPanel.removeAll();
         componentPanel.setLayout(cardLayout);
-        if( null != layerUI ) {
+        if( SplitAction.isSplitingEnabled() && model.canSplit() ) {
+            layerUI = new SplitLayerUI( componentPanel );
             add(new JLayer( componentPanel, layerUI), BorderLayout.CENTER);
         } else {
+            layerUI = null;
             add(componentPanel, BorderLayout.CENTER);
         }
         alreadyAddedElements = new HashSet<MultiViewElement>();
@@ -644,7 +640,7 @@ class TabsComponent extends JPanel {
 
             bar.add(toolbarPanel, cons);
 
-            if( SplitAction.isSplitingEnabled() && null == splitPane ) {
+            if( SplitAction.isSplitingEnabled() && null == splitPane && null != layerUI ) {
                 cons = new GridBagConstraints();
                 cons.anchor = GridBagConstraints.EAST;
                 cons.fill = GridBagConstraints.NONE;

@@ -374,6 +374,12 @@ public final class OptionsChooserPanel extends JPanel {
                         public void run() {
                             LOGGER.fine("Changing options.");
                             scrollPaneOptions.setViewportView(getOutline(treeModel));
+                            if (panelType == PanelType.IMPORT) { // Check All checkboxes by default when importing
+                                Object root = treeModel.getRoot();
+                                if (root != null) {
+                                    treeDataProvider.setSelected(root, Boolean.TRUE);
+                                }
+                            }
                             dialogDescriptor.setValid(isPanelValid());
                         }
                     });
