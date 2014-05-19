@@ -273,6 +273,9 @@ function ${name}(${parameters}) {
     <codetemplate abbreviation="conw">
         <code><![CDATA[window.console.warn(${warn});]]></code>
     </codetemplate>
+    <codetemplate abbreviation="cl">
+        <code><![CDATA[console.log(${log});]]></code>
+    </codetemplate>
     <codetemplate abbreviation="dw">
         <code><![CDATA[document.write(${message});]]></code>
     </codetemplate>

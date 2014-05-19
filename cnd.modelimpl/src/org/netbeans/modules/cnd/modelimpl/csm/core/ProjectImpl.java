@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferSnapshot2;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -215,7 +216,7 @@ public final class ProjectImpl extends ProjectBase {
             }
         }
         for (FileImpl file : addToParse) {
-            ParserQueue.instance().add(file, getPreprocHandlersForParse(file), ParserQueue.Position.TAIL);
+            ParserQueue.instance().add(file, getPreprocHandlersForParse(file, Interrupter.DUMMY), ParserQueue.Position.TAIL);
         }
     //N.B. don't clear list of editedFiles here.
     }

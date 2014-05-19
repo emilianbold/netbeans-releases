@@ -114,6 +114,12 @@ public class BeanRunConfig implements RunConfig {
         setUpdateSnapshots(parent.isUpdateSnapshots());
         setReactorStyle(parent.getReactorStyle());
     }
+    //#243897 MavenCommoandLineExecutor needs to reuse the maven project from the parent config to prevent repoading MP many times during one execution..
+    public void reassignMavenProjectFromParent() {
+        if (parent instanceof BeanRunConfig) {
+            this.mp = ((BeanRunConfig)parent).mp;
+        }
+    }
 
     @Override
     public final File getExecutionDirectory() {
@@ -167,11 +173,7 @@ public class BeanRunConfig implements RunConfig {
             if (getProperties() != null) {
                 props.putAll(getProperties());
             }
-            try {
-                mp = impl.loadMavenProject(EmbedderFactory.createProjectLikeEmbedder(), profiles, props);
-            } catch (PlexusContainerException ex) {
-                throw new IllegalStateException();
-            }
+            mp = impl.loadMavenProject(EmbedderFactory.getProjectEmbedder(), profiles, props);
         }
         return mp;
      }
@@ -230,9 +232,10 @@ public class BeanRunConfig implements RunConfig {
         } else {
             properties.remove(key);
         }
-        synchronized (this) {
-            mp = null;
-        }
+        //#243897 let's assume that all significant properties were set before the getMavenProject() method was called.
+//        synchronized (this) {
+//            mp = null;
+//        }
     }
     
     @Override public final Map<? extends String,? extends Object> getInternalProperties() {
@@ -265,9 +268,10 @@ public class BeanRunConfig implements RunConfig {
             }
         }
         properties.putAll(props);
-        synchronized (this) {
-            mp = null;
-        }         
+        //#243897 let's assume that all significant properties were set before the getMavenProject() method was called.
+//        synchronized (this) {
+//            mp = null;
+//        }         
     }
 
     @Override
@@ -313,9 +317,10 @@ public class BeanRunConfig implements RunConfig {
     public final void setActivatedProfiles(List<String> activeteProfiles) {
         activate = new ArrayList<String>();
         activate.addAll(activeteProfiles);
-        synchronized (this) {
-            mp = null;
-        }
+        //#243897 let's assume that all profiles were set before the getMavenProject() method was called.
+//        synchronized (this) {
+//            mp = null;
+//        }
     }
 
     @Override

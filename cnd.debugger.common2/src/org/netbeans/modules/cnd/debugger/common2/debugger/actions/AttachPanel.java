@@ -189,8 +189,8 @@ public final class AttachPanel extends TopComponent {
     }
 
     private void initializeNew() {
+        lastHostChoice = ServerList.getDefaultRecord().getDisplayName();
         initRemoteHost();
-        lastHostChoice = null;
         lastFilter = (String) filterCombo.getSelectedItem();
     }
 

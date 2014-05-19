@@ -92,7 +92,13 @@ public class APTSelfWalker extends APTAbstractWalker {
     }
     
     protected APTWalker createIncludeWalker(APTFile apt, APTSelfWalker parent, CharSequence includePath, APTFileCacheEntry cache) {
-        return new APTSelfWalker(apt, parent.getPreprocHandler(), cache);
+        return new APTSelfWalker(apt, parent.getPreprocHandler(), cache) {
+
+            @Override
+            protected boolean isStopped() {
+                return super.isStopped() || APTSelfWalker.this.isStopped();
+            }
+       };
     }
 
     @Override

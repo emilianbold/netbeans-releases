@@ -2678,6 +2678,16 @@ public class BaseKit extends DefaultEditorKit {
                     String actionName = (String) getValue(Action.NAME);
                     boolean select = selectionBeginLineAction.equals(actionName)
                             || selectionLineFirstColumnAction.equals(actionName);
+                    
+                    // If possible scroll the view to its begining horizontally
+                    // to ease user's orientation in the code.
+                    Rectangle r = target.modelToView(dot);
+                    Rectangle visRect = target.getVisibleRect();
+                    if (r.getMaxX() < visRect.getWidth()) {
+                        r.x = 0;
+                        target.scrollRectToVisible(r);
+                    }
+
                     if (select) {
                         caret.moveDot(dot);
                     } else {

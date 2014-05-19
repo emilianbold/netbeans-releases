@@ -83,7 +83,7 @@ public class MethodDeclarationMissed extends AbstractCodeAudit {
                 return;
             }
             CsmFileReferences.getDefault().accept(
-                    request.getFile(), new ReferenceVisitor(request, response),
+                    request.getFile(), request.getDocument(), new ReferenceVisitor(request, response),
                     CsmReferenceKind.FUNCTION_DECLARATION_KINDS);
         }
     }

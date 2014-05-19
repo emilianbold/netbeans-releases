@@ -150,6 +150,22 @@ public final class NativeProjectProvider {
         }
         return NativeFileItem.Language.OTHER;
     }
+    
+    private static NativeFileItem.LanguageFlavor getLanguageFlavor(File file) {
+        if (DebugUtils.getBoolean("cnd.language.flavor.cpp11", false)) { // NOI18N
+            return NativeFileItem.LanguageFlavor.CPP11;
+        }
+        String cpp11Dirs = System.getProperty("cnd.tests.cpp11directories"); // NOI18N
+        if (cpp11Dirs != null && !cpp11Dirs.isEmpty()) {
+            String cpp11DirList[] = cpp11Dirs.split(";"); // NOI18N
+            for (String cpp11Dir : cpp11DirList) {
+                if (file.getAbsolutePath().contains(cpp11Dir)) {
+                    return NativeFileItem.LanguageFlavor.CPP11;
+                }
+            }
+        }
+        return NativeFileItem.LanguageFlavor.UNKNOWN;
+    }
 
     public static DataObject getDataObject(FileObject fo) {
         DataObject dobj = null;
@@ -396,7 +412,8 @@ public final class NativeProjectProvider {
             File file = FileUtil.toFile(fo);
             DataObject dobj = getDataObject(fo);
 	    NativeFileItem.Language lang = getLanguage(fo, dobj);
-	    NativeFileItem item = new NativeFileItemImpl(file, this, lang);
+        NativeFileItem.LanguageFlavor flavor = getLanguageFlavor(file);
+	    NativeFileItem item = new NativeFileItemImpl(file, this, lang, flavor);
 	    //TODO: put item in loockup of DataObject
             // registerItemInDataObject(dobj, item);
 	    this.files.add(item);
@@ -435,13 +452,15 @@ public final class NativeProjectProvider {
         private final File file;
         private final NativeProjectImpl project;
         private final NativeFileItem.Language lang;
+        private final NativeFileItem.LanguageFlavor flavor;
         private DataObject lastDataObject; //keep data object, otherwise it will be recreated without association to NativeFileItem
 
-        public NativeFileItemImpl(File file, NativeProjectImpl project, NativeFileItem.Language language) {
+        public NativeFileItemImpl(File file, NativeProjectImpl project, NativeFileItem.Language language, NativeFileItem.LanguageFlavor flavor) {
 	    
             this.project = project;
             this.file = CndFileUtils.normalizeFile(file);
             this.lang = language;
+            this.flavor = flavor;
         }
         
         @Override
@@ -514,11 +533,7 @@ public final class NativeProjectProvider {
 
         @Override
         public NativeFileItem.LanguageFlavor getLanguageFlavor() {
-            if(DebugUtils.getBoolean("cnd.language.flavor.cpp11", false)) {
-                return NativeFileItem.LanguageFlavor.CPP11;
-            } else {
-                return NativeFileItem.LanguageFlavor.UNKNOWN;
-            }
+            return flavor;
         }
 
         @Override

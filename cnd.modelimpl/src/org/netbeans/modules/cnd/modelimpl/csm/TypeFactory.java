@@ -253,17 +253,17 @@ public class TypeFactory {
         AST typeStart = AstRenderer.getFirstSiblingSkipQualifiers(ast);
         
         if (typeStart != null && typeStart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND && DeclTypeImpl.isDeclType(typeStart.getFirstChild())) {
-            type = new DeclTypeImpl(typeStart.getFirstChild(), file, scope, pointerDepth, refence, arrayDepth, TypeImpl.initConstQualifiers(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast, inFunctionParameters));
+            type = new DeclTypeImpl(typeStart.getFirstChild(), file, scope, pointerDepth, refence, arrayDepth, TypeImpl.initConstQualifiers(ast), TypeImpl.getStartOffset(ast), TypeImpl.getEndOffset(ast, inFunctionParameters));
         } else if (DeclTypeImpl.isDeclType(typeStart)) {
-            type = new DeclTypeImpl(typeStart, file, scope, pointerDepth, refence, arrayDepth, TypeImpl.initConstQualifiers(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast, inFunctionParameters));
+            type = new DeclTypeImpl(typeStart, file, scope, pointerDepth, refence, arrayDepth, TypeImpl.initConstQualifiers(ast), TypeImpl.getStartOffset(ast), TypeImpl.getEndOffset(ast, inFunctionParameters));
         } else if (parent != null) {
             type = NestedType.create(parent, file, parent.getPointerDepth(), getReferenceValue(parent), parent.getArrayDepth(), parent.isConst(), parent.getStartOffset(), parent.getEndOffset());
         } else if (TypeFunPtrImpl.isFunctionPointerParamList(asts, inFunctionParameters, inTypedef)) {
-            type = new TypeFunPtrImpl(file, returnTypePointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), OffsetableBase.getStartOffset(ast), TypeFunPtrImpl.getEndOffset(ast));
+            type = new TypeFunPtrImpl(file, returnTypePointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), TypeImpl.getStartOffset(ast), TypeFunPtrImpl.getEndOffset(ast));
             ((TypeFunPtrImpl)type).init(asts, scope, inFunctionParameters, inTypedef);
             functionPointerType = true;
         } else {
-            type = new TypeImpl(file, pointerDepth, refence, arrayDepth, TypeImpl.initConstQualifiers(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast, inFunctionParameters));
+            type = new TypeImpl(file, pointerDepth, refence, arrayDepth, TypeImpl.initConstQualifiers(ast), TypeImpl.getStartOffset(ast), TypeImpl.getEndOffset(ast, inFunctionParameters));
         }
 
         // TODO: pass extra parameters to the constructor insdead of calling methods!!!
@@ -271,8 +271,10 @@ public class TypeFactory {
         ///// INIT CLASSFIER stuff
         if( typeStart != null) {
             if (typeStart.getType() == CPPTokenTypes.LITERAL_struct ||
-                    typeStart.getType() == CPPTokenTypes.LITERAL_class ||
-                    typeStart.getType() == CPPTokenTypes.LITERAL_union) {
+                typeStart.getType() == CPPTokenTypes.LITERAL_class ||
+                typeStart.getType() == CPPTokenTypes.LITERAL_union ||
+                typeStart.getType() == CPPTokenTypes.LITERAL_enum) 
+            {
                 typeStart = typeStart.getNextSibling();
             }            
         }
@@ -360,9 +362,7 @@ public class TypeFactory {
                                     // TODO: maybe we need to filter out some more tokens
                                     if (namePart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN
                                             || namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
-                                            || namePart.getType() == CPPTokenTypes.LITERAL_struct
-                                            || namePart.getType() == CPPTokenTypes.LITERAL_class
-                                            || namePart.getType() == CPPTokenTypes.LITERAL_union) {
+                                            || AstUtil.isElaboratedKeyword(namePart)) {
                                         CsmType t = AstRenderer.renderType(namePart, file, true, scope, true);
                                         type.addInstantiationParam(new TypeBasedSpecializationParameterImpl(t));
                                     }

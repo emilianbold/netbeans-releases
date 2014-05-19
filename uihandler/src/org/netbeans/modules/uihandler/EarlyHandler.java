@@ -44,12 +44,13 @@
 
 package org.netbeans.modules.uihandler;
 
+import java.util.ArrayDeque;
+import java.util.Queue;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -57,23 +58,30 @@ import org.openide.util.NbBundle;
  */
 @org.openide.util.lookup.ServiceProviders({@org.openide.util.lookup.ServiceProvider(service=java.util.logging.Handler.class), @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.uihandler.EarlyHandler.class)})
 public final class EarlyHandler extends Handler {
+    
+    final Queue<LogRecord> earlyRecords = new ArrayDeque<>();
+    private final Runnable installerRestore = new InstallerRestore();
+    private volatile boolean isOn = true;
+    
     public EarlyHandler() {
-        setLevel(Level.FINEST);
+        setLevel(Level.ALL);
     }
     
     public static void disable() {
         EarlyHandler eh = Lookup.getDefault().lookup(EarlyHandler.class);
         eh.setLevel(Level.OFF);
+        eh.isOn = false;
     }
 
     @Override
     public void publish(LogRecord record) {
-        String uiLoggerName = NbBundle.getMessage(EarlyHandler.class, "UI_LOGGER_NAME");
-        if (record.getLoggerName() != null && record.getLoggerName().startsWith(uiLoggerName)) {
-            disable();
-            Installer.findObject(Installer.class, true).restored();
-            // one again for the Installer's logs
-            Logger.getLogger(record.getLoggerName()).log(record);
+        if (isOn && record.getLoggerName() != null) {
+            synchronized (earlyRecords) {
+                if (earlyRecords.isEmpty()) {
+                    restoreLoggerInstaller();
+                }
+                earlyRecords.add(record);
+            }
         }
     }
 
@@ -83,5 +91,18 @@ public final class EarlyHandler extends Handler {
 
     @Override
     public void close() throws SecurityException {
+    }
+    
+    private void restoreLoggerInstaller() {
+        new RequestProcessor(EarlyHandler.class).post(installerRestore);
+    }
+    
+    private class InstallerRestore implements Runnable {
+        
+        @Override
+        public void run() {
+            Installer installer = Installer.findObject(Installer.class, true);
+            installer.restored(earlyRecords);
+        }
     }
 }

@@ -52,6 +52,7 @@ import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
@@ -226,6 +227,18 @@ public final class PositionRef extends Object implements Serializable {
 
         /** the document for this manager or null if the manager is not in memory */
         transient private Reference<StyledDocument> doc;
+        
+        /**
+         * Whether positions were turned into in-memory representation.
+         * <br/>
+         * Document impls typically allow itself to be GCed while positions
+         * may be refernced by hard refs so this flag determines whether positions
+         * are converted to in-memory state or not (regardless of document reference value).
+         * <br/>
+         * The flag may be tested from multiple threads and its subsequent positions conversion
+         * is readlocked.
+         */
+        private transient AtomicBoolean inMemory = new AtomicBoolean();
 
         /** Creates new manager
         * @param supp support to work with
@@ -288,18 +301,20 @@ public final class PositionRef extends Object implements Serializable {
         /** Converts all positions into document one.
         */
         void documentOpened(Reference<StyledDocument> doc) {
-            this.doc = doc;
-
-            processPositions(true);
+            if (inMemory.compareAndSet(false, true)) {
+                this.doc = doc;
+                processPositions(true);
+            }
         }
 
         /** Closes the document and switch all positionRefs to the offset (int)
         * holding status (Position objects willbe forgotten.
         */
         void documentClosed() {
-            processPositions(false);
-
-            doc = null;
+            if (inMemory.compareAndSet(true, false)) {
+                processPositions(false);
+                this.doc = null;
+            }
         }
 
         /** Gets the document this object should work on.
@@ -324,7 +339,7 @@ public final class PositionRef extends Object implements Serializable {
          * pass sweep of the data structure (inlined in the code).
          * @param toMemory puts positions to memory if <code>true</code>,
          * from memory if <code>false</code> */
-        void processPositions(final boolean toMemory) {
+        private void processPositions(final boolean toMemory) {
             // clear the queue, we'll do the sweep inline anyway
             while (queue.poll() != null)
                 ;
@@ -356,6 +371,7 @@ public final class PositionRef extends Object implements Serializable {
                             }
                        }
              */
+            // doc.render() acquires doc's readlock
             new DocumentRenderer(this, DocumentRenderer.PROCESS_POSITIONS, toMemory).render();
         }
 

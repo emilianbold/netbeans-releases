@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.api.model.xref;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.swing.JEditorPane;
@@ -82,7 +81,7 @@ public abstract class CsmReferenceResolver {
      * @param offset position in file to find reference
      * @return reference for element on position "offset", null if not found
      */
-    public abstract CsmReference findReference(CsmFile file, int offset);
+    public abstract CsmReference findReference(CsmFile file, Document doc, int offset);
 
     /**
      * look for reference on specified position in file
@@ -106,7 +105,7 @@ public abstract class CsmReferenceResolver {
                 int offset = pane.getSelectionEnd();
                 CsmFile file = CsmUtilities.getCsmFile(activatedNode,false);
                 if (file != null){
-                    return findReference(file, offset);
+                    return findReference(file, pane.getDocument(), offset);
                 }
             }
         }
@@ -116,7 +115,7 @@ public abstract class CsmReferenceResolver {
     public CsmReference findReference(Document doc, int offset) {
         CsmFile file = CsmUtilities.getCsmFile(doc, false, false);
         if (file != null) {
-            return findReference(file, offset);
+            return findReference(file, doc, offset);
         }
         return null;
     }
@@ -147,9 +146,9 @@ public abstract class CsmReferenceResolver {
         }
 
         @Override
-        public CsmReference findReference(CsmFile file, int offset) {
+        public CsmReference findReference(CsmFile file, Document doc, int offset) {
             for (CsmReferenceResolver resolver : res.allInstances()) {
-                CsmReference out = resolver.findReference(file, offset);
+                CsmReference out = resolver.findReference(file, doc, offset);
                 if (out != null) {
                     return out;
                 }

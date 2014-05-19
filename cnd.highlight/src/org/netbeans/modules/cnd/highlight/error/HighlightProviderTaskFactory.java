@@ -60,6 +60,7 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.parsing.spi.TaskIndexingMode;
+import org.netbeans.modules.parsing.spi.support.CancelSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -83,7 +84,7 @@ public final class HighlightProviderTaskFactory extends TaskFactory {
     }
 
     private final class ErrorsHighlighter extends IndexingAwareParserResultTask<Parser.Result> {
-
+        private final CancelSupport cancel = CancelSupport.create(this);
         private InterrupterImpl interrupter = new InterrupterImpl();
         private Parser.Result lastParserResult;
 
@@ -100,6 +101,9 @@ public final class HighlightProviderTaskFactory extends TaskFactory {
                 interrupter.cancel();
                 this.lastParserResult = result;
                 this.interrupter = new InterrupterImpl();
+            }
+            if (cancel.isCancelled()) {
+                return;
             }
             long time = 0;
             try {

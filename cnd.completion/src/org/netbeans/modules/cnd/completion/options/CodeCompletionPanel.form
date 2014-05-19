@@ -16,27 +16,30 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="autoCompletionTriggersLabel" min="-2" max="-2" attributes="1"/>
-                  <Component id="autoCompletionTriggersPreprocLabel" min="-2" max="-2" attributes="1"/>
-              </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="autoCompletionTriggersPreprocField" alignment="0" min="-2" pref="86" max="-2" attributes="2"/>
-                  <Component id="autoCompletionTriggersField" alignment="0" min="-2" pref="86" max="-2" attributes="2"/>
-              </Group>
-              <EmptySpace min="-2" pref="33" max="-2" attributes="0"/>
-          </Group>
-          <Group type="102" attributes="0">
-              <EmptySpace min="12" pref="12" max="12" attributes="0"/>
-              <Component id="autoInsertIncludeDirectives" min="-2" max="-2" attributes="1"/>
-              <EmptySpace pref="44" max="32767" attributes="0"/>
-          </Group>
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jSeparator1" pref="377" max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="autoCompletionTriggersLabel" min="-2" max="-2" attributes="1"/>
+                          <Component id="autoCompletionTriggersPreprocLabel" min="-2" max="-2" attributes="1"/>
+                      </Group>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="autoCompletionTriggersField" pref="122" max="32767" attributes="2"/>
+                          <Component id="autoCompletionTriggersPreprocField" max="32767" attributes="2"/>
+                      </Group>
+                  </Group>
+                  <Group type="102" attributes="0">
+                      <EmptySpace min="12" pref="12" max="12" attributes="0"/>
+                      <Component id="autoInsertIncludeDirectives" min="-2" max="-2" attributes="1"/>
+                  </Group>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

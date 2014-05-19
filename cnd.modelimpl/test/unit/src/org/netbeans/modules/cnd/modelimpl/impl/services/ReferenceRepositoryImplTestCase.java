@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceXRef;
+import org.netbeans.modules.cnd.support.Interrupter;
 
 /**
  *
@@ -99,7 +100,7 @@ public class ReferenceRepositoryImplTestCase extends TraceModelTestBase {
         @SuppressWarnings("unchecked")
         Set<CsmReferenceKind> kinds = (Set<CsmReferenceKind>) params[3];
         int offset = fileImpl.getOffset(line, column);
-        CsmReference tgtRef = CsmReferenceResolver.getDefault().findReference(fileImpl, offset);
+        CsmReference tgtRef = CsmReferenceResolver.getDefault().findReference(fileImpl, null, offset);
         assertNotNull("reference is not found for " + testFile.getAbsolutePath() + "; line="+line+";column="+column, tgtRef);
         CsmObject target = tgtRef.getReferencedObject();
         assertNotNull("referenced object is not found for " + testFile.getAbsolutePath() + "; line="+line+";column="+column, target);
@@ -107,9 +108,9 @@ public class ReferenceRepositoryImplTestCase extends TraceModelTestBase {
         ReferenceRepositoryImpl xRefRepository = new ReferenceRepositoryImpl();
         Collection<CsmReference> out;
         if (inProject) {
-            out = xRefRepository.getReferences(target, fileImpl.getProject(), kinds, null);
+            out = xRefRepository.getReferences(target, fileImpl.getProject(), kinds, Interrupter.DUMMY);
         } else {
-            out = xRefRepository.getReferences(target, fileImpl, kinds, null);
+            out = xRefRepository.getReferences(target, fileImpl, kinds, Interrupter.DUMMY);
         }
         TraceXRef.traceRefs(out, target, streamOut);
     }

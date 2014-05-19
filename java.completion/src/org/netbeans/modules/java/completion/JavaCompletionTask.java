@@ -3262,7 +3262,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
         if (!ctorSeen[0] && kinds.contains(CONSTRUCTOR) && elem.getKind().isInterface()) {
             results.add(itemFactory.createDefaultConstructorItem((TypeElement) elem, anchorOffset, isOfSmartType(env, type, smartTypes)));
         }
-        if (isStatic && elem.getKind().isInterface() && env.getController().getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0) {
+        if (isStatic && enclClass != null && elem.getKind().isInterface() && env.getController().getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0) {
             for (TypeMirror iface : enclClass.getInterfaces()) {
                 if (((DeclaredType) iface).asElement() == elem) {
                     results.add(itemFactory.createKeywordItem(SUPER_KEYWORD, null, anchorOffset, isOfSmartType(env, type, smartTypes)));

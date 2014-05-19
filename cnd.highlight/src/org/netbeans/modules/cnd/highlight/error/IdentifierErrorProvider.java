@@ -42,9 +42,11 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
+import java.util.MissingResourceException;
 import org.netbeans.modules.cnd.analysis.api.AnalyzerResponse;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
@@ -112,7 +114,7 @@ public final class IdentifierErrorProvider extends AbstractCodeAudit {
                 System.err.println("#@# Error Highlighting update() have started for file " + file.getAbsolutePath());
             }
             CsmFileReferences.getDefault().accept(
-                    request.getFile(), new ReferenceVisitor(request, response),
+                    request.getFile(), request.getDocument(), new ReferenceVisitor(request, response),
                     CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
             if (SHOW_TIMES) {
                 System.err.println("#@# Error Highlighting update() done in "+ (System.currentTimeMillis() - start) +"ms for file " + request.getFile().getAbsolutePath());
@@ -156,16 +158,7 @@ public final class IdentifierErrorProvider extends AbstractCodeAudit {
                         whatKind = UNRESOLVED_FORWARD;
                     }
                     if (whatKind == kind) {
-                        foundError++;
-                        if (response instanceof AnalyzerResponse) {
-                            String decoratedText = getID()+"\n"+NbBundle.getMessage(IdentifierErrorProvider.class, message, ref.getText().toString()); // NOI18N
-                            ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, request.getFile().getFileObject(),
-                                    new ErrorInfoImpl(CodeAssistanceHintProvider.NAME, getID(), decoratedText, toSeverity(minimalSeverity()), ref.getStartOffset(), ref.getEndOffset()));
-                        } else {
-                            String decoratedText = NbBundle.getMessage(IdentifierErrorProvider.class, message, ref.getText().toString()); // NOI18N
-                            response.addError(
-                                    new ErrorInfoImpl(CodeAssistanceHintProvider.NAME, getID(), decoratedText, toSeverity(minimalSeverity()), ref.getStartOffset(), ref.getEndOffset()));
-                        }
+                        addMessage(ref);
                     }
                 } else if (referencedObject instanceof CsmTemplateBasedReferencedObject) {
                     if (CsmFileReferences.isAfterUnresolved(context)) {
@@ -175,18 +168,24 @@ public final class IdentifierErrorProvider extends AbstractCodeAudit {
                         return;
                     }
                     if (kind == UNRESOLVED_TEMPLATE) {
-                        foundError++;
-                        if (response instanceof AnalyzerResponse) {
-                            String decoratedText = getID()+"\n"+NbBundle.getMessage(IdentifierErrorProvider.class, message, ref.getText().toString()); // NOI18N
-                            ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, request.getFile().getFileObject(),
-                                    new ErrorInfoImpl(CodeAssistanceHintProvider.NAME, getID(), decoratedText, toSeverity(minimalSeverity()), ref.getStartOffset(), ref.getEndOffset()));
-                        } else {
-                            String decoratedText = NbBundle.getMessage(IdentifierErrorProvider.class, message, ref.getText().toString());
-                            response.addError(
-                                    new ErrorInfoImpl(CodeAssistanceHintProvider.NAME, getID(), decoratedText, toSeverity(minimalSeverity()), ref.getStartOffset(), ref.getEndOffset()));
-                        }
+                        addMessage(ref);
                     }
+                } else if (kind == UNRESOLVED_FORWARD && CsmClassifierResolver.getDefault().isForwardClassifier(referencedObject)) {
+                    addMessage(ref);
                 }
+            }
+        }
+
+        private void addMessage(CsmReference ref) throws MissingResourceException {
+            foundError++;
+            if (response instanceof AnalyzerResponse) {
+                String decoratedText = getID()+"\n"+NbBundle.getMessage(IdentifierErrorProvider.class, message, ref.getText().toString()); // NOI18N
+                ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, request.getFile().getFileObject(),
+                        new ErrorInfoImpl(CodeAssistanceHintProvider.NAME, getID(), decoratedText, toSeverity(minimalSeverity()), ref.getStartOffset(), ref.getEndOffset()));
+            } else {
+                String decoratedText = NbBundle.getMessage(IdentifierErrorProvider.class, message, ref.getText().toString()); // NOI18N
+                response.addError(
+                        new ErrorInfoImpl(CodeAssistanceHintProvider.NAME, getID(), decoratedText, toSeverity(minimalSeverity()), ref.getStartOffset(), ref.getEndOffset()));
             }
         }
 

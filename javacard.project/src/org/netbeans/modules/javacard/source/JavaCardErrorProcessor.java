@@ -73,7 +73,7 @@ import org.openide.util.NbBundle;
  * @author Tim Boudreau
  */
 @SupportedAnnotationTypes("*") //NOI18N
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedOptions(JavaCardErrorProcessor.JAVACARD_OPTION)
 public final class JavaCardErrorProcessor extends AbstractProcessor {
     static final String JAVACARD_OPTION = "netbeans_private_enable_javacard_processor"; //NOI18N

@@ -65,8 +65,6 @@ import javax.swing.Icon;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.*;
 import org.netbeans.api.project.ProjectManager.Result;
-import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
-import org.netbeans.modules.projectapi.TimedWeakReference;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectFactory2;
@@ -816,7 +814,6 @@ public final class NbProjectManager implements ProjectManagerImplementation {
                 } :
                 r;
         }
-
         private <T> ExceptionAction<T> wrap(@NonNull final ExceptionAction<T> a) {
             return autoSave ?
                 new ExceptionAction<T>() {
@@ -834,7 +831,6 @@ public final class NbProjectManager implements ProjectManagerImplementation {
                 } :
                 a;
         }
-
         private <E extends Exception> void saveProjects(@NonNull final Class<E> clz) throws E {
             final Queue<Exception> causes = new ArrayDeque<Exception>();
             for (Project prj : projects) {
@@ -856,6 +852,5 @@ public final class NbProjectManager implements ProjectManagerImplementation {
                 }
             }
         }
-
     }
 }

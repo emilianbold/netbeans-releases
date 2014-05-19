@@ -141,7 +141,7 @@ public final class MacroExpansionViewUtils {
         if (newExpandedContextDoc == null) {
             return;
         }
-        final int expansionsNumber = CsmMacroExpansion.expand(mainDoc, startOffset, endOffset, newExpandedContextDoc, canceled);
+        final int expansionsNumber = CsmMacroExpansion.expand(mainDoc, startOffset, endOffset, newExpandedContextDoc, canceled, true);
         if (canceled.get()) {
             return;
         }

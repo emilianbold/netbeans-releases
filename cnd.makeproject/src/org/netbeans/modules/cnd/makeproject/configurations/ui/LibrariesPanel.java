@@ -302,7 +302,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             if (seed == null) {
                 seed = baseDir.getPath();
             }
-            FileFilter[] filters = FileFilterFactory.getLibraryFilters();
+            FileFilter[] filters = FileFilterFactory.getLibraryFilters(baseDir.getFileSystem());
             if (lastSelectedFilter == null) {
                 lastSelectedFilter = filters[0];
             }
@@ -352,7 +352,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             if (seed == null) {
                 seed = baseDir.getPath();
             }
-            FileFilter[] filters = FileFilterFactory.getLibraryFilters();
+            FileFilter[] filters = FileFilterFactory.getLibraryFilters(baseDir.getFileSystem());
             if (lastSelectedFilter == null) {
                 lastSelectedFilter = filters[0];
             }

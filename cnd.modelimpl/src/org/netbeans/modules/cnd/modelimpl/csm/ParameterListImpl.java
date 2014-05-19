@@ -45,10 +45,12 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMacroParameter;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
@@ -139,10 +141,10 @@ public class ParameterListImpl<T, K extends CsmNamedElement> extends OffsetableB
         super.write(output);
         PersistentUtils.writeParameters(parameters, output);
     }
-
-    public ParameterListImpl(RepositoryDataInput input) throws IOException {
+    
+    public ParameterListImpl(RepositoryDataInput input, CsmScope scope) throws IOException {
         super(input);
-        parameters = PersistentUtils.readParameters(input);
+        parameters = PersistentUtils.readParameters(input, scope);
     }
 
     ////////////////////////////////////////////////////////////////////////////

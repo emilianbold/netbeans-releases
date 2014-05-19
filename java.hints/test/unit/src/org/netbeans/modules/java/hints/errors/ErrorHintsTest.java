@@ -311,7 +311,7 @@ public class ErrorHintsTest extends HintsTestBase {
 //    }
     
     public void testCreateLocalVariable1() throws Exception {
-        performTest("org.netbeans.test.java.hints.CreateLocalVariable1", "Local", 23, 15);
+        performTest("org.netbeans.test.java.hints.CreateLocalVariable1", "Local Variable", 23, 15);
     }
     
 //    public void testCreateLocalVariable2() throws Exception {
@@ -319,35 +319,35 @@ public class ErrorHintsTest extends HintsTestBase {
 //    }
     
     public void testCreateLocalVariable3() throws Exception {
-        performTest("org.netbeans.test.java.hints.CreateLocalVariable3", "Local", 20, 20);
+        performTest("org.netbeans.test.java.hints.CreateLocalVariable3", "Local Variable ", 20, 20);
     }
     
     public void testCreateLocalVariable4() throws Exception {
-        performTest("org.netbeans.test.java.hints.CreateLocalVariable4", "Local", 8, 18);
+        performTest("org.netbeans.test.java.hints.CreateLocalVariable4", "Local Variable", 8, 18);
     }
     
     public void testCreateLocalVariable5() throws Exception {
-        performTest("org.netbeans.test.java.hints.CreateLocalVariable5", "Local", 8, 18);
+        performTest("org.netbeans.test.java.hints.CreateLocalVariable5", "Local Variable", 8, 18);
     }
     
     public void testCreateLocalVariable6() throws Exception {
-        performTest("org.netbeans.test.java.hints.CreateLocalVariable6", "Local", 8, 18);
+        performTest("org.netbeans.test.java.hints.CreateLocalVariable6", "Local Variable", 8, 18);
     }
     
     public void testCreateLocalVariable7() throws Exception {
-        performTest("org.netbeans.test.java.hints.CreateLocalVariable7", "Local", 10, 18);
+        performTest("org.netbeans.test.java.hints.CreateLocalVariable7", "Local Variable", 10, 18);
     }
     
     public void testCreateLocalVariable8() throws Exception {
-        performTest("org.netbeans.test.java.hints.CreateLocalVariable8", "Local", 9, 18);
+        performTest("org.netbeans.test.java.hints.CreateLocalVariable8", "Local Variable", 9, 18);
     }
     
     public void testCreateLocalVariable9() throws Exception {
-        performTest("org.netbeans.test.java.hints.CreateLocalVariable9", "Local", 11, 18);
+        performTest("org.netbeans.test.java.hints.CreateLocalVariable9", "Local Variable", 11, 18);
     }
     
     public void testCreateLocalVariable10() throws Exception {
-        performTest("org.netbeans.test.java.hints.CreateLocalVariable10", "Local", 10, 18);
+        performTest("org.netbeans.test.java.hints.CreateLocalVariable10", "Local Variable", 10, 18);
     }
     
     public void testCreateParam1() throws Exception {
