@@ -110,14 +110,12 @@ class WildflyStartRunnable implements Runnable {
 
     private final static String NEW_IF_CONDITION_STRING
             = "\"xx\" == \"x\"";                      // NOI18N
-
-    private static final Logger LOGGER = Logger.getLogger(WildflyStartRunnable.class.getName());
-
+    
     private static final SpecificationVersion JDK_18 = new SpecificationVersion("1.8");
 
-    private WildflyDeploymentManager dm;
-    private String instanceName;
-    private WildflyStartServer startServer;
+    private final WildflyDeploymentManager dm;
+    private final String instanceName;
+    private final WildflyStartServer startServer;
 
     WildflyStartRunnable(WildflyDeploymentManager dm, WildflyStartServer startServer) {
         this.dm = dm;
@@ -180,7 +178,7 @@ class WildflyStartRunnable implements Runnable {
                             try {
                                 // remove newline characters, as the value may contain them, see issue #81174
                                 BufferedReader br = new BufferedReader(new StringReader(value));
-                                String line = null;
+                                String line;
                                 StringBuilder noNL = new StringBuilder();
                                 while ((line = br.readLine()) != null) {
                                     noNL.append(line);
