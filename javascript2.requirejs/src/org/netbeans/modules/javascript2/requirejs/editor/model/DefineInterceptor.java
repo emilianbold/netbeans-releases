@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -91,6 +92,7 @@ public class DefineInterceptor implements FunctionInterceptor {
         for (Iterator<FunctionArgument> it = args.iterator(); it.hasNext();) {
             FunctionArgument arg = it.next();
             switch (arg.getKind()) {
+                case ANONYMOUS_OBJECT:
                 case REFERENCE:
                     fArg = arg;
                     break;
@@ -102,59 +104,71 @@ public class DefineInterceptor implements FunctionInterceptor {
         }
 
         if (fArg != null) {
-            List<String> fqn = (List<String>) fArg.getValue();
-            JsObject posibleFunc = findJsObjectByName(globalObject, fqn);
             FileObject fo = globalObject.getFileObject();
-            if (fo != null && posibleFunc != null && posibleFunc instanceof JsFunction) {
-                JsFunction defFunc = (JsFunction) posibleFunc;
-                if (RequireJsIndexer.Factory.isScannerThread()) {
-                    if (EditorUtils.DEFINE.equals(name)) {
-                        // save to the index the return types
-                        Collection<? extends TypeUsage> returnTypes = defFunc.getReturnTypes();
-                        RequireJsIndexer.addTypes(fo.toURI(), returnTypes);
-                    }
-                } else if (modules != null && modules.getValue() instanceof JsArray) {
-                    // add assignments for the parameters
-                    JsArray array = (JsArray) modules.getValue();
-                    Source source = Source.create(fo);
-                    List<String> paths = new ArrayList<String>();
-                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(source.createSnapshot().getTokenHierarchy(), array.getOffset());
-                    if (ts == null) {
-                        return;
-                    }
-                    ts.move(array.getOffset());
-                    if (ts.moveNext()) {
-                        Token<? extends JsTokenId> token = ts.token();
-                        int index = 0;
-                        while (ts.moveNext() && token.id() != JsTokenId.BRACKET_RIGHT_BRACKET) {
-                            token = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT,
-                                    JsTokenId.STRING_BEGIN, JsTokenId.STRING_END));
-                            if (token.id() == JsTokenId.STRING) {
-                                while (index > paths.size()) {
-                                    paths.add("");
-                                }
-                                paths.add(token.text().toString());
-                            } else if (token.id() == JsTokenId.OPERATOR_COMMA) {
-                                index++;
-                            }
+            if (fo == null) {
+                // no action
+                return;
+            }
+            if (fArg.getKind() == FunctionArgument.Kind.ANONYMOUS_OBJECT) {
+                if (RequireJsIndexer.Factory.isScannerThread() && EditorUtils.DEFINE.equals(name)) {
+                    JsObject anonym = (JsObject)fArg.getValue();
+                    RequireJsIndexer.addTypes(fo.toURI(), Collections.singletonList(factory.newType(anonym.getFullyQualifiedName(), anonym.getOffset(), true)));
+                }
+            } else {
+                List<String> fqn = (List<String>) fArg.getValue();
+                JsObject posibleFunc = findJsObjectByName(globalObject, fqn);
+                
+                if (posibleFunc != null && posibleFunc instanceof JsFunction) {
+                    JsFunction defFunc = (JsFunction) posibleFunc;
+                    if (RequireJsIndexer.Factory.isScannerThread()) {
+                        if (EditorUtils.DEFINE.equals(name)) {
+                            // save to the index the return types
+                            Collection<? extends TypeUsage> returnTypes = defFunc.getReturnTypes();
+                            RequireJsIndexer.addTypes(fo.toURI(), returnTypes);
                         }
-                        if (!paths.isEmpty()) {
-                            index = 0;
-                            Project project = FileOwnerQuery.getOwner(fo);
-                            RequireJsIndex rIndex = null;
-                            try {
-                                rIndex = RequireJsIndex.get(project);
-                            } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
+                    } else if (modules != null && modules.getValue() instanceof JsArray) {
+                        // add assignments for the parameters
+                        JsArray array = (JsArray) modules.getValue();
+                        Source source = Source.create(fo);
+                        List<String> paths = new ArrayList<String>();
+                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(source.createSnapshot().getTokenHierarchy(), array.getOffset());
+                        if (ts == null) {
+                            return;
+                        }
+                        ts.move(array.getOffset());
+                        if (ts.moveNext()) {
+                            Token<? extends JsTokenId> token = ts.token();
+                            int index = 0;
+                            while (ts.moveNext() && token.id() != JsTokenId.BRACKET_RIGHT_BRACKET) {
+                                token = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT,
+                                        JsTokenId.STRING_BEGIN, JsTokenId.STRING_END));
+                                if (token.id() == JsTokenId.STRING) {
+                                    while (index > paths.size()) {
+                                        paths.add("");
+                                    }
+                                    paths.add(token.text().toString());
+                                } else if (token.id() == JsTokenId.OPERATOR_COMMA) {
+                                    index++;
+                                }
                             }
-                            if (rIndex != null) {
-                                Iterator<? extends JsObject> paramIterator = defFunc.getParameters().iterator();
-                                for (String module : paths) {
-                                    Collection<? extends TypeUsage> exposedTypes = rIndex.getExposedTypes(module, factory);
-                                    if (paramIterator.hasNext()) {
-                                        JsObject param = paramIterator.next();
-                                        for (TypeUsage typeUsage : exposedTypes) {
-                                            param.addAssignment(typeUsage, -1);
+                            if (!paths.isEmpty()) {
+                                index = 0;
+                                Project project = FileOwnerQuery.getOwner(fo);
+                                RequireJsIndex rIndex = null;
+                                try {
+                                    rIndex = RequireJsIndex.get(project);
+                                } catch (IOException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                                if (rIndex != null) {
+                                    Iterator<? extends JsObject> paramIterator = defFunc.getParameters().iterator();
+                                    for (String module : paths) {
+                                        Collection<? extends TypeUsage> exposedTypes = rIndex.getExposedTypes(module, factory);
+                                        if (paramIterator.hasNext()) {
+                                            JsObject param = paramIterator.next();
+                                            for (TypeUsage typeUsage : exposedTypes) {
+                                                param.addAssignment(typeUsage, -1);
+                                            }
                                         }
                                     }
                                 }
