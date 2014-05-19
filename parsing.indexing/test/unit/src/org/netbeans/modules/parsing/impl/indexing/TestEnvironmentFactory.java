@@ -48,7 +48,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
+
 import javax.swing.text.Document;
+
+import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.implspi.EnvironmentFactory;
 import org.netbeans.modules.parsing.implspi.SchedulerControl;
@@ -136,6 +139,10 @@ public class TestEnvironmentFactory implements EnvironmentFactory {
 
         @Override
         public void activate() {
+        }
+
+        @Override
+        public void addTokenHierarchyListener(TokenHierarchyListener listener) {
         }
     }
 }
