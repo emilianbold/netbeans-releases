@@ -273,6 +273,7 @@ public class FmtOptions {
     public static final String spaceWithinAnnotationParens = "spaceWithinAnnotationParens"; //NOI18N
     public static final String spaceWithinBraces = "spaceWithinBraces"; //NOI18N
     public static final String spaceWithinArrayInitBrackets = "spaceWithinArrayInitBrackets"; //NOI18N
+    public static final String spaceWithinArrayIndexBrackets = "spaceWithinArrayIndexBrackets"; //NOI18N
     public static final String spaceBeforeComma = "spaceBeforeComma"; //NOI18N
     public static final String spaceAfterComma = "spaceAfterComma"; //NOI18N
     public static final String spaceBeforeSemi = "spaceBeforeSemi"; //NOI18N
@@ -557,6 +558,7 @@ public class FmtOptions {
             { spaceWithinAnnotationParens, FALSE}, //NOI18N
             { spaceWithinBraces, FALSE}, //NOI18N
             { spaceWithinArrayInitBrackets, FALSE}, //NOI18N
+            { spaceWithinArrayIndexBrackets, FALSE}, //NOI18N
             { spaceBeforeComma, FALSE}, //NOI18N
             { spaceAfterComma, TRUE}, //NOI18N
             { spaceBeforeSemi, FALSE}, //NOI18N

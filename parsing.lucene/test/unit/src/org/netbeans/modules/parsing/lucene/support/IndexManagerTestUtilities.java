@@ -64,7 +64,6 @@ public final class IndexManagerTestUtilities {
     }
     
     public static void setDisabledLocks(final boolean disabled) {
-        LuceneIndex.setDisabledLocks(disabled);
     }
     
 }
