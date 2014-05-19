@@ -59,13 +59,11 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
-import org.netbeans.modules.java.source.DocumentToFileObjectMapper;
 import org.netbeans.modules.java.source.parsing.AbstractSourceFileObject.Handle;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.NbDocument;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -113,12 +111,9 @@ public class BasicSourceFileObject extends AbstractSourceFileObject implements D
         if (file == null) {
             return null;
         }
-        final DocumentToFileObjectMapper mapper = Lookup.getDefault().lookup(DocumentToFileObjectMapper.class);
-        if (mapper != null) {
-            Document doc = null;
-            try {
-                doc = mapper.getDocument(file, false);
-            } catch (IOException ex) {}
+        final Source source = Source.create(file);
+        if (source != null) {
+            Document doc = source.getDocument(false);
             if (doc != null) {
                 return DocumentUtilities.getDocumentTimestamp(doc);
             }

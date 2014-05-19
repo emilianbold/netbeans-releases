@@ -62,8 +62,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.text.Document;
 import javax.tools.Diagnostic;
@@ -76,13 +74,12 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.CompilationInfo.CacheClearPolicy;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.modules.java.source.DocumentToFileObjectMapper;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.Pair;
 
 /**
@@ -342,19 +339,11 @@ public final class CompilationInfoImpl {
         if (!this.file.isValid()) {
             return null;
         }
-        try {
-            DocumentToFileObjectMapper mapper = Lookup.getDefault().lookup(DocumentToFileObjectMapper.class);
-            if (mapper != null) {
-                return mapper.getDocument(file, false);
-            } else {
-                return null;
-            }
-        } catch (IOException e) {
-            //may happen when the underlying FileObject has just been deleted
-            //should be safe to ignore
-            Logger.getLogger(CompilationInfoImpl.class.getName()).log(Level.FINE, null, e);
-            return null;
+        Source source = this.snapshot != null ? this.snapshot.getSource() : null;
+        if (source != null) {
+            return source.getDocument(false);
         }
+        return null;
     }
         
                                 

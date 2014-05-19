@@ -68,10 +68,8 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
-import org.netbeans.modules.java.source.DocumentToFileObjectMapper;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
-//import org.netbeans.modules.java.source.JavaSourceSupportAccessor;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.SourceFileManager;
 import org.netbeans.modules.java.source.save.ElementOverlay;
@@ -88,7 +86,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.NbDocument;
 import org.openide.text.PositionRef;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -257,9 +254,9 @@ public final class ModificationResult {
         // if editor cookie was found and user does not provided his own
         // writer where he wants to see changes, commit the changes to 
         // found document.
-        DocumentToFileObjectMapper mapper = Lookup.getDefault().lookup(DocumentToFileObjectMapper.class);
-        if (mapper != null && out == null) {
-            final Document doc = mapper.getDocument(fo, false);
+        Source source = Source.create(fo);
+        if (source != null && out == null) {
+            final Document doc = source.getDocument(false);
             if (doc instanceof StyledDocument) {
                 final IOException[] exceptions = new IOException [1];
                 NbDocument.runAtomic((StyledDocument)doc, new Runnable () {

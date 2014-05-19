@@ -89,7 +89,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -99,6 +98,7 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.EventListenerList;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.NonNull;
@@ -117,11 +117,7 @@ import org.netbeans.modules.parsing.implspi.SourceEnvironment;
 import org.netbeans.modules.parsing.implspi.TaskProcessorControl;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -322,6 +318,7 @@ final class EventSupport extends SourceEnvironment {
         private final EditorCookie.Observable ec;
         private DocumentListener docListener;
         private TokenHierarchyListener thListener;
+        private EventListenerList externalTHListeners = new EventListenerList();
         
         @SuppressWarnings("LeakingThisInConstructor")
         public DocListener (final EditorCookie.Observable ec) {
@@ -392,6 +389,9 @@ final class EventSupport extends SourceEnvironment {
         @Override
         public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
             resetState (true, false, evt.affectedStartOffset(), evt.affectedEndOffset(), false);
+            for (TokenHierarchyListener thl : externalTHListeners.getListeners(TokenHierarchyListener.class)) {
+                thl.tokenHierarchyChanged(evt);
+            }
         }
     }
     
@@ -651,6 +651,13 @@ final class EventSupport extends SourceEnvironment {
         }
         if (l != null) {
             l.attachSource(now, attach);
+        }
+    }
+
+    @Override
+    public void addTokenHierarchyListener(TokenHierarchyListener listener) {
+        if (docListener != null) {
+            docListener.externalTHListeners.add(TokenHierarchyListener.class, listener);
         }
     }
 }

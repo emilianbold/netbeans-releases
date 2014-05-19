@@ -86,8 +86,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.Callable;
+
 import javax.swing.text.Document;
+
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.implspi.EnvironmentFactory;
 import org.netbeans.modules.parsing.implspi.SourceControl;
@@ -257,6 +260,13 @@ public class Utilities {
     
     public static SourceEnvironment createEnvironment(Source src, SourceControl ctrl) {
         return getEnvFactory().createEnvironment(src, ctrl);
+    }
+
+    public static void addTokenHierarchyListener(final Source src, final TokenHierarchyListener listener) {
+        SourceEnvironment env = SourceAccessor.getINSTANCE().getEnv(src);
+        if (env != null) {
+            env.addTokenHierarchyListener(listener);
+        }
     }
     
     public static Class<? extends Scheduler> findDefaultScheduler(String type) {

@@ -132,7 +132,6 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.GuardedDocument;
-import org.netbeans.modules.java.source.DocumentToFileObjectMapper;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
 import org.netbeans.modules.java.source.parsing.AbstractSourceFileObject;
@@ -209,10 +208,7 @@ public final class GeneratorUtilities {
         try {
             doc = copy.getDocument();
             if (doc == null) {
-                DocumentToFileObjectMapper mapper = Lookup.getDefault().lookup(DocumentToFileObjectMapper.class);
-                if (mapper != null) {
-                    doc = mapper.getDocument(copy.getFileObject(), true);
-                }
+                doc = copy.getSnapshot().getSource().getDocument(true);
             }
         } catch (IOException ioe) {}
         CodeStyle codeStyle = DiffContext.getCodeStyle(copy);

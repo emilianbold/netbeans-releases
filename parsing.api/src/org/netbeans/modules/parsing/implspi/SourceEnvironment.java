@@ -42,9 +42,12 @@
 package org.netbeans.modules.parsing.implspi;
 
 import java.io.IOException;
+
 import javax.swing.text.Document;
+
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
 
@@ -83,6 +86,14 @@ public abstract class SourceEnvironment {
      * @param attach if false, the scheduler is just detached from the source.
      */
     public abstract void attachScheduler(@NonNull SchedulerControl s, boolean attach);
+
+    /**
+     * Adds a TokenHierarchyListener to the source in this environment.
+     * <p/>
+     * 
+     * @param listener the listener to add
+     */
+    public abstract void addTokenHierarchyListener(@NonNull final TokenHierarchyListener listener);
 
     /**
      * Notifies that the source was actually used, and the parser wants to be

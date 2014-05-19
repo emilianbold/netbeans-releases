@@ -73,7 +73,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.modules.java.source.DocumentToFileObjectMapper;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.parsing.ClassParser;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoTask;
@@ -89,6 +88,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -97,7 +97,6 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -332,12 +331,9 @@ public final class JavaSource {
         Reference<?> ref = (Reference<?>) doc.getProperty(JavaSource.class);
         JavaSource js = ref != null ? (JavaSource) ref.get() : null;
         if (js == null) {
-            DocumentToFileObjectMapper mapper = Lookup.getDefault().lookup(DocumentToFileObjectMapper.class);
-            if (mapper != null) {
-                FileObject fo = mapper.getFileObject(doc);
-                if (fo != null) {
-                    js = forFileObject(fo);
-                }
+            FileObject fo = Utilities.getFileObject(doc);
+            if (fo != null) {
+                js = forFileObject(fo);
             }
         }
         return js;

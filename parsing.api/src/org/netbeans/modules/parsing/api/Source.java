@@ -722,6 +722,12 @@ public final class Source {
         }
 
         @Override
+        public SourceEnvironment getEnv(final Source source) {
+            assert source != null;
+            return source.sourceEnv;
+        }
+
+        @Override
         public long getLastEventId (final Source source) {
             assert source != null;
             return source.eventId;

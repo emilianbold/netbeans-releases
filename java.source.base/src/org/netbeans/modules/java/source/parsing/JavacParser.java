@@ -144,7 +144,6 @@ import org.netbeans.lib.nbjavac.services.NBMessager;
 import org.netbeans.lib.nbjavac.services.NBResolve;
 import org.netbeans.lib.nbjavac.services.NBTreeMaker;
 import org.netbeans.lib.nbjavac.services.PartialReparser;
-import org.netbeans.modules.java.source.DocumentToFileObjectMapper;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
@@ -223,8 +222,6 @@ public class JavacParser extends Parser {
     //Incremental parsing support
     private final AtomicReference<Pair<DocPositionRegion,MethodTree>> changedMethod =
             new AtomicReference<Pair<DocPositionRegion, MethodTree>>();
-    //Incremental parsing support
-    private final DocumentToFileObjectMapper.ListenerHandle listener;
     //J2ME preprocessor support
     private final FilterListener filterListener;
     //ClasspathInfo Listener
@@ -251,30 +248,16 @@ public class JavacParser extends Parser {
         this.supportsReparse = singleJavaFile && !DISABLE_PARTIAL_REPARSE;
         EditorCookie.Observable ec = null;
         JavaFileFilterImplementation filter = null;
-        DocumentToFileObjectMapper.ListenerHandle handle = null;
         if (singleJavaFile) {
             final Source source = snapshots.iterator().next().getSource();
             FileObject fo = source.getFileObject();
             if (fo != null) {
                 //fileless Source -- ie. debugger watch CC etc
                 filter = JavaFileFilterQuery.getFilter(fo);
-                try {
-                    DocumentToFileObjectMapper mapper = Lookup.getDefault().lookup(DocumentToFileObjectMapper.class);
-                    if (mapper != null) {
-                        handle = mapper.addTokenHierarchyListener(fo, new DocListener());
-                        if (this.listener == null) {
-                            LOGGER.log(Level.FINE,
-                                String.format("File: %s has no EditorCookie.Observable", //NOI18N
-                                FileUtil.getFileDisplayName (fo)));
-                        }
-                    }
-                } catch (IOException e) {
-                    LOGGER.log(Level.FINE,"Invalid DataObject",e);
-                }
+                Utilities.addTokenHierarchyListener(source, new DocListener());
             }
         }
         this.filterListener = filter != null ? new FilterListener (filter) : null;
-        this.listener = handle != null ? handle : null;
         this.cpInfoListener = new ClasspathInfoListener (
             listeners,
             new Runnable() {
@@ -630,7 +613,7 @@ public class JavacParser extends Parser {
                 CompilationUnitTree unit = it.next();
                 currentInfo.setCompilationUnit(unit);
                 assert !it.hasNext();
-                final Document doc = listener == null ? null : listener.getDocument();
+                final Document doc = currentInfo.getDocument();
                 if (doc != null && supportsReparse) {
                     FindMethodRegionsVisitor v = new FindMethodRegionsVisitor(doc,Trees.instance(currentInfo.getJavacTask()).getSourcePositions(),this.parserCanceled);
                     v.visit(unit, null);

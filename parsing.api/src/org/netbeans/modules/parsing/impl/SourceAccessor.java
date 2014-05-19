@@ -173,6 +173,7 @@ public abstract class SourceAccessor {
     public abstract void assignListeners(Source source);
     
     public abstract SourceControl getEnvControl(Source s);
+    public abstract SourceEnvironment getEnv(Source s);
     
     public abstract long getLastEventId (Source source);
     

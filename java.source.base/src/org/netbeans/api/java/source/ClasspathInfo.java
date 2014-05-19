@@ -72,19 +72,18 @@ import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.parsing.ProxyFileManager;
 import org.netbeans.modules.java.source.parsing.SourceFileManager;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
-import org.netbeans.modules.java.source.DocumentToFileObjectMapper;
 import org.netbeans.modules.java.source.classpath.AptSourcePath;
 import org.netbeans.modules.java.source.classpath.SourcePath;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.netbeans.modules.java.source.parsing.*;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
@@ -261,12 +260,9 @@ public final class ClasspathInfo {
      */
     public static @NullUnknown ClasspathInfo create(@NonNull final Document doc) {
         Parameters.notNull("doc", doc);
-        DocumentToFileObjectMapper mapper = Lookup.getDefault().lookup(DocumentToFileObjectMapper.class);
-        if (mapper != null) {
-            FileObject fileObject = mapper.getFileObject(doc);
-            if (fileObject != null) {
-                return create(fileObject);
-            }
+        FileObject fileObject = Utilities.getFileObject(doc);
+        if (fileObject != null) {
+            return create(fileObject);
         }
         return null;
     }
