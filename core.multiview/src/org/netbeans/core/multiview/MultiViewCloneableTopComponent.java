@@ -178,6 +178,8 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
         Action[] superActions = super.getActions();
         List<Action> acts = new ArrayList<Action>(Arrays.asList(peer.peerGetActions(superActions)));
         
+        if( !acts.isEmpty() )
+            acts.add(null);
         acts.add( new EditorsAction() );
         if( canSplit() ) {
             acts.add( new SplitAction(true) );

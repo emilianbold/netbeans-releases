@@ -164,6 +164,8 @@ public final class MultiViewTopComponent
         //TEMP don't delegate to element's actions..
         Action[] superActions = superActions4Tests == null ? super.getActions() : superActions4Tests;
         List<Action> acts = new ArrayList<Action>(Arrays.asList(peer.peerGetActions(superActions)));
+        if( !acts.isEmpty() )
+            acts.add(null);
         acts.add(new EditorsAction());
         if( canSplit() ) {
             acts.add(new SplitAction(true));
