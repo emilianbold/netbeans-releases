@@ -242,12 +242,13 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
         
         TableModelListener[] listeners = getTableModelListeners();
         inMultiEvent = e.length > 1;
+        //System.err.println("fireTableChange("+Arrays.toString(e)+")");
         try {
             for (int i=0; i < e.length; i++) {
-                fireTableChange (e[i], listeners);
                 if (i == e.length-1) {
                     inMultiEvent = false;
                 }
+                fireTableChange (e[i], listeners);
             }
         } finally {
             inMultiEvent = false;

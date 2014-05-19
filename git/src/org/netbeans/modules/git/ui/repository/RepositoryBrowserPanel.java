@@ -324,6 +324,11 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
     }
 
+    @Override
+    public boolean requestFocusInWindow () {
+        return tree.requestFocusInWindow();
+    }
+
     private void attachToolbarListeners () {
 
     }
@@ -1057,8 +1062,13 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 actions.add(new AbstractAction(NbBundle.getMessage(CreateTagAction.class, "LBL_CreateTagAction_PopupName")) { //NOI18N
                     @Override
                     public void actionPerformed (ActionEvent e) {
-                        CreateTagAction action = SystemAction.get(CreateTagAction.class);
-                        action.createTag(repo, branch);
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                CreateTagAction action = SystemAction.get(CreateTagAction.class);
+                                action.createTag(repo, branch);
+                            }
+                        });
                     }
                 });
                 actions.add(new AbstractAction(NbBundle.getMessage(MergeRevisionAction.class, "LBL_MergeRevisionAction_PopupName")) { //NOI18N
@@ -1081,8 +1091,13 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 actions.add(new AbstractAction(NbBundle.getMessage(DeleteBranchAction.class, "LBL_DeleteBranchAction_PopupName")) { //NOI18N
                     @Override
                     public void actionPerformed (ActionEvent e) {
-                        DeleteBranchAction action = SystemAction.get(DeleteBranchAction.class);
-                        action.deleteBranch(currRepository, branchName);
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                DeleteBranchAction action = SystemAction.get(DeleteBranchAction.class);
+                                action.deleteBranch(repo, branch);
+                            }
+                        });
                     }
 
                     @Override
@@ -1113,8 +1128,13 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     actions.add(new AbstractAction(Bundle.LBL_SetTrackedBranchAction_PopupName()) {
                         @Override
                         public void actionPerformed (ActionEvent e) {
-                            SystemAction.get(SetTrackingAction.class).setupTrackedBranch(currRepository, branchName,
-                                    trackedBranch == null ? null : trackedBranch.getName());
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run () {
+                                    SystemAction.get(SetTrackingAction.class).setupTrackedBranch(repo, branch,
+                                            trackedBranch == null ? null : trackedBranch.getName());
+                                }
+                            });
                         }
                     });
                 }
@@ -1617,7 +1637,12 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             actions.add(new AbstractAction(NbBundle.getMessage(RepositoryBrowserPanel.class, "LBL_RepositoryPanel.RemoteNode.remove")) { //NOI18N
                 @Override
                 public void actionPerformed (ActionEvent e) {
-                    new RemoveRemoteConfig().removeRemote(repository, remoteName);
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run () {
+                            new RemoveRemoteConfig().removeRemote(repository, remoteName);
+                        }
+                    });
                 }
             });
             return actions.toArray(new Action[actions.size()]);
