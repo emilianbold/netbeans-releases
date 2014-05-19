@@ -39,6 +39,7 @@ core.output2,\
 core.startup,\
 core.ui,\
 core.windows,\
+debugger.jpda.js,\
 editor.mimelookup,\
 editor.mimelookup.impl,\
 extexecution,\
