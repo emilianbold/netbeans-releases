@@ -132,7 +132,7 @@ public class WildflyPluginUtils {
         File serverDirectory = new File(serverLocation);
 
         if (isGoodJBServerLocation(serverDirectory)) {
-            String[] files = new String[]{"standalone", "domain"};
+            String[] files = new String[]{"standalone"};
             File file = serverDirectory;
             if (files != null) {
                 for (String file1 : files) {
