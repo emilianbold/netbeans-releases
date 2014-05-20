@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,23 +37,59 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.core.multiview;
+package org.netbeans.modules.debugger.jpda.js.source;
 
-import org.openide.windows.TopComponent;
+import java.io.OutputStream;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author S. Aubrecht
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public interface Splitable {
+public class SourceTest extends NbTestCase {
+   public static final String AVATAR_PREFIX = "(function (exports, require, module, __filename, __dirname) {";
+   public static final String AVATAR_SUFFIX = "\n});";
+  
+    public SourceTest(String name) {
+        super(name);
+    }
 
-    TopComponent splitComponent( int orientation, int splitPosition );
-
-    TopComponent clearSplit( int elementToActivate);
-
-    int getSplitOrientation();
+    public void testAvatarJSPrefix() throws Exception {
+        String js = 
+            "(function() {\n"
+          + "  alert('Hello');\n"
+          + ")();\n";
+        
+        FileObject fo = FileUtil.createMemoryFileSystem().getRoot().createData("test.js");
+        final OutputStream os = fo.getOutputStream();
+        os.write(js.getBytes("UTF-8"));
+        os.close();
+        
+        String wrap = AVATAR_PREFIX + js + AVATAR_SUFFIX;
+        
+        int shift = Source.getContentLineShift(fo.toURL(), wrap);
+        assertEquals("No shift at all", 0, shift);
+    }
     
-    boolean canSplit();
+    public void testTwoLinesPrefix() throws Exception {
+        String js = 
+            "(function() {\n"
+          + "  alert('Hello');\n"
+          + ")();\n";
+        
+        FileObject fo = FileUtil.createMemoryFileSystem().getRoot().createData("test.js");
+        final OutputStream os = fo.getOutputStream();
+        os.write(js.getBytes("UTF-8"));
+        os.close();
+        
+        String wrap = "// Written by Martin\n// Tested by Jarda\n" + js;
+        
+        int shift = Source.getContentLineShift(fo.toURL(), wrap);
+        assertEquals("Two lines shift", 2, shift);
+        
+    }
 }

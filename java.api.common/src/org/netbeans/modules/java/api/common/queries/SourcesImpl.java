@@ -195,18 +195,17 @@ final class SourcesImpl implements Sources, SourceGroupModifierImplementation, P
         String libLoc = helper.getLibrariesLocation();
         if (libLoc != null) {
             String libLocEval = evaluator.evaluate(libLoc);
-            File file = null;
             if (libLocEval != null) {
-                file = helper.resolveFile(libLocEval);
+                final File file = helper.resolveFile(libLocEval);
+                FileObject libLocFO = FileUtil.toFileObject(file);
+                if (libLocFO != null) {
+                    //#126366 this can happen when people checkout the project but not the libraries description
+                    //that is located outside the project
+                    FileObject libLocParent = libLocFO.getParent();
+                    return libLocParent;
+                }
             }
-            FileObject libLocFO = FileUtil.toFileObject(file);
-            if (libLocFO != null) {
-                //#126366 this can happen when people checkout the project but not the libraries description 
-                //that is located outside the project
-                FileObject libLocParent = libLocFO.getParent();
-                return libLocParent;
-            }
-        } 
+        }
         return null;
     }
 

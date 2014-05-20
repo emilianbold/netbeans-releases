@@ -2474,7 +2474,9 @@ public class Reformatter implements ReformatTask {
         public Boolean visitArrayAccess(ArrayAccessTree node, Void p) {
             scan(node.getExpression(), p);
             accept(LBRACKET);
+            spaces(cs.spaceWithinArrayIndexBrackets() ? 1 : 0);
             scan(node.getIndex(), p);
+            spaces(cs.spaceWithinArrayIndexBrackets() ? 1 : 0);
             accept(RBRACKET);
             return true;
         }

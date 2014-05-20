@@ -106,7 +106,7 @@ final class AnalyzeStackTopComponent extends TopComponent {
 
             @Override
             public void mouseClicked (MouseEvent e) {
-                if (e.getClickCount () != 2) {
+                if (e.getClickCount () != 1) {
                     return;
                 }
                 int i = list.locationToIndex (e.getPoint ());
