@@ -52,6 +52,8 @@ import org.netbeans.api.annotations.common.NullUnknown;
  */
 public final class WebLogicConfiguration {
 
+    public static final Version VERSION_10 = Version.fromJsr277NotationWithFallback("10"); // NOI18N
+
     private final File serverHome;
 
     private final String username;
@@ -79,7 +81,8 @@ public final class WebLogicConfiguration {
 
     public static WebLogicConfiguration forLocalDomain(File serverHome, File domainHome,
             String username, String password) {
-        return null;
+        // FIXME port
+        return new WebLogicConfiguration(serverHome, username, password, domainHome, "localhost", 7001);
     }
 
     public static WebLogicConfiguration forRemoteDomain(File serverHome, String host, int port,
@@ -103,12 +106,23 @@ public final class WebLogicConfiguration {
 
     @NonNull
     public String getAdminURL() {
-        return null;
+        // XXX
+        return "t3://" + host + ":" + port;
     }
 
     @NonNull
     public String getSiteURL() {
         return null;
+    }
+
+    @NonNull
+    public String getUsername() {
+        return username;
+    }
+
+    @NonNull
+    public String getPassword() {
+        return password;
     }
 
     @NonNull
