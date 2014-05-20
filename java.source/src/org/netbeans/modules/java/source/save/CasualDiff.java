@@ -4650,6 +4650,21 @@ public class CasualDiff {
         }
         return Math.max(minPos, pos);
     }
+    
+    private int getPosAfterCommentStart(Tree t, int minPos) {
+        CommentSet cs = getCommentsForTree(t, true);
+        List<Comment> cmm = cs.getComments(CommentSet.RelativePosition.PRECEDING);
+        if (cmm.isEmpty()) {
+            cmm = cs.getComments(CommentSet.RelativePosition.INNER);
+        }
+        if (cmm.isEmpty()) {
+            return minPos;
+        }
+        Comment c = cmm.get(cmm.size() - 1);
+        int pos = c.endPos();
+        assert pos >= 0;
+        return Math.max(minPos, pos);
+    }
 
     protected int diffTreeImpl(JCTree oldT, JCTree newT, JCTree parent /*used only for modifiers*/, int[] elementBounds) {
         if (oldT == null && newT != null)
@@ -4684,20 +4699,13 @@ public class CasualDiff {
             }
         }
 
-        // if comments are the same, diffPredComments will skip them so that printer.print(newT) will
-        // not emit them from the new element. But if printer.print() won't be used (the newT will be merged in rather
-        // than printed anew), then surviving comments have to be printed.
-        int predComments = diffPrecedingComments(oldT, newT, getOldPos(oldT), elementBounds[0], 
-                oldT.getTag() == Tag.TOPLEVEL && diffContext.forceInitialComment);
-        int retVal = -1;
-
         if (oldT.getTag() != newT.getTag()) {
             if (((compAssign.contains(oldT.getKind()) && compAssign.contains(newT.getKind())) == false) &&
                 ((binaries.contains(oldT.getKind()) && binaries.contains(newT.getKind())) == false) &&
                 ((unaries.contains(oldT.getKind()) && unaries.contains(newT.getKind())) == false)) {
                 // different kind of trees found, print the whole new one.
                 int[] oldBounds = getBounds(oldT);
-                elementBounds[0] = Math.abs(predComments);
+                elementBounds[0] = getPosAfterCommentStart(oldT, elementBounds[0]);
                 if (oldBounds[0] > elementBounds[0]) {
                     copyTo(elementBounds[0], oldBounds[0]);
                 }
@@ -4706,6 +4714,13 @@ public class CasualDiff {
                 return getPosAfterCommentEnd(oldT, oldBounds[1]);
             }
         }
+        
+        // if comments are the same, diffPredComments will skip them so that printer.print(newT) will
+        // not emit them from the new element. But if printer.print() won't be used (the newT will be merged in rather
+        // than printed anew), then surviving comments have to be printed.
+        int predComments = diffPrecedingComments(oldT, newT, getOldPos(oldT), elementBounds[0], 
+                oldT.getTag() == Tag.TOPLEVEL && diffContext.forceInitialComment);
+        int retVal = -1;
         if (predComments < 0 && elementBounds[0] < -predComments) {
             copyTo(elementBounds[0], -predComments);
         }
