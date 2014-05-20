@@ -55,10 +55,10 @@ import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex2;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -110,7 +110,7 @@ public final class DocumentBasedIndexManager {
                 switch (mode) {
                     case CREATE:
                     {
-                        final File file = Utilities.toFile(root.toURI());
+                        final File file = BaseUtilities.toFile(root.toURI());
                         file.mkdir();
                         final DocumentIndexCache cache = ClusteredIndexables.createDocumentIndexCache();
                         final DocumentIndex2.Transactional index = (DocumentIndex2.Transactional) IndexManager.createTransactionalDocumentIndex(file, cache);
@@ -121,7 +121,7 @@ public final class DocumentBasedIndexManager {
                     }
                     case IF_EXIST:
                     {
-                        final File file = Utilities.toFile(root.toURI());
+                        final File file = BaseUtilities.toFile(root.toURI());
                         String[] children;
                         if (file.isDirectory() && (children=file.list())!= null && children.length > 0) {
                             final DocumentIndexCache cache = ClusteredIndexables.createDocumentIndexCache();

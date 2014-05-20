@@ -313,7 +313,7 @@ public class TaskCache {
             }
             URI rootURI = root.toURI();
             File cacheRoot = getCacheRoot(root);
-            URI cacheRootURI = org.openide.util.Utilities.toURI(cacheRoot);
+            URI cacheRootURI = org.openide.util.BaseUtilities.toURI(cacheRoot);
             Queue<File> todo = new LinkedList<File>();
             
             todo.add(cacheRoot);
@@ -325,13 +325,13 @@ public class TaskCache {
                 
                 if (f.isFile()) {
                     if (f.getName().endsWith(ERR_EXT)) {
-                        String relative = cacheRootURI.relativize(org.openide.util.Utilities.toURI(f)).getRawPath();
+                        String relative = cacheRootURI.relativize(org.openide.util.BaseUtilities.toURI(f)).getRawPath();
                         
                         relative = relative.replaceAll("." + ERR_EXT + "$", ""); //NOI18N
                         result.add(rootURI.resolve(relative).toURL());
                     }
                     if (!onlyErrors && f.getName().endsWith(WARN_EXT)) {
-                        String relative = cacheRootURI.relativize(org.openide.util.Utilities.toURI(f)).getRawPath();
+                        String relative = cacheRootURI.relativize(org.openide.util.BaseUtilities.toURI(f)).getRawPath();
                         
                         relative = relative.replaceAll("." + WARN_EXT + "$", ""); //NOI18N
                         result.add(rootURI.resolve(relative).toURL());

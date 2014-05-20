@@ -42,67 +42,80 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.parsing.impl.indexing.lucene.DocumentBasedIndexManager;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
-import org.openide.modules.ModuleInstall;
+import org.openide.modules.OnStart;
+import org.openide.modules.OnStop;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author sdedic
  */
-public class IndexingModule extends ModuleInstall {
+public class IndexingModule {
     private static volatile boolean closed;
 
+    /**
+     * Initialization part of the former IndexerModule / ModuleInstall
+     * 
+     * @author sdedic
+     */
+    @OnStart
+    public static class Startup implements Runnable {
+        @Override
+        public void run() {
+            RepositoryUpdater.getDefault().start(false);
+        }
+    }
+    
+    @OnStop
+    public static class Shutdown implements Runnable, Callable<Boolean> {
+
+        @Override
+        public void run() {
+            closed = true;
+            final CountDownLatch done = new CountDownLatch(1);
+            final Runnable postTask = new Runnable() {
+                private AtomicBoolean started = new AtomicBoolean();
+                @Override
+                public void run() {
+                    if (started.compareAndSet(false, true)) {                    
+                        try {
+                            LuceneIndexFactory.getDefault().close();
+                            DocumentBasedIndexManager.getDefault().close();
+                        } finally {
+                            done.countDown();
+                        }
+                    }
+                }
+            };
+            try {
+                RepositoryUpdater.getDefault().stop(postTask);
+            } catch (TimeoutException timeout) {
+                postTask.run();
+            } finally {
+                try {
+                    done.await();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+
+        @Override
+        public Boolean call() throws Exception {
+            LogContext.notifyClosing();
+            return true;
+        }
+        
+    }
+    
     public static boolean isClosed() {
         return closed;
     }
 
-    @Override
-    public void restored () {
-        super.restored();
-        RepositoryUpdater.getDefault().start(false);
-
-    }
-
-    @Override
-    public boolean closing() {
-        LogContext.notifyClosing();
-        return super.closing();
-    }
-
-    @Override
-    public void close() {
-        super.close();
-        closed = true;
-        final CountDownLatch done = new CountDownLatch(1);
-        final Runnable postTask = new Runnable() {
-            private AtomicBoolean started = new AtomicBoolean();
-            @Override
-            public void run() {
-                if (started.compareAndSet(false, true)) {                    
-                    try {
-                        LuceneIndexFactory.getDefault().close();
-                        DocumentBasedIndexManager.getDefault().close();
-                    } finally {
-                        done.countDown();
-                    }
-                }
-            }
-        };
-        try {
-            RepositoryUpdater.getDefault().stop(postTask);
-        } catch (TimeoutException timeout) {
-            postTask.run();
-        } finally {
-            try {
-                done.await();
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
 }
