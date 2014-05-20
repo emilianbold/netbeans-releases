@@ -80,13 +80,16 @@ public final class WebLogicDeployer {
 
     private final WebLogicConfiguration config;
 
-    private WebLogicDeployer(WebLogicConfiguration config) {
+    private final File javaBinary;
+
+    private WebLogicDeployer(WebLogicConfiguration config, File javaBinary) {
         this.config = config;
+        this.javaBinary = javaBinary;
     }
 
     @NonNull
-    public static WebLogicDeployer getInstance(@NonNull WebLogicConfiguration config) {
-        return new WebLogicDeployer(config);
+    public static WebLogicDeployer getInstance(@NonNull WebLogicConfiguration config, @NullAllowed File javaBinary) {
+        return new WebLogicDeployer(config, javaBinary);
     }
 
     @NonNull
@@ -214,20 +217,10 @@ public final class WebLogicDeployer {
     }
 
     private String getJavaBinary() {
-        // TODO configurable ? or use the jdk server is running on ?
-//        JavaPlatform platform = JavaPlatformManager.getDefault().getDefaultPlatform();
-//        Collection<FileObject> folders = platform.getInstallFolders();
-        String javaBinary = BaseUtilities.isWindows() ? "java.exe" : "java"; // NOI18N
-//        if (folders.size() > 0) {
-//            FileObject folder = folders.iterator().next();
-//            File file = FileUtil.toFile(folder);
-//            if (file != null) {
-//                javaBinary = file.getAbsolutePath() + File.separator
-//                        + "bin" + File.separator
-//                        + (BaseUtilities.isWindows() ? "java.exe" : "java"); // NOI18N
-//            }
-//        }
-        return javaBinary;
+        if (javaBinary != null) {
+            return javaBinary.getAbsolutePath();
+        }
+        return BaseUtilities.isWindows() ? "java.exe" : "java"; // NOI18N
     }
 
     private static class LastLineProcessor implements LineProcessor {
