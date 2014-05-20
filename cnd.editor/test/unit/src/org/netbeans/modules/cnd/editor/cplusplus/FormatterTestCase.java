@@ -5759,4 +5759,58 @@ public class FormatterTestCase extends EditorBase {
                 "};\n"
                 );
     }
+    
+    public void test244599() {
+        setLoadDocumentText(
+                "class A {\n" +
+                "    value_t operator &() {}\n" +
+                "    const value_t operator &() const {}\n" +
+                "    value_t& operator *() {}\n" +
+                "    const value_t& operator *() const {}\n" +
+                "    value_t* operator ->() {}\n" +
+                "    const value_t* operator ->() const {}\n" +
+                "    value_t& operator [](std::size_t index) {}\n" +
+                "    const value_t& operator [](std::size_t index) const {}\n" +
+                "};\n"
+                );
+        setDefaultsOptions();
+        reformat();
+        assertDocumentText(" 'operator ->' and 'operator []' has not empty line between methods after reformat",
+                "class A\n" +
+                "{\n" +
+                "\n" +
+                "    value_t operator &()\n" +
+                "    {\n" +
+                "    }\n" +
+                "\n" +
+                "    const value_t operator &() const\n" +
+                "    {\n" +
+                "    }\n" +
+                "\n" +
+                "    value_t& operator *()\n" +
+                "    {\n" +
+                "    }\n" +
+                "\n" +
+                "    const value_t& operator *() const\n" +
+                "    {\n" +
+                "    }\n" +
+                "\n" +
+                "    value_t* operator ->()\n" +
+                "    {\n" +
+                "    }\n" +
+                "\n" +
+                "    const value_t* operator ->() const\n" +
+                "    {\n" +
+                "    }\n" +
+                "\n" +
+                "    value_t& operator [](std::size_t index)\n" +
+                "    {\n" +
+                "    }\n" +
+                "\n" +
+                "    const value_t& operator [](std::size_t index) const\n" +
+                "    {\n" +
+                "    }\n" +
+                "};\n"
+                );
+    }
 }
