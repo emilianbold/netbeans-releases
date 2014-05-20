@@ -1181,9 +1181,6 @@ public class ModelUtils {
                     boolean isType = false;
                     for (IndexResult indexResult: indexResults) {
                         Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
-                        if (assignments.size() > 10) {
-                            System.out.println("@@@@Assignments for " + fqn + " " + assignments.size());
-                        }
                         if (!assignments.isEmpty()) {
                             hasAssignments = true;
                             for (TypeUsage type : assignments) {
