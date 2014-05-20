@@ -45,6 +45,7 @@ package org.netbeans.modules.java.source.indexing;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -129,10 +130,15 @@ public class COSSynchronizingIndexer extends CustomIndexer {
     public static Set<String> gatherJavaMimeTypes() {
         Set<String> mimeTypes = new HashSet<String>();
 
-        for (IndexerInfo<CustomIndexerFactory> i : IndexerCache.getCifCache().getIndexersByName(JavaIndex.NAME)) {
-            mimeTypes.addAll(i.getMimeTypes());
+        final Collection<? extends IndexerInfo<CustomIndexerFactory>> indexers =
+            IndexerCache.getCifCache().getIndexersByName(JavaIndex.NAME);
+        if (indexers != null) {
+            for (IndexerInfo<CustomIndexerFactory> i : indexers) {
+                mimeTypes.addAll(i.getMimeTypes());
+            }
+        } else {
+            LOG.warning("No java indexer found.");  //NOI18N
         }
-
         return mimeTypes;
     }
 
