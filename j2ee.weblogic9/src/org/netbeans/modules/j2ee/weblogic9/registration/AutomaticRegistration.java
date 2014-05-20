@@ -49,11 +49,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.ui.wizard.WLInstantiatingIterator;
+import org.netbeans.modules.weblogic.common.api.Version;
+import org.netbeans.modules.weblogic.common.api.WebLogicLayout;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -161,8 +162,8 @@ public class AutomaticRegistration {
             return 4;
         }
 
-        Version version = WLPluginProperties.getServerVersion(serverDir);
-        if (!WLPluginProperties.isSupportedVersion(version)) {
+        Version version = WebLogicLayout.getServerVersion(serverDir);
+        if (!WebLogicLayout.isSupportedVersion(version)) {
             LOGGER.log(Level.INFO, "Cannot register the default WebLogic server. "
                     + " The version " + version + " is not supported."); // NOI18N
             return 5;
