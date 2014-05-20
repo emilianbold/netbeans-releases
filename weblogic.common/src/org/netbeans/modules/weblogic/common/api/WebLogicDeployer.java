@@ -90,8 +90,8 @@ public final class WebLogicDeployer {
     }
 
     @NonNull
-    public Future<Boolean> deploy(@NonNull String name, final @NonNull File file,
-            final @NullAllowed DeployListener listener, final String... parameters) {
+    public Future<Boolean> deploy(@NonNull String name, @NonNull final File file,
+            @NullAllowed final DeployListener listener, final String... parameters) {
 
         if (listener != null) {
             listener.onStart(NbBundle.getMessage(WebLogicDeployer.class, "MSG_Deploying", file.getAbsolutePath()));
@@ -119,7 +119,7 @@ public final class WebLogicDeployer {
                     if (value != 0) {
                         if (listener != null) {
                             listener.onFail(NbBundle.getMessage(WebLogicDeployer.class, "MSG_Deployment_Failed",
-                                    lineProcessor.getLastLine()));
+                                    lineProcessor.getLastLine()), lineProcessor.getLastLine());
                         }
                         return false;
                     } else {
@@ -130,18 +130,21 @@ public final class WebLogicDeployer {
                     }
                 } catch (InterruptedException ex) {
                     if (listener != null) {
-                        listener.onFail(NbBundle.getMessage(WebLogicDeployer.class, "MSG_Deployment_Failed_Interrupted"));
+                        listener.onFail(NbBundle.getMessage(WebLogicDeployer.class, "MSG_Deployment_Failed_Interrupted"),
+                                lineProcessor.getLastLine());
                     }
                     result.cancel(true);
                     Thread.currentThread().interrupt();
                 } catch (TimeoutException ex) {
                     if (listener != null) {
-                        listener.onFail(NbBundle.getMessage(WebLogicDeployer.class, "MSG_Deployment_Failed_Timeout"));
+                        listener.onFail(NbBundle.getMessage(WebLogicDeployer.class, "MSG_Deployment_Failed_Timeout"),
+                                lineProcessor.getLastLine());
                     }
                     result.cancel(true);
                 } catch (ExecutionException ex) {
                     if (listener != null) {
-                        listener.onFail(NbBundle.getMessage(WebLogicDeployer.class, "MSG_Deployment_Failed_With_Message"));
+                        listener.onFail(NbBundle.getMessage(WebLogicDeployer.class, "MSG_Deployment_Failed_With_Message"),
+                                lineProcessor.getLastLine());
                     }
                 }
                 return false;
@@ -166,7 +169,7 @@ public final class WebLogicDeployer {
         arguments.add(getClassPath());
         arguments.add("weblogic.Deployer"); // NOI18N
         arguments.add("-adminurl"); // NOI18N
-        arguments.add(config.getAdminURL()); // NOI18N
+        arguments.add(config.getAdminURL());
         arguments.add("-username"); // NOI18N
         arguments.add(config.getUsername());
         arguments.add("-password"); // NOI18N

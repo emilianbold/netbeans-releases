@@ -40,20 +40,29 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.weblogic.common.api;
+package org.netbeans.modules.weblogic.common;
 
-import java.util.EventListener;
+import java.io.File;
+import java.util.concurrent.Future;
+import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
+import org.netbeans.modules.weblogic.common.api.WebLogicDeployer;
 
 /**
  *
  * @author Petr Hejl
  */
-public interface DeployListener extends EventListener {
+public class Main {
 
-    void onStart(String message);
+    public static void main(String[] args) throws Exception {
+        String serverHome = args[0];
+        String domainHome = args[1];
+        String artifact = args[2];
+        WebLogicConfiguration config = WebLogicConfiguration.forLocalDomain(new File(serverHome), new File(domainHome),
+                "weblogic", "welcome1");
 
-    void onFail(String message, String lastLine);
-
-    void onFinish(String message);
-
+        WebLogicDeployer deployer = WebLogicDeployer.getInstance(config);
+        Future<Boolean> ret = deployer.deploy("Test", new File(artifact), null, new String[0]);
+        boolean ok = ret.get();
+        System.out.println("OK: " + ok);
+    }
 }
