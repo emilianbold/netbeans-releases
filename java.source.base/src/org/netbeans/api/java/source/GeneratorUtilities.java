@@ -729,44 +729,46 @@ public final class GeneratorUtilities {
         List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
         for (ImportTree imp : imports) {
             Element e = getImportedElement(cut, imp);
-            if (imp.isStatic()) {
-                if (e.getKind().isClass() || e.getKind().isInterface()) {
-                    Element el = e;
-                    while (el != null) {
-                        Integer cnt = typeCounts.get((TypeElement)el);
-                        if (cnt != null) {
-                            typeCounts.put((TypeElement)el, -2);
+            if (!elementsToImport.contains(e)) {
+                if (imp.isStatic()) {
+                    if (e.getKind().isClass() || e.getKind().isInterface()) {
+                        Element el = e;
+                        while (el != null) {
+                            Integer cnt = typeCounts.get((TypeElement)el);
+                            if (cnt != null) {
+                                typeCounts.put((TypeElement)el, -2);
+                            }
+                            TypeMirror tm = ((TypeElement)el).getSuperclass();
+                            el = tm.getKind() == TypeKind.DECLARED ? ((DeclaredType)tm).asElement() : null;
                         }
-                        TypeMirror tm = ((TypeElement)el).getSuperclass();
-                        el = tm.getKind() == TypeKind.DECLARED ? ((DeclaredType)tm).asElement() : null;
+                    } else {
+                        Element el = elementUtilities.enclosingTypeElement(e);
+                        if (el != null) {
+                            Integer cnt = typeCounts.get((TypeElement)el);
+                            if (cnt != null) {
+                                if (cnt >= 0) {
+                                    cnt++;
+                                    if (cnt >= staticTreshold)
+                                        cnt = -1;
+                                }
+                                typeCounts.put((TypeElement)el, cnt);
+                            }
+                        }
                     }
                 } else {
-                    Element el = elementUtilities.enclosingTypeElement(e);
+                    Element el = e.getKind() == ElementKind.PACKAGE ? e : (e.getKind().isClass() || e.getKind().isInterface()) && e.getEnclosingElement().getKind() == ElementKind.PACKAGE ? e.getEnclosingElement() : null;
                     if (el != null) {
-                        Integer cnt = typeCounts.get((TypeElement)el);
+                        Integer cnt = pkgCounts.get((PackageElement)el);
                         if (cnt != null) {
-                            if (cnt >= 0) {
+                            if (el == e) {
+                                cnt = -2;
+                            } else if (cnt >= 0) {
                                 cnt++;
-                                if (cnt >= staticTreshold)
+                                if (cnt >= treshold)
                                     cnt = -1;
                             }
-                            typeCounts.put((TypeElement)el, cnt);
+                            pkgCounts.put((PackageElement)el, cnt);
                         }
-                    }
-                }
-            } else {
-                Element el = e.getKind() == ElementKind.PACKAGE ? e : (e.getKind().isClass() || e.getKind().isInterface()) && e.getEnclosingElement().getKind() == ElementKind.PACKAGE ? e.getEnclosingElement() : null;
-                if (el != null) {
-                    Integer cnt = pkgCounts.get((PackageElement)el);
-                    if (cnt != null) {
-                        if (el == e) {
-                            cnt = -2;
-                        } else if (cnt >= 0) {
-                            cnt++;
-                            if (cnt >= treshold)
-                                cnt = -1;
-                        }
-                        pkgCounts.put((PackageElement)el, cnt);
                     }
                 }
             }
