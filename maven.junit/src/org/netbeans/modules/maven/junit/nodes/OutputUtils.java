@@ -69,7 +69,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
+import org.netbeans.modules.gsf.testrunner.ui.api.TestsuiteNode;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;

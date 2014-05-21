@@ -92,7 +92,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.junit.TestabilityResult.SkippedClass;
 import org.netbeans.modules.junit.plugin.JUnitPlugin;
-import org.netbeans.modules.gsf.testrunner.api.SelfResizingPanel;
+import org.netbeans.modules.gsf.testrunner.ui.api.SelfResizingPanel;
 import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin.CreateTestParam;
 import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin.Location;
 import org.netbeans.modules.junit.wizards.Utils;

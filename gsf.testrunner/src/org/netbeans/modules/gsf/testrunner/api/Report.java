@@ -85,7 +85,7 @@ public final class Report {
     private boolean aborted;
     private boolean skipped;
 
-    protected boolean completed;
+    private boolean completed;
 
     /**
      */
@@ -98,6 +98,14 @@ public final class Report {
         this.completed = true;
         this.aborted = false;
         this.skipped = false;
+    }
+
+    public boolean isCompleted() {
+      return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+      this.completed = completed;
     }
 
     public FileLocator getFileLocator() {
@@ -386,7 +394,7 @@ public final class Report {
         this.skipped = skipped;
     }
 
-    int getStatusMask(){
+    public int getStatusMask(){
         int statusMask = 0;
         statusMask |= getPassed() > 0 ? Status.PASSED.getBitMask() : 0;
         statusMask |= getPassedWithErrors() > 0 ? Status.PASSEDWITHERRORS.getBitMask() : 0;

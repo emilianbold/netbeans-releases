@@ -48,7 +48,7 @@ import javax.swing.Action;
  *
  * @author Marian Petras
  */
-final class CallstackFrameNode extends org.netbeans.modules.gsf.testrunner.api.CallstackFrameNode {
+final class CallstackFrameNode extends org.netbeans.modules.gsf.testrunner.ui.api.CallstackFrameNode {
 
     /**
      * Creates a node for a call stack frame.

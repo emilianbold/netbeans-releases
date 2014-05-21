@@ -64,8 +64,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
@@ -748,10 +746,8 @@ public final class Utils {
         }
 
         try {
-            DataObject dob = DataObject.find(file);
-            EditorCookie ed = dob.getCookie(EditorCookie.class);
-            if (ed != null && /* not true e.g. for *_ja.properties */
-                              file == dob.getPrimaryFile()) {
+            EditorCookie ed = file.getLookup().lookup(EditorCookie.class);
+            if (ed != null) {
                 if (lineNum == -1) {
                     // OK, just open it.
                     ed.open();
@@ -770,8 +766,6 @@ public final class Utils {
             } else {
                 java.awt.Toolkit.getDefaultToolkit().beep();
             }
-        } catch (DataObjectNotFoundException ex1) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, ex1);
         } catch (IOException ex2) {
             // XXX see above, should not be necessary to call openDocument
             // at all

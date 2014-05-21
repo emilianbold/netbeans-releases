@@ -44,6 +44,7 @@ package org.netbeans.modules.java.testrunner.providers;
 import java.util.Map;
 import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin.CreateTestParam;
 import org.netbeans.modules.gsf.testrunner.plugin.CommonTestUtilProvider;
+import org.netbeans.modules.gsf.testrunner.ui.api.CommonTestUtilUIProvider;
 import org.netbeans.modules.java.testrunner.CommonTestUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
@@ -54,7 +55,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author theofanis
  */
 @ServiceProvider(service=CommonTestUtilProvider.class, position=10)
-public class JavaCommonTestUtilProvider extends CommonTestUtilProvider {
+public class JavaCommonTestUtilProvider extends CommonTestUtilUIProvider {
 
     @Override
     public Object[] getTestTargets(FileObject fileObject) {

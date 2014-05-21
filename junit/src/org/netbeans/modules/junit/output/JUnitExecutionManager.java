@@ -257,7 +257,7 @@ public class JUnitExecutionManager implements RerunHandler{
             } catch (Exception ex) {
             }
 
-            JavaPlatform platform = getActivePlatform(platformId); //NOI18N
+            JavaPlatform platform = OutputUtils.getActivePlatform(platformId); //NOI18N
             if (platform != null) {
                 props.put("platform.java", platform.findTool("java").getPath());//NOI18N
             } else {
@@ -270,22 +270,6 @@ public class JUnitExecutionManager implements RerunHandler{
             Exceptions.printStackTrace(ex);
         } catch (IllegalArgumentException ex) {
             Exceptions.printStackTrace(ex);
-        }
-    }
-
-    private JavaPlatform getActivePlatform(final String activePlatformId) {
-        final JavaPlatformManager pm = JavaPlatformManager.getDefault();
-        if (activePlatformId == null) {
-            return pm.getDefaultPlatform();
-        } else {
-            JavaPlatform[] installedPlatforms = pm.getPlatforms(null, new Specification("j2se", null));   //NOI18N
-            for (JavaPlatform p : installedPlatforms) {
-                String antName = p.getProperties().get("platform.ant.name"); // NOI18N
-                if (antName != null && antName.equals(activePlatformId)) {
-                    return p;
-                }
-            }
-            return null;
         }
     }
     

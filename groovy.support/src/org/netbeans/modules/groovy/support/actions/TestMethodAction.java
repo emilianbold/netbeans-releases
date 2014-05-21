@@ -43,7 +43,7 @@
 package org.netbeans.modules.groovy.support.actions;
 
 import java.util.Collection;
-import org.netbeans.modules.gsf.testrunner.api.TestMethodRunnerProvider;
+import org.netbeans.modules.gsf.testrunner.ui.api.TestMethodRunnerProvider;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;

@@ -45,7 +45,7 @@ package org.netbeans.modules.junit.output;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.modules.gsf.testrunner.api.CallstackFrameNode;
+import org.netbeans.modules.gsf.testrunner.ui.api.CallstackFrameNode;
 
 /**
  *

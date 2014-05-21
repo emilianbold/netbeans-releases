@@ -43,7 +43,7 @@ package org.netbeans.modules.php.project.ui.testrunner;
 
 import java.io.File;
 import java.util.List;
-import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;

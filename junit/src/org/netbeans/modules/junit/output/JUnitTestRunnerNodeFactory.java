@@ -43,9 +43,9 @@
 package org.netbeans.modules.junit.output;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.testrunner.api.TestRunnerNodeFactory;
+import org.netbeans.modules.gsf.testrunner.ui.api.TestRunnerNodeFactory;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
-import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
+import org.netbeans.modules.gsf.testrunner.ui.api.TestsuiteNode;
 import org.openide.nodes.Node;
 
 /**

@@ -43,7 +43,9 @@ package org.netbeans.modules.junit;
 
 import java.awt.EventQueue;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -51,6 +53,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider;
+import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider.Context;
 import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider.Registration;
 import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin;
 import org.netbeans.modules.java.testrunner.GuiUtils;
@@ -75,28 +78,33 @@ import org.openide.util.RequestProcessor;
 public class JUnitTestCreatorProvider extends TestCreatorProvider {
 
     @Override
-    public boolean enable(Node[] activatedNodes) {
-        if (activatedNodes.length == 0) {
+    public boolean enable(FileObject[] activatedFOs) {
+        if (activatedFOs.length == 0) {
             return false;
         }
-
+        ArrayList<FileObject> fos = new ArrayList<FileObject>();
+        for(FileObject fo : activatedFOs) {
+            if(fo.isFolder()) {
+//                fos.addAll(Arrays.asList(fo.getChildren()));
+                fos.addAll(Collections.list(fo.getChildren(true)));
+            } else {
+                fos.add(fo);
+            }
+        }
         /*
          * In most cases, there is just one node selected - that is why
          * this case is handled in a special, more effective way
          * (no collections and iterators created).
          */
-        if (activatedNodes.length == 1) {
-            final Node node = activatedNodes[0];
-            DataObject dataObj;
-            FileObject fileObj;
+        if (fos.size() == 1) {
+            FileObject fileObj = fos.get(0);
+            
             Project project;
-            if (((dataObj = node.getLookup().lookup(DataObject.class)) != null)
-                && ((fileObj = dataObj.getPrimaryFile()) != null)
+            if ((fileObj != null)
                 && fileObj.isValid()
                 && ((project = FileOwnerQuery.getOwner(fileObj)) != null)
                 && (getSourceGroup(fileObj, project) != null)
-                && (TestUtil.isJavaFile(fileObj)
-                    || (node.getLookup().lookup(DataFolder.class) != null))) {
+                && (TestUtil.isJavaFile(fileObj))) {
 
                 JUnitPlugin plugin = TestUtil.getPluginForProject(project);
                 return JUnitPluginTrampoline.DEFAULT.canCreateTests(plugin,
@@ -107,33 +115,29 @@ public class JUnitTestCreatorProvider extends TestCreatorProvider {
         }
 
         final Collection<FileObject> fileObjs
-                = new ArrayList<FileObject>(activatedNodes.length);
+                = new ArrayList<FileObject>(fos.size());
         Project theProject = null;
         boolean result = false;
-        for (Node node : activatedNodes) {
-            DataObject dataObj = node.getLookup().lookup(DataObject.class);
-            if (dataObj != null) {
-                FileObject fileObj = dataObj.getPrimaryFile();
-                if ((fileObj == null) || !fileObj.isValid()) {
-                    continue;
+        for (FileObject fileObj : fos) {
+            if ((fileObj == null) || !fileObj.isValid()) {
+                continue;
+            }
+
+            fileObjs.add(fileObj);
+
+            Project prj = FileOwnerQuery.getOwner(fileObj);
+            if (prj != null) {
+                if (theProject == null) {
+                    theProject = prj;
+                }
+                if (prj != theProject) {
+                    return false;        /* files from different projects */
+
                 }
 
-                fileObjs.add(fileObj);
-                
-                Project prj = FileOwnerQuery.getOwner(fileObj);
-                if (prj != null) {
-                    if (theProject == null) {
-                        theProject = prj;
-                    }
-                    if (prj != theProject) {
-                        return false;        /* files from different projects */
-                    }
-
-                    if ((getSourceGroup(fileObj, prj) != null)
-                        && (TestUtil.isJavaFile(fileObj)
-                            || (node.getLookup().lookup(DataFolder.class) != null))) {
-                        result = true;
-                    }
+                if ((getSourceGroup(fileObj, prj) != null)
+                        && (TestUtil.isJavaFile(fileObj))) {
+                    result = true;
                 }
             }
         }
@@ -151,7 +155,7 @@ public class JUnitTestCreatorProvider extends TestCreatorProvider {
     @Override
     public void createTests(Context context) {
         String problem;
-        if ((problem = checkNodesValidity(context.getActivatedNodes())) != null) {
+        if ((problem = checkNodesValidity(context.getActivatedFOs())) != null) {
             // TODO report problem
             NotifyDescriptor msg = new NotifyDescriptor.Message(
                     problem, NotifyDescriptor.WARNING_MESSAGE);
@@ -159,7 +163,7 @@ public class JUnitTestCreatorProvider extends TestCreatorProvider {
             return;
         }
 
-        final FileObject[] filesToTest = getFileObjectsFromNodes(context.getActivatedNodes());
+        final FileObject[] filesToTest = context.getActivatedFOs();
         if (filesToTest == null) {
             return;     //XXX: display some message
         }
@@ -232,8 +236,7 @@ public class JUnitTestCreatorProvider extends TestCreatorProvider {
      * @return String message describing the problem found or null, if the
      *         selection is ok
      */
-    private static String checkNodesValidity(Node[] nodes) {
-        FileObject[] files = getFiles(nodes);
+    private static String checkNodesValidity(FileObject[] files) {
 
         Project project = getProject(files);
         if (project == null) {

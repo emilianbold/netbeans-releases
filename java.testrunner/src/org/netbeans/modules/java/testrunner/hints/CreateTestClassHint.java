@@ -53,8 +53,8 @@ import java.util.Map.Entry;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.gsf.testrunner.api.TestCreatorPanelDisplayer;
 import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider;
+import org.netbeans.modules.gsf.testrunner.ui.api.TestCreatorPanelDisplayer;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -64,10 +64,6 @@ import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 
@@ -109,46 +105,36 @@ public class CreateTestClassHint {
         }
 
 	Collection<? extends TestCreatorProvider> providers = Lookup.getDefault().lookupAll(TestCreatorProvider.class);
-        DataObject dataObject;
-	Node activeNode = null;
-	try {
-	    dataObject = DataObject.find(fileObject);
-	    activeNode = dataObject.getNodeDelegate();
-	} catch (DataObjectNotFoundException ex) {
-	    Exceptions.printStackTrace(ex);
-	}
-	if (activeNode != null) {
-	    Map<Object, List<String>> validCombinations = Utils.getValidCombinations(info, null);
-	    if(validCombinations == null) { // no TestCreatorProvider found
-		return null;
-	    }
-	    for (TestCreatorProvider provider : providers) {
-		if (provider.enable(new Node[]{activeNode}) && !validCombinations.isEmpty()) {
-		    List<Fix> fixes = new ArrayList<Fix>();
-		    Fix fix;
-		    for(Entry<Object, List<String>> entrySet : validCombinations.entrySet()) {
-			Object location = entrySet.getKey();
-			for(String testingFramework : entrySet.getValue()) {
-			    fix = new CreateTestClassFix(new Node[]{activeNode}, location, testingFramework);
-			    fixes.add(fix);
-			}
-		    }
-		    validCombinations.clear();
-		    return ErrorDescriptionFactory.forTree(context, context.getPath(), Bundle.ERR_CreateTestClassHint(), fixes.toArray(new Fix[fixes.size()]));
-		}
-	    }
-	    validCombinations.clear();
-	}
+        Map<Object, List<String>> validCombinations = Utils.getValidCombinations(info, null);
+        if (validCombinations == null) { // no TestCreatorProvider found
+            return null;
+        }
+        for (TestCreatorProvider provider : providers) {
+            if (provider.enable(new FileObject[]{fileObject}) && !validCombinations.isEmpty()) {
+                List<Fix> fixes = new ArrayList<Fix>();
+                Fix fix;
+                for (Entry<Object, List<String>> entrySet : validCombinations.entrySet()) {
+                    Object location = entrySet.getKey();
+                    for (String testingFramework : entrySet.getValue()) {
+                        fix = new CreateTestClassFix(new FileObject[]{fileObject}, location, testingFramework);
+                        fixes.add(fix);
+                    }
+                }
+                validCombinations.clear();
+                return ErrorDescriptionFactory.forTree(context, context.getPath(), Bundle.ERR_CreateTestClassHint(), fixes.toArray(new Fix[fixes.size()]));
+            }
+        }
+        validCombinations.clear();
 	return null;
     }
 
     private static final class CreateTestClassFix implements Fix {
-	Node[] activatedNodes;
+	FileObject[] activatedFOs;
 	Object location;
 	String testingFramework;
 
-	public CreateTestClassFix(Node[] activatedNodes, Object location, String testingFramework) {
-	    this.activatedNodes = activatedNodes;
+	public CreateTestClassFix(FileObject[] activatedFOs, Object location, String testingFramework) {
+	    this.activatedFOs = activatedFOs;
 	    this.location = location;
 	    this.testingFramework = testingFramework;
 	}
@@ -164,7 +150,7 @@ public class CreateTestClassHint {
 
 	@Override
 	public ChangeInfo implement() throws Exception {
-	    TestCreatorPanelDisplayer.getDefault().displayPanel(activatedNodes, location, testingFramework);
+	    TestCreatorPanelDisplayer.getDefault().displayPanel(activatedFOs, location, testingFramework);
 	    return null;
 	}
     }

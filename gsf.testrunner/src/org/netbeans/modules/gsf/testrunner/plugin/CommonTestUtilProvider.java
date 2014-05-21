@@ -43,7 +43,6 @@ package org.netbeans.modules.gsf.testrunner.plugin;
 
 import java.util.Map;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.Node;
 
 /**
  *
@@ -53,6 +52,5 @@ public abstract class CommonTestUtilProvider {
     
     public abstract Object[] getTestTargets(FileObject fileObject);
     public abstract Map<CommonPlugin.CreateTestParam, Object> getSettingsMap(boolean multipleFiles);
-    public abstract FileObject getFileObjectFromNode(Node node);
     
 }

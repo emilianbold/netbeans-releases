@@ -57,8 +57,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.gsf.testrunner.api.TestRunnerNodeFactory;
+import org.netbeans.modules.gsf.testrunner.ui.api.TestRunnerNodeFactory;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
+import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -72,8 +73,9 @@ public class JUnitTestSession extends TestSession{
     private FileLocator projectFileLocator = null;
 
     public JUnitTestSession(String name, Project project, SessionType sessionType, TestRunnerNodeFactory nodeFactory) {
-        super(name, project, sessionType, nodeFactory);
+        super(name, project, sessionType);
         projectFileLocator = new ProjectFileLocator(project);
+        Manager.getInstance().setNodeFactory(nodeFactory);
     }
 
     @Override
@@ -138,7 +140,7 @@ public class JUnitTestSession extends TestSession{
             } catch (Exception ex) {
             }
 
-            JavaPlatform platform = getActivePlatform(platformId); //NOI18N
+            JavaPlatform platform = OutputUtils.getActivePlatform(platformId); //NOI18N
             if (platform != null) {
                 roots.addAll(Arrays.asList(platform.getSourceFolders().getRoots()));
             }
@@ -146,23 +148,6 @@ public class JUnitTestSession extends TestSession{
             result = ClassPathSupport.createClassPath(roots.toArray(new FileObject[roots.size()]));
 
             return result;
-        }
-
-        private JavaPlatform getActivePlatform (final String activePlatformId) {
-            final JavaPlatformManager pm = JavaPlatformManager.getDefault();
-            if (activePlatformId == null) {
-                return pm.getDefaultPlatform();
-            }
-            else {
-                JavaPlatform[] installedPlatforms = pm.getPlatforms(null, new Specification ("j2se",null));   //NOI18N
-                for (JavaPlatform p : installedPlatforms) {
-                    String antName = p.getProperties().get("platform.ant.name"); // NOI18N
-                    if (antName != null && antName.equals(activePlatformId)) {
-                        return p;
-                    }
-                }
-                return null;
-            }
         }
     }
 }

@@ -51,15 +51,15 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.testrunner.api.CallstackFrameNode;
-import org.netbeans.modules.gsf.testrunner.api.DiffViewAction;
-import org.netbeans.modules.gsf.testrunner.api.Manager;
-import org.netbeans.modules.gsf.testrunner.api.TestMethodNode;
-import org.netbeans.modules.gsf.testrunner.api.TestRunnerNodeFactory;
+import org.netbeans.modules.gsf.testrunner.ui.api.CallstackFrameNode;
+import org.netbeans.modules.gsf.testrunner.ui.api.DiffViewAction;
+import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
+import org.netbeans.modules.gsf.testrunner.ui.api.TestMethodNode;
+import org.netbeans.modules.gsf.testrunner.ui.api.TestRunnerNodeFactory;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
-import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
+import org.netbeans.modules.gsf.testrunner.ui.api.TestsuiteNode;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
@@ -142,11 +142,8 @@ public class HudsonFailureDisplayer extends FailureDataDisplayerImpl {
     }
 
     private TestSession createTestSession(String displayName) {
-
-        TestRunnerNodeFactory testRunnerNodeFactory
-                = new HudsonTestRunnerNodeFactory();
-        return new TestSession(displayName, project,
-                TestSession.SessionType.TEST, testRunnerNodeFactory);
+        Manager.getInstance().setNodeFactory(new HudsonTestRunnerNodeFactory());
+        return new TestSession(displayName, project, TestSession.SessionType.TEST);
     }
 
     private void prepareOutput() {

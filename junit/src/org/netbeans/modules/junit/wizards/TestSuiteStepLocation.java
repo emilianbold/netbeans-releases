@@ -53,7 +53,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.java.testrunner.GuiUtils;
-import org.netbeans.modules.gsf.testrunner.api.SelfResizingPanel;
+import org.netbeans.modules.gsf.testrunner.ui.api.SelfResizingPanel;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;

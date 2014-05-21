@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.testrunner.ui;
 import java.util.Collection;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.testrunner.api.TestNodeAction;
+import org.netbeans.modules.gsf.testrunner.ui.api.TestNodeAction;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;

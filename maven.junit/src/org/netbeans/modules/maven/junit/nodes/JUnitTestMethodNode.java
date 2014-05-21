@@ -49,7 +49,7 @@ import javax.swing.Action;
 import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.testrunner.api.TestMethodNode;
+import org.netbeans.modules.gsf.testrunner.ui.api.TestMethodNode;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import static org.netbeans.modules.maven.junit.nodes.Bundle.*;
 import org.netbeans.spi.project.ActionProvider;

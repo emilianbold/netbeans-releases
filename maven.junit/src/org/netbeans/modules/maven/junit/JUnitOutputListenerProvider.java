@@ -71,7 +71,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.gsf.testrunner.api.Status;
@@ -80,6 +80,7 @@ import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.gsf.testrunner.api.UnitTestsUsage;
+import org.netbeans.modules.gsf.testrunner.ui.api.TestRunnerNodeFactory;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
@@ -243,8 +244,8 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
 			}
 		    }
 		    final TestSession.SessionType fType = type;
-		    session = new TestSession(createSessionName(mvnprj.getMavenProject().getId()), prj, TestSession.SessionType.TEST,
-			    new JUnitTestRunnerNodeFactory(session, prj));
+                    Manager.getInstance().setNodeFactory(new JUnitTestRunnerNodeFactory(session, prj));
+                    session = new TestSession(createSessionName(mvnprj.getMavenProject().getId()), prj, TestSession.SessionType.TEST);
 		    session.setRerunHandler(new RerunHandler() {
 			public @Override
 			void rerun() {

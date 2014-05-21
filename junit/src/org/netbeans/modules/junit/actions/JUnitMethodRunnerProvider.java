@@ -42,7 +42,7 @@
 package org.netbeans.modules.junit.actions;
 
 import javax.swing.text.Document;
-import org.netbeans.modules.gsf.testrunner.api.TestMethodRunnerProvider;
+import org.netbeans.modules.gsf.testrunner.ui.api.TestMethodRunnerProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.openide.nodes.Node;
 import org.openide.util.lookup.ServiceProvider;

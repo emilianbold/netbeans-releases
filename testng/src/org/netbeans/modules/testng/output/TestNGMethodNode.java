@@ -45,7 +45,7 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.testrunner.api.TestMethodNode;
+import org.netbeans.modules.gsf.testrunner.ui.api.TestMethodNode;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;

@@ -55,9 +55,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.gsf.testrunner.api.TestRunnerNodeFactory;
+import org.netbeans.modules.gsf.testrunner.ui.api.TestRunnerNodeFactory;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
+import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -74,10 +75,11 @@ public class TestNGTestSession extends TestSession {
     private TestSuite currentSuite;
 
     public TestNGTestSession(String name, Project project, SessionType sessionType, TestRunnerNodeFactory nodeFactory) {
-        super(name, project, sessionType, nodeFactory);
+        super(name, project, sessionType);
         if (project != null) {
             projectFileLocator = new ProjectFileLocator(project);
         }
+        Manager.getInstance().setNodeFactory(nodeFactory);
     }
 
     @Override

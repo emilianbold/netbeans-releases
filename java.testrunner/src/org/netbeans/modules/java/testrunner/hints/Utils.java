@@ -59,7 +59,6 @@ import org.netbeans.modules.gsf.testrunner.plugin.GuiUtilsProvider;
 import static org.netbeans.modules.java.testrunner.CommonTestUtil.findSourceGroupOwner;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -156,8 +155,7 @@ public class Utils {
     }
 
     private static String getPreffiledName(CompilationInfo info, String selectedFramework) {
-	DataObject dataObj = info.getFileObject().getLookup().lookup(DataObject.class);
-	FileObject fileObj = dataObj.getPrimaryFile();
+	FileObject fileObj = info.getFileObject();
 	ClassPath cp = ClassPath.getClassPath(fileObj, ClassPath.SOURCE);
 	String className = cp.getResourceName(fileObj, '.', false);
 	return className + getTestingFrameworkSuffix(selectedFramework) + TEST_CLASS_SUFFIX;

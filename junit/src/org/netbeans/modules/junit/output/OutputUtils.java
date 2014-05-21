@@ -68,7 +68,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
-import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
+import org.netbeans.modules.gsf.testrunner.ui.api.TestsuiteNode;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.junit.wizards.Utils;
 import org.netbeans.spi.project.ActionProvider;
@@ -76,6 +76,8 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import static javax.lang.model.util.ElementFilter.*;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
@@ -88,6 +90,23 @@ public final class OutputUtils {
     static final Action[] NO_ACTIONS = new Action[0];
     
     private OutputUtils() {
+    }
+
+    static JavaPlatform getActivePlatform(final String activePlatformId) {
+        final JavaPlatformManager pm = JavaPlatformManager.getDefault();
+        if (activePlatformId == null) {
+            return pm.getDefaultPlatform();
+        } else {
+            JavaPlatform[] installedPlatforms = pm.getInstalledPlatforms();
+            for (JavaPlatform p : installedPlatforms) {
+                String name = p.getSpecification().getName();
+                String antName = p.getProperties().get("platform.ant.name"); // NOI18N
+                if (name != null && name.equals("j2se") && antName != null && antName.equals(activePlatformId)) { // NOI18N
+                    return p;
+                }
+            }
+            return null;
+        }
     }
 
     static void openTestsuite(TestsuiteNode node) {

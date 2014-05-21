@@ -47,8 +47,8 @@ package org.netbeans.modules.junit.output;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.gsf.testrunner.api.CallstackFrameNode;
-import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
+import org.netbeans.modules.gsf.testrunner.ui.api.CallstackFrameNode;
+import org.netbeans.modules.gsf.testrunner.ui.api.TestsuiteNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 

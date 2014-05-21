@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.testng.output;
 
+import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;

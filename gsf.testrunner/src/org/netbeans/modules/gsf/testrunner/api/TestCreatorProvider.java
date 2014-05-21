@@ -53,7 +53,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.gsf.testrunner.plugin.RootsProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
@@ -72,7 +71,7 @@ public abstract class TestCreatorProvider {
         String displayName();
     }
     
-    public abstract boolean enable(Node[] activatedNodes);
+    public abstract boolean enable(FileObject[] activatedFOs);
     
     public abstract void createTests(Context context);
 
@@ -100,15 +99,15 @@ public abstract class TestCreatorProvider {
         private boolean singleClass;
         private String testClassName;
         private FileObject targetFolder;
-        private Node[] activatedNodes;
+        private FileObject[] activatedFOs;
         private boolean integrationTests;
         
-        public Context(Node[] activatedNodes) {
-            this.activatedNodes = activatedNodes;
+        public Context(FileObject[] activatedNodes) {
+            this.activatedFOs = activatedNodes;
         }
 
-        public Node[] getActivatedNodes() {
-            return activatedNodes;
+        public FileObject[] getActivatedFOs() {
+            return activatedFOs;
         }
 
         public boolean isSingleClass() {

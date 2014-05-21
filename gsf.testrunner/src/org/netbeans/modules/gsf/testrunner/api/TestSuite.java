@@ -51,6 +51,11 @@ import java.util.List;
  * @author Erno Mononen
  */
 public class TestSuite {
+  
+    /**
+    * The max number of output lines to display in the tooltip.
+     */
+    static final int MAX_TOOLTIP_LINES = Integer.getInteger("testrunner.max.tooltip.lines", 4); //NOI18N
 
     public static final String ANONYMOUS_SUITE = new String();
 
@@ -74,7 +79,7 @@ public class TestSuite {
         this.name = name;
     }
 
-    void addTestcase(Testcase testcase) {
+    public void addTestcase(Testcase testcase) {
         testcases.add(testcase);
     }
 

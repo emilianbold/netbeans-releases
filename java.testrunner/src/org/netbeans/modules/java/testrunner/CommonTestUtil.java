@@ -55,8 +55,6 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
 /**
@@ -76,19 +74,7 @@ public class CommonTestUtil {
     }
     
     static public FileObject getFileObjectFromNode(Node node) {
-        DataObject dO;
-        DataFolder df;
-
-        dO = node.getLookup().lookup(DataObject.class);
-        if (null != dO) {
-            return dO.getPrimaryFile();
-        }
-
-        df = node.getLookup().lookup(DataFolder.class);
-        if (null != df) {
-            return df.getPrimaryFile();
-        }
-        return null;
+        return node.getLookup().lookup(FileObject.class);
     }
     
     /**

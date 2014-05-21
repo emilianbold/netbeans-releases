@@ -115,7 +115,7 @@ public class Testcase {
      */
     public void addOutputLines(List<String> lines) {
         for (String line : lines) {
-            if(output.size() == TestsuiteNode.MAX_TOOLTIP_LINES + 1) {
+            if(output.size() == TestSuite.MAX_TOOLTIP_LINES + 1) {
                 // Do not add any more output to prevent OOME, as it will not be used in the end, as at most MAX_TOOLTIP_LINES will be shown as a tooltip
                 return;
             }

@@ -47,7 +47,7 @@ package org.netbeans.modules.maven.junit.nodes;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
+import org.netbeans.modules.gsf.testrunner.ui.api.TestsuiteNode;
 import static org.netbeans.modules.maven.junit.nodes.Bundle.*;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle.Messages;
