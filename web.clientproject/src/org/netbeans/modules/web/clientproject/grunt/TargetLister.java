@@ -106,6 +106,15 @@ public class TargetLister {
         });
     }
     
+    static void invalidateCache(final FileObject gruntFile) {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                cache.remove(gruntFile.getPath());
+            }
+        });
+    }
+    
     private static void parse(String output, FileObject gruntFile) throws IOException {
         BufferedReader r = new BufferedReader(new StringReader(output));
 
