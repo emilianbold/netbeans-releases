@@ -43,6 +43,8 @@
 package org.netbeans.modules.weblogic.common.api;
 
 import java.util.EventListener;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 
 /**
  *
@@ -50,10 +52,16 @@ import java.util.EventListener;
  */
 public interface DeployListener extends EventListener {
 
-    void onStart(String message);
+    void onStart();
 
-    void onFail(String message, String lastLine);
+    void onFinish();
 
-    void onFinish(String message);
+    void onFail(@NullAllowed String line);
+
+    void onTimeout();
+
+    void onInterrupted();
+
+    void onException(@NonNull Exception ex);
 
 }

@@ -97,7 +97,7 @@ public final class WebLogicDeployer {
             @NullAllowed final DeployListener listener, final String... parameters) {
 
         if (listener != null) {
-            listener.onStart(NbBundle.getMessage(WebLogicDeployer.class, "MSG_Deploying", file.getAbsolutePath()));
+            listener.onStart();
         }
 
         return DEPLOYMENT_RP.submit(new Callable<Boolean>() {
@@ -121,33 +121,34 @@ public final class WebLogicDeployer {
                     Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
                     if (value != 0) {
                         if (listener != null) {
-                            listener.onFail(NbBundle.getMessage(WebLogicDeployer.class, "MSG_Deployment_Failed",
-                                    lineProcessor.getLastLine()), lineProcessor.getLastLine());
+                            listener.onFail(lineProcessor.getLastLine());
                         }
                         return false;
                     } else {
                         if (listener != null) {
-                            listener.onFinish(NbBundle.getMessage(WebLogicDeployer.class, "MSG_Deployment_Completed"));
+                            listener.onFinish();
                         }
                         return true;
                     }
                 } catch (InterruptedException ex) {
                     if (listener != null) {
-                        listener.onFail(NbBundle.getMessage(WebLogicDeployer.class, "MSG_Deployment_Failed_Interrupted"),
-                                lineProcessor.getLastLine());
+                        listener.onInterrupted();
                     }
                     result.cancel(true);
                     Thread.currentThread().interrupt();
                 } catch (TimeoutException ex) {
                     if (listener != null) {
-                        listener.onFail(NbBundle.getMessage(WebLogicDeployer.class, "MSG_Deployment_Failed_Timeout"),
-                                lineProcessor.getLastLine());
+                        listener.onTimeout();
                     }
                     result.cancel(true);
                 } catch (ExecutionException ex) {
                     if (listener != null) {
-                        listener.onFail(NbBundle.getMessage(WebLogicDeployer.class, "MSG_Deployment_Failed_With_Message"),
-                                lineProcessor.getLastLine());
+                        Throwable cause = ex.getCause();
+                        if (cause instanceof Exception) {
+                            listener.onException((Exception) cause);
+                        } else {
+                            listener.onException(ex);
+                        }
                     }
                 }
                 return false;
