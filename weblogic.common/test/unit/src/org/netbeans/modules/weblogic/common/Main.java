@@ -61,7 +61,7 @@ public class Main {
                 "weblogic", "welcome1");
 
         WebLogicDeployer deployer = WebLogicDeployer.getInstance(config, null);
-        Future<Boolean> ret = deployer.deploy("Test", new File(artifact), null, new String[0]);
+        Future<Boolean> ret = deployer.deploy(new File(artifact), null, new String[0]);
         boolean ok = ret.get();
         System.out.println("OK: " + ok);
     }
