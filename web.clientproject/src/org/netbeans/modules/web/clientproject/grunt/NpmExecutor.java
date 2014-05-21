@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
@@ -58,45 +59,30 @@ import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
 /** 
- * Executes an Gruntfile asynchronously in the IDE.
+ * Executes an npm install asynchronously in the IDE.
  */
-public final class GruntfileExecutor implements Runnable {
+public final class NpmExecutor implements Runnable {
 
-    private final List<String> targetNames;
-    private String allTargets;
+    private final List<String> arguments;
     private final String displayName;
-    private final FileObject gruntFile;
+    private final FileObject root;
 
-    /** targets may be null to indicate default target */
-    
     @NbBundle.Messages({
-        "# {0} - Project Name", 
-        "# {1} - Task Name",    
-        "TXT_GruntTabTitle={0} ({1})"
+        "# {0} - project name",
+        "TTL_npm_install=npm install ({0})"
     })
-    public GruntfileExecutor (FileObject gruntFile, String[] targets) {
-        targetNames = ((targets == null) ? null : Arrays.asList(targets));
-        
-        allTargets = "";
-        for (String t:targets) {
-            allTargets+=t;
-            allTargets+=" ";
-        }
-        allTargets = allTargets.trim();
-        
-        this.gruntFile = gruntFile;
-
-        Project owner = FileOwnerQuery.getOwner(gruntFile);
-        if (owner!=null) {
-            displayName = Bundle.TXT_GruntTabTitle(ProjectUtils.getInformation(owner).getDisplayName(), allTargets);
-        } else {
-            displayName = gruntFile.getName();
-        }
+    public NpmExecutor (FileObject root, String[] args) {
+        arguments = ((args == null) ? null : Arrays.asList(args));
+        this.root = root;
+        Project owner = FileOwnerQuery.getOwner(root);
+        String name = ProjectUtils.getInformation(owner).getDisplayName();
+        displayName = Bundle.TTL_npm_install(name);
     }
     
     /**
@@ -122,18 +108,17 @@ public final class GruntfileExecutor implements Runnable {
                 ExternalProcessBuilder pb;
                 if (Utilities.isWindows()) {
                     pb = new ExternalProcessBuilder("cmd");
-                    pb= pb.addArgument("/C grunt --no-color " + allTargets);
+                    pb= pb.addArgument("/C npm " + arguments.get(0));
                 } else if (Utilities.isMac()) {
                     pb = new ExternalProcessBuilder("/bin/bash");
                     pb = pb.addArgument("-lc");
-                    pb = pb.addArgument("grunt --no-color " + allTargets);
+                    pb = pb.addArgument("npm " + arguments.get(0));
                 } else {
-                    pb = new ExternalProcessBuilder("grunt");
-                    pb = pb.addArgument("--no-color");
-                    pb = pb.addArgument(allTargets);
+                    pb = new ExternalProcessBuilder("npm");
+                    pb = pb.addArgument(arguments.get(0));
                 }
 
-                pb = pb.workingDirectory(FileUtil.toFile(gruntFile.getParent()));
+                pb = pb.workingDirectory(FileUtil.toFile(root));
                 pb = pb.redirectErrorStream(true);
                 return pb.call();
             }
@@ -145,6 +130,12 @@ public final class GruntfileExecutor implements Runnable {
         desc = desc.frontWindow(true);
         desc = desc.controllable(true);
         ExecutionService execution = ExecutionService.newService(creator, desc, displayName);
-        execution.run();
+        try {
+            execution.run().get();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 }

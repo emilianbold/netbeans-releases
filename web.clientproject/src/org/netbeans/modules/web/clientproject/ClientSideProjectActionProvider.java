@@ -41,17 +41,22 @@
  */
 package org.netbeans.modules.web.clientproject;
 
+import java.io.IOException;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ui.ProjectProblems;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
+import org.netbeans.modules.web.clientproject.grunt.GruntfileExecutor;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
+import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.project.ActionProvider;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_TEST;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -91,6 +96,9 @@ public class ClientSideProjectActionProvider implements ActionProvider {
         }
     }
 
+    @NbBundle.Messages({
+        "LBL_ConfigureGrunt=Action not supported for this configuration.\nDo you want to configure project actions to call Grunt tasks?"
+    })
     @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
         LifecycleManager.getDefault().saveAll();
@@ -134,6 +142,26 @@ public class ClientSideProjectActionProvider implements ActionProvider {
                     runTests();
                 }
             });
+            return;
+        }
+        
+        FileObject gruntFile = project.getProjectDirectory().getFileObject("Gruntfile.js");
+        if (gruntFile !=null) {
+            String gruntBuild = project.getEvaluator().getProperty("grunt.action." + command);
+            if (gruntBuild!=null) {
+                try {
+                    new GruntfileExecutor(gruntFile, gruntBuild.split(" ")).execute();
+                    return;
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            } else {
+                NotifyDescriptor desc = new NotifyDescriptor.Confirmation(Bundle.LBL_ConfigureGrunt(), NotifyDescriptor.YES_NO_OPTION);
+                Object option = DialogDisplayer.getDefault().notify(desc);
+                if (option==NotifyDescriptor.YES_OPTION) {
+                        project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer("grunt");
+                }
+            }
             return;
         }
 
