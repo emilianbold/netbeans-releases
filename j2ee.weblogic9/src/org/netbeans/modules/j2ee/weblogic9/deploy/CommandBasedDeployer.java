@@ -550,7 +550,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
         WebLogicDeployer deployer = WebLogicDeployer.getInstance(
                 CommonBridge.getConfiguration(getDeploymentManager()), new File(getJavaBinary()));
-        deployer.deploy(null, file, listener, parameters);
+        deployer.deploy(file, listener, parameters);
 
         return progress;
     }

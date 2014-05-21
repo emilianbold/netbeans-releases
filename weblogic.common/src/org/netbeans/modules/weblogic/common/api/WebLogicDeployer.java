@@ -93,7 +93,7 @@ public final class WebLogicDeployer {
     }
 
     @NonNull
-    public Future<Boolean> deploy(@NonNull String name, @NonNull final File file,
+    public Future<Boolean> deploy(@NonNull final File file,
             @NullAllowed final DeployListener listener, final String... parameters) {
 
         if (listener != null) {
