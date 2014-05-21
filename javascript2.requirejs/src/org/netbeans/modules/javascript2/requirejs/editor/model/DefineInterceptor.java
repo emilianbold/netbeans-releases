@@ -63,6 +63,7 @@ import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
+import org.netbeans.modules.javascript2.requirejs.RequireJsPreferences;
 import org.netbeans.modules.javascript2.requirejs.editor.EditorUtils;
 import org.netbeans.modules.javascript2.requirejs.editor.index.RequireJsIndex;
 import org.netbeans.modules.javascript2.requirejs.editor.index.RequireJsIndexer;
@@ -127,6 +128,10 @@ public class DefineInterceptor implements FunctionInterceptor {
                             RequireJsIndexer.addTypes(fo.toURI(), returnTypes);
                         }
                     } else if (modules != null && modules.getValue() instanceof JsArray) {
+                        Project project = FileOwnerQuery.getOwner(fo);
+                        if (!RequireJsPreferences.getBoolean(project, RequireJsPreferences.ENABLED)) {
+                            return;
+                        }
                         // add assignments for the parameters
                         JsArray array = (JsArray) modules.getValue();
                         Source source = Source.create(fo);
@@ -153,7 +158,6 @@ public class DefineInterceptor implements FunctionInterceptor {
                             }
                             if (!paths.isEmpty()) {
                                 index = 0;
-                                Project project = FileOwnerQuery.getOwner(fo);
                                 RequireJsIndex rIndex = null;
                                 try {
                                     rIndex = RequireJsIndex.get(project);
