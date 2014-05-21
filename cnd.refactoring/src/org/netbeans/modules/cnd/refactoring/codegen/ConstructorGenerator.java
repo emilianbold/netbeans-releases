@@ -47,7 +47,7 @@ import java.awt.Dialog;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -106,7 +106,7 @@ public class ConstructorGenerator implements CodeGenerator {
             final Set<CsmField> mayBeIninitializedFields = new LinkedHashSet<>();
             final Set<CsmField> cannotBeInitializedFields = new LinkedHashSet<>();
             final List<CsmConstructor> constructors = new ArrayList<>();
-            final Map<CsmClass,List<CsmConstructor>> inheritedConstructors = new HashMap<>();
+            final Map<CsmClass,List<CsmConstructor>> inheritedConstructors = new LinkedHashMap<>();
             CsmCacheManager.enter();
             try {
                 // check base class
