@@ -41,25 +41,25 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import javax.lang.model.element.Name;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-
+import org.netbeans.api.editor.document.LineDocument;
+import org.netbeans.api.editor.document.LineDocumentUtils;
+import org.netbeans.api.editor.guards.DocumentGuards;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import static org.netbeans.api.java.lexer.JavaTokenId.*;
 import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import static org.netbeans.api.java.lexer.JavaTokenId.*;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.CodeStyle.WrapStyle;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.GuardedDocument;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
@@ -236,6 +236,7 @@ public class Reformatter implements ReformatTask {
         TreePath path = getCommonPath(startOffset, endOffset);
         if (path == null)
             return;
+        DocumentGuards guards = LineDocumentUtils.as(doc, DocumentGuards.class);
         for (Diff diff : Pretty.reformat(controller, path, cs, startOffset, endOffset, templateEdit, firstLineIndent)) {
             int start = diff.getStartOffset();
             int end = diff.getEndOffset();
@@ -248,7 +249,7 @@ public class Reformatter implements ReformatTask {
                 continue;
             if (embeddingOffset >= start)
                 continue;
-            if (doc instanceof GuardedDocument && ((GuardedDocument)doc).isPosGuarded(start))
+            if (guards != null && guards.isPositionGuarded(start, false))
                 continue;
             if (startOffset >= start) {
                 if (text != null && text.length() > 0) {

@@ -60,9 +60,14 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import javax.swing.text.Document;
 import junit.framework.TestCase;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.netbeans.spi.editor.document.DocumentFactory;
 import org.openide.util.Utilities;
 
 
@@ -377,5 +382,15 @@ public class TestUtil {
           
       }
       
-    
+
+      public static void setupEditorMockServices() {
+        MockMimeLookup.setInstances(MimePath.EMPTY, new DocumentFactory() {
+
+            @Override
+            public Document createDocument(String mimeType) {
+                return new BaseDocument(false, mimeType);
+            }
+            
+        });
+      }
 }

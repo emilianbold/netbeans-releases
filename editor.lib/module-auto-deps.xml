@@ -62,5 +62,15 @@ made subject to such option by the copyright holder.
                 </result>
             </implies>
         </transformation>
+        <transformation>
+            <trigger-dependency type="older">
+                <module-dependency codenamebase="org.netbeans.modules.editor.lib" major="3" spec="4.0"/>
+            </trigger-dependency>
+            <implies>
+                <result>
+                    <module-dependency codenamebase="org.netbeans.modules.editor.document" spec="1.0"/>
+                </result>
+            </implies>
+        </transformation>
     </transformationgroup>
 </transformations>

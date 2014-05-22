@@ -44,7 +44,14 @@ package org.netbeans.modules.editor.lib2.document;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.text.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Element;
+import javax.swing.text.Position;
+import javax.swing.text.SimpleAttributeSet;
 import javax.swing.undo.UndoableEdit;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.lib.editor.util.swing.GapBranchElement;
@@ -97,8 +104,8 @@ public final class LineRootElement extends GapBranchElement {
         }
         return super.getElementIndex(offset);
     }
-
-    public void insertUpdate(AbstractDocument.DefaultDocumentEvent evt, AttributeSet attr) {
+    
+    public void insertUpdate(DocumentEvent evt, UndoableEdit edit, AttributeSet attr) {
         int insertOffset = evt.getOffset();
         int insertEndOffset = insertOffset + evt.getLength();
         CharSequence text = DocumentUtilities.getText(doc);
@@ -150,7 +157,7 @@ public final class LineRootElement extends GapBranchElement {
                 Element[] added = new Element[addedLines.size()];
                 addedLines.toArray(added);
 
-                evt.addEdit(new Edit(index, removed, added));
+                edit.addEdit(new Edit(index, removed, added));
                 replace(index, removed.length, added);
             }
         } catch (BadLocationException e) {
@@ -158,14 +165,14 @@ public final class LineRootElement extends GapBranchElement {
         }
     }
     
-    public void removeUpdate(AbstractDocument.DefaultDocumentEvent evt) {
+    public void removeUpdate(DocumentEvent evt, UndoableEdit edit2) {
         UndoableEdit edit = legacyRemoveUpdate(evt);
         if (edit != null) {
-            evt.addEdit(edit);
+            edit2.addEdit(edit);
         }
     }
-
-    public UndoableEdit legacyRemoveUpdate(AbstractDocument.DefaultDocumentEvent evt) {
+    
+    public UndoableEdit legacyRemoveUpdate(DocumentEvent evt) {
         // The algorithm here is similar to the one in PlainDocument.removeUpdate().
         // Unfortunately in case exactly a line element (or multiple line elements)
         // the algorithm removes extra line that follows the end of removed area.

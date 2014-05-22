@@ -50,23 +50,27 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.Document;
 import junit.framework.Assert;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.MimeTypes;
+import org.netbeans.spi.editor.document.DocumentFactory;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -150,11 +154,19 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
             throw new IOException(ex);
         }
         
-        extraLookupContent = new Object[additionalLookupContent.length + 1];
+        extraLookupContent = new Object[additionalLookupContent.length + 2];
         
-        System.arraycopy(additionalLookupContent, 0, extraLookupContent, 1, additionalLookupContent.length);
+        System.arraycopy(additionalLookupContent, 0, extraLookupContent, 2, additionalLookupContent.length);
         
         extraLookupContent[0] = repository;
+        extraLookupContent[1] = new DocumentFactory() {
+
+            @Override
+            public Document createDocument(String mimeType) {
+                return new BaseDocument(false, mimeType);
+            }
+            
+        };
         
         SourceUtilsTestUtil.setLookup(extraLookupContent, SourceUtilsTestUtil.class.getClassLoader());
         
@@ -169,6 +181,8 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
         amt.add("text/x-java");
         MimeTypes.setAllMimeTypes(amt);
         org.netbeans.api.project.ui.OpenProjects.getDefault().getOpenProjects();
+
+        TestUtil.setupEditorMockServices();
     }
     
     static {

@@ -65,7 +65,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.source.ModificationResult.CreateChange;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
@@ -379,25 +378,24 @@ public final class ModificationResult {
                     // The listener was added while trying to fix #63323
                     // IMPORTANT: it has to be removed immediatelly after the change to stop marking the events
                     // as ignoring caret changes
-                    if (doc instanceof BaseDocument) {
-                        l = new DocumentListener() {
-                            @Override
-                            public void insertUpdate(DocumentEvent e) {
-                                DocumentUtilities.putEventProperty(e, "caretIgnore", Boolean.TRUE); // NOI18N
-                            }
+                    l = new DocumentListener() {
 
-                            @Override
-                            public void removeUpdate(DocumentEvent e) {
-                                DocumentUtilities.putEventProperty(e, "caretIgnore", Boolean.TRUE); // NOI18N
-                            }
+                        @Override
+                        public void insertUpdate(DocumentEvent e) {
+                            DocumentUtilities.putEventPropertyIfSupported(e, "caretIgnore", Boolean.TRUE); // NOI18N
+                        }
 
-                            @Override
-                            public void changedUpdate(DocumentEvent e) {
-                                DocumentUtilities.putEventProperty(e, "caretIgnore", Boolean.TRUE); // NOI18N
-                            }
-                        };
-                        doc.addDocumentListener(l);
-                    }
+                        @Override
+                        public void removeUpdate(DocumentEvent e) {
+                            DocumentUtilities.putEventPropertyIfSupported(e, "caretIgnore", Boolean.TRUE); // NOI18N
+                        }
+
+                        @Override
+                        public void changedUpdate(DocumentEvent e) {
+                            DocumentUtilities.putEventPropertyIfSupported(e, "caretIgnore", Boolean.TRUE); // NOI18N
+                        }
+                    };
+                    doc.addDocumentListener(l);
                     processDocumentLocked(doc, diff);
                 } catch (BadLocationException ex) {
                     blex[0] = ex;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,30 +37,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.editor.lib2.document;
+
+package org.netbeans.spi.editor.document;
+
+import javax.swing.text.Document;
 
 /**
- * Default implementation of character acceptor.
- *
- * @author Miloslav Metelka
+ * Interface to create documents. Implementations should be registered in the
+ * {@link MimeLookup} for an appropriate MIME type. The system may provide a default
+ * implementation for all MIME types.
+ * 
+ * @author sdedic
  */
-public class DefaultDocumentCharacterAcceptor extends DocumentCharacterAcceptor {
-    
-    public static final DocumentCharacterAcceptor INSTANCE = new DefaultDocumentCharacterAcceptor();
-    
-    private DefaultDocumentCharacterAcceptor() {
-    }
-    
-    @Override
-    public boolean isIdentifier(char ch) {
-        return Character.isJavaIdentifierPart(ch);
-    }
-
-    @Override
-    public boolean isWhitespace(char ch) {
-        return Character.isWhitespace(ch);
-    }
-    
+public interface DocumentFactory {
+    /**
+     * Creates a document for the given mime type
+     * @param mimeType the MIME type
+     * @return document instance of {@code null}
+     */
+    public Document createDocument(String mimeType);
 }

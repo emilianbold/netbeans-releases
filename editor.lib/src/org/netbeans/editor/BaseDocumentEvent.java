@@ -44,17 +44,16 @@
 
 package org.netbeans.editor;
 
-import java.util.Hashtable;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.List;
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Element;
 import javax.swing.event.DocumentEvent;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
-import javax.swing.undo.UndoableEdit;
-import javax.swing.undo.CannotUndoException;
+import javax.swing.text.Element;
 import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoableEdit;
 import org.netbeans.modules.editor.lib2.document.ContentEdit;
 
 /**

@@ -41,11 +41,11 @@
  */
 package org.netbeans.modules.editor.lib2.document;
 
-import javax.swing.UIManager;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.openide.util.NbBundle;
 
 /**
  * Undoable edit of EditorDocumentContent.
@@ -156,9 +156,9 @@ public abstract class ContentEdit implements UndoableEdit {
     public String getUndoPresentationName() {
 	String name = getPresentationName();
 	if (!"".equals(name)) {
-	    name = UIManager.getString("AbstractUndoableEdit.undoText") + " " + name; // NOI18N
+            name = NbBundle.getMessage(ContentEdit.class, "AbstractUndoableEdit.undoText.param", name); // NOI18N
 	} else {
-	    name = UIManager.getString("AbstractUndoableEdit.undoText"); // NOI18N
+            name = NbBundle.getMessage(ContentEdit.class, "AbstractUndoableEdit.undoText"); // NOI18N
 	}
 	return name;
     }
@@ -167,9 +167,9 @@ public abstract class ContentEdit implements UndoableEdit {
     public String getRedoPresentationName() {
 	String name = getPresentationName();
 	if (!"".equals(name)) {
-	    name = UIManager.getString("AbstractUndoableEdit.redoText") + " " + name; // NOI18N
+            name = NbBundle.getMessage(ContentEdit.class, "AbstractUndoableEdit.redoText.param", name); // NOI18N
 	} else {
-	    name = UIManager.getString("AbstractUndoableEdit.redoText"); // NOI18N
+            name = NbBundle.getMessage(ContentEdit.class, "AbstractUndoableEdit.redoText"); // NOI18N
 	}
 
 	return name;

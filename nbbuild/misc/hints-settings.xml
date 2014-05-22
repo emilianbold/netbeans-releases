@@ -234,7 +234,9 @@
         <node name="org.netbeans.modules.java.hints.OrganizeImports"/>
         <node name="org.netbeans.modules.java.hints.jdk.JoinCatches"/>
         <node name="org.netbeans.modules.java.hints.control.RedundantIf"/>
-        <node name="create-javadoc"/>
+        <node name="create-javadoc">
+            <attribute name="enabled" value="false"/>
+        </node>
         <node name="EmptyStatements_IF"/>
         <node name="org.netbeans.modules.java.hints.perf.ManualArrayCopy"/>
         <node name="org.netbeans.modules.java.hints.DeclarationForInstanceOf"/>

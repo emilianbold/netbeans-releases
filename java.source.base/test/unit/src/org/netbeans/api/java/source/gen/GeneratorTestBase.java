@@ -61,27 +61,20 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.java.source.transform.Transformer;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.ClassIndexTestCase;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.netbeans.modules.java.source.save.Reindenter;
-import org.netbeans.modules.java.source.usages.ClassIndexEventsTransaction;
-import org.netbeans.modules.java.source.usages.ClassIndexImpl.State;
-import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
-import org.netbeans.modules.java.source.usages.PersistentClassIndex;
-import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.java.source.TestUtil;
 
 /**
  *
@@ -150,6 +143,7 @@ public abstract class GeneratorTestBase extends ClassIndexTestCase {
         cacheFolder.mkdirs();
         IndexUtil.setCacheFolder(cacheFolder);
         ensureRootValid(dataDir.getURL());
+        TestUtil.setupEditorMockServices();
     }
     
     public <R, P> void process(final Transformer<R, P> transformer) throws IOException {

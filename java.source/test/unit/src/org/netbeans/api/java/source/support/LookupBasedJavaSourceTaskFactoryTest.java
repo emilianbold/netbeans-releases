@@ -78,6 +78,7 @@ public class LookupBasedJavaSourceTaskFactoryTest extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {
+        SourceUtilsTestUtil.setLookup(new Object[]{}, getClass().getClassLoader());
         testDir = SourceUtilsTestUtil.makeScratchDir(this);
         testFile1 = testDir.createData("test1.java");
         testFile2 = testDir.createData("test2.java");

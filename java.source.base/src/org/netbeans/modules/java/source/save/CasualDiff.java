@@ -45,6 +45,7 @@ package org.netbeans.modules.java.source.save;
 
 import com.sun.source.doctree.DocCommentTree;
 import com.sun.source.doctree.DocTree;
+import static com.sun.source.doctree.DocTree.Kind.RETURN;
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.DocSourcePositions;
@@ -53,6 +54,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.*;
+import static com.sun.tools.javac.code.Flags.*;
 import com.sun.tools.javac.tree.DCTree;
 import com.sun.tools.javac.tree.DCTree.DCAttribute;
 import com.sun.tools.javac.tree.DCTree.DCAuthor;
@@ -147,9 +149,12 @@ import com.sun.tools.javac.util.Position;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.Map.Entry;
+import static java.util.logging.Level.*;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.document.AtomicLockDocument;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.Comment;
@@ -159,29 +164,22 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
+
 import org.netbeans.modules.java.source.save.ListMatcher.Operation;
 import org.netbeans.modules.java.source.save.ListMatcher.ResultItem;
 import org.netbeans.modules.java.source.save.ListMatcher.Separator;
+
+import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 import org.netbeans.modules.java.source.save.PositionEstimator.Direction;
 import org.netbeans.modules.java.source.transform.FieldGroupTree;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
-
-import static com.sun.source.doctree.DocTree.Kind.RETURN;
-import static com.sun.source.tree.Tree.*;
-import static com.sun.tools.javac.code.Flags.*;
-import static java.util.logging.Level.*;
-
-import static org.netbeans.modules.java.source.save.ListMatcher.*;
-
-import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 
 public class CasualDiff {
 
@@ -363,7 +361,8 @@ public class CasualDiff {
             }
             try {
                 String toParse = origText.substring(0, start) + resultSrc + origText.substring(end);
-                BaseDocument doc = new BaseDocument(false, "text/x-java");
+                
+                Document doc = LineDocumentUtils.createDocument("text/x-java");
                 doc.insertString(0, toParse, null);
                 doc.putProperty(Language.class, JavaTokenId.language());
                 doc.putProperty(Document.StreamDescriptionProperty, diffContext.file);
@@ -378,8 +377,10 @@ public class CasualDiff {
                 }
                 final Indent i = Indent.get(doc);
                 i.lock();
+                
+                AtomicLockDocument adoc = LineDocumentUtils.asRequired(doc, AtomicLockDocument.class);
                 try {
-                    doc.runAtomic(new Runnable() {
+                    Runnable r = new Runnable() {
                         @Override public void run() {
                             for (int[] region : td.printer.reindentRegions) {
                                 try {
@@ -389,7 +390,8 @@ public class CasualDiff {
                                 }
                             }
                         }
-                    });
+                    };
+                    adoc.runAtomic(r);
                 } finally {
                     i.unlock();
                 }

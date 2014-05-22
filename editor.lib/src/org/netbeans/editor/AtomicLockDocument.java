@@ -45,6 +45,7 @@
 package org.netbeans.editor;
 
 import javax.swing.text.Document;
+
 /**
  * Document that supports atomic locking allows
  * for transactional modifications.
@@ -70,7 +71,9 @@ import javax.swing.text.Document;
  *   <P>The external clients can watch for atomic operations
  *   by registering an listener through
  *   {@link addAtomicLockListener(AtomicLockListener)}
+ * @deprecated Use {@link org.netbeans.api.editor.AtomicLockDocument}
  */
+@Deprecated
 public interface AtomicLockDocument extends Document {
 
     public void atomicLock();

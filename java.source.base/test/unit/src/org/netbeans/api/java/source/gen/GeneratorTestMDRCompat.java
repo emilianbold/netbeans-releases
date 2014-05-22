@@ -61,9 +61,9 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.java.source.transform.Transformer;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.ClassIndexTestCase;
+import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.save.Reindenter;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -71,7 +71,6 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
 
@@ -103,6 +102,8 @@ public abstract class GeneratorTestMDRCompat extends ClassIndexTestCase {
         SharedClassObject loader = JavaDataLoader.findObject(JavaDataLoader.class, true);
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/source/resources/layer.xml"}, new Object[] {loader, cpp});
         MockMimeLookup.setInstances(MimePath.get("text/x-java"), new Reindenter.Factory());
+        
+        TestUtil.setupEditorMockServices();
         JEditorPane.registerEditorKitForContentType("text/x-java", "org.netbeans.modules.editor.java.JavaKit");
         File cacheFolder = new File(getWorkDir(), "var/cache/index");
         cacheFolder.mkdirs();

@@ -51,6 +51,7 @@ import org.netbeans.modules.java.source.usages.ClassIndexEventsTransaction;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.State;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.PersistentClassIndex;
+import org.netbeans.modules.parsing.api.ParsingTestBase;
 
 /**
  *

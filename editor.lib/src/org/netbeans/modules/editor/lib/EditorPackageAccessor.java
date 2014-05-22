@@ -51,6 +51,7 @@ import javax.swing.undo.UndoableEdit;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.InvalidMarkException;
 import org.netbeans.editor.Mark;
+import org.netbeans.editor.MarkBlockChain;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.editor.lib.impl.MarkVector;
 import org.netbeans.modules.editor.lib.impl.MultiMark;
@@ -94,4 +95,7 @@ public abstract class EditorPackageAccessor {
     public abstract void Mark_insert(Mark mark, BaseDocument doc, int pos) throws InvalidMarkException, BadLocationException;
     public abstract void ActionFactory_reformat(Reformat formatter, Document doc, int startPos, int endPos, AtomicBoolean canceled) throws BadLocationException;
 
+    public abstract Object BaseDocument_newServices(BaseDocument doc);
+    
+    public abstract int MarkBlockChain_adjustPos(MarkBlockChain chain, int pos, boolean thisBlock);
 }
