@@ -45,6 +45,7 @@ package org.netbeans.modules.weblogic.common.api;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -63,7 +64,6 @@ import org.netbeans.api.extexecution.base.input.InputProcessors;
 import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.api.extexecution.base.input.LineProcessors;
 import org.openide.util.BaseUtilities;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -94,7 +94,7 @@ public final class WebLogicDeployer {
 
     @NonNull
     public Future<Boolean> deploy(@NonNull final File file,
-            @NullAllowed final DeployListener listener, final String... parameters) {
+            @NullAllowed final SingleDeployListener listener, final String... parameters) {
 
         if (listener != null) {
             listener.onStart();
@@ -152,6 +152,80 @@ public final class WebLogicDeployer {
                     }
                 }
                 return false;
+            }
+        });
+    }
+
+    @NonNull
+    public Future<Boolean> redeploy(@NonNull final Collection<String> names,
+            @NullAllowed final BatchDeployListener listener, final String... parameters) {
+
+        if (listener != null) {
+            listener.onStart();
+        }
+
+        return DEPLOYMENT_RP.submit(new Callable<Boolean>() {
+
+            @Override
+            public Boolean call() {
+                boolean failed = false;
+                LastLineProcessor lineProcessor = new LastLineProcessor();
+                for (String name : names) {
+                    String[] execParams = new String[parameters.length + 2];
+                    execParams[0] = "-name"; // NOI18N
+                    execParams[1] = name;
+                    if (parameters.length > 0) {
+                        System.arraycopy(parameters, 0, execParams, 2, parameters.length);
+                    }
+                    BaseExecutionService service = createService("-redeploy", lineProcessor, execParams); // NOI18N
+                    if (listener != null) {
+                        listener.onProgress(name);
+                    }
+
+                    Future<Integer> result = service.run();
+                    try {
+                        Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
+                        if (value != 0) {
+                            failed = true;
+                            if (listener != null) {
+                                listener.onFail(lineProcessor.getLastLine());
+                            }
+                            break;
+                        }
+                    } catch (InterruptedException ex) {
+                        failed = true;
+                        if (listener != null) {
+                            listener.onInterrupted();
+                        }
+                        result.cancel(true);
+                        Thread.currentThread().interrupt();
+                        break;
+                    } catch (TimeoutException ex) {
+                        failed = true;
+                        if (listener != null) {
+                            listener.onTimeout();
+                        }
+                        result.cancel(true);
+                        break;
+                    } catch (ExecutionException ex) {
+                        failed = true;
+                        if (listener != null) {
+                            Throwable cause = ex.getCause();
+                            if (cause instanceof Exception) {
+                                listener.onException((Exception) cause);
+                            } else {
+                                listener.onException(ex);
+                            }
+                        }
+                        break;
+                    }
+                }
+                if (!failed) {
+                    if (listener != null) {
+                        listener.onFinish();
+                    }
+                }
+                return !failed;
             }
         });
     }

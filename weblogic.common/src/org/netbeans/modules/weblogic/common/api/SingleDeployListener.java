@@ -50,7 +50,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
  *
  * @author Petr Hejl
  */
-public interface DeployListener extends EventListener {
+public interface SingleDeployListener extends EventListener {
 
     void onStart();
 
