@@ -52,7 +52,9 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
+import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
@@ -66,7 +68,7 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
     //public static final String TRUFFLE_CLASS_DebugManager = "com.oracle.truffle.debug.DebugManager";
     public static final String TRUFFLE_CLASS_DebugManager = "com.oracle.truffle.js.engine.TruffleJSEngine";
     
-    private ClassLoadUnloadBreakpoint debugManagerLoadBP;
+    private JPDABreakpoint debugManagerLoadBP;
     private final Map<JPDADebugger, DebugManagerHandler> dmHandlers = new HashMap<>();
     
     public TruffleDebugManager() {
@@ -74,9 +76,11 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
     
     @Override
     public Breakpoint[] initBreakpoints() {
-        debugManagerLoadBP = ClassLoadUnloadBreakpoint.create(TRUFFLE_CLASS_DebugManager,
-                                                    false,
-                                                    ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED);
+//        debugManagerLoadBP = ClassLoadUnloadBreakpoint.create(TRUFFLE_CLASS_DebugManager,
+//                                                    false,
+//                                                    ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED);
+        debugManagerLoadBP = MethodBreakpoint.create(TRUFFLE_CLASS_DebugManager, "<init>");
+        ((MethodBreakpoint) debugManagerLoadBP).setBreakpointType(MethodBreakpoint.TYPE_METHOD_EXIT);
         debugManagerLoadBP.setHidden(true);
         debugManagerLoadBP.setSuspend(EventRequest.SUSPEND_ALL);
         return new Breakpoint[] { debugManagerLoadBP };
