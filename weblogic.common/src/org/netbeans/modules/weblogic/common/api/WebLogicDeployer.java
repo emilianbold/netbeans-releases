@@ -191,6 +191,10 @@ public final class WebLogicDeployer {
                                 listener.onFail(lineProcessor.getLastLine());
                             }
                             break;
+                        } else {
+                            if (listener != null) {
+                                listener.onStepFinish(name);
+                            }
                         }
                     } catch (InterruptedException ex) {
                         failed = true;
@@ -258,6 +262,10 @@ public final class WebLogicDeployer {
                                 listener.onFail(lineProcessor.getLastLine());
                             }
                             break;
+                        } else {
+                            if (listener != null) {
+                                listener.onStepFinish(name);
+                            }
                         }
                     } catch (InterruptedException ex) {
                         failed = true;
