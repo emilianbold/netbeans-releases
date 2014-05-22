@@ -107,7 +107,9 @@ public class GruntCustomizerPanel extends javax.swing.JPanel {
         rebuildTextField.setEnabled(pref!=null);
         rebuildTextField.setText(pref!=null?pref:prefs.get(PROP_REBUILD_ACTION, "clean build"));//NOI18N
         boolean gruntFound = project.getProjectDirectory().getFileObject("Gruntfile.js")!=null;//NOI18N
-        setPanelEnabled(gruntFound);
+        if (!gruntFound) {
+            setPanelEnabled(false);
+        }
         if (!gruntFound) {
             category.setErrorMessage(NbBundle.getMessage(GruntCustomizerPanel.class, "ERR_NoGruntfile"));
         } else {
