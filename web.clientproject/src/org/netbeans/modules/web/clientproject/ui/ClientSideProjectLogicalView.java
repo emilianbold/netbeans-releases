@@ -402,9 +402,10 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                 return;
             }
             Set<String> supportedActions = new HashSet<>(Arrays.asList(actionProvider.getSupportedActions()));
-            boolean buildSupported = supportedActions.contains(ActionProvider.COMMAND_BUILD);
-            boolean rebuildSupported = supportedActions.contains(ActionProvider.COMMAND_REBUILD);
-            boolean cleanSupported = supportedActions.contains(ActionProvider.COMMAND_CLEAN);
+            boolean grunt = project.getProjectDirectory().getFileObject("Gruntfile.js") !=null;
+            boolean buildSupported = supportedActions.contains(ActionProvider.COMMAND_BUILD) || grunt;
+            boolean rebuildSupported = supportedActions.contains(ActionProvider.COMMAND_REBUILD) || grunt;
+            boolean cleanSupported = supportedActions.contains(ActionProvider.COMMAND_CLEAN) || grunt;
             int index = 1; // right after New... action
             if (buildSupported
                     || rebuildSupported
