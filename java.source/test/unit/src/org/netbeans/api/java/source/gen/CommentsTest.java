@@ -96,6 +96,52 @@ public class CommentsTest extends GeneratorTestBase {
         return suite;
     }
     
+    public void testReplaceExpression() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile
+                , "package t;\n"
+                + "public class A {\n"
+                + "    public int getRating() {\n"
+                + "        return (false) ? 2 : 1;\n"
+                + "    }\n"
+                + "    private int numberOfLateDeliveries = 6;\n"
+                + "}"
+        );
+        String golden
+                = "package t;\n"
+                + "public class A {\n"
+                + "    public int getRating() {\n"
+                + "        return ( // Comment\n"
+                + "        numberOfLateDeliveries > 5) ? 2 : 1;\n"
+                + "    }\n"
+                + "    private int numberOfLateDeliveries = 6;\n"
+                + "}";
+
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                ReturnTree returnStatement = (ReturnTree) method.getBody().getStatements().get(0);
+                ConditionalExpressionTree condExp = (ConditionalExpressionTree) returnStatement.getExpression();
+                ExpressionTree condition = ((ParenthesizedTree)condExp.getCondition()).getExpression();
+                BinaryTree newCond = make.Binary(Tree.Kind.GREATER_THAN, make.Identifier("numberOfLateDeliveries"), make.Literal(5));
+                make.addComment(newCond, Comment.create(Style.LINE, "Comment"), true);
+                workingCopy.rewrite(condition, newCond);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     public void testAddStatement() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
