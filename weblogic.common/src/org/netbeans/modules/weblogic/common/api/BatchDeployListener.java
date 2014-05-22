@@ -48,6 +48,8 @@ package org.netbeans.modules.weblogic.common.api;
  */
 public interface BatchDeployListener extends SingleDeployListener {
 
-    void onProgress(String name);
+    void onStepStart(String name);
+
+    void onStepFinish(String name);
 
 }

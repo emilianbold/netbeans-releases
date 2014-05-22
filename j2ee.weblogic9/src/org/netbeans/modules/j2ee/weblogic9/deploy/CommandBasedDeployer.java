@@ -154,11 +154,16 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             private TargetModuleID module;
 
             @Override
-            public void onProgress(String name) {
+            public void onStepStart(String name) {
                 module = names.get(name);
                 progress.fireProgressEvent(null, new WLDeploymentStatus(
                         ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.RUNNING,
                         NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeploying", name)));
+            }
+
+            @Override
+            public void onStepFinish(String name) {
+                // noop
             }
 
             @Override
@@ -575,11 +580,16 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             private TargetModuleID module;
             
             @Override
-            public void onProgress(String name) {
+            public void onStepStart(String name) {
                 module = names.get(name);
                 progress.fireProgressEvent(null, new WLDeploymentStatus(
                         ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
                         NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeploying", name)));
+            }
+
+            @Override
+            public void onStepFinish(String name) {
+                // noop
             }
 
             @Override

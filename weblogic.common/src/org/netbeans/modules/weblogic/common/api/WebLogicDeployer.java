@@ -179,7 +179,7 @@ public final class WebLogicDeployer {
                     }
                     BaseExecutionService service = createService("-redeploy", lineProcessor, execParams); // NOI18N
                     if (listener != null) {
-                        listener.onProgress(name);
+                        listener.onStepStart(name);
                     }
 
                     Future<Integer> result = service.run();
@@ -246,7 +246,7 @@ public final class WebLogicDeployer {
                 for (String name : names) {
                     BaseExecutionService service = createService("-undeploy", lineProcessor, "-name", name);
                     if (listener != null) {
-                        listener.onProgress(name);
+                        listener.onStepStart(name);
                     }
 
                     Future<Integer> result = service.run();
