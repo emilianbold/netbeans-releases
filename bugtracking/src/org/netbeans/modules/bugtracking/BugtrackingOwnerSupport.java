@@ -137,7 +137,7 @@ public class BugtrackingOwnerSupport {
         RepositoryImpl repo;
 
         try {
-            repo = getRepositoryIntern(fileObject);
+            repo = getRepositoryIntern(fileObject, askIfUnknown);
             if (repo != null) {
                 return repo;
             }
@@ -167,7 +167,7 @@ public class BugtrackingOwnerSupport {
             LOG.log(Level.WARNING, " did not find a FileObject for file {0}", new Object[] {file}); //NOI18N
         } else {
             try {
-                RepositoryImpl repo = getRepositoryIntern(fileObject);
+                RepositoryImpl repo = getRepositoryIntern(fileObject, askIfUnknown);
                 if (repo != null) {
                     return repo;
                 }
@@ -332,7 +332,7 @@ public class BugtrackingOwnerSupport {
      * @return
      * @throws IOException
      */
-    private static RepositoryImpl getRepositoryIntern(FileObject fileObject) throws IOException {
+    private static RepositoryImpl getRepositoryIntern(FileObject fileObject, boolean askIfUnknown) throws IOException {
         String url = VersioningQuery.getRemoteLocation(fileObject.toURI());
         
         if (url != null) {
@@ -353,7 +353,7 @@ public class BugtrackingOwnerSupport {
                 return repository;
             }
             try {
-                repository = APIAccessor.IMPL.getImpl(getRepository(url));
+                repository = APIAccessor.IMPL.getImpl(getRepository(url, askIfUnknown));
                 if (repository != null) {
                     return repository;
                 }
@@ -424,8 +424,8 @@ public class BugtrackingOwnerSupport {
         return null;
     }    
     
-    private static Repository getRepository(String repositoryUrl) throws IOException {
-        TeamProject project = TeamAccessorUtils.getTeamProjectForRepository(repositoryUrl);
+    private static Repository getRepository(String repositoryUrl, boolean askIfUnknown) throws IOException {
+        TeamProject project = TeamAccessorUtils.getTeamProjectForRepository(repositoryUrl, askIfUnknown);
         RepositoryImpl repoImpl = (project != null)
                 ? TeamRepositories.getInstance().getRepository(project.getHost(), project.getName())
                 : null; //not a team project repository
