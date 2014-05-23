@@ -541,10 +541,11 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
                 methodStatements.addAll(statements.subList(from, to + 1));
             }
         }
-
+        
         private MethodTree createMethodDefinition(boolean mustStatic) {
+            // if all the statements are contained within a Block, get just the block, it will be processed recursively
             List<VariableTree> formalArguments = IntroduceHint.createVariables(copy, parameters, pathToClass, 
-                    statementPaths);
+                    statementPaths.subList(from, to + 1));
             if (formalArguments == null) {
                 return null; //XXX
             }
