@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,60 +34,68 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.refactoring.spi.impl;
 
-import org.netbeans.modules.refactoring.api.impl.ActionsImplementationFactory;
+package org.netbeans.modules.web.clientproject.grunt;
+
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import org.netbeans.api.project.Project;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
-import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
-import org.openide.util.HelpCtx;
+import org.openide.awt.DynamicMenuContent;
+import org.openide.filesystems.FileObject;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
+ *
  * @author Jan Becicka
  */
-@ActionID(id = "org.netbeans.modules.refactoring.api.ui.WhereUsedAction", category = "Refactoring")
-@ActionRegistration(displayName = "#LBL_WhereUsedAction")
-@ActionReferences({
-        @ActionReference(path = "Menu/Edit", name = "WhereUsedAction", position = 2200),
-        @ActionReference(path = "Editors/text/x-java/Popup" , name = "WhereUsedAction", position = 1400),
-        @ActionReference(path = "Loaders/text/x-java/Actions", name = "WhereUsedAction", position = 1900)
-})
-public class WhereUsedAction extends RefactoringGlobalAction {
-
-    /**
-     * Creates a new instance of WhereUsedAction
-     */
-    public WhereUsedAction() {
-        super(NbBundle.getMessage(WhereUsedAction.class, "LBL_WhereUsedAction"), null);
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+@ActionID(id = "org.netbeans.modules.web.clientproject.grunt.NpmInstallAction", category = "Build")
+@ActionRegistration(displayName = "#CTL_NpmInstallAction", lazy=false)
+@ActionReference(path="Projects/org-netbeans-modules-web-clientproject/Actions", position = 170)
+public class NpmInstallAction extends AbstractAction implements ContextAwareAction {
+    
+    public @Override void actionPerformed(ActionEvent e) {
+        assert false;
     }
     
-    @Override
-    public final void performAction(Lookup context) {
-        ActionsImplementationFactory.doFindUsages(context);
+    public @Override Action createContextAwareInstance(Lookup context) {
+        return new ContextAction(context);
     }
     
-    @Override
-    public org.openide.util.HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
+    @NbBundle.Messages({
+        "CTL_NpmInstall=Npm install"
+    })
+    private static final class ContextAction extends AbstractAction {
+        private final Project p;
 
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-
-    @Override
-    protected boolean enable(Lookup context) {
-        return ActionsImplementationFactory.canFindUsages(context);
-    }
-
-    @Override
-    protected boolean applicable(Lookup context) {
-        return ActionsImplementationFactory.canFindUsages(context);
+        public ContextAction(Lookup context) {
+            super(Bundle.CTL_NpmInstall());
+            p = context.lookup(Project.class);
+            FileObject package_json = p.getProjectDirectory().getFileObject("package.json");//NOI18N
+            setEnabled(package_json!=null);
+            putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
+        }
+        
+        public @Override
+        void actionPerformed(ActionEvent e) {
+            try {
+                new NpmExecutor(p.getProjectDirectory(), new String[]{"install"}).execute(); //NOI18N
+                TargetLister.invalidateCache(p.getProjectDirectory().getFileObject("Gruntfile.js")); //NOI18N
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 }
