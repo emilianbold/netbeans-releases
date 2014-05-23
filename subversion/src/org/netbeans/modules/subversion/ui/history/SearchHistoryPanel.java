@@ -800,7 +800,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             currentAdditionalSearch.cancel();
         }
         if (count < 0 || showingResults < 0) {
-            count = -1;
+            count = 0;
         } else {
             count += showingResults;
         }
@@ -893,7 +893,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                                 }
                             }
                             results.addAll(toAdd);
-                            if (count == -1) {
+                            if (count == 0) {
                                 showingResults = -1;
                             } else {
                                 showingResults = count;
