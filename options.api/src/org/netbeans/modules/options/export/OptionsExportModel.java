@@ -41,14 +41,19 @@
  */
 package org.netbeans.modules.options.export;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.SyncFailedException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,12 +69,14 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 import org.openide.filesystems.*;
 import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Model for export/import options. It reads {@code OptionsExport/<category>/<item>}
@@ -111,6 +118,52 @@ public final class OptionsExportModel {
      */
     public OptionsExportModel(File source) {
         this.source = source;
+    }
+    
+    ArrayList<String> getEnabledItemsDuringExport(File importSource) {
+        ArrayList<String> enabledItems = new ArrayList<String>();
+        if (importSource.isFile()) { // importing from .zip file
+            try {
+                ZipFile zipFile = new ZipFile(importSource);
+                // Enumerate each entry
+                Enumeration<? extends ZipEntry> entries = zipFile.entries();
+                while (entries.hasMoreElements()) {
+                    ZipEntry zipEntry = (ZipEntry) entries.nextElement();
+                    if(zipEntry.getName().equals(OptionsExportModel.ENABLED_ITEMS_INFO)) {
+                        InputStream stream = zipFile.getInputStream(zipEntry);
+                        BufferedReader br = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+                        String strLine;
+                        while ((strLine = br.readLine()) != null) {
+                            enabledItems.add(strLine);
+                        }
+                    }
+                }
+            } catch (ZipException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else if(importSource.isDirectory()) { // importing from directory
+            File[] children = importSource.listFiles(new java.io.FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    return pathname.getName().equals(OptionsExportModel.ENABLED_ITEMS_INFO);
+                }
+            });
+            if(children.length == 1) {
+                BufferedReader br;
+                try {
+                    br = Files.newBufferedReader(Paths.get(Utilities.toURI(children[0])), StandardCharsets.UTF_8);
+                    String strLine;
+                    while ((strLine = br.readLine()) != null) {
+                        enabledItems.add(strLine);
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return enabledItems;
     }
 
     /**
