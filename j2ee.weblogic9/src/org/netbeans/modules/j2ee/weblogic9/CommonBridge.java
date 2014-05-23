@@ -43,6 +43,10 @@
 package org.netbeans.modules.j2ee.weblogic9;
 
 import java.io.File;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
@@ -57,8 +61,8 @@ public final class CommonBridge {
         super();
     }
 
-
-    public static WebLogicConfiguration getConfiguration(WLDeploymentManager dm) {
+    @NonNull
+    public static WebLogicConfiguration getConfiguration(@NonNull WLDeploymentManager dm) {
         InstanceProperties ip = dm.getInstanceProperties();
         String username = ip.getProperty(InstanceProperties.USERNAME_ATTR);
         String password = ip.getProperty(InstanceProperties.PASSWORD_ATTR);
@@ -82,5 +86,13 @@ public final class CommonBridge {
             return WebLogicConfiguration.forRemoteDomain(new File(serverHome), host, realPort, username, password);
         }
         return WebLogicConfiguration.forLocalDomain(new File(serverHome), new File(domainHome), username, password);
+    }
+
+    @CheckForNull
+    public static Version getVersion(@NullAllowed org.netbeans.modules.weblogic.common.api.Version version) {
+        if (version == null) {
+            return null;
+        }
+        return Version.fromJsr277OrDottedNotationWithFallback(version.toString());
     }
 }
