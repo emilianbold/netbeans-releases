@@ -39,13 +39,13 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.javascript2.requirejs.editor;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -55,6 +55,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.javascript2.requirejs.RequireJsPreferences;
 import org.netbeans.modules.javascript2.requirejs.editor.index.RequireJsIndex;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -66,14 +67,15 @@ import org.openide.util.Utilities;
  * @author Petr Pisl
  */
 public class FSCompletionUtils {
+
     final static String GO_UP = "../"; //NOI18N
-    
+
     public static List<? extends CompletionProposal> computeRelativeItems(
             Collection<? extends FileObject> relativeTo,
             final String prefix,
             int anchor,
             FileObjectFilter filter) throws IOException {
-        
+
         assert relativeTo != null;
 
         List<CompletionProposal> result = new LinkedList();
@@ -133,8 +135,8 @@ public class FSCompletionUtils {
                 FileObject current = children[cntr];
 
                 if (VisibilityQuery.getDefault().isVisible(current) && current.getNameExt().toLowerCase().startsWith(filePrefix.toLowerCase()) && filter.accept(current)) {
-                    int newAnchor = pathPrefix == null ? 
-                            anchor - prefix.length() : anchor - Math.max(0, prefix.length() - pathPrefix.length() - 1);
+                    int newAnchor = pathPrefix == null
+                            ? anchor - prefix.length() : anchor - Math.max(0, prefix.length() - pathPrefix.length() - 1);
                     result.add(new FSCompletionItem(current, pathPrefix != null ? pathPrefix + "/" : "./", newAnchor)); //NOI18N
                 }
             }
@@ -157,8 +159,9 @@ public class FSCompletionUtils {
 
         return result;
     }
-    
+
     public static class JSIncludesFilter implements FileObjectFilter {
+
         private FileObject currentFile;
 
         public JSIncludesFilter(FileObject currentFile) {
@@ -195,17 +198,19 @@ public class FSCompletionUtils {
             return false;
         }
     }
+
     interface FileObjectFilter {
 
         boolean accept(FileObject file);
 
     }
-    
+
     /**
      * Returns corresponding file, if it's found for the specific path
+     *
      * @param path
      * @param info
-     * @return 
+     * @return
      */
     public static FileObject findFileObject(final String pathToFile, FileObject parent) {
         String path = pathToFile;
@@ -218,23 +223,25 @@ public class FSCompletionUtils {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            
+            Map<String, String> pathMappings = new HashMap();
             if (rIndex != null) {
-                Map<String, String> pathMappings = rIndex.getPathMappings(pathParts[0]);
-                String alias = "";
-                for (String possibleAlias : pathMappings.keySet()) {
-                    if (possibleAlias.equals(path)) {
-                        alias = possibleAlias;
-                        break;
-                    }
-                    if (path.startsWith(possibleAlias) && (alias.length() < possibleAlias.length())) {
-                        alias = possibleAlias;
-                    }
+                pathMappings.putAll(rIndex.getPathMappings(pathParts[0]));
+            }
+            pathMappings.putAll(RequireJsPreferences.getMappings(project));
+            
+            String alias = "";
+            for (String possibleAlias : pathMappings.keySet()) {
+                if (possibleAlias.equals(path)) {
+                    alias = possibleAlias;
+                    break;
                 }
-                if (!alias.isEmpty()) {
-                    path = pathMappings.get(alias) + path.substring(alias.length());
-                    pathParts = path.split("/");                        //NOI18N
+                if (path.startsWith(possibleAlias) && (alias.length() < possibleAlias.length())) {
+                    alias = possibleAlias;
                 }
+            }
+            if (!alias.isEmpty()) {
+                path = pathMappings.get(alias) + path.substring(alias.length());
+                pathParts = path.split("/");                        //NOI18N
             }
         }
         if (parent != null && pathParts.length > 0) {

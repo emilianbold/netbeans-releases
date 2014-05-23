@@ -42,7 +42,16 @@
 
 package org.netbeans.modules.javascript2.requirejs.editor;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
+import org.netbeans.modules.javascript2.requirejs.RequireJsPreferences;
+import org.netbeans.modules.javascript2.requirejs.TestProjectSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -52,6 +61,23 @@ public class RequireJsDeclarationFinderTest extends JsTestBase {
     
     public RequireJsDeclarationFinderTest(String testName) {
         super(testName);
+    }
+    
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp(); 
+        FileObject folder = getTestFile("TestProject1");
+        Project testProject = new TestProjectSupport.TestProject(folder, null);
+        List lookupAll = new ArrayList();
+        lookupAll.addAll(MockLookup.getDefault().lookupAll(Object.class));
+        lookupAll.add(new TestProjectSupport.FileOwnerQueryImpl(testProject));
+        MockLookup.setInstances(lookupAll.toArray());
+        
+        Map<String, String> mappings = new HashMap();
+        mappings.put("utils", "js/folder1/api/utils.js");
+        mappings.put("api", "js/folder1/api");
+        mappings.put("lib/api", "js/folder1/api");
+        RequireJsPreferences.storeMappings(testProject, mappings);
     }
     
     public void testNavigationFromModuleDeclaration01() throws Exception {
@@ -69,4 +95,18 @@ public class RequireJsDeclarationFinderTest extends JsTestBase {
     public void testNavigationFromParameter01() throws Exception {
         checkDeclaration("TestProject1/js/main.js", "function (mod^ule1, module11) {", "module1.js", 0);
     }
+    
+    // project mapping through the RequireJS project customizer
+    public void testNavigationThroughProjectProperties01() throws Exception {
+        checkDeclaration("TestProject1/js/main.js", "'util^s'", "utils.js", 0);
+    }
+    
+    public void testNavigationThroughProjectProperties02() throws Exception {
+        checkDeclaration("TestProject1/js/main.js", "'api/v0^.1/Options'", "Options.js", 0);
+    }
+    
+    public void testNavigationThroughProjectProperties03() throws Exception {
+        checkDeclaration("TestProject1/js/main.js", "'lib/api/v0.1/OMe^ssages'", "OMessages.js", 0);
+    }
+        
 }
