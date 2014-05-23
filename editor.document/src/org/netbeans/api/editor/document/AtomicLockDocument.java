@@ -44,8 +44,8 @@
 
 package org.netbeans.api.editor.document;
 
-import com.sun.istack.internal.NotNull;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
 /**
  * Document that supports atomic locking allows
  * for transactional modifications.
@@ -84,7 +84,7 @@ public interface AtomicLockDocument {
      * Provides access to the underlying Document
      * @return Document instance
      */
-    public @NotNull Document getDocument();
+    public @NonNull Document getDocument();
     
     /**
      * Obtains an atomic lock. The document will become write-locked and
@@ -110,7 +110,7 @@ public interface AtomicLockDocument {
      * called.
      * @param r the executable to run.
      */
-    public void runAtomic(@NotNull Runnable r);
+    public void runAtomic(@NonNull Runnable r);
     
     /**
      * Runs the Runnable under atomic lock, respecting document protection.
@@ -121,18 +121,18 @@ public interface AtomicLockDocument {
      * 
      * @param r the executable to run.
      */
-    public void runAtomicAsUser(@NotNull Runnable r);
+    public void runAtomicAsUser(@NonNull Runnable r);
     
     /**
      * Attaches a Listener to receive start/end atomic lock events.
      * @param l the listener
      */
-    public void addAtomicLockListener(@NotNull AtomicLockListener l);
+    public void addAtomicLockListener(@NonNull AtomicLockListener l);
     
     /**
      * Detaches a Listener for start/end atomic lock events.
      * @param l the listener
      */
-    public void removeAtomicLockListener(@NotNull AtomicLockListener l);
+    public void removeAtomicLockListener(@NonNull AtomicLockListener l);
 
 }
