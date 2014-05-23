@@ -359,6 +359,7 @@ public class OptionsExportModelTest extends NbTestCase {
         model.doExport(targetZipFile, enabledItems);
         assertEquals(enabledItems, model.getEnabledItemsDuringExport(targetZipFile)); // reading enabledItems.info from zip file
         
+        assertEquals(null, model.getEnabledItemsDuringExport(sourceUserdir)); // no enabledItems.info in user dir, e.g. version < 7.4
         // first write the enabledItems.info in user dir
         Files.write(Paths.get(Utilities.toURI(new File(sourceUserdir, OptionsExportModel.ENABLED_ITEMS_INFO))), "Category0Item01".getBytes());
         assertEquals(enabledItems, model.getEnabledItemsDuringExport(sourceUserdir)); // reading enabledItems.info from user dir

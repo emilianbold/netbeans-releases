@@ -121,7 +121,7 @@ public final class OptionsExportModel {
     }
     
     ArrayList<String> getEnabledItemsDuringExport(File importSource) {
-        ArrayList<String> enabledItems = new ArrayList<String>();
+        ArrayList<String> enabledItems = null;
         if (importSource.isFile()) { // importing from .zip file
             try {
                 ZipFile zipFile = new ZipFile(importSource);
@@ -130,6 +130,7 @@ public final class OptionsExportModel {
                 while (entries.hasMoreElements()) {
                     ZipEntry zipEntry = (ZipEntry) entries.nextElement();
                     if(zipEntry.getName().equals(OptionsExportModel.ENABLED_ITEMS_INFO)) {
+                        enabledItems = new ArrayList<String>();
                         InputStream stream = zipFile.getInputStream(zipEntry);
                         BufferedReader br = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
                         String strLine;
@@ -151,6 +152,7 @@ public final class OptionsExportModel {
                 }
             });
             if(children.length == 1) {
+                enabledItems = new ArrayList<String>();
                 BufferedReader br;
                 try {
                     br = Files.newBufferedReader(Paths.get(Utilities.toURI(children[0])), StandardCharsets.UTF_8);
