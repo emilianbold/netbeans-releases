@@ -3619,6 +3619,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         private InitializeAllConstructorItem(CompilationInfo info, boolean isDefault, Iterable<? extends VariableElement> fields, ExecutableElement superConstructor, TypeElement parent, int substitutionOffset) {
             super(substitutionOffset);
+            CodeStyle cs = null;
+            try {
+                cs = CodeStyle.getDefault(info.getDocument());
+            } catch (IOException ex) {
+            }
+            if (cs == null) {
+                cs = CodeStyle.getDefault(info.getFileObject());
+            }
             this.isDefault = isDefault;
             this.fieldHandles = new ArrayList<ElementHandle<VariableElement>>();
             this.parentHandle = ElementHandle.create(parent);
@@ -3626,14 +3634,27 @@ public abstract class JavaCompletionItem implements CompletionItem {
             for (VariableElement ve : fields) {
                 this.fieldHandles.add(ElementHandle.create(ve));
                 if (!isDefault) {
-                    this.params.add(new ParamDesc(null, Utilities.getTypeName(info, ve.asType(), false).toString(), ve.getSimpleName().toString()));
+                    boolean isStatic = ve.getModifiers().contains(Modifier.STATIC);
+                    String sName = CodeStyleUtils.removePrefixSuffix(ve.getSimpleName(),
+                        isStatic ? cs.getStaticFieldNamePrefix() : cs.getFieldNamePrefix(),
+                        isStatic ? cs.getStaticFieldNameSuffix() : cs.getFieldNameSuffix());
+                    sName = CodeStyleUtils.addPrefixSuffix(
+                            sName,
+                            cs.getParameterNamePrefix(),
+                            cs.getParameterNameSuffix());
+                    this.params.add(new ParamDesc(null, Utilities.getTypeName(info, ve.asType(), false).toString(), sName));
                 }
             }
             if (superConstructor != null) {
                 this.superConstructorHandle = ElementHandle.create(superConstructor);
                 if (!isDefault) {
                     for (VariableElement ve : superConstructor.getParameters()) {
-                        this.params.add(new ParamDesc(null, Utilities.getTypeName(info, ve.asType(), false).toString(), ve.getSimpleName().toString()));
+                        String sName = CodeStyleUtils.removePrefixSuffix(ve.getSimpleName(), cs.getParameterNamePrefix(), cs.getParameterNameSuffix());
+                        sName = CodeStyleUtils.addPrefixSuffix(
+                                sName,
+                                cs.getParameterNamePrefix(),
+                                cs.getParameterNameSuffix());
+                        this.params.add(new ParamDesc(null, Utilities.getTypeName(info, ve.asType(), false).toString(), sName));
                     }
                 }
             } else {
