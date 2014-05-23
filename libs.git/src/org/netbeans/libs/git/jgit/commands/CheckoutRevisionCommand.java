@@ -117,6 +117,9 @@ public class CheckoutRevisionCommand extends GitCommand {
         Repository repository = getRepository();
         try {
             Ref headRef = repository.getRef(Constants.HEAD);
+            if (headRef == null) {
+                throw new GitException("Corrupted repository, missing HEAD file in .git folder.");
+            }
             ObjectId headTree = null;
             try {
                 headTree = Utils.findCommit(repository, Constants.HEAD).getTree();
