@@ -127,6 +127,7 @@ is the proper place.
             </description>
             <class name="GuardedRegionMarker" package="org.netbeans.spi.editor.guards"/>
             <class name="DocumentGuards" package="org.netbeans.api.editor.guards"/>
+            <issue number="244679"/>
         </change>
         <change id="AbstractGuardedSectionsProvider-useReadersWritersOnSet">
             <api name="general"/>

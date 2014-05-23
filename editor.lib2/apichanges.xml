@@ -118,6 +118,7 @@ is the proper place.
                     Document data handling and implementation was separated into <code>editor.document</code> module
                 </p>
             </description>
+            <issue number="244679"/>
         </change>
         <change id="typinghooks-CamelCase-spi-added">
             <summary>Typing Hooks Camel Case SPI added</summary>

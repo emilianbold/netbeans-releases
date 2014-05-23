@@ -118,6 +118,7 @@ is the proper place.
                     Document data handling and implementation was separated into <code>editor.document</code> module
                 </p>
             </description>
+            <issue number="244679"/>
         </change>
         <change id="caret-fold-cleanup">
             <summary>Removed dependencies on Folding</summary>
