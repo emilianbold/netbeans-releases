@@ -247,6 +247,7 @@
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.html.editor.lib</friend>
                 <friend>org.netbeans.modules.html.knockout</friend>
+                <friend>org.netbeans.modules.html.ojet</friend>
                 <friend>org.netbeans.modules.html.parser</friend>
                 <friend>org.netbeans.modules.html.validation</friend>
                 <friend>org.netbeans.modules.j2ee.common</friend>
