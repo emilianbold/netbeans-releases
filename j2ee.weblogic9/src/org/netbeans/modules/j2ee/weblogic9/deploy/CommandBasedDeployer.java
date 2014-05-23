@@ -304,67 +304,75 @@ public final class CommandBasedDeployer extends AbstractDeployer {
     public ProgressObject stop(final TargetModuleID[] targetModuleID) {
         final WLProgressObject progress = new WLProgressObject(targetModuleID);
 
-        progress.fireProgressEvent(null, new WLDeploymentStatus(
-                ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
-                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Started")));
+        final Map<String, TargetModuleID> names = new LinkedHashMap<String, TargetModuleID>();
+        for (TargetModuleID id : targetModuleID) {
+            names.put(id.getModuleID(), id);
+        }
 
-        DEPLOYMENT_RP.submit(new Runnable() {
+        BatchDeployListener listener = new BatchDeployListener() {
+
+            private TargetModuleID module;
 
             @Override
-            public void run() {
-                boolean failed = false;
-                LastLineProcessor lineProcessor = new LastLineProcessor();
-                for (TargetModuleID module : targetModuleID) {
-                    String name = module.getModuleID();
-                    BaseExecutionService service = createService("-stop", lineProcessor, "-name", name);
-                    progress.fireProgressEvent(null, new WLDeploymentStatus(
-                            ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
-                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stopping", name)));
-
-                    Future<Integer> result = service.run();
-                    try {
-                        Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
-                        if (value.intValue() != 0) {
-                            failed = true;
-                            progress.fireProgressEvent(null, new WLDeploymentStatus(
-                                    ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
-                                    NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Failed",
-                                        lineProcessor.getLastLine())));
-                            FailedAuthenticationSupport.checkFailedAuthentication(getDeploymentManager(), lineProcessor.getLastLine());
-                            break;
-                        } else {
-                            continue;
-                        }
-                    } catch (InterruptedException ex) {
-                        failed = true;
-                        progress.fireProgressEvent(null, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
-                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Failed_Interrupted")));
-                        result.cancel(true);
-                        Thread.currentThread().interrupt();
-                        break;
-                    } catch (TimeoutException ex) {
-                        failed = true;
-                        progress.fireProgressEvent(null, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
-                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Failed_Timeout")));
-                        result.cancel(true);
-                        break;
-                    } catch (ExecutionException ex) {
-                        failed = true;
-                        progress.fireProgressEvent(null, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
-                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Failed_With_Message")));
-                        break;
-                    }
-                }
-                if (!failed) {
-                    progress.fireProgressEvent(null, new WLDeploymentStatus(
-                            ActionType.EXECUTE, CommandType.STOP, StateType.COMPLETED,
-                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Completed")));
-                }
+            public void onStepStart(String name) {
+                module = names.get(name);
+                progress.fireProgressEvent(null, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stopping", name)));
             }
-        });
+
+            @Override
+            public void onStepFinish(String name) {
+                // noop
+            }
+
+            @Override
+            public void onStart() {
+                progress.fireProgressEvent(null, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Started")));
+            }
+
+            @Override
+            public void onFinish() {
+                progress.fireProgressEvent(null, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.STOP, StateType.COMPLETED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Completed")));
+            }
+
+            @Override
+            public void onFail(String line) {
+                progress.fireProgressEvent(module, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Failed", line)));
+                FailedAuthenticationSupport.checkFailedAuthentication(getDeploymentManager(), line);
+            }
+
+            @Override
+            public void onTimeout() {
+                progress.fireProgressEvent(module, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Failed_Timeout")));
+            }
+
+            @Override
+            public void onInterrupted() {
+                progress.fireProgressEvent(module, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Failed_Interrupted")));
+            }
+
+            @Override
+            public void onException(Exception ex) {
+                progress.fireProgressEvent(module, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Failed_With_Message", ex.getMessage())));
+            }
+        };
+
+        WebLogicDeployer deployer = WebLogicDeployer.getInstance(
+                CommonBridge.getConfiguration(getDeploymentManager()), new File(getJavaBinary()));
+        deployer.stop(names.keySet(), listener);
 
         return progress;
     }

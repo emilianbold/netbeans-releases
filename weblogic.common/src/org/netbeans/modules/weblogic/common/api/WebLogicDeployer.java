@@ -377,6 +377,78 @@ public final class WebLogicDeployer {
         });
     }
 
+    public Future<Boolean> stop(@NonNull final Collection<String> names,
+            @NullAllowed final BatchDeployListener listener) {
+
+        if (listener != null) {
+            listener.onStart();
+        }
+
+        return DEPLOYMENT_RP.submit(new Callable<Boolean>() {
+
+            @Override
+            public Boolean call() {
+                boolean failed = false;
+                LastLineProcessor lineProcessor = new LastLineProcessor();
+                for (String name : names) {
+                    BaseExecutionService service = createService("-stop", lineProcessor, "-name", name);
+                    if (listener != null) {
+                        listener.onStepStart(name);
+                    }
+
+                    Future<Integer> result = service.run();
+                    try {
+                        Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
+                        if (value != 0) {
+                            failed = true;
+                            if (listener != null) {
+                                listener.onFail(lineProcessor.getLastLine());
+                            }
+                            break;
+                        } else {
+                            if (listener != null) {
+                                listener.onStepFinish(name);
+                            }
+                        }
+                    } catch (InterruptedException ex) {
+                        failed = true;
+                        if (listener != null) {
+                            listener.onInterrupted();
+                        }
+                        result.cancel(true);
+                        Thread.currentThread().interrupt();
+                        break;
+                    } catch (TimeoutException ex) {
+                        failed = true;
+                        if (listener != null) {
+                            listener.onTimeout();
+                        }
+                        result.cancel(true);
+                        break;
+                    } catch (ExecutionException ex) {
+                        failed = true;
+                        if (listener != null) {
+                            Throwable cause = ex.getCause();
+                            if (cause instanceof Exception) {
+                                listener.onException((Exception) cause);
+                            } else {
+                                listener.onException(ex);
+                            }
+                        }
+                        break;
+                    }
+                }
+                if (!failed) {
+                    if (listener != null) {
+                        listener.onFinish();
+                    }
+                }
+                return !failed;
+            }
+        });
+    }
+
+
     private BaseExecutionService createService(final String command,
             final LineProcessor processor, String... parameters) {
 
