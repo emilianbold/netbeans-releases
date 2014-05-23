@@ -51,7 +51,13 @@
             category = FrameworksUtils.CATEGORY,
             categoryLabel = FrameworksUtils.CATEGORY_LABEL,
             position = 193
-    )   
+    ),
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = FrameworksUtils.MAVEN_PROJET,
+            category = FrameworksUtils.CATEGORY,
+            categoryLabel = FrameworksUtils.CATEGORY_LABEL,
+            position = 193
+    )
 }
 )
 package org.netbeans.modules.javascript2.editor.api;
