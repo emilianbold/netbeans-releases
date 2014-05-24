@@ -349,8 +349,7 @@ public class ElementJavadoc {
         StringBuilder content = new StringBuilder();
         JavadocHelper.TextStream page = null;
         if (element != null) {
-            // XXX would be better to avoid testing network connections in case we get a source fo anyway
-            page = JavadocHelper.getJavadoc(element, cancel);
+            page = JavadocHelper.getJavadoc(element, false, cancel);
             if (page != null) {
                 docURL = page.getLocation();
             }

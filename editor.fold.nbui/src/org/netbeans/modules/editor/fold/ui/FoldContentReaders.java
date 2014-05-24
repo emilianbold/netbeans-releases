@@ -66,7 +66,7 @@ import org.openide.util.LookupListener;
  * @author sdedic
  */
 public final class FoldContentReaders {
-    private static FoldContentReaders INSTANCE = new FoldContentReaders();
+    private static final FoldContentReaders INSTANCE = new FoldContentReaders();
     
     private final Map<String, N> mimeNodes = new HashMap<String, N>();
     

@@ -1032,7 +1032,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                                                 !illegalForwardRefNames.contains(e.getSimpleName());
                                     case FIELD:
                                         if (e.getSimpleName().contentEquals("this")) //NOI18N
-                                            return !isStatic;
+                                            return !isStatic && e.asType().getKind() == TypeKind.DECLARED && ((DeclaredType)e.asType()).asElement() == enclClass;
                                         if (e.getSimpleName().contentEquals("super")) //NOI18N
                                             return false;
                                         if (illegalForwardRefNames.contains(e.getSimpleName()))

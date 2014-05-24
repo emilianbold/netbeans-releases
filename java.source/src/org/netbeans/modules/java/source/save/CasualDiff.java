@@ -349,7 +349,7 @@ public class CasualDiff {
             }
         }
 
-        td.printer.print(origText.substring(lineStart, start));
+        td.copyTo(lineStart, start, td.printer);
         td.diffTree(oldTree, newTree, (JCTree) (oldTreePath.getParentPath() != null ? oldTreePath.getParentPath().getLeaf() : null), new int[] {start, bounds[1]});
         String resultSrc = td.printer.toString().substring(start - lineStart);
         if (!td.printer.reindentRegions.isEmpty()) {
@@ -5282,14 +5282,13 @@ public class CasualDiff {
         }
         if (nextBlockBoundary == -1 && boundaries.hasNext()) {
             nextBlockBoundary = boundaries.next();
-        } else {
-            while (nextBlockBoundary != -1 && nextBlockBoundary < from) {
-                if (boundaries.hasNext()) {
-                    nextBlockBoundary = boundaries.next();
-                } else {
-                    nextBlockBoundary = -1;
-                    break;
-                }
+        } 
+        while (nextBlockBoundary != -1 && nextBlockBoundary < from) {
+            if (boundaries.hasNext()) {
+                nextBlockBoundary = boundaries.next();
+            } else {
+                nextBlockBoundary = -1;
+                break;
             }
         }
         // map the boundary if the copied text starts at OR ends at the boundary. E.g. the after-boundary text might be
