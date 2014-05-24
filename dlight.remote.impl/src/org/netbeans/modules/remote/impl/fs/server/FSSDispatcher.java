@@ -65,6 +65,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -283,10 +284,11 @@ import org.openide.util.RequestProcessor;
         if (force) {
             valid = false;
         } else {
-            if (attempts.incrementAndGet() > MAX_ATTEMPTS) {
+            if (attempts.incrementAndGet() > MAX_ATTEMPTS) {                
                 valid = false;
             }
         }
+        RemoteLogger.log(Level.WARNING, "fs_server at {0} failed: {1} ", env, lastErrorMessage.get());
     }
     
     private void checkValid() throws ExecutionException, InterruptedException {
@@ -511,10 +513,10 @@ import org.openide.util.RequestProcessor;
         if (line == null) {
             NativeProcess.State state = server.getProcess().getState();
             if (state == NativeProcess.State.FINISHED) {
-                int rc = server.getProcess().waitFor();
-                if (rc == FSSExitCodes.FAILURE_LOCKING_LOCK_FILE) {
-                    throw new InitializationException(lastErrorMessage.get());
-                }
+                //int rc = server.getProcess().waitFor();
+                //if (rc == FSSExitCodes.FAILURE_LOCKING_LOCK_FILE) {
+                throw new InitializationException(lastErrorMessage.get());
+                //}
             }
         } else {
             Buffer buf = new Buffer(line);

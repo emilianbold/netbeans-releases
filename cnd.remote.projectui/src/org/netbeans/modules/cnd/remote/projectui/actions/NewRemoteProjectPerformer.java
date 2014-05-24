@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.remote.projectui.actions;
 
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
@@ -49,6 +50,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
+import javax.swing.Action;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
@@ -88,11 +90,15 @@ public class NewRemoteProjectPerformer extends RemoteActionPerformer {
     private ExecutionEnvironment env;
 
     @Override
-    protected void actionPerformedRemote(ExecutionEnvironment anEnv) {
-        if (anEnv.isLocal()) {
-            return;
+    protected void actionPerformedRemote(ExecutionEnvironment env, ActionEvent e) {
+        if (env.isLocal()) {
+            Action delegate = findAction("Actions/Project", "Actions/Project/org-netbeans-modules-project-ui-NewProject"); //NOI18N
+            if (delegate != null) {
+                delegate.actionPerformed(e);
+                return;
+            }
         }
-        this.env = anEnv;
+        this.env = env;
         if (!running) {
             running = true;
             bodyTask.schedule(0);
