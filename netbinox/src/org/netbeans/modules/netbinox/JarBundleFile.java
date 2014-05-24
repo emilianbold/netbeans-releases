@@ -128,7 +128,7 @@ final class JarBundleFile extends BundleFile implements BundleContent {
                             final File bf = new File(getBaseFile().getPath());
                             if (bf.isDirectory()) {
                                 try {
-                                    delegate = new DirBundleFile(bf);
+                                    delegate = new DirBundleFile(bf, false);
                                     return false;
                                 } catch (IOException dirEx) {
                                     NetbinoxFactory.LOG.log(Level.WARNING, 
