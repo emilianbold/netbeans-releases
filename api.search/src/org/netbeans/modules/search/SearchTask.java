@@ -66,9 +66,9 @@ final class SearchTask implements Runnable, Cancellable {
     /** */
     private volatile boolean finished = false;
     /** Search composition */
-    private SearchComposition<?> searchComposition;
+    private final SearchComposition<?> searchComposition;
     /** Replace mode */
-    private boolean replacing;
+    private final boolean replacing;
     /** */
     private ResultViewPanel resultViewPanel = null;    
 
@@ -107,6 +107,7 @@ final class SearchTask implements Runnable, Cancellable {
         GraphicalSearchListener searchListener =
                 this.resultViewPanel.createListener();
         try {
+            makeResultViewBusy(true);
             searchListener.searchStarted();
             Mutex.EVENT.writeAccess(new Runnable() {
                 @Override
@@ -120,6 +121,7 @@ final class SearchTask implements Runnable, Cancellable {
         } finally {
             finished = true;
             searchListener.searchFinished();
+            makeResultViewBusy(false);
         }
     }
 
@@ -197,5 +199,14 @@ final class SearchTask implements Runnable, Cancellable {
 
     void setResultViewPanel(ResultViewPanel resultViewPanel) {
         this.resultViewPanel = resultViewPanel;
+    }
+
+    private void makeResultViewBusy(final boolean busy) {
+        Mutex.EVENT.writeAccess(new Runnable() {
+            @Override
+            public void run() {
+                ResultView.getInstance().makeBusy(busy);
+            }
+        });
     }
 }

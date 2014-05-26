@@ -453,6 +453,7 @@ public final class GeneratorUtilities {
     private MethodTree createConstructor(TypeElement clazz, Iterable<? extends VariableElement> fields, ExecutableElement constructor, boolean isDefault) {
         assert clazz != null && fields != null;
         TreeMaker make = copy.getTreeMaker();
+        CodeStyle cs = DiffContext.getCodeStyle(copy);
         Set<Modifier> mods = EnumSet.of(clazz.getKind() == ElementKind.ENUM ? Modifier.PRIVATE : Modifier.PUBLIC);
         List<VariableTree> parameters = new ArrayList<VariableTree>();
         LinkedList<StatementTree> statements = new LinkedList<StatementTree>();
@@ -464,8 +465,9 @@ public final class GeneratorUtilities {
             if (isDefault) {
                 statements.add(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Literal(defaultValue(type))))); //NOI18N
             } else {
-                parameters.add(make.Variable(parameterModifiers, ve.getSimpleName(), make.Type(type), null));
-                statements.add(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier(ve.getSimpleName())))); //NOI18N
+                String paramName = addParamPrefixSuffix(removeFieldPrefixSuffix(ve, cs), cs);
+                parameters.add(make.Variable(parameterModifiers, paramName, make.Type(type), null));
+                statements.add(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier(paramName)))); //NOI18N
             }
         }
         if (constructor != null) {
@@ -476,13 +478,13 @@ public final class GeneratorUtilities {
                 Iterator<? extends TypeMirror> parameterTypes = constructorType != null ? constructorType.getParameterTypes().iterator() : null;
                 while (parameterElements.hasNext()) {
                     VariableElement ve = parameterElements.next();
-                    Name simpleName = ve.getSimpleName();
                     TypeMirror type = parameterTypes != null ? parameterTypes.next() : ve.asType();
                     if (isDefault) {
                         arguments.add(make.Literal(defaultValue(type)));
                     } else {
-                        parameters.add(make.Variable(parameterModifiers, simpleName, make.Type(type), null));
-                        arguments.add(make.Identifier(simpleName));
+                        String paramName = addParamPrefixSuffix(removeParamPrefixSuffix(ve, cs), cs);
+                        parameters.add(make.Variable(parameterModifiers, paramName, make.Type(type), null));
+                        arguments.add(make.Identifier(paramName));
                     }
                 }
                 statements.addFirst(make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier("super"), arguments))); //NOI18N
@@ -1499,6 +1501,10 @@ public final class GeneratorUtilities {
         return CodeStyleUtils.addPrefixSuffix(name,
                 cs.getParameterNamePrefix(),
                 cs.getParameterNameSuffix());
+    }
+
+    private static String removeParamPrefixSuffix(VariableElement var, CodeStyle cs) {
+        return CodeStyleUtils.removePrefixSuffix(var.getSimpleName(), cs.getParameterNamePrefix(), cs.getParameterNameSuffix());
     }
 
     private static class ClassMemberComparator implements Comparator<Tree> {

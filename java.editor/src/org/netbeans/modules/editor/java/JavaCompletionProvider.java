@@ -3113,8 +3113,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     e.getEnclosingElement().getKind() == METHOD && e.getEnclosingElement().getEnclosingElement().getKind() == FIELD))) &&
                                     !illegalForwardRefs.contains(e);
                         case FIELD:
-                            if (e.getSimpleName().contentEquals(THIS_KEYWORD) || e.getSimpleName().contentEquals(SUPER_KEYWORD))
+                            if (e.getSimpleName().contentEquals(THIS_KEYWORD)) {
+                                if (e.asType().getKind() == TypeKind.DECLARED && ((DeclaredType)e.asType()).asElement() == enclClass)
+                                    return Utilities.startsWith(e.getSimpleName().toString(), prefix) && !isStatic;
+                            } else if (e.getSimpleName().contentEquals(SUPER_KEYWORD)) {
                                 return Utilities.startsWith(e.getSimpleName().toString(), prefix) && !isStatic;
+                            }
                         case ENUM_CONSTANT:
                             return startsWith(env, e.getSimpleName().toString()) &&
                                     !illegalForwardRefs.contains(e) &&

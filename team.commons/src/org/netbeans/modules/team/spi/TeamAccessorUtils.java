@@ -242,6 +242,26 @@ public final class TeamAccessorUtils {
     }    
     
     /**
+     * @param repositoryUrl
+     * @param forceLogin
+     * @return 
+     * @throws java.io.IOException
+     * @see TeamAccessor#getTeamProjectForRepository(java.lang.String)
+     */
+    public static TeamProject getTeamProjectForRepository(String repositoryUrl, boolean forceLogin) throws IOException {
+        for (TeamAccessor ka : getTeamAccessors()) {
+            if(ka.isOwner(repositoryUrl) && forceLogin && !ka.isLoggedIn(repositoryUrl)) {
+                ka.showLogin();
+            } 
+            TeamProject kp = ka.getTeamProjectForRepository(repositoryUrl);
+            if (kp != null) {
+                return kp;
+            }
+        }
+        return null;
+    }    
+    
+    /**
      * @param url
      * @param projectName
      * @return 

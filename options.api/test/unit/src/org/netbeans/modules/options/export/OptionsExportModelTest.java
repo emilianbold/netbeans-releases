@@ -51,6 +51,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -71,6 +73,7 @@ import org.netbeans.modules.options.export.OptionsExportModel.State;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -344,6 +347,22 @@ public class OptionsExportModelTest extends NbTestCase {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+    
+    public void test244640() throws Exception {
+        createModel(new String[][]{
+            {"Category0", "Item00", "dir0/subdir0/.*", null},});
+        ArrayList<String> enabledItems = new ArrayList<String>();
+        enabledItems.add("Category0Item01");
+
+        File targetZipFile = new File(getWorkDir(), "export.zip");
+        model.doExport(targetZipFile, enabledItems);
+        assertEquals(enabledItems, model.getEnabledItemsDuringExport(targetZipFile)); // reading enabledItems.info from zip file
+        
+        assertEquals(null, model.getEnabledItemsDuringExport(sourceUserdir)); // no enabledItems.info in user dir, e.g. version < 7.4
+        // first write the enabledItems.info in user dir
+        Files.write(Paths.get(Utilities.toURI(new File(sourceUserdir, OptionsExportModel.ENABLED_ITEMS_INFO))), "Category0Item01".getBytes());
+        assertEquals(enabledItems, model.getEnabledItemsDuringExport(sourceUserdir)); // reading enabledItems.info from user dir
     }
 
     public void testImportProperties() throws Exception {

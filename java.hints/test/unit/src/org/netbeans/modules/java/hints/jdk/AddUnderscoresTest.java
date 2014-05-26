@@ -72,6 +72,43 @@ public class AddUnderscoresTest extends NbTestCase {
                               "}\n");
     }
 
+    public void testNegativeAdd() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private static final int CONST = -12345678;\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(AddUnderscores.class)
+                .findWarning("2:37-2:46:hint:ERR_org.netbeans.modules.javahints.jdk.AddUnderscores")
+                .applyFix("FIX_org.netbeans.modules.javahints.jdk.AddUnderscores-12_345_678")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    private static final int CONST = -12_345_678;\n" +
+                              "}\n");
+    }
+
+
+    public void testPositiveAdd() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private static final int CONST = +12345678;\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(AddUnderscores.class)
+                .findWarning("2:38-2:46:hint:ERR_org.netbeans.modules.javahints.jdk.AddUnderscores")
+                .applyFix("FIX_org.netbeans.modules.javahints.jdk.AddUnderscores12_345_678")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    private static final int CONST = +12_345_678;\n" +
+                              "}\n");
+    }
+
     public void testSettings() throws Exception {
         HintTest
                 .create()

@@ -326,6 +326,10 @@ class DiffFacility {
             
             // change
             else { // type == 'c'
+                // Note: it's better to first REMOVE then INSERT to avoid insertion attempts into readonly (guarded)
+                // part of text (the writabl area was removed at the 1st step of the change operation). But remove-then-insert is interpreted 
+                // as 'change' by DiffUtilities.diff2ModificationResultDifference. I only wonder why the 'change' type is discarded here,
+                // then reinvented later.
                 StringBuilder builder = new StringBuilder();
                 /*for (int i = delStart; i <= delEnd; i++) {
                     builder.append(lines1[i].data);
@@ -335,8 +339,8 @@ class DiffFacility {
                 for (int i = addStart; i <= addEnd; i++) {
                     builder.append(lines2[i].data);
                 }
-                gdiff.add(Diff.insert(currentPos + (delEnd == Difference.NONE ? lines1[delStart].start : lines1[delEnd].end),
-                        builder.toString()));
+                // delEnd must not be NONE here, see `type' computation
+                gdiff.add(Diff.insert(currentPos + lines1[delEnd].end, builder.toString()));
             }
                     
         }
