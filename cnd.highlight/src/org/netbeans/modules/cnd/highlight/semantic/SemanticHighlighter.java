@@ -189,14 +189,14 @@ public final class SemanticHighlighter extends HighlighterBase {
                 SemanticEntity se = i.next();
                 if (NamedOption.getAccessor().getBoolean(se.getName()) && 
                         (!macroExpansionView || !se.getName().equals(SemanticEntitiesProvider.MacrosCodeProvider.NAME))) { // NOI18N
-                    ReferenceCollector collector = se.getCollector(interrupter);
+                    ReferenceCollector collector = se.getCollector(doc, interrupter);
                     if (collector != null) {
                         // remember the collector for future use
                         collectors.add(collector);
                     } else {
                         // this is simple entity without collector,
                         // let's add its blocks right now
-                        provider.addHighlightsToBag(doc, newBagFast, se.getBlocks(csmFile, interrupter), se);
+                        provider.addHighlightsToBag(doc, newBagFast, se.getBlocks(csmFile, doc, interrupter), se);
                         i.remove();
                     }
                 } else {
@@ -210,7 +210,7 @@ public final class SemanticHighlighter extends HighlighterBase {
                 // here we invoke the collectors
                 // but not for huge documents
                 if (!entities.isEmpty() && !isVeryBigDocument(doc)) {
-                    CsmFileReferences.getDefault().accept(csmFile, new Visitor() {
+                    CsmFileReferences.getDefault().accept(csmFile, doc, new Visitor() {
                         @Override
                         public void visit(CsmReferenceContext context) {
                             CsmReference ref = context.getReference();
