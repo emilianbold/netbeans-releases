@@ -65,23 +65,22 @@ public class Main {
                 "weblogic", "welcome1");
 
         WebLogicRuntime runtime = WebLogicRuntime.getInstance(config);
-        boolean started = runtime.start(new BaseExecutionDescriptor.InputProcessorFactory() {
-
-            @Override
-            public InputProcessor newInputProcessor() {
-                return InputProcessors.copying(new BufferedWriter(new OutputStreamWriter(System.out)));
-            }
-        }, new BaseExecutionDescriptor.InputProcessorFactory() {
-
-            @Override
-            public InputProcessor newInputProcessor() {
-                return InputProcessors.copying(new BufferedWriter(new OutputStreamWriter(System.out)));
-            }
-        }, null);
+        boolean started = runtime.start(new DefaultFactory(), new DefaultFactory(), null);
         System.out.println("Started: " + started);
+
+        boolean startedAgain = runtime.start(new DefaultFactory(), new DefaultFactory(), null);
+        System.out.println("Started again: " + startedAgain);
 
 //        WebLogicDeployer deployer = WebLogicDeployer.getInstance(config, null);
 //        Future<Boolean> ret = deployer.deploy(new File(artifact), null, new String[0]);
 //        System.out.println("Deployed: " + ret.get());
+    }
+
+    private static class DefaultFactory implements BaseExecutionDescriptor.InputProcessorFactory {
+
+        @Override
+        public InputProcessor newInputProcessor() {
+            return InputProcessors.copying(new BufferedWriter(new OutputStreamWriter(System.out)));
+        }
     }
 }
