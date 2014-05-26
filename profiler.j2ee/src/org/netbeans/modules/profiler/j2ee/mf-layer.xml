@@ -46,6 +46,7 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="NBProfiler">
+        <!--
         <folder name="Categories">
             <folder name="Persistence">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.profiler.j2ee.Bundle#NBProfiler/Categories/Persistence"/>
@@ -54,7 +55,7 @@ made subject to such option by the copyright holder.
                     <folder name=".package">
                         <folder name="org.hibernate.impl"/>
                     </folder>
-                    <!--folder name=".type">
+                    <folder name=".type">
                         <folder name="org.hibernate.impl.AbstractQueryImpl"/>
                         <folder name="org.hibernate.impl.CriteriaImpl"/>
                         <folder name="org.hibernate.impl.FetchingScrollableResultsImpl"/>
@@ -67,7 +68,7 @@ made subject to such option by the copyright holder.
                         <folder name="org.hibernate.impl.SessionFactoryObjectFactory"/>
                         <folder name="org.hibernate.impl.SessionImpl"/>
                         <folder name="org.hibernate.impl.StatelessSessionImpl"/>
-                    </folder-->
+                    </folder>
                 </folder>
                 <folder name="JDBC">
                     <attr name="displayName" bundlevalue="org.netbeans.modules.profiler.j2ee.Bundle#NBProfiler/Categories/Persistence/JDBC"/>
@@ -220,10 +221,12 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
         </folder>
+        -->
     </folder>
     <folder name="Projects">
         <folder name="org-netbeans-modules-j2ee-ejbjarproject">
             <folder name="NBProfiler">
+                <!--
                 <folder name="Categories">
                     <file name="Persistence.shadow">
                         <attr name="originalFile" stringvalue="NBProfiler/Categories/Persistence"/>
@@ -235,10 +238,12 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="NBProfiler/Categories/JAX-WS"/>
                     </file>
                 </folder>
+                -->
             </folder>
         </folder>
         <folder name="org-netbeans-modules-web-project">
             <folder name="NBProfiler">
+                <!--
                 <folder name="Categories">
                     <file name="Persistence.shadow">
                         <attr name="originalFile" stringvalue="NBProfiler/Categories/Persistence"/>
@@ -250,6 +255,7 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="NBProfiler/Categories/JAX-WS"/>
                     </file>
                 </folder>
+                -->
             </folder>
         </folder>
     </folder>

@@ -221,6 +221,7 @@ made subject to such option by the copyright holder.
     <folder name="Projects">
         <folder name="org-netbeans-modules-java-j2seproject">
             <folder name="NBProfiler">
+                <!--
                 <folder name="Categories">
                     <file name="IO.shadow">
                         <attr name="originalFile" stringvalue="NBProfiler/Categories/IO"/>
@@ -229,6 +230,7 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="NBProfiler/Categories/UI"/>
                     </file>
                 </folder>
+                -->
             </folder>
         </folder>
     </folder>
