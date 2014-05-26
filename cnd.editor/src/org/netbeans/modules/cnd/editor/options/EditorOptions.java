@@ -299,6 +299,8 @@ public class EditorOptions {
     public static final boolean spaceAfterColonDefault = true;
     public static final String spaceAfterTypeCast = "spaceAfterTypeCast"; //NOI18N
     public static final boolean spaceAfterTypeCastDefault = true;
+    public static final String spaceAfterOperatorKeyword = "spaceAfterOperatorKeyword"; //NOI18N
+    public static final boolean spaceAfterOperatorKeywordfault = false;
     
     //BlankLines
     public static final String blankLinesBeforeClass = "blankLinesBeforeClass"; //NOI18N
@@ -437,6 +439,7 @@ public class EditorOptions {
         defaults.put(spaceBeforeColon,spaceBeforeColonDefault);
         defaults.put(spaceAfterColon,spaceAfterColonDefault);
         defaults.put(spaceAfterTypeCast,spaceAfterTypeCastDefault);
+        defaults.put(spaceAfterOperatorKeyword,spaceAfterOperatorKeywordfault);
         //BlankLines
         defaults.put(blankLinesBeforeClass,blankLinesBeforeClassDefault);
         //defaults.put(blankLinesAfterClass,blankLinesAfterClassDefault);
