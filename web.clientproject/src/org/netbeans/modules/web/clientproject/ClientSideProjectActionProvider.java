@@ -43,6 +43,7 @@ package org.netbeans.modules.web.clientproject;
 
 import java.io.IOException;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.ui.ProjectProblems;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
@@ -55,6 +56,7 @@ import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -100,7 +102,7 @@ public class ClientSideProjectActionProvider implements ActionProvider {
         "LBL_ConfigureGrunt=Action not supported for this configuration.\nDo you want to configure project actions to call Grunt tasks?"
     })
     @Override
-    public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+    public void invokeAction(final String command, final Lookup context) throws IllegalArgumentException {
         LifecycleManager.getDefault().saveAll();
         if (COMMAND_RUN_SINGLE.equals(command)
                 || COMMAND_RUN.equals(command)) {
@@ -126,42 +128,38 @@ public class ClientSideProjectActionProvider implements ActionProvider {
             deleteProject();
             return;
         }
-        ActionProvider ap = getActionProvider();
+        final ActionProvider ap = getActionProvider();
         if (ap != null && isSupportedAction(command, ap)) {
             // #217362 and possibly others
             if (!checkSiteRoot()) {
                 return;
             }
-            ap.invokeAction(command, context);
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    tryGrunt(command, false, true);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            ap.invokeAction(command, context);
+                        }
+                    });
+                }
+            });
             return;
         }
         if (COMMAND_TEST.equals(command)) {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
+                    tryGrunt(command, false, true);
                     runTests();
                 }
             });
             return;
         }
         
-        FileObject gruntFile = project.getProjectDirectory().getFileObject("Gruntfile.js");
-        if (gruntFile !=null) {
-            String gruntBuild = project.getEvaluator().getProperty("grunt.action." + command);
-            if (gruntBuild!=null) {
-                try {
-                    new GruntfileExecutor(gruntFile, gruntBuild.split(" ")).execute();
-                    return;
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            } else {
-                NotifyDescriptor desc = new NotifyDescriptor.Confirmation(Bundle.LBL_ConfigureGrunt(), NotifyDescriptor.YES_NO_OPTION);
-                Object option = DialogDisplayer.getDefault().notify(desc);
-                if (option==NotifyDescriptor.YES_OPTION) {
-                        project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer("grunt");
-                }
-            }
+        if (tryGrunt(command, true, false)) {
             return;
         }
 
@@ -172,6 +170,32 @@ public class ClientSideProjectActionProvider implements ActionProvider {
                 new Object[]{NotifyDescriptor.OK_OPTION},
                 NotifyDescriptor.OK_OPTION);
         DialogDisplayer.getDefault().notify(desc);
+    }
+
+    private boolean tryGrunt(String command, boolean showCustomizer, boolean waitFinished) {
+        FileObject gruntFile = project.getProjectDirectory().getFileObject("Gruntfile.js");
+        if (gruntFile != null) {
+            String gruntBuild = project.getEvaluator().getProperty("grunt.action." + command);
+            if (gruntBuild != null) {
+                try {
+                    ExecutorTask execute = new GruntfileExecutor(gruntFile, gruntBuild.split(" ")).execute();
+                    if (waitFinished) {
+                        execute.result();
+                    }
+                    return true;
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            } else if (showCustomizer) {
+                NotifyDescriptor desc = new NotifyDescriptor.Confirmation(Bundle.LBL_ConfigureGrunt(), NotifyDescriptor.YES_NO_OPTION);
+                Object option = DialogDisplayer.getDefault().notify(desc);
+                if (option == NotifyDescriptor.YES_OPTION) {
+                    project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer("grunt");
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
