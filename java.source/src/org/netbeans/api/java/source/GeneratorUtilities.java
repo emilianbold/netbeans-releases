@@ -361,6 +361,7 @@ public final class GeneratorUtilities {
      */
     public MethodTree createMethod(DeclaredType asMemberOf, ExecutableElement method) {
         TreeMaker make = copy.getTreeMaker();
+        CodeStyle cs = DiffContext.getCodeStyle(copy);
         Set<Modifier> mods = method.getModifiers();
         Set<Modifier> flags = mods.isEmpty() ? EnumSet.noneOf(Modifier.class) : EnumSet.copyOf(mods);
         flags.remove(Modifier.ABSTRACT);
@@ -410,7 +411,8 @@ public final class GeneratorUtilities {
                 parameterModifiers = make.Modifiers(1L << 34,
                         Collections.<AnnotationTree>emptyList());
             }
-            params.add(make.Variable(parameterModifiers, formArgName.getSimpleName(), resolveWildcard(formArgType), null));
+            String paramName = addParamPrefixSuffix(removeParamPrefixSuffix(formArgName, cs), cs);
+            params.add(make.Variable(parameterModifiers, paramName, resolveWildcard(formArgType), null));
         }
 
         List<ExpressionTree> throwsList = new ArrayList<ExpressionTree>();
@@ -1377,6 +1379,7 @@ public final class GeneratorUtilities {
     }
 
     private Map<String, Object> createBindings(TypeElement clazz, ExecutableElement element) {
+        CodeStyle cs = DiffContext.getCodeStyle(copy);       
         Map<String, Object> bindings = new HashMap<String, Object>();
         bindings.put(CLASS_NAME, clazz.getQualifiedName().toString());
         bindings.put(SIMPLE_CLASS_NAME, clazz.getSimpleName().toString());
@@ -1416,7 +1419,7 @@ public final class GeneratorUtilities {
         sb.append("super.").append(element.getSimpleName()).append('('); //NOI18N
         for (Iterator<? extends VariableElement> it = element.getParameters().iterator(); it.hasNext();) {
             VariableElement ve = it.next();
-            sb.append(ve.getSimpleName());
+            sb.append(addParamPrefixSuffix(removeParamPrefixSuffix(ve, cs), cs));
             if (it.hasNext())
                 sb.append(","); //NOI18N
         }
