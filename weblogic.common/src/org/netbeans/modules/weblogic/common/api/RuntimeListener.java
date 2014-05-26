@@ -50,13 +50,19 @@ import org.netbeans.api.annotations.common.NullAllowed;
  *
  * @author Petr Hejl
  */
-public interface SingleDeployListener extends EventListener {
+public interface RuntimeListener extends EventListener {
 
     void onStart();
 
     void onFinish();
 
-    void onFail(@NullAllowed String line);
+    void onFail();
+
+    void onProcessStart();
+
+    void onProcessFinish();
+
+    void onRunning();
 
     void onTimeout();
 

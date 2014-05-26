@@ -64,7 +64,6 @@ import org.netbeans.api.extexecution.base.input.InputProcessors;
 import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.api.extexecution.base.input.LineProcessors;
 import org.openide.util.BaseUtilities;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -95,7 +94,7 @@ public final class WebLogicDeployer {
 
     @NonNull
     public Future<Boolean> deploy(@NonNull final File file,
-            @NullAllowed final SingleDeployListener listener, final String... parameters) {
+            @NullAllowed final DeployListener listener, final String... parameters) {
 
         if (listener != null) {
             listener.onStart();

@@ -46,7 +46,7 @@ package org.netbeans.modules.weblogic.common.api;
  *
  * @author Petr Hejl
  */
-public interface BatchDeployListener extends SingleDeployListener {
+public interface BatchDeployListener extends DeployListener {
 
     void onStepStart(String name);
 

@@ -95,7 +95,7 @@ import org.netbeans.modules.j2ee.weblogic9.config.WLMessageDestination;
 import org.netbeans.modules.j2ee.weblogic9.dd.model.WebApplicationModel;
 import org.netbeans.modules.j2ee.weblogic9.ui.FailedAuthenticationSupport;
 import org.netbeans.modules.weblogic.common.api.BatchDeployListener;
-import org.netbeans.modules.weblogic.common.api.SingleDeployListener;
+import org.netbeans.modules.weblogic.common.api.DeployListener;
 import org.netbeans.modules.weblogic.common.api.WebLogicDeployer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -535,7 +535,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             final String... parameters) {
         final WLProgressObject progress = new WLProgressObject(moduleId);
 
-        SingleDeployListener listener = new SingleDeployListener() {
+        DeployListener listener = new DeployListener() {
 
             @Override
             public void onStart() {

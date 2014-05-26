@@ -43,6 +43,7 @@
 package org.netbeans.modules.weblogic.common.api;
 
 import java.io.File;
+import java.util.Objects;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullUnknown;
 
@@ -53,6 +54,8 @@ import org.netbeans.api.annotations.common.NullUnknown;
 public final class WebLogicConfiguration {
 
     public static final Version VERSION_10 = Version.fromJsr277NotationWithFallback("10"); // NOI18N
+
+    private final String id;
 
     private final File serverHome;
 
@@ -77,6 +80,12 @@ public final class WebLogicConfiguration {
         this.domainHome = domainHome;
         this.host = host;
         this.port = port;
+
+        if (domainHome != null) {
+            id = serverHome + ":" + domainHome;
+        } else {
+            id = host + ":" + port;
+        }
     }
 
     public static WebLogicConfiguration forLocalDomain(File serverHome, File domainHome,
@@ -88,6 +97,10 @@ public final class WebLogicConfiguration {
     public static WebLogicConfiguration forRemoteDomain(File serverHome, String host, int port,
             String username, String password) {
         return new WebLogicConfiguration(serverHome, username, password, null, host, port);
+    }
+
+    public String getId() {
+        return id;
     }
 
     public boolean isRemote() {
@@ -105,17 +118,6 @@ public final class WebLogicConfiguration {
     }
 
     @NonNull
-    public String getAdminURL() {
-        // XXX
-        return "t3://" + host + ":" + port;
-    }
-
-    @NonNull
-    public String getSiteURL() {
-        return null;
-    }
-
-    @NonNull
     public String getUsername() {
         return username;
     }
@@ -125,11 +127,47 @@ public final class WebLogicConfiguration {
         return password;
     }
 
+    public String getHost() {
+        return host;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    @NonNull
+    public String getAdminURL() {
+        // XXX
+        return "t3://" + host + ":" + port;
+    }
+
     @NonNull
     public synchronized WebLogicLayout getLayout() {
         if (layout == null) {
             layout = new WebLogicLayout(this);
         }
         return layout;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 79 * hash + Objects.hashCode(this.id);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final WebLogicConfiguration other = (WebLogicConfiguration) obj;
+        if (!Objects.equals(this.id, other.id)) {
+            return false;
+        }
+        return true;
     }
 }

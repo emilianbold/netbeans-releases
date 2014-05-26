@@ -40,48 +40,28 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.weblogic.common;
+package org.netbeans.modules.weblogic.common.api;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.OutputStreamWriter;
-import org.netbeans.api.extexecution.base.BaseExecutionDescriptor;
-import org.netbeans.api.extexecution.base.input.InputProcessor;
-import org.netbeans.api.extexecution.base.input.InputProcessors;
-import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
-import org.netbeans.modules.weblogic.common.api.WebLogicRuntime;
+import java.util.EventListener;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 
 /**
  *
  * @author Petr Hejl
  */
-public class Main {
+public interface DeployListener extends EventListener {
 
-    public static void main(String[] args) throws Exception {
-        String serverHome = args[0];
-        String domainHome = args[1];
-        //String artifact = args[2];
-        WebLogicConfiguration config = WebLogicConfiguration.forLocalDomain(new File(serverHome), new File(domainHome),
-                "weblogic", "welcome1");
+    void onStart();
 
-        WebLogicRuntime runtime = WebLogicRuntime.getInstance(config);
-        boolean started = runtime.start(new BaseExecutionDescriptor.InputProcessorFactory() {
+    void onFinish();
 
-            @Override
-            public InputProcessor newInputProcessor() {
-                return InputProcessors.copying(new BufferedWriter(new OutputStreamWriter(System.out)));
-            }
-        }, new BaseExecutionDescriptor.InputProcessorFactory() {
+    void onFail(@NullAllowed String line);
 
-            @Override
-            public InputProcessor newInputProcessor() {
-                return InputProcessors.copying(new BufferedWriter(new OutputStreamWriter(System.out)));
-            }
-        }, null);
-        System.out.println("Started: " + started);
+    void onTimeout();
 
-//        WebLogicDeployer deployer = WebLogicDeployer.getInstance(config, null);
-//        Future<Boolean> ret = deployer.deploy(new File(artifact), null, new String[0]);
-//        System.out.println("Deployed: " + ret.get());
-    }
+    void onInterrupted();
+
+    void onException(@NonNull Exception ex);
+
 }
