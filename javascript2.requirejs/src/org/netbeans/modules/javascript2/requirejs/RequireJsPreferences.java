@@ -42,7 +42,7 @@
 package org.netbeans.modules.javascript2.requirejs;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
@@ -106,7 +106,7 @@ public class RequireJsPreferences {
             return Collections.emptyMap();
         }
         String[] mappings = storedMappings.split(Pattern.quote(MAPPINGS_SEPARATOR));
-        HashMap<String, String> result = new HashMap<String, String>(mappings.length);
+        Map<String, String> result = new TreeMap<String, String>();
         String pattern = Pattern.quote(MAPPINGS_PATH_SEPARATOR);
         for (String mapping : mappings) {
             String[] parts = mapping.split(pattern);

@@ -50,7 +50,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -277,11 +277,13 @@ final class RequireJsPanel extends JPanel implements HelpCtx.Provider {
     }
     
     private Map<String, String> getPathMappings() {
-        Map<String, String> mappings = new HashMap(pathMappingTableModel.getRowCount());
-        for (int i = 0; i < pathMappingTableModel.getRowCount() - 1; ++i) {
+        Map<String, String> mappings = new TreeMap();
+        for (int i = 0; i < pathMappingTableModel.getRowCount(); ++i) {
             String mapping = (String) pathMappingTableModel.getValueAt(i, COLUMN_MAPPING_PATH);
             String localPath = ((LocalPathCell) pathMappingTableModel.getValueAt(i, COLUMN_LOCAL_PATH)).getPath();
-            mappings.put(mapping, localPath);
+            if (mapping != null && !mapping.isEmpty() && localPath != null && !localPath.isEmpty()) {
+                mappings.put(mapping, localPath);
+            }
         }
         return mappings;
     }
