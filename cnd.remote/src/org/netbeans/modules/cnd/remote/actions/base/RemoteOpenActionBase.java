@@ -138,15 +138,11 @@ public abstract class RemoteOpenActionBase extends AbstractAction implements Dyn
             if (env == null) {
                 ServerListUI.showServerListDialog();
             } else {
-                actionPerformedRemote();          
+                peformer.actionPerformed(e);
             }
         } else {
-            actionPerformedRemote();          
+            peformer.actionPerformed(e);
         }
-    }
-
-    protected final void actionPerformedRemote() {
-        peformer.actionPerformed(null);
     }
 
     protected abstract Icon getIcon();
