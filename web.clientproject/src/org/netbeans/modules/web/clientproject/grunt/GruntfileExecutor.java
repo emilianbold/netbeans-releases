@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
@@ -58,6 +59,7 @@ import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
@@ -145,6 +147,12 @@ public final class GruntfileExecutor implements Runnable {
         desc = desc.frontWindow(true);
         desc = desc.controllable(true);
         ExecutionService execution = ExecutionService.newService(creator, desc, displayName);
-        execution.run();
+        try {
+            execution.run().get();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 }
