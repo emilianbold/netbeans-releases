@@ -105,7 +105,6 @@ public final class WebLogicRuntime {
         return new WebLogicRuntime(config);
     }
 
-    @NonNull
     public boolean start(@NullAllowed final BaseExecutionDescriptor.InputProcessorFactory outFactory,
             @NullAllowed final BaseExecutionDescriptor.InputProcessorFactory errFactory,
             @NullAllowed final RuntimeListener listener) throws InterruptedException {
@@ -114,7 +113,7 @@ public final class WebLogicRuntime {
             listener.onStart();
         }
 
-        if (config.isRemote()) {
+        if (config.isRemote() || isRunning()) {
             return true;
         }
 
