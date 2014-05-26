@@ -109,12 +109,12 @@ public final class WebLogicRuntime {
             @NullAllowed final BaseExecutionDescriptor.InputProcessorFactory errFactory,
             @NullAllowed final RuntimeListener listener) throws InterruptedException {
 
-        if (listener != null) {
-            listener.onStart();
+        if (config.isRemote()) {
+            return true;
         }
 
-        if (config.isRemote() || isRunning()) {
-            return true;
+        if (listener != null) {
+            listener.onStart();
         }
 
         final AtomicBoolean result = new AtomicBoolean();
@@ -130,6 +130,16 @@ public final class WebLogicRuntime {
                         listener.onFail();
                     }
                     latch.countDown();
+                    return;
+                }
+
+                if (isRunning()) {
+                    result.set(true);
+                    latch.countDown();
+
+                    if (listener != null) {
+                        listener.onRunning();
+                    }
                     return;
                 }
 
@@ -159,7 +169,6 @@ public final class WebLogicRuntime {
                 }
 
                 //builder = initBuilder(builder);
-
                 Process process;
                 try {
                     process = builder.call();
