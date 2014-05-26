@@ -66,7 +66,6 @@ import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.base.Processes;
-import org.netbeans.api.extexecution.base.input.InputProcessors;
 import org.netbeans.api.extexecution.base.input.InputReaderTask;
 import org.netbeans.api.extexecution.base.input.InputReaders;
 import org.netbeans.api.extexecution.startup.StartupExtender;
