@@ -248,26 +248,9 @@ public final class JavaSource {
                 LOGGER.log(Level.FINE, "FileObject ({0}) passed to JavaSource.forFileObject is a template", fileObject.toURI().toString());
                 return null;
             }
-// TODO: Split
-//            DataObject od = DataObject.find(fileObject);
-//            
-//            EditorCookie ec = od.getLookup().lookup(EditorCookie.class);
-//            
-//            if (!(ec instanceof CloneableEditorSupport)) {
-//                //allow creation of JavaSource for .class files:
-//                mimeType = FileUtil.getMIMEType(fileObject, supportedMIMETypes);
-//                if (!("application/x-class-file".equals(mimeType) || "class".equals(fileObject.getExt()))) {
-//                    LOGGER.log(Level.FINE, "DataObject ({1}) created for FileObject ({0}) passed to JavaSource.forFileObject does not provide CloneableEditorSupport and is not a classfile", new Object[] {fileObject.toURI().toString(), od.getClass().getName()});
-//                    return null;
-//                }
-//            }
         } catch (FileStateInvalidException ex) {
             LOGGER.log(Level.FINE, null, ex);
             return null;
-// TODO: Split
-//        } catch (DataObjectNotFoundException ex) {
-//            LOGGER.log(Level.FINE, null, ex);
-//            return null;
         }
         
         Reference<JavaSource> ref = file2JavaSource.get(fileObject);

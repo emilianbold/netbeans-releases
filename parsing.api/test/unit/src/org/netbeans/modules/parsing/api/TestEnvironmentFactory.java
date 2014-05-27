@@ -140,7 +140,7 @@ public class TestEnvironmentFactory implements EnvironmentFactory {
         }
 
         @Override
-        public void addTokenHierarchyListener(TokenHierarchyListener listener) {
+        public void addDocListener(SourceEnvironment.DocListener listener) {
         }
     }
 }

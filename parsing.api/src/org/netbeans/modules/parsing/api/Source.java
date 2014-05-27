@@ -561,8 +561,16 @@ public final class Source {
         ASourceModificationEvent newSourceModificationEvent;
         do {
             oldSourceModificationEvent = sourceModificationEvent.get();
-            boolean mergedChange = sourceChanged | (oldSourceModificationEvent == null ? false : oldSourceModificationEvent.sourceChanged());
-            newSourceModificationEvent = new ASourceModificationEvent (this, mergedChange, startOffset, endOffset);                
+            if (sourceChanged) {
+                if (oldSourceModificationEvent == null || !oldSourceModificationEvent.sourceChanged()) {
+                    newSourceModificationEvent = new ASourceModificationEvent (this, sourceChanged, startOffset, endOffset);                    
+                } else {
+                    oldSourceModificationEvent.add(startOffset, endOffset);
+                    newSourceModificationEvent = oldSourceModificationEvent;
+                }
+            } else {
+                newSourceModificationEvent = oldSourceModificationEvent == null ? new ASourceModificationEvent(this, sourceChanged, startOffset, endOffset) : oldSourceModificationEvent;
+            }
         } while (!sourceModificationEvent.compareAndSet(oldSourceModificationEvent, newSourceModificationEvent));
     }
 

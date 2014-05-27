@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.parsing.implspi;
 
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 
 import javax.swing.text.Document;
@@ -93,7 +94,7 @@ public abstract class SourceEnvironment {
      * 
      * @param listener the listener to add
      */
-    public abstract void addTokenHierarchyListener(@NonNull final TokenHierarchyListener listener);
+    public abstract void addDocListener(@NonNull final DocListener listener);
 
     /**
      * Notifies that the source was actually used, and the parser wants to be
@@ -112,4 +113,6 @@ public abstract class SourceEnvironment {
      */
     public abstract boolean isReparseBlocked();
     
+    public static interface DocListener extends PropertyChangeListener, TokenHierarchyListener {
+    }
 }
