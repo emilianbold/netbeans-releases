@@ -58,8 +58,8 @@ import org.netbeans.modules.weblogic.common.api.WebLogicRuntime;
 public class Main {
 
     public static void main(String[] args) throws Exception {
-        String serverHome = args[0];
-        String domainHome = args[1];
+        String serverHome = "/home/sickboy/software/wls12120/wlserver";//args[0];
+        String domainHome = "/home/sickboy/software/wls12120/user_projects/domains/mydomain";//;args[1];
         //String artifact = args[2];
         WebLogicConfiguration config = WebLogicConfiguration.forLocalDomain(new File(serverHome), new File(domainHome),
                 "weblogic", "welcome1");

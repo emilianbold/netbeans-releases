@@ -44,7 +44,6 @@ package org.netbeans.modules.weblogic.common.api;
 
 import java.util.EventListener;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 
 /**
  *
