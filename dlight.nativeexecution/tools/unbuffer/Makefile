@@ -5,7 +5,11 @@ ROOT_DIR:sh = pwd
 OS = $(shell uname -s)
 OS:sh = uname -s
 
-CONF=$(OS)-x86
+ifeq (armv, $(shell expr substr `arch` 1 4))
+    CONF=$(OS)-arm
+else
+    CONF=$(OS)-x86
+endif
 
 CC=gcc
 
@@ -24,6 +28,8 @@ LINE=sh $(ROOT_DIR)/make/line
 CF_COMMON         = -s -O2
 CF_Linux-x86      = $(CF_COMMON) -DLINUX -shared -fPIC -m32
 EX_Linux-x86      = unbuffer.so
+CF_Linux-arm      = $(CF_COMMON) -DLINUX -shared -fPIC
+EX_Linux-arm      = unbuffer.so
 CF_Linux-x86_64   = $(CF_COMMON) -DLINUX -shared -fPIC -m64
 EX_Linux-x86_64   = unbuffer.so
 CF_MacOSX-x86     = $(CF_COMMON) -DMAXOSX  -shared -m32

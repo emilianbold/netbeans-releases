@@ -412,6 +412,11 @@ public final class CodeStyle {
                          EditorOptions.spaceAfterTypeCastDefault);
     }
     
+    public boolean spaceAfterOperatorKeyword() {
+        return getOption(EditorOptions.spaceAfterOperatorKeyword,
+                         EditorOptions.spaceAfterOperatorKeywordfault);
+    }
+
     //SpacesBeforeLeftBraces
     public boolean spaceBeforeClassDeclLeftBrace(){
         return getOption(EditorOptions.spaceBeforeClassDeclLeftBrace,
