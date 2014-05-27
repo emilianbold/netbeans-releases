@@ -69,4 +69,6 @@ public interface RuntimeListener extends EventListener {
 
     void onException(@NonNull Exception ex);
 
+    void onExit();
+
 }

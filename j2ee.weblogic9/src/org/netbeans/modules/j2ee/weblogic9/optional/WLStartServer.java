@@ -102,11 +102,13 @@ public final class WLStartServer extends StartServer {
      */
     private static final int SERVER_CHECK_TIMEOUT = 10000;
 
-    private static final String JAVA_VENDOR_VARIABLE = "JAVA_VENDOR";    // NOI18N
+    private static final String JAVA_VENDOR_VARIABLE = "JAVA_VENDOR"; // NOI18N
 
-    private static final String JAVA_OPTIONS_VARIABLE = "JAVA_OPTIONS";  // NOI18N
+    private static final String JAVA_OPTIONS_VARIABLE = "JAVA_OPTIONS"; // NOI18N
 
-    private static final String MEMORY_OPTIONS_VARIABLE= "USER_MEM_ARGS";// NOI18N
+    private static final String MEMORY_OPTIONS_VARIABLE= "USER_MEM_ARGS"; // NOI18N
+
+    private static final String KEY_UUID = "NB_EXEC_WL_START_PROCESS_UUID"; //NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(WLStartServer.class.getName());
 
@@ -183,7 +185,7 @@ public final class WLStartServer extends StartServer {
 
         WebLogicRuntime runtime = WebLogicRuntime.getInstance(CommonBridge.getConfiguration(dm));
         runtime.start(new DefaultInputProcessorFactory(uri, false), new DefaultInputProcessorFactory(uri, true),
-                new StartListener(uri, serverName, serverProgress), getStartDebugVariables(dm));
+                new StartListener(uri, serverName, serverProgress), getStartDebugVariables(dm), null);
 
         addServerInDebug(uri);
         return serverProgress;
@@ -200,7 +202,7 @@ public final class WLStartServer extends StartServer {
 
         WebLogicRuntime runtime = WebLogicRuntime.getInstance(CommonBridge.getConfiguration(dm));
         runtime.start(new DefaultInputProcessorFactory(uri, false), new DefaultInputProcessorFactory(uri, true),
-                new StartListener(uri, serverName, serverProgress), getStartVariables(dm));
+                new StartListener(uri, serverName, serverProgress), getStartVariables(dm), null);
 
         removeServerInDebug(uri);
         return serverProgress;
@@ -210,19 +212,38 @@ public final class WLStartServer extends StartServer {
      * @see org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer#startProfiling(javax.enterprise.deploy.spi.Target, org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings)
      */
     @Override
-    public ProgressObject startProfiling( Target target )
-    {
+    public ProgressObject startProfiling(Target target) {
         LOGGER.log(Level.FINER, "Starting server in profiling mode"); // NOI18N
 
-        WLServerProgress serverProgress = new WLServerProgress(this);
-
-        String serverName = dm.getInstanceProperties().getProperty(
+        final WLServerProgress serverProgress = new WLServerProgress(this);
+        final String serverName = dm.getInstanceProperties().getProperty(
                 InstanceProperties.DISPLAY_NAME_ATTR);
-        serverProgress.notifyStart(StateType.RUNNING,
-                NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName));
 
         String uri = dm.getUri();
-        service.submit(new WLProfilingStartTask(uri, serverProgress, dm));
+
+        final WebLogicRuntime runtime = WebLogicRuntime.getInstance(CommonBridge.getConfiguration(dm));
+        runtime.start(new DefaultInputProcessorFactory(uri, false), new DefaultInputProcessorFactory(uri, true), new StartListener(uri, serverName, serverProgress) {
+
+            @Override
+            public void onExit() {
+                int state = ProfilerSupport.getState();
+                if (state == ProfilerSupport.STATE_INACTIVE) {
+                    serverProgress.notifyStart(StateType.FAILED,
+                            NbBundle.getMessage(WLStartServer.class,
+                                    "MSG_START_PROFILED_SERVER_FAILED", serverName));
+                    runtime.kill();
+                }
+            }
+        }, getStartProfileVariables(dm), new WebLogicRuntime.RunningCondition() {
+
+            @Override
+            public boolean isRunning() {
+                int state = ProfilerSupport.getState();
+                return state == ProfilerSupport.STATE_BLOCKING
+                        || state == ProfilerSupport.STATE_RUNNING
+                        || state == ProfilerSupport.STATE_PROFILING;
+            }
+        });
 
         removeServerInDebug(uri);
         return serverProgress;
@@ -439,6 +460,31 @@ public final class WLStartServer extends StartServer {
         return ret;
     }
 
+    private static Map<String, String> getStartProfileVariables(WLDeploymentManager dm) {
+        Map<String, String> ret = new HashMap<String, String>();
+        StringBuilder javaOptsBuilder = new StringBuilder();
+        String javaOpts = dm.getInstanceProperties().getProperty(
+                WLPluginProperties.JAVA_OPTS);
+        if (javaOpts != null && javaOpts.trim().length() > 0) {
+            javaOptsBuilder.append(" ");                              // NOI18N
+            javaOptsBuilder.append(javaOpts.trim());
+        }
+
+        for (StartupExtender args : StartupExtender.getExtenders(
+                Lookups.singleton(CommonServerBridge.getCommonInstance(dm.getUri())), StartupExtender.StartMode.PROFILE)) {
+            for (String singleArg : args.getArguments()) {
+                javaOptsBuilder.append(' ').append(singleArg);
+            }
+        }
+
+        appendNonProxyHosts(javaOptsBuilder);
+        String toAdd = javaOptsBuilder.toString().trim();
+        if (!toAdd.isEmpty()) {
+            ret.put(JAVA_OPTIONS_VARIABLE, toAdd);
+        }
+        return ret;
+    }
+
     private static StringBuilder appendNonProxyHosts(StringBuilder sb) {
         if (sb.indexOf(NonProxyHostsHelper.HTTP_NON_PROXY_HOSTS) < 0) { // NOI18N
             String nonProxyHosts = NonProxyHostsHelper.getNonProxyHosts();
@@ -453,266 +499,6 @@ public final class WLStartServer extends StartServer {
             }
         }
         return sb;
-    }
-
-    private class WLProfilingStartTask extends WLStartTask {
-
-        public WLProfilingStartTask(String uri, WLServerProgress serverProgress,
-                WLDeploymentManager dm) {
-
-            super( uri , serverProgress, dm );
-        }
-
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.j2ee.weblogic9.optional.WLStartServer.WLStartTask#run()
-         */
-        @Override
-        public void run() {
-            super.run();
-            int state = ProfilerSupport.getState();
-            if ( state == ProfilerSupport.STATE_INACTIVE){
-                getProgress().notifyStart(StateType.FAILED,
-                        NbBundle.getMessage(WLStartServer.class,
-                                "MSG_START_PROFILED_SERVER_FAILED",
-                                dm.getInstanceProperties().getProperty(
-                                        InstanceProperties.DISPLAY_NAME_ATTR)));
-                Process process = dm.getServerProcess();
-                if (process != null) {
-                    Map<String, String> mark = new HashMap<String, String>();
-                    mark.put(WLStartTask.KEY_UUID, dm.getUri());
-                    Processes.killTree(process, mark);
-                }
-            }
-        }
-
-        @Override
-        protected ExternalProcessBuilder setJavaOptionsEnv(ExternalProcessBuilder builder) {
-            ExternalProcessBuilder result = builder;
-
-            StringBuilder javaOptsBuilder = new StringBuilder();
-            String javaOpts = dm.getInstanceProperties().getProperty(
-                    WLPluginProperties.JAVA_OPTS);
-            if ( javaOpts!= null && javaOpts.trim().length() >0 ){
-                javaOptsBuilder.append( " " );                              // NOI18N
-                javaOptsBuilder.append( javaOpts.trim() );
-            }
-
-            for (StartupExtender args : StartupExtender.getExtenders(
-                        Lookups.singleton(CommonServerBridge.getCommonInstance(dm.getUri())), StartupExtender.StartMode.PROFILE)) {
-                for (String singleArg : args.getArguments()) {
-                    javaOptsBuilder.append(' ').append(singleArg);
-                }
-            }
-
-            appendNonProxyHosts(javaOptsBuilder);
-            String toAdd = javaOptsBuilder.toString().trim();
-            if (!toAdd.isEmpty()){
-                result = result.addEnvironmentVariable(JAVA_OPTIONS_VARIABLE, 
-                    toAdd);
-            }
-            return result;
-        }
-
-        @Override
-        protected boolean isRunning(){
-            int state = ProfilerSupport.getState();
-            if (state == ProfilerSupport.STATE_BLOCKING ||
-                    state == ProfilerSupport.STATE_RUNNING  ||
-                    state == ProfilerSupport.STATE_PROFILING )
-            {
-                return true;
-            }
-            return super.isRunning();
-        }
-    }
-
-    private class WLStartTask implements Runnable {
-
-        private static final String KEY_UUID = "NB_EXEC_WL_START_PROCESS_UUID"; //NOI18N
-
-        /**
-         * The amount of time in milliseconds during which the server should
-         * start
-         */
-        private static final int TIMEOUT = 300000;
-
-        /**
-         * The amount of time in milliseconds that we should wait between checks
-         */
-        private static final int DELAY = 1000;
-
-        /**
-         * Name of the startup script for Unices
-         */
-        private static final String STARTUP_SH = "startWebLogic.sh";   // NOI18N
-
-        /**
-         * Name of the startup script for windows
-         */
-        private static final String STARTUP_BAT = "startWebLogic.cmd"; // NOI18N
-
-        /**
-         * Name of the startup script for Unices
-         */
-        private static final String STARTUP_SH_DWP_ALTERNATIVE = "startServer.sh";   // NOI18N
-
-        /**
-         * Name of the startup script for windows
-         */
-        private static final String STARTUP_BAT_DWP_ALTERNATIVE = "startServer.cmd"; // NOI18N
-
-        private final String uri;
-
-        private final WLServerProgress serverProgress;
-
-        private final WLDeploymentManager dm;
-
-        public WLStartTask(String uri, WLServerProgress serverProgress, WLDeploymentManager dm) {
-            this.uri = uri;
-            this.serverProgress = serverProgress;
-            this.dm = dm;
-        }
-
-        @Override
-        public void run() {
-            String domainString = dm.getInstanceProperties().getProperty(
-                    WLPluginProperties.DOMAIN_ROOT_ATTR);
-
-            File domainHome = new File(domainString);
-            if (!domainHome.exists() || !domainHome.isDirectory()) {
-                serverProgress.notifyStart(StateType.FAILED,
-                        NbBundle.getMessage(WLStartServer.class, "MSG_NO_DOMAIN_HOME"));
-                return;
-            }
-
-            try {
-                long start = System.currentTimeMillis();
-
-                File startup = null;
-                if (Utilities.isWindows()) {
-                    startup = new File(domainHome, STARTUP_BAT);
-                    if (!startup.exists()) {
-                        startup = new File(new File(domainHome, "bin"), STARTUP_BAT); // NOI18N
-                    }
-                    if (!startup.exists()) {
-                        startup = new File(new File(domainHome, "bin"), STARTUP_BAT_DWP_ALTERNATIVE); // NOI18N
-                    }
-                } else {
-                    startup = new File(domainHome, STARTUP_SH);
-                    if (!startup.exists()) {
-                        startup = new File(new File(domainHome, "bin"), STARTUP_SH); // NOI18N
-                    }                    
-                    if (!startup.exists()) {
-                        startup = new File(new File(domainHome, "bin"), STARTUP_SH_DWP_ALTERNATIVE); // NOI18N
-                    }
-                }
-
-                ExternalProcessBuilder builder = new ExternalProcessBuilder(startup.getAbsolutePath());
-                builder = builder.workingDirectory(domainHome)
-                        .addEnvironmentVariable(KEY_UUID, dm.getUri());
-                
-                String mwHome = dm.getProductProperties().getMiddlewareHome();
-                if (mwHome != null) {
-                    builder = builder.addEnvironmentVariable("MW_HOME", mwHome); // NOI18N
-                }
-
-                builder = initBuilder(builder);
-
-                Process process = builder.call();
-                dm.setServerProcess(process);
-
-                ExecutorService service = Executors.newFixedThreadPool(2);
-                startService(uri, process, service);
-
-                String serverName = dm.getInstanceProperties().getProperty(
-                        InstanceProperties.DISPLAY_NAME_ATTR);
-
-                // wait till the timeout happens, or if the server starts before
-                // send the completed event to j2eeserver
-                while ((System.currentTimeMillis() - start) < TIMEOUT) {
-                    if (isRunning()) {
-                        // reset the restart flag
-                        dm.setRestartNeeded(false);
-
-                        serverProgress.notifyStart(StateType.COMPLETED,
-                                NbBundle.getMessage(WLStartServer.class, "MSG_SERVER_STARTED", serverName));
-
-                        // FIXME we should wait for the process and kill service
-                        boolean interrupted = false;
-                        try {
-                            process.waitFor();
-                        } catch (InterruptedException ex) {
-                            interrupted = true;
-                        }
-                        if (interrupted) {
-                            Thread.currentThread().interrupt();
-                        } else {
-                            stopService(uri, service);
-                        }
-                        return;
-                    }
-                    try {
-                        Thread.sleep(DELAY);
-                    } catch (InterruptedException e) {
-                        serverProgress.notifyStart(StateType.FAILED,
-                                NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_INTERRUPTED"));
-                        Thread.currentThread().interrupt();
-                        return;
-                    }
-                }
-
-                serverProgress.notifyStart(StateType.FAILED,
-                        NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_TIMEOUT"));
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, null, e);
-            }
-        }
-
-        private ExternalProcessBuilder initBuilder(ExternalProcessBuilder builder) {
-            ExternalProcessBuilder result = builder;
-            
-            result = setJavaOptionsEnv(result);
-            String vendor = dm.getInstanceProperties().getProperty(WLPluginProperties.VENDOR);
-            if (vendor != null && vendor.trim().length() > 0) {
-                result = result.addEnvironmentVariable(JAVA_VENDOR_VARIABLE,
-                        vendor.trim());
-            }
-            String memoryOptions = dm.getInstanceProperties().getProperty(
-                    WLPluginProperties.MEM_OPTS);
-            if (memoryOptions != null && memoryOptions.trim().length() > 0) {
-                result = result.addEnvironmentVariable(MEMORY_OPTIONS_VARIABLE,
-                        memoryOptions.trim());
-            }  
-            return result;
-        }
-        
-        protected ExternalProcessBuilder setJavaOptionsEnv(ExternalProcessBuilder builder) {
-            ExternalProcessBuilder result = builder;
-            String javaOpts = dm.getInstanceProperties().getProperty(WLPluginProperties.JAVA_OPTS);
-            StringBuilder sb = new StringBuilder((javaOpts!= null && javaOpts.trim().length() > 0)
-                    ? javaOpts.trim() : "");
-            for (StartupExtender args : StartupExtender.getExtenders(
-                        Lookups.singleton(CommonServerBridge.getCommonInstance(dm.getUri())), StartupExtender.StartMode.NORMAL)) {
-                for (String singleArg : args.getArguments()) {
-                    sb.append(' ').append(singleArg);
-                }
-            }
-
-            appendNonProxyHosts(sb);
-            if (sb.length() > 0) {
-                result = builder.addEnvironmentVariable(JAVA_OPTIONS_VARIABLE,
-                        sb.toString());
-            }
-            return result;
-        }
-
-        protected boolean isRunning(){
-            return WLStartServer.this.isRunning();
-        }
-
-        protected WLServerProgress getProgress(){
-            return serverProgress;
-        }
     }
 
     private class WLStopTask implements Runnable {
@@ -815,7 +601,7 @@ public final class WLStartServer extends StartServer {
                             return;
                         }
                         Map<String, String> mark = new HashMap<String, String>();
-                        mark.put(WLStartTask.KEY_UUID, dm.getUri());
+                        mark.put(KEY_UUID, dm.getUri());
                         Processes.killTree(process, mark);
                 }
 
@@ -977,6 +763,11 @@ public final class WLStartServer extends StartServer {
             LOGGER.log(Level.WARNING, null, ex);
             serverProgress.notifyStart(StateType.FAILED,
                     NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_FAILED", serverName));
+        }
+
+        @Override
+        public void onExit() {
+            // noop
         }
     };
 }

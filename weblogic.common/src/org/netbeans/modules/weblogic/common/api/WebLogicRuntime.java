@@ -66,6 +66,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.base.BaseExecutionDescriptor;
 import org.netbeans.api.extexecution.base.Environment;
+import org.netbeans.api.extexecution.base.Processes;
 import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.netbeans.api.extexecution.base.input.InputReaderTask;
 import org.netbeans.api.extexecution.base.input.InputReaders;
@@ -165,9 +166,14 @@ public final class WebLogicRuntime {
                 reference.set(ex);
                 latch.countDown();
             }
+
+            @Override
+            public void onExit() {
+                // noop
+            }
         };
 
-        start(outFactory, errFactory, listener, environment);
+        start(outFactory, errFactory, listener, environment, null);
         latch.await();
 
         Exception exception = reference.get();
@@ -185,7 +191,8 @@ public final class WebLogicRuntime {
     public void start(@NullAllowed final BaseExecutionDescriptor.InputProcessorFactory outFactory,
             @NullAllowed final BaseExecutionDescriptor.InputProcessorFactory errFactory,
             @NullAllowed final RuntimeListener listener,
-            @NullAllowed final Map<String, String> environment) {
+            @NullAllowed final Map<String, String> environment,
+            @NullAllowed final RunningCondition condition) {
 
         if (listener != null) {
             listener.onStart();
@@ -202,109 +209,116 @@ public final class WebLogicRuntime {
 
             @Override
             public void run() {
-                File domainHome = config.getDomainHome();
-                if (!domainHome.exists() || !domainHome.isDirectory()) {
-                    if (listener != null) {
-                        listener.onFail();
-                    }
-                    return;
-                }
-
-                if (isRunning()) {
-                    if (listener != null) {
-                        listener.onRunning();
-                    }
-                    return;
-                }
-
-                long start = System.currentTimeMillis();
-
-                File startup;
-                if (BaseUtilities.isWindows()) {
-                    startup = new File(domainHome, STARTUP_BAT);
-                    if (!startup.exists()) {
-                        startup = new File(new File(domainHome, "bin"), STARTUP_BAT); // NOI18N
-                    }
-                } else {
-                    startup = new File(domainHome, STARTUP_SH);
-                    if (!startup.exists()) {
-                        startup = new File(new File(domainHome, "bin"), STARTUP_SH); // NOI18N
-                    }
-                }
-
-                org.netbeans.api.extexecution.base.ProcessBuilder builder = org.netbeans.api.extexecution.base.ProcessBuilder.getLocal();
-                builder.setExecutable(startup.getAbsolutePath());
-                builder.setWorkingDirectory(domainHome.getAbsolutePath());
-                builder.getEnvironment().setVariable(KEY_UUID, config.getId());
-
-                File mwHome = config.getLayout().getMiddlewareHome();
-                if (mwHome != null) {
-                    builder.getEnvironment().setVariable("MW_HOME", mwHome.getAbsolutePath()); // NOI18N
-                }
-
-                configureEnvironment(builder.getEnvironment(), environment);
-
-                Process process;
                 try {
-                    process = builder.call();
-                } catch (IOException ex) {
-                    if (listener != null) {
-                        listener.onException(ex);
+                    File domainHome = config.getDomainHome();
+                    if (!domainHome.exists() || !domainHome.isDirectory()) {
+                        if (listener != null) {
+                            listener.onFail();
+                        }
+                        return;
                     }
-                    return;
-                }
-                synchronized (INSTANCES) {
-                    INSTANCES.put(config, process);
-                }
 
-                if (listener != null) {
-                    listener.onProcessStart();
-                }
-
-                ExecutorService service = Executors.newFixedThreadPool(2);
-                startService(service, process, outFactory, errFactory);
-
-                while ((System.currentTimeMillis() - start) < TIMEOUT) {
                     if (isRunning()) {
                         if (listener != null) {
                             listener.onRunning();
                         }
-
-                        // FIXME we should wait for the process and kill service
-                        boolean interrupted = false;
-                        try {
-                            process.waitFor();
-                        } catch (InterruptedException ex) {
-                            interrupted = true;
-                        }
-                        if (interrupted) {
-                            // this is interruption just in wait for process
-                            Thread.currentThread().interrupt();
-                        } else {
-                            stopService(service);
-                            if (listener != null) {
-                                listener.onProcessFinish();
-                            }
-                        }
-                        if (listener != null) {
-                            listener.onFinish();
-                        }
                         return;
                     }
+
+                    long start = System.currentTimeMillis();
+
+                    File startup;
+                    if (BaseUtilities.isWindows()) {
+                        startup = new File(domainHome, STARTUP_BAT);
+                        if (!startup.exists()) {
+                            startup = new File(new File(domainHome, "bin"), STARTUP_BAT); // NOI18N
+                        }
+                    } else {
+                        startup = new File(domainHome, STARTUP_SH);
+                        if (!startup.exists()) {
+                            startup = new File(new File(domainHome, "bin"), STARTUP_SH); // NOI18N
+                        }
+                    }
+
+                    org.netbeans.api.extexecution.base.ProcessBuilder builder
+                            = org.netbeans.api.extexecution.base.ProcessBuilder.getLocal();
+                    builder.setExecutable(startup.getAbsolutePath());
+                    builder.setWorkingDirectory(domainHome.getAbsolutePath());
+                    builder.getEnvironment().setVariable(KEY_UUID, config.getId());
+
+                    File mwHome = config.getLayout().getMiddlewareHome();
+                    if (mwHome != null) {
+                        builder.getEnvironment().setVariable("MW_HOME", mwHome.getAbsolutePath()); // NOI18N
+                    }
+
+                    configureEnvironment(builder.getEnvironment(), environment);
+
+                    Process process;
                     try {
-                        Thread.sleep(DELAY);
-                    } catch (InterruptedException e) {
+                        process = builder.call();
+                    } catch (IOException ex) {
                         if (listener != null) {
-                            listener.onInterrupted();
+                            listener.onException(ex);
                         }
-                        Thread.currentThread().interrupt();
                         return;
                     }
-                }
+                    synchronized (INSTANCES) {
+                        INSTANCES.put(config, process);
+                    }
 
-                // timeouted
-                if (listener != null) {
-                    listener.onTimeout();
+                    if (listener != null) {
+                        listener.onProcessStart();
+                    }
+
+                    ExecutorService service = Executors.newFixedThreadPool(2);
+                    startService(service, process, outFactory, errFactory);
+
+                    while ((System.currentTimeMillis() - start) < TIMEOUT) {
+                        if ((condition != null && condition.isRunning()) || isRunning()) {
+                            if (listener != null) {
+                                listener.onRunning();
+                            }
+
+                            // FIXME we should wait for the process and kill service
+                            boolean interrupted = false;
+                            try {
+                                process.waitFor();
+                            } catch (InterruptedException ex) {
+                                interrupted = true;
+                            }
+                            if (interrupted) {
+                                // this is interruption just in wait for process
+                                Thread.currentThread().interrupt();
+                            } else {
+                                stopService(service);
+                                if (listener != null) {
+                                    listener.onProcessFinish();
+                                }
+                            }
+                            if (listener != null) {
+                                listener.onFinish();
+                            }
+                            return;
+                        }
+                        try {
+                            Thread.sleep(DELAY);
+                        } catch (InterruptedException e) {
+                            if (listener != null) {
+                                listener.onInterrupted();
+                            }
+                            Thread.currentThread().interrupt();
+                            return;
+                        }
+                    }
+
+                    // timeouted
+                    if (listener != null) {
+                        listener.onTimeout();
+                    }
+                } finally {
+                    if (listener != null) {
+                        listener.onExit();
+                    }
                 }
             }
         });
@@ -315,8 +329,20 @@ public final class WebLogicRuntime {
         return null;
     }
 
+    public void kill() {
+        Process process;
+        synchronized (INSTANCES) {
+            process = INSTANCES.get(config);
+        }
+        if (process != null) {
+            Map<String, String> mark = new HashMap<String, String>();
+            mark.put(KEY_UUID, config.getId());
+            Processes.killTree(process, mark);
+        }
+    }
+
     public boolean isRunning() {
-        Process proc = null;
+        Process proc;
         synchronized (INSTANCES) {
             proc = INSTANCES.get(config);
         }
@@ -413,5 +439,11 @@ public final class WebLogicRuntime {
             LOGGER.log(Level.FINE, null, ioe);
             return false;
         }
+    }
+
+    public static interface RunningCondition {
+
+        boolean isRunning();
+
     }
 }
