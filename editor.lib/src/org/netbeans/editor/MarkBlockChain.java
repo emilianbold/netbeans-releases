@@ -327,11 +327,38 @@ public class MarkBlockChain {
         currentBlock = null; // make sure current block is cleared
         return blk;
     }
+    
+    synchronized int adjustToBlockHead(int pos) {
+        int rel = compareBlock(pos, pos) & MarkBlock.IGNORE_EMPTY;
+        if (rel == MarkBlock.INSIDE_BEGIN || rel == MarkBlock.INNER) {
+            pos = currentBlock.getEndOffset();
+        }
+        return pos;
+    }
 
     public synchronized int adjustToBlockEnd(int pos) {
         int rel = compareBlock(pos, pos) & MarkBlock.IGNORE_EMPTY;
         if (rel == MarkBlock.INSIDE_BEGIN || rel == MarkBlock.INNER) { // inside blk
             pos = currentBlock.getEndOffset();
+        }
+        return pos;
+    }
+    
+    synchronized int adjustToPrevBlockEnd(int pos) {
+        int rel = compareBlock(pos, pos) & MarkBlock.IGNORE_EMPTY;
+        if ((rel & MarkBlock.AFTER) != 0) {
+            pos = currentBlock.getEndOffset();
+        } else {
+            if (currentBlock != null) {
+                MarkBlock prevBlk = currentBlock.getPrev();
+                if (prevBlk != null) {
+                    pos = prevBlk.getEndOffset();
+                } else {
+                    pos = -1;
+                }
+            } else {
+                pos = -1;
+            }
         }
         return pos;
     }

@@ -45,12 +45,15 @@ package org.netbeans.modules.parsing.api;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.swing.text.Document;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.test.MockLookup;
+import org.netbeans.spi.editor.document.DocumentFactory;
+import org.netbeans.editor.BaseDocument;
 
 /**
  *
@@ -78,6 +81,12 @@ public class ParsingTestBase extends NbTestCase {
 //        MockLookup.setLookup(
 //                Lookups.metaInfServices(getClass().getClassLoader()),
 //                createTestServices());
+        MockMimeLookup.setInstances(MimePath.EMPTY, new DocumentFactory() {
+            @Override
+            public Document createDocument(String mimeType) {
+                return new BaseDocument(false, mimeType);
+            }
+        });
     }
     
     protected Class[] getMockServices() {

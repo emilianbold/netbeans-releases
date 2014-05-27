@@ -227,3 +227,4 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-modules-extexecution-base" value="${javadoc.web.root}/org-netbeans-modules-extexecution-base"/>
 <property name="javadoc.docs.org-netbeans-modules-java-platform-ui" value="${javadoc.web.root}/org-netbeans-modules-java-platform-ui"/>
 <property name="javadoc.docs.org-netbeans-modules-projectuiapi-base" value="${javadoc.web.root}/org-netbeans-modules-projectuiapi-base"/>
+<property name="javadoc.docs.org-netbeans-modules-editor-document" value="${javadoc.web.root}/org-netbeans-modules-editor-document"/>

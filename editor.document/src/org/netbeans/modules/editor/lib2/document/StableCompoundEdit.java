@@ -43,10 +43,10 @@ package org.netbeans.modules.editor.lib2.document;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.UIManager;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
+import org.openide.util.NbBundle;
 
 /**
  * Similar to Swing's {@link javax.swing.undo.CompoundEdit} but guarantees
@@ -194,10 +194,9 @@ public class StableCompoundEdit implements UndoableEdit {
 	} else {
             String name = getPresentationName();
             if (!"".equals(name)) {
-                name = UIManager.getString("AbstractUndoableEdit.undoText")
-                        + " " + name;
+                name = NbBundle.getMessage(ContentEdit.class, "AbstractUndoableEdit.undoText.param", name); // NOI18N
             } else {
-                name = UIManager.getString("AbstractUndoableEdit.undoText");
+                name = NbBundle.getMessage(ContentEdit.class, "AbstractUndoableEdit.undoText"); // NOI18N
             }
 
             return name;
@@ -212,10 +211,9 @@ public class StableCompoundEdit implements UndoableEdit {
 	} else {
             String name = getPresentationName();
             if (!"".equals(name)) {
-                name = UIManager.getString("AbstractUndoableEdit.redoText")
-                        + " " + name;
+                name = NbBundle.getMessage(ContentEdit.class, "AbstractUndoableEdit.redoText.param", name); // NOI18N
             } else {
-                name = UIManager.getString("AbstractUndoableEdit.redoText");
+                name = NbBundle.getMessage(ContentEdit.class, "AbstractUndoableEdit.redoText"); // NOI18N
             }
 
             return name;

@@ -49,6 +49,7 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ErroneousTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
@@ -79,7 +80,6 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.jvm.ClassReader;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -98,7 +98,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -124,14 +123,12 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.swing.text.Document;
 import javax.tools.JavaFileObject;
-
-import com.sun.source.tree.ErroneousTree;
-
+import org.netbeans.api.editor.document.LineDocumentUtils;
+import org.netbeans.api.editor.guards.DocumentGuards;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.editor.GuardedDocument;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
 import org.netbeans.modules.java.source.parsing.AbstractSourceFileObject;
@@ -236,12 +233,13 @@ public final class GeneratorUtilities {
                 }
                 if (idx < 0 && (codeStyle.getClassMemberInsertionPoint() == CodeStyle.InsertionPoint.FIRST_IN_CATEGORY && comparator.compare(member, tree) <= 0
                         || comparator.compare(member, tree) < 0)) {
-                    if (doc == null || !(doc instanceof GuardedDocument)) {
+                    DocumentGuards guards = LineDocumentUtils.as(doc, DocumentGuards.class);
+                    if (doc == null || guards == null) {
                         idx = i;
                         continue;
                     }
                     int pos = (int)(lastMember != null ? sp.getEndPosition(compilationUnit, lastMember) : sp.getStartPosition( compilationUnit,clazz));
-                    pos = ((GuardedDocument)doc).getGuardedBlockChain().adjustToBlockEnd(pos);
+                    pos = guards.adjustPosition(pos, true);
                     long treePos = sp.getStartPosition(compilationUnit, tree);
                     if (treePos < 0 || pos <= treePos) {
                         idx = i;

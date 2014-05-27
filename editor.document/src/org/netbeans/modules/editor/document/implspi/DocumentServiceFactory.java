@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,34 +37,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.editor.lib2.document;
+
+package org.netbeans.modules.editor.document.implspi;
 
 import javax.swing.text.Document;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Abstract implementation of editor character services.
- *
- * @author mmetelka
+ * Allows to attach a service implementation to the document. A service
+ * implementation may be a {@link CharClassifier}, {@link AtomicDocument}
+ * or any public service interface to be available together with a certain
+ * document implementation.
+ * <p/>
+ * The implementation should be registered on path <code>Editors/Documents/
+ * &ltimplementation-class-fqn></code> using {@link ServiceProvider} or XML
+ * layer.
+ * <p/>
+ * DocumentServices are merged for all supertypes of the actual document's impl
+ * class, services registered for more specific types take priority.
+ * @author sdedic
  */
-public final class DefaultEditorCharacterServices extends EditorCharacterServices {
-
-    @Override
-    public int getIdentifierEnd(Document doc, int offset, boolean backward) {
-        DocumentCharacterAcceptor characterAcceptor = DocumentCharacterAcceptor.get(doc);
-        CharSequence docText = DocumentUtilities.getText(doc);
-        if (backward) {
-            while (--offset >= 0 && characterAcceptor.isIdentifier(docText.charAt(offset))) { }
-            return offset + 1;
-        } else {
-            int docTextLen = docText.length();
-            while (offset < docTextLen && characterAcceptor.isIdentifier(docText.charAt(offset))) {
-                offset++;
-            }
-            return offset;
-        }
-    }
-
+public interface DocumentServiceFactory<D extends Document> {
+    public Lookup forDocument(D doc);
 }

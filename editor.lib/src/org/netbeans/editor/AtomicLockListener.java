@@ -86,7 +86,9 @@ import java.util.EventListener;
  *
  *  }
  *  <PRE>
+ * @deprecated use {@link org.netbeans.api.editor.document.AtomicLockListener}
  */
+@Deprecated
 public interface AtomicLockListener extends EventListener {
 
     public void atomicLock(AtomicLockEvent evt);

@@ -106,7 +106,18 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
-
+      <change id="EventPropertyStorage.test">
+          <summary>Added test for property storage support on events</summary>
+          <version major="1" minor="59"/>
+          <date day="20" month="5" year="2014"/>
+          <author login="sdedic"/>
+          <compatibility addition="yes" deletion="no" modification="no" binary="compatible" semantic="compatible"/>
+          <description>
+              Presence of property storage depends on the event publisher or document implementation. A client that
+              wants to attach property to the event should be able to check whether the feature is available. In past
+              the check was done by testing the implementation document type, which is not desirable.
+          </description>
+      </change>
       <change id="StringEscapeUtils">
           <summary>Added String escape utils</summary>
           <version major="1" minor="52"/>

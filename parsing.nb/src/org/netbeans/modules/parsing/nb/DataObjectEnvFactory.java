@@ -165,7 +165,7 @@ public final class DataObjectEnvFactory extends SourceEnvironment implements Env
     }
 
     @Override
-    public void addTokenHierarchyListener(TokenHierarchyListener listener) {
+    public void addDocListener(SourceEnvironment.DocListener listener) {
     }
 
     @Override

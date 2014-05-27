@@ -93,6 +93,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeListener;
@@ -101,6 +102,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.EditorRegistry;
@@ -158,8 +160,6 @@ final class EventSupport extends SourceEnvironment {
 //        }
 //    });
 
-    private static final EditorRegistryListener editorRegistryListener  = new EditorRegistryListener();
-    
     public EventSupport (final SourceControl sourceControl) {
         assert sourceControl != null;
         this.envControl = sourceControl;
@@ -318,8 +318,8 @@ final class EventSupport extends SourceEnvironment {
         private final EditorCookie.Observable ec;
         private DocumentListener docListener;
         private TokenHierarchyListener thListener;
-        private EventListenerList externalTHListeners = new EventListenerList();
-        
+        private EventListenerList externalDocListeners = new EventListenerList();
+    
         @SuppressWarnings("LeakingThisInConstructor")
         public DocListener (final EditorCookie.Observable ec) {
             assert ec != null;
@@ -331,6 +331,7 @@ final class EventSupport extends SourceEnvironment {
             if (doc != null) {
                 assignDocumentListener(doc);
             }
+            editorRegistryListener.addPropertyChangeListener(WeakListeners.propertyChange(this, editorRegistryListener));
         }
         
         public DocListener(final Document doc) {
@@ -360,6 +361,12 @@ final class EventSupport extends SourceEnvironment {
                     assignDocumentListener(doc);
                     resetState(true, false, -1, -1, false);
                 }                
+            } else if (EditorRegistry.FOCUS_GAINED_PROPERTY.equals(evt.getPropertyName())) {
+                final JTextComponent focused = EditorRegistry.focusedComponent();
+                PropertyChangeEvent newEvt = new PropertyChangeEvent(this, null, null, focused);
+                for (SourceEnvironment.DocListener dl : externalDocListeners.getListeners(SourceEnvironment.DocListener.class)) {
+                    dl.propertyChange(newEvt);
+                }
             }
         }
         
@@ -389,8 +396,8 @@ final class EventSupport extends SourceEnvironment {
         @Override
         public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
             resetState (true, false, evt.affectedStartOffset(), evt.affectedEndOffset(), false);
-            for (TokenHierarchyListener thl : externalTHListeners.getListeners(TokenHierarchyListener.class)) {
-                thl.tokenHierarchyChanged(evt);
+            for (SourceEnvironment.DocListener dl : externalDocListeners.getListeners(SourceEnvironment.DocListener.class)) {
+                dl.tokenHierarchyChanged(evt);
             }
         }
     }
@@ -465,18 +472,24 @@ final class EventSupport extends SourceEnvironment {
         }
     }
 
+    private static final EditorRegistryListener editorRegistryListener  = new EditorRegistryListener();
+    
     //Public because of test
     public static class EditorRegistryListener implements CaretListener, PropertyChangeListener {
 
         private static final AtomicBoolean k24 = new AtomicBoolean();
                         
         private Reference<JTextComponent> lastEditorRef;
+        private EventListenerList externalPCListeners = new EventListenerList();
         
         private EditorRegistryListener () {
             EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     editorRegistryChanged();
+                    for (PropertyChangeListener pcl : externalPCListeners.getListeners(PropertyChangeListener.class)) {
+                        pcl.propertyChange(evt);
+                    }
                 }
             });
             editorRegistryChanged();
@@ -558,6 +571,14 @@ final class EventSupport extends SourceEnvironment {
                 support.envControl.revalidate(0);
             }
         }
+        
+        private void addPropertyChangeListener(PropertyChangeListener listener) {
+            externalPCListeners.add(PropertyChangeListener.class, listener);
+        }
+        
+        private void removePropertyChangeListener(PropertyChangeListener listener) {
+            externalPCListeners.remove(PropertyChangeListener.class, listener);
+        }                
     }
 
     // </editor-fold>
@@ -655,9 +676,9 @@ final class EventSupport extends SourceEnvironment {
     }
 
     @Override
-    public void addTokenHierarchyListener(TokenHierarchyListener listener) {
+    public void addDocListener(SourceEnvironment.DocListener listener) {
         if (docListener != null) {
-            docListener.externalTHListeners.add(TokenHierarchyListener.class, listener);
+            docListener.externalDocListeners.add(SourceEnvironment.DocListener.class, listener);
         }
     }
 }

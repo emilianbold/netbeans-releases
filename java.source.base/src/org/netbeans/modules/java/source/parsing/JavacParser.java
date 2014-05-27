@@ -71,7 +71,6 @@ import com.sun.tools.javac.util.Options;
 import com.sun.tools.javac.util.Position.LineMapImpl;
 
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -106,7 +105,6 @@ import javax.tools.JavaFileObject;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.queries.SourceLevelQuery;
@@ -118,7 +116,6 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenChange;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyEventType;
-import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -152,6 +149,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.Utilities;
+import org.netbeans.modules.parsing.implspi.SourceEnvironment;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
@@ -162,7 +160,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.Pair;
 import org.openide.util.WeakListeners;
 
@@ -254,7 +251,7 @@ public class JavacParser extends Parser {
             if (fo != null) {
                 //fileless Source -- ie. debugger watch CC etc
                 filter = JavaFileFilterQuery.getFilter(fo);
-                Utilities.addTokenHierarchyListener(source, new DocListener());
+                Utilities.addDocListener(source, new DocListener());
             }
         }
         this.filterListener = filter != null ? new FilterListener (filter) : null;
@@ -1215,27 +1212,24 @@ public class JavacParser extends Parser {
      * Lexer listener used to detect partial reparse
      * todo: should be replaced by parsing API events when available
      */
-    private class DocListener implements PropertyChangeListener, TokenHierarchyListener {
+    private class DocListener implements SourceEnvironment.DocListener {
 
         private volatile Document document;
 
         @SuppressWarnings("LeakingThisInConstructor")
         public DocListener () {
-            EditorRegistry.addPropertyChangeListener(new EditorRegistryWeakListener(this));
         }
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (EditorRegistry.FOCUS_GAINED_PROPERTY.equals(evt.getPropertyName())) {
-                final Document doc = document;
-                final JTextComponent focused = EditorRegistry.focusedComponent();
-                final Document focusedDoc = focused == null ? null : focused.getDocument();
-                if (doc != null) {
-                    if (doc == focusedDoc) {
-                        positions.clear();
-                    } else if (ciImpl != null) {
-                        ciImpl.dispose();
-                    }
+            final Document doc = document;
+            final JTextComponent focused = (JTextComponent) evt.getNewValue();
+            final Document focusedDoc = focused == null ? null : focused.getDocument();
+            if (doc != null) {
+                if (doc == focusedDoc) {
+                    positions.clear();
+                } else if (ciImpl != null) {
+                    ciImpl.dispose();
                 }
             }
         }
@@ -1295,43 +1289,6 @@ public class JavacParser extends Parser {
                 positions.clear();
                 JavacParser.this.changedMethod.set(null);
             }
-        }
-    }
-
-    private static final class EditorRegistryWeakListener extends WeakReference<PropertyChangeListener> implements PropertyChangeListener, Runnable {
-        private Reference<JTextComponent> last;
-
-        private EditorRegistryWeakListener(final @NonNull PropertyChangeListener delegate) {
-            super(delegate,org.openide.util.BaseUtilities.activeReferenceQueue());
-        }
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            final PropertyChangeListener delegate = get();
-            final JTextComponent lastCandidate = EditorRegistry.focusedComponent();
-            if (delegate != null && lastCandidate != null && lastCandidate != getLast()) {
-                setLast(lastCandidate);
-                delegate.propertyChange(evt);
-            }
-        }
-
-        @Override
-        public void run() {
-            EditorRegistry.removePropertyChangeListener(this);
-        }
-
-        /**
-         * @return the last
-         */
-        private JTextComponent getLast() {
-            return last == null ? null : last.get();
-        }
-
-        /**
-         * @param last the last to set
-         */
-        private void setLast(JTextComponent last) {
-            this.last = new WeakReference<JTextComponent>(last);
         }
     }
 

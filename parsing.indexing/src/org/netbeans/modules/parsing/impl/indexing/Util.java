@@ -48,7 +48,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -60,7 +59,7 @@ import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
+import org.netbeans.modules.parsing.api.ParserManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.TopologicalSortException;
@@ -78,7 +77,7 @@ public final class Util {
         Boolean.getBoolean("disable.reversedeps.fastpath"); //NOI18N
 
     public static Set<String> getAllMimeTypes () {
-        return allMimeTypes != null ? allMimeTypes : EditorSettings.getDefault().getAllMimeTypes();
+        return allMimeTypes != null ? allMimeTypes : ParserManager.getAllMimeTypes();
     }
 
     public static boolean canBeParsed(String mimeType) {

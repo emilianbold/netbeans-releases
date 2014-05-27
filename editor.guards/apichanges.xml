@@ -108,6 +108,27 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="DocumentGuards">
+            <api name="general"/>
+            <summary>DocumentGuards API</summary>
+            <version major="1" minor="29"/>
+            <date day="21" month="5" year="2014"/>
+            <author login="sdedic"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no"/>
+            <description>
+                <p>
+                    APIs exposed and actually used on GuardedDocument in <code>editor.lib</code> module is now declared in Editor Guarded Sections.
+                    Clients may depend on Guarded Sections instead of on fading-away editor.lib module.
+                </p>
+                <p>
+                    Dependency on <code>openide.text</code> eliminated, new SPI <code>GuardedRegionMarker</code>
+                    is added for Documents that are willing to style their contents according to guarded areas.
+                </p>
+            </description>
+            <class name="GuardedRegionMarker" package="org.netbeans.spi.editor.guards"/>
+            <class name="DocumentGuards" package="org.netbeans.api.editor.guards"/>
+            <issue number="244679"/>
+        </change>
         <change id="AbstractGuardedSectionsProvider-useReadersWritersOnSet">
             <api name="general"/>
             <summary>Ability run guarded readers/writers when the content of the guarded section's content is set</summary>
