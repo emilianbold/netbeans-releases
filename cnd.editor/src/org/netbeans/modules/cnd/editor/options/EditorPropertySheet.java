@@ -351,6 +351,7 @@ public class EditorPropertySheet extends javax.swing.JPanel
             set.put(new BooleanNodeProp(language, preferences, EditorOptions.spaceBeforeColon));
             set.put(new BooleanNodeProp(language, preferences, EditorOptions.spaceAfterColon));
             set.put(new BooleanNodeProp(language, preferences, EditorOptions.spaceAfterTypeCast));
+            set.put(new BooleanNodeProp(language, preferences, EditorOptions.spaceAfterOperatorKeyword));
             sheet.put(set);
         }
 
