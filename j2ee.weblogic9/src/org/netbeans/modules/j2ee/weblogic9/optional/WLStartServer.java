@@ -65,7 +65,9 @@ import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.api.extexecution.base.BaseExecutionDescriptor;
 import org.netbeans.api.extexecution.base.Processes;
+import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.netbeans.api.extexecution.base.input.InputReaderTask;
 import org.netbeans.api.extexecution.base.input.InputReaders;
 import org.netbeans.api.extexecution.startup.StartupExtender;
@@ -75,9 +77,12 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
+import org.netbeans.modules.j2ee.weblogic9.CommonBridge;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.weblogic.common.api.RuntimeListener;
+import org.netbeans.modules.weblogic.common.api.WebLogicRuntime;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -96,6 +101,12 @@ public final class WLStartServer extends StartServer {
      * way.
      */
     private static final int SERVER_CHECK_TIMEOUT = 10000;
+
+    private static final String JAVA_VENDOR_VARIABLE = "JAVA_VENDOR";    // NOI18N
+
+    private static final String JAVA_OPTIONS_VARIABLE = "JAVA_OPTIONS";  // NOI18N
+
+    private static final String MEMORY_OPTIONS_VARIABLE= "USER_MEM_ARGS";// NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(WLStartServer.class.getName());
 
@@ -183,15 +194,88 @@ public final class WLStartServer extends StartServer {
     public ProgressObject startDeploymentManager() {
         LOGGER.log(Level.FINER, "Starting server"); // NOI18N
 
-        WLServerProgress serverProgress = new WLServerProgress(this);
+        final WLServerProgress serverProgress = new WLServerProgress(this);
 
-        String serverName = dm.getInstanceProperties().getProperty(
+        final String serverName = dm.getInstanceProperties().getProperty(
                 InstanceProperties.DISPLAY_NAME_ATTR);
-        serverProgress.notifyStart(StateType.RUNNING,
-                NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName));
 
-        String uri = dm.getUri();
-        service.submit(new WLStartTask(uri, serverProgress, dm));
+        final String uri = dm.getUri();
+        RuntimeListener listener = new RuntimeListener() {
+
+            @Override
+            public void onStart() {
+                serverProgress.notifyStart(StateType.RUNNING,
+                        NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName));
+            }
+
+            @Override
+            public void onFinish() {
+                // noop
+            }
+
+            @Override
+            public void onFail() {
+//                serverProgress.notifyStart(StateType.FAILED,
+//                        NbBundle.getMessage(WLStartServer.class, "MSG_NO_DOMAIN_HOME"));
+                serverProgress.notifyStart(StateType.FAILED,
+                        NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_FAILED", serverName));
+            }
+
+            @Override
+            public void onProcessStart() {
+                InputOutput io = UISupport.getServerIO(uri);
+                if (io == null) {
+                    return;
+                }
+
+                try {
+                    // as described in the api we reset just ouptut
+                    io.getOut().reset();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                }
+
+                io.select();
+            }
+
+            @Override
+            public void onProcessFinish() {
+                InputOutput io = UISupport.getServerIO(uri);
+                if (io != null) {
+                    io.getOut().close();
+                    io.getErr().close();
+                }
+            }
+
+            @Override
+            public void onRunning() {
+                serverProgress.notifyStart(StateType.COMPLETED,
+                        NbBundle.getMessage(WLStartServer.class, "MSG_SERVER_STARTED", serverName));
+            }
+
+            @Override
+            public void onTimeout() {
+                serverProgress.notifyStart(StateType.FAILED,
+                        NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_TIMEOUT"));
+            }
+
+            @Override
+            public void onInterrupted() {
+                serverProgress.notifyStart(StateType.FAILED,
+                        NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_INTERRUPTED"));
+            }
+
+            @Override
+            public void onException(Exception ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+                serverProgress.notifyStart(StateType.FAILED,
+                        NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_FAILED", serverName));
+            }
+        };
+
+        WebLogicRuntime runtime = WebLogicRuntime.getInstance(CommonBridge.getConfiguration(dm));
+        runtime.start(new DefaultInputProcessorFactory(uri, false), new DefaultInputProcessorFactory(uri, true),
+                listener, getStartVariables(dm));
 
         removeServerInDebug(uri);
         return serverProgress;
@@ -370,6 +454,36 @@ public final class WLStartServer extends StartServer {
         return true;
     }
 
+    private static Map<String, String> getStartVariables(WLDeploymentManager dm) {
+        Map<String, String> ret = new HashMap<String, String>();
+
+        String javaOpts = dm.getInstanceProperties().getProperty(WLPluginProperties.JAVA_OPTS);
+        StringBuilder sb = new StringBuilder((javaOpts != null && javaOpts.trim().length() > 0)
+                ? javaOpts.trim() : "");
+        for (StartupExtender args : StartupExtender.getExtenders(
+                Lookups.singleton(CommonServerBridge.getCommonInstance(dm.getUri())), StartupExtender.StartMode.NORMAL)) {
+            for (String singleArg : args.getArguments()) {
+                sb.append(' ').append(singleArg);
+            }
+        }
+
+        appendNonProxyHosts(sb);
+        if (sb.length() > 0) {
+            ret.put(JAVA_OPTIONS_VARIABLE, sb.toString());
+        }
+
+        String vendor = dm.getInstanceProperties().getProperty(WLPluginProperties.VENDOR);
+        if (vendor != null && vendor.trim().length() > 0) {
+            ret.put(JAVA_VENDOR_VARIABLE, vendor.trim());
+        }
+        String memoryOptions = dm.getInstanceProperties().getProperty(
+                WLPluginProperties.MEM_OPTS);
+        if (memoryOptions != null && memoryOptions.trim().length() > 0) {
+            ret.put(MEMORY_OPTIONS_VARIABLE, memoryOptions.trim());
+        }
+        return ret;
+    }
+
     private static StringBuilder appendNonProxyHosts(StringBuilder sb) {
         if (sb.indexOf(NonProxyHostsHelper.HTTP_NON_PROXY_HOSTS) < 0) { // NOI18N
             String nonProxyHosts = NonProxyHostsHelper.getNonProxyHosts();
@@ -499,14 +613,6 @@ public final class WLStartServer extends StartServer {
     }
 
     private class WLStartTask implements Runnable {
-
-        static final String JAVA_VENDOR_VARIABLE = "JAVA_VENDOR";    // NOI18N
-
-        static final String JAVA_OPTIONS_VARIABLE = "JAVA_OPTIONS";  // NOI18N
-        
-        static final String MEMORY_OPTIONS_VARIABLE= "USER_MEM_ARGS";// NOI18N
-
-        static final String MEMORY_OPTIONS_VARIABLE_11_WEB = "MEM_ARGS";// NOI18N
 
         private static final String KEY_UUID = "NB_EXEC_WL_START_PROCESS_UUID"; //NOI18N
 
@@ -849,6 +955,29 @@ public final class WLStartServer extends StartServer {
                     stopService(uri, stopService);
                 }
             }
+        }
+    }
+
+    private static class DefaultInputProcessorFactory implements BaseExecutionDescriptor.InputProcessorFactory {
+
+        private final String uri;
+
+        private final boolean error;
+
+        public DefaultInputProcessorFactory(String uri, boolean error) {
+            this.uri = uri;
+            this.error = error;
+        }
+        
+        @Override
+        public InputProcessor newInputProcessor() {
+            InputOutput io = UISupport.getServerIO(uri);
+            if (io == null) {
+                return null;
+            }
+
+            return org.netbeans.api.extexecution.print.InputProcessors.printing(
+                    error ? io.getErr() : io.getOut(), new ErrorLineConvertor(), true);
         }
     }
 }
