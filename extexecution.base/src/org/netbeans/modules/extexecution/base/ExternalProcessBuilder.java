@@ -99,8 +99,6 @@ public final class ExternalProcessBuilder implements Callable<Process> {
 
     private final Map<String, String> envVariables = new HashMap<String, String>();
 
-    private final boolean emptySystemVariables;
-
     /**
      * Creates the new builder that will create the process by running
      * given executable. Arguments must not be part of the string.
@@ -118,7 +116,6 @@ public final class ExternalProcessBuilder implements Callable<Process> {
         this.arguments.addAll(builder.arguments);
         this.paths.addAll(builder.paths);
         this.envVariables.putAll(builder.envVariables);
-        this.emptySystemVariables = builder.emptySystemVariables;
     }
 
     /**
@@ -288,13 +285,7 @@ public final class ExternalProcessBuilder implements Callable<Process> {
         }
 
         Map<String, String> pbEnv = pb.environment();
-        Map<String, String> env;
-        if (emptySystemVariables) {
-            pbEnv.clear();
-            env = new HashMap<String, String>();
-        } else {
-            env = buildEnvironment(pbEnv);
-        }
+        Map<String, String> env = buildEnvironment(pbEnv);
         pbEnv.putAll(env);
         String uuid = UUID.randomUUID().toString();
         pbEnv.put(WrapperProcess.KEY_UUID, uuid);
@@ -303,11 +294,6 @@ public final class ExternalProcessBuilder implements Callable<Process> {
         logProcess(Level.FINE, pb);
         WrapperProcess wp = new WrapperProcess(pb.start(), uuid);
         return wp;
-    }
-
-    public ExternalProcessBuilder emptySystemVariables(boolean emptySystemVariables) {
-        BuilderData builder = new BuilderData(this);
-        return new ExternalProcessBuilder(builder.emptySystemVariables(emptySystemVariables));
     }
 
     /**
@@ -516,8 +502,6 @@ public final class ExternalProcessBuilder implements Callable<Process> {
 
         private Map<String, String> envVariables = new HashMap<String, String>();
 
-        private boolean emptySystemVariables;
-
         public BuilderData(String executable) {
             this.executable = executable;
         }
@@ -529,7 +513,6 @@ public final class ExternalProcessBuilder implements Callable<Process> {
             this.arguments.addAll(builder.arguments);
             this.paths.addAll(builder.paths);
             this.envVariables.putAll(builder.envVariables);
-            this.emptySystemVariables = builder.emptySystemVariables;
         }
 
         public BuilderData workingDirectory(File workingDirectory) {
@@ -563,11 +546,6 @@ public final class ExternalProcessBuilder implements Callable<Process> {
             assert value != null;
 
             envVariables.put(name, value);
-            return this;
-        }
-
-        public BuilderData emptySystemVariables(boolean emptySystemVariables) {
-            this.emptySystemVariables = emptySystemVariables;
             return this;
         }
     }

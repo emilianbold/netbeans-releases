@@ -317,7 +317,6 @@ public final class ProcessBuilder implements Callable<Process>, Lookup.Provider 
             }
             builder = builder.redirectErrorStream(parameters.isRedirectErrorStream());
 
-            builder = builder.emptySystemVariables(true);
             for (Map.Entry<String, String> entry : parameters.getEnvironmentVariables().entrySet()) {
                 builder = builder.addEnvironmentVariable(entry.getKey(), entry.getValue());
             }
