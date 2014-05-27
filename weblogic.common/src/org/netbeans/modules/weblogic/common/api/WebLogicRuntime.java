@@ -54,10 +54,12 @@ import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
@@ -106,21 +108,95 @@ public final class WebLogicRuntime {
         return new WebLogicRuntime(config);
     }
 
-    public boolean start(@NullAllowed final BaseExecutionDescriptor.InputProcessorFactory outFactory,
+    public void startAndWait(@NullAllowed final BaseExecutionDescriptor.InputProcessorFactory outFactory,
+            @NullAllowed final BaseExecutionDescriptor.InputProcessorFactory errFactory,
+            @NullAllowed final Map<String, String> environment) throws InterruptedException, ExecutionException, TimeoutException {
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicReference<Exception> reference = new AtomicReference<>();
+
+        RuntimeListener listener = new RuntimeListener() {
+
+            @Override
+            public void onStart() {
+                // noop
+            }
+
+            @Override
+            public void onFinish() {
+                // just to be sure
+                latch.countDown();
+            }
+
+            @Override
+            public void onFail() {
+                latch.countDown();
+            }
+
+            @Override
+            public void onProcessStart() {
+                // noop
+            }
+
+            @Override
+            public void onProcessFinish() {
+                // noop
+            }
+
+            @Override
+            public void onRunning() {
+                latch.countDown();
+            }
+
+            @Override
+            public void onTimeout() {
+                reference.set(new TimeoutException());
+                latch.countDown();
+            }
+
+            @Override
+            public void onInterrupted() {
+                reference.set(new InterruptedException());
+                latch.countDown();
+            }
+
+            @Override
+            public void onException(Exception ex) {
+                reference.set(ex);
+                latch.countDown();
+            }
+        };
+
+        start(outFactory, errFactory, listener, environment);
+        latch.await();
+
+        Exception exception = reference.get();
+        if (exception != null) {
+            if (exception instanceof TimeoutException) {
+                throw (TimeoutException) exception;
+            } else if (exception instanceof InterruptedException) {
+                throw (InterruptedException) exception;
+            } else {
+                throw new ExecutionException(exception);
+            }
+        }
+    }
+
+    public void start(@NullAllowed final BaseExecutionDescriptor.InputProcessorFactory outFactory,
             @NullAllowed final BaseExecutionDescriptor.InputProcessorFactory errFactory,
             @NullAllowed final RuntimeListener listener,
-            @NullAllowed final Map<String, String> environment) throws InterruptedException {
-
-        if (config.isRemote()) {
-            return true;
-        }
+            @NullAllowed final Map<String, String> environment) {
 
         if (listener != null) {
             listener.onStart();
         }
 
-        final AtomicBoolean result = new AtomicBoolean();
-        final CountDownLatch latch = new CountDownLatch(1);
+        if (config.isRemote()) {
+            if (listener != null) {
+                listener.onRunning();
+            }
+            return;
+        }
 
         RUNTIME_RP.submit(new Runnable() {
 
@@ -131,14 +207,10 @@ public final class WebLogicRuntime {
                     if (listener != null) {
                         listener.onFail();
                     }
-                    latch.countDown();
                     return;
                 }
 
                 if (isRunning()) {
-                    result.set(true);
-                    latch.countDown();
-
                     if (listener != null) {
                         listener.onRunning();
                     }
@@ -179,7 +251,6 @@ public final class WebLogicRuntime {
                     if (listener != null) {
                         listener.onException(ex);
                     }
-                    latch.countDown();
                     return;
                 }
                 synchronized (INSTANCES) {
@@ -195,9 +266,6 @@ public final class WebLogicRuntime {
 
                 while ((System.currentTimeMillis() - start) < TIMEOUT) {
                     if (isRunning()) {
-                        result.set(true);
-                        latch.countDown();
-
                         if (listener != null) {
                             listener.onRunning();
                         }
@@ -216,11 +284,11 @@ public final class WebLogicRuntime {
                             stopService(service);
                             if (listener != null) {
                                 listener.onProcessFinish();
-                                listener.onFinish();
                             }
                         }
-                        // just to be sure
-                        latch.countDown();
+                        if (listener != null) {
+                            listener.onFinish();
+                        }
                         return;
                     }
                     try {
@@ -230,7 +298,6 @@ public final class WebLogicRuntime {
                             listener.onInterrupted();
                         }
                         Thread.currentThread().interrupt();
-                        latch.countDown();
                         return;
                     }
                 }
@@ -239,12 +306,8 @@ public final class WebLogicRuntime {
                 if (listener != null) {
                     listener.onTimeout();
                 }
-                latch.countDown();
             }
         });
-
-        latch.await();
-        return result.get();
     }
 
     @NonNull

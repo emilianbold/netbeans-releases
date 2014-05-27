@@ -86,7 +86,7 @@ public final class WebLogicLayout {
 
     private static final int DEFAULT_PORT = 7001;
 
-    private static final Collection EXPECTED_FILES = new ArrayList();
+    private static final Collection<String> EXPECTED_FILES = new ArrayList<>();
 
     static {
         EXPECTED_FILES.add("common"); // NOI18N
@@ -623,7 +623,7 @@ public final class WebLogicLayout {
         return result;
     }
 
-    private static boolean hasRequiredChildren(File candidate, Collection requiredChildren) {
+    private static boolean hasRequiredChildren(File candidate, Collection<String> requiredChildren) {
         if (null == candidate) {
             return false;
         }
@@ -635,8 +635,8 @@ public final class WebLogicLayout {
             return true;
         }
 
-        for (Iterator iter = requiredChildren.iterator(); iter.hasNext(); ){
-            String next = (String) iter.next();
+        for (Iterator<String> it = requiredChildren.iterator(); it.hasNext();) {
+            String next = it.next();
             File test = new File(candidate.getPath() + File.separator + next);
             if (!test.exists()) {
                 return false;

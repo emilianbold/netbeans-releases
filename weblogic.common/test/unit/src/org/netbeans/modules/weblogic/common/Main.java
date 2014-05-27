@@ -65,11 +65,11 @@ public class Main {
                 "weblogic", "welcome1");
 
         WebLogicRuntime runtime = WebLogicRuntime.getInstance(config);
-        boolean started = runtime.start(new DefaultFactory(), new DefaultFactory(), null, null);
-        System.out.println("Started: " + started);
+        runtime.startAndWait(new DefaultFactory(), new DefaultFactory(), null);
+        System.out.println("Started");
 
-        boolean startedAgain = runtime.start(new DefaultFactory(), new DefaultFactory(), null, null);
-        System.out.println("Started again: " + startedAgain);
+        runtime.startAndWait(new DefaultFactory(), new DefaultFactory(), null);
+        System.out.println("Started again");
 
 //        WebLogicDeployer deployer = WebLogicDeployer.getInstance(config, null);
 //        Future<Boolean> ret = deployer.deploy(new File(artifact), null, new String[0]);
