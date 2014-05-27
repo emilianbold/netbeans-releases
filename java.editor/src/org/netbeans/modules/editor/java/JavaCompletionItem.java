@@ -1533,7 +1533,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private boolean memberRef;
         private String simpleName;
         protected Set<Modifier> modifiers;
-        private List<ParamDesc> params;
+        protected List<ParamDesc> params;
         private String typeName;
         private boolean addSemicolon;
         private String sortText;
@@ -1846,6 +1846,18 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         private OverrideMethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean implement, WhiteListQuery.WhiteList whiteList) {
             super(info, elem, type, substitutionOffset, null, false, false, false, false, false, -1, false, whiteList);
+            CodeStyle cs = null;
+            try {
+                cs = CodeStyle.getDefault(info.getDocument());
+            } catch (IOException ex) {
+            }
+            if (cs == null) {
+                cs = CodeStyle.getDefault(info.getFileObject());
+            }
+            for (ParamDesc paramDesc : params) {
+                String name = CodeStyleUtils.removePrefixSuffix(paramDesc.name, cs.getParameterNamePrefix(), cs.getParameterNameSuffix());
+                paramDesc.name = CodeStyleUtils.addPrefixSuffix(name, cs.getParameterNamePrefix(), cs.getParameterNameSuffix());
+            }
             this.implement = implement;
         }
 
@@ -4037,7 +4049,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
     static class ParamDesc {
         private final String fullTypeName;
         private final String typeName;
-        private final String name;
+        private String name;
 
         public ParamDesc(String fullTypeName, String typeName, String name) {
             this.fullTypeName = fullTypeName;
