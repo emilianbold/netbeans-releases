@@ -6,6 +6,6 @@ define(
             'api/v0.1/Options',
             'lib/api/v0.1/OMessages'
         ], 
-        function (module1, module11) {
-    
+        function (module1, module11, utils) {
+        utils.utilMethod1();
 });

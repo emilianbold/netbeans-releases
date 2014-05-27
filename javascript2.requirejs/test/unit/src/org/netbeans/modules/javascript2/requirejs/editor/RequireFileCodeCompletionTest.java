@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.javascript2.requirejs.editor;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -51,6 +52,7 @@ import javax.swing.text.Position;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
+import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
@@ -62,11 +64,14 @@ import static org.netbeans.modules.csl.api.test.CslTestBase.getCaretOffset;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.JsCodeCompletionBase;
+import org.netbeans.modules.javascript2.requirejs.TestProjectSupport;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.openide.filesystems.FileObject;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -76,6 +81,17 @@ public class RequireFileCodeCompletionTest extends JsCodeCompletionBase {
     
     public RequireFileCodeCompletionTest(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        FileObject folder = getTestFile("TestProject1");
+        Project tp = new TestProjectSupport.TestProject(folder, null);
+        List lookupAll = new ArrayList();
+        lookupAll.addAll(MockLookup.getDefault().lookupAll(Object.class));
+        lookupAll.add(new TestProjectSupport.FileOwnerQueryImpl(tp));
+        MockLookup.setInstances(lookupAll.toArray());
     }
     
     public void testFSCompletion01() throws Exception {

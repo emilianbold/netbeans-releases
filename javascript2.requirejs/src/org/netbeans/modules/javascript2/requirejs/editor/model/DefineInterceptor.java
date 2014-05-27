@@ -65,6 +65,7 @@ import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 import org.netbeans.modules.javascript2.requirejs.RequireJsPreferences;
 import org.netbeans.modules.javascript2.requirejs.editor.EditorUtils;
+import org.netbeans.modules.javascript2.requirejs.editor.FSCompletionUtils;
 import org.netbeans.modules.javascript2.requirejs.editor.index.RequireJsIndex;
 import org.netbeans.modules.javascript2.requirejs.editor.index.RequireJsIndexer;
 import org.netbeans.modules.parsing.api.Source;
@@ -167,6 +168,10 @@ public class DefineInterceptor implements FunctionInterceptor {
                                 if (rIndex != null) {
                                     Iterator<? extends JsObject> paramIterator = defFunc.getParameters().iterator();
                                     for (String module : paths) {
+                                        FileObject fileObject = FSCompletionUtils.findFileObject(module, project.getProjectDirectory());
+                                        if (fileObject != null) {
+                                            module = fileObject.getName();
+                                        } 
                                         Collection<? extends TypeUsage> exposedTypes = rIndex.getExposedTypes(module, factory);
                                         if (paramIterator.hasNext()) {
                                             JsObject param = paramIterator.next();

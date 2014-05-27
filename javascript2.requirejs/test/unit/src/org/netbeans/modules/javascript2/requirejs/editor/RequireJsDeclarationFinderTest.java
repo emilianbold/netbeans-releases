@@ -93,7 +93,11 @@ public class RequireJsDeclarationFinderTest extends JsTestBase {
     }
     
     public void testNavigationFromParameter01() throws Exception {
-        checkDeclaration("TestProject1/js/main.js", "function (mod^ule1, module11) {", "module1.js", 0);
+        checkDeclaration("TestProject1/js/main.js", "function (modul^e1, module11, utils) {", "module1.js", 0);
+    }
+    
+    public void testNavigationFromParameter02() throws Exception {
+        checkDeclaration("TestProject1/js/main.js", "function (module1, module11, uti^ls) {", "utils.js", 0);
     }
     
     // project mapping through the RequireJS project customizer
