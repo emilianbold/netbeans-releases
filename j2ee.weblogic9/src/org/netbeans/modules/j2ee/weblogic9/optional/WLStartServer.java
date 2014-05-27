@@ -177,14 +177,13 @@ public final class WLStartServer extends StartServer {
         LOGGER.log(Level.FINER, "Starting server in debug mode"); // NOI18N
 
         WLServerProgress serverProgress = new WLServerProgress(this);
-
         String serverName = dm.getInstanceProperties().getProperty(
                 InstanceProperties.DISPLAY_NAME_ATTR);
-        serverProgress.notifyStart(StateType.RUNNING,
-                NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName));
-
         String uri = dm.getUri();
-        service.submit(new WLDebugStartTask(uri, serverProgress, dm));
+
+        WebLogicRuntime runtime = WebLogicRuntime.getInstance(CommonBridge.getConfiguration(dm));
+        runtime.start(new DefaultInputProcessorFactory(uri, false), new DefaultInputProcessorFactory(uri, true),
+                new StartListener(uri, serverName, serverProgress), getStartDebugVariables(dm));
 
         addServerInDebug(uri);
         return serverProgress;
@@ -194,88 +193,14 @@ public final class WLStartServer extends StartServer {
     public ProgressObject startDeploymentManager() {
         LOGGER.log(Level.FINER, "Starting server"); // NOI18N
 
-        final WLServerProgress serverProgress = new WLServerProgress(this);
-
-        final String serverName = dm.getInstanceProperties().getProperty(
+        WLServerProgress serverProgress = new WLServerProgress(this);
+        String serverName = dm.getInstanceProperties().getProperty(
                 InstanceProperties.DISPLAY_NAME_ATTR);
-
-        final String uri = dm.getUri();
-        RuntimeListener listener = new RuntimeListener() {
-
-            @Override
-            public void onStart() {
-                serverProgress.notifyStart(StateType.RUNNING,
-                        NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName));
-            }
-
-            @Override
-            public void onFinish() {
-                // noop
-            }
-
-            @Override
-            public void onFail() {
-//                serverProgress.notifyStart(StateType.FAILED,
-//                        NbBundle.getMessage(WLStartServer.class, "MSG_NO_DOMAIN_HOME"));
-                serverProgress.notifyStart(StateType.FAILED,
-                        NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_FAILED", serverName));
-            }
-
-            @Override
-            public void onProcessStart() {
-                InputOutput io = UISupport.getServerIO(uri);
-                if (io == null) {
-                    return;
-                }
-
-                try {
-                    // as described in the api we reset just ouptut
-                    io.getOut().reset();
-                } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
-                }
-
-                io.select();
-            }
-
-            @Override
-            public void onProcessFinish() {
-                InputOutput io = UISupport.getServerIO(uri);
-                if (io != null) {
-                    io.getOut().close();
-                    io.getErr().close();
-                }
-            }
-
-            @Override
-            public void onRunning() {
-                serverProgress.notifyStart(StateType.COMPLETED,
-                        NbBundle.getMessage(WLStartServer.class, "MSG_SERVER_STARTED", serverName));
-            }
-
-            @Override
-            public void onTimeout() {
-                serverProgress.notifyStart(StateType.FAILED,
-                        NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_TIMEOUT"));
-            }
-
-            @Override
-            public void onInterrupted() {
-                serverProgress.notifyStart(StateType.FAILED,
-                        NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_INTERRUPTED"));
-            }
-
-            @Override
-            public void onException(Exception ex) {
-                LOGGER.log(Level.WARNING, null, ex);
-                serverProgress.notifyStart(StateType.FAILED,
-                        NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_FAILED", serverName));
-            }
-        };
+        String uri = dm.getUri();
 
         WebLogicRuntime runtime = WebLogicRuntime.getInstance(CommonBridge.getConfiguration(dm));
         runtime.start(new DefaultInputProcessorFactory(uri, false), new DefaultInputProcessorFactory(uri, true),
-                listener, getStartVariables(dm));
+                new StartListener(uri, serverName, serverProgress), getStartVariables(dm));
 
         removeServerInDebug(uri);
         return serverProgress;
@@ -484,6 +409,36 @@ public final class WLStartServer extends StartServer {
         return ret;
     }
 
+    private static Map<String, String> getStartDebugVariables(WLDeploymentManager dm) {
+        Map<String, String> ret = new HashMap<String, String>();
+        int debugPort = 4000;
+        debugPort = Integer.parseInt(dm.getInstanceProperties().getProperty(
+                WLPluginProperties.DEBUGGER_PORT_ATTR));
+
+        StringBuilder javaOptsBuilder = new StringBuilder();
+        String javaOpts = dm.getInstanceProperties().getProperty(
+                WLPluginProperties.JAVA_OPTS);
+        if (javaOpts != null && javaOpts.trim().length() > 0) {
+            javaOptsBuilder.append(javaOpts.trim());
+        }
+        if (javaOptsBuilder.length() > 0) {
+            javaOptsBuilder.append(" ");// NOI18N
+        }
+        javaOptsBuilder.append("-Xdebug -Xnoagent -Djava.compiler=none "); // NOI18N
+        javaOptsBuilder.append("-Xrunjdwp:server=y,suspend=n,transport=dt_socket,address="); // NOI18N
+        javaOptsBuilder.append(debugPort);
+        for (StartupExtender args : StartupExtender.getExtenders(
+                Lookups.singleton(CommonServerBridge.getCommonInstance(dm.getUri())), StartupExtender.StartMode.DEBUG)) {
+            for (String singleArg : args.getArguments()) {
+                javaOptsBuilder.append(' ').append(singleArg);
+            }
+        }
+
+        appendNonProxyHosts(javaOptsBuilder);
+        ret.put(JAVA_OPTIONS_VARIABLE, javaOptsBuilder.toString());
+        return ret;
+    }
+
     private static StringBuilder appendNonProxyHosts(StringBuilder sb) {
         if (sb.indexOf(NonProxyHostsHelper.HTTP_NON_PROXY_HOSTS) < 0) { // NOI18N
             String nonProxyHosts = NonProxyHostsHelper.getNonProxyHosts();
@@ -568,47 +523,6 @@ public final class WLStartServer extends StartServer {
                 return true;
             }
             return super.isRunning();
-        }
-    }
-
-    private class WLDebugStartTask extends WLStartTask {
-
-        public WLDebugStartTask(String uri, WLServerProgress serverProgress,
-                WLDeploymentManager dm) {
-            super( uri , serverProgress, dm  );
-        }
-
-        @Override
-        protected ExternalProcessBuilder setJavaOptionsEnv(ExternalProcessBuilder builder) {
-            int debugPort = 4000;
-            debugPort = Integer.parseInt(dm.getInstanceProperties().getProperty(
-                    WLPluginProperties.DEBUGGER_PORT_ATTR));
-
-            StringBuilder javaOptsBuilder = new StringBuilder();
-            String javaOpts = dm.getInstanceProperties().getProperty(
-                    WLPluginProperties.JAVA_OPTS);
-            if ( javaOpts!= null && javaOpts.trim().length() >0 ){
-                javaOptsBuilder.append( javaOpts.trim() );
-            }
-            if ( javaOptsBuilder.length()> 0 ){
-                javaOptsBuilder.append(" ");                                    // NOI18N
-            }
-            javaOptsBuilder.append("-Xdebug -Xnoagent -Djava.compiler=none ");  // NOI18N
-            javaOptsBuilder.append("-Xrunjdwp:server=y,suspend=n,transport=dt_socket,address=");// NOI18N
-            javaOptsBuilder.append( debugPort );
-            for (StartupExtender args : StartupExtender.getExtenders(
-                        Lookups.singleton(CommonServerBridge.getCommonInstance(dm.getUri())), StartupExtender.StartMode.DEBUG)) {
-                for (String singleArg : args.getArguments()) {
-                    javaOptsBuilder.append(' ').append(singleArg);
-                }
-            }
-
-            appendNonProxyHosts(javaOptsBuilder);
-            ExternalProcessBuilder result = builder.addEnvironmentVariable(
-                    JAVA_OPTIONS_VARIABLE,
-                    javaOptsBuilder.toString());   
-            return result;
-
         }
     }
 
@@ -980,4 +894,89 @@ public final class WLStartServer extends StartServer {
                     error ? io.getErr() : io.getOut(), new ErrorLineConvertor(), true);
         }
     }
+
+    private static class StartListener implements RuntimeListener {
+
+        private final String uri;
+
+        private final String serverName;
+
+        private final WLServerProgress serverProgress;
+
+        public StartListener(String uri, String serverName, WLServerProgress serverProgress) {
+            this.uri = uri;
+            this.serverName = serverName;
+            this.serverProgress = serverProgress;
+        }
+        
+        @Override
+        public void onStart() {
+            serverProgress.notifyStart(StateType.RUNNING,
+                    NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName));
+        }
+
+        @Override
+        public void onFinish() {
+            // noop
+        }
+
+        @Override
+        public void onFail() {
+//                serverProgress.notifyStart(StateType.FAILED,
+//                        NbBundle.getMessage(WLStartServer.class, "MSG_NO_DOMAIN_HOME"));
+            serverProgress.notifyStart(StateType.FAILED,
+                    NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_FAILED", serverName));
+        }
+
+        @Override
+        public void onProcessStart() {
+            InputOutput io = UISupport.getServerIO(uri);
+            if (io == null) {
+                return;
+            }
+
+            try {
+                // as described in the api we reset just ouptut
+                io.getOut().reset();
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+
+            io.select();
+        }
+
+        @Override
+        public void onProcessFinish() {
+            InputOutput io = UISupport.getServerIO(uri);
+            if (io != null) {
+                io.getOut().close();
+                io.getErr().close();
+            }
+        }
+
+        @Override
+        public void onRunning() {
+            serverProgress.notifyStart(StateType.COMPLETED,
+                    NbBundle.getMessage(WLStartServer.class, "MSG_SERVER_STARTED", serverName));
+        }
+
+        @Override
+        public void onTimeout() {
+            serverProgress.notifyStart(StateType.FAILED,
+                    NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_TIMEOUT"));
+        }
+
+        @Override
+        public void onInterrupted() {
+            serverProgress.notifyStart(StateType.FAILED,
+                    NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_INTERRUPTED"));
+        }
+
+        @Override
+        public void onException(Exception ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+            serverProgress.notifyStart(StateType.FAILED,
+                    NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_FAILED", serverName));
+        }
+    };
 }
