@@ -63,6 +63,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.base.BaseExecutionDescriptor;
+import org.netbeans.api.extexecution.base.Environment;
 import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.netbeans.api.extexecution.base.input.InputReaderTask;
 import org.netbeans.api.extexecution.base.input.InputReaders;
@@ -107,7 +108,8 @@ public final class WebLogicRuntime {
 
     public boolean start(@NullAllowed final BaseExecutionDescriptor.InputProcessorFactory outFactory,
             @NullAllowed final BaseExecutionDescriptor.InputProcessorFactory errFactory,
-            @NullAllowed final RuntimeListener listener) throws InterruptedException {
+            @NullAllowed final RuntimeListener listener,
+            @NullAllowed final Map<String, String> environment) throws InterruptedException {
 
         if (config.isRemote()) {
             return true;
@@ -168,7 +170,8 @@ public final class WebLogicRuntime {
                     builder.getEnvironment().setVariable("MW_HOME", mwHome.getAbsolutePath()); // NOI18N
                 }
 
-                //builder = initBuilder(builder);
+                configureEnvironment(builder.getEnvironment(), environment);
+
                 Process process;
                 try {
                     process = builder.call();
@@ -264,6 +267,16 @@ public final class WebLogicRuntime {
         return ping(host, port, CHECK_TIMEOUT); // is server responding?
     }
 
+    private static void configureEnvironment(Environment environment, Map<String, String> variables) {
+        if (variables == null) {
+            return;
+        }
+
+        for (Map.Entry<String, String> entry : variables.entrySet()) {
+            environment.setVariable(entry.getKey(), entry.getValue());
+        }
+    }
+
     private static void startService(final ExecutorService service, Process process,
             BaseExecutionDescriptor.InputProcessorFactory outFactory,
             BaseExecutionDescriptor.InputProcessorFactory errFactory) {
@@ -310,13 +323,13 @@ public final class WebLogicRuntime {
     }
 
     private static boolean ping(String host, int port, int timeout) {
-        if (pingPath(host, port, timeout, "/console/login/LoginForm.jsp")) {
+        if (ping(host, port, timeout, "/console/login/LoginForm.jsp")) {
             return true;
         }
-        return pingPath(host, port, timeout, "/console");
+        return ping(host, port, timeout, "/console");
     }
 
-    private static boolean pingPath(String host, int port, int timeout, String path) {
+    private static boolean ping(String host, int port, int timeout, String path) {
         // checking whether a socket can be created is not reliable enough, see #47048
         Socket socket = new Socket();
         try {
@@ -327,8 +340,8 @@ public final class WebLogicRuntime {
                         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
                     out.println("GET " + path + " HTTP/1.1\nHost:\n"); // NOI18N
                     String line = in.readLine();
-                    return "HTTP/1.1 200 OK".equals(line)
-                            || "HTTP/1.1 302 Moved Temporarily".equals(line);
+                    return "HTTP/1.1 200 OK".equals(line) // NOI18N
+                            || "HTTP/1.1 302 Moved Temporarily".equals(line); // NOI18N
                 }
             } finally {
                 socket.close();
