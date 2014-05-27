@@ -130,7 +130,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
     private final String port;
 
     private final WLProductProperties productProperties = new WLProductProperties(this);
-    
+
     private final WLSharedState mutableState;
 
     private final boolean disconnected;
