@@ -58,4 +58,17 @@ made subject to such option by the copyright holder.
             </implies>
         </transformation>
     </transformationgroup>
+    <transformationgroup>
+        <description>Separate projectuiapi into desktop and NetBeans independent and dependent parts</description>
+        <transformation>
+            <trigger-dependency type="older">
+                <module-dependency codenamebase="org.netbeans.modules.projectuiapi" major="1" spec="1.78.0"/>
+            </trigger-dependency>
+            <implies>
+                <result>
+                    <module-dependency codenamebase="org.netbeans.modules.projectuiapi.base" major="1" spec="1.78.0"/>
+                </result>
+            </implies>
+        </transformation>
+    </transformationgroup>        
 </transformations>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,28 +34,25 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.project.uiapi;
 
-package org.netbeans.spi.project.ui;
-
-import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.openide.modules.ModuleInstall;
 
 /**
- * List of template types supported by a project when making a new file.
- * An instance should be placed in {@link org.netbeans.api.project.Project#getLookup}
- * to affect the recommended template list for that project.
- * <p>
- * For more information about registering templates see overview of
- * {@link org.netbeans.spi.project.ui.templates.support} package.
- * @author Petr Hrebejk
+ *
+ * @author Tomas Stupka
  */
-public interface RecommendedTemplates {
+public class ProjectUiapiModule extends ModuleInstall {
 
-    /**
-     * Lists supported template types.
-     * @return types of supported templates (should match template file attribute names)
-     * @see TemplateRegistration#category
-     */
-    public String[] getRecommendedTypes();
+    @Override
+    public void restored() {
+        OpenProjects.getDefault().addPropertyChangeListener(new OpenProjectsListener());
+    }
     
 }

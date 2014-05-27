@@ -64,6 +64,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.project.ui.groups.Bundle.*;
+import org.netbeans.modules.project.uiapi.BaseUtilities;
 import org.netbeans.modules.project.uiapi.Utilities;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
@@ -202,7 +203,7 @@ public class GroupsMenu extends AbstractAction {
      */
     @Messages("GroupsMenu.properties_title=Project Group Properties")
     static void openProperties(Group g) {
-            Lookup context = Lookups.fixed(new Object[] { g, Utilities.ACCESSOR.createGroup(g.getName(), g.prefs()) });
+            Lookup context = Lookups.fixed(new Object[] { g, BaseUtilities.ACCESSOR.createGroup(g.getName(), g.prefs()) });
             Dialog dialog = ProjectCustomizer.createCustomizerDialog("Projects/Groups/Customizer", //NOI18N
                                              context, 
                                              (String)null, 

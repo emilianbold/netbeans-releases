@@ -44,33 +44,22 @@
 
 package org.netbeans.spi.project.ui;
 
-import org.netbeans.api.templates.TemplateRegistration;
-
 /**
- * List of templates which should be in the initial "privileged" list
- * when making a new file.
+ * List of template types supported by a project when making a new file.
  * An instance should be placed in {@link org.netbeans.api.project.Project#getLookup}
- * to affect the privileged list for that project.
- * 
- * <p>
- * Since 1.28, the PrivilegedTemplates instance can also reside in active node's lookup
- * and such instance will be used instead of the default one.
- * 
+ * to affect the recommended template list for that project.
  * <p>
  * For more information about registering templates see overview of
  * {@link org.netbeans.spi.project.ui.templates.support} package.
- * @see org.netbeans.spi.project.ui.support.CommonProjectActions
  * @author Petr Hrebejk
  */
-public interface PrivilegedTemplates {
-    
+public interface RecommendedTemplates {
+
     /**
-     * Lists privileged templates.
-     * @return full paths to privileged templates, e.g. <samp>Templates/Other/XmlFile.xml</samp>
-     * @see TemplateRegistration#folder
-     * @see TemplateRegistration#content
-     * @see TemplateRegistration#id
+     * Lists supported template types.
+     * @return types of supported templates (should match template file attribute names)
+     * @see <code>org.netbeans.api.templates.TemplateRegistration.#category</code>
      */
-    public String[] getPrivilegedTemplates();
+    public String[] getRecommendedTypes();
     
 }

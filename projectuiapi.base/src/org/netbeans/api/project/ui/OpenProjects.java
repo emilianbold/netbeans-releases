@@ -53,8 +53,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
-import org.netbeans.modules.project.uiapi.Utilities;
-import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.modules.project.uiapi.BaseUtilities;
 
 /**
  * List of projects open in the GUI.
@@ -96,8 +95,8 @@ public final class OpenProjects {
     private OpenProjectsTrampoline trampoline;
     
     private OpenProjects() {
-        this.trampoline = Utilities.getOpenProjectsTrampoline();
-        addPropertyChangeListener( new OpenProjectsListener() );
+        this.trampoline = BaseUtilities.getOpenProjectsTrampoline();
+//        addPropertyChangeListener( new OpenProjectsListener() );
     }
 
     /**

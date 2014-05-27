@@ -48,6 +48,7 @@ import java.util.concurrent.FutureTask;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.util.Parameters;
 

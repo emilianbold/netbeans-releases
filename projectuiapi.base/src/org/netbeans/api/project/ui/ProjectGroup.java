@@ -42,8 +42,7 @@
 package org.netbeans.api.project.ui;
 
 import java.util.prefs.Preferences;
-import org.netbeans.modules.project.uiapi.Utilities;
-import org.openide.util.NbPreferences;
+import org.netbeans.modules.project.uiapi.BaseUtilities;
 
 /**
  * Object describing a project group, in most cases the currently active project group.
@@ -104,12 +103,12 @@ public final class ProjectGroup {
     }
  
     
-    static class AccessorImpl extends Utilities.ProjectGroupAccessor {
+    static class AccessorImpl extends BaseUtilities.ProjectGroupAccessor {
         
         
          public void assign() {
-             if (Utilities.ACCESSOR == null) {
-                 Utilities.ACCESSOR = this;
+             if (BaseUtilities.ACCESSOR == null) {
+                 BaseUtilities.ACCESSOR = this;
              }
          }
     

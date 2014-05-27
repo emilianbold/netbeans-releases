@@ -42,6 +42,7 @@
 package org.netbeans.spi.project.ui;
 
 import java.util.concurrent.Future;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 
 /**
  * A fix of the {@link ProjectProblemsProvider.ProjectProblem}.
