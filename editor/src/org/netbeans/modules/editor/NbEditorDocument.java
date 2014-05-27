@@ -239,9 +239,9 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
                 if (annotation.getAnnotationType() != null) {
                     a = new AnnotationDescDelegate(this, startPos, length, annotation);
                     annoMap.put(annotation, a);
+                    getAnnotations().addAnnotation(a);
                 }
             }
-            getAnnotations().addAnnotation(a);
         } finally {
             readUnlock();
         }
