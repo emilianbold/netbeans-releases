@@ -71,6 +71,9 @@ public class Main {
         runtime.startAndWait(new DefaultFactory(), new DefaultFactory(), null);
         System.out.println("Started again");
 
+        runtime.stopAndWait(new DefaultFactory(), new DefaultFactory());
+        System.out.println("Stopped");
+
 //        WebLogicDeployer deployer = WebLogicDeployer.getInstance(config, null);
 //        Future<Boolean> ret = deployer.deploy(new File(artifact), null, new String[0]);
 //        System.out.println("Deployed: " + ret.get());

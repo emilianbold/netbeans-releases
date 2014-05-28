@@ -119,80 +119,17 @@ public final class WebLogicRuntime {
 
     public void startAndWait(@NullAllowed final BaseExecutionDescriptor.InputProcessorFactory outFactory,
             @NullAllowed final BaseExecutionDescriptor.InputProcessorFactory errFactory,
-            @NullAllowed final Map<String, String> environment) throws InterruptedException, ExecutionException, TimeoutException {
+            @NullAllowed final Map<String, String> environment) throws InterruptedException, ExecutionException {
 
-        final CountDownLatch latch = new CountDownLatch(1);
-        final AtomicReference<Exception> reference = new AtomicReference<>();
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicReference<Exception> reference = new AtomicReference<>();
 
-        RuntimeListener listener = new RuntimeListener() {
-
-            @Override
-            public void onStart() {
-                // noop
-            }
-
-            @Override
-            public void onFinish() {
-                // just to be sure
-                latch.countDown();
-            }
-
-            @Override
-            public void onFail() {
-                latch.countDown();
-            }
-
-            @Override
-            public void onProcessStart() {
-                // noop
-            }
-
-            @Override
-            public void onProcessFinish() {
-                // noop
-            }
-
-            @Override
-            public void onRunning() {
-                latch.countDown();
-            }
-
-            @Override
-            public void onTimeout() {
-                reference.set(new TimeoutException());
-                latch.countDown();
-            }
-
-            @Override
-            public void onInterrupted() {
-                reference.set(new InterruptedException());
-                latch.countDown();
-            }
-
-            @Override
-            public void onException(Exception ex) {
-                reference.set(ex);
-                latch.countDown();
-            }
-
-            @Override
-            public void onExit() {
-                // noop
-            }
-        };
-
-        start(outFactory, errFactory, listener, environment, null);
+        start(outFactory, errFactory, new BlockingListener(latch, reference), environment, null);
         latch.await();
 
         Exception exception = reference.get();
         if (exception != null) {
-            if (exception instanceof TimeoutException) {
-                throw (TimeoutException) exception;
-            } else if (exception instanceof InterruptedException) {
-                throw (InterruptedException) exception;
-            } else {
-                throw new ExecutionException(exception);
-            }
+            throw new ExecutionException(exception);
         }
     }
 
@@ -332,7 +269,21 @@ public final class WebLogicRuntime {
         });
     }
 
-    @NonNull
+    public void stopAndWait(@NullAllowed final BaseExecutionDescriptor.InputProcessorFactory outFactory,
+            @NullAllowed final BaseExecutionDescriptor.InputProcessorFactory errFactory) throws InterruptedException, ExecutionException {
+
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicReference<Exception> reference = new AtomicReference<>();
+
+        stop(outFactory, errFactory, new BlockingListener(latch, reference));
+        latch.await();
+
+        Exception exception = reference.get();
+        if (exception != null) {
+            throw new ExecutionException(exception);
+        }
+    }
+
     public void stop(@NullAllowed final BaseExecutionDescriptor.InputProcessorFactory outFactory,
             @NullAllowed final BaseExecutionDescriptor.InputProcessorFactory errFactory,
             @NullAllowed final RuntimeListener listener) {
@@ -352,133 +303,136 @@ public final class WebLogicRuntime {
 
             @Override
             public void run() {
-                File domainHome = config.getDomainHome();
-                if (!domainHome.isDirectory()) {
-                    if (listener != null) {
-                        listener.onFail();
-                    }
-                    return;
-                }
-                File shutdown;
-                if (BaseUtilities.isWindows()) {
-                    shutdown = new File(new File(domainHome, "bin"), SHUTDOWN_BAT); // NOI18N
-                } else {
-                    shutdown = new File(new File(domainHome, "bin"), SHUTDOWN_SH); // NOI18N
-                }
-
-                ExecutorService stopService = null;
-                Process stopProcess = null;
-                String uuid = UUID.randomUUID().toString();
-
                 try {
-                    long start = System.currentTimeMillis();
-
-                    if (shutdown.exists()) {
-                        org.netbeans.api.extexecution.base.ProcessBuilder builder =
-                                org.netbeans.api.extexecution.base.ProcessBuilder.getLocal();
-                        builder.setExecutable(shutdown.getAbsolutePath());
-                        builder.setWorkingDirectory(domainHome.getAbsolutePath());
-                        builder.getEnvironment().setVariable(STOP_KEY_UUID, uuid);
-
-                        List<String> arguments = new ArrayList<String>();
-                        arguments.add(config.getUsername());
-                        arguments.add(config.getPassword());
-                        arguments.add(config.getAdminURL());
-                        builder.setArguments(arguments);
-
-                        File mwHome = config.getLayout().getMiddlewareHome();
-                        if (mwHome != null) {
-                            builder.getEnvironment().setVariable("MW_HOME", mwHome.getAbsolutePath()); // NOI18N
-                        }
-
-                        try {
-                            stopProcess = builder.call();
-                        } catch (IOException ex) {
-                            if (listener != null) {
-                                listener.onException(ex);
-                            }
-                            return;
-                        }
-
+                    File domainHome = config.getDomainHome();
+                    if (!domainHome.isDirectory()) {
                         if (listener != null) {
-                            listener.onProcessStart();
+                            listener.onFail();
                         }
-
-                        stopService = Executors.newFixedThreadPool(2);
-                        startService(stopService, stopProcess, outFactory, errFactory);
+                        return;
+                    }
+                    File shutdown;
+                    if (BaseUtilities.isWindows()) {
+                        shutdown = new File(new File(domainHome, "bin"), SHUTDOWN_BAT); // NOI18N
                     } else {
-                        Process process;
-                        synchronized (INSTANCES) {
-                            process = INSTANCES.get(config);
-                        }
-                        if (process == null) {
-                            // FIXME what to do here
-                            if (listener != null) {
-                                listener.onFail();
-                            }
-                            return;
-                        }
-                        Map<String, String> mark = new HashMap<String, String>();
-                        mark.put(START_KEY_UUID, config.getId());
-                        Processes.killTree(process, mark);
+                        shutdown = new File(new File(domainHome, "bin"), SHUTDOWN_SH); // NOI18N
                     }
 
-                    while ((System.currentTimeMillis() - start) < TIMEOUT) {
-                        if (isRunning() && isRunning(stopProcess)) {
-                            if (listener != null) {
-                                listener.onRunning();
+                    ExecutorService stopService = null;
+                    Process stopProcess = null;
+                    String uuid = UUID.randomUUID().toString();
+
+                    try {
+                        long start = System.currentTimeMillis();
+
+                        if (shutdown.exists()) {
+                            org.netbeans.api.extexecution.base.ProcessBuilder builder
+                                    = org.netbeans.api.extexecution.base.ProcessBuilder.getLocal();
+                            builder.setExecutable(shutdown.getAbsolutePath());
+                            builder.setWorkingDirectory(domainHome.getAbsolutePath());
+                            builder.getEnvironment().setVariable(STOP_KEY_UUID, uuid);
+
+                            List<String> arguments = new ArrayList<String>();
+                            arguments.add(config.getUsername());
+                            arguments.add(config.getPassword());
+                            arguments.add(config.getAdminURL());
+                            builder.setArguments(arguments);
+
+                            File mwHome = config.getLayout().getMiddlewareHome();
+                            if (mwHome != null) {
+                                builder.getEnvironment().setVariable("MW_HOME", mwHome.getAbsolutePath()); // NOI18N
                             }
 
                             try {
-                                Thread.sleep(DELAY);
-                            } catch (InterruptedException e) {
+                                stopProcess = builder.call();
+                            } catch (IOException ex) {
                                 if (listener != null) {
-                                    listener.onInterrupted();
+                                    listener.onException(ex);
                                 }
-                                Thread.currentThread().interrupt();
                                 return;
                             }
+
+                            if (listener != null) {
+                                listener.onProcessStart();
+                            }
+
+                            stopService = Executors.newFixedThreadPool(2);
+                            startService(stopService, stopProcess, outFactory, errFactory);
                         } else {
-                            if (stopProcess != null) {
+                            Process process;
+                            synchronized (INSTANCES) {
+                                process = INSTANCES.get(config);
+                            }
+                            if (process == null) {
+                                // FIXME what to do here
+                                if (listener != null) {
+                                    listener.onFail();
+                                }
+                                return;
+                            }
+                            Map<String, String> mark = new HashMap<String, String>();
+                            mark.put(START_KEY_UUID, config.getId());
+                            Processes.killTree(process, mark);
+                        }
+
+                        while ((System.currentTimeMillis() - start) < TIMEOUT) {
+                            if (isRunning() && isRunning(stopProcess)) {
+                                if (listener != null) {
+                                    listener.onRunning();
+                                }
+
                                 try {
-                                    stopProcess.waitFor();
-                                } catch (InterruptedException ex) {
+                                    Thread.sleep(DELAY);
+                                } catch (InterruptedException e) {
                                     if (listener != null) {
                                         listener.onInterrupted();
                                     }
                                     Thread.currentThread().interrupt();
                                     return;
                                 }
-                            }
-
-                            if (isRunning()) {
-                                if (listener != null) {
-                                    listener.onFail();
-                                }
                             } else {
-                                if (listener != null) {
-                                    listener.onFinish();
+                                if (stopProcess != null) {
+                                    try {
+                                        stopProcess.waitFor();
+                                    } catch (InterruptedException ex) {
+                                        if (listener != null) {
+                                            listener.onInterrupted();
+                                        }
+                                        Thread.currentThread().interrupt();
+                                        return;
+                                    }
                                 }
-                            }
-                            return;
-                        }
-                    }
 
-                    // timeouted
-                    if (listener != null) {
-                        listener.onTimeout();
+                                if (isRunning()) {
+                                    if (listener != null) {
+                                        listener.onFail();
+                                    }
+                                } else {
+                                    if (listener != null) {
+                                        listener.onFinish();
+                                    }
+                                }
+                                return;
+                            }
+                        }
+
+                        // timeouted
+                        if (listener != null) {
+                            listener.onTimeout();
+                        }
+                    } finally {
+                        // do the cleanup
+                        if (stopProcess != null) {
+                            Map<String, String> mark = new HashMap<String, String>();
+                            mark.put(STOP_KEY_UUID, uuid);
+                            Processes.killTree(stopProcess, mark);
+                            stopService(stopService);
+                            if (listener != null) {
+                                listener.onProcessFinish();
+                            }
+                        }
                     }
                 } finally {
-                    // do the cleanup
-                    if (stopProcess != null) {
-                        Map<String, String> mark = new HashMap<String, String>();
-                        mark.put(STOP_KEY_UUID, uuid);
-                        Processes.killTree(stopProcess, mark);
-                        stopService(stopService);
-                        if (listener != null) {
-                            listener.onProcessFinish();
-                        }
-                    }
                     if (listener != null) {
                         listener.onExit();
                     }
@@ -603,5 +557,79 @@ public final class WebLogicRuntime {
 
         boolean isRunning();
 
+    }
+
+    private static class BlockingListener implements RuntimeListener {
+
+        private final CountDownLatch latch;
+
+        private final AtomicReference<Exception> exception;
+
+        public BlockingListener(CountDownLatch latch, AtomicReference<Exception> exception) {
+            this.latch = latch;
+            this.exception = exception;
+        }
+
+        public CountDownLatch getLatch() {
+            return latch;
+        }
+
+        public AtomicReference<Exception> getException() {
+            return exception;
+        }
+
+        @Override
+        public void onStart() {
+            // noop
+        }
+
+        @Override
+        public void onFinish() {
+            // noop
+        }
+
+        @Override
+        public void onFail() {
+            // noop
+        }
+
+        @Override
+        public void onProcessStart() {
+            // noop
+        }
+
+        @Override
+        public void onProcessFinish() {
+            // noop
+        }
+
+        @Override
+        public void onRunning() {
+            latch.countDown();
+        }
+
+        @Override
+        public void onTimeout() {
+            exception.set(new TimeoutException(TIMEOUT + " ms"));
+            latch.countDown();
+        }
+
+        @Override
+        public void onInterrupted() {
+            // XXX is this ok ?
+            exception.set(new InterruptedException());
+            latch.countDown();
+        }
+
+        @Override
+        public void onException(Exception ex) {
+            exception.set(ex);
+            latch.countDown();
+        }
+
+        @Override
+        public void onExit() {
+            latch.countDown();
+        }
     }
 }
