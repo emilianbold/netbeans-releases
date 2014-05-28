@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.java.source.compat8;
 
-import com.sun.javafx.beans.annotations.NonNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ModificationResult;
 import org.openide.modules.PatchFor;
 import org.openide.text.PositionRef;
