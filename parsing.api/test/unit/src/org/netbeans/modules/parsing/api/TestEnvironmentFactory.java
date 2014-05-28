@@ -50,7 +50,6 @@ import java.util.concurrent.Callable;
 
 import javax.swing.text.Document;
 
-import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.modules.parsing.implspi.EnvironmentFactory;
 import org.netbeans.modules.parsing.implspi.SchedulerControl;
 import org.netbeans.modules.parsing.implspi.SourceControl;
@@ -137,10 +136,6 @@ public class TestEnvironmentFactory implements EnvironmentFactory {
 
         @Override
         public void activate() {
-        }
-
-        @Override
-        public void addDocListener(SourceEnvironment.DocListener listener) {
         }
     }
 }

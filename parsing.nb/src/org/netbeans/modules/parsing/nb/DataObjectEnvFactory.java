@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import javax.swing.text.Document;
-import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.netbeans.modules.parsing.api.Source;
@@ -162,10 +161,6 @@ public final class DataObjectEnvFactory extends SourceEnvironment implements Env
     }
     
     public void attachScheduler(SchedulerControl s, boolean attach) {
-    }
-
-    @Override
-    public void addDocListener(SourceEnvironment.DocListener listener) {
     }
 
     @Override

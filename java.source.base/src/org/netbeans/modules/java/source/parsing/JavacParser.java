@@ -70,7 +70,6 @@ import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Options;
 import com.sun.tools.javac.util.Position.LineMapImpl;
 
-import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -98,7 +97,6 @@ import javax.annotation.processing.Processor;
 import javax.swing.event.ChangeEvent;
 import  javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
@@ -106,17 +104,12 @@ import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaParserResultTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.lexer.TokenChange;
-import org.netbeans.api.lexer.TokenHierarchyEvent;
-import org.netbeans.api.lexer.TokenHierarchyEventType;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
@@ -149,7 +142,6 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.Utilities;
-import org.netbeans.modules.parsing.implspi.SourceEnvironment;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
@@ -249,7 +241,6 @@ public class JavacParser extends Parser {
             if (fo != null) {
                 //fileless Source -- ie. debugger watch CC etc
                 filter = JavaFileFilterQuery.getFilter(fo);
-                Utilities.addDocListener(source, new DocListener());
             }
         }
         this.filterListener = filter != null ? new FilterListener (filter) : null;
@@ -350,7 +341,8 @@ public class JavacParser extends Parser {
     //@GuardedBy (org.netbeans.modules.parsing.impl.TaskProcessor.parserLock)
     @Override
     public void parse(final Snapshot snapshot, final Task task, SourceModificationEvent event) throws ParseException {
-        try {            
+        try {
+            checkSourceModification(event);
             parseImpl(snapshot, task);
         } catch (FileObjects.InvalidFileException ife) {
             //pass - already invalidated in parseImpl
@@ -1085,13 +1077,17 @@ public class JavacParser extends Parser {
                     ((CompilationInfoImpl.DiagnosticListenerImpl)dl).startPartialReparse(origStartPos, origEndPos);
                     long start = System.currentTimeMillis();
                     Map<JCTree,LazyDocCommentTable.Entry> docComments = new HashMap<JCTree, LazyDocCommentTable.Entry>();
-                    block = pr.reparseMethodBody(cu, orig, newBody, firstInner, docComments);
+                    block = pr.reparseMethodBody(cu, orig, newBody + " ", firstInner, docComments);
                     LOGGER.log(Level.FINER, "Reparsed method in: {0}", fo);     //NOI18N
                     if (block == null) {
                         LOGGER.log(
                             Level.FINER,
                             "Skeep reparse method, invalid position, newBody: ",       //NOI18N
                             newBody);
+                        return false;
+                    }
+                    final int newEndPos = (int) jt.getSourcePositions().getEndPosition(cu, block);
+                    if (newEndPos != origStartPos + newBody.length()) {
                         return false;
                     }
                     fav.reset();
@@ -1109,7 +1105,6 @@ public class JavacParser extends Parser {
                     if (fo != null) {
                         logTime (fo,Phase.PARSED,(end-start));
                     }
-                    final int newEndPos = (int) jt.getSourcePositions().getEndPosition(cu, block);
                     final int delta = newEndPos - origEndPos;
                     final EndPosTable endPos = ((JCCompilationUnit)cu).endPositions;
                     final TranslatePositionsVisitor tpv = new TranslatePositionsVisitor(orig, endPos, delta);
@@ -1206,87 +1201,30 @@ public class JavacParser extends Parser {
         }
     }
 
-    /**
-     * Lexer listener used to detect partial reparse
-     * todo: should be replaced by parsing API events when available
-     */
-    private class DocListener implements SourceEnvironment.DocListener {
-
-        private volatile Document document;
-
-        @SuppressWarnings("LeakingThisInConstructor")
-        public DocListener () {
-        }
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            final Document doc = document;
-            final JTextComponent focused = (JTextComponent) evt.getNewValue();
-            final Document focusedDoc = focused == null ? null : focused.getDocument();
-            if (doc != null) {
-                if (doc == focusedDoc) {
-                    positions.clear();
-                } else if (ciImpl != null) {
-                    ciImpl.dispose();
-                }
-            }
-        }
-
-        @Override
-        public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
+    private void checkSourceModification(final SourceModificationEvent evt) {
+        if (evt != null && evt.sourceChanged()) {
             Pair<DocPositionRegion,MethodTree> changedMethod = null;
-            if (evt.type() == TokenHierarchyEventType.MODIFICATION) {
-                if (supportsReparse) {
-                    int start = evt.affectedStartOffset();
-                    int end = evt.affectedEndOffset();
-                    synchronized (positions) {
-                        for (Pair<DocPositionRegion,MethodTree> pe : positions) {
-                            PositionRegion p = pe.first();
-                            if (start > p.getStartOffset() && end < p.getEndOffset()) {
-                                changedMethod = pe;
-                                break;
-                            }
+            if (supportsReparse) {
+                int start = evt.getAffectedStartOffset();
+                int end = evt.getAffectedEndOffset();
+                synchronized (positions) {
+                    for (Pair<DocPositionRegion,MethodTree> pe : positions) {
+                        PositionRegion p = pe.first();
+                        if (start > p.getStartOffset() && end < p.getEndOffset()) {
+                            changedMethod = pe;
+                            break;
                         }
-                        if (changedMethod != null) {
-                            TokenChange<JavaTokenId> change = evt.tokenChange(JavaTokenId.language());
-                            if (change != null) {
-                                TokenSequence<JavaTokenId> ts = change.removedTokenSequence();
-                                if (ts != null) {
-                                    while (ts.moveNext()) {
-                                        switch (ts.token().id()) {
-                                            case LBRACE:
-                                            case RBRACE:
-                                                changedMethod = null;
-                                                break;
-                                        }
-                                    }
-                                }
-                                if (changedMethod != null) {
-                                    TokenSequence<JavaTokenId> current = change.currentTokenSequence();
-                                    current.moveIndex(change.index());
-                                    for (int i=0; i< change.addedTokenCount(); i++) {
-                                        current.moveNext();
-                                        switch (current.token().id()) {
-                                            case LBRACE:
-                                            case RBRACE:
-                                                changedMethod = null;
-                                                break;
-                                            }
-                                    }
-                                }
-                            }
-                        }
-                        positions.clear();
-                        if (changedMethod!=null) {
-                            positions.add (changedMethod);
-                        }
-                        JavacParser.this.changedMethod.set(changedMethod);
                     }
+                    positions.clear();
+                    if (changedMethod!=null) {
+                        positions.add (changedMethod);
+                    }
+                    JavacParser.this.changedMethod.set(changedMethod);
                 }
-            } else if (evt.type() == TokenHierarchyEventType.ACTIVITY) {
-                positions.clear();
-                JavacParser.this.changedMethod.set(null);
             }
+        } else {
+            positions.clear();
+            JavacParser.this.changedMethod.set(null);
         }
     }
 

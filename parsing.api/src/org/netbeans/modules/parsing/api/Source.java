@@ -908,7 +908,17 @@ public final class Source {
             int             _endOffset
         ) {
             startOffset = Math.min (startOffset, _startOffset);
-            endOffset = Math.min (endOffset, _endOffset);
+            endOffset = Math.max (endOffset, _endOffset);
+        }
+
+        @Override
+        public int getAffectedStartOffset() {
+            return startOffset;
+        }
+
+        @Override
+        public int getAffectedEndOffset() {
+            return endOffset;
         }
 
         @Override

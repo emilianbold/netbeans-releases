@@ -260,13 +260,6 @@ public class Utilities {
         return getEnvFactory().createEnvironment(src, ctrl);
     }
 
-    public static void addDocListener(final Source src, final SourceEnvironment.DocListener listener) {
-        SourceEnvironment env = SourceAccessor.getINSTANCE().getEnv(src);
-        if (env != null) {
-            env.addDocListener(listener);
-        }
-    }
-    
     public static Class<? extends Scheduler> findDefaultScheduler(String type) {
         EnvironmentFactory f = getEnvFactory();
         Scheduler o = f.createScheduler(type);

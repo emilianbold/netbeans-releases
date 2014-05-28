@@ -41,14 +41,12 @@
  */
 package org.netbeans.modules.parsing.implspi;
 
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 
 import javax.swing.text.Document;
 
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
 
@@ -89,14 +87,6 @@ public abstract class SourceEnvironment {
     public abstract void attachScheduler(@NonNull SchedulerControl s, boolean attach);
 
     /**
-     * Adds a TokenHierarchyListener to the source in this environment.
-     * <p/>
-     * 
-     * @param listener the listener to add
-     */
-    public abstract void addDocListener(@NonNull final DocListener listener);
-
-    /**
      * Notifies that the source was actually used, and the parser wants to be
      * notified on changes through {@link SourceControl}.
      * Until this method is called, the environment implementation need not to
@@ -112,7 +102,4 @@ public abstract class SourceEnvironment {
      * @return true, if a reparse should not be scheduled.
      */
     public abstract boolean isReparseBlocked();
-    
-    public static interface DocListener extends PropertyChangeListener, TokenHierarchyListener {
-    }
 }

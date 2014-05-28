@@ -52,7 +52,6 @@ import org.netbeans.modules.parsing.api.Source;
 public class SourceModificationEvent extends EventObject {
     
     private final boolean sourceChanged;
-
     
     /**
      * Creates a new {@link SourceModificationEvent}
@@ -92,12 +91,27 @@ public class SourceModificationEvent extends EventObject {
     public boolean sourceChanged() {
         return sourceChanged;
     }
+    
+    /**
+     * Returns start offset of the change that affected the source.
+     * @return offset or -1 if the source was not affected
+     * @since 9.1
+     */
+    public int getAffectedStartOffset() {
+        return -1;
+    }
 
+    /**
+     * Returns end offset of the change that affected the source.
+     * @return offset or -1 if the source was not affected
+     * @since 9.1
+     */
+    public int getAffectedEndOffset() {
+        return -1;
+    }
+    
     @Override
     public String toString () {
         return "SourceModificationEvent " + hashCode () + "(source: " + source + ")";
     }
 }
-
-
-
