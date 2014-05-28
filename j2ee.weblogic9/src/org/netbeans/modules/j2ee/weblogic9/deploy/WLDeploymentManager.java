@@ -256,14 +256,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
         mutableState.setRestartNeeded(restartNeeded);
     }
 
-    public Process getServerProcess() {
-        return mutableState.getServerProcess();
-    }
-
-    public void setServerProcess(Process serverProcess) {
-        mutableState.setServerProcess(serverProcess);
-    }
-
     public WLProductProperties getProductProperties() {
         return productProperties;
     }
