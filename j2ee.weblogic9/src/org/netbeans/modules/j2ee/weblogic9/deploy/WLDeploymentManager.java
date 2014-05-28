@@ -130,7 +130,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
     private final String port;
 
     private final WLProductProperties productProperties = new WLProductProperties(this);
-    
+
     private final WLSharedState mutableState;
 
     private final boolean disconnected;
@@ -254,14 +254,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
     public void setRestartNeeded(boolean restartNeeded) {
         mutableState.setRestartNeeded(restartNeeded);
-    }
-
-    public Process getServerProcess() {
-        return mutableState.getServerProcess();
-    }
-
-    public void setServerProcess(Process serverProcess) {
-        mutableState.setServerProcess(serverProcess);
     }
 
     public WLProductProperties getProductProperties() {

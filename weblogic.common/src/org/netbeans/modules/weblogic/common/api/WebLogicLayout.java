@@ -41,14 +41,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.weblogic9;
+package org.netbeans.modules.weblogic.common.api;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -63,25 +62,16 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.modules.j2ee.deployment.common.api.Version;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.weblogic.common.api.Version;
+import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
-import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -90,214 +80,102 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-/**
- * @author Petr Hejl
- * @author Ivan Sidorkin
- */
-public final class WLPluginProperties {
+public final class WebLogicLayout {
 
-    public static final String WEBLOGIC_JAR = "server/lib/weblogic.jar"; // NOI18N
+    private static final String WEBLOGIC_JAR = "server/lib/weblogic.jar"; // NOI18N
 
-    private static final Logger LOGGER = Logger.getLogger(WLPluginProperties.class.getName());
+    private static final int DEFAULT_PORT = 7001;
 
-    private static final String CONFIG_XML = "config/config.xml"; //NOI18N
+    private static final Collection<String> EXPECTED_FILES = new ArrayList<>();
 
-    // additional properties that are stored in the InstancePropeties object
-    public static final String SERVER_ROOT_ATTR = "serverRoot";        // NOI18N
-    public static final String DOMAIN_ROOT_ATTR = "domainRoot";        // NOI18N
-    //public static final String IS_LOCAL_ATTR = "isLocal";              // NOI18N
-    public static final String HOST_ATTR = "host";                     // NOI18N
-    public static final String PORT_ATTR = "port";                     // NOI18N
-    public static final String REMOTE_ATTR = "remote";                 // NOI18N
-    public static final String DEBUGGER_PORT_ATTR = "debuggerPort";    // NOI18N
-    public static final String ADMIN_SERVER_NAME= "adminName";      // NOI18N
-    public static final String DOMAIN_NAME = "domainName";          // NOI18N
-    public static final String PRODUCTION_MODE = "productionMode";  // NOI18N
-    public static final String DOMAIN_VERSION = "domainVersion";  // NOI18N
+    static {
+        EXPECTED_FILES.add("common"); // NOI18N
+        EXPECTED_FILES.add("server/bin"); // NOI18N
+        EXPECTED_FILES.add(WEBLOGIC_JAR);
+    }
 
-    public static final String VENDOR   = "vendor";                 // NOI18N
-    public static final String JAVA_OPTS="java_opts";               // NOI18N
-    public static final String MEM_OPTS = "mem_opts";               // NOI18N
-    
-    public static final String BEA_JAVA_HOME="bea_java_home";           // NOI18N
-    public static final String SUN_JAVA_HOME="sun_java_home";           // NOI18N
-    public static final String JAVA_HOME ="java_home";                  // NOI18N
-    
-    private static final Pattern WIN_BEA_JAVA_HOME_PATTERN = 
-        Pattern.compile("\\s*(set) BEA_JAVA_HOME\\s*=(.*)");
-    
-    private static final Pattern WIN_SUN_JAVA_HOME_PATTERN = 
-        Pattern.compile("\\s*(set) SUN_JAVA_HOME\\s*=(.*)");
-    
-    private static final Pattern WIN_JAVA_VENDOR_CHECK_PATTERN = 
-        Pattern.compile("\\s*if\\s+\"%JAVA_VENDOR%\"\\s*==\\s*\"([^\"]+)\".*");
-    
-    private static final Pattern WIN_JAVA_HOME_PATTERN = 
-        Pattern.compile("\\s*(set) JAVA_HOME\\s*=(.*)");
-    
-    private static final Pattern WIN_DEFAULT_VENDOR_PATTERN = 
-        Pattern.compile("\\s*(set) JAVA_VENDOR\\s*=(.*)");
-    
-    private static final Pattern SHELL_JAVA_VENDOR_CHECK_PATTERN = 
-        Pattern.compile("\\s*if\\s+\\[\\s+\"\\$\\{JAVA_VENDOR\\}\"\\s*=\\s*\"([^\"]+)\"\\s*\\].*");
-    
-    private static final Pattern SHELL_BEA_JAVA_HOME_PATTERN = 
-        Pattern.compile("\\s*(export)?\\s*BEA_JAVA_HOME\\s*=(.*)");
-    
-    private static final Pattern SHELL_SUN_JAVA_HOME_PATTERN = 
-        Pattern.compile("\\s*(export)?\\s*SUN_JAVA_HOME\\s*=(.*)");
-    
-    private static final Pattern SHELL_JAVA_HOME_PATTERN = 
-        Pattern.compile("\\s*(export)?\\s*JAVA_HOME\\s*=(.*)");
-    
-    private static final Pattern SHELL_DEFAULT_VENDOR_PATTERN = 
-        Pattern.compile("\\s*(export)?\\s*JAVA_VENDOR\\s*=(.*)");
-    
-    private static final Pattern LISTEN_ADDRESS_PATTERN = 
+    private static final Logger LOGGER = Logger.getLogger(WebLogicLayout.class.getName());
+
+    public static final String DOMAIN_HOST = "host"; // NOI18N
+    public static final String DOMAIN_PORT = "port"; // NOI18N
+    public static final String ADMIN_SERVER_NAME= "adminName"; // NOI18N
+    public static final String DOMAIN_NAME = "domainName"; // NOI18N
+    public static final String PRODUCTION_MODE = "productionMode"; // NOI18N
+    public static final String DOMAIN_VERSION = "domainVersion"; // NOI18N
+
+    private static final Pattern LISTEN_ADDRESS_PATTERN =
         Pattern.compile("(?:[a-z]+\\:)?listen-address");            // NOI18N
 
-    private static final Pattern LISTEN_PORT_PATTERN = 
+    private static final Pattern LISTEN_PORT_PATTERN =
         Pattern.compile("(?:[a-z]+\\:)?listen-port");               // NOI18N
 
-    private static final Pattern NAME_PATTERN = 
+    private static final Pattern NAME_PATTERN =
         Pattern.compile("(?:[a-z]+\\:)?name");                      // NOI18N
-    
-    private static final  Pattern SERVER_PATTERN = 
+
+    private static final  Pattern SERVER_PATTERN =
         Pattern.compile("(?:[a-z]+\\:)?server");                    // NOI18N
-    
-    private static final  Pattern ADMIN_SERVER_PATTERN = 
+
+    private static final  Pattern ADMIN_SERVER_PATTERN =
         Pattern.compile("(?:[a-z]+\\:)?admin-server-name");         // NOI18N
 
     private static final String DOMAIN_LIST = "common/nodemanager/nodemanager.domains"; // NOI18N
 
     private static final String DOMAIN_REGISTRY = "domain-registry.xml"; // NOI18N
 
-    private static final String INSTALL_ROOT_KEY = "installRoot"; // NOI18N
+    private final WebLogicConfiguration config;
 
-    private static final String FAILED_AUTHENTICATION_REPORTED_KEY = "failedAuthenticationReported"; // NOI18N
-
-    private WLPluginProperties() {
-        super();
-    }
-
-    public static String getLastServerRoot() {
-        return getPreferences().get(INSTALL_ROOT_KEY, "");
-    }
-
-    public static void setLastServerRoot(String serverRoot) {
-        getPreferences().put(INSTALL_ROOT_KEY, serverRoot);
-    }
-
-    public static boolean isFailedAuthenticationReported() {
-        return getPreferences().getBoolean(FAILED_AUTHENTICATION_REPORTED_KEY, true);
-    }
-
-    public static void setFailedAuthenticationReported(boolean reported) {
-        getPreferences().putBoolean(FAILED_AUTHENTICATION_REPORTED_KEY, reported);
+    WebLogicLayout(WebLogicConfiguration config) {
+        this.config = config;
     }
 
     @CheckForNull
-    public static FileObject getDomainConfigFileObject(WLDeploymentManager manager) {
-        String domainDir = manager.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
-        return getDomainConfigFileObject(new File(domainDir));
-    }
-
-    @CheckForNull
-    public static FileObject getDomainConfigFileObject(File domainDir) {
-        File domainPath = FileUtil.normalizeFile(domainDir);
-        FileObject domain = FileUtil.toFileObject(domainPath);
-        FileObject domainConfig = null;
-        if (domain != null) {
-            domainConfig = domain.getFileObject(CONFIG_XML);
-        }
-        return domainConfig;
-    }
-
-    @CheckForNull
-    public static File getDomainConfigFile(InstanceProperties props) {
-        String domainDir = props.getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
-        if (domainDir == null) {
-            // may happen during the registration
+    public File getDomainConfigFile() {
+        if (config.isRemote()) {
             return null;
         }
-        return FileUtil.normalizeFile(new File(domainDir + File.separator
-                + "config" + File.separator + "config.xml")); // NOI18N
+        return FileUtil.normalizeFile(new File(config.getDomainHome(),
+                "config" + File.separator + "config.xml")); // NOI18N
     }
 
     @CheckForNull
-    public static File getDomainLibDirectory(WLDeploymentManager manager) {
-        String domain = (String) manager.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
-        if (domain != null) {
-            File domainLib = new File(new File(domain), "lib"); // NOI18N
-            if (domainLib.exists() && domainLib.isDirectory()) {
-                return domainLib;
-            }
-        }
-        return null;
-    }
-
-    @CheckForNull
-    public static File getServerLibDirectory(WLDeploymentManager manager, boolean fallback) {
-        File server = getServerRoot(manager, fallback);
-        if (server != null) {
-            File serverLib = new File(server, "server" + File.separator + "lib"); // NOI18N
-            if (serverLib.exists() && serverLib.isDirectory()) {
-                return serverLib;
-            }
-        }
-        return null;
-    }
-
-    @CheckForNull
-    public static File getServerLibDirectory(File serverFile) {
-        File serverLib = new File(serverFile, "server" + File.separator + "lib"); // NOI18N
-        if (serverLib.exists() && serverLib.isDirectory()) {
+    public File getServerLibDirectory() {
+        File serverLib = new File(config.getServerHome(), "server" + File.separator + "lib"); // NOI18N
+        if (serverLib.isDirectory()) {
             return serverLib;
         }
         return null;
     }
-    
+
     @CheckForNull
-    public static File getServerRoot(WLDeploymentManager manager, boolean fallback) {
-        String server = (String) manager.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
-        // if serverRoot is null, then we are in a server instance registration process, thus this call
-        // is made from InstanceProperties creation -> WLPluginProperties singleton contains
-        // install location of the instance being registered
-        if (fallback && server == null) {
-            server = WLPluginProperties.getLastServerRoot();
+    public File getDomainLibDirectory() {
+        if (config.isRemote()) {
+            return null;
         }
-        if (server != null) {
-            File serverFile = new File(server);
-            if (serverFile.exists() && serverFile.isDirectory()) {
-                return serverFile;
-            }
+        File domainLib = new File(config.getDomainHome(), "lib"); // NOI18N
+        if (domainLib.exists() && domainLib.isDirectory()) {
+            return domainLib;
         }
         return null;
     }
-    
-    @CheckForNull
-    public static File getWeblogicJar(WLDeploymentManager manager) {
-        String server = (String) manager.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
-        if (server != null) {
-            File serverFile = new File(server);
-            return getWeblogicJar(serverFile);
-        }
-        return null;
-    }
-    
+
     @NonNull
-    public static File getWeblogicJar(File serverFile) {
-        File weblogicJar = FileUtil.normalizeFile(new File(serverFile, WEBLOGIC_JAR));
+    public File getWeblogicJar() {
+        return getWeblogicJar(config.getServerHome());
+    }
+
+    @NonNull
+    public static File getWeblogicJar(@NonNull File serverHome) {
+        File weblogicJar = FileUtil.normalizeFile(new File(serverHome, WEBLOGIC_JAR));
         return weblogicJar;
-    }    
-    
+    }
+
     /**
      * Gets the list of registered domains according to the given server
      * installation root
      *
      * @param serverRoot the server's installation location
      *
-     * @return an array if strings with the domains' paths
+     * @return an array if strings with the paths
      */
     public static String[] getRegisteredDomainPaths(String serverRoot) {
         // init the resulting vector
@@ -307,12 +185,12 @@ public final class WLPluginProperties {
         }
         return result.toArray(new String[result.size()]);
     }
-    
+
     /**
      * Returns map of server domain configuration properties red from config.xml file.
-     * Only properties required for the moment are returned.  
-     * Method implementation should be extended for additional properties. 
-     * return server configuration properties 
+     * Only properties required for the moment are returned.
+     * Method implementation should be extended for additional properties.
+     * return server configuration properties
      */
     public static Properties getDomainProperties(String domainPath) {
         Properties properties = new Properties();
@@ -356,7 +234,7 @@ public final class WLPluginProperties {
                     properties.put(DOMAIN_VERSION, domainVersion);
                 } else if ("production-mode-enabled".equals(child.getNodeName())) {
                     String isEnabled = child.getFirstChild().getNodeValue();
-                    properties.put(PRODUCTION_MODE, "true".equals( isEnabled ));
+                    properties.put(PRODUCTION_MODE, "true".equals(isEnabled));
                 } else if (ADMIN_SERVER_PATTERN.matcher(child.getNodeName()).matches()) {
                     adminServer = child.getFirstChild().getNodeValue();
                 // if the child's name equals 'server' get its children
@@ -382,16 +260,14 @@ public final class WLPluginProperties {
                         // if the child's name equals 'listen-port' fetch the
                         // instance's port
                         if (LISTEN_PORT_PATTERN.matcher(ch.getNodeName())
-                                .matches())
-                        {
+                                .matches()) {
                             port = ch.getFirstChild().getNodeValue();
                         }
 
                         // if the child's name equals 'listen-address' fetch the
                         // instance's host
                         if (LISTEN_ADDRESS_PATTERN.matcher(ch.getNodeName())
-                                .matches())
-                        {
+                                .matches()) {
                             if (ch.hasChildNodes()) {
                                 host = ch.getFirstChild().getNodeValue();
                             }
@@ -408,11 +284,12 @@ public final class WLPluginProperties {
                         // address and port have minOccurs=0 and are missing in
                         // 90 examples server
                         port = (port == null || port.equals("")) // NOI18N
-                        ? Integer.toString(WLDeploymentFactory.DEFAULT_PORT)
+                                ? Integer.toString(DEFAULT_PORT)
                                 : port;
-                        host = (host == null || host.equals("")) ? "localhost" // NOI18N
+                        host = (host == null || host.equals(""))
+                                ? "localhost" // NOI18N
                                 : host;
-                        
+
                         servers.put(name, new ServerDescriptor(host, port, name));
                     }
                 }
@@ -425,17 +302,13 @@ public final class WLPluginProperties {
                 admin = servers.entrySet().iterator().next().getValue();
             }
             if (admin != null) {
-                properties.put(PORT_ATTR, admin.getPort());
-                properties.put(HOST_ATTR, admin.getHost());
+                properties.put(DOMAIN_PORT, admin.getPort());
+                properties.put(DOMAIN_HOST, admin.getHost());
                 properties.put(ADMIN_SERVER_NAME, admin.getName());
             }
-        } catch (FileNotFoundException e) {
-            LOGGER.log(Level.INFO, null, e);
         } catch (IOException e) {
             LOGGER.log(Level.INFO, null, e);
-        } catch (ParserConfigurationException e) {
-            LOGGER.log(Level.INFO, null, e);
-        } catch (SAXException e) {
+        } catch (ParserConfigurationException | SAXException e) {
             LOGGER.log(Level.INFO, null, e);
         } finally {
             try {
@@ -448,142 +321,30 @@ public final class WLPluginProperties {
         }
         return properties;
     }
-    
-    @CheckForNull
-    public static String getDefaultPlatformHome() {
-        Collection<FileObject> instFolders = JavaPlatformManager.getDefault().
-                getDefaultPlatform().getInstallFolders();
-        return instFolders.isEmpty() ? null : FileUtil.toFile(
-                instFolders.iterator().next()).getAbsolutePath();
+
+    public static boolean isSupportedLayout(File candidate){
+        return null != candidate
+                && candidate.canRead()
+                && candidate.isDirectory()
+                && hasRequiredChildren(candidate, EXPECTED_FILES);
     }
 
     /**
-     * Returns map of JDK configuration which is used for starting server
+     * Checks whether the server root contains weblogic.jar of version 9, 10 or 11.
      */
-    public static Properties getRuntimeProperties(String domainPath) {
-        Properties properties = new Properties();
-        Properties javaHomeVendors = new Properties();
-        String beaJavaHome = null;
-        String sunJavaHome = null; 
-        properties.put(JAVA_HOME, javaHomeVendors);
-
-        try {
-            String setDomainEnv = domainPath + (Utilities.isWindows() ? "/bin/setDomainEnv.cmd" : "/bin/setDomainEnv.sh"); // NOI18N
-            File file = new File(setDomainEnv);
-            if (!file.exists()) {
-                LOGGER.log(Level.INFO, "Domain environment "
-                        + "setup {0} is not found. Probably server configuration was "
-                        + "changed externally", setDomainEnv); // NOI18N
-                // FIXME DWP could be the web profile
-                javaHomeVendors.put("", getDefaultPlatformHome());
-                return properties;
-            }
-            BufferedReader reader = new BufferedReader(new FileReader(file));
-            try {
-                String line;
-                String vendorName = null;
-                boolean vendorsSection = false;
-                boolean defaultVendorInit = false;
-
-                final Pattern beaPattern;
-                final Pattern sunPattern;
-                final Pattern vendorPattern;
-                final Pattern javaHomePattern;
-                final Pattern defaultVendorPattern;
-
-                if (Utilities.isWindows()) {
-                    beaPattern = WIN_BEA_JAVA_HOME_PATTERN;
-                    sunPattern = WIN_SUN_JAVA_HOME_PATTERN;
-                    vendorPattern = WIN_JAVA_VENDOR_CHECK_PATTERN;
-                    javaHomePattern = WIN_JAVA_HOME_PATTERN;
-                    defaultVendorPattern = WIN_DEFAULT_VENDOR_PATTERN;
-                } else {
-                    beaPattern = SHELL_BEA_JAVA_HOME_PATTERN;
-                    sunPattern = SHELL_SUN_JAVA_HOME_PATTERN;
-                    vendorPattern = SHELL_JAVA_VENDOR_CHECK_PATTERN;
-                    javaHomePattern = SHELL_JAVA_HOME_PATTERN;
-                    defaultVendorPattern = SHELL_DEFAULT_VENDOR_PATTERN;
-                }
-
-                while ((line = reader.readLine()) != null) {
-                    Matcher bea = beaPattern.matcher(line);
-                    Matcher sun = sunPattern.matcher(line);
-                    Matcher vendor = vendorPattern.matcher(line);
-                    Matcher javaHomeMatcher = javaHomePattern.matcher(line);
-                    Matcher defaultVendor = defaultVendorPattern.matcher(line);
-
-                    if (vendor.matches()) {
-                        vendorsSection = true;
-                        vendorName = vendor.group(1).trim();
-                        continue;
-                    } else if (javaHomeMatcher.matches()) {
-                        if (vendorName != null) {
-                            javaHomeVendors.put(vendorName, unquote(javaHomeMatcher.group(2)).trim());
-                        } else if (defaultVendorInit) {
-                            javaHomeVendors.put("", unquote(javaHomeMatcher.group(2)).trim());
-                            defaultVendorInit = false;
-                        }
-                        continue;
-                    } else {
-                        vendorName = null;
-                    }
-                    if (bea.matches()) {
-                        beaJavaHome = bea.group(2).trim();
-                    } else if (sun.matches()) {
-                        sunJavaHome = sun.group(2).trim();
-                    } else if (vendorsSection && defaultVendor.matches()){
-                        defaultVendorInit = true;
-                        vendorsSection = false;
-                    }
-                }
-            } finally {
-                reader.close();
-            }
-        } catch (FileNotFoundException e) {
-            LOGGER.log(Level.INFO, null, e);
-        } catch (IOException e) {
-            LOGGER.log(Level.INFO, null, e);
-        }
-        if (beaJavaHome != null) {
-            properties.put(BEA_JAVA_HOME, unquote(beaJavaHome));
-        }
-        if (sunJavaHome != null) {
-            properties.put(SUN_JAVA_HOME, unquote(sunJavaHome));
-        }
-        return properties;
-    }
-    
-    private static String unquote(String value) {
-        if (Utilities.isWindows()) {
-            return value;
-        }
-
-        String quote = "\""; // NOI18N
-        String result = value ;
-        if (result.startsWith(quote)){
-            result = result.substring(1);
-        }
-        if (result.endsWith(quote)){
-            result = result.substring(0, result.length()-1);
-        }
-        return result;
+    public static boolean isSupportedVersion(Version version) {
+        return version != null && (Integer.valueOf(9).equals(version.getMajor())
+                    || Integer.valueOf(10).equals(version.getMajor())
+                    || Integer.valueOf(11).equals(version.getMajor())
+                    || Integer.valueOf(12).equals(version.getMajor()));
     }
 
-    private static Preferences getPreferences() {
-        return NbPreferences.forModule(WLPluginProperties.class);
-    }
-
-    public static File[] getClassPath(WLDeploymentManager manager) {
-        File serverRoot = WLPluginProperties.getServerRoot(manager, true);
-        if (serverRoot == null) {
-            LOGGER.log(Level.INFO, "The server root directory does not exist for {0}", manager.getUri());
-            return new File[] {};
-        }
-
-        File weblogicJar = WLPluginProperties.getWeblogicJar(serverRoot);
+    @NonNull
+    public File[] getClassPath() {
+        File weblogicJar = getWeblogicJar();
         if (!weblogicJar.exists()) {
             LOGGER.log(Level.INFO, "File {0} does not exist for {1}",
-                    new Object[] {weblogicJar.getAbsolutePath(), manager.getUri()});
+                    new Object[] {weblogicJar.getAbsolutePath(), config.getServerHome()});
             return new File[] {weblogicJar};
         }
 
@@ -604,7 +365,7 @@ public final class WLPluginProperties {
                             File ref = new File(weblogicJar.getParentFile(), element);
                             if (!ref.exists()) {
                                 LOGGER.log(Level.INFO, "Broken {0} classpath file {1} for {2}",
-                                        new Object[] {weblogicJar.getAbsolutePath(), ref.getAbsolutePath(), manager.getUri()});
+                                        new Object[] {weblogicJar.getAbsolutePath(), ref.getAbsolutePath(), config.getServerHome()});
                             }
                             serverModulesJar = element;
                             // last element of ../../../modules/something
@@ -627,10 +388,10 @@ public final class WLPluginProperties {
         }
 
         if (serverModulesJar != null) {
-            WLProductProperties prodProps = manager.getProductProperties();
-            String mwHome = prodProps.getMiddlewareHome();
+            // XXX cache values
+            File mwHome = getMiddlewareHome(config.getServerHome());
             if (mwHome != null) {
-                File serverModuleFile = FileUtil.normalizeFile(new File(new File(mwHome),
+                File serverModuleFile = FileUtil.normalizeFile(new File(mwHome,
                         serverModulesJar.replaceAll("/", Matcher.quoteReplacement(File.separator)))); // NOI18N
                 return new File[] {weblogicJar, serverModuleFile};
             }
@@ -639,8 +400,14 @@ public final class WLPluginProperties {
         return new File[] {weblogicJar};
     }
 
-    public static Version getServerVersion(File serverRoot) {
-        File weblogicJar = WLPluginProperties.getWeblogicJar(serverRoot);
+    @CheckForNull
+    public Version getServerVersion() {
+        return getServerVersion(config.getServerHome());
+    }
+
+    @CheckForNull
+    public static Version getServerVersion(@NonNull File serverHome) {
+        File weblogicJar = getWeblogicJar(serverHome);
         if (!weblogicJar.exists()) {
             return null;
         }
@@ -671,17 +438,18 @@ public final class WLPluginProperties {
         return null;
     }
 
-    public static Version getDomainVersion(InstanceProperties props) {
+    @CheckForNull
+    public Version getDomainVersion() {
         // Domain config file
-        File config = getDomainConfigFile(props);
+        File configFile = getDomainConfigFile();
 
         // Check if the file exists
-        if (config == null || !config.exists()) {
+        if (configFile == null || !configFile.exists()) {
             return null;
         }
 
         try {
-            InputSource source = new InputSource(new FileInputStream(config));
+            InputSource source = new InputSource(new FileInputStream(configFile));
             Document d = XMLUtil.parse(source, false, false, null, null);
 
             // Retrieve domain version
@@ -689,12 +457,7 @@ public final class WLPluginProperties {
                 String strVersion = d.getElementsByTagName("domain-version").item(0).getTextContent();
                 return  strVersion != null ? Version.fromJsr277OrDottedNotationWithFallback(strVersion) : null;
             }
-
-        } catch(FileNotFoundException e) {
-            LOGGER.log(Level.INFO, null, e);
-        } catch(IOException e) {
-            LOGGER.log(Level.INFO, null, e);
-        } catch(SAXException e) {
+        } catch(IOException | SAXException e) {
             LOGGER.log(Level.INFO, null, e);
         }
 
@@ -702,26 +465,47 @@ public final class WLPluginProperties {
     }
 
     @CheckForNull
-    public static File getMiddlewareHome(File platformRootFile) {
-        String mwHome = WLProductProperties.getMiddlewareHome(platformRootFile);
-        return getMiddlewareHome(platformRootFile, mwHome);
-    } 
-    
+    public File getMiddlewareHome() {
+        return getMiddlewareHome(config.getServerHome());
+    }
+
     @CheckForNull
-    public static File getMiddlewareHome(@NonNull File platformRootFile, @NullAllowed String mwHome) {
+    public static File getMiddlewareHome(@NonNull File serverHome) {
+        Properties ret = new Properties();
+        File productProps = new File(serverHome, ".product.properties"); // NOI18N
+
+        if (!productProps.exists() || !productProps.canRead()) {
+            return getMiddlewareHome(serverHome, null);
+        }
+        try {
+            InputStream is = new BufferedInputStream(new FileInputStream(productProps));
+            try {
+                ret.load(is);
+            } finally {
+                is.close();
+            }
+            return getMiddlewareHome(serverHome, ret.getProperty("MW_HOME"));
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            return getMiddlewareHome(serverHome, null);
+        }
+    }
+
+    @CheckForNull
+    private static File getMiddlewareHome(@NonNull File serverHome, @NullAllowed String mwHome) {
         File middleware = null;
         if (mwHome != null) {
             middleware = new File(mwHome);
         }
         if (middleware == null || !middleware.exists() || !middleware.isDirectory()) {
-            middleware = platformRootFile.getParentFile();
+            middleware = serverHome.getParentFile();
         }
 
         if (middleware != null && middleware.exists() && middleware.isDirectory()) {
             return middleware;
         }
         return null;
-    }     
+    }
 
     private static List<String> getDomainsFromNodeManager(String serverRoot) {
         // is the server root was not defined, return an empty array of domains
@@ -821,8 +605,6 @@ public final class WLPluginProperties {
                     }
                 }
             }
-        } catch (FileNotFoundException e) {
-            LOGGER.log(Level.INFO, null, e);
         } catch (IOException e) {
             LOGGER.log(Level.INFO, null, e);
         } catch (ParserConfigurationException e) {
@@ -841,71 +623,34 @@ public final class WLPluginProperties {
         return result;
     }
 
-    private static boolean hasRequiredChildren(File candidate, Collection requiredChildren) {
-        if (null == candidate)
+    private static boolean hasRequiredChildren(File candidate, Collection<String> requiredChildren) {
+        if (null == candidate) {
             return false;
+        }
         String[] children = candidate.list();
-        if (null == children)
+        if (null == children) {
             return false;
-        if (null == requiredChildren)
+        }
+        if (null == requiredChildren) {
             return true;
-        Iterator iter = requiredChildren.iterator();
-        while (iter.hasNext()){
-            String next = (String)iter.next();
-            File test = new File(candidate.getPath()+File.separator+next);
-            if (!test.exists())
+        }
+
+        for (Iterator<String> it = requiredChildren.iterator(); it.hasNext();) {
+            String next = it.next();
+            File test = new File(candidate.getPath() + File.separator + next);
+            if (!test.exists()) {
                 return false;
+            }
         }
         return true;
     }
 
-    public static final class JvmVendor {
-
-        public static final JvmVendor ORACLE = new JvmVendor("Oracle", // NOI18N
-                NbBundle.getMessage(JvmVendor.class, "LBL_OracleJvmJRockit"));
-
-        public static final JvmVendor SUN = new JvmVendor("Sun", // NOI18N
-                NbBundle.getMessage(JvmVendor.class, "LBL_OracleJvmHotSpot"));
-        
-        public static final JvmVendor DEFAULT = new JvmVendor("", // NOI18N
-                NbBundle.getMessage(JvmVendor.class, "LBL_OracleJvmDefault"));
-
-        private final String name;
-        
-        private final String displayName;
-
-        private JvmVendor(String name, String displayName) {
-            this.name = name;
-            this.displayName = displayName;
-        }
-
-        public String toPropertiesString() {
-            return name;
-        }
-
-        @Override
-        public String toString() {
-            return displayName;
-        }
-
-        public static JvmVendor fromPropertiesString(String value) {
-            if (ORACLE.toPropertiesString().equals(value)) {
-                return ORACLE;
-            } else if (SUN.toPropertiesString().equals(value)) {
-                return SUN;
-            } else if (value == null || value.trim().length() == 0) {
-                return DEFAULT;
-            }
-            return new JvmVendor(value, value);
-        }
-    }
-    
     private static class ServerDescriptor {
-        
+
         private final String host;
-        
+
         private final String port;
-        
+
         private final String name;
 
         public ServerDescriptor(String host, String port, String name) {
