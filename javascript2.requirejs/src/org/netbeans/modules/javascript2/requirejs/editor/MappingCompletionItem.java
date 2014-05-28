@@ -39,16 +39,15 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.javascript2.requirejs.editor;
 
 import java.beans.BeanInfo;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -58,34 +57,29 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author Petr Pisl
  */
-public class FSCompletionItem implements CompletionProposal {
-
-    private final FileObject file;
-    private final ImageIcon icon;
-    private final int anchor;
-    private final String prefix;
-    private final FSElementHandle element;
+public class MappingCompletionItem implements CompletionProposal {
     
-    public FSCompletionItem(final FileObject file, final String prefix, final int anchor) throws IOException {
-        this.file = file;
-        this.element = new FSElementHandle(file);
-        DataObject od = DataObject.find(file);
-
-        icon = new ImageIcon(od.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
-
+    private static ImageIcon REQUIREJS_ICON = null;
+   
+    private final int anchor;
+    private final MappingHandle element;
+    private String insertedPrefix = null;
+    private final FileObject mapToFile;
+    
+    public MappingCompletionItem(final String mapping, FileObject toFile, final int anchor){
+        this.element = new MappingHandle(mapping);
         this.anchor = anchor;
-
-        this.prefix = prefix;
+        this.mapToFile = toFile;
     }
     
     protected String getText() {
-        return prefix + file.getNameExt() + (file.isFolder() ? "/" : "");
+        return getName();
     }
 
     @Override
@@ -95,18 +89,22 @@ public class FSCompletionItem implements CompletionProposal {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof FSCompletionItem)) {
+        if (!(o instanceof MappingCompletionItem)) {
             return false;
         }
 
-        FSCompletionItem remote = (FSCompletionItem) o;
+        MappingCompletionItem remote = (MappingCompletionItem) o;
 
         return getText().equals(remote.getText());
     }
 
     @Override
     public ImageIcon getIcon() {
-        return icon;
+        
+        if (REQUIREJS_ICON == null) {
+            REQUIREJS_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/requirejs/resources/requirejs.png")); //NOI18N
+        }
+        return REQUIREJS_ICON;
     }
 
     @Override
@@ -126,7 +124,7 @@ public class FSCompletionItem implements CompletionProposal {
 
     @Override
     public String getInsertPrefix() {
-        return getName() + (file.isFolder() ? "/" : "");
+        return getName() + (mapToFile != null && mapToFile.isFolder() ? "/" : "");
     }
 
     @Override
@@ -136,7 +134,7 @@ public class FSCompletionItem implements CompletionProposal {
 
     @Override
     public String getLhsHtml(HtmlFormatter formatter) {
-        return file.getNameExt() + " "; //NOI18N
+        return getText();
     }
 
     @Override
@@ -151,7 +149,7 @@ public class FSCompletionItem implements CompletionProposal {
 
     @Override
     public Set<Modifier> getModifiers() {
-        return Collections.emptySet();
+        return element.getModifiers();
     }
 
     @Override
@@ -168,29 +166,30 @@ public class FSCompletionItem implements CompletionProposal {
     public String getCustomInsertTemplate() {
         return null;
     }
+
     
-    public static class FSElementHandle implements ElementHandle {
-        
-        private final FileObject fo;
+    private class MappingHandle implements ElementHandle {
 
-        public FSElementHandle(FileObject fo) {
-            this.fo = fo;
+        private final String name;
+
+        public MappingHandle(String name) {
+            this.name = name;
         }
-
+        
         
         @Override
         public FileObject getFileObject() {
-            return fo;
+            return null;
         }
 
         @Override
         public String getMimeType() {
-            return fo.getMIMEType();
+            return null;
         }
 
         @Override
         public String getName() {
-            return fo.isFolder() ? fo.getNameExt() : fo.getName();
+            return name;
         }
 
         @Override
@@ -210,7 +209,7 @@ public class FSCompletionItem implements CompletionProposal {
 
         @Override
         public boolean signatureEquals(ElementHandle handle) {
-            return fo.equals(handle.getFileObject());
+            return name.equals(handle.getName());
         }
 
         @Override
@@ -219,5 +218,4 @@ public class FSCompletionItem implements CompletionProposal {
         }
         
     }
-
 }

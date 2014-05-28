@@ -1,3 +1,20 @@
+requirejs.config({
+//    baseUrl: 'js/app',
+    paths: {
+        config: "js/fileCC/main3",
+        lib: "folder1"
+    },
+    shim: {
+        'jquery': {
+            exports: ['jQuery', '$']
+        }
+        ,
+        'piwik': {
+            exports: 'piwik'
+        }
+    }
+});
+
 define(
         [
             'folder1/module1',

@@ -1,5 +1,5 @@
 Code completion result for source line:
-ob.ol2|
+ob.ol2|color
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 FIELD      ol2color: String                [PUBLIC]   objectLiteral2.js

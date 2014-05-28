@@ -70,7 +70,7 @@ public class FSCompletionUtils {
 
     final static String GO_UP = "../"; //NOI18N
 
-    public static List<? extends CompletionProposal> computeRelativeItems(
+    public static List<CompletionProposal> computeRelativeItems(
             Collection<? extends FileObject> relativeTo,
             final String prefix,
             int anchor,

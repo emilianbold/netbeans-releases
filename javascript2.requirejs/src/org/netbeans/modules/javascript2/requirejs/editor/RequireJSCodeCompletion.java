@@ -45,8 +45,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
@@ -55,6 +60,8 @@ import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
 import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
+import org.netbeans.modules.javascript2.requirejs.RequireJsPreferences;
+import org.netbeans.modules.javascript2.requirejs.editor.index.RequireJsIndex;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -113,14 +120,61 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                 relativeTo.add(fo.getParent());
             }
 
-            List<? extends CompletionProposal> result = new ArrayList();
+            List<CompletionProposal> result = new ArrayList();
 
             try {
                 result = FSCompletionUtils.computeRelativeItems(relativeTo, writtenPath, ccContext.getCaretOffset(), new FSCompletionUtils.JSIncludesFilter(fo));
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            return (List<CompletionProposal>) result;
+
+            FileObject fromMapping = FSCompletionUtils.findFileObject(writtenPath, fo);
+            String prefixAfterMapping = "";
+            if (fromMapping == null) {
+                // try to find file withouth the last part of part
+                int index = writtenPath.lastIndexOf('/');
+                if (index > -1) {
+                    fromMapping = FSCompletionUtils.findFileObject(writtenPath.substring(0, index), fo);
+                    prefixAfterMapping = writtenPath.substring(index + 1);
+                }
+            }
+            if (fromMapping != null) {
+                // try the whole prefix
+                relativeTo.clear();
+                relativeTo.add(fromMapping);
+                try {
+                    List<CompletionProposal> newItems = FSCompletionUtils.computeRelativeItems(relativeTo, prefixAfterMapping, ccContext.getCaretOffset(), new FSCompletionUtils.JSIncludesFilter(fo));
+                    for (Iterator<CompletionProposal> it = newItems.iterator(); it.hasNext();) {
+                        CompletionProposal proposel = it.next();
+                        if (!result.contains(proposel)) {
+                            result.add(proposel);
+                        }
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            Project project = FileOwnerQuery.getOwner(fo);
+            Map<String, String> mappings = new HashMap();
+            RequireJsIndex rIndex = null;
+            try {
+                rIndex = RequireJsIndex.get(project);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            if (rIndex != null) {
+                mappings.putAll(rIndex.getPathMappings(writtenPath));
+            }
+            mappings.putAll(RequireJsPreferences.getMappings(project));
+            System.out.println(FSCompletionUtils.findFileObject(writtenPath, fo));
+            for (String mapping : mappings.keySet()) {
+                if (mapping.startsWith(writtenPath)) {
+                    System.out.println(mapping);
+                    result.add(new MappingCompletionItem(mapping, FSCompletionUtils.findFileObject(mapping, fo), ccContext.getCaretOffset() - writtenPath.length()));
+                }
+            }
+
+            return result;
         }
         return Collections.emptyList();
     }

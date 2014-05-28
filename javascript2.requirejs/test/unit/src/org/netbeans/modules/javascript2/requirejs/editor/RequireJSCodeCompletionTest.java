@@ -110,7 +110,7 @@ public class RequireJSCodeCompletionTest extends JsCodeCompletionBase {
     
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
-        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
+        List<FileObject> cpRoots = new LinkedList<FileObject>();
         
         cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/TestProject1")));
         return Collections.singletonMap(
@@ -121,7 +121,7 @@ public class RequireJSCodeCompletionTest extends JsCodeCompletionBase {
 
     @Override
     protected boolean classPathContainsBinaries() {
-        return true;
+        return false;
     }
 
     @Override
