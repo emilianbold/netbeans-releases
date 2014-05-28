@@ -50,10 +50,7 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.project.spi.intern.IDEOpenProjectServices;
 import org.netbeans.modules.project.spi.intern.ProjectIDEServicesImplementation;
-import org.netbeans.modules.project.spi.intern.impl.Bundle;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -71,16 +68,6 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=ProjectIDEServicesImplementation.class, position=100)
 public class IDEServicesImpl implements ProjectIDEServicesImplementation {
-    
-    private IDEOpenProjectServicesImpl openProjectServices;
-
-    @Override
-    public synchronized IDEOpenProjectServices getIDEOpenProjectServices() {
-        if(openProjectServices == null) {
-            openProjectServices = new IDEOpenProjectServicesImpl();
-        }
-        return openProjectServices;
-    }
     
     @Override
     public Icon loadIcon(String resource, boolean localized) {
@@ -176,26 +163,5 @@ public class IDEServicesImpl implements ProjectIDEServicesImplementation {
     @Override
     public void notifyWarning(String message) {
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.WARNING_MESSAGE));
-    }
-
-    private static class IDEOpenProjectServicesImpl implements IDEOpenProjectServices {
-
-        public IDEOpenProjectServicesImpl() {
-        }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener pcl) {
-            OpenProjects.getDefault().addPropertyChangeListener(pcl);
-        }
-
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener pcl) {
-            OpenProjects.getDefault().removePropertyChangeListener(pcl);
-        }
-
-        @Override
-        public Project[] getOpenProjects() {
-            return OpenProjects.getDefault().getOpenProjects();
-        }
     }
 }

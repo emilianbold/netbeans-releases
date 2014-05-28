@@ -52,8 +52,6 @@ import org.openide.filesystems.FileObject;
  */
 public interface ProjectIDEServicesImplementation {
     
-    public IDEOpenProjectServices getIDEOpenProjectServices();
-    
     ////////////////////////////////////////////////////////////////////////////
     // FileBuiltQuery services
     ////////////////////////////////////////////////////////////////////////////

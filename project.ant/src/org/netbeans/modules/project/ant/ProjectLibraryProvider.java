@@ -82,11 +82,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider.ProjectLibraryArea;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider.ProjectLibraryImplementation;
-import org.netbeans.modules.project.spi.intern.IDEOpenProjectServices;
 import org.netbeans.modules.project.spi.intern.ProjectIDEServices;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.libraries.ArealLibraryProvider;
@@ -183,11 +183,11 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         synchronized (this) { // lazy init of OpenProjects-related stuff is better for unit testing
             if (apl == null) {
                 apl = WeakListeners.create(AntProjectListener.class, this, null);
-                ProjectIDEServices.getOpenProjectServices().addPropertyChangeListener(WeakListeners.propertyChange(this, ProjectIDEServices.getOpenProjectServices()));
+                OpenProjects.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjects.getDefault()));
             }
         }
         Set<ProjectLibraryArea> areas = new HashSet<ProjectLibraryArea>();
-        for (Project p : ProjectIDEServices.getOpenProjectServices().getOpenProjects()) {
+        for (Project p : OpenProjects.getDefault().getOpenProjects()) {
             AntProjectHelper helper = AntBasedProjectFactorySingleton.getHelperFor(p);
             if (helper == null) {
                 // Not an Ant-based project; ignore.
@@ -238,7 +238,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
     }
 
     public void propertyChange(PropertyChangeEvent ev) {
-        if (IDEOpenProjectServices.PROPERTY_OPEN_PROJECTS.equals(ev.getPropertyName())) {
+        if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(ev.getPropertyName())) {
             pcs.firePropertyChange(ArealLibraryProvider.PROP_OPEN_AREAS, null, null);
         }
     }

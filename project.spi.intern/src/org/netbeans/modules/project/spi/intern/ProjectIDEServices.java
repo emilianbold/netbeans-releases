@@ -72,10 +72,6 @@ public final class ProjectIDEServices {
         getImpl().notifyWarning(message);
     }
     
-    public static IDEOpenProjectServices getOpenProjectServices() {
-        return getImpl().getIDEOpenProjectServices();
-    }
-
     public static ProjectIDEServicesImplementation.FileBuiltQuerySource createFileBuiltQuerySource(FileObject sourceFile) {
         return getImpl().createFileBuiltQuerySource(sourceFile);
     }
