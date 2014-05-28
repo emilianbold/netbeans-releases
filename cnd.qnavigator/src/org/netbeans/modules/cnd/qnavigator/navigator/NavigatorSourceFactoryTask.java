@@ -47,10 +47,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
@@ -86,6 +88,10 @@ public class NavigatorSourceFactoryTask extends IndexingAwareParserResultTask<Pa
             return;
         }
         if (!(event instanceof CursorMovedSchedulerEvent)) {
+            return;
+        }
+        final Document doc = result.getSnapshot().getSource().getDocument(false);
+        if (doc != null && doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) != null) {
             return;
         }
         long time = 0;
