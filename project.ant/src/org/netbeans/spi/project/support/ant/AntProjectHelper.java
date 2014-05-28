@@ -69,7 +69,8 @@ import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider;
 import org.netbeans.modules.project.ant.ProjectXMLCatalogReader;
 import org.netbeans.modules.project.ant.ProjectXMLKnownChecksums;
-import org.netbeans.modules.project.ant.UserQuestionHandler;
+import org.netbeans.modules.project.spi.intern.ProjectIDEServices;
+import org.netbeans.modules.project.spi.intern.ProjectIDEServicesImplementation.UserQuestionExceptionCallback;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.CacheDirectoryProvider;
@@ -77,9 +78,6 @@ import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.netbeans.spi.queries.SharabilityQueryImplementation2;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -89,14 +87,13 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.Mutex.Action;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.UserQuestionException;
-import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -320,16 +317,16 @@ public final class AntProjectHelper {
         File f = FileUtil.toFile(xml);
         assert f != null;
         try {
-            Document doc = XMLUtil.parse(new InputSource(Utilities.toURI(f).toString()), false, true, XMLUtil.defaultErrorHandler(), null);
+            Document doc = XMLUtil.parse(new InputSource(BaseUtilities.toURI(f).toString()), false, true, XMLUtil.defaultErrorHandler(), null);
             ProjectXMLCatalogReader.validate(doc.getDocumentElement());
             return doc;
         } catch (IOException e) {
             if (!QUIETLY_SWALLOW_XML_LOAD_ERRORS) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, e);
             }
         } catch (SAXException e) {
             if (!QUIETLY_SWALLOW_XML_LOAD_ERRORS) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, e);
             }
         }
         return null;
@@ -375,9 +372,14 @@ public final class AntProjectHelper {
                     } finally {
                         os.close();
                     }
-                } catch (UserQuestionException uqe) { // #46089
+                } catch (IOException ioe) { // #46089
+                    if(!ProjectIDEServices.isUserQuestionException(ioe)) {
+                        throw ioe;
+                    }
+                    
                     needPendingHook();
-                    UserQuestionHandler.handle(uqe, new UserQuestionHandler.Callback() {
+                    
+                    ProjectIDEServices.handleUserQuestionException(ioe, new UserQuestionExceptionCallback() {
                         public void accepted() {
                             // Try again.
                             try {
@@ -394,7 +396,7 @@ public final class AntProjectHelper {
                                 });
                             } catch (IOException e) {
                                 // Oh well.
-                                ErrorManager.getDefault().notify(e);
+                                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, e);
                                 reload();
                             }
                         }
@@ -402,7 +404,7 @@ public final class AntProjectHelper {
                             reload();
                         }
                         public void error(IOException e) {
-                            ErrorManager.getDefault().notify(e);
+                            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, e);
                             reload();
                         }
                         private void reload() {
@@ -525,7 +527,7 @@ public final class AntProjectHelper {
                         }
                     } catch (RuntimeException e) {
                         // Don't prevent other listeners from being notified.
-                        ErrorManager.getDefault().notify(e);
+                        Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, e);
                     }
                 }
                 return null;
@@ -699,7 +701,7 @@ public final class AntProjectHelper {
                 });
             } catch (MutexException e) {
                 // XXX mark project modified again??
-                ErrorManager.getDefault().notify(e);
+                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, e);
             } finally {
                 pendingHook = null;
             }
@@ -1233,7 +1235,7 @@ public final class AntProjectHelper {
         final SharabilityQueryImplementation2 sq2 = createSharabilityQuery2(eval, sourceRoots, buildDirectories);
         return new SharabilityQueryImplementation() {
             @Override public int getSharability(File file) {
-                return sq2.getSharability(Utilities.toURI(file)).ordinal();
+                return sq2.getSharability(BaseUtilities.toURI(file)).ordinal();
             }
         };
     }
@@ -1379,9 +1381,7 @@ public final class AntProjectHelper {
                     } else {
                         message = Bundle.DESC_Problem_Broken_Config("$project_basedir/nbproject/private/private.xml");
                     }
-                    NotifyDescriptor.Message msg = new NotifyDescriptor.Message(message,
-                        NotifyDescriptor.WARNING_MESSAGE);
-                                DialogDisplayer.getDefault().notify(msg);
+                    ProjectIDEServices.notifyWarning(message);
                     Logger.getLogger(AntProjectHelper.class.getName()).log(Level.WARNING, message);
                 }
             }

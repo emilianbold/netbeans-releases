@@ -74,20 +74,19 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.project.ant.AntBuildExtender.Extension;
 import org.netbeans.modules.project.ant.AntBuildExtenderAccessor;
-import org.netbeans.modules.project.ant.UserQuestionHandler;
+import org.netbeans.modules.project.spi.intern.ProjectIDEServices;
+import org.netbeans.modules.project.spi.intern.ProjectIDEServicesImplementation.UserQuestionExceptionCallback;
 import org.netbeans.spi.project.ant.GeneratedFilesInterceptor;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
-import org.openide.util.UserQuestionException;
-import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -331,7 +330,7 @@ public final class GeneratedFilesHelper {
                                 File projectXmlF = FileUtil.toFile(projectXml);
                                 assert projectXmlF != null;
                                 StreamSource projectXmlSource = new StreamSource(
-                                    new ByteArrayInputStream(projectXmlData), Utilities.toURI(projectXmlF).toString());
+                                    new ByteArrayInputStream(projectXmlData), BaseUtilities.toURI(projectXmlF).toString());
                                 ByteArrayOutputStream result = new ByteArrayOutputStream();
                                 t.transform(projectXmlSource, new StreamResult(result));
                                 if (BUILD_IMPL_XML_PATH.equals(path)) {
@@ -413,38 +412,41 @@ public final class GeneratedFilesHelper {
                             };
                             try {
                                 body.run();
-                            } catch (UserQuestionException uqe) {
+                            } catch (IOException ioe) {
+                                if(!ProjectIDEServices.isUserQuestionException(ioe)) {
+                                    throw ioe;
+                                }
                                 // #57480: need to regenerate build-impl.xml, really.
-                                UserQuestionHandler.handle(uqe, new UserQuestionHandler.Callback() {
+                                ProjectIDEServices.handleUserQuestionException(ioe, new UserQuestionExceptionCallback() {
                                     public void accepted() {
                                         // Try again.
                                         try {
                                             body.run();
-                                        } catch (UserQuestionException uqe2) {
+                                        } catch (IOException ioe2) {
+                                            if(!ProjectIDEServices.isUserQuestionException(ioe2)) {
+                                                Logger.getLogger(GeneratedFilesHelper.this.getClass().getName()).log(Level.SEVERE, null, ioe2);
+                                            }                                            
                                             // Need to try one more time - may have locked bSX but not yet gf.
-                                            UserQuestionHandler.handle(uqe2, new UserQuestionHandler.Callback() {
+                                            ProjectIDEServices.handleUserQuestionException(ioe2, new UserQuestionExceptionCallback() {
                                                 public void accepted() {
                                                     try {
                                                         body.run();
                                                     } catch (IOException e) {
-                                                        ErrorManager.getDefault().notify(e);
+                                                        Logger.getLogger(GeneratedFilesHelper.this.getClass().getName()).log(Level.SEVERE, null, e);
                                                     }
                                                 }
                                                 public void denied() {}
                                                 public void error(IOException e) {
-                                                    ErrorManager.getDefault().notify(e);
+                                                    Logger.getLogger(GeneratedFilesHelper.this.getClass().getName()).log(Level.SEVERE, null, e);
                                                 }
                                             });
-                                        } catch (IOException e) {
-                                            // Oh well.
-                                            ErrorManager.getDefault().notify(e);
-                                        }
+                                        } 
                                     }
                                     public void denied() {
                                         // OK, skip it.
                                     }
                                     public void error(IOException e) {
-                                        ErrorManager.getDefault().notify(e);
+                                        Logger.getLogger(GeneratedFilesHelper.this.getClass().getName()).log(Level.SEVERE, null, e);
                                         // Never mind.
                                     }
                                 });
@@ -646,7 +648,7 @@ public final class GeneratedFilesHelper {
                 }
             });
         } catch (MutexException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, (IOException)e.getException());
+            Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, e);
             return FLAG_UNKNOWN | FLAG_MODIFIED | FLAG_OLD_PROJECT_XML | FLAG_OLD_STYLESHEET;
         }
     }
@@ -868,7 +870,7 @@ public final class GeneratedFilesHelper {
      // marcow: Use at least some buffered output!
     private static class EolFilterOutputStream extends BufferedOutputStream {
 
-        private boolean isActive = Utilities.isWindows();
+        private boolean isActive = BaseUtilities.isWindows();
         private int last = -1;
         
         public EolFilterOutputStream(OutputStream os) {

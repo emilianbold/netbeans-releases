@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.project.ant;
 
 import java.io.IOException;
@@ -49,18 +48,20 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import javax.swing.Icon;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.project.spi.intern.ProjectIDEServices;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 
-/** Generic implementation of {@link AntBasedGenericType} that feeds itself
- * from an layer data.
+/**
+ * Generic implementation of {@link AntBasedGenericType} that feeds itself from
+ * an layer data.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class AntBasedGenericType implements AntBasedProjectType {
+
     private final String iconResource;
     private final String type;
     private final String className;
@@ -69,17 +70,19 @@ final class AntBasedGenericType implements AntBasedProjectType {
     private final String[] configNamespaces;
 
     public AntBasedGenericType(Map map) {
-        iconResource = (String)map.get("iconResource"); // NOI18N
-        type = (String)map.get("type"); // NOI18N
-        className = (String)map.get("className"); // NOI18N
-        methodName = (String)map.get("methodName"); // NOI18N
-        configNames = new String[] {
-            (String)map.get("sharedName"), // NOI18N
-            (String)map.get("privateName"), // NOI18N
+        
+        // XXXX 
+        iconResource = (String) map.get("iconResource"); // NOI18N
+        type = (String) map.get("type"); // NOI18N
+        className = (String) map.get("className"); // NOI18N
+        methodName = (String) map.get("methodName"); // NOI18N
+        configNames = new String[]{
+            (String) map.get("sharedName"), // NOI18N
+            (String) map.get("privateName"), // NOI18N
         };
-        configNamespaces = new String[] {
-            (String)map.get("sharedNamespace"), // NOI18N
-            (String)map.get("privateNamespace"), // NOI18N
+        configNamespaces = new String[]{
+            (String) map.get("sharedNamespace"), // NOI18N
+            (String) map.get("privateNamespace"), // NOI18N
         };
         Parameters.notNull("iconResource", iconResource); // NOI18N
         Parameters.notNull("type", type); // NOI18N
@@ -91,7 +94,7 @@ final class AntBasedGenericType implements AntBasedProjectType {
     }
 
     public Icon getIcon() {
-        return ImageUtilities.loadImageIcon(iconResource, true);
+        return ProjectIDEServices.loadImageIcon(iconResource, true);
     }
 
     @Override
@@ -109,7 +112,6 @@ final class AntBasedGenericType implements AntBasedProjectType {
         return shared ? configNamespaces[0] : configNamespaces[1];
     }
 
-
     @Override
     public Project createProject(AntProjectHelper helper) throws IOException {
         ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
@@ -123,17 +125,17 @@ final class AntBasedGenericType implements AntBasedProjectType {
             Class<?> clazz = l.loadClass(className);
             if (methodName != null) {
                 Method m = clazz.getDeclaredMethod(methodName, AntProjectHelper.class);
-                return (Project)m.invoke(null, helper);
+                return (Project) m.invoke(null, helper);
             } else {
                 Constructor c = clazz.getConstructor(AntProjectHelper.class);
                 return (Project) c.newInstance(helper);
             }
         } catch (InvocationTargetException ex) {
             if (ex.getTargetException() instanceof IOException) {
-                throw (IOException)ex.getTargetException();
+                throw (IOException) ex.getTargetException();
             }
             if (ex.getTargetException() instanceof RuntimeException) {
-                throw (RuntimeException)ex.getTargetException();
+                throw (RuntimeException) ex.getTargetException();
             }
             throw new IllegalArgumentException(ex);
         } catch (RuntimeException ex) {

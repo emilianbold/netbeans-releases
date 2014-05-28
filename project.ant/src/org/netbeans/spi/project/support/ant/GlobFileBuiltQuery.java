@@ -56,19 +56,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileBuiltQuery;
+import org.netbeans.modules.project.spi.intern.ProjectIDEServices;
+import org.netbeans.modules.project.spi.intern.ProjectIDEServicesImplementation;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.BaseUtilities;
 import org.openide.util.ChangeSupport;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -78,8 +77,8 @@ import org.openide.util.WeakListeners;
  */
 final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
     
-    private static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.spi.project.support.ant.GlobFileBuiltQuery"); // NOI18N
-    
+    private static final Logger LOG = Logger.getLogger("org.netbeans.spi.project.support.ant.GlobFileBuiltQuery"); // NOI18N
+        
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
     private final String[] fromPrefixes;
@@ -145,8 +144,8 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
     private File findTarget(FileObject file) {
         File sourceF = FileUtil.toFile(file);
         if (sourceF == null) {
-            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                err.log("Not a disk file: " + file);
+            if (LOG.isLoggable(Level.INFO)) {
+                LOG.log(Level.INFO, "Not a disk file: {0}", file);
             }
             return null;
         }
@@ -154,15 +153,15 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         for (int i = 0; i < fromPrefixes.length; i++) {
             String prefixEval = eval.evaluate(fromPrefixes[i]);
             if (prefixEval == null) {
-                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    err.log(fromPrefixes[i] + " evaluates to null");
+                if (LOG.isLoggable(Level.INFO)) {
+                    LOG.log(Level.INFO, "{0} evaluates to null", fromPrefixes[i]);
                 }
                 continue;
             }
             String suffixEval = eval.evaluate(fromSuffixes[i]);
             if (suffixEval == null) {
-                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    err.log(fromSuffixes[i] + " evaluates to null");
+                if (LOG.isLoggable(Level.INFO)) {
+                    LOG.log(Level.INFO, "{0} evaluates to null", fromSuffixes[i]);
                 }
                 continue;
             }
@@ -181,26 +180,26 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
             String particular = remainder.substring(0, remainder.length() - suffixEval.length());
             String toPrefixEval = eval.evaluate(toPrefixes[i]);
             if (toPrefixEval == null) {
-                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    err.log(toPrefixes[i] + " evaluates to null");
+                if (LOG.isLoggable(Level.INFO)) {
+                    LOG.log(Level.INFO, "{0} evaluates to null", toPrefixes[i]);
                 }
                 continue;
             }
             String toSuffixEval = eval.evaluate(toSuffixes[i]);
             if (toSuffixEval == null) {
-                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    err.log(toSuffixes[i] + " evaluates to null");
+                if (LOG.isLoggable(Level.INFO)) {
+                    LOG.log(Level.INFO, "{0} evaluates to null", toSuffixes[i]);
                 }
                 continue;
             }
             File target = helper.resolveFile(toPrefixEval + particular + toSuffixEval);
-            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                err.log("Found target for " + source + ": " + target);
+            if (LOG.isLoggable(Level.INFO)) {
+                LOG.log(Level.INFO, "Found target for {0}: {1}", new Object[]{source, target});
             }
             return target;
         }
-        if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            err.log("No match for path " + source + " among " + Arrays.asList(fromPrefixes) + " " + Arrays.asList(fromSuffixes));
+        if (LOG.isLoggable(Level.INFO)) {
+            LOG.log(Level.INFO, "No match for path {0} among {1} {2}", new Object[]{source, Arrays.asList(fromPrefixes), Arrays.asList(fromSuffixes)});
         }
         return null;
     }
@@ -208,14 +207,8 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
     private StatusImpl createStatus(FileObject file) {
         File target = findTarget(file);
         if (target != null) {
-            try {
-                DataObject source = DataObject.find(file);
-                
-                return new StatusImpl(source, file, target);
-            } catch (DataObjectNotFoundException e) {
-                Logger.getLogger(GlobFileBuiltQuery.class.getName()).log(Level.FINE, null, e);
-                return null;
-            }   
+            ProjectIDEServicesImplementation.FileBuiltQuerySource source = ProjectIDEServices.createFileBuiltQuerySource(file);
+            return source != null ? new StatusImpl(source, file, target) : null;
         } else {
             return null;
         }
@@ -227,12 +220,12 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         
         private final ChangeSupport cs = new ChangeSupport(this);
         private Boolean built = null;
-        private final DataObject source;
+        private final ProjectIDEServicesImplementation.FileBuiltQuerySource source;
         private File target;
         private FileChangeListener targetListener;
         
         @SuppressWarnings("LeakingThisInConstructor")
-        StatusImpl(DataObject source, FileObject sourceFO, File target) {
+        StatusImpl(ProjectIDEServicesImplementation.FileBuiltQuerySource source, FileObject sourceFO, File target) {
             this.source = source;
             this.source.addPropertyChangeListener(WeakListeners.propertyChange(this, this.source));
             sourceFO.addFileChangeListener(FileUtil.weakFileChangeListener(this, sourceFO));
@@ -270,8 +263,8 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
                     doFire = true;
                 }
                 built = Boolean.valueOf(b);
-                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    err.log("isBuilt: " + b + " from " + this);
+                if (LOG.isLoggable(Level.INFO)) {
+                    LOG.log(Level.INFO, "isBuilt: {0} from {1}", new Object[]{b, this});
                 }
             }
             if (doFire) {
@@ -282,30 +275,30 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         
         private boolean isReallyBuilt() {
             if (!source.isValid()) {
-                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    err.log("invalid: " + this);
+                if (LOG.isLoggable(Level.INFO)) {
+                    LOG.log(Level.INFO, "invalid: {0}", this);
                 }
                 return false; // whatever
             }
             if (source.isModified()) {
-                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    err.log("modified: " + this);
+                if (LOG.isLoggable(Level.INFO)) {
+                    LOG.log(Level.INFO, "modified: {0}", this);
                 }
                 return false;
             }
             if (target == null) {
-                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    err.log("no target matching " + this);
+                if (LOG.isLoggable(Level.INFO)) {
+                    LOG.log(Level.INFO, "no target matching {0}", this);
                 }
                 return false;
             }
             long targetTime = target.lastModified();
-            long sourceTime = source.getPrimaryFile().lastModified().getTime();
+            long sourceTime = source.getFileObject().lastModified().getTime();
             if (targetTime >= sourceTime) {
                 return true;
             } else {
-                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    err.log("out of date (target: " + targetTime + " vs. source: " + sourceTime + "): " + this);
+                if (LOG.isLoggable(Level.INFO)) {
+                    LOG.log(Level.INFO, "out of date (target: {0} vs. source: {1}): {2}", new Object[]{targetTime, sourceTime, this});
                 }
                 return false;
             }
@@ -329,8 +322,8 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         }
         
         public @Override void propertyChange(PropertyChangeEvent evt) {
-            assert evt.getSource() instanceof DataObject;
-            if (DataObject.PROP_MODIFIED.equals(evt.getPropertyName())) {
+            assert evt.getSource() instanceof ProjectIDEServicesImplementation.FileBuiltQuerySource;
+            if (ProjectIDEServicesImplementation.FileBuiltQuerySource.PROP_MODIFIED.equals(evt.getPropertyName())) {
                 update();
             }
         }
@@ -344,8 +337,8 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         }
         
         public @Override void fileRenamed(FileRenameEvent fe) {
-            File target2 = findTarget(source.getPrimaryFile());
-            if (!Utilities.compareObjects(target, target2)) {
+            File target2 = findTarget(source.getFileObject());
+            if (!BaseUtilities.compareObjects(target, target2)) {
                 // #45694: source file moved, recalculate target.
                 if (target != null) {
                     FileUtil.removeFileChangeListener(targetListener, target);
@@ -372,7 +365,7 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         
         @Override
         public String toString() {
-            return "GFBQ.StatusImpl[" + source.getPrimaryFile() + " -> " + target + "]"; // NOI18N
+            return "GFBQ.StatusImpl[" + source.getFileObject()+ " -> " + target + "]"; // NOI18N
         }
 
     }

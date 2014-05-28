@@ -57,10 +57,10 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Union2;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -330,7 +330,7 @@ final class SequentialPropertyEvaluator implements PropertyEvaluator, ChangeList
             }
             List<String> sorted;
             try {
-                sorted = Utilities.topologicalSort(toSort, dependOnSiblings);
+                sorted = BaseUtilities.topologicalSort(toSort, dependOnSiblings);
             } catch (TopologicalSortException e) {
                 //System.err.println("Cyclic property refs: " + Arrays.asList(e.unsortableSets()));
                 return null;

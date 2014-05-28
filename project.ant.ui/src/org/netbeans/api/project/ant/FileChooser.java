@@ -49,10 +49,13 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import javax.swing.JFileChooser;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.project.ant.FileChooserAccessory;
-import org.netbeans.modules.project.ant.ProjectLibraryProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
@@ -79,7 +82,9 @@ public final class FileChooser extends JFileChooser {
      */
     public FileChooser(AntProjectHelper helper, boolean copyAllowed) {
         super();
-        LibraryManager lm = ProjectLibraryProvider.getProjectLibraryManager(helper);
+        FileObject projectFolder = helper.getProjectDirectory();
+        Project p = projectFolder != null ? FileOwnerQuery.getOwner(projectFolder): null;
+        LibraryManager lm = p != null ? ReferenceHelper.getProjectLibraryManager(p) : null;
         if (lm != null) {
             URL u = lm.getLocation();
             if (u != null) {

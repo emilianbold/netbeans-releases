@@ -79,12 +79,12 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -282,7 +282,7 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
         } else {
             Class<?> t = o.getClass();
             if (t.isArray()) {
-                Object[] arr = o instanceof Object[] ? (Object[]) o : Utilities.toObjectArray(o);
+                Object[] arr = o instanceof Object[] ? (Object[]) o : BaseUtilities.toObjectArray(o);
                 b.append('[');
                 for (int i = 0; i < arr.length; i++) {
                     if (i > 0) {
@@ -335,7 +335,7 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
         }
         byte[] data = baos.toByteArray();
         InputSource src = new InputSource(new ByteArrayInputStream(data));
-        src.setSystemId(Utilities.toURI(projectDiskFile).toString());
+        src.setSystemId(BaseUtilities.toURI(projectDiskFile).toString());
         try {
 //            Document projectXml = XMLUtil.parse(src, false, true, Util.defaultErrorHandler(), null);
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();

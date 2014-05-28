@@ -54,14 +54,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 // XXX may also need displayName field (any default? or only in SimpleAntArtifact?)
 
@@ -200,9 +200,9 @@ public abstract class AntArtifact {
         URL artifact;
         try {
             // XXX this should probably use something in PropertyUtils?
-            artifact = Utilities.toURI(getScriptLocation()).resolve(artifactLocation).normalize().toURL();
+            artifact = BaseUtilities.toURI(getScriptLocation()).resolve(artifactLocation).normalize().toURL();
         } catch (MalformedURLException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, e);
             return null;
         }
         FileObject fo = URLMapper.findFileObject(artifact);
@@ -255,7 +255,7 @@ public abstract class AntArtifact {
      * @return the associated project, or null if there is none or it could not be located
      */
     public Project getProject() {
-        return FileOwnerQuery.getOwner(Utilities.toURI(getScriptLocation()));
+        return FileOwnerQuery.getOwner(BaseUtilities.toURI(getScriptLocation()));
     }
 
     /**
