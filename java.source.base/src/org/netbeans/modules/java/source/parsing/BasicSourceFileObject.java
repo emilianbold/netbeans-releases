@@ -56,6 +56,8 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.editor.document.AtomicLockDocument;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
@@ -63,7 +65,6 @@ import org.netbeans.modules.java.source.parsing.AbstractSourceFileObject.Handle;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.text.NbDocument;
 
 /**
  *
@@ -175,7 +176,7 @@ public class BasicSourceFileObject extends AbstractSourceFileObject implements D
             throw new IllegalStateException ();
         }
         else {
-            NbDocument.runAtomic(doc,r);
+            LineDocumentUtils.as(doc, AtomicLockDocument.class).runAtomic(r);
         }
     }
 
@@ -227,8 +228,7 @@ public class BasicSourceFileObject extends AbstractSourceFileObject implements D
 
         public synchronized @Override void close() throws IOException {
             try {
-                NbDocument.runAtomic(this.doc,
-                    new Runnable () {
+                LineDocumentUtils.as(doc, AtomicLockDocument.class).runAtomic(new Runnable () {
                         @Override
                         public void run () {
                             try {

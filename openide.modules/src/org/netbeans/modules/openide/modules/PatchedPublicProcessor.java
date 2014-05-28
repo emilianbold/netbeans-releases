@@ -202,7 +202,7 @@ public class PatchedPublicProcessor extends AbstractProcessor {
             TypeElement t = (TypeElement)e;
             
             boolean defaultCtorFound = false;
-            for (Element el : target.getEnclosedElements()) {
+            for (Element el : t.getEnclosedElements()) {
                 if (el.getKind() != ElementKind.CONSTRUCTOR) {
                     continue;
                 }

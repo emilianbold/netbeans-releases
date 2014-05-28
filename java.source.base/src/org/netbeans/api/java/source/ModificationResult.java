@@ -53,16 +53,18 @@ import java.nio.charset.Charset;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import javax.tools.JavaFileObject;
-
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullUnknown;
+import org.netbeans.api.editor.document.AtomicLockDocument;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.java.source.ModificationResult.CreateChange;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
@@ -83,8 +85,6 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.text.NbDocument;
-import org.openide.text.PositionRef;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -258,7 +258,7 @@ public final class ModificationResult {
             final Document doc = source.getDocument(false);
             if (doc instanceof StyledDocument) {
                 final IOException[] exceptions = new IOException [1];
-                NbDocument.runAtomic((StyledDocument)doc, new Runnable () {
+                LineDocumentUtils.asRequired(doc, AtomicLockDocument.class).runAtomic(new Runnable () {
                     public void run () {
                         try {
                             commit2 ((StyledDocument)doc, differences, out);
@@ -406,14 +406,12 @@ public final class ModificationResult {
                 }
             }
         };
+        AtomicLockDocument ald = LineDocumentUtils.asRequired(doc, AtomicLockDocument.class);
+        assert ald != null : "Missing AtomicLockDocument stub";
         if (diff.isCommitToGuards()) {
-            NbDocument.runAtomic(doc, task);
+            ald.runAtomic(task);
         } else {
-            try {
-                NbDocument.runAtomicAsUser(doc, task);
-            } catch (BadLocationException ex) {
-                blex[0] = ex;
-            }
+            ald.runAtomicAsUser(task);
         }
         if (blex[0] != null) {
             IOException ioe = new IOException();
@@ -494,15 +492,16 @@ public final class ModificationResult {
     
     public static class Difference {
               Kind kind;
-        final PositionRef startPos;
-        final PositionRef endPos;
+        final Position startPos;
+        final Position endPos;
               String oldText;
               String newText;
         final String description;
         private boolean excluded;
         private boolean ignoreGuards = false;
+        private final Source theSource;
 
-        Difference(Kind kind, PositionRef startPos, PositionRef endPos, String oldText, String newText, String description) {
+        Difference(Kind kind, Position startPos, Position endPos, String oldText, String newText, String description, Source theSource) {
             this.kind = kind;
             this.startPos = startPos;
             this.endPos = endPos;
@@ -510,21 +509,22 @@ public final class ModificationResult {
             this.newText = newText;
             this.description = description;
             this.excluded = false;
+            this.theSource = theSource;
         }
         
-        Difference(Kind kind, PositionRef startPos, PositionRef endPos, String oldText, String newText) {
-            this(kind, startPos, endPos, oldText, newText, null);
+        Difference(Kind kind, Position startPos, Position endPos, String oldText, String newText, Source theSource) {
+            this(kind, startPos, endPos, oldText, newText, null, theSource);
         }
         
         public @NonNull Kind getKind() {
             return kind;
         }
         
-        public @NonNull PositionRef getStartPosition() {
+        public @NonNull Position getStartPosition() {
             return startPos;
         }
         
-        public @NonNull PositionRef getEndPosition() {
+        public @NonNull Position getEndPosition() {
             return endPos;
         }
         
@@ -572,6 +572,21 @@ public final class ModificationResult {
             return description;
         }
         
+        /**
+         * Opens a Document where the Difference is to be applied. Throws IOException,
+         * if the document open fails. If the document is already opened, returns the opened
+         * instance. If the difference is CREATE and the document does not exist yet,
+         * the method may return {@code null}
+         * 
+         * @throws IOException when document open fails
+         * @return Document to apply the Difference.
+         * @since java.source.base 1.1
+         */
+        @CheckForNull
+        public Document openDocument() throws IOException {
+            return theSource == null ? null : theSource.getDocument(true);
+        }
+        
         public static enum Kind {
             INSERT,
             REMOVE,
@@ -585,7 +600,7 @@ public final class ModificationResult {
         
         CreateChange(JavaFileObject fileObject, String text) {
             super(Kind.CREATE, null, null, null, text, 
-                    NbBundle.getMessage(ModificationResult.class, "TXT_CreateFile", fileObject.getName()));
+                    NbBundle.getMessage(ModificationResult.class, "TXT_CreateFile", fileObject.getName()), null);
             this.fileObject = fileObject;
         }
 

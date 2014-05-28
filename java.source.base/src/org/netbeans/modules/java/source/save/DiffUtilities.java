@@ -49,15 +49,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position.Bias;
-
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.PositionConverter;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.PositionRefProvider;
 import org.netbeans.modules.java.source.save.CasualDiff.Diff;
+import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -68,8 +67,8 @@ import org.openide.filesystems.FileUtil;
 public class DiffUtilities {
     private static final Logger LOG = Logger.getLogger(DiffUtilities.class.getName());
     
-    public static List<ModificationResult.Difference> diff2ModificationResultDifference(FileObject fo, PositionConverter converter, Map<Integer, String> userInfo, String originalCode, String newCode) throws IOException, BadLocationException {
-        return diff2ModificationResultDifference(fo, converter, userInfo, originalCode, diff(originalCode, newCode, 0));
+    public static List<ModificationResult.Difference> diff2ModificationResultDifference(FileObject fo, PositionConverter converter, Map<Integer, String> userInfo, String originalCode, String newCode, Source src) throws IOException, BadLocationException {
+        return diff2ModificationResultDifference(fo, converter, userInfo, originalCode, diff(originalCode, newCode, 0), src);
     }
 
     public static List<Diff> diff(String origContent, String newContent, int offset) {
@@ -82,14 +81,14 @@ public class DiffUtilities {
         return diffs;
     }
     
-    public static List<ModificationResult.Difference> diff2ModificationResultDifference(FileObject fo, PositionConverter converter, Map<Integer, String> userInfo, String content, List<Diff> diffs) throws IOException, BadLocationException {
+    public static List<ModificationResult.Difference> diff2ModificationResultDifference(FileObject fo, PositionConverter converter, Map<Integer, String> userInfo, String content, List<Diff> diffs, Source src) throws IOException, BadLocationException {
         Collections.sort(diffs, new Comparator<Diff>() {
             public int compare(Diff o1, Diff o2) {
                 return o1.getPos() - o2.getPos();
             }
         });
 
-        Rewriter out = new Rewriter(fo, converter, userInfo);
+        Rewriter out = new Rewriter(fo, converter, userInfo, src);
         char[] buf = content.toCharArray();
 
         // Copy any leading comments.
@@ -120,8 +119,10 @@ public class DiffUtilities {
         private PositionConverter converter;
         public List<ModificationResult.Difference> diffs = new LinkedList<ModificationResult.Difference>();
         private Map<Integer, String> userInfo;
-
-        public Rewriter(FileObject fo, PositionConverter converter, Map<Integer, String> userInfo) throws IOException {
+        private final Source src;
+        
+        public Rewriter(FileObject fo, PositionConverter converter, Map<Integer, String> userInfo, Source src) throws IOException {
+            this.src = src;
             this.converter = converter;
             this.userInfo = userInfo;
             if (fo != null) {
@@ -135,11 +136,11 @@ public class DiffUtilities {
             ModificationResult.Difference diff = diffs.size() > 0 ? diffs.get(diffs.size() - 1) : null;
             if (diff != null && diff.getKind() == ModificationResult.Difference.Kind.REMOVE && diff.getEndPosition().getOffset() == offset) {
                 diffs.remove(diffs.size() - 1);
-                diffs.add(JavaSourceAccessor.getINSTANCE().createDifference(ModificationResult.Difference.Kind.CHANGE, diff.getStartPosition(), diff.getEndPosition(), diff.getOldText(), s, diff.getDescription()));
+                diffs.add(JavaSourceAccessor.getINSTANCE().createDifference(ModificationResult.Difference.Kind.CHANGE, diff.getStartPosition(), diff.getEndPosition(), diff.getOldText(), s, diff.getDescription(), src));
             } else {
                 int off = converter != null ? converter.getOriginalPosition(offset) : offset;
                 if (off >= 0) {
-                    diffs.add(JavaSourceAccessor.getINSTANCE().createDifference(ModificationResult.Difference.Kind.INSERT, prp.createPositionRef(off, Bias.Forward), prp.createPositionRef(off, Bias.Backward), null, s, userInfo.get(offset)));
+                    diffs.add(JavaSourceAccessor.getINSTANCE().createDifference(ModificationResult.Difference.Kind.INSERT, prp.createPosition(off, Bias.Forward), prp.createPosition(off, Bias.Backward), null, s, userInfo.get(offset), src));
                 }
             }
         }
@@ -149,11 +150,11 @@ public class DiffUtilities {
             org.netbeans.api.java.source.ModificationResult.Difference diff = diffs.size() > 0 ? diffs.get(diffs.size() - 1) : null;
             if (diff != null && diff.getKind() == org.netbeans.api.java.source.ModificationResult.Difference.Kind.INSERT && diff.getStartPosition().getOffset() == offset) {
                 diffs.remove(diffs.size() - 1);
-                diffs.add(JavaSourceAccessor.getINSTANCE().createDifference(ModificationResult.Difference.Kind.CHANGE, diff.getStartPosition(), diff.getEndPosition(), origText, diff.getNewText(), diff.getDescription()));
+                diffs.add(JavaSourceAccessor.getINSTANCE().createDifference(ModificationResult.Difference.Kind.CHANGE, diff.getStartPosition(), diff.getEndPosition(), origText, diff.getNewText(), diff.getDescription(), src));
             } else {
                 int off = converter != null ? converter.getOriginalPosition(offset) : offset;
                 if (off >= 0) {
-                    diffs.add(JavaSourceAccessor.getINSTANCE().createDifference(ModificationResult.Difference.Kind.REMOVE, prp.createPositionRef(off, Bias.Forward), prp.createPositionRef(off + origText.length(), Bias.Backward), origText, null, userInfo.get(offset)));
+                    diffs.add(JavaSourceAccessor.getINSTANCE().createDifference(ModificationResult.Difference.Kind.REMOVE, prp.createPosition(off, Bias.Forward), prp.createPosition(off + origText.length(), Bias.Backward), origText, null, userInfo.get(offset), src));
                 }
             }
             offset = pos;

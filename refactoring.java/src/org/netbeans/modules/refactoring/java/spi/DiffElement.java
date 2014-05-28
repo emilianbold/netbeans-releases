@@ -45,6 +45,7 @@ package org.netbeans.modules.refactoring.java.spi;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import javax.swing.text.Position;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
@@ -161,11 +162,12 @@ import org.openide.util.lookup.Lookups;
      * @return ModificationResult corresponding to this change
      */
     public static DiffElement create(Difference diff, FileObject fileObject, ModificationResult modification) {
-        PositionRef start = diff.getStartPosition();
-        PositionRef end = diff.getEndPosition();
+        Position start = diff.getStartPosition();
+        Position end = diff.getEndPosition();
         PositionBounds bounds = null;
         if (diff.getKind() != Difference.Kind.CREATE) {
-            bounds = new PositionBounds(start, end);
+            // FIXME - unnecessary dependency on openide.text
+            bounds = new PositionBounds((PositionRef)start, (PositionRef)end);
         }
         return new DiffElement(diff, bounds, fileObject, modification);
     }    

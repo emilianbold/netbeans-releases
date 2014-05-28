@@ -47,7 +47,6 @@ package org.netbeans.api.java.source;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Symbol.CompletionFailure;
 import com.sun.tools.javac.util.Log;
-
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -64,10 +63,9 @@ import java.util.WeakHashMap;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.swing.text.Document;
+import javax.swing.text.Position;
 import javax.tools.JavaFileObject;
-
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullUnknown;
@@ -95,7 +93,6 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -762,8 +759,8 @@ public final class JavaSource {
         }
 
         @Override
-        public ModificationResult.Difference createDifference(ModificationResult.Difference.Kind kind, PositionRef startPos, PositionRef endPos, String oldText, String newText, String description) {
-            return new ModificationResult.Difference(kind, startPos, endPos, oldText, newText, description);
+        public ModificationResult.Difference createDifference(ModificationResult.Difference.Kind kind, Position startPos, Position endPos, String oldText, String newText, String description, Source src) {
+            return new ModificationResult.Difference(kind, startPos, endPos, oldText, newText, description, src);
         }
 
         @Override

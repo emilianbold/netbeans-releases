@@ -87,7 +87,7 @@ public class DocumentServices {
                 lkps.add(Lookups.forPath("Editors/Documents/" + cn)); // NOI18N
             }
             c = c.getSuperclass();
-        } while (c != java.lang.Object.class);
+        } while (c != null && c != java.lang.Object.class);
         Lookup[] arr = lkps.toArray(new Lookup[lkps.size()]);
         return new ProxyLookup(arr).lookupResult(DocumentServiceFactory.class);
     }

@@ -47,7 +47,6 @@ import java.io.IOException;
 import javax.swing.text.Position;
 
 import org.openide.filesystems.FileObject;
-import org.openide.text.PositionRef;
 import org.openide.util.Lookup;
 
 /**
@@ -56,7 +55,7 @@ import org.openide.util.Lookup;
  */
 public abstract class PositionRefProvider {
 
-    public abstract PositionRef createPositionRef(int position, Position.Bias bias);
+    public abstract Position createPosition(int position, Position.Bias bias);
     
     public static final PositionRefProvider get(final FileObject fo) throws IOException {
         Factory f = Lookup.getDefault().lookup(Factory.class);

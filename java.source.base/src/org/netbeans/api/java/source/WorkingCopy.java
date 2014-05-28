@@ -789,7 +789,8 @@ public class WorkingCopy extends CompilationController {
         userInfo.putAll(this.userInfo);
         
         try {
-            return DiffUtilities.diff2ModificationResultDifference(diffContext.file, diffContext.positionConverter, userInfo, codeForCompilationUnit(diffContext.origUnit), diffs);
+            return DiffUtilities.diff2ModificationResultDifference(diffContext.file, diffContext.positionConverter, userInfo, codeForCompilationUnit(diffContext.origUnit), diffs,
+                    getSnapshot().getSource());
         } catch (IOException ex) {
             if (!diffContext.file.isValid()) {
                 Logger.getLogger(WorkingCopy.class.getName()).log(Level.FINE, null, ex);

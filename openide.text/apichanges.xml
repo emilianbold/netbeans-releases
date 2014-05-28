@@ -49,6 +49,23 @@ made subject to such option by the copyright holder.
 <apidef name="text">Text API</apidef>
 </apidefs>
 <changes>
+    <change id="PositionRef.Position">
+        <api name="text"/>
+        <summary>Implement Position interface for compatibility</summary>
+        <version major="6" minor="63"/>
+        <date day="25" month="5" year="2014"/>
+        <author login="sdedic"/>
+        <compatibility modification="yes" binary="compatible" source="compatible"/>
+        <description>
+            <p>
+                PositionRef can provide a Position object, but does not itself implement
+                the Position interface, although it can provide the <code>offset</code>.
+                The change is just to formally implement the j.s.t.Position.
+            </p>
+        </description>
+        <class name="PositionRef" package="org.openide.text"/>
+        <issue number="244744"/>
+    </change>
     <change id="NbDocument-getEditToBeUndoneOfType">
         <api name="text"/>
         <summary>Added NbDocument.getEditToBeUndoneOfType</summary>
