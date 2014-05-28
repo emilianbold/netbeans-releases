@@ -65,7 +65,6 @@ import javax.swing.text.Position.Bias;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.PositionRefProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
@@ -200,7 +199,7 @@ public final class DocTreePathHandle {
             assert index != (-1);
             return new DocTreePathHandle(new CountingDelegate(treePathHandle, index, docTreePath.getLeaf().getKind()));
         }
-        PositionRef pos = createPositionRef(treePathHandle.getFileObject(), position, Bias.Forward);
+        Position pos = createPositionRef(treePathHandle.getFileObject(), position, Bias.Forward);
         return new DocTreePathHandle(new DocTreeDelegate(pos, new DocTreeDelegate.KindPath(docTreePath), treePathHandle));
     }
 
@@ -237,10 +236,10 @@ public final class DocTreePathHandle {
         return result;
     }
 
-    private static PositionRef createPositionRef(FileObject file, int position, Position.Bias bias) {
+    private static Position createPositionRef(FileObject file, int position, Position.Bias bias) {
         try {
             PositionRefProvider prp = PositionRefProvider.get(file);
-            PositionRef positionRef = prp != null ? prp.createPositionRef(position, bias) : null;
+            Position positionRef = prp != null ? prp.createPosition(position, bias) : null;
             if (positionRef != null) {
                 return positionRef;
             }
@@ -270,12 +269,12 @@ public final class DocTreePathHandle {
 
     private static final class DocTreeDelegate implements Delegate {
 
-        private final PositionRef position;
+        private final Position position;
         private final KindPath kindPath;
         private final TreePathHandle treePathHandle;
         private final DocTree.Kind kind;
 
-        private DocTreeDelegate(PositionRef position, KindPath kindPath, TreePathHandle treePathHandle) {
+        private DocTreeDelegate(Position position, KindPath kindPath, TreePathHandle treePathHandle) {
             this.kindPath = kindPath;
             this.position = position;
             this.treePathHandle = treePathHandle;
@@ -329,12 +328,7 @@ public final class DocTreePathHandle {
 
         public boolean equalsHandle(Delegate obj) {
             DocTreeDelegate other = (DocTreeDelegate) obj;
-            try {
-                if (this.position.getPosition().getOffset() != this.position.getPosition().getOffset()) {
-                    return false;
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+            if (this.position.getOffset() != this.position.getOffset()) {
                 return false;
             }
             return other.getTreePathHandle().equals(treePathHandle);

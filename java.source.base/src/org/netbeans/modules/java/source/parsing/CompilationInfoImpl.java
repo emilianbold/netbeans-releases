@@ -77,7 +77,6 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Pair;

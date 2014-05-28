@@ -101,6 +101,7 @@ import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.save.DiffUtilities;
 import org.netbeans.modules.java.source.save.ElementOverlay;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -200,6 +201,7 @@ public class BatchUtilities {
             try {
                 Charset encoding = FileEncodingQuery.getEncoding(e.getKey());
                 final Document originalDocument = getDocument(e.getKey());
+                final Source s = Source.create(originalDocument);
                 final String[] origContent = new String[1];
                 if (originalDocument != null) {
                     originalDocument.render(new Runnable() {
@@ -219,7 +221,7 @@ public class BatchUtilities {
                 }
                 String newContent  = encoding.newDecoder().decode(ByteBuffer.wrap(e.getValue())).toString();
 
-                result.put(e.getKey(), DiffUtilities.diff2ModificationResultDifference(e.getKey(), null, Collections.<Integer, String>emptyMap(), origContent[0], newContent));
+                result.put(e.getKey(), DiffUtilities.diff2ModificationResultDifference(e.getKey(), null, Collections.<Integer, String>emptyMap(), origContent[0], newContent, s));
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (IOException ex) {

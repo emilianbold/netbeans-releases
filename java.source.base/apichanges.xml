@@ -49,6 +49,28 @@ made subject to such option by the copyright holder.
     <apidef name="util">Base Java Source API</apidef>
 </apidefs>
 <changes>
+    <change id="remove.openide.text">
+        <api name="util"/>
+        <summary>Remove dependency on Openide Text API</summary>
+        <version major="1" minor="1"/>
+        <date day="25" month="5" year="2014"/>
+        <author login="sdedic"/>
+        <compatibility modification="yes" binary="compatible" source="incompatible"/>
+        <description>
+            <p>
+                OpenIDE Text API dependencies are removed, affecting <code>ModificationResult.Difference</code>
+                API class, whose interface <b>changed</b> incompatibly. The class now returns
+                <code>java.swing.text.Position</code> instead of <code>org.openide.text.PositionRef</code>
+                for the start and end positions.
+            </p>
+            <p>
+                For binary compatibility, an additional module <code>java.source.compat8</code> was created,
+                which provides compatible method that still returns <code>PositionRef</code>
+            </p>
+        </description>
+        <class name="ModificationResult" package="org.netbeans.api.java.source"/>
+        <issue number="244744"/>
+    </change>
     <change id="server.is.free">
         <api name="util"/>
         <summary>Desktop independent parts of the Java Source module extracted</summary>
@@ -56,14 +78,14 @@ made subject to such option by the copyright holder.
         <date day="30" month="4" year="2014"/>
         <author login="dbalek"/>
         <compatibility modification="yes" addition="yes" binary="compatible" source="incompatible">
+        </compatibility>
+        <description>
             <p>
                 Runtime compatibility remains, compile time compatibility is
                 mostly preserved too. It is however recommended to upgrade
                 dependencies of client modules. Try running
                 <code>ant fix-dependencies</code> in your Ant module.
             </p>
-        </compatibility>
-        <description>
         </description>
     </change>
 </changes>

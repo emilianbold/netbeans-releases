@@ -156,7 +156,6 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
@@ -246,7 +245,6 @@ public class JavacParser extends Parser {
         this.sourceCount = snapshots.size();
         final boolean singleJavaFile = this.sourceCount == 1 && MIME_TYPE.equals(snapshots.iterator().next().getSource().getMimeType());
         this.supportsReparse = singleJavaFile && !DISABLE_PARTIAL_REPARSE;
-        EditorCookie.Observable ec = null;
         JavaFileFilterImplementation filter = null;
         if (singleJavaFile) {
             final Source source = snapshots.iterator().next().getSource();

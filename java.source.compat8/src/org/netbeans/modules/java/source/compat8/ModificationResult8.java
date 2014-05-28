@@ -40,29 +40,31 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.source;
+package org.netbeans.modules.java.source.compat8;
 
-import java.io.IOException;
-
-import javax.swing.text.Position;
-
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+import com.sun.javafx.beans.annotations.NonNull;
+import org.netbeans.api.java.source.ModificationResult;
+import org.openide.modules.PatchFor;
+import org.openide.text.PositionRef;
 
 /**
- *
- * @author Dusan Balek
+ * Provides PositionRefs instead of Positions.
+ * @author sdedic
  */
-public abstract class PositionRefProvider {
+@PatchFor(ModificationResult.Difference.class)
+public class ModificationResult8 {
+    private ModificationResult.Difference inst;
+    
+    public ModificationResult8() {
+        this.inst = (ModificationResult.Difference)(Object)this;
+    }
+    
+    public @NonNull PositionRef getStartPosition() {
+        return (PositionRef)this.inst.getStartPosition();
+    }
 
-    public abstract Position createPosition(int position, Position.Bias bias);
-    
-    public static final PositionRefProvider get(final FileObject fo) throws IOException {
-        Factory f = Lookup.getDefault().lookup(Factory.class);
-        return f != null ? f.create(fo) : null;
+    public @NonNull PositionRef getEndPosition() {
+        return (PositionRef)this.inst.getEndPosition();
     }
-    
-    public interface Factory {
-        PositionRefProvider create(FileObject fo) throws IOException;
-    }
+        
 }

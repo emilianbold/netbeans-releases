@@ -51,6 +51,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.text.Position;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -78,7 +79,6 @@ import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.openide.filesystems.FileObject;
-import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
@@ -241,7 +241,7 @@ public abstract class JavaSourceAccessor {
 	return Utilities.holdsParserLock();
     }
 
-    public abstract Difference createDifference(Kind kind, PositionRef startPos, PositionRef endPos, String oldText, String newText, String description);
+    public abstract Difference createDifference(Kind kind, Position startPos, Position endPos, String oldText, String newText, String description, Source src);
     public abstract Difference createNewFileDifference(JavaFileObject fileObject, String text);
     public abstract ModificationResult createModificationResult(Map<FileObject, List<Difference>> diffs, Map<?, int[]> tag2Span);
     public abstract ElementUtilities createElementUtilities(@NonNull JavacTaskImpl jt);

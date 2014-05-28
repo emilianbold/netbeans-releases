@@ -81,7 +81,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;                                                                                                                                                                                     
 import org.openide.filesystems.URLMapper;
-import org.openide.text.PositionRef;                                                                                                                                                                                           
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
                                                                                                                                                                                                                                
@@ -244,7 +243,7 @@ public final class TreePathHandle {
             assert index != (-1);
             return new TreePathHandle(new CountingDelegate(TreePathHandle.create(treePath.getParentPath(), info), index, treePath.getLeaf().getKind()));
         }
-        PositionRef pos = createPositionRef(file, position, Bias.Forward);
+        Position pos = createPositionRef(file, position, Bias.Forward);
         TreePath current = treePath;
         Element correspondingElement = info.getTrees().getElement(current);
         Element element = null;
@@ -321,10 +320,10 @@ public final class TreePathHandle {
         }
     }
 
-    private static PositionRef createPositionRef(FileObject file, int position, Position.Bias bias) {
+    private static Position createPositionRef(FileObject file, int position, Position.Bias bias) {
         try {
             PositionRefProvider prp = PositionRefProvider.get(file);
-            PositionRef positionRef = prp != null ? prp.createPositionRef(position, bias) : null;
+            Position positionRef = prp != null ? prp.createPosition(position, bias) : null;
             if (positionRef != null) {
                 return positionRef;
             }
@@ -371,14 +370,14 @@ public final class TreePathHandle {
 
     private static final class TreeDelegate implements Delegate {
         
-        private final PositionRef position;
+        private final Position position;
         private final KindPath kindPath;
         private final FileObject file;
         private final ElementHandle enclosingElement;
         private final ElementHandle correspondingEl;
         private final Tree.Kind kind;
 
-        private TreeDelegate(PositionRef position, KindPath kindPath, FileObject file, ElementHandle element, ElementHandle correspondingEl) {
+        private TreeDelegate(Position position, KindPath kindPath, FileObject file, ElementHandle element, ElementHandle correspondingEl) {
             this.kindPath = kindPath;
             this.position = position;
             this.file = file;
@@ -484,24 +483,20 @@ public final class TreePathHandle {
         public boolean equalsHandle(Delegate obj) {
             TreeDelegate other = (TreeDelegate) obj;
             
-            try {
-                if (this.correspondingEl != other.correspondingEl && (this.correspondingEl == null || !this.correspondingEl.equals(other.correspondingEl))) {
-                    return false;
-                }
-                if (this.enclosingElement != other.enclosingElement && (this.enclosingElement == null || !this.enclosingElement.equals(other.enclosingElement))) {
-                    return false;
-                }
-                if (this.position == null && other.position == null) {
-                    return true;
-                }
-                if (this.position.getPosition().getOffset() != other.position.getPosition().getOffset()) {
-                    return false;
-                }
-                if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
-                    return false;
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+            if (this.correspondingEl != other.correspondingEl && (this.correspondingEl == null || !this.correspondingEl.equals(other.correspondingEl))) {
+                return false;
+            }
+            if (this.enclosingElement != other.enclosingElement && (this.enclosingElement == null || !this.enclosingElement.equals(other.enclosingElement))) {
+                return false;
+            }
+            if (this.position == null && other.position == null) {
+                return true;
+            }
+            // TODO: swap file and position test ?
+            if (this.position.getOffset() != other.position.getOffset()) {
+                return false;
+            }
+            if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
                 return false;
             }
             return true;

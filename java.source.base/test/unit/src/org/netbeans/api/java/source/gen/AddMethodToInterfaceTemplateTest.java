@@ -43,33 +43,32 @@
  */
 package org.netbeans.api.java.source.gen;
 
-import java.util.*;
-import java.io.IOException;
 
 import com.sun.source.tree.*;
+import static com.sun.source.tree.Tree.*;
 import com.sun.source.util.TreePath;
 import java.io.File;
+import java.io.IOException;
+import java.util.*;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.lexer.JavaTokenId;
-import static com.sun.source.tree.Tree.*;
 
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.MockServices;
-
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.text.PositionBounds;
 
 /**
@@ -159,10 +158,8 @@ public class AddMethodToInterfaceTemplateTest extends GeneratorTestBase {
         };
         ModificationResult result = firstSrc.runModificationTask(firstTask);
         List<? extends Difference> diffs = result.getDifferences(testFO);
-        List<PositionBounds> pbs = new ArrayList<PositionBounds>();
         List<Difference> difflist = new ArrayList<Difference>();
         for (Difference d : diffs) {
-            pbs.add(new PositionBounds(d.getStartPosition(), d.getEndPosition()));
             System.err.println("Description: " + d.getDescription());
             difflist.add(d);
         }

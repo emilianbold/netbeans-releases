@@ -45,27 +45,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
-import javax.lang.model.element.TypeElement;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.actions.Editable;
 import org.netbeans.api.actions.Savable;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.ModificationResult.Difference;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
 import org.netbeans.modules.javafx2.editor.completion.model.FxModel;
-import org.netbeans.modules.javafx2.editor.completion.model.FxXmlSymbols;
 import org.netbeans.modules.javafx2.editor.completion.model.FxmlParserResult;
 import org.netbeans.modules.javafx2.editor.fxml.FXMLDataObject;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -73,22 +59,15 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
-import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
-import org.openide.util.Utilities;
 
 import static org.netbeans.modules.javafx2.editor.actions.Bundle.*;
 
@@ -186,25 +165,5 @@ public final class GenerateControllerAction implements ActionListener {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-    }
-    
-    private PositionRef findFirstDifference(ModificationResult res, FileObject f) throws IOException {
-        List<? extends Difference> diffs = res.getDifferences(f);
-        if (diffs == null || diffs.isEmpty()) {
-            return null;
-        }
-        PositionRef minPos = null;
-        
-        for (Difference d : diffs) {
-            PositionRef r = d.getStartPosition();
-            if (minPos == null) {
-                minPos = r;
-            } else {
-                if (minPos.getLine() > r.getLine()) {
-                    minPos = r;
-                }
-            }
-        }
-        return minPos;
     }
 }
