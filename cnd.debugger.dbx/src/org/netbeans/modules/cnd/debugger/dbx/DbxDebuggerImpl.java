@@ -1611,13 +1611,17 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         if (get_frames || get_debugging) {
 	    stackEnabler.setRegistered(true);
         } else {
-	    stackEnabler.setRegistered(false);
+            if (dbx != null && dbx.connected()) {   // Debugging View unregister its model during the shutdown
+                stackEnabler.setRegistered(false);
+            }
         }
         
         if (get_threads || get_debugging) {
             threadEnabler.setRegistered(true);
         } else {
-            threadEnabler.setRegistered(false);
+            if (dbx != null && dbx.connected()) {   // Debugging View unregister its model during the shutdown
+                threadEnabler.setRegistered(false);
+            }
         }
     }
 
