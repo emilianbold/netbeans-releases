@@ -42,12 +42,16 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.api.project.ant;
+package org.netbeans.modules.project.ant;
 
 import java.io.File;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
+import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.support.ant.AntBasedTestUtil;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;

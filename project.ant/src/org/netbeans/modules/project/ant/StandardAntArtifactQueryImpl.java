@@ -51,7 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.ant.AntArtifactQueryImplementation;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 /**
  * Standard implementation of {@link AntArtifactQueryImplementation} which uses
@@ -65,7 +65,7 @@ public class StandardAntArtifactQueryImpl implements AntArtifactQueryImplementat
     public StandardAntArtifactQueryImpl() {}
     
     public AntArtifact findArtifact(File file) {
-        Project p = FileOwnerQuery.getOwner(Utilities.toURI(file));
+        Project p = FileOwnerQuery.getOwner(BaseUtilities.toURI(file));
         if (p == null) {
             return null;
         }
@@ -77,7 +77,7 @@ public class StandardAntArtifactQueryImpl implements AntArtifactQueryImplementat
         for (int i = 0; i < artifacts.length; i++) {
             URI uris[] = artifacts[i].getArtifactLocations();
             for (int y = 0; y < uris.length; y++) {
-                File testFile = Utilities.toFile(Utilities.toURI(artifacts[i].getScriptLocation()).resolve(uris[y]));
+                File testFile = BaseUtilities.toFile(BaseUtilities.toURI(artifacts[i].getScriptLocation()).resolve(uris[y]));
                 if (file.equals(testFile)) {
                     return artifacts[i];
                 }

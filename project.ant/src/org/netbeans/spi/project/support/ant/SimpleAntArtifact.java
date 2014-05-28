@@ -47,11 +47,12 @@ package org.netbeans.spi.project.support.ant;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
-import org.openide.ErrorManager;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 /**
  * A basic AntArtifact implementation.
@@ -89,13 +90,13 @@ final class SimpleAntArtifact extends AntArtifact {
         }
         File locF = new File(locationResolved);
         if (locF.isAbsolute()) {
-            return Utilities.toURI(locF);
+            return BaseUtilities.toURI(locF);
         } else {
             // Project-relative path.
             try {
                 return new URI(null, null, locationResolved.replace(File.separatorChar, '/'), null);
             } catch (URISyntaxException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, e);
                 return URI.create("file:/BROKEN"); // NOI18N
             }
         }

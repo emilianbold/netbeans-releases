@@ -68,7 +68,6 @@ import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.ProjectManager;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -76,12 +75,12 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
+import org.openide.util.BaseUtilities;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  * Support for working with Ant properties and property files.
@@ -186,7 +185,12 @@ public class PropertyUtils {
                             bp = FileUtil.toFileObject(ubp);
                             if (bp == null) {
                                 // XXX ugly (and will not correctly notify changes) but better than nothing:
-                                ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - cannot properly write to " + ubp + "; might be because your user directory is on a Windows UNC path (issue #46813)? If so, try using mapped drive letters.");
+                                Logger.getLogger(this.getClass().getName()).log(
+                                    Level.WARNING, 
+                                    "Warning - cannot properly write to {0}; "
+                                    + "might be because your user directory is on a Windows UNC path (issue #46813)? "
+                                    + "If so, try using mapped drive letters.", 
+                                    ubp);
                                 OutputStream os = new FileOutputStream(ubp);
                                 try {
                                     properties.store(os);
@@ -427,7 +431,7 @@ public class PropertyUtils {
             base = base.getParentFile();
             //#231704 when 2 UNC paths have different case, they are equal.
             //better to show as non-relative rather than throw an assert.
-            if (base == null || (Utilities.isWindows() && "\\\\".equals(base.getAbsolutePath()))) {
+            if (base == null || (BaseUtilities.isWindows() && "\\\\".equals(base.getAbsolutePath()))) {
                 return null;
             }
             if (base.equals(file)) {
@@ -437,7 +441,7 @@ public class PropertyUtils {
             }
             b.append("../"); // NOI18N
         }
-        URI u = Utilities.toURI(base).relativize(Utilities.toURI(file));
+        URI u = BaseUtilities.toURI(base).relativize(BaseUtilities.toURI(file));
         assert !u.isAbsolute() : u + " from " + basedir + " and " + file + " with common root " + base;
         b.append(u.getPath());
         if (b.charAt(b.length() - 1) == '/') {

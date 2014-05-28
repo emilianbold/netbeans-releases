@@ -468,7 +468,7 @@ public final class FileChooserAccessory extends javax.swing.JPanel
         });
 
         relativePath.setEditable(false);
-        relativePath.setText(null);
+        relativePath.setText("null");
 
         buttonGroup1.add(rbVariable);
         org.openide.awt.Mnemonics.setLocalizedText(rbVariable, org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "FileChooserAccessory.rbVariable.text")); // NOI18N
@@ -494,7 +494,7 @@ public final class FileChooserAccessory extends javax.swing.JPanel
         });
 
         copyTo.setEditable(false);
-        copyTo.setText(null);
+        copyTo.setText("null");
 
         buttonGroup1.add(rbAbsolute);
         org.openide.awt.Mnemonics.setLocalizedText(rbAbsolute, org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "FileChooserAccessory.rbAbsolute.text")); // NOI18N
@@ -505,7 +505,7 @@ public final class FileChooserAccessory extends javax.swing.JPanel
         });
 
         absolutePath.setEditable(false);
-        absolutePath.setText(null);
+        absolutePath.setText("null");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);

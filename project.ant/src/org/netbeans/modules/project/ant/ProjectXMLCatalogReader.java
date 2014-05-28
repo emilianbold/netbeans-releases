@@ -81,8 +81,11 @@ import org.xml.sax.SAXException;
  */
 public class ProjectXMLCatalogReader implements CatalogReader, CatalogDescriptor {
     
+    /** duplicated in project.ant/o.n.m.project.ant.ProjectXMLUtil **/
     private static final String PREFIX = "http://www.netbeans.org/ns/"; // NOI18N
+    /** duplicated in project.ant/o.n.m.project.ant.ProjectXMLUtil **/
     private static final String EXTENSION = "xsd"; // NOI18N
+    /** duplicated in project.ant/o.n.m.project.ant.ProjectXMLUtil **/
     private static final String CATALOG = "ProjectXMLCatalog"; // NOI18N
     
     /** Default constructor for use from layer. */
