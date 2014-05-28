@@ -124,7 +124,7 @@ public final class WebLogicRuntime {
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<Exception> reference = new AtomicReference<>();
 
-        start(outFactory, errFactory, new BlockingListener(latch, reference), environment, null);
+        start(outFactory, errFactory, new BlockingListener(latch, reference, false), environment, null);
         latch.await();
 
         Exception exception = reference.get();
@@ -275,7 +275,7 @@ public final class WebLogicRuntime {
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<Exception> reference = new AtomicReference<>();
 
-        stop(outFactory, errFactory, new BlockingListener(latch, reference));
+        stop(outFactory, errFactory, new BlockingListener(latch, reference, true));
         latch.await();
 
         Exception exception = reference.get();
@@ -565,9 +565,12 @@ public final class WebLogicRuntime {
 
         private final AtomicReference<Exception> exception;
 
-        public BlockingListener(CountDownLatch latch, AtomicReference<Exception> exception) {
+        private final boolean waitOnRunning;
+
+        public BlockingListener(CountDownLatch latch, AtomicReference<Exception> exception, boolean waitOnRunning) {
             this.latch = latch;
             this.exception = exception;
+            this.waitOnRunning = waitOnRunning;
         }
 
         public CountDownLatch getLatch() {
@@ -605,7 +608,9 @@ public final class WebLogicRuntime {
 
         @Override
         public void onRunning() {
-            latch.countDown();
+            if (!waitOnRunning) {
+                latch.countDown();
+            }
         }
 
         @Override
