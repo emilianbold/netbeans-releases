@@ -124,8 +124,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
     public ProgressObject directoryDeploy(final Target target, String name,
             File file, String host, String port, J2eeModule.Type type) {
-        return deploy(createModuleId(target, file, host, port, name, type),
-                file, "-nostage", "-name", name, "-source"); // NOI18N
+        return deploy(createModuleId(target, file, host, port, name, type), file, name);
     }
 
     public ProgressObject directoryRedeploy(final TargetModuleID moduleId) {
@@ -135,7 +134,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
     public ProgressObject deploy(Target[] target, final File file, final File plan, String host, String port) {
         // TODO is this correct only first server mentioned
         final TargetModuleID moduleId = createModuleId(target[0], file, host, port, file.getName(), null);
-        return deploy(moduleId, file);
+        return deploy(moduleId, file, null);
     }
 
     public ProgressObject redeploy(TargetModuleID[] targetModuleID, File file, File file2) {
@@ -531,8 +530,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         return progress;
     }
 
-    private ProgressObject deploy(final TargetModuleID moduleId, final File file,
-            final String... parameters) {
+    private ProgressObject deploy(final TargetModuleID moduleId, final File file, String name) {
         final WLProgressObject progress = new WLProgressObject(moduleId);
 
         DeployListener listener = new DeployListener() {
@@ -583,7 +581,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
         WebLogicDeployer deployer = WebLogicDeployer.getInstance(
                 CommonBridge.getConfiguration(getDeploymentManager()), new File(getJavaBinary()));
-        deployer.deploy(file, listener, parameters);
+        deployer.deploy(file, listener, name);
 
         return progress;
     }

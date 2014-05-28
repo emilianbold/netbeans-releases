@@ -93,7 +93,22 @@ public final class WebLogicDeployer {
     }
 
     @NonNull
-    public Future<Boolean> deploy(@NonNull final File file,
+    public Future<Boolean> deploy(@NonNull File file, @NullAllowed DeployListener listener,
+            @NullAllowed String name) {
+
+        List<String> params = new ArrayList<>();
+        if (name != null) {
+            params.add("-name"); // NOI18N
+            params.add(name);
+        }
+        if (file.isDirectory()) {
+            params.add("-nostage"); // NOI18N
+            params.add("-source"); // NOI18N
+        }
+        return deploy(file, listener, params.toArray(new String[params.size()]));
+    }
+
+    private Future<Boolean> deploy(@NonNull final File file,
             @NullAllowed final DeployListener listener, final String... parameters) {
 
         if (listener != null) {
