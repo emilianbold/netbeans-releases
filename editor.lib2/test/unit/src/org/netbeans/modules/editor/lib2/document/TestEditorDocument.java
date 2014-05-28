@@ -71,13 +71,13 @@ public class TestEditorDocument extends PlainDocument {
     @Override
     protected void insertUpdate(DefaultDocumentEvent chng, AttributeSet attr) {
 //        super.insertUpdate(chng, attr);
-        lineElementRoot.insertUpdate(chng, attr);
+        lineElementRoot.insertUpdate(chng, chng, attr);
     }
 
     @Override
     protected void removeUpdate(DefaultDocumentEvent chng) {
 //        super.removeUpdate(chng);
-        lineElementRoot.removeUpdate(chng);
+        lineElementRoot.removeUpdate(chng, chng);
     }
 
 }
