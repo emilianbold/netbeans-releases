@@ -76,6 +76,14 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
     
     @Override
     public Breakpoint[] initBreakpoints() {
+        initLoadBP();
+        return new Breakpoint[] { debugManagerLoadBP };
+    }
+    
+    private synchronized void initLoadBP() {
+        if (debugManagerLoadBP != null) {
+            return ;
+        }
 //        debugManagerLoadBP = ClassLoadUnloadBreakpoint.create(TRUFFLE_CLASS_DebugManager,
 //                                                    false,
 //                                                    ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED);
@@ -83,7 +91,8 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
         ((MethodBreakpoint) debugManagerLoadBP).setBreakpointType(MethodBreakpoint.TYPE_METHOD_EXIT);
         debugManagerLoadBP.setHidden(true);
         debugManagerLoadBP.setSuspend(EventRequest.SUSPEND_ALL);
-        return new Breakpoint[] { debugManagerLoadBP };
+        System.err.println("TruffleDebugManager.initBreakpoints(): submitted BP "+debugManagerLoadBP);
+        new TruffleAccessBreakpoints().init();
     }
     
     @Override
@@ -92,6 +101,8 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
         if (debugger == null) {
             return ;
         }
+        initLoadBP();
+        System.err.println("TruffleDebugManager.engineAdded("+engine+"), adding BP listener to "+debugManagerLoadBP);
         DebugManagerHandler dmh = new DebugManagerHandler(debugger);
         debugManagerLoadBP.addJPDABreakpointListener(dmh);
         synchronized (dmHandlers) {
@@ -110,6 +121,7 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
             dmh = dmHandlers.remove(debugger);
         }
         if (dmh != null) {
+            System.err.println("TruffleDebugManager.engineRemoved("+engine+"), removing BP listener from "+debugManagerLoadBP);
             debugManagerLoadBP.removeJPDABreakpointListener(dmh);
             dmh.destroy();
         }
