@@ -70,7 +70,6 @@ import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.JsCodeCompletionBase;
 import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
-import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
 import org.netbeans.modules.javascript2.requirejs.RequireJsPreferences;
 import org.netbeans.modules.javascript2.requirejs.TestProjectSupport;
 import org.netbeans.modules.parsing.api.ParserManager;

@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.requirejs.editor;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -215,7 +216,14 @@ public class FSCompletionUtils {
     public static FileObject findFileObject(final String pathToFile, FileObject parent) {
         String path = pathToFile;
         String[] pathParts = path.split("/");
+        FileObject result = null;
         if (parent != null) {
+            if (pathParts[pathParts.length - 1].indexOf('.') > 0) {
+                result = findFile(parent, path);
+                if (result != null) {
+                    return result;
+                }
+            }
             Project project = FileOwnerQuery.getOwner(parent);
             RequireJsIndex rIndex = null;
             try {
@@ -223,15 +231,17 @@ public class FSCompletionUtils {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            Map<String, String> pathMappings = new HashMap();
+            Collection<String> basePaths = new ArrayList();
+            Map<String, String> configPaths = new HashMap();
+
             if (rIndex != null) {
-                pathMappings.putAll(rIndex.getPathMappings(pathParts[0]));
+                basePaths = rIndex.getBasePaths();
+                configPaths = rIndex.getPathMappings(basePaths.isEmpty() ? pathParts[0] : "");
             }
-            pathMappings.putAll(RequireJsPreferences.getMappings(project));
-            
+
             String alias = "";
-            for (String possibleAlias : pathMappings.keySet()) {
-                if (possibleAlias.equals(path)) {
+            for (String possibleAlias : configPaths.keySet()) {
+                if (possibleAlias.equals(pathToFile)) {
                     alias = possibleAlias;
                     break;
                 }
@@ -240,13 +250,52 @@ public class FSCompletionUtils {
                 }
             }
             if (!alias.isEmpty()) {
-                path = pathMappings.get(alias) + path.substring(alias.length());
-                pathParts = path.split("/");                        //NOI18N
+                path = configPaths.get(alias) + pathToFile.substring(alias.length());
+                if (basePaths.isEmpty()) {
+                    result = findFile(parent, composePath(path));
+                    if (result != null) {
+                        return result;
+                    }
+                }
             }
+            // try directly the base path
+            for (String value : basePaths) {
+                String composedPath = composePath(value, path);
+                result = findFile(parent, composedPath);
+                if (result != null) {
+                    return result;
+                }
+            }
+
+            // try mappings from project properties
+            Map<String, String> pathMappings = RequireJsPreferences.getMappings(project);
+            alias = "";
+            for (String possibleAlias : pathMappings.keySet()) {
+                if (possibleAlias.equals(pathToFile)) {
+                    alias = possibleAlias;
+                    break;
+                }
+                if (pathToFile.startsWith(possibleAlias) && (alias.length() < possibleAlias.length())) {
+                    alias = possibleAlias;
+                }
+            }
+            if (!alias.isEmpty()) {
+                path = pathMappings.get(alias) + pathToFile.substring(alias.length());
+                result = findFile(parent, composePath(path));
+                if (result != null) {
+                    return result;
+                }
+            }
+            result = findFile(parent, composePath(pathToFile));
         }
-        if (parent != null && pathParts.length > 0) {
-            parent = parent.getParent();
-            FileObject targetFO;
+
+        return result;
+    }
+
+    private static FileObject findFile(final FileObject fromFO, final String path) {
+        FileObject parent = fromFO;
+        FileObject targetFO = fromFO;
+        if (parent != null && !path.isEmpty()) {
             while (parent != null) {
                 targetFO = parent.getFileObject(path);
                 if (targetFO != null) {
@@ -260,5 +309,22 @@ public class FSCompletionUtils {
             }
         }
         return null;
+    }
+
+    private static String composePath(String... parts) {
+        StringBuilder result = new StringBuilder();
+        String lastPart = "";
+        for (String part : parts) {
+            if (part.isEmpty()) {
+                // skip empty parts
+                continue;
+            }
+            if (!lastPart.isEmpty() && lastPart.charAt(lastPart.length() - 1) != '/' && part.charAt(0) != '/') {
+                result.append('/');
+            }
+            result.append(part);
+            lastPart = part;
+        }
+        return result.toString();
     }
 }

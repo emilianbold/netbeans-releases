@@ -74,9 +74,11 @@ public class RequireJsIndexer extends EmbeddingIndexer {
     public static final String FIELD_EXPOSED_TYPES = "et"; //NOI18N
     public static final String FIELD_MODULE_NAME = "mn"; //NOI18N
     public static final String FIELD_PATH_MAP = "mp";   //NOI18N
+    public static final String FIELD_BASE_PATH = "bp";  //NOI18N
 
     private static final ThreadLocal<Map<URI, Collection<? extends TypeUsage>>> exposedTypes = new ThreadLocal();
     private static final ThreadLocal<Map<URI, Map<String, String>>> pathsMapping = new ThreadLocal();
+    private static final ThreadLocal<Map<URI, String>> basePath = new ThreadLocal();
 
     @Override
     protected void index(Indexable indexable, Parser.Result parserResult, Context context) {
@@ -120,6 +122,15 @@ public class RequireJsIndexer extends EmbeddingIndexer {
                 storeDocument = true;
             }
         }
+        
+        Map<URI, String>baseUrls = basePath.get();
+        if (baseUrls != null && !baseUrls.isEmpty()) {
+            String baseUrl = baseUrls.remove(fo.toURI());
+            if (baseUrl != null && !baseUrl.isEmpty()) {
+                elementDocument.addPair(FIELD_BASE_PATH, baseUrl, true, true);
+                storeDocument = true;
+            }
+        }
         if (storeDocument) {
             support.addDocument(elementDocument);
         }
@@ -129,7 +140,7 @@ public class RequireJsIndexer extends EmbeddingIndexer {
         final Map<URI, Collection<? extends TypeUsage>> map = exposedTypes.get();
 
         if (map == null) {
-            throw new IllegalStateException("RequireJsIndexer.addControllers can be called only from scanner thread.");  //NOI18N
+            throw new IllegalStateException("RequireJsIndexer.addTypes can be called only from scanner thread.");  //NOI18N
         }
         map.put(uri, exported);
     }
@@ -138,9 +149,18 @@ public class RequireJsIndexer extends EmbeddingIndexer {
         final Map<URI, Map<String, String>> map = pathsMapping.get();
 
         if (map == null) {
-            throw new IllegalStateException("RequireJsIndexer.addControllers can be called only from scanner thread.");  //NOI18N
+            throw new IllegalStateException("RequireJsIndexer.addPathMapping can be called only from scanner thread.");  //NOI18N
         }
         map.put(uri, mappings);
+    }
+    
+    public static void addBasePath(final URI uri, String path) {
+        final Map<URI, String> map = basePath.get();
+
+        if (map == null) {
+            throw new IllegalStateException("RequireJsIndexer.addBasePath can be called only from scanner thread.");  //NOI18N
+        }
+        map.put(uri, path);
     }
 
     public static final class Factory extends EmbeddingIndexerFactory {
@@ -196,6 +216,7 @@ public class RequireJsIndexer extends EmbeddingIndexer {
             postScanTasks.set(new LinkedList<Runnable>());
             exposedTypes.set(new HashMap<URI, Collection<? extends TypeUsage>>());
             pathsMapping.set(new HashMap<URI, Map<String, String>>());
+            basePath.set(new HashMap<URI, String>(1));
             return super.scanStarted(context);
         }
 

@@ -166,10 +166,8 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                 mappings.putAll(rIndex.getPathMappings(writtenPath));
             }
             mappings.putAll(RequireJsPreferences.getMappings(project));
-            System.out.println(FSCompletionUtils.findFileObject(writtenPath, fo));
             for (String mapping : mappings.keySet()) {
                 if (mapping.startsWith(writtenPath)) {
-                    System.out.println(mapping);
                     result.add(new MappingCompletionItem(mapping, FSCompletionUtils.findFileObject(mapping, fo), ccContext.getCaretOffset() - writtenPath.length()));
                 }
             }

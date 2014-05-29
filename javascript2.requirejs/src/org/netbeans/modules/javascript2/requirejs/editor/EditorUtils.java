@@ -62,6 +62,7 @@ public class EditorUtils {
     public static final String REQUIRE = "require";    //NOI18N
     public static final String REQUIREJS = "requirejs"; // NOI18N
     public static final String PATHS = "paths";        //NOI18N
+    public static final String BASE_URL = "baseUrl";    //NOI8N
 
     /**
      * Returns true if at the offset there is a string and the string is in a

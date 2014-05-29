@@ -43,9 +43,11 @@ package org.netbeans.modules.javascript2.requirejs.editor.index;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
@@ -162,5 +164,23 @@ public class RequireJsIndex {
             return mappings;
         }
         return Collections.emptyMap();
+    }
+    
+    public Collection<String> getBasePaths() {
+        Collection<? extends IndexResult> result = null;
+        
+        try {
+            result = querySupport.query(RequireJsIndexer.FIELD_BASE_PATH, "", QuerySupport.Kind.PREFIX, RequireJsIndexer.FIELD_BASE_PATH);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (result != null && !result.isEmpty()) {
+            List<String> paths = new ArrayList();
+            for (IndexResult indexResult : result) {
+                paths.addAll(Arrays.asList(indexResult.getValues(RequireJsIndexer.FIELD_BASE_PATH)));
+            }
+            return paths;
+        }
+        return Collections.emptyList();
     }
 }

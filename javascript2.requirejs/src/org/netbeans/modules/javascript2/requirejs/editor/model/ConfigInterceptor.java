@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
@@ -88,14 +89,25 @@ public class ConfigInterceptor implements FunctionInterceptor {
         }
 
         if (fArg != null && fArg.getValue() instanceof JsObject) {
+            // find paths property
             JsObject paths = ((JsObject) fArg.getValue()).getProperty(EditorUtils.PATHS);
-            if (paths != null) {
-                Map<String, String> mapping = new HashMap<String, String>();
+            // find baseUrl property
+            JsObject baseUrl = ((JsObject) fArg.getValue()).getProperty(EditorUtils.BASE_URL);
+            if (paths != null || baseUrl != null) {
                 FileObject fo = globalObject.getFileObject();
-                if (fo != null) {
-                    Source source = Source.create(fo);
-                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(source.createSnapshot().getTokenHierarchy(), paths.getOffset());
+                if (fo == null) {
+                    return;
+                }
+                Source source = Source.create(fo);
+                TokenHierarchy<?> th = source.createSnapshot().getTokenHierarchy();
+                if (paths != null) {
+                    // find defined mappings 
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, paths.getOffset());
                     Token<? extends JsTokenId> token;
+                    if (ts == null) {
+                        return;
+                    }
+                    Map<String, String> mapping = new HashMap<String, String>();
                     for (JsObject path : paths.getProperties().values()) {
                         String alias = path.getName();
                         String target = null;
@@ -114,9 +126,32 @@ public class ConfigInterceptor implements FunctionInterceptor {
                             mapping.put(alias, target);
                         }
                     }
-                }
-                if (!mapping.isEmpty()) {
-                    RequireJsIndexer.addPathMapping(fo.toURI(), mapping);
+                    if (!mapping.isEmpty()) {
+                        RequireJsIndexer.addPathMapping(fo.toURI(), mapping);
+                    }
+
+                    if (baseUrl != null) {
+                        // find defined mappings 
+                        ts = LexUtilities.getJsTokenSequence(th, baseUrl.getOffset());
+                        if (ts == null) {
+                            return;
+                        }
+                        ts.move(baseUrl.getOffset());
+                        String target = null;
+                        if (ts.moveNext()) {
+                            token = LexUtilities.findNextToken(ts, Arrays.asList(JsTokenId.OPERATOR_COLON));
+                            if (token.id() == JsTokenId.OPERATOR_COLON) {
+                                token = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT,
+                                        JsTokenId.STRING_BEGIN, JsTokenId.OPERATOR_COLON));
+                                if (token.id() == JsTokenId.STRING) {
+                                    target = token.text().toString();
+                                }
+                            }
+                        }
+                        if (target != null) {
+                            RequireJsIndexer.addBasePath(fo.toURI(), target);
+                        }
+                    }
                 }
             }
         }
