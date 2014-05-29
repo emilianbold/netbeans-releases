@@ -1327,6 +1327,10 @@ made subject to such option by the copyright holder.
                 <module codenamebase="org.netbeans.modules.projectuiapi" release="1" spec="1.78.0"/>
                 <module codenamebase="org.netbeans.modules.projectuiapi.base" spec="1.78.0"/>
             </replace>
+            <replace codenamebase="org.netbeans.modules.project.ant" addcompiletime="true">
+                <module codenamebase="org.netbeans.modules.project.ant" release="1" spec="1.61"/>
+                <module codenamebase="org.netbeans.modules.project.ant.ui" spec="1.61"/>
+            </replace>
             <fileset dir="nbproject" >
                 <include name="project.xml" />
             </fileset>
