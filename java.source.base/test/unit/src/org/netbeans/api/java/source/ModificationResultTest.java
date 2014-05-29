@@ -96,15 +96,11 @@ public class ModificationResultTest extends NbTestCase {
         ces = (CloneableEditorSupport) od.getCookie(EditorCookie.class);
     }
     
-    private Source getSource(PositionRef pos) throws IOException {
-        return Source.create(pos.getCloneableEditorSupport().openDocument());
-    }
-    
     private ModificationResult prepareInsertResult() throws Exception {
         PositionRef start1 = ces.createPositionRef(5, Bias.Forward);
-        ModificationResult.Difference diff1 = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, start1, start1, "", "new-test1\n", getSource(start1));
+        ModificationResult.Difference diff1 = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, start1, start1, "", "new-test1\n", Source.create(testFile));
         PositionRef start2 = ces.createPositionRef(10, Bias.Forward);
-        ModificationResult.Difference diff2 = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, start2, start2, "", "new-test2\n", getSource(start1));
+        ModificationResult.Difference diff2 = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, start2, start2, "", "new-test2\n", Source.create(testFile));
         
         ModificationResult result = new ModificationResult(null);
         
@@ -116,9 +112,9 @@ public class ModificationResultTest extends NbTestCase {
     
     private ModificationResult prepareInsertResultFiltered() throws Exception {
         PositionRef start1 = ces.createPositionRef(4, Bias.Forward);
-        ModificationResult.Difference diff1 = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, start1, start1, "", "new-test1\n", getSource(start1));
+        ModificationResult.Difference diff1 = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, start1, start1, "", "new-test1\n", Source.create(testFile));
         PositionRef start2 = ces.createPositionRef(8, Bias.Forward);
-        ModificationResult.Difference diff2 = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, start2, start2, "", "new-test2\n", getSource(start1));
+        ModificationResult.Difference diff2 = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, start2, start2, "", "new-test2\n", Source.create(testFile));
 
         ModificationResult result = new ModificationResult(null);
 
@@ -214,10 +210,10 @@ public class ModificationResultTest extends NbTestCase {
     private ModificationResult prepareRemoveResult() throws Exception {
         PositionRef start1 = ces.createPositionRef(5, Bias.Forward);
         PositionRef end1 = ces.createPositionRef(9, Bias.Forward);
-        ModificationResult.Difference diff1 = new ModificationResult.Difference(ModificationResult.Difference.Kind.REMOVE, start1, end1, "test", "", getSource(start1));
+        ModificationResult.Difference diff1 = new ModificationResult.Difference(ModificationResult.Difference.Kind.REMOVE, start1, end1, "test", "", Source.create(testFile));
         PositionRef start2 = ces.createPositionRef(11, Bias.Forward);
         PositionRef end2 = ces.createPositionRef(12, Bias.Forward);
-        ModificationResult.Difference diff2 = new ModificationResult.Difference(ModificationResult.Difference.Kind.REMOVE, start2, end2, "e", "", getSource(start1));
+        ModificationResult.Difference diff2 = new ModificationResult.Difference(ModificationResult.Difference.Kind.REMOVE, start2, end2, "e", "", Source.create(testFile));
         
         ModificationResult result = new ModificationResult(null);
         
@@ -230,10 +226,10 @@ public class ModificationResultTest extends NbTestCase {
     private ModificationResult prepareModificationResult1() throws Exception {
         PositionRef start1 = ces.createPositionRef(5, Bias.Forward);
         PositionRef end1 = ces.createPositionRef(9, Bias.Forward);
-        ModificationResult.Difference diff1 = new ModificationResult.Difference(ModificationResult.Difference.Kind.CHANGE, start1, end1, "test", "ab", getSource(start1));
+        ModificationResult.Difference diff1 = new ModificationResult.Difference(ModificationResult.Difference.Kind.CHANGE, start1, end1, "test", "ab", Source.create(testFile));
         PositionRef start2 = ces.createPositionRef(11, Bias.Forward);
         PositionRef end2 = ces.createPositionRef(13, Bias.Forward);
-        ModificationResult.Difference diff2 = new ModificationResult.Difference(ModificationResult.Difference.Kind.CHANGE, start2, end2, "es", "a", getSource(start1));
+        ModificationResult.Difference diff2 = new ModificationResult.Difference(ModificationResult.Difference.Kind.CHANGE, start2, end2, "es", "a", Source.create(testFile));
         
         ModificationResult result = new ModificationResult(null);
         
@@ -246,10 +242,10 @@ public class ModificationResultTest extends NbTestCase {
     private ModificationResult prepareModificationResult2() throws Exception {
         PositionRef start1 = ces.createPositionRef(5, Bias.Forward);
         PositionRef end1 = ces.createPositionRef(9, Bias.Forward);
-        ModificationResult.Difference diff1 = new ModificationResult.Difference(ModificationResult.Difference.Kind.CHANGE, start1, end1, "test", "abcde", getSource(start1));
+        ModificationResult.Difference diff1 = new ModificationResult.Difference(ModificationResult.Difference.Kind.CHANGE, start1, end1, "test", "abcde", Source.create(testFile));
         PositionRef start2 = ces.createPositionRef(11, Bias.Forward);
         PositionRef end2 = ces.createPositionRef(13, Bias.Forward);
-        ModificationResult.Difference diff2 = new ModificationResult.Difference(ModificationResult.Difference.Kind.CHANGE, start2, end2, "es", "a", getSource(start1));
+        ModificationResult.Difference diff2 = new ModificationResult.Difference(ModificationResult.Difference.Kind.CHANGE, start2, end2, "es", "a", Source.create(testFile));
         
         ModificationResult result = new ModificationResult(null);
         
@@ -327,10 +323,10 @@ public class ModificationResultTest extends NbTestCase {
 
         PositionRef start1 = ces.createPositionRef(5, Bias.Forward);
         PositionRef end1 = ces.createPositionRef(9, Bias.Forward);
-        ModificationResult.Difference diff1 = new ModificationResult.Difference(ModificationResult.Difference.Kind.CHANGE, start1, end1, "test", "abcde", getSource(start1));
+        ModificationResult.Difference diff1 = new ModificationResult.Difference(ModificationResult.Difference.Kind.CHANGE, start1, end1, "test", "abcde", Source.create(testFile));
         PositionRef start2 = ces.createPositionRef(10, Bias.Forward);
         PositionRef end2 = ces.createPositionRef(13, Bias.Forward);
-        ModificationResult.Difference diff2 = new ModificationResult.Difference(ModificationResult.Difference.Kind.CHANGE, start2, end2, "tes", "a", getSource(start1));
+        ModificationResult.Difference diff2 = new ModificationResult.Difference(ModificationResult.Difference.Kind.CHANGE, start2, end2, "tes", "a", Source.create(testFile));
 
         ModificationResult result = new ModificationResult(null);
 

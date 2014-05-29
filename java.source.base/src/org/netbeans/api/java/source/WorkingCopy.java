@@ -112,6 +112,7 @@ import org.netbeans.modules.java.source.save.ElementOverlay.FQNComputer;
 import org.netbeans.modules.java.source.transform.ImmutableDocTreeTranslator;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
 import org.netbeans.modules.java.source.transform.TreeDuplicator;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -790,7 +791,7 @@ public class WorkingCopy extends CompilationController {
         
         try {
             return DiffUtilities.diff2ModificationResultDifference(diffContext.file, diffContext.positionConverter, userInfo, codeForCompilationUnit(diffContext.origUnit), diffs,
-                    getSnapshot().getSource());
+                    getFileObject() != null ? getSnapshot().getSource() : null);
         } catch (IOException ex) {
             if (!diffContext.file.isValid()) {
                 Logger.getLogger(WorkingCopy.class.getName()).log(Level.FINE, null, ex);
