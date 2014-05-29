@@ -73,6 +73,6 @@ public class AtomicLockEvent extends EventObject {
      * @return the atomic lock
      */
     public AtomicLockDocument getAtomicLock() {
-        return LineDocumentUtils.as((Document)getSource(), AtomicLockDocument.class);
+        return LineDocumentUtils.as(getSource(), AtomicLockDocument.class);
     }
 }

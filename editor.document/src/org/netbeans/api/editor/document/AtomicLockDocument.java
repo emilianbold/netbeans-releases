@@ -53,24 +53,9 @@ import org.netbeans.api.annotations.common.NonNull;
  * operation. All the operations since
  * the begining of the atomic operation
  * can be undone by using atomicUndo().
- * Typical scenario of the operation
- * is the following: <PRE>
- *   doc.atomicLock();
- *   try {
- *     ...
- *     modification1
- *     modification2
- *     ...
- *   } catch (BadLocationException e) {
- *     // something went wrong - undo till begining
- *     doc.atomicUndo();
- *   } finally {
- *     doc.atomicUnlock();
- *   }
- *   <PRE>
- *   <P>The external clients can watch for atomic operations
- *   by registering an listener through
- *   {@link addAtomicLockListener(AtomicLockListener)}
+ * <p>Clients may watch for atomic operations
+ * by registering an listener through
+ * {@link addAtomicLockListener(AtomicLockListener)}
  * <p/>
  * The infrastructure registers a stub implementation for all documents;
  * the stub does not perform any locking, except that execution of {@link #runAtomic}
@@ -85,18 +70,6 @@ public interface AtomicLockDocument {
      * @return Document instance
      */
     public @NonNull Document getDocument();
-    
-    /**
-     * Obtains an atomic lock. The document will become write-locked and
-     * undo support should accumulate the subsequent events into one Undo item.
-     */
-    public void atomicLock();
-    
-    /**
-     * Releases the atomic lock. It is an error to call atomicUnlock without
-     * calling first a matching {@link #atomicLock}.
-     */
-    public void atomicUnlock();
     
     /**
      * Reverts modifications done during the atomic operation.

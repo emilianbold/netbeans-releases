@@ -56,13 +56,13 @@ public final class EditorDocumentHandler {
         // no instances
     }
 
-    private static Class editorDocClass;
+    private static Class<? extends Document> editorDocClass;
     
     private static EditorDocumentServices editorDocServices;
     
     private static EditorCharacterServices charServices = new DefaultEditorCharacterServices(); // Until other impls exist
     
-    public static void setEditorDocumentServices(Class docClass, EditorDocumentServices docServices) {
+    public static void setEditorDocumentServices(Class<? extends Document> docClass, EditorDocumentServices docServices) {
         // Currently expect just a single implementation: BaseDocument
         if (editorDocClass != null) {
             throw new IllegalStateException("Only single registration expected. Already registered: " + editorDocClass);

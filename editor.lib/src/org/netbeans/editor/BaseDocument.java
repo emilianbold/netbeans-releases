@@ -2719,12 +2719,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             return doc.isWhitespace(ch);
         }
 
-        @Override
         public void atomicLock() {
             doc.atomicLockImpl();
         }
 
-        @Override
         public void atomicUnlock() {
             doc.atomicUnlockImpl();
         }

@@ -621,16 +621,18 @@ public final class LineDocumentUtils {
         if (d == null) {
             throw new NullPointerException("null document");
         }
-        T res;
         
         if (documentService.isInstance(d)) {
-            return (T)d;
+            @SuppressWarnings("unchecked")
+            T res = (T) d;
+            return res;
         }
         Object serv = d.getProperty(documentService);
         if (serv != null) {
             if (serv instanceof V) {
                 if (useStub) {
-                    res = (T)((V<T>)serv).delegate;
+                    @SuppressWarnings("unchecked")
+                    T res = ((V<T>)serv).delegate;
                     if (res == null) {
                         throw new IllegalArgumentException();
                     }
@@ -645,27 +647,29 @@ public final class LineDocumentUtils {
                 }
                 // fall through, make a wrapper
             } else {
-                return (T)serv;
+                @SuppressWarnings("unchecked")
+                T res = (T) serv;
+                return res;
             }
         }
         
         Lookup lkp = DocumentServices.getInstance().getLookup(d);
         serv = lkp.lookup(documentService);
-        Object v = serv;
         if (serv == null) {
             if (useStub) {
                 lkp = DocumentServices.getInstance().getStubLookup(d);
                 serv = lkp.lookup(documentService);
-                v = new V(serv);
-                d.putProperty(documentService, new V(serv));
+                d.putProperty(documentService, new V<Object>(serv));
                 if (serv == null) {
                     throw new IllegalArgumentException();
                 }
             }
         } else {
-            d.putProperty(documentService, v == null ? NOT_FOUND : v);
+            d.putProperty(documentService, serv == null ? NOT_FOUND : serv);
         }
-        return (T)serv;
+        @SuppressWarnings("unchecked")
+        T res = (T) serv;
+        return res;
     }
 
     /**

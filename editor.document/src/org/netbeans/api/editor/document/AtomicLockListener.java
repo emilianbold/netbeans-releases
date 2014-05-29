@@ -47,31 +47,41 @@ package org.netbeans.api.editor.document;
 import java.util.EventListener;
 
 /**
- * Listener for begining and end of the atomic
- * locking. It can be used to optimize the document
+ * Listener for begining and end of the atomic locking.
+ * <br/>
+ * Only outer atomic lock/unlock is being notified (nested locking is not notified).
+ * <br/>
+ * There may be an empty atomic section when the lock is acquired and released
+ * but no modification is done inside it.
+ * <br/>
+ * Listener may be used to optimize regular document
  * listeners if a large amounts of edits are performed
- * in an atomic change. For example if there's
- * a timer restarted after each document modification
- * to update an external pane showing the document structure
- * after 2000ms past the last modification occurred
- * then there could be a following listener used:<PRE>
- *  class MultiListener implements DocumentListener, AtomicLockListener {
+ * in an atomic change. For example instead of restarting
+ * a reparse timer after each document modification
+ * inside a document reformatting section the timer could
+ * only be restarted once when an atomic lock is being released:
+ * <pre>
+ *  class DocListener implements DocumentListener, AtomicLockListener {
  *
- *    private boolean atomic; // whether in atomic change
+ *    private boolean atomicChange; // whether in atomic change
+ * 
+ *    private boolean modified; // any modification performed
  *
  *    public void insertUpdate(DocumentEvent evt) {
- *      modified(evt);
+ *      modified = true;
+ *      possiblyRestartTimer();
  *    }
  *
  *    public void removeUpdate(DocumentEvent evt) {
- *      modified(evt);
+ *      modified = true;
+ *      possiblyRestartTimer();
  *    }
  *
  *    public void changedUpdate(DocumentEvent evt) {
  *    }
  *
- *    private void modified(DocumentEvent evt) {
- *      if (!atomic) {
+ *    private void modified() {
+ *      if (modified && !atomic) {
  *        restartTimer(); // restart the timer
  *      }
  *    }
@@ -82,15 +92,25 @@ import java.util.EventListener;
  *
  *    public void atomicUnlock(AtomicLockEvent evt) {
  *      atomic = false;
+ *      possiblyRestartTimer();
  *    }
  *
  *  }
- *  <PRE>
+ *  </pre>
  */
 public interface AtomicLockListener extends EventListener {
 
+    /**
+     * Called once the outer atomic lock was acquired.
+     *
+     * @param evt non-null event
+     */
     public void atomicLock(AtomicLockEvent evt);
     
+    /**
+     * Called right before the outer atomic lock will be released.
+     * @param evt 
+     */
     public void atomicUnlock(AtomicLockEvent evt);
     
 }

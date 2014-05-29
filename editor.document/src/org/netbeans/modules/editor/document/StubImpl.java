@@ -73,14 +73,6 @@ public class StubImpl implements AtomicLockDocument, CharClassifier {
     }
 
     @Override
-    public void atomicLock() {
-    }
-
-    @Override
-    public void atomicUnlock() {
-    }
-
-    @Override
     public void atomicUndo() {
         throw new UnsupportedOperationException();
     }

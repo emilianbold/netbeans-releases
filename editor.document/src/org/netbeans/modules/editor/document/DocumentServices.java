@@ -61,7 +61,7 @@ import org.openide.util.lookup.ProxyLookup;
 public class DocumentServices {
     private static volatile DocumentServices INSTANCE;
     
-    private Map<Class, Lookup.Result<DocumentServiceFactory>> factoryMap = new HashMap<>(5);
+    private Map<Class<?>, Lookup.Result<DocumentServiceFactory<?>>> factoryMap = new HashMap<>(5);
     
     public static DocumentServices getInstance() {
         if (INSTANCE == null) {
@@ -79,7 +79,7 @@ public class DocumentServices {
     }
     
     //@GuardedBy(this)
-    private Lookup.Result<DocumentServiceFactory> initDocumentFactories(Class c) {
+    private Lookup.Result<DocumentServiceFactory<?>> initDocumentFactories(Class<?> c) {
         List<Lookup> lkps = new ArrayList<Lookup>(5);
         do {
             String cn = c.getCanonicalName();
@@ -89,10 +89,16 @@ public class DocumentServices {
             c = c.getSuperclass();
         } while (c != null && c != java.lang.Object.class);
         Lookup[] arr = lkps.toArray(new Lookup[lkps.size()]);
-        return new ProxyLookup(arr).lookupResult(DocumentServiceFactory.class);
+        @SuppressWarnings("rawtypes")
+        Lookup.Result lookupResult = new ProxyLookup(arr).lookupResult(DocumentServiceFactory.class);
+        @SuppressWarnings("unchecked")
+        Lookup.Result<DocumentServiceFactory<?>> res = (Lookup.Result<DocumentServiceFactory<?>>) lookupResult;
+        return res;
     }
     
-    private Lookup doInitDocumentServices(Document doc, Class c) {
+    
+    
+    private <D extends Document> Lookup doInitDocumentServices(D doc, Class<?> c) {
         boolean stub = c != doc.getClass();
         Object k = stub ? STUB_KEY : DocumentServices.class;
         Lookup res;
@@ -101,7 +107,7 @@ public class DocumentServices {
         if (res != null) {
             return res;
         }
-        Lookup.Result<DocumentServiceFactory> factories;
+        Lookup.Result<DocumentServiceFactory<?>> factories;
         
         synchronized (this) {
             factories = factoryMap.get(c);
@@ -109,11 +115,12 @@ public class DocumentServices {
                 factories = initDocumentFactories(c);
             }
         }
-        Collection<? extends DocumentServiceFactory> col = factories.allInstances();
+        Collection<? extends DocumentServiceFactory<?>> col = factories.allInstances();
         Collection<Lookup> lkps = new ArrayList<Lookup>(col.size());
-        for (DocumentServiceFactory f : col) {
+        for (DocumentServiceFactory<?> f : col) {
             try {
-                Lookup l = f.forDocument(doc);
+                @SuppressWarnings("unchecked")
+                Lookup l = ((DocumentServiceFactory<D>)f).forDocument(doc);
                 if (l == null) {
                     continue;
                 }
