@@ -54,7 +54,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
-import org.netbeans.modules.cnd.modelimpl.impl.services.MacroExpansionDocProviderImpl;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -116,7 +115,7 @@ public class MacroExpansionOffsetsTestCase extends MacroExpansionDocProviderImpl
 
             Document doc2 = createExpandedContextDocument(doc, currentFile);
             assertNotNull(doc2);
-            mp.expand(doc, 0, doc.getLength(), doc2, new AtomicBoolean(false), false);
+            mp.expand(doc, 0, doc.getLength(), doc2, new AtomicBoolean(false));
 
             int res = 0;
             if(originalToExpanded) {
