@@ -158,7 +158,6 @@ public class DefineInterceptor implements FunctionInterceptor {
                                 }
                             }
                             if (!paths.isEmpty()) {
-                                index = 0;
                                 RequireJsIndex rIndex = null;
                                 try {
                                     rIndex = RequireJsIndex.get(project);
@@ -168,7 +167,7 @@ public class DefineInterceptor implements FunctionInterceptor {
                                 if (rIndex != null) {
                                     Iterator<? extends JsObject> paramIterator = defFunc.getParameters().iterator();
                                     for (String module : paths) {
-                                        FileObject fileObject = FSCompletionUtils.findMappedFileObject(module, project.getProjectDirectory());
+                                        FileObject fileObject = FSCompletionUtils.findMappedFileObject(module, fo);
                                         if (fileObject != null) {
                                             module = fileObject.getName();
                                         } 
