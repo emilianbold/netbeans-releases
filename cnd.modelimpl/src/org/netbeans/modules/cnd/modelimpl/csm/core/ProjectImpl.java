@@ -59,7 +59,6 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
-import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -366,7 +365,7 @@ public final class ProjectImpl extends ProjectBase {
         // we don't need this since ProjectBase persists fqn
         //UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         //aFactory.writeUID(getUID(), aStream);
-        getLibraryManager().writeProjectLibraries(getUID(), aStream);
+        getLibraryManager().writeProjectLibraries(getUID(), aStream, getUnitId());
     }
 
     public ProjectImpl(RepositoryDataInput input) throws IOException {
@@ -375,7 +374,7 @@ public final class ProjectImpl extends ProjectBase {
         //UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         //CsmUID uid = aFactory.readUID(input);
         //LibraryManager.getInsatnce().read(uid, input);
-        getLibraryManager().readProjectLibraries(getUID(), input);
+        getLibraryManager().readProjectLibraries(getUID(), input, getUnitId());
     //nativeFiles = new NativeFileContainer();
     }
 

@@ -1126,6 +1126,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
         if (!CndPathUtilities.isPathAbsolute(output)) {
             output = getBaseDir() + "/" + output; // NOI18N
             output = CndPathUtilities.normalizeSlashes(output);
+            output = CndPathUtilities.normalizeUnixPath(output);
         }
         return expandMacros(output);
     }

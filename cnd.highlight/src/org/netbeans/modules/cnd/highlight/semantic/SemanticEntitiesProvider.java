@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -95,7 +97,11 @@ public final class SemanticEntitiesProvider {
         }
         @Override
         public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Document doc, Interrupter interrupter) {
-            return ModelUtils.getInactiveCodeBlocks(csmFile, doc, interrupter);
+            if (doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) == null) {
+                return ModelUtils.getInactiveCodeBlocks(csmFile, doc, interrupter);
+            } else {
+                return Collections.emptyList();
+            }
         }
 
         @Override
@@ -107,6 +113,11 @@ public final class SemanticEntitiesProvider {
         public String getDescription() {
             return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-inactive-AD"); //NOI18N
         }
+
+        @Override
+        public boolean isCsmFileBased() {
+            return true;
+        }    
     }
     
     @ServiceProviders({
@@ -149,6 +160,11 @@ public final class SemanticEntitiesProvider {
         public String getDescription() {
             return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-fast-class-fields-AD"); //NOI18N
         }
+
+        @Override
+        public boolean isCsmFileBased() {
+            return true;
+        }
     }
 
     @ServiceProviders({
@@ -179,6 +195,10 @@ public final class SemanticEntitiesProvider {
         @Override
         public ReferenceCollector getCollector(Document doc, Interrupter interrupter) {
             return new ModelUtils.FieldReferenceCollector(interrupter);
+        }
+        @Override
+        public boolean isCsmFileBased() {
+            return false;
         }
     }
 
@@ -245,6 +265,11 @@ public final class SemanticEntitiesProvider {
             super.updateFontColors(provider);
             funUsageColors.put(provider.getMimeType(), getFontColor(provider, FontColorProvider.Entity.FUNCTION_USAGE));
         }
+        
+        @Override
+        public boolean isCsmFileBased() {
+            return true;
+        }
     }
     
     @ServiceProviders({
@@ -299,6 +324,11 @@ public final class SemanticEntitiesProvider {
             super.updateFontColors(provider);
             funUsageColors.put(provider.getMimeType(), getFontColor(provider, FontColorProvider.Entity.FUNCTION_USAGE));
         }
+        
+        @Override
+        public boolean isCsmFileBased() {
+            return false;
+        }
     }
 
     @ServiceProviders({
@@ -329,7 +359,11 @@ public final class SemanticEntitiesProvider {
         }
         @Override
         public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Document doc, Interrupter interrupter) {
-            return ModelUtils.getMacroBlocks(csmFile, doc, interrupter);
+            if (doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) == null) {
+                return ModelUtils.getMacroBlocks(csmFile, doc, interrupter);
+            } else {
+                return Collections.emptyList();
+            }
         }
         @Override
         public AttributeSet getAttributes(CsmOffsetable obj, String mimePath) {
@@ -354,6 +388,10 @@ public final class SemanticEntitiesProvider {
             super.updateFontColors(provider);
             sysMacroColors.put(provider.getMimeType(), getFontColor(provider, FontColorProvider.Entity.SYSTEM_MACRO));
             userMacroColors.put(provider.getMimeType(), getFontColor(provider, FontColorProvider.Entity.USER_MACRO));
+        }
+        @Override
+        public boolean isCsmFileBased() {
+            return true;
         }
     }
 
@@ -386,6 +424,10 @@ public final class SemanticEntitiesProvider {
         public ReferenceCollector getCollector(Document doc, Interrupter interrupter) {
             return new ModelUtils.TypedefReferenceCollector(interrupter);
         }
+        @Override
+        public boolean isCsmFileBased() {
+            return false;
+        }
     }
 
     @ServiceProviders({
@@ -416,7 +458,12 @@ public final class SemanticEntitiesProvider {
         }
         @Override
         public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Document doc, Interrupter interrupter) {
-            return ModelUtils.collect(csmFile, doc, getCollector(doc, interrupter), interrupter);
+            if (doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) == null) {
+                return ModelUtils.collect(csmFile, doc, getCollector(doc, interrupter), interrupter);
+            } else {
+                // TODO: does not work for macro expanded document
+                return Collections.emptyList();
+            }
         }
         @Override
         public ReferenceCollector getCollector(Document doc, Interrupter interrupter) {
@@ -432,6 +479,10 @@ public final class SemanticEntitiesProvider {
         public void updateFontColors(FontColorProvider provider) {
             super.updateFontColors(provider);
             unusedToolTipColors.put(provider.getMimeType(), AttributesUtilities.createComposite(UNUSED_TOOLTIP, super.getColor(provider.getMimeType())));
+        }
+        @Override
+        public boolean isCsmFileBased() {
+            return false;
         }
     }
     
