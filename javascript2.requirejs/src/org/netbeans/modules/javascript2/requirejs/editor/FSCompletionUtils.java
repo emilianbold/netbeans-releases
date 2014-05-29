@@ -213,13 +213,13 @@ public class FSCompletionUtils {
      * @param info
      * @return
      */
-    public static FileObject findFileObject(final String pathToFile, FileObject parent) {
+    public static FileObject findMappedFileObject(final String pathToFile, FileObject parent) {
         String path = pathToFile;
         String[] pathParts = path.split("/");
         FileObject result = null;
         if (parent != null) {
             if (pathParts[pathParts.length - 1].indexOf('.') > 0) {
-                result = findFile(parent, path);
+                result = findFileObject(parent, path);
                 if (result != null) {
                     return result;
                 }
@@ -252,7 +252,7 @@ public class FSCompletionUtils {
             if (!alias.isEmpty()) {
                 path = configPaths.get(alias) + pathToFile.substring(alias.length());
                 if (basePaths.isEmpty()) {
-                    result = findFile(parent, composePath(path));
+                    result = findFileObject(parent, composePath(path));
                     if (result != null) {
                         return result;
                     }
@@ -261,7 +261,7 @@ public class FSCompletionUtils {
             // try directly the base path
             for (String value : basePaths) {
                 String composedPath = composePath(value, path);
-                result = findFile(parent, composedPath);
+                result = findFileObject(parent, composedPath);
                 if (result != null) {
                     return result;
                 }
@@ -281,18 +281,18 @@ public class FSCompletionUtils {
             }
             if (!alias.isEmpty()) {
                 path = pathMappings.get(alias) + pathToFile.substring(alias.length());
-                result = findFile(parent, composePath(path));
+                result = findFileObject(parent, composePath(path));
                 if (result != null) {
                     return result;
                 }
             }
-            result = findFile(parent, composePath(pathToFile));
+            result = findFileObject(parent, composePath(pathToFile));
         }
 
         return result;
     }
 
-    private static FileObject findFile(final FileObject fromFO, final String path) {
+    public static FileObject findFileObject(final FileObject fromFO, final String path) {
         FileObject parent = fromFO;
         FileObject targetFO = fromFO;
         if (parent != null && !path.isEmpty()) {

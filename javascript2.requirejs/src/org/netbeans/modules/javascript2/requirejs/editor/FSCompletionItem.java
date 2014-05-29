@@ -101,7 +101,7 @@ public class FSCompletionItem implements CompletionProposal {
 
         FSCompletionItem remote = (FSCompletionItem) o;
 
-        return getText().equals(remote.getText());
+        return getFile().equals(remote.getFile());
     }
 
     @Override
@@ -167,6 +167,10 @@ public class FSCompletionItem implements CompletionProposal {
     @Override
     public String getCustomInsertTemplate() {
         return null;
+    }
+
+    public FileObject getFile() {
+        return file;
     }
     
     public static class FSElementHandle implements ElementHandle {

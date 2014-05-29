@@ -69,7 +69,7 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
                 ts.move(caretOffset);
                 ts.moveNext();
                 String path = ts.token().text().toString();
-                FileObject targetFO = FSCompletionUtils.findFileObject(path, fo);
+                FileObject targetFO = FSCompletionUtils.findMappedFileObject(path, fo);
                 if (targetFO != null) {
                     return new DeclarationLocation(targetFO, 0);
                 }
@@ -101,7 +101,7 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
                                }
                             } while (path == null && ts.moveNext() && token.id() != JsTokenId.BRACKET_RIGHT_PAREN);
                             if (path != null) {
-                                FileObject targetFO = FSCompletionUtils.findFileObject(path, fo);
+                                FileObject targetFO = FSCompletionUtils.findMappedFileObject(path, fo);
                                 if (targetFO != null) {
                                     return new DeclarationLocation(targetFO, 0);
                                 }

@@ -168,7 +168,7 @@ public class DefineInterceptor implements FunctionInterceptor {
                                 if (rIndex != null) {
                                     Iterator<? extends JsObject> paramIterator = defFunc.getParameters().iterator();
                                     for (String module : paths) {
-                                        FileObject fileObject = FSCompletionUtils.findFileObject(module, project.getProjectDirectory());
+                                        FileObject fileObject = FSCompletionUtils.findMappedFileObject(module, project.getProjectDirectory());
                                         if (fileObject != null) {
                                             module = fileObject.getName();
                                         } 

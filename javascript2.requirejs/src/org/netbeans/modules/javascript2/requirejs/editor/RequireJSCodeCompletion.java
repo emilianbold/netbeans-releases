@@ -103,7 +103,7 @@ public class RequireJSCodeCompletion implements CompletionProvider {
             Collection<String> usedFileInDefine = EditorUtils.getUsedFileInDefine(snapshot, offset);
             for (String path : usedFileInDefine) {
                 if (writtenPath.isEmpty() || path.startsWith(writtenPath)) {
-                    FileObject targetFO = FSCompletionUtils.findFileObject(path, fo);
+                    FileObject targetFO = FSCompletionUtils.findMappedFileObject(path, fo);
                     if (targetFO != null) {
                         String[] folders = path.split("/");
                         for (int i = 0; i < folders.length; i++) {
@@ -117,7 +117,29 @@ public class RequireJSCodeCompletion implements CompletionProvider {
             }
 
             if (relativeTo.isEmpty()) {
+                Project project = FileOwnerQuery.getOwner(fo);
+                Collection<String> basePaths = new ArrayList();
+                if (project != null) {
+                    RequireJsIndex rIndex = null;
+                    try {
+                        rIndex = RequireJsIndex.get(project);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+
+                    if (rIndex != null) {
+                        basePaths = rIndex.getBasePaths();
+                    }
+                }
                 relativeTo.add(fo.getParent());
+                if (!basePaths.isEmpty()) {
+                    for (String path : basePaths) {
+                        FileObject findFO = FSCompletionUtils.findFileObject(fo, path);
+                        if (findFO != null) {
+                            relativeTo.add(findFO);
+                        }
+                    }
+                } 
             }
 
             List<CompletionProposal> result = new ArrayList();
@@ -128,13 +150,13 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                 Exceptions.printStackTrace(ex);
             }
 
-            FileObject fromMapping = FSCompletionUtils.findFileObject(writtenPath, fo);
+            FileObject fromMapping = FSCompletionUtils.findMappedFileObject(writtenPath, fo);
             String prefixAfterMapping = "";
             if (fromMapping == null) {
                 // try to find file withouth the last part of part
                 int index = writtenPath.lastIndexOf('/');
                 if (index > -1) {
-                    fromMapping = FSCompletionUtils.findFileObject(writtenPath.substring(0, index), fo);
+                    fromMapping = FSCompletionUtils.findMappedFileObject(writtenPath.substring(0, index), fo);
                     prefixAfterMapping = writtenPath.substring(index + 1);
                 }
             }
@@ -168,7 +190,7 @@ public class RequireJSCodeCompletion implements CompletionProvider {
             mappings.putAll(RequireJsPreferences.getMappings(project));
             for (String mapping : mappings.keySet()) {
                 if (mapping.startsWith(writtenPath)) {
-                    result.add(new MappingCompletionItem(mapping, FSCompletionUtils.findFileObject(mapping, fo), ccContext.getCaretOffset() - writtenPath.length()));
+                    result.add(new MappingCompletionItem(mapping, FSCompletionUtils.findMappedFileObject(mapping, fo), ccContext.getCaretOffset() - writtenPath.length()));
                 }
             }
 
