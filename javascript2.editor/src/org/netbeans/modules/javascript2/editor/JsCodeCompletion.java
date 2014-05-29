@@ -515,7 +515,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                     }
                 }
                 long end = System.currentTimeMillis();
-                System.out.println("Usages trvalo: " + (end - start));
+                LOGGER.log(Level.FINE, String.format("Counting cc based on usages took: {0}ms", (end - start)));
             }
             addedItems.putAll(toAdd);
         }
