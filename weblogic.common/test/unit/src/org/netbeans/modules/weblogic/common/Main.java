@@ -45,10 +45,12 @@ package org.netbeans.modules.weblogic.common;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.OutputStreamWriter;
+import java.util.Collection;
 import org.netbeans.api.extexecution.base.BaseExecutionDescriptor;
 import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.netbeans.api.extexecution.base.input.InputProcessors;
 import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
+import org.netbeans.modules.weblogic.common.api.WebLogicDeployer;
 import org.netbeans.modules.weblogic.common.api.WebLogicRuntime;
 
 /**
@@ -70,6 +72,12 @@ public class Main {
 
         runtime.startAndWait(new DefaultFactory(), new DefaultFactory(), null);
         System.out.println("Started again");
+
+        WebLogicDeployer deployer = WebLogicDeployer.getInstance(config, null);
+        Collection<String> apps = deployer.list().get();
+        for (String app : apps) {
+            System.out.println("Application " + app);
+        }
 
         runtime.stopAndWait(new DefaultFactory(), new DefaultFactory());
         System.out.println("Stopped");

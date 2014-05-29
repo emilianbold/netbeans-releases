@@ -43,6 +43,7 @@
 package org.netbeans.modules.weblogic.common.api;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -90,6 +91,40 @@ public final class WebLogicDeployer {
     @NonNull
     public static WebLogicDeployer getInstance(@NonNull WebLogicConfiguration config, @NullAllowed File javaBinary) {
         return new WebLogicDeployer(config, javaBinary);
+    }
+
+    @NonNull
+    public Future<Collection<String>> list() {
+        return DEPLOYMENT_RP.submit(new Callable<Collection<String>>() {
+
+            @Override
+            public Collection<String> call() throws Exception {
+                ApplicationLineProcessor processor = new ApplicationLineProcessor();
+                BaseExecutionService service = createService("-listapps", processor); // NOI18N
+                Future<Integer> result = service.run();
+                try {
+                    Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
+                    if (value != 0) {
+                        throw new IOException("Command failed");
+                    } else {
+                        return processor.getApplications();
+                    }
+                } catch (InterruptedException ex) {
+                    result.cancel(true);
+                    throw ex;
+                } catch (TimeoutException ex) {
+                    result.cancel(true);
+                    throw ex;
+                } catch (ExecutionException ex) {
+                    Throwable cause = ex.getCause();
+                    if (cause instanceof Exception) {
+                        throw (Exception) cause;
+                    } else {
+                        throw ex;
+                    }
+                }
+            }
+        });
     }
 
     @NonNull
@@ -529,6 +564,30 @@ public final class WebLogicDeployer {
             return javaBinary.getAbsolutePath();
         }
         return BaseUtilities.isWindows() ? "java.exe" : "java"; // NOI18N
+    }
+
+    private static class ApplicationLineProcessor implements LineProcessor {
+
+        private final List<String> applications = new ArrayList<>();
+
+        @Override
+        public synchronized void processLine(String line) {
+            if (line.startsWith(" ")) {
+                applications.add(line.trim());
+            }
+        }
+
+        @Override
+        public void reset() {
+        }
+
+        @Override
+        public void close() {
+        }
+
+        public synchronized List<String> getApplications() {
+            return applications;
+        }
     }
 
     private static class LastLineProcessor implements LineProcessor {
