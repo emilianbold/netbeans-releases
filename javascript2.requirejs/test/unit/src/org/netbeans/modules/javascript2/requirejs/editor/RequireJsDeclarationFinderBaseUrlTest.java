@@ -45,16 +45,13 @@ package org.netbeans.modules.javascript2.requirejs.editor;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript2.editor.JsCodeCompletionBase;
-import org.netbeans.modules.javascript2.editor.JsTestBase;
 import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
-import org.netbeans.modules.javascript2.requirejs.RequireJsPreferences;
 import org.netbeans.modules.javascript2.requirejs.TestProjectSupport;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -97,6 +94,30 @@ public class RequireJsDeclarationFinderBaseUrlTest extends JsCodeCompletionBase 
     
     public void testNavigation04() throws Exception {
         checkDeclaration("TestProject2/public_html/js/main.js", "'pikn^ic'", "picnic.js", 0);
+    }
+    
+    public void testNavigation05() throws Exception {
+        checkDeclaration("TestProject2/public_html/js/main.js", "'proto/locali^zation',", "localization.js", 0);
+    }
+    
+    public void testNavigationFromParameter01() throws Exception {
+        checkDeclaration("TestProject2/public_html/js/main.js", "function(l^ib1, lib2, test, loc, pik)", "moduleLib1.js", 0);
+    }
+    
+    public void testNavigationFromParameter02() throws Exception {
+        checkDeclaration("TestProject2/public_html/js/main.js", "function(lib1, l^ib2, test, loc, pik)", "moduleLib2.js", 0);
+    }
+    
+    public void testNavigationFromParameter03() throws Exception {
+        checkDeclaration("TestProject2/public_html/js/main.js", "function(lib1, lib2, te^st, loc, pik)", "moduleApp1.js", 0);
+    }
+    
+    public void testNavigationFromParameter04() throws Exception {
+        checkDeclaration("TestProject2/public_html/js/main.js", "function(lib1, lib2, test, l^oc, pik)", "localization.js", 0);
+    }
+    
+    public void testNavigationFromParameter05() throws Exception {
+        checkDeclaration("TestProject2/public_html/js/main.js", "function(lib1, lib2, test, loc, p^ik)", "picnic.js", 0);
     }
     
     @Override
