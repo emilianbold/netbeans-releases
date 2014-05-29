@@ -48,7 +48,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,6 +67,7 @@ import java.util.logging.Logger;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
+import org.netbeans.libs.git.GitURI;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.client.GitClient;
@@ -425,15 +425,13 @@ class FilesystemInterceptor extends VCSInterceptor {
             for (GitRemoteConfig rc : remotes.values()) {
                 List<String> uris = rc.getUris();
                 for (int i = 0; i < uris.size(); i++) {
-                    URI u;
                     try {
-                        u = new URI(uris.get(i));
-                        u = new URI(u.getScheme(), null, u.getHost(), u.getPort(), u.getPath(), null, null);
+                        GitURI u = new GitURI(uris.get(i));
+                        u = u.setUser(null).setPass(null);
+                        sb.append(u.toString()).append(';');
                     } catch (URISyntaxException ex) {
-                        LOG.log(Level.WARNING, null, ex);
-                        continue;
+                        LOG.log(Level.FINE, null, ex);
                     }
-                    sb.append(u.toString()).append(';');
                 }
             }
             if (sb.length() > 0) {
