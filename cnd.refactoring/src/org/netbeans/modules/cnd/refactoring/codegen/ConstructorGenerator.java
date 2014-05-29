@@ -47,7 +47,7 @@ import java.awt.Dialog;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -106,7 +107,7 @@ public class ConstructorGenerator implements CodeGenerator {
             final Set<CsmField> mayBeIninitializedFields = new LinkedHashSet<>();
             final Set<CsmField> cannotBeInitializedFields = new LinkedHashSet<>();
             final List<CsmConstructor> constructors = new ArrayList<>();
-            final Map<CsmClass,List<CsmConstructor>> inheritedConstructors = new HashMap<>();
+            final Map<CsmClass,List<CsmConstructor>> inheritedConstructors = new LinkedHashMap<>();
             CsmCacheManager.enter();
             try {
                 // check base class
@@ -116,7 +117,7 @@ public class ConstructorGenerator implements CodeGenerator {
                         List<CsmConstructor> list = new ArrayList<>();
                         for (CsmMember member : baseClass.getMembers()) {
                             if (CsmKindUtilities.isConstructor(member) &&
-                                CsmInheritanceUtilities.matchVisibility(member, csmInheritance.getVisibility()) &&
+                                CsmInheritanceUtilities.matchVisibility(member, CsmVisibility.PROTECTED) &&
                                 !isCopyConstructor(baseClass, (CsmConstructor)member)) {
                                 list.add((CsmConstructor)member);
                             }

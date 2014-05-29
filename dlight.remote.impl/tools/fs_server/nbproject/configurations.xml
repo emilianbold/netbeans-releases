@@ -639,5 +639,83 @@
       <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
       </item>
     </conf>
+    <conf name="Armv6" type="0">
+      <toolsSet>
+        <compilerSet>GNU|GNU</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <codeAssistance>
+      </codeAssistance>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE} -f Makefile</buildCommand>
+          <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
+          <executablePath>../../release/bin/Linux-arm/fs_server</executablePath>
+          <cTool>
+            <incDir>
+              <pElem>.</pElem>
+            </incDir>
+            <preprocessorList>
+              <Elem>LINUX</Elem>
+              <Elem>_GNU_SOURCE</Elem>
+              <Elem>_XOPEN_SOURCE=700</Elem>
+            </preprocessorList>
+          </cTool>
+        </makeTool>
+      </makefileType>
+      <item path="src/array.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="src/dirtab.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="src/fs_server.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="src/queue.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="src/util.c" ex="false" tool="0" flavor2="9">
+      </item>
+    </conf>
+    <conf name="Armv5" type="0">
+      <toolsSet>
+        <compilerSet>GNU|GNU</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <codeAssistance>
+      </codeAssistance>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE} -f Makefile</buildCommand>
+          <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
+          <executablePath>../../release/bin/Linux-arm/fs_server</executablePath>
+          <cTool>
+            <incDir>
+              <pElem>.</pElem>
+            </incDir>
+            <preprocessorList>
+              <Elem>LINUX</Elem>
+              <Elem>_GNU_SOURCE</Elem>
+              <Elem>_XOPEN_SOURCE=700</Elem>
+            </preprocessorList>
+          </cTool>
+        </makeTool>
+      </makefileType>
+      <item path="src/array.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="src/dirtab.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="src/fs_server.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="src/queue.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="src/util.c" ex="false" tool="0" flavor2="9">
+      </item>
+    </conf>
   </confs>
 </configurationDescriptor>

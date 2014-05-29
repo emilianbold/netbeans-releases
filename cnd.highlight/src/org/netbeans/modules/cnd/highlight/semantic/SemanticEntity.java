@@ -60,4 +60,5 @@ public abstract class SemanticEntity extends NamedOption {
     public abstract ReferenceCollector getCollector(Document doc, Interrupter interrupter);
     public abstract void updateFontColors(FontColorProvider provider);
     public abstract AttributeSet getAttributes(CsmOffsetable obj, String mimeType);
+    public abstract boolean isCsmFileBased();
 }
