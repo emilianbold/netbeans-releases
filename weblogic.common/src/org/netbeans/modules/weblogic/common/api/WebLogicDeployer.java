@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -109,10 +110,7 @@ public final class WebLogicDeployer {
                     } else {
                         return processor.getApplications();
                     }
-                } catch (InterruptedException ex) {
-                    result.cancel(true);
-                    throw ex;
-                } catch (TimeoutException ex) {
+                } catch (InterruptedException | TimeoutException ex) {
                     result.cancel(true);
                     throw ex;
                 } catch (ExecutionException ex) {
@@ -128,7 +126,7 @@ public final class WebLogicDeployer {
     }
 
     @NonNull
-    public Future<Boolean> deploy(@NonNull File file, @NullAllowed DeployListener listener,
+    public Future<Void> deploy(@NonNull File file, @NullAllowed DeployListener listener,
             @NullAllowed String name) {
 
         List<String> params = new ArrayList<>();
@@ -143,17 +141,228 @@ public final class WebLogicDeployer {
         return deploy(file, listener, params.toArray(new String[params.size()]));
     }
 
-    private Future<Boolean> deploy(@NonNull final File file,
+    @NonNull
+    public Future<Void> redeploy(@NonNull String name, @NonNull File file,
+            @NullAllowed BatchDeployListener listener) {
+        List<String> params = new ArrayList<>();
+//        if (file.isDirectory()) {
+            params.add("-source"); // NOI18N
+            params.add(file.getAbsolutePath());
+//        }
+        return redeploy(Collections.singletonList(name), listener, params.toArray(new String[params.size()]));
+    }
+
+    @NonNull
+    public Future<Void> redeploy(@NonNull Collection<String> names, @NullAllowed BatchDeployListener listener) {
+        return redeploy(names, listener, new String[]{});
+    }
+
+    @NonNull
+    public Future<Void> undeploy(@NonNull final Collection<String> names,
+            @NullAllowed final BatchDeployListener listener) {
+
+        if (listener != null) {
+            listener.onStart();
+        }
+
+        return DEPLOYMENT_RP.submit(new Callable<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+                LastLineProcessor lineProcessor = new LastLineProcessor();
+                for (String name : names) {
+                    BaseExecutionService service = createService("-undeploy", lineProcessor, "-name", name);
+                    if (listener != null) {
+                        listener.onStepStart(name);
+                    }
+
+                    Future<Integer> result = service.run();
+                    try {
+                        Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
+                        if (value != 0) {
+                            if (listener != null) {
+                                listener.onFail(lineProcessor.getLastLine());
+                            }
+                            throw new IOException("Command failed");
+                        } else {
+                            if (listener != null) {
+                                listener.onStepFinish(name);
+                            }
+                        }
+                    } catch (InterruptedException ex) {
+                        if (listener != null) {
+                            listener.onInterrupted();
+                        }
+                        result.cancel(true);
+                        throw ex;
+                    } catch (TimeoutException ex) {
+                        if (listener != null) {
+                            listener.onTimeout();
+                        }
+                        result.cancel(true);
+                        throw ex;
+                    } catch (ExecutionException ex) {
+                        if (listener != null) {
+                            Throwable cause = ex.getCause();
+                            if (cause instanceof Exception) {
+                                listener.onException((Exception) cause);
+                                throw (Exception) cause;
+                            } else {
+                                listener.onException(ex);
+                                throw ex;
+                            }
+                        }
+                    }
+                }
+                if (listener != null) {
+                    listener.onFinish();
+                }
+                return null;
+            }
+        });
+    }
+
+    @NonNull
+    public Future<Void> start(@NonNull final Collection<String> names,
+            @NullAllowed final BatchDeployListener listener) {
+
+        if (listener != null) {
+            listener.onStart();
+        }
+
+        return DEPLOYMENT_RP.submit(new Callable<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+                LastLineProcessor lineProcessor = new LastLineProcessor();
+                for (String name : names) {
+                    BaseExecutionService service = createService("-start", lineProcessor, "-name", name);
+                    if (listener != null) {
+                        listener.onStepStart(name);
+                    }
+
+                    Future<Integer> result = service.run();
+                    try {
+                        Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
+                        if (value != 0) {
+                            if (listener != null) {
+                                listener.onFail(lineProcessor.getLastLine());
+                            }
+                            throw new IOException("Command failed");
+                        } else {
+                            if (listener != null) {
+                                listener.onStepFinish(name);
+                            }
+                        }
+                    } catch (InterruptedException ex) {
+                        if (listener != null) {
+                            listener.onInterrupted();
+                        }
+                        result.cancel(true);
+                        throw ex;
+                    } catch (TimeoutException ex) {
+                        if (listener != null) {
+                            listener.onTimeout();
+                        }
+                        result.cancel(true);
+                        throw ex;
+                    } catch (ExecutionException ex) {
+                        if (listener != null) {
+                            Throwable cause = ex.getCause();
+                            if (cause instanceof Exception) {
+                                listener.onException((Exception) cause);
+                                throw (Exception) cause;
+                            } else {
+                                listener.onException(ex);
+                                throw ex;
+                            }
+                        }
+                    }
+                }
+                if (listener != null) {
+                    listener.onFinish();
+                }
+                return null;
+            }
+        });
+    }
+
+    @NonNull
+    public Future<Void> stop(@NonNull final Collection<String> names,
+            @NullAllowed final BatchDeployListener listener) {
+
+        if (listener != null) {
+            listener.onStart();
+        }
+
+        return DEPLOYMENT_RP.submit(new Callable<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+                LastLineProcessor lineProcessor = new LastLineProcessor();
+                for (String name : names) {
+                    BaseExecutionService service = createService("-stop", lineProcessor, "-name", name);
+                    if (listener != null) {
+                        listener.onStepStart(name);
+                    }
+
+                    Future<Integer> result = service.run();
+                    try {
+                        Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
+                        if (value != 0) {
+                            if (listener != null) {
+                                listener.onFail(lineProcessor.getLastLine());
+                            }
+                            throw new IOException("Command failed");
+                        } else {
+                            if (listener != null) {
+                                listener.onStepFinish(name);
+                            }
+                        }
+                    } catch (InterruptedException ex) {
+                        if (listener != null) {
+                            listener.onInterrupted();
+                        }
+                        result.cancel(true);
+                        throw ex;
+                    } catch (TimeoutException ex) {
+                        if (listener != null) {
+                            listener.onTimeout();
+                        }
+                        result.cancel(true);
+                        throw ex;
+                    } catch (ExecutionException ex) {
+                        if (listener != null) {
+                            Throwable cause = ex.getCause();
+                            if (cause instanceof Exception) {
+                                listener.onException((Exception) cause);
+                                throw (Exception) cause;
+                            } else {
+                                listener.onException(ex);
+                                throw ex;
+                            }
+                        }
+                    }
+                }
+                if (listener != null) {
+                    listener.onFinish();
+                }
+                return null;
+            }
+        });
+    }
+
+    private Future<Void> deploy(@NonNull final File file,
             @NullAllowed final DeployListener listener, final String... parameters) {
 
         if (listener != null) {
             listener.onStart();
         }
 
-        return DEPLOYMENT_RP.submit(new Callable<Boolean>() {
+        return DEPLOYMENT_RP.submit(new Callable<Void>() {
 
             @Override
-            public Boolean call() {
+            public Void call() throws Exception {
                 int length = config.isRemote() ? parameters.length + 2 : parameters.length + 1;
                 String[] execParams = new String[length];
                 execParams[execParams.length - 1] = file.getAbsolutePath();
@@ -173,52 +382,53 @@ public final class WebLogicDeployer {
                         if (listener != null) {
                             listener.onFail(lineProcessor.getLastLine());
                         }
-                        return false;
+                        throw new IOException("Command failed");
                     } else {
                         if (listener != null) {
                             listener.onFinish();
                         }
-                        return true;
+                        return null;
                     }
                 } catch (InterruptedException ex) {
                     if (listener != null) {
                         listener.onInterrupted();
                     }
                     result.cancel(true);
-                    Thread.currentThread().interrupt();
+                    throw ex;
                 } catch (TimeoutException ex) {
                     if (listener != null) {
                         listener.onTimeout();
                     }
                     result.cancel(true);
+                    throw ex;
                 } catch (ExecutionException ex) {
                     if (listener != null) {
                         Throwable cause = ex.getCause();
                         if (cause instanceof Exception) {
                             listener.onException((Exception) cause);
+                            throw (Exception) cause;
                         } else {
                             listener.onException(ex);
+                            throw ex;
                         }
                     }
                 }
-                return false;
+                return null;
             }
         });
     }
 
-    @NonNull
-    public Future<Boolean> redeploy(@NonNull final Collection<String> names,
+    private Future<Void> redeploy(@NonNull final Collection<String> names,
             @NullAllowed final BatchDeployListener listener, final String... parameters) {
 
         if (listener != null) {
             listener.onStart();
         }
 
-        return DEPLOYMENT_RP.submit(new Callable<Boolean>() {
+        return DEPLOYMENT_RP.submit(new Callable<Void>() {
 
             @Override
-            public Boolean call() {
-                boolean failed = false;
+            public Void call() throws Exception {
                 LastLineProcessor lineProcessor = new LastLineProcessor();
                 for (String name : names) {
                     String[] execParams = new String[parameters.length + 2];
@@ -236,272 +446,54 @@ public final class WebLogicDeployer {
                     try {
                         Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
                         if (value != 0) {
-                            failed = true;
                             if (listener != null) {
                                 listener.onFail(lineProcessor.getLastLine());
                             }
-                            break;
+                            throw new IOException("Command failed");
                         } else {
                             if (listener != null) {
                                 listener.onStepFinish(name);
                             }
                         }
                     } catch (InterruptedException ex) {
-                        failed = true;
                         if (listener != null) {
                             listener.onInterrupted();
                         }
                         result.cancel(true);
-                        Thread.currentThread().interrupt();
-                        break;
+                        throw ex;
                     } catch (TimeoutException ex) {
-                        failed = true;
                         if (listener != null) {
                             listener.onTimeout();
                         }
                         result.cancel(true);
-                        break;
+                        throw ex;
                     } catch (ExecutionException ex) {
-                        failed = true;
                         if (listener != null) {
                             Throwable cause = ex.getCause();
                             if (cause instanceof Exception) {
                                 listener.onException((Exception) cause);
+                                throw (Exception) cause;
                             } else {
                                 listener.onException(ex);
+                                throw ex;
                             }
                         }
                         break;
                     }
                 }
-                if (!failed) {
-                    if (listener != null) {
-                        listener.onFinish();
-                    }
+                if (listener != null) {
+                    listener.onFinish();
                 }
-                return !failed;
+                return null;
             }
         });
     }
-
-    public Future<Boolean> undeploy(@NonNull final Collection<String> names,
-            @NullAllowed final BatchDeployListener listener) {
-
-        if (listener != null) {
-            listener.onStart();
-        }
-
-        return DEPLOYMENT_RP.submit(new Callable<Boolean>() {
-
-            @Override
-            public Boolean call() {
-                boolean failed = false;
-                LastLineProcessor lineProcessor = new LastLineProcessor();
-                for (String name : names) {
-                    BaseExecutionService service = createService("-undeploy", lineProcessor, "-name", name);
-                    if (listener != null) {
-                        listener.onStepStart(name);
-                    }
-
-                    Future<Integer> result = service.run();
-                    try {
-                        Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
-                        if (value != 0) {
-                            failed = true;
-                            if (listener != null) {
-                                listener.onFail(lineProcessor.getLastLine());
-                            }
-                            break;
-                        } else {
-                            if (listener != null) {
-                                listener.onStepFinish(name);
-                            }
-                        }
-                    } catch (InterruptedException ex) {
-                        failed = true;
-                        if (listener != null) {
-                            listener.onInterrupted();
-                        }
-                        result.cancel(true);
-                        Thread.currentThread().interrupt();
-                        break;
-                    } catch (TimeoutException ex) {
-                        failed = true;
-                        if (listener != null) {
-                            listener.onTimeout();
-                        }
-                        result.cancel(true);
-                        break;
-                    } catch (ExecutionException ex) {
-                        failed = true;
-                        if (listener != null) {
-                            Throwable cause = ex.getCause();
-                            if (cause instanceof Exception) {
-                                listener.onException((Exception) cause);
-                            } else {
-                                listener.onException(ex);
-                            }
-                        }
-                        break;
-                    }
-                }
-                if (!failed) {
-                    if (listener != null) {
-                        listener.onFinish();
-                    }
-                }
-                return !failed;
-            }
-        });
-    }
-
-    public Future<Boolean> start(@NonNull final Collection<String> names,
-            @NullAllowed final BatchDeployListener listener) {
-
-        if (listener != null) {
-            listener.onStart();
-        }
-
-        return DEPLOYMENT_RP.submit(new Callable<Boolean>() {
-
-            @Override
-            public Boolean call() {
-                boolean failed = false;
-                LastLineProcessor lineProcessor = new LastLineProcessor();
-                for (String name : names) {
-                    BaseExecutionService service = createService("-start", lineProcessor, "-name", name);
-                    if (listener != null) {
-                        listener.onStepStart(name);
-                    }
-
-                    Future<Integer> result = service.run();
-                    try {
-                        Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
-                        if (value != 0) {
-                            failed = true;
-                            if (listener != null) {
-                                listener.onFail(lineProcessor.getLastLine());
-                            }
-                            break;
-                        } else {
-                            if (listener != null) {
-                                listener.onStepFinish(name);
-                            }
-                        }
-                    } catch (InterruptedException ex) {
-                        failed = true;
-                        if (listener != null) {
-                            listener.onInterrupted();
-                        }
-                        result.cancel(true);
-                        Thread.currentThread().interrupt();
-                        break;
-                    } catch (TimeoutException ex) {
-                        failed = true;
-                        if (listener != null) {
-                            listener.onTimeout();
-                        }
-                        result.cancel(true);
-                        break;
-                    } catch (ExecutionException ex) {
-                        failed = true;
-                        if (listener != null) {
-                            Throwable cause = ex.getCause();
-                            if (cause instanceof Exception) {
-                                listener.onException((Exception) cause);
-                            } else {
-                                listener.onException(ex);
-                            }
-                        }
-                        break;
-                    }
-                }
-                if (!failed) {
-                    if (listener != null) {
-                        listener.onFinish();
-                    }
-                }
-                return !failed;
-            }
-        });
-    }
-
-    public Future<Boolean> stop(@NonNull final Collection<String> names,
-            @NullAllowed final BatchDeployListener listener) {
-
-        if (listener != null) {
-            listener.onStart();
-        }
-
-        return DEPLOYMENT_RP.submit(new Callable<Boolean>() {
-
-            @Override
-            public Boolean call() {
-                boolean failed = false;
-                LastLineProcessor lineProcessor = new LastLineProcessor();
-                for (String name : names) {
-                    BaseExecutionService service = createService("-stop", lineProcessor, "-name", name);
-                    if (listener != null) {
-                        listener.onStepStart(name);
-                    }
-
-                    Future<Integer> result = service.run();
-                    try {
-                        Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
-                        if (value != 0) {
-                            failed = true;
-                            if (listener != null) {
-                                listener.onFail(lineProcessor.getLastLine());
-                            }
-                            break;
-                        } else {
-                            if (listener != null) {
-                                listener.onStepFinish(name);
-                            }
-                        }
-                    } catch (InterruptedException ex) {
-                        failed = true;
-                        if (listener != null) {
-                            listener.onInterrupted();
-                        }
-                        result.cancel(true);
-                        Thread.currentThread().interrupt();
-                        break;
-                    } catch (TimeoutException ex) {
-                        failed = true;
-                        if (listener != null) {
-                            listener.onTimeout();
-                        }
-                        result.cancel(true);
-                        break;
-                    } catch (ExecutionException ex) {
-                        failed = true;
-                        if (listener != null) {
-                            Throwable cause = ex.getCause();
-                            if (cause instanceof Exception) {
-                                listener.onException((Exception) cause);
-                            } else {
-                                listener.onException(ex);
-                            }
-                        }
-                        break;
-                    }
-                }
-                if (!failed) {
-                    if (listener != null) {
-                        listener.onFinish();
-                    }
-                }
-                return !failed;
-            }
-        });
-    }
-
 
     private BaseExecutionService createService(final String command,
             final LineProcessor processor, String... parameters) {
 
-        org.netbeans.api.extexecution.base.ProcessBuilder builder = org.netbeans.api.extexecution.base.ProcessBuilder.getLocal();
+        org.netbeans.api.extexecution.base.ProcessBuilder builder =
+                org.netbeans.api.extexecution.base.ProcessBuilder.getLocal();
         builder.setExecutable(getJavaBinary());
         builder.setRedirectErrorStream(true);
         List<String> arguments = new ArrayList<String>();

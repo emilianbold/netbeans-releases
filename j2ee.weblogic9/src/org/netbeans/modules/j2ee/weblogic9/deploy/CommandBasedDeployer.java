@@ -128,7 +128,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
     }
 
     public ProgressObject directoryRedeploy(final TargetModuleID moduleId) {
-        return redeploy(new TargetModuleID[] {moduleId});
+        return redeploy(new TargetModuleID[] {moduleId}, null);
     }
 
     public ProgressObject deploy(Target[] target, final File file, final File plan, String host, String port) {
@@ -138,7 +138,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
     }
 
     public ProgressObject redeploy(TargetModuleID[] targetModuleID, File file, File file2) {
-        return redeploy(targetModuleID, "-source", file.getAbsolutePath()); // NOI18N
+        return redeploy(targetModuleID, file);
     }
 
     public ProgressObject undeploy(final TargetModuleID[] targetModuleID) {
@@ -587,7 +587,8 @@ public final class CommandBasedDeployer extends AbstractDeployer {
     }
 
     // FIXME we should check the source of module if it differs this should do undeploy/deploy
-    private ProgressObject redeploy(final TargetModuleID[] targetModuleID, final String... parameters) {
+    private ProgressObject redeploy(final TargetModuleID[] targetModuleID, final File file) {
+        assert file == null || targetModuleID.length == 1;
         final WLProgressObject progress = new WLProgressObject(targetModuleID);
 
         final Map<String, TargetModuleID> names = new LinkedHashMap<String, TargetModuleID>();
@@ -658,7 +659,11 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
         WebLogicDeployer deployer = WebLogicDeployer.getInstance(
                 CommonBridge.getConfiguration(getDeploymentManager()), new File(getJavaBinary()));
-        deployer.redeploy(names.keySet(), listener, parameters);
+        if (file != null) {
+            deployer.redeploy(targetModuleID[0].getModuleID(), file, listener);
+        } else {
+            deployer.redeploy(names.keySet(), listener);
+        }
 
         return progress;
     }

@@ -94,12 +94,12 @@ public final class WebLogicLayout {
 
     private static final Logger LOGGER = Logger.getLogger(WebLogicLayout.class.getName());
 
-    public static final String DOMAIN_HOST = "host"; // NOI18N
-    public static final String DOMAIN_PORT = "port"; // NOI18N
-    public static final String ADMIN_SERVER_NAME= "adminName"; // NOI18N
-    public static final String DOMAIN_NAME = "domainName"; // NOI18N
-    public static final String PRODUCTION_MODE = "productionMode"; // NOI18N
-    public static final String DOMAIN_VERSION = "domainVersion"; // NOI18N
+    private static final String DOMAIN_HOST = "host"; // NOI18N
+    private static final String DOMAIN_PORT = "port"; // NOI18N
+    private static final String ADMIN_SERVER_NAME= "adminName"; // NOI18N
+    private static final String DOMAIN_NAME = "domainName"; // NOI18N
+    private static final String PRODUCTION_MODE = "productionMode"; // NOI18N
+    private static final String DOMAIN_VERSION = "domainVersion"; // NOI18N
 
     private static final Pattern LISTEN_ADDRESS_PATTERN =
         Pattern.compile("(?:[a-z]+\\:)?listen-address");            // NOI18N
