@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.junit;
 
+import org.netbeans.modules.junit.api.JUnitTestUtil;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.awt.EventQueue;
@@ -105,7 +106,7 @@ public final class GoToOppositeAction implements TestLocator {
         boolean sourceToTest = true;
         
         if ((fileObj == null)
-          || !fileObj.isFolder() && !(isJavaFile = TestUtil.isJavaFile(fileObj))
+          || !fileObj.isFolder() && !(isJavaFile = JUnitTestUtil.isJavaFile(fileObj))
           || ((srcCP = ClassPath.getClassPath(fileObj, ClassPath.SOURCE)) == null)
           || ((fileObjRoot = srcCP.findOwnerRoot(fileObj)) == null)
           || ((project = FileOwnerQuery.getOwner(fileObjRoot)) == null)
@@ -116,7 +117,7 @@ public final class GoToOppositeAction implements TestLocator {
             return;
         }
         
-        JUnitPlugin plugin = TestUtil.getPluginForProject(project);
+        JUnitPlugin plugin = JUnitTestUtil.getPluginForProject(project);
         assert plugin != null;
         
         SourceGroup[] srcGroups;
@@ -130,7 +131,7 @@ public final class GoToOppositeAction implements TestLocator {
         ClassPath srcClassPath = ClassPathSupport.createClassPath(srcRoots);
 
         RequestProcessor requestProcessor = new RequestProcessor(GoToOppositeAction.class.getName(), 1);
-	JUnitPlugin pluginIT = TestUtil.getITPluginForProject(project);
+	JUnitPlugin pluginIT = JUnitTestUtil.getITPluginForProject(project);
         assert pluginIT != null;
 	requestProcessor.post(
                 new ActionImpl(plugin, pluginIT,
@@ -318,7 +319,7 @@ public final class GoToOppositeAction implements TestLocator {
         boolean isJavaFile = false;
         boolean sourceToTest = true;
         boolean enabled = (fileObj != null)
-          && (fileObj.isFolder() || (isJavaFile = TestUtil.isJavaFile(fileObj)))
+          && (fileObj.isFolder() || (isJavaFile = JUnitTestUtil.isJavaFile(fileObj)))
           && ((srcCP = ClassPath.getClassPath(fileObj, ClassPath.SOURCE)) != null)
           && ((fileObjRoot = srcCP.findOwnerRoot(fileObj)) != null)
           && ((UnitTestForSourceQuery.findUnitTests(fileObjRoot).length != 0)
@@ -332,27 +333,27 @@ public final class GoToOppositeAction implements TestLocator {
     public boolean appliesTo(FileObject fo) {
         Project project = FileOwnerQuery.getOwner(fo);
         if (project != null) {
-            JUnitPlugin plugin = TestUtil.getPluginForProject(project);
+            JUnitPlugin plugin = JUnitTestUtil.getPluginForProject(project);
 	    boolean applies = false;
             if (plugin instanceof DefaultPlugin) {
                 Location loc = new Location(fo);
                 Location test = ((DefaultPlugin) plugin).getTestLocation(loc);
                 Location tested = ((DefaultPlugin) plugin).getTestedLocation(loc);
-                applies = TestUtil.isJavaFile(fo) && (test != null || tested != null);
+                applies = JUnitTestUtil.isJavaFile(fo) && (test != null || tested != null);
             }
 	    if(applies) {
 		return true;
 	    } else {
-		plugin = TestUtil.getITPluginForProject(project);
+		plugin = JUnitTestUtil.getITPluginForProject(project);
 		if (plugin instanceof DefaultITPlugin) {
 		    Location loc = new Location(fo);
 		    Location test = ((DefaultITPlugin) plugin).getTestLocation(loc);
 		    Location tested = ((DefaultITPlugin) plugin).getTestedLocation(loc);
-		    return TestUtil.isJavaFile(fo) && (test != null || tested != null);
+		    return JUnitTestUtil.isJavaFile(fo) && (test != null || tested != null);
 		}
 	    }
         }
-        return TestUtil.isJavaFile(fo);
+        return JUnitTestUtil.isJavaFile(fo);
     }
 
     public FileType getFileType(FileObject fo) {

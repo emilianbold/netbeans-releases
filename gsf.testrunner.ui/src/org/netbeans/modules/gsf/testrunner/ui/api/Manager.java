@@ -66,7 +66,7 @@ import org.netbeans.modules.gsf.testrunner.api.Report;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionResult;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
-import org.netbeans.modules.gsf.testrunner.api.Utils;
+import org.netbeans.modules.gsf.testrunner.api.CommonUtils;
 import org.netbeans.modules.gsf.testrunner.ui.ResultDisplayHandler;
 import org.netbeans.modules.gsf.testrunner.ui.ResultWindow;
 import org.netbeans.modules.gsf.testrunner.ui.StatisticsPanel;
@@ -108,8 +108,8 @@ public final class Manager {
 
     private static final Logger LOGGER = Logger.getLogger(Manager.class.getName());
     
-    public static final String JUNIT_TF = Utils.JUNIT_TF;
-    public static final String TESTNG_TF = Utils.TESTNG_TF;
+    public static final String JUNIT_TF = CommonUtils.JUNIT_TF;
+    public static final String TESTNG_TF = CommonUtils.TESTNG_TF;
     private Notification bubbleNotification = null;
     private final RequestProcessor.Task bubbleTask;
     private final RequestProcessor RP = new RequestProcessor(Manager.class.getName(), 1, true);
@@ -160,11 +160,11 @@ public final class Manager {
     }
     
     public void setTestingFramework(String testingFramework) {
-        Utils.getInstance().setTestingFramework(testingFramework);
+        CommonUtils.getInstance().setTestingFramework(testingFramework);
     }
 
     public String getTestingFramework() {
-        return Utils.getInstance().getTestingFramework();
+        return CommonUtils.getInstance().getTestingFramework();
     }
 
 //    public Set<TestSession> getTestSessions() {

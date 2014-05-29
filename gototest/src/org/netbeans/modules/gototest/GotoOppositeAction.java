@@ -59,7 +59,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.gsf.testrunner.ui.api.TestCreatorPanelDisplayer;
-import org.netbeans.modules.gsf.testrunner.ui.api.Utils;
+import org.netbeans.modules.gsf.testrunner.ui.api.UICommonUtils;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.spi.gototest.TestLocator;
 import org.netbeans.spi.gototest.TestLocator.FileType;
@@ -157,7 +157,7 @@ public class GotoOppositeAction extends CallableSystemAction {
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {
-                                TestCreatorPanelDisplayer.getDefault().displayPanel(Utils.getFileObjectsFromNodes(TopComponent.getRegistry().getActivatedNodes()), null, null);
+                                TestCreatorPanelDisplayer.getDefault().displayPanel(UICommonUtils.getFileObjectsFromNodes(TopComponent.getRegistry().getActivatedNodes()), null, null);
                             }
                         });
                     }
@@ -343,7 +343,7 @@ public class GotoOppositeAction extends CallableSystemAction {
                     }
                 }
             } else {
-                return Utils.getFileObjectFromNode(nodes[0]);
+                return UICommonUtils.getFileObjectFromNode(nodes[0]);
             }
         }
         

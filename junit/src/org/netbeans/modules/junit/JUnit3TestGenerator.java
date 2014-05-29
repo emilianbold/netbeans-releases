@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.junit;
 
+import org.netbeans.modules.junit.api.JUnitTestUtil;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -98,7 +99,7 @@ final class JUnit3TestGenerator extends AbstractTestGenerator {
      */
     JUnit3TestGenerator(TestGeneratorSetup setup, String sourceLevel) {
         super(setup, JUnitVersion.JUNIT3);
-        useAnnotations = TestUtil.areAnnotationsSupported(sourceLevel);
+        useAnnotations = JUnitTestUtil.areAnnotationsSupported(sourceLevel);
     }
     
     /**
@@ -109,7 +110,7 @@ final class JUnit3TestGenerator extends AbstractTestGenerator {
                         boolean isNewTestClass,
                         String sourceLevel) {
         super(setup, srcTopClassHandles, suiteMembers, isNewTestClass, JUnitVersion.JUNIT3);
-        useAnnotations = TestUtil.areAnnotationsSupported(sourceLevel);
+        useAnnotations = JUnitTestUtil.areAnnotationsSupported(sourceLevel);
     }
     
     
@@ -367,7 +368,7 @@ final class JUnit3TestGenerator extends AbstractTestGenerator {
         }
 
         //PENDING - generating main(String[]) method:
-        //if (generateMainMethod && !TestUtil.hasMainMethod(tstClass)) {
+        //if (generateMainMethod && !JUnitTestUtil.hasMainMethod(tstClass)) {
         //    addMainMethod(tstClass);
         //}
 
@@ -418,8 +419,8 @@ final class JUnit3TestGenerator extends AbstractTestGenerator {
                         null,                           //enclosing instance
                         Collections.<ExpressionTree>emptyList(), //type args
                         testSuiteIdentifier,            //class name
-                        Collections.singletonList(      //params
-                                maker.Literal(TestUtil.getSimpleName(suiteName))),
+Collections.singletonList(      //params
+maker.Literal(JUnitTestUtil.getSimpleName(suiteName))),
                         null));                         //class body
 
         bodyContent.add(suiteObjInit);
@@ -541,7 +542,7 @@ final class JUnit3TestGenerator extends AbstractTestGenerator {
                 = ElementFilter.typesIn(tstClassElem.getEnclosedElements());
         if (!nestedClassElems.isEmpty()) {
             for (TypeElement nestedClassElem : nestedClassElems) {
-                if (TestUtil.isClassTest(workingCopy, nestedClassElem)) {
+                if (JUnitTestUtil.isClassTest(workingCopy, nestedClassElem)) {
 
                     /* suite.addTest(NestedClass.suite()); */
 

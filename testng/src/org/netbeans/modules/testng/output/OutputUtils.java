@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.testng.output;
 
+import org.netbeans.modules.testng.api.TestNGTestSuite;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.Trees;
@@ -59,6 +60,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
+import org.netbeans.modules.java.testrunner.JavaRegexpUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -181,12 +183,12 @@ final class OutputUtils {
     private static FileObject getFile(final String callstackLine,
             final int[] lineNumStorage,
             final FileLocator locator) {
-        String line = RegexpUtils.specialTrim(callstackLine);
-        if (line.startsWith(RegexpUtils.CALLSTACK_LINE_PREFIX_CATCH)) {
-            line = line.substring(RegexpUtils.CALLSTACK_LINE_PREFIX_CATCH.length());
+        String line = JavaRegexpUtils.specialTrim(callstackLine);
+        if (line.startsWith(JavaRegexpUtils.CALLSTACK_LINE_PREFIX_CATCH)) {
+            line = line.substring(JavaRegexpUtils.CALLSTACK_LINE_PREFIX_CATCH.length());
         }
-        if (line.startsWith(RegexpUtils.CALLSTACK_LINE_PREFIX)) {
-            line = line.substring(RegexpUtils.CALLSTACK_LINE_PREFIX.length());
+        if (line.startsWith(JavaRegexpUtils.CALLSTACK_LINE_PREFIX)) {
+            line = line.substring(JavaRegexpUtils.CALLSTACK_LINE_PREFIX.length());
         }
 
         /* Get the part before brackets (if any brackets present): */
@@ -211,8 +213,8 @@ final class OutputUtils {
         String fileName = null;
         int lineNum = -1;
         if (inBrackets != null) {
-            // RegexpUtils.getInstance() retns instance from ResultPanelTree
-            if (RegexpUtils.getInstance().getLocationInFilePattern().matcher(inBrackets).matches()) {
+            // JavaRegexpUtils.getInstance() retns instance from ResultPanelTree
+            if (JavaRegexpUtils.getInstance().getLocationInFilePattern().matcher(inBrackets).matches()) {
                 int ddotIndex = inBrackets.lastIndexOf(':'); //srch from end
                 if (ddotIndex == -1) {
                     fileName = inBrackets;

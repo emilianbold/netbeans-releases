@@ -176,10 +176,12 @@
                 <friend>org.netbeans.modules.groovy.support</friend>
                 <friend>org.netbeans.modules.hudson.ui</friend>
                 <friend>org.netbeans.modules.java.testrunner</friend>
+                <friend>org.netbeans.modules.java.testrunner.ui</friend>
                 <friend>org.netbeans.modules.javascript.jstestdriver</friend>
                 <friend>org.netbeans.modules.javascript.karma</friend>
-                <friend>org.netbeans.modules.junit</friend>
-                <friend>org.netbeans.modules.maven.junit</friend>
+                <friend>org.netbeans.modules.junit.ant.ui</friend>
+                <friend>org.netbeans.modules.junit.ui</friend>
+                <friend>org.netbeans.modules.maven.junit.ui</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.python.testrunner</friend>
                 <friend>org.netbeans.modules.ruby.testrunner</friend>

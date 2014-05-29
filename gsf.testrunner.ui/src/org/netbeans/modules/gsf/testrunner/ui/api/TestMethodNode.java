@@ -113,6 +113,10 @@ public class TestMethodNode extends AbstractNode {
 
     }
 
+    public Testcase getTestcase() {
+        return testcase;
+    }
+
     @NbBundle.Messages({
         "# {0} - name of the test method", "MSG_TestMethodFailed={0} - Failed",
         "# {0} - name of the test method", "MSG_TestMethodPending={0} - Pending",

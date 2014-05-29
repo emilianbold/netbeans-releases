@@ -47,7 +47,7 @@ package org.netbeans.modules.gsf.testrunner.ui;
 import org.netbeans.modules.gsf.testrunner.ui.api.TestCreatorPanelDisplayer;
 import java.util.Collection;
 import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider;
-import org.netbeans.modules.gsf.testrunner.ui.api.Utils;
+import org.netbeans.modules.gsf.testrunner.ui.api.UICommonUtils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -97,7 +97,7 @@ public class TestCreatorAction extends NodeAction {
         Collection<? extends Lookup.Item<TestCreatorProvider>> providers = Lookup.getDefault().lookupResult(TestCreatorProvider.class).allItems();
         boolean enable;
         for (Lookup.Item<TestCreatorProvider> provider : providers) {
-            enable = provider.getInstance().enable(Utils.getFileObjectsFromNodes(activatedNodes));
+            enable = provider.getInstance().enable(UICommonUtils.getFileObjectsFromNodes(activatedNodes));
             if(enable) {
                 return true;
             }
@@ -107,7 +107,7 @@ public class TestCreatorAction extends NodeAction {
 
     @Override
     protected void performAction(Node[] activatedNodes) {
-	TestCreatorPanelDisplayer.getDefault().displayPanel(Utils.getFileObjectsFromNodes(activatedNodes), null, null);
+	TestCreatorPanelDisplayer.getDefault().displayPanel(UICommonUtils.getFileObjectsFromNodes(activatedNodes), null, null);
     }
     
 }

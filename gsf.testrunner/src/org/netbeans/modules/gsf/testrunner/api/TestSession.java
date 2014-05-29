@@ -239,7 +239,7 @@ public class TestSession {
         assert currentSuite != null : "Currently running suite was null for projectURI: " + projectURI; //NOI18N
         Report report = new Report(currentSuite.getName(), getProject());
         report.setElapsedTimeMillis(timeInMillis);
-	boolean isTestNG = Utils.getInstance().getTestingFramework().equals(Utils.TESTNG_TF);
+	boolean isTestNG = CommonUtils.getInstance().getTestingFramework().equals(CommonUtils.TESTNG_TF);
         for (Testcase testcase : currentSuite.getTestcases()) {
             report.reportTest(testcase);
             if (!isTestNGConfigMethod(testcase, isTestNG)) {

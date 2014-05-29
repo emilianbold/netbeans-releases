@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.testng.output;
 
+import org.netbeans.modules.testng.api.TestNGTestcase;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

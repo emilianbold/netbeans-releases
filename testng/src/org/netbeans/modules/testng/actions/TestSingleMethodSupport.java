@@ -54,7 +54,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.testrunner.CommonTestUtil;
-import org.netbeans.modules.java.testrunner.Utils;
+import org.netbeans.modules.java.testrunner.JavaUtils;
 import org.netbeans.spi.project.SingleMethod;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -73,11 +73,11 @@ public class TestSingleMethodSupport {
     }private static final Logger LOGGER = Logger.getLogger(TestSingleMethodSupport.class.getName());
 
     public static boolean isTestClass(Node activatedNode) {
-        FileObject fileObject = CommonTestUtil.getFileObjectFromNode(activatedNode);
+        FileObject fileObject = org.netbeans.modules.gsf.testrunner.ui.api.UICommonUtils.getFileObjectFromNode(activatedNode);
         if (fileObject != null && CommonTestUtil.isJavaFile(fileObject)) {
             Project project = FileOwnerQuery.getOwner(fileObject);
             if (project != null) {
-                SourceGroup[] javaSGs = new Utils(project).getJavaSourceGroups();
+                SourceGroup[] javaSGs = new JavaUtils(project).getJavaSourceGroups();
                 for (int i = 0; i < javaSGs.length; i++) {
                     SourceGroup javaSG = javaSGs[i];
                     FileObject rootFolder = javaSG.getRootFolder();
@@ -118,7 +118,7 @@ public class TestSingleMethodSupport {
     }
 
     public static boolean canHandle(Node activatedNode) {
-        FileObject fileO = CommonTestUtil.getFileObjectFromNode(activatedNode);
+        FileObject fileO = org.netbeans.modules.gsf.testrunner.ui.api.UICommonUtils.getFileObjectFromNode(activatedNode);
         if (fileO != null) {
             final EditorCookie ec = activatedNode.getLookup().lookup(EditorCookie.class);
             if (ec != null) {

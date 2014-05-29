@@ -46,7 +46,7 @@ package org.netbeans.modules.junit;
 
 /**
  */
-enum JUnitVersion {
+public enum JUnitVersion {
     JUNIT3,
     JUNIT4
 }

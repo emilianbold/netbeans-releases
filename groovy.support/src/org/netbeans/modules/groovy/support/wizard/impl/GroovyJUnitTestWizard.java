@@ -61,7 +61,7 @@ import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.api.templates.TemplateRegistrations;
 import org.netbeans.modules.groovy.support.wizard.AbstractGroovyWizard;
 import org.netbeans.modules.groovy.support.wizard.JUnit;
-import org.netbeans.modules.gsf.testrunner.ui.api.SelfResizingPanel;
+import org.netbeans.modules.gsf.testrunner.api.SelfResizingPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.gsf.testrunner.ui;
 
-import org.netbeans.modules.gsf.testrunner.ui.api.SelfResizingPanel;
+import org.netbeans.modules.gsf.testrunner.api.SelfResizingPanel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

@@ -71,7 +71,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.gsf.testrunner.api.Status;
@@ -80,7 +79,10 @@ import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.gsf.testrunner.api.UnitTestsUsage;
-import org.netbeans.modules.gsf.testrunner.ui.api.TestRunnerNodeFactory;
+import org.netbeans.modules.gsf.testrunner.api.CommonUtils;
+import org.netbeans.modules.gsf.testrunner.api.CoreManager;
+import org.netbeans.modules.junit.api.JUnitTestSuite;
+import org.netbeans.modules.junit.api.JUnitTestcase;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
@@ -88,8 +90,8 @@ import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
-import org.netbeans.modules.maven.junit.nodes.JUnitTestRunnerNodeFactory;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
 /**
@@ -225,6 +227,16 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         return name;
     } 
     
+    private CoreManager getManagerProvider() {
+        Collection<? extends Lookup.Item<CoreManager>> providers = Lookup.getDefault().lookupResult(CoreManager.class).allItems();
+        for (Lookup.Item<CoreManager> provider : providers) {
+            if(provider.getDisplayName().equals(CommonUtils.MAVEN_PROJECT_TYPE.concat("_").concat(CommonUtils.JUNIT_TF))) {
+                return provider.getInstance();
+            }
+        }
+        return null;
+    }
+    
     private void createSession(File nonNormalizedFile) {
         if (session == null) {
             File fil = FileUtil.normalizeFile(nonNormalizedFile);
@@ -244,7 +256,10 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
 			}
 		    }
 		    final TestSession.SessionType fType = type;
-                    Manager.getInstance().setNodeFactory(new JUnitTestRunnerNodeFactory(session, prj));
+                    CoreManager junitManager = getManagerProvider();
+                    if (junitManager != null) {
+                        junitManager.registerNodeFactory();
+                    }
                     session = new TestSession(createSessionName(mvnprj.getMavenProject().getId()), prj, TestSession.SessionType.TEST);
 		    session.setRerunHandler(new RerunHandler() {
 			public @Override
@@ -331,7 +346,9 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
 			void removeChangeListener(ChangeListener listener) {
 			}
 		    });
-		    Manager.getInstance().testStarted(session);
+		    if (junitManager != null) {
+                        junitManager.testStarted(session);
+                    }
 		}
 	    }
 	}
@@ -400,7 +417,10 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                 generateTest();
             }
         }
-        Manager.getInstance().sessionFinished(session);
+        CoreManager junitManager = getManagerProvider();
+        if (junitManager != null) {
+            junitManager.sessionFinished(session);
+        }
         runningTestClass = null;
         outputDir = null;
         session = null;
@@ -466,9 +486,12 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             Document document = builder.build(report);
             Element testSuite = document.getRootElement();
             assert "testsuite".equals(testSuite.getName()) : "Root name " + testSuite.getName(); //NOI18N
-            TestSuite suite = new TestSuite(testSuite.getAttributeValue("name"));
+            TestSuite suite = new JUnitTestSuite(testSuite.getAttributeValue("name"), session);
             session.addSuite(suite);
-            Manager.getInstance().displaySuiteRunning(session, suite.getName());
+            CoreManager junitManager = getManagerProvider();
+            if (junitManager != null) {
+                junitManager.displaySuiteRunning(session, suite.getName());
+            }
             
             @SuppressWarnings("unchecked")
             List<Element> testcases = testSuite.getChildren("testcase"); //NOI18N
@@ -479,7 +502,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                 if (name.endsWith(nameSuffix)) {
                     name = name.substring(0, name.length() - nameSuffix.length());
                 }
-                Testcase test = new Testcase(name, null, session);
+                Testcase test = new JUnitTestcase(name, null, session);
                 Element stdout = testcase.getChild("system-out"); //NOI18N
                 if (stdout != null) {
                     logText(stdout.getText(), test, false);
@@ -524,11 +547,15 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             String time = testSuite.getAttributeValue("time");
             // the surefire plugin does not print out localised numbers, so use the english format
             float fl = NumberFormat.getNumberInstance(Locale.ENGLISH).parse(time).floatValue();
-            long timeinmilis = (long)(fl * 1000);
-            Manager.getInstance().displayReport(session, session.getReport(timeinmilis));
+            long timeinmilis = (long) (fl * 1000);
+            if (junitManager != null) {
+                junitManager.displayReport(session, session.getReport(timeinmilis));
+            }
             File output = new File(outputDir, runningTestClass + suffix + "-output.txt");
             if (output.isFile()) {
-                Manager.getInstance().displayOutput(session, FileUtils.fileRead(output), false);
+                if (junitManager != null) {
+                    junitManager.displayOutput(session, FileUtils.fileRead(output), false);
+                }
             }
         } catch (JDOMException x) {
             LOG.log(Level.INFO, "parsing " + report, x);
@@ -543,7 +570,10 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         while (tokens.hasMoreTokens()) {
             lines.add(tokens.nextToken());
         }
-        Manager.getInstance().displayOutput(session, text, failure);
+        CoreManager junitManager = getManagerProvider();
+        if (junitManager != null) {
+            junitManager.displayOutput(session, text, failure);
+        }
         test.addOutputLines(lines);
     }
 

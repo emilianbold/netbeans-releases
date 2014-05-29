@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.testng.output;
 
+import org.netbeans.modules.testng.api.TestNGTestSuite;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
