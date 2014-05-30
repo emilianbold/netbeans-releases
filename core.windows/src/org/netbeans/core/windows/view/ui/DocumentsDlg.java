@@ -428,6 +428,10 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
     }
     
     public void removeNotify () {
+        // save dialog size on click at [x] in titlebar
+        Window dlg = SwingUtilities.getWindowAncestor(this);
+        if( null != dlg )
+            getDefault().previousDialogSize = dlg.getSize();
         super.removeNotify();
         explorer.removePropertyChangeListener(this);
     }
@@ -459,14 +463,6 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
             dlg.setLocationRelativeTo(null);
         }
 
-        // save dialog size on click at [x] in titlebar
-        dlg.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                getDefault().previousDialogSize = dlg.getSize();
-            }
-        });
-        
         dlg.setVisible(true);
         getDefault().clearNodes();
     }
