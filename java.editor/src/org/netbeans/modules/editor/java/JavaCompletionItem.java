@@ -1751,8 +1751,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 sb.append("${"); //NOI18N
                                 sb.append(paramDesc.name);
                                 if (guessArgs) {
-                                    sb.append(" named instanceof="); //NOI18N
+                                    sb.append(" named instanceof=\""); //NOI18N
                                     sb.append(paramDesc.fullTypeName);
+                                    sb.append("\""); //NOI18N
                                 }
                                 sb.append('}'); //NOI18N
                                 if (it.hasNext()) {
@@ -2335,8 +2336,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 sb.append("${"); //NOI18N
                                 sb.append(paramDesc.name);
                                 if (guessArgs) {
-                                    sb.append(" named instanceof="); //NOI18N
+                                    sb.append(" named instanceof=\""); //NOI18N
                                     sb.append(paramDesc.fullTypeName);
+                                    sb.append("\""); //NOI18N
                                 }
                                 sb.append("}"); //NOI18N
                                 if (it.hasNext()) {
@@ -2633,8 +2635,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 sb.append("${"); //NOI18N
                 sb.append(paramDesc.name);
                 if (guessArgs) {
-                    sb.append(" named instanceof="); //NOI18N
+                    sb.append(" named instanceof=\""); //NOI18N
                     sb.append(paramDesc.fullTypeName);
+                    sb.append("\""); //NOI18N
                 }
                 sb.append("}"); //NOI18N
                 if (i < params.size() - 1) {
@@ -3258,8 +3261,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                             template.append("${"); //NOI18N
                                             template.append(paramDesc.name);
                                             if (guessArgs) {
-                                                template.append(" named instanceof="); //NOI18N
+                                                template.append(" named instanceof=\""); //NOI18N
                                                 template.append(paramDesc.fullTypeName);
+                                                template.append("\""); //NOI18N
                                             }
                                             template.append("}"); //NOI18N
                                             if (it.hasNext()) {
@@ -3550,8 +3554,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             sb.append("${"); //NOI18N
                             sb.append(paramDesc.name);
                             if (guessArgs) {
-                                sb.append(" named instanceof="); //NOI18N
+                                sb.append(" named instanceof=\""); //NOI18N
                                 sb.append(paramDesc.fullTypeName);
+                                sb.append("\""); //NOI18N
                             }
                             sb.append('}');
                             if (paramsIt.hasNext()) {
