@@ -1248,7 +1248,7 @@ public class SvnUtils {
      * @return name or null
      */
     private static String getCopy(SVNUrl url, List<AnnotationExpression> annotationExpressions) {
-        if (url != null) {
+        if (url != null && SvnModuleConfig.getDefault().isDetermineBranchesEnabled()) {
             String urlString = decodeToString(url);
             for (Iterator<AnnotationExpression> it = annotationExpressions.iterator(); it.hasNext();) {
                 String name = it.next().getCopyName(urlString);
