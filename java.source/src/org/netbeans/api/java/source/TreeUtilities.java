@@ -350,8 +350,9 @@ public final class TreeUtilities {
                             path.getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION)
                         break;
                 case SEMICOLON:
-                    if (path.getLeaf().getKind() == Tree.Kind.FOR_LOOP &&
-                            tokenList.offset() <= sourcePositions.getStartPosition(path.getCompilationUnit(), ((ForLoopTree)path.getLeaf()).getUpdate().get(0)))
+                    if (path.getLeaf().getKind() == Tree.Kind.EMPTY_STATEMENT ||
+                            (path.getLeaf().getKind() == Tree.Kind.FOR_LOOP &&
+                            tokenList.offset() <= sourcePositions.getStartPosition(path.getCompilationUnit(), ((ForLoopTree)path.getLeaf()).getUpdate().get(0))))
                         break;
                 case RBRACE:
                     path = path.getParentPath();
