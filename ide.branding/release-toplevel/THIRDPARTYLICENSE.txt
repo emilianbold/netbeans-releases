@@ -91,7 +91,6 @@ ide/modules/ext/jsch-agentproxy-core.jar                              BSD-jsch-a
 ide/modules/ext/jsch-agentproxy-pageant.jar                           BSD-jsch-agent-proxy
 ide/modules/ext/jsch-agentproxy-sshagent.jar                          BSD-jsch-agent-proxy
 ide/modules/ext/jsch-agentproxy-usocket-jna.jar                       BSD-jsch-agent-proxy
-ide/modules/ext/jsch-agentproxy-usocket-nc.jar                        BSD-jsch-agent-proxy
 ide/modules/ext/json-simple-1.1.1.jar                                 Apache-2.0
 ide/modules/ext/jvyamlb-0.2.3.jar                                     MIT-jvyamlb
 ide/modules/ext/libpam4j-1.1.jar                                      MIT
