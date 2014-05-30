@@ -40,53 +40,33 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.truffle;
+package org.netbeans.modules.debugger.jpda.truffle.access;
 
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.jpda.JPDABreakpoint;
-import org.netbeans.api.debugger.jpda.MethodBreakpoint;
-import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
-import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
 
 /**
- *
+ * Container of information about the current program counter.
+ * 
  * @author Martin
  */
-public class TruffleAccessBreakpoints implements JPDABreakpointListener {
+public class CurrentPCInfo {
     
-    private static final String METHOD_EXEC_HALTED = "executionHalted";         // NOI18N
-    private static final String METHOD_EXEC_STEP_INTO = "executionStepInto";    // NOI18N
-    private static final String METHOD_DEBUGGER_ACCESS = "debuggerAccess";      // NOI18N
+    private final Reference<JPDAThread> threadRef;
+    private SourcePosition sp;
     
-    private JPDABreakpoint execHaltedBP;
-    private JPDABreakpoint execStepIntoBP;
-    private JPDABreakpoint dbgAccessBP;
-    
-    void init() {
-        execHaltedBP = createBP(METHOD_EXEC_HALTED);
-        execStepIntoBP = createBP(METHOD_EXEC_STEP_INTO);
-        dbgAccessBP = createBP(METHOD_DEBUGGER_ACCESS);
+    public CurrentPCInfo(JPDAThread thread, SourcePosition sp) {
+        this.threadRef = new WeakReference<>(thread);
+        this.sp = sp;
     }
     
-    private JPDABreakpoint createBP(String methodName) {
-        MethodBreakpoint mb = MethodBreakpoint.create(DebugManagerHandler.BASIC_CLASS_NAME, methodName);
-        mb.setBreakpointType(MethodBreakpoint.TYPE_METHOD_ENTRY);
-        mb.setHidden(true);
-        //mb.setSession( );
-        mb.addJPDABreakpointListener(this);
-        DebuggerManager.getDebuggerManager().addBreakpoint(mb);
-        return mb;
+    public JPDAThread getThread() {
+        return threadRef.get();
     }
-
-    @Override
-    public void breakpointReached(JPDABreakpointEvent event) {
-        Object bp = event.getSource();
-        if (execHaltedBP == bp) {
-            System.err.println("TruffleAccessBreakpoints.breakpointReached("+event+"), exec halted.");
-        } else if (execStepIntoBP == bp) {
-            System.err.println("TruffleAccessBreakpoints.breakpointReached("+event+"), exec step into.");
-        } else if (dbgAccessBP == bp) {
-            System.err.println("TruffleAccessBreakpoints.breakpointReached("+event+"), debugger access.");
-        }
+    
+    public SourcePosition getSourcePosition() {
+        return sp;
     }
 }

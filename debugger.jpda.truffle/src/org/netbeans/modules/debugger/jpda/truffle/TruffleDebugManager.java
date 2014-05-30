@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.debugger.jpda.truffle;
 
+import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccessBreakpoints;
 import com.sun.jdi.request.EventRequest;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -92,7 +93,7 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
         debugManagerLoadBP.setHidden(true);
         debugManagerLoadBP.setSuspend(EventRequest.SUSPEND_ALL);
         System.err.println("TruffleDebugManager.initBreakpoints(): submitted BP "+debugManagerLoadBP);
-        new TruffleAccessBreakpoints().init();
+        TruffleAccessBreakpoints.init();
     }
     
     @Override

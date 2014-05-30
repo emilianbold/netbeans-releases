@@ -83,10 +83,9 @@ import org.netbeans.modules.debugger.jpda.jdi.PrimitiveValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import static org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccessBreakpoints.BASIC_CLASS_NAME;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
-import org.openide.windows.InputOutput;
 
 /**
  *
@@ -96,7 +95,6 @@ class DebugManagerHandler implements JPDABreakpointListener {
     
     private static final Logger LOG = Logger.getLogger(DebugManagerHandler.class.getName());
     
-    static final String BASIC_CLASS_NAME = "org.netbeans.modules.debugger.jpda.backend.truffle.JPDATruffleAccessor";    // NOI18N
     private static final String TRUFFLE_JE_ENGINE_CLASS_NAME = "com.oracle.truffle.js.engine.TruffleJSEngine"; // NOI18N
     private static final String ACCESSOR_START_ACCESS_LOOP = "startAccessLoop"; // NOI18N
     private static final String ACCESSOR_STOP_ACCESS_LOOP = "stopAccessLoop";   // NOI18N
