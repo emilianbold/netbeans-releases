@@ -79,8 +79,9 @@ import org.openide.util.Exceptions;
 @FunctionInterceptor.Registration(priority = 350)
 public class DefineInterceptor implements FunctionInterceptor {
 
-    private final static Pattern PATTERN = Pattern.compile("define|requirejs|require");  //NOI18N
-
+    private static final Pattern PATTERN = Pattern.compile("define|requirejs|require");  //NOI18N
+    private static final String CODE_COMPLETION_THREAD_NAME = "Code Completion";
+    
     @Override
     public Pattern getNamePattern() {
         return PATTERN;
@@ -122,7 +123,7 @@ public class DefineInterceptor implements FunctionInterceptor {
                 
                 if (posibleFunc != null && posibleFunc instanceof JsFunction) {
                     JsFunction defFunc = (JsFunction) posibleFunc;
-                    if (RequireJsIndexer.Factory.isScannerThread()) {
+                    if (saveToIndex()) {
                         if (EditorUtils.DEFINE.equals(name)) {
                             // save to the index the return types
                             Collection<? extends TypeUsage> returnTypes = defFunc.getReturnTypes();
@@ -188,6 +189,10 @@ public class DefineInterceptor implements FunctionInterceptor {
         }
     }
 
+    private boolean saveToIndex() {
+        return RequireJsIndexer.Factory.isScannerThread() && !CODE_COMPLETION_THREAD_NAME.equals(Thread.currentThread().getName());
+    }
+    
     public static JsObject findJsObjectByName(JsObject global, List<String> fqn) {
         JsObject result = global;
         JsObject property = result;
