@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types;
 import java.io.File;
 import javax.swing.JFileChooser;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeSession;
 
@@ -54,6 +55,8 @@ import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointPanel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 
 class LineBreakpointPanel extends BreakpointPanel {
@@ -222,10 +225,16 @@ class LineBreakpointPanel extends BreakpointPanel {
 	if (!seed.isDirectory())
 	    seed = seed.getParentFile();
 
-        NativeSession nativeSession = NativeSession.map(DebuggerManager.getDebuggerManager().getCurrentSession());
-        Host host = Host.byName(nativeSession.getSessionHost());
+        ExecutionEnvironment environment = ExecutionEnvironmentFactory.getLocal();
+        Session coreSession = DebuggerManager.getDebuggerManager().getCurrentSession();
+        if (coreSession != null) {
+            NativeSession nativeSession = NativeSession.map(coreSession);
+            if (nativeSession != null) {
+                environment = Host.byName(nativeSession.getSessionHost()).executionEnvironment();
+            }
+        }
         
-        FileChooserBuilder builder = new FileChooserBuilder(host.executionEnvironment());
+        FileChooserBuilder builder = new FileChooserBuilder(environment);
         JFileChooser chooser = builder.createFileChooser();
         //	chooser.setDialogTitle("File Name");  Reasonable default???
 	chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
