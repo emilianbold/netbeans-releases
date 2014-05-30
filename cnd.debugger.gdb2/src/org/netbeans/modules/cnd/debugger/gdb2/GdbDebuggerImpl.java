@@ -3838,6 +3838,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             stateMsg = Catalog.get("Dbx_program_stopped");	// NOI18N
         } else if (reason.equals("breakpoint-hit")) {		// NOI18N
             stateMsg = Catalog.get("Dbx_program_stopped");	// NOI18N
+        } else if (reason.equals("location-reached")) {	// NOI18N
+            stateMsg = Catalog.get("Dbx_program_stopped");	// NOI18N
         } else if (reason.equals(MI_WATCHPOINT_TRIGGER)) {
             String expValue = "";
             MIValue wptVal = results.valueOf(MI_WPT);
