@@ -146,6 +146,7 @@ public final class WebLogicRuntime {
         if (config.isRemote()) {
             if (listener != null) {
                 listener.onRunning();
+                listener.onExit();
             }
             return;
         }
@@ -295,6 +296,7 @@ public final class WebLogicRuntime {
         if (config.isRemote()) {
             if (listener != null) {
                 listener.onRunning();
+                listener.onExit();
             }
             return;
         }

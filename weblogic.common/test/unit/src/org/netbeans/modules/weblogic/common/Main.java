@@ -63,8 +63,10 @@ public class Main {
         String serverHome = "/home/sickboy/software/wls12120/wlserver";//args[0];
         String domainHome = "/home/sickboy/software/wls12120/user_projects/domains/mydomain";//;args[1];
         //String artifact = args[2];
-        WebLogicConfiguration config = WebLogicConfiguration.forLocalDomain(new File(serverHome), new File(domainHome),
-                "weblogic", "welcome1");
+//        WebLogicConfiguration config = WebLogicConfiguration.forLocalDomain(
+//                new File(serverHome), new File(domainHome), "weblogic", "welcome1");
+        WebLogicConfiguration config = WebLogicConfiguration.forRemoteDomain(
+                new File(serverHome), "192.168.56.101", 7001, "weblogic", "welcome1");
 
         WebLogicRuntime runtime = WebLogicRuntime.getInstance(config);
         runtime.startAndWait(new DefaultFactory(), new DefaultFactory(), null);
