@@ -51,11 +51,15 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.FollowFilter;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.revwalk.filter.AndRevFilter;
+import org.eclipse.jgit.revwalk.filter.MaxCountRevFilter;
+import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitObjectType;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
+import org.netbeans.libs.git.jgit.utils.CancelRevFilter;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
@@ -66,11 +70,13 @@ public class GetPreviousCommitCommand extends GitCommand {
     private final String revision;
     private GitRevisionInfo previousRevision;
     private final File file;
+    private final ProgressMonitor monitor;
 
     public GetPreviousCommitCommand (Repository repository, GitClassFactory gitFactory, File file, String revision, ProgressMonitor monitor) {
         super(repository, gitFactory, monitor);
         this.file = file;
         this.revision = revision;
+        this.monitor = monitor;
     }
 
     @Override
@@ -86,6 +92,7 @@ public class GetPreviousCommitCommand extends GitCommand {
                     if (path != null && !path.isEmpty()) {
                         walk.setTreeFilter(FollowFilter.create(path, repository.getConfig().get(DiffConfig.KEY)));
                     }
+                    walk.setRevFilter(AndRevFilter.create(new RevFilter[] { new CancelRevFilter(monitor), MaxCountRevFilter.create(1) }));
                     Iterator<RevCommit> it = walk.iterator();
                     if (it.hasNext()) {
                         previousRevision = getClassFactory().createRevisionInfo(new RevWalk(repository).parseCommit(it.next()), repository);
