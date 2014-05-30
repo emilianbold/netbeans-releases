@@ -359,6 +359,8 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
                 case ANNOTATION_TYPE:
                     result.append("@interface ");
                     break;
+                default:
+                    break;
             }
             Element enclosing = e.getEnclosingElement();
 
