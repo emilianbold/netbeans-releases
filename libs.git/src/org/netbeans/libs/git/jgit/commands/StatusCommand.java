@@ -45,7 +45,7 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.InvalidPathException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -67,7 +67,6 @@ import org.eclipse.jgit.errors.CorruptObjectException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.FileMode;
 import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.ObjectInserter;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -97,7 +96,6 @@ public class StatusCommand extends GitCommand {
     private final ProgressMonitor monitor;
     private final StatusListener listener;
     private final String revision;
-    private static final String PROP_TRACK_SYMLINKS = "org.netbeans.libs.git.trackSymLinks"; //NOI18N
     private static final Logger LOG = Logger.getLogger(StatusCommand.class.getName());
     private static final Set<File> logged = new HashSet<>();
 
@@ -170,8 +168,12 @@ public class StatusCommand extends GitCommand {
                     if (path.equals(lastPath)) {
                         symlink = isKnownSymlink(symLinks, path);
                     } else {
-                        if (Files.isSymbolicLink(Paths.get(file.getAbsolutePath()))) {
-                            symlink = true;
+                        try {
+                            symlink = Files.isSymbolicLink(file.toPath());
+                        } catch (InvalidPathException ex) {
+                            if (logged.add(file)) {
+                                LOG.log(Level.FINE, null, ex);
+                            }
                         }
                         handleConflict(conflicts, workTreePath);
                         handleSymlink(symLinks, workTreePath);

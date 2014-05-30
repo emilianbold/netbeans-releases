@@ -182,9 +182,12 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
      *        the message won't be displayed.
      */
     @NbBundle.Messages("MSG_J2ME_PROJECT_TYPE=Tests cannot be created for this project type. Please use the New File wizard to create a JMUnit test instead.")
-    public void createCfgPanel(boolean isShowMsgFilesWillBeSaved, boolean isJ2meProject) {
-//        assert (nodes != null) && (nodes.length != 0);
-//        this.nodes = nodes;
+    public boolean createCfgPanel(boolean isShowMsgFilesWillBeSaved, boolean isJ2meProject) {
+        DataObject dataObj = nodes[0].getLookup().lookup(DataObject.class);
+        if (ClassPath.getClassPath(dataObj.getPrimaryFile(), ClassPath.SOURCE) == null) { // cannot create tests for this FO
+            return false;
+        }
+        
         multipleClasses = checkMultipleClasses();
         this.isJ2meProject = isJ2meProject;
         
@@ -215,6 +218,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         } finally {
             unlinkBundle();
         }
+        return true;
     }
     
     private void addAccessibleDescriptions() {
