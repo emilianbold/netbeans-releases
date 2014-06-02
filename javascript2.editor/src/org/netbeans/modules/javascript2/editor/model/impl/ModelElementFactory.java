@@ -255,7 +255,7 @@ class ModelElementFactory {
 
     @NonNull
     static JsObjectImpl createAnonymousObject(JsParserResult parserResult, ObjectNode objectNode, ModelBuilder modelBuilder) {
-        String name = modelBuilder.getUnigueNameForAnonymObject();
+        String name = modelBuilder.getUnigueNameForAnonymObject(parserResult);
         JsObjectImpl result = new AnonymousObject(modelBuilder.getCurrentDeclarationFunction(),
                     name, new OffsetRange(objectNode.getStart(), objectNode.getFinish()), parserResult.getSnapshot().getMimeType(), null);
         modelBuilder.getCurrentDeclarationFunction().addProperty(name, result);
@@ -269,7 +269,7 @@ class ModelElementFactory {
     
     @NonNull
     static JsArrayImpl createAnonymousObject(JsParserResult parserResult, LiteralNode.ArrayLiteralNode aNode, ModelBuilder modelBuilder) {
-        String name = modelBuilder.getUnigueNameForAnonymObject();
+        String name = modelBuilder.getUnigueNameForAnonymObject(parserResult);
         JsArrayImpl result = new AnonymousObject.AnonymousArray(modelBuilder.getCurrentDeclarationFunction(),
                     name, new OffsetRange(aNode.getStart(), aNode.getFinish()), parserResult.getSnapshot().getMimeType(), null);
         modelBuilder.getCurrentDeclarationFunction().addProperty(name, result);

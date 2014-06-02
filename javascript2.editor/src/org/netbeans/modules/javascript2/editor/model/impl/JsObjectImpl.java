@@ -403,11 +403,12 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                                 }
                             }
                             if (jsObject != null) {
+//                                if (typeHere.isResolved() && !jsObject.isAnonymous()) {
                                 if (typeHere.isResolved()) {
                                     int index = rType.lastIndexOf('.');
                                     int typeLength = (index > -1) ? rType.length() - index - 1 : rType.length();
                                     int offset = typeHere.getOffset();
-                                    ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(offset, offset + typeLength));
+                                    ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(offset, jsObject.isAnonymous() ? offset : offset + typeLength));
                                 }
                                 moveOccurrenceOfProperties((JsObjectImpl)jsObject, this);
                                 JsObject parent = jsObject.getParent();
