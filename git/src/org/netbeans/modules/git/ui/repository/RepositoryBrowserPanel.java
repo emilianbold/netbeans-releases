@@ -70,6 +70,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
@@ -87,6 +88,7 @@ import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitRepositories;
+import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.branch.CreateBranchAction;
 import org.netbeans.modules.git.ui.branch.DeleteBranchAction;
@@ -1338,6 +1340,12 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
     }
 
+    @NbBundle.Messages({
+        "CTL_TagNode.deleteTag.action=Delete Tag...",
+        "MSG_TagNode.deleteTag.progress=Deleting Tag",
+        "# {0} - tag name", "MSG_TagNode.deleteTag.confirmation=Do you really want to delete tag {0}?",
+        "LBL_TagNode.deleteTag.confirmation=Delete Tag"
+    })
     private class TagNode extends RepositoryBrowserNode {
         private boolean active;
         private final String tagName;
@@ -1471,6 +1479,32 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     @Override
                     public boolean isEnabled() {
                         return !active;
+                    }
+                });
+                actions.add(new AbstractAction(Bundle.CTL_TagNode_deleteTag_action()) {
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        EventQueue.invokeLater(new Runnable() {
+                            
+                            @Override
+                            public void run () {
+                                if (JOptionPane.showConfirmDialog(RepositoryBrowserPanel.this, Bundle.MSG_TagNode_deleteTag_confirmation(tag),
+                                        Bundle.LBL_TagNode_deleteTag_confirmation(),
+                                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {                                     
+                                    new GitProgressSupport() {
+
+                                        @Override
+                                        protected void perform () {
+                                            try {
+                                                getClient().deleteTag(tag, GitUtils.NULL_PROGRESS_MONITOR);
+                                            } catch (GitException ex) {
+                                                GitClientExceptionHandler.notifyException(ex, false);
+                                            }
+                                        }
+                                    }.start(Git.getInstance().getRequestProcessor(currRepository), currRepository, Bundle.MSG_TagNode_deleteTag_progress());
+                                }
+                            }
+                        });
                     }
                 });
             }
