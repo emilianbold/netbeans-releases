@@ -120,6 +120,9 @@ public class StepIntoScriptHandler extends LazyActionsManagerListener implements
                     }
                 }
             }
+            if (ActionsManager.ACTION_STEP_OVER.equals(action)) {
+                
+            }
         }
     }
     

@@ -43,13 +43,22 @@
 package org.netbeans.modules.debugger.jpda.truffle.access;
 
 import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.ClassType;
 import com.sun.jdi.IntegerValue;
 import com.sun.jdi.LongValue;
+import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StringReference;
 import com.sun.jdi.Value;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.LazyActionsManagerListener;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -58,6 +67,9 @@ import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.breakpoints.BreakpointsEngineListener;
+import org.netbeans.modules.debugger.jpda.breakpoints.MethodBreakpointImpl;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.IntegerValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
@@ -86,6 +98,8 @@ public class TruffleAccessBreakpoints implements JPDABreakpointListener {
     
     private static final Map<JPDADebugger, CurrentPCInfo> currentPCInfos = new WeakHashMap<>();
     
+    private static final TruffleAccessBreakpoints DEFAULT = new TruffleAccessBreakpoints();
+
     private JPDABreakpoint execHaltedBP;
     private JPDABreakpoint execStepIntoBP;
     private JPDABreakpoint dbgAccessBP;
@@ -93,7 +107,39 @@ public class TruffleAccessBreakpoints implements JPDABreakpointListener {
     private TruffleAccessBreakpoints() {}
     
     public static void init() {
-        new TruffleAccessBreakpoints().initBPs();
+        DEFAULT.initBPs();
+    }
+    
+    public static void assureBPSet(JPDADebugger debugger, ClassType accessorClass) {
+        if (DEFAULT.execHaltedBP.getValidity() != Breakpoint.VALIDITY.VALID) {
+            BreakpointsEngineListener breakpointsEngineListener = getBreakpointsEngineListener(debugger);
+            List<ReferenceType> classes = Collections.singletonList((ReferenceType) accessorClass);
+            MethodBreakpointImpl mbimpl = (MethodBreakpointImpl) breakpointsEngineListener.getBreakpointImpl(DEFAULT.execHaltedBP);
+            assureClassLoaded(mbimpl, classes);
+            mbimpl = (MethodBreakpointImpl) breakpointsEngineListener.getBreakpointImpl(DEFAULT.execStepIntoBP);
+            assureClassLoaded(mbimpl, classes);
+            mbimpl = (MethodBreakpointImpl) breakpointsEngineListener.getBreakpointImpl(DEFAULT.dbgAccessBP);
+            assureClassLoaded(mbimpl, classes);
+        }
+    }
+    
+    private static void assureClassLoaded(MethodBreakpointImpl mbimpl, List<ReferenceType> classes) {
+        try {
+            Method classLoadedMethod = MethodBreakpointImpl.class.getDeclaredMethod("classLoaded", List.class);
+            classLoadedMethod.setAccessible(true);
+            classLoadedMethod.invoke(mbimpl, classes);
+        } catch (Exception ex) {}
+    }
+    
+    private static BreakpointsEngineListener getBreakpointsEngineListener(JPDADebugger debugger) {
+        List<? extends LazyActionsManagerListener> lamls =
+                ((JPDADebuggerImpl) debugger).getSession().lookup(null, LazyActionsManagerListener.class);
+        for (LazyActionsManagerListener laml : lamls) {
+            if (laml instanceof BreakpointsEngineListener) {
+                return (BreakpointsEngineListener) laml;
+            }
+        }
+        return null;
     }
     
     private void initBPs() {
@@ -103,12 +149,21 @@ public class TruffleAccessBreakpoints implements JPDABreakpointListener {
     }
     
     private JPDABreakpoint createBP(String methodName) {
-        MethodBreakpoint mb = MethodBreakpoint.create(BASIC_CLASS_NAME, methodName);
+        final MethodBreakpoint mb = MethodBreakpoint.create(BASIC_CLASS_NAME, methodName);
         mb.setBreakpointType(MethodBreakpoint.TYPE_METHOD_ENTRY);
         mb.setHidden(true);
         //mb.setSession( );
         mb.addJPDABreakpointListener(this);
         DebuggerManager.getDebuggerManager().addBreakpoint(mb);
+        mb.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                System.err.println(mb+" has changed: "+evt);
+                System.err.println("  prop name = "+evt.getPropertyName()+", new value = "+evt.getNewValue());
+                Thread.dumpStack();
+            }
+        });
+        
         return mb;
     }
     

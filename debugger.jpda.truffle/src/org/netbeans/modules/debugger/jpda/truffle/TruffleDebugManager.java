@@ -44,10 +44,15 @@ package org.netbeans.modules.debugger.jpda.truffle;
 
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccessBreakpoints;
 import com.sun.jdi.request.EventRequest;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import javax.script.ScriptEngineFactory;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
@@ -67,8 +72,9 @@ import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 public class TruffleDebugManager extends DebuggerManagerAdapter {
     
     //public static final String TRUFFLE_CLASS_DebugManager = "com.oracle.truffle.debug.DebugManager";
-    public static final String TRUFFLE_CLASS_DebugManager = "com.oracle.truffle.js.engine.TruffleJSEngine";
+    //public static final String TRUFFLE_CLASS_DebugManager = "com.oracle.truffle.js.engine.TruffleJSEngine";
     
+    private JPDABreakpoint bpEnabler;
     private JPDABreakpoint debugManagerLoadBP;
     private final Map<JPDADebugger, DebugManagerHandler> dmHandlers = new HashMap<>();
     
@@ -78,7 +84,7 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
     @Override
     public Breakpoint[] initBreakpoints() {
         initLoadBP();
-        return new Breakpoint[] { debugManagerLoadBP };
+        return new Breakpoint[] { bpEnabler, debugManagerLoadBP };
     }
     
     private synchronized void initLoadBP() {
@@ -88,10 +94,19 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
 //        debugManagerLoadBP = ClassLoadUnloadBreakpoint.create(TRUFFLE_CLASS_DebugManager,
 //                                                    false,
 //                                                    ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED);
-        debugManagerLoadBP = MethodBreakpoint.create(TRUFFLE_CLASS_DebugManager, "<init>");
+        //debugManagerLoadBP = MethodBreakpoint.create(TRUFFLE_CLASS_DebugManager, "<init>");
+        bpEnabler = MethodBreakpoint.create(ScriptEngineFactory.class.getName(), "getScriptEngine");
+        ((MethodBreakpoint) bpEnabler).setBreakpointType(MethodBreakpoint.TYPE_METHOD_ENTRY);
+        bpEnabler.setHidden(true);
+        bpEnabler.setSuspend(EventRequest.SUSPEND_NONE);
+        
+        debugManagerLoadBP = MethodBreakpoint.create(ScriptEngineFactory.class.getName(), "getScriptEngine");
         ((MethodBreakpoint) debugManagerLoadBP).setBreakpointType(MethodBreakpoint.TYPE_METHOD_EXIT);
         debugManagerLoadBP.setHidden(true);
-        debugManagerLoadBP.setSuspend(EventRequest.SUSPEND_ALL);
+        //debugManagerLoadBP.setSuspend(EventRequest.SUSPEND_ALL);
+        debugManagerLoadBP.disable(); // Disabled by default, enabled by bpEnabler
+        
+        bpEnabler.setBreakpointsToEnable(Collections.singleton((Breakpoint) debugManagerLoadBP));
         System.err.println("TruffleDebugManager.initBreakpoints(): submitted BP "+debugManagerLoadBP);
         TruffleAccessBreakpoints.init();
     }
@@ -106,6 +121,14 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
         System.err.println("TruffleDebugManager.engineAdded("+engine+"), adding BP listener to "+debugManagerLoadBP);
         DebugManagerHandler dmh = new DebugManagerHandler(debugger);
         debugManagerLoadBP.addJPDABreakpointListener(dmh);
+        debugManagerLoadBP.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                System.err.println(debugManagerLoadBP+" has changed: "+evt);
+                System.err.println("  prop name = "+evt.getPropertyName()+", new value = "+evt.getNewValue());
+                Thread.dumpStack();
+            }
+        });
         synchronized (dmHandlers) {
             dmHandlers.put(debugger, dmh);
         }
