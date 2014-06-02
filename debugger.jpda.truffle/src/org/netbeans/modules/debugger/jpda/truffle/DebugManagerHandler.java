@@ -83,8 +83,11 @@ import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.PrimitiveValueWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccessBreakpoints;
 import static org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccessBreakpoints.BASIC_CLASS_NAME;
@@ -277,25 +280,28 @@ class DebugManagerHandler implements JPDABreakpointListener {
         }
     }
     
-
+    ClassType getAccessorClass() {
+        return accessorClass;
+    }
     
     void destroy() {
         if (accessorClass == null) {
             return ;
         }
         try {
-            Field accessLoopRunning = accessorClass.fieldByName("accessLoopRunning");
+            Field accessLoopRunning = ReferenceTypeWrapper.fieldByName(accessorClass, "accessLoopRunning");
             if (accessLoopRunning != null) {
-                accessorClass.setValue(accessLoopRunning, accessorClass.virtualMachine().mirrorOf(false));
+                ClassTypeWrapper.setValue(accessorClass, accessLoopRunning,
+                                          VirtualMachineWrapper.mirrorOf(accessorClass.virtualMachine(), false));
             }
-            Field accessThreadField = accessorClass.fieldByName("accessLoopThread");
+            Field accessThreadField = ReferenceTypeWrapper.fieldByName(accessorClass, "accessLoopThread");
             if (accessThreadField != null) {
-                Value ret = accessorClass.getValue(accessThreadField);
+                Value ret = ReferenceTypeWrapper.getValue(accessorClass, accessThreadField);
                 if (ret instanceof ThreadReference) {
-                    ((ThreadReference) ret).interrupt();
+                    ThreadReferenceWrapper.interrupt((ThreadReference) ret);
                 }
             }
-        } catch (VMDisconnectedException vdex) {
+        } catch (VMDisconnectedExceptionWrapper vdex) {
             // Ignore
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);

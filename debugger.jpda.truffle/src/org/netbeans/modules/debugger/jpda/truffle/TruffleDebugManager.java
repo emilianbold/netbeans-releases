@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.debugger.jpda.truffle;
 
-import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccessBreakpoints;
+import com.sun.jdi.ClassType;
 import com.sun.jdi.request.EventRequest;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -61,6 +61,7 @@ import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
+import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccessBreakpoints;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
@@ -76,7 +77,7 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
     
     private JPDABreakpoint bpEnabler;
     private JPDABreakpoint debugManagerLoadBP;
-    private final Map<JPDADebugger, DebugManagerHandler> dmHandlers = new HashMap<>();
+    private static final Map<JPDADebugger, DebugManagerHandler> dmHandlers = new HashMap<>();
     
     public TruffleDebugManager() {
     }
@@ -116,6 +117,12 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
         JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
         if (debugger == null) {
             return ;
+        }
+        synchronized (dmHandlers) {
+            if (dmHandlers.containsKey(debugger)) {
+                // A new engine for the same debugger
+                return ;
+            }
         }
         initLoadBP();
         System.err.println("TruffleDebugManager.engineAdded("+engine+"), adding BP listener to "+debugManagerLoadBP);
@@ -173,6 +180,17 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
             }
             for (DebugManagerHandler dmh : handlers) {
                 dmh.breakpointRemoved((JSLineBreakpoint) breakpoint);
+            }
+        }
+    }
+    
+    public static ClassType getDebugAccessorClass(JPDADebugger debugger) {
+        synchronized (dmHandlers) {
+            DebugManagerHandler dmh = dmHandlers.get(debugger);
+            if (dmh != null) {
+                return dmh.getAccessorClass();
+            } else {
+                return null;
             }
         }
     }
