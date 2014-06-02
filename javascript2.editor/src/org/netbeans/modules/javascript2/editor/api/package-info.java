@@ -53,7 +53,7 @@
             position = 193
     ),
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
-            projectType = FrameworksUtils.MAVEN_PROJET,
+            projectType = FrameworksUtils.MAVEN_PROJECT,
             category = FrameworksUtils.CATEGORY,
             categoryLabel = FrameworksUtils.CATEGORY_LABEL,
             position = 193

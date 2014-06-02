@@ -66,7 +66,7 @@ public class RequireJsCustomizer implements ProjectCustomizer.CompositeCategoryP
         position = 260
     ),
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
-        projectType = FrameworksUtils.MAVEN_PROJET,
+        projectType = FrameworksUtils.MAVEN_PROJECT,
         category = FrameworksUtils.CATEGORY,
         position = 260
     )   
