@@ -217,7 +217,7 @@ public class FSCompletionUtils {
         String path = pathToFile;
         String[] pathParts = path.split("/");
         FileObject result = null;
-        if (parent != null) {
+        if (parent != null && pathParts.length > 0) {
             if (pathParts[pathParts.length - 1].indexOf('.') > 0) {
                 result = findFileObject(parent, path);
                 if (result != null) {
