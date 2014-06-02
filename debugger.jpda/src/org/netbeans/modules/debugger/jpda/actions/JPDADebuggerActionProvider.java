@@ -112,7 +112,7 @@ implements PropertyChangeListener {
         return super.isEnabled (action);
     }
     
-    JPDADebuggerImpl getDebuggerImpl () {
+    protected JPDADebuggerImpl getDebuggerImpl () {
         return debugger;
     }
     

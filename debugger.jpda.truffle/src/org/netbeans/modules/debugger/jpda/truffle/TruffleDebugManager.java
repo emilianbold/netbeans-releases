@@ -121,14 +121,14 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
         System.err.println("TruffleDebugManager.engineAdded("+engine+"), adding BP listener to "+debugManagerLoadBP);
         DebugManagerHandler dmh = new DebugManagerHandler(debugger);
         debugManagerLoadBP.addJPDABreakpointListener(dmh);
-        debugManagerLoadBP.addPropertyChangeListener(new PropertyChangeListener() {
+        /*debugManagerLoadBP.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 System.err.println(debugManagerLoadBP+" has changed: "+evt);
                 System.err.println("  prop name = "+evt.getPropertyName()+", new value = "+evt.getNewValue());
                 Thread.dumpStack();
             }
-        });
+        });*/
         synchronized (dmHandlers) {
             dmHandlers.put(debugger, dmh);
         }
