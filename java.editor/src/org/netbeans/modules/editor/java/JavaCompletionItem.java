@@ -1533,7 +1533,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private boolean memberRef;
         private String simpleName;
         protected Set<Modifier> modifiers;
-        private List<ParamDesc> params;
+        protected List<ParamDesc> params;
         private String typeName;
         private boolean addSemicolon;
         private String sortText;
@@ -1751,8 +1751,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 sb.append("${"); //NOI18N
                                 sb.append(paramDesc.name);
                                 if (guessArgs) {
-                                    sb.append(" named instanceof="); //NOI18N
+                                    sb.append(" named instanceof=\""); //NOI18N
                                     sb.append(paramDesc.fullTypeName);
+                                    sb.append("\""); //NOI18N
                                 }
                                 sb.append('}'); //NOI18N
                                 if (it.hasNext()) {
@@ -1846,6 +1847,18 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         private OverrideMethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean implement, WhiteListQuery.WhiteList whiteList) {
             super(info, elem, type, substitutionOffset, null, false, false, false, false, false, -1, false, whiteList);
+            CodeStyle cs = null;
+            try {
+                cs = CodeStyle.getDefault(info.getDocument());
+            } catch (IOException ex) {
+            }
+            if (cs == null) {
+                cs = CodeStyle.getDefault(info.getFileObject());
+            }
+            for (ParamDesc paramDesc : params) {
+                String name = CodeStyleUtils.removePrefixSuffix(paramDesc.name, cs.getParameterNamePrefix(), cs.getParameterNameSuffix());
+                paramDesc.name = CodeStyleUtils.addPrefixSuffix(name, cs.getParameterNamePrefix(), cs.getParameterNameSuffix());
+            }
             this.implement = implement;
         }
 
@@ -2323,8 +2336,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 sb.append("${"); //NOI18N
                                 sb.append(paramDesc.name);
                                 if (guessArgs) {
-                                    sb.append(" named instanceof="); //NOI18N
+                                    sb.append(" named instanceof=\""); //NOI18N
                                     sb.append(paramDesc.fullTypeName);
+                                    sb.append("\""); //NOI18N
                                 }
                                 sb.append("}"); //NOI18N
                                 if (it.hasNext()) {
@@ -2621,8 +2635,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 sb.append("${"); //NOI18N
                 sb.append(paramDesc.name);
                 if (guessArgs) {
-                    sb.append(" named instanceof="); //NOI18N
+                    sb.append(" named instanceof=\""); //NOI18N
                     sb.append(paramDesc.fullTypeName);
+                    sb.append("\""); //NOI18N
                 }
                 sb.append("}"); //NOI18N
                 if (i < params.size() - 1) {
@@ -3246,8 +3261,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                             template.append("${"); //NOI18N
                                             template.append(paramDesc.name);
                                             if (guessArgs) {
-                                                template.append(" named instanceof="); //NOI18N
+                                                template.append(" named instanceof=\""); //NOI18N
                                                 template.append(paramDesc.fullTypeName);
+                                                template.append("\""); //NOI18N
                                             }
                                             template.append("}"); //NOI18N
                                             if (it.hasNext()) {
@@ -3538,8 +3554,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             sb.append("${"); //NOI18N
                             sb.append(paramDesc.name);
                             if (guessArgs) {
-                                sb.append(" named instanceof="); //NOI18N
+                                sb.append(" named instanceof=\""); //NOI18N
                                 sb.append(paramDesc.fullTypeName);
+                                sb.append("\""); //NOI18N
                             }
                             sb.append('}');
                             if (paramsIt.hasNext()) {
@@ -4037,7 +4054,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
     static class ParamDesc {
         private final String fullTypeName;
         private final String typeName;
-        private final String name;
+        private String name;
 
         public ParamDesc(String fullTypeName, String typeName, String name) {
             this.fullTypeName = fullTypeName;

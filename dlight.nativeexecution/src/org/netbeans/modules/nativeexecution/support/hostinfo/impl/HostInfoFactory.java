@@ -82,12 +82,7 @@ public final class HostInfoFactory {
         info.os = _os;
 
         info.hostname = initData.getProperty("HOSTNAME", UNKNOWN); // NOI18N
-
-        try {
-            info.cpuFamily = CpuFamily.valueOf(initData.getProperty("CPUFAMILY", UNKNOWN).toUpperCase()); // NOI18N
-        } catch (IllegalArgumentException ex) {
-            info.cpuFamily = CpuFamily.UNKNOWN;
-        }
+        info.cpuFamily = toCpuFamily(initData.getProperty("CPUFAMILY", UNKNOWN)); //NOI18N
 
         info.loginShell = initData.getProperty("SH", UNKNOWN); // NOI18N
         info.tempDir = initData.getProperty("TMPDIRBASE", UNKNOWN); // NOI18N
@@ -113,6 +108,17 @@ public final class HostInfoFactory {
         return info;
     }
     
+    private static CpuFamily toCpuFamily(String cpuFamilyStr) {
+        try {
+            return CpuFamily.valueOf(cpuFamilyStr.toUpperCase()); // NOI18N
+        } catch (IllegalArgumentException ex) {
+            if (cpuFamilyStr.startsWith("armv")) { //NOI18N
+                return CpuFamily.ARM;
+            }
+            return CpuFamily.UNKNOWN;
+        }
+    }
+
     private static void parseId(HostInfoImpl info, String id) {
         // format:
         // uid=1000(vk) gid=10(stuff) groups=4(adm),20(dialout),21(fax)

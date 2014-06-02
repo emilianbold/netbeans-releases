@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,30 +37,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.highlight.error;
 
-import javax.swing.text.Document;
-import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
-import org.netbeans.modules.cnd.highlight.semantic.SemanticHighlighter;
+package org.netbeans.libs.git.jgit.utils;
+
+import java.io.IOException;
+import org.eclipse.jgit.errors.IncorrectObjectTypeException;
+import org.eclipse.jgit.errors.MissingObjectException;
+import org.eclipse.jgit.errors.StopWalkException;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.revwalk.filter.RevFilter;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
- * Disables error highlighting on big files.
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
+ * @author Ondra
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.RequestValidator.class)
-public class BigFileValidator implements CsmErrorProvider.RequestValidator {
+public class CancelRevFilter extends RevFilter {
+    private final ProgressMonitor monitor;
+
+    public CancelRevFilter (ProgressMonitor monitor) {
+        this.monitor = monitor;
+    }
 
     @Override
-    public boolean isValid(CsmErrorProvider provider, CsmErrorProvider.Request request) {
-        final Document doc = request.getDocument();
-        if (doc != null && doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) != null) {
-            return false;
+    public boolean include (RevWalk walker, RevCommit cmit) throws StopWalkException, MissingObjectException, IncorrectObjectTypeException, IOException {
+        if (monitor.isCanceled()) {
+            throw StopWalkException.INSTANCE;
         }
-        return !SemanticHighlighter.isVeryBigDocument(doc);
+        return true;
+    }
+
+    @Override
+    public RevFilter clone () {
+        return this;
+    }
+
+    @Override
+    public boolean requiresCommitBody () {
+        return false;
     }
     
 }
