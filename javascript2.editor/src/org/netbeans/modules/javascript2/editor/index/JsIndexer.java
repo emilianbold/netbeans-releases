@@ -57,6 +57,7 @@ import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
+import org.netbeans.modules.javascript2.editor.model.impl.ParameterObject;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -107,6 +108,14 @@ public class JsIndexer extends EmbeddingIndexer {
                 storeObject(object, object.getName(), support, indexable);
             }
         }
+        
+        IndexDocument document = support.createDocument(indexable);
+        for (JsObject object : globalObject.getProperties().values()) {
+            if (object.getParent() != null) {
+                storeUsages(object, object.getName(), document);
+            }
+        }
+        support.addDocument(document);
     }
 
     private void storeObject(JsObject object, String fqn, IndexingSupport support, Indexable indexable) {
@@ -149,6 +158,42 @@ public class JsIndexer extends EmbeddingIndexer {
             }
         }
         return false;
+    }
+
+    private void storeUsages(JsObject object, String name, IndexDocument document) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(object.getName());
+        for (JsObject property : object.getProperties().values()) {
+            if (storeUsage(property)) {
+                sb.append(':');
+                sb.append(property.getName()).append('#');
+                if (property.getJSKind().isFunction()) {
+                    sb.append('F');
+                } else {
+                    sb.append('P');
+                }
+            }
+        }
+        document.addPair(JsIndex.FIELD_USAGE, sb.toString(), true, true);
+        if (object instanceof JsFunction) {
+            // store parameters
+            for (JsObject parameter : ((JsFunction) object).getParameters()) {
+                storeUsages(parameter, parameter.getName(), document);
+            }
+        }
+        for (JsObject property : object.getProperties().values()) {
+            if (storeUsage(property) && (!(property instanceof JsObjectReference && !((JsObjectReference)property).getOriginal().isAnonymous()))) {
+                storeUsages(property, property.getName(), document);
+            }
+        }
+    }
+    
+    private boolean storeUsage(JsObject object) {
+        boolean result = true;
+        if ("arguments".equals(object.getName()) || object.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
+            result = false;
+        }
+        return result;
     }
     
     public static final class Factory extends EmbeddingIndexerFactory {
