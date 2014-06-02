@@ -146,7 +146,7 @@ public class RequireJsPreferences {
         Preferences preferences = getPreferences(project);
         // get default value lazyly since it can do anything...
         String value = preferences.get(property.getKey(), DEFAULT_VALUE);
-        if (value == DEFAULT_VALUE) {
+        if (DEFAULT_VALUE.equals(value)) {
             Object defaultValue = property.getDefaultValue();
             if (defaultValue == null) {
                 return null;

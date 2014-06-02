@@ -42,11 +42,8 @@
 
 package org.netbeans.modules.javascript2.requirejs.editor;
 
-import java.beans.BeanInfo;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
@@ -56,7 +53,6 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -69,7 +65,6 @@ public class MappingCompletionItem implements CompletionProposal {
    
     private final int anchor;
     private final MappingHandle element;
-    private String insertedPrefix = null;
     private final FileObject mapToFile;
     
     public MappingCompletionItem(final String mapping, FileObject toFile, final int anchor){
@@ -168,7 +163,7 @@ public class MappingCompletionItem implements CompletionProposal {
     }
 
     
-    private class MappingHandle implements ElementHandle {
+    private static class MappingHandle implements ElementHandle {
 
         private final String name;
 
