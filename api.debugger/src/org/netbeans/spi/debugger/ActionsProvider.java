@@ -61,6 +61,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.netbeans.debugger.registry.ContextAwareServiceHandler;
+import org.netbeans.debugger.registry.ContextAwareServicePath;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -186,7 +187,8 @@ public abstract class ActionsProvider {
         Registration[] value();
     }
 
-    static class ContextAware extends ActionsProvider implements ContextAwareService<ActionsProvider> {
+    static class ContextAware extends ActionsProvider implements ContextAwareService<ActionsProvider>,
+                                                                 ContextAwareServicePath {
 
         private static final String ERROR = "error in getting MIMEType";    // NOI18N
 
@@ -231,6 +233,11 @@ public abstract class ActionsProvider {
             return delegate;
         }
 
+        @Override
+        public String getServicePath() {
+            return path;
+        }
+        
         @Override
         public Set getActions() {
             ActionsProvider actionsDelegate;
