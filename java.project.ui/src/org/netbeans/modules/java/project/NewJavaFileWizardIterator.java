@@ -63,6 +63,8 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.api.templates.TemplateRegistrations;
+import org.netbeans.modules.java.project.JavaTargetChooserPanel;
+import org.netbeans.modules.java.project.PackageDisplayUtils;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
