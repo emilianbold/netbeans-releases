@@ -48,13 +48,15 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.jgit.diff.DiffAlgorithm;
 import org.eclipse.jgit.diff.RawText;
 import org.eclipse.jgit.diff.RawTextComparator;
@@ -117,6 +119,9 @@ public class CheckoutRevisionCommand extends GitCommand {
         Repository repository = getRepository();
         try {
             Ref headRef = repository.getRef(Constants.HEAD);
+            if (headRef == null) {
+                throw new GitException("Corrupted repository, missing HEAD file in .git folder.");
+            }
             ObjectId headTree = null;
             try {
                 headTree = Utils.findCommit(repository, Constants.HEAD).getTree();
@@ -242,8 +247,13 @@ public class CheckoutRevisionCommand extends GitCommand {
         try {
             for (String path : conflicts) {
                 File f = new File(workTree, path);
-                Path p = Paths.get(f.getAbsolutePath());
-                if (Files.isSymbolicLink(p)) {
+                Path p = null;
+                try {
+                    p = f.toPath();
+                } catch (InvalidPathException ex) {
+                    Logger.getLogger(CheckoutRevisionCommand.class.getName()).log(Level.FINE, null, ex);
+                }
+                if (p != null && Files.isSymbolicLink(p)) {
                     Path link = Utils.getLinkPath(p);                                
                     cachedContents.put(path, inserter.insert(Constants.OBJ_BLOB, Constants.encode(link.toString())));
                 } else if (f.isFile()) {

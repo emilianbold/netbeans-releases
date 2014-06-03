@@ -47,11 +47,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheBuildIterator;
 import org.eclipse.jgit.dircache.DirCacheBuilder;
@@ -136,12 +138,17 @@ public class AddCommand extends GitCommand {
                             entry.setLastModified(f.getEntryLastModified());
                             int fm = f.getEntryFileMode().getBits();
                             long sz = f.getEntryLength();
-                            final Path p = Paths.get(file.getAbsolutePath());
+                            Path p = null;
+                            try {
+                                p = file.toPath();
+                            } catch (InvalidPathException ex) {
+                                Logger.getLogger(AddCommand.class.getName()).log(Level.FINE, null, ex);
+                            }
                             if (Utils.isFromNested(fm)) {
                                 entry.setFileMode(FileMode.fromBits(fm));
                                 entry.setLength(sz);
                                 entry.setObjectId(f.getEntryObjectId());
-                            } else if (Files.isSymbolicLink(p)) {
+                            } else if (p != null && Files.isSymbolicLink(p)) {
                                 Path link = Utils.getLinkPath(p);                                
                                 entry.setFileMode(FileMode.SYMLINK);
                                 entry.setLength(0);

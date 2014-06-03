@@ -171,6 +171,10 @@ public final class J2MEProjectProperties {
     public static final String PROP_PLATFORM_APIS = "platform.apis"; //NOI18N
     public static final String PROP_PLATFORM_BOOTCLASSPATH = "platform.bootcp"; //NOI18N
     public static final String PLATFORM_HOME = "platform.home"; //NOI18N
+    //Liblets in J2MECompilingPanel
+    public static final String PROP_LIBLET_PREFIX = "liblets."; //NOI18N
+    public static final String PROP_LIBLET_DEPENDENCY = ".dependency"; //NOI18N
+    public static final String PROP_LIBLET_URL = ".url"; //NOI18N
 
     private static final Integer BOOLEAN_KIND_TF = new Integer(0);
     private static final Integer BOOLEAN_KIND_YN = new Integer(1);
@@ -205,6 +209,7 @@ public final class J2MEProjectProperties {
     ListCellRenderer CLASS_PATH_LIST_RENDERER;
     ListCellRenderer PLATFORM_LIST_RENDERER;
     Document SHARED_LIBRARIES_MODEL;
+    DefaultComboBoxModel LIBLETS_MODEL;
 
     //J2MEObfuscatingPanel
     Document ADDITIONAL_OBFUSCATION_SETTINGS_MODEL;
@@ -357,6 +362,7 @@ public final class J2MEProjectProperties {
         PLATFORM_MODEL = filters == null ? PlatformUiSupport.createPlatformComboBoxModel(evaluator.getProperty(ProjectProperties.PLATFORM_ACTIVE))
                 : PlatformUiSupport.createPlatformComboBoxModel(evaluator.getProperty(ProjectProperties.PLATFORM_ACTIVE), filters);
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
+        LIBLETS_MODEL = createLibletModelFromProps(evaluator);
 
         SHARED_LIBRARIES_MODEL = new PlainDocument();
         try {
@@ -546,7 +552,7 @@ public final class J2MEProjectProperties {
         String[] run_cp = cs.encodeToStrings(ClassPathUiSupport.getList(RUN_CLASSPATH_MODEL));
         String[] run_test_cp = cs.encodeToStrings(ClassPathUiSupport.getList(RUN_TEST_CLASSPATH_MODEL));
         String[] endorsed_cp = cs.encodeToStrings(ClassPathUiSupport.getList(ENDORSED_CLASSPATH_MODEL));
-
+        
         // Store source roots
         storeRoots(project.getSourceRoots(), SOURCE_ROOTS_MODEL);
 //        storeRoots( project.getTestSourceRoots(), TEST_ROOTS_MODEL );
@@ -558,6 +564,23 @@ public final class J2MEProjectProperties {
         // Standard store of the properties
         projectGroup.store(projectProperties);
         privateGroup.store(privateProperties);
+
+        // Strore liblet dependencies
+        int libletIndex = 0;
+        for (libletIndex = 0; libletIndex < LIBLETS_MODEL.getSize(); libletIndex++) {
+            LibletInfo li = (LibletInfo) LIBLETS_MODEL.getElementAt(libletIndex);
+            String libletDep = li.getType().name().toLowerCase() + ";" + li.getRequirement().name().toLowerCase() + ";" + li.getName() + ";" + li.getVendor() + ";" + li.getVersion(); //NOI18N
+            projectProperties.put(PROP_LIBLET_PREFIX + libletIndex + PROP_LIBLET_DEPENDENCY, libletDep);
+            if (li.getUrl() != null) {
+                projectProperties.put(PROP_LIBLET_PREFIX + libletIndex + PROP_LIBLET_URL, li.getUrl());
+            }
+        }
+        String nextLiblet = null;
+        while ((nextLiblet = project.evaluator().getProperty(PROP_LIBLET_PREFIX + libletIndex + PROP_LIBLET_DEPENDENCY)) != null) {
+            projectProperties.remove(PROP_LIBLET_PREFIX + libletIndex + PROP_LIBLET_DEPENDENCY);
+            projectProperties.remove(PROP_LIBLET_PREFIX + libletIndex + PROP_LIBLET_URL);
+            libletIndex++;
+        }
 
         //store Signing properties
         if (SIGN_ENABLED_MODEL.isSelected() && SIGN_KEYSTORE_MODEL.getSelectedItem() != null) {
@@ -1150,6 +1173,27 @@ public final class J2MEProjectProperties {
                     break;
                 }
             }
+        }
+        return model;
+    }
+    
+    private static DefaultComboBoxModel<LibletInfo> createLibletModelFromProps(PropertyEvaluator eval) {
+        DefaultComboBoxModel<LibletInfo> model = new DefaultComboBoxModel<>();
+        int i = 0;
+        String dep = null;
+        while ((dep = eval.getProperty(PROP_LIBLET_PREFIX + i + PROP_LIBLET_DEPENDENCY)) != null) {
+            String url = eval.getProperty(PROP_LIBLET_PREFIX + i + PROP_LIBLET_URL); //NOI18N
+            String[] splittedDep = dep.split(";"); //NOI18N
+            LibletInfo li = new LibletInfo(
+                    LibletInfo.LibletType.valueOf(splittedDep[0].trim().toUpperCase()),
+                    splittedDep[2].trim(),
+                    splittedDep.length > 3 ? splittedDep[3].trim() : "",
+                    splittedDep.length > 4 ? splittedDep[4].trim() : "",
+                    LibletInfo.Requirement.valueOf(splittedDep[1].trim().toUpperCase()),
+                    url);
+            model.addElement(li);
+
+            i++;
         }
         return model;
     }

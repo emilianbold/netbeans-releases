@@ -52,13 +52,14 @@ import java.util.TreeMap;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
+import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
-import org.openide.text.NbDocument;
-import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
+import org.openide.text.NbDocument;
 
 /**
  *
@@ -199,7 +200,7 @@ public class ReferencesCache {
                 } else {
                     for (Map.Entry<TokenItem<TokenId>, CacheEntry> entry1 : unresolved.entrySet()) {
                         printOut.printf("UNRESOLVED [%s] version=%d\n", getPosition(entry1.getKey(), file), entry1.getValue().fileVersion);// NOI18N
-                        CsmObject checkAgain = ReferencesSupport.findDeclaration(file, ReferencesSupport.getDocument(file), entry1.getKey(), entry1.getKey().offset());
+                        CsmObject checkAgain = ReferencesSupport.findDeclaration(file, CsmReferenceRepository.getDocument(file), entry1.getKey(), entry1.getKey().offset());
                         if (checkAgain != null) {
                             printOut.printf("\t ERROR: resolved as [%s]\n", checkAgain);// NOI18N
                         }
@@ -211,7 +212,7 @@ public class ReferencesCache {
                     for (Map.Entry<TokenItem<TokenId>, CacheEntry> entry1 : invalid.entrySet()) {
                         CsmObject csmObject = entry1.getValue().csmObject;
                         printOut.printf("INVALID [%s] version=%d %s\n", getPosition(entry1.getKey(), file), entry1.getValue().fileVersion, csmObject);// NOI18N
-                        CsmObject checkAgain = ReferencesSupport.findDeclaration(file, ReferencesSupport.getDocument(file), entry1.getKey(), entry1.getKey().offset());
+                        CsmObject checkAgain = ReferencesSupport.findDeclaration(file, CsmReferenceRepository.getDocument(file), entry1.getKey(), entry1.getKey().offset());
                         if (checkAgain != csmObject) {
                             printOut.printf("\t ERROR: invalid resolved as [%s]\n", checkAgain);// NOI18N
                         }
@@ -223,7 +224,7 @@ public class ReferencesCache {
     }
 
     private String getPosition(TokenItem<TokenId> offset, CsmFile file) {
-        BaseDocument document = ReferencesSupport.getDocument(file);
+        BaseDocument document = CsmReferenceRepository.getDocument(file);
         StringBuilder out = new StringBuilder();
         out.append("offset=").append(offset.offset()); // NOI18N
         if (document instanceof StyledDocument) {

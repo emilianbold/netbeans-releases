@@ -64,9 +64,11 @@ public class CommitPanel extends javax.swing.JPanel {
         this.parameters = parameters;
         
         initComponents();
+        boolean skipTemplates = false;
         if (patchName != null && !patchName.isEmpty()) {
             txtPatchName.setText(patchName);
             txtPatchName.setEditable(false);
+            skipTemplates = true;
         }
         
         messageTextArea.setColumns(60);    //this determines the preferred width of the whole dialog
@@ -81,18 +83,18 @@ public class CommitPanel extends javax.swing.JPanel {
         messageTextArea.addMouseListener(new CommitMessageMouseAdapter());
         
         Spellchecker.register (messageTextArea);  
-        initCommitMessage(commitMessage);
+        initCommitMessage(commitMessage, skipTemplates);
         
         cmbAuthor.setModel(parameters.createRecentUsersModel());
     }
     
-    private void initCommitMessage (String commitMessage) {
+    private void initCommitMessage (String commitMessage, boolean skipTemplates) {
         TemplateSelector ts = new TemplateSelector(parameters.getPreferences());
         if (commitMessage == null) {
             commitMessage = ""; //NOI18N
         }
         messageTextArea.setText(commitMessage);
-        if (ts.isAutofill()) {
+        if (ts.isAutofill() && !skipTemplates) {
             messageTextArea.setText(ts.getTemplate());
         } else {
             String lastCommitMessage = parameters.getLastCanceledCommitMessage();

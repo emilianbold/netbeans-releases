@@ -47,6 +47,7 @@ import java.io.IOException;
 import org.eclipse.jgit.lib.Constants;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitMergeResult;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 
@@ -167,6 +168,50 @@ public class GetCommonAncestorTest extends AbstractGitTestCase {
         // merge last branch commit (not merge) into master
         client.checkoutRevision(Constants.MASTER, true, NULL_PROGRESS_MONITOR);
         client.merge(branchCommit.getRevision(), NULL_PROGRESS_MONITOR);
+        
+        GitRevisionInfo ancestor = client.getCommonAncestor(new String[] { Constants.MASTER, BRANCH_NAME }, NULL_PROGRESS_MONITOR);
+        assertEquals(initial.getRevision(), ancestor.getRevision());
+    }
+    
+    public void testGetBaseCrissCrossConflict_244222 () throws Exception {
+        File f1 = new File(workDir, "f1");
+        File f2 = new File(workDir, "f2");
+        File f3 = new File(workDir, "f3");
+        write(f1, "initial content");
+        GitClient client = getClient(workDir);
+        File[] files = new File[] { f1, f2, f3 };
+        client.add(files, NULL_PROGRESS_MONITOR);
+        GitRevisionInfo initial = client.commit(files, "initial commit", null, null, NULL_PROGRESS_MONITOR);
+        
+        client.createBranch(BRANCH_NAME, "master", NULL_PROGRESS_MONITOR);
+        
+        // change on master
+        write(f1, Constants.MASTER);
+        client.add(files, NULL_PROGRESS_MONITOR);
+        client.commit(files, "master commit", null, null, NULL_PROGRESS_MONITOR);
+        GitRevisionInfo masterCommit = client.log("master", NULL_PROGRESS_MONITOR);
+        
+        // change on branch
+        client.checkoutRevision(BRANCH_NAME, true, NULL_PROGRESS_MONITOR);
+        write(f1, BRANCH_NAME);
+        client.add(files, NULL_PROGRESS_MONITOR);
+        client.commit(files, "branch commit", null, null, NULL_PROGRESS_MONITOR);
+        GitRevisionInfo branchCommit = client.log(BRANCH_NAME, NULL_PROGRESS_MONITOR);
+        
+        // merge last master commit (not merge) into branch
+        GitMergeResult res = client.merge(masterCommit.getRevision(), NULL_PROGRESS_MONITOR);
+        assertEquals(GitMergeResult.MergeStatus.CONFLICTING, res.getMergeStatus());
+        write(f1, BRANCH_NAME);
+        client.add(files, NULL_PROGRESS_MONITOR);
+        client.commit(new File[0], "Merge master into branch", null, null, NULL_PROGRESS_MONITOR);
+        
+        // merge last branch commit (not merge) into master
+        client.checkoutRevision(Constants.MASTER, true, NULL_PROGRESS_MONITOR);
+        res = client.merge(branchCommit.getRevision(), NULL_PROGRESS_MONITOR);
+        assertEquals(GitMergeResult.MergeStatus.CONFLICTING, res.getMergeStatus());
+        write(f1, Constants.MASTER);
+        client.add(files, NULL_PROGRESS_MONITOR);
+        client.commit(new File[0], "Merge branch into master", null, null, NULL_PROGRESS_MONITOR);
         
         GitRevisionInfo ancestor = client.getCommonAncestor(new String[] { Constants.MASTER, BRANCH_NAME }, NULL_PROGRESS_MONITOR);
         assertEquals(initial.getRevision(), ancestor.getRevision());

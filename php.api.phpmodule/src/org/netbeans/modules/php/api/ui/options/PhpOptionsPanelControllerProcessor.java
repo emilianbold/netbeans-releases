@@ -63,7 +63,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author S. Aubrecht
  */
 @ServiceProvider(service = Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedAnnotationTypes("org.netbeans.modules.php.api.util.UiUtils.PhpOptionsPanelRegistration")
 public class PhpOptionsPanelControllerProcessor extends LayerGeneratingProcessor {
 

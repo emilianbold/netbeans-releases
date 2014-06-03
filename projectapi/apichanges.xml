@@ -108,6 +108,22 @@ is the proper place.
 
     <changes>
         
+         <change id="ProjectManager.Result">
+            <api name="general"/>
+            <summary>More information in <code>ProjectManager.Result</code></summary>
+            <version major="1" minor="60"/>
+            <date day="30" month="4" year="2014"/>
+            <author login="tstupka"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                  Introduced <code>ProjectManager.Result.getDisplayName()</code> and <code>ProjectManager.Result.getProjectType()</code>
+                  to provide more information about a potential project via <code>ProjectManager.isProject2(FileObject)</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.api.project" name="ProjectManager"/>
+            <issue number="244126"/>
+        </change>
         <change id="DependencyProjectProvider">
             <api name="general"/>
             <summary></summary>

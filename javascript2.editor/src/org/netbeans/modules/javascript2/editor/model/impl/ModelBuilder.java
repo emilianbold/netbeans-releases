@@ -42,9 +42,11 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.Stack;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.JsWith;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -127,7 +129,11 @@ public final class ModelBuilder {
         }
     }
     
-    String getUnigueNameForAnonymObject() {
+    String getUnigueNameForAnonymObject(ParserResult parserResult) {
+        FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
+        if (fo != null) {
+            return fo.getName() + ANONYMOUS_OBJECT_NAME_START + anonymObjectCount++;
+        }
         return  ANONYMOUS_OBJECT_NAME_START + anonymObjectCount++;  
     }
     

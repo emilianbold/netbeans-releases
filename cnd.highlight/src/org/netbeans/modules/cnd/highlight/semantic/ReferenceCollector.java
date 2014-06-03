@@ -69,5 +69,7 @@ public interface ReferenceCollector {
      * @return  list of references
      */
     List<CsmReference> getReferences();
+    
+    boolean cancelled();
 
 }

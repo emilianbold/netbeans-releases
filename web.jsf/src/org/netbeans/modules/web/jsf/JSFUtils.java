@@ -339,16 +339,6 @@ public class JSFUtils {
         return false;
     }
 
-    public static boolean isCDIEnabled(WebModule wm) {
-        if (wm != null) {
-            FileObject confRoot = wm.getWebInf();
-            if (confRoot!=null && confRoot.getFileObject("beans.xml")!=null) {  //NOI18N
-                return true;
-            }
-        }
-        return false;
-    }
-
      /**
      * Logs usage statistics data.
      *

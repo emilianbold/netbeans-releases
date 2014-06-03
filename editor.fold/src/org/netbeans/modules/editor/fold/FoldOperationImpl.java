@@ -173,6 +173,11 @@ public final class FoldOperationImpl {
                 LOG.log(Level.INFO, "Fold creation stack", new Exception());
             }
         }
+        if (type == null) {
+            LOG.warning("Null fold type supplier for fold start=" + startOffset + ", end=" + endOffset + 
+                        "by manager " + manager);
+            type = FoldType.CODE_BLOCK;
+        }
 
         return getAccessor().createFold(this,
             type, description, collapsed,

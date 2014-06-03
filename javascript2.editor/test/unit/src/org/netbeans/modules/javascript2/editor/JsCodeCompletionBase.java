@@ -65,6 +65,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.util.test.MockLookup;
@@ -82,11 +83,11 @@ public class JsCodeCompletionBase extends JsTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MockLookup.init();
-        List lookupAll = new ArrayList();
-        lookupAll.addAll(MockLookup.getDefault().lookupAll(Object.class));
-        MockLookup.setInstances(new ClassPathProviderImpl());
-        MockLookup.setInstances(lookupAll.toArray());
+////        MockLookup.init();
+//        List lookupAll = new ArrayList();
+//        lookupAll.addAll(MockLookup.getDefault().lookupAll(Object.class));
+//        MockLookup.setInstances(new ClassPathProviderImpl());
+//        MockLookup.setInstances(lookupAll.toArray());
         OpenProjects.getDefault().getOpenProjects();
         OptionsUtils.forLanguage(getPreferredLanguage().getLexerLanguage()).autoCompletionTypeResolution();
         OptionsUtils.forLanguage(getPreferredLanguage().getLexerLanguage()).setTestTypeResolution(true);
@@ -99,13 +100,7 @@ public class JsCodeCompletionBase extends JsTestBase {
     @Override
     public void checkCompletion(String file, String caretLine, boolean includeModifiers) throws Exception {
         // waits for registration into the GlobalPathRegistry
-        Future<?> future = ClasspathProviderImplAccessor.getRequestProcessor().submit(new Runnable() {
-            @Override
-            public void run() {
-                //NOOP
-            }
-        });
-        future.get();
+        RepositoryUpdater.getDefault().waitUntilFinished(10000);
         super.checkCompletion(file, caretLine, includeModifiers);
     }
 

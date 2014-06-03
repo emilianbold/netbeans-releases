@@ -274,7 +274,7 @@ public class J2MEProject implements Project {
                     testRoots),
                 QuerySupport.createProjectInformation(helper, this, ImageUtilities.loadImageIcon(ICON, false)),
                 encodingQuery,
-                QuerySupport.createSourceLevelQuery2(eval),
+                QuerySupport.createSourceLevelQuery2(eval, J2MEProjectProperties.PLATFORM_TYPE_J2ME),
                 QuerySupport.createSources(
                     this,
                     helper,

@@ -223,6 +223,9 @@ made subject to such option by the copyright holder.
                     <file name="finalfield.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.errors.ErrorFixesFakeHint.create"/>
                     </file>
+                    <file name="importClass.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.errors.ErrorFixesFakeHint.create"/>
+                    </file>
                 </folder>
                 
                 <folder name="rules15">

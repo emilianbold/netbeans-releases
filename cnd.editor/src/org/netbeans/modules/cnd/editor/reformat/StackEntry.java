@@ -145,6 +145,11 @@ class StackEntry {
                         if (paren == 0 && triangle == 0 && bracket == 0) {
                             Token<CppTokenId> prev = ts.lookPreviousImportant();
                             if (prev != null) {
+                                if (prev.id() == OPERATOR) {
+                                    likeToArrayInitialization = false;
+                                    likeToFunction = true;
+                                    return;
+                                }
                                 if (prev.id() == IDENTIFIER) {
                                     likeToArrayInitialization = true;
                                     return;
@@ -299,6 +304,12 @@ class StackEntry {
                     case ARROW: // ->
                     { 
                         if (paren == 0 && triangle == 0) {
+                            Token<CppTokenId> prev = ts.lookPreviousImportant();
+                            if (prev != null && prev.id() == OPERATOR) {
+                                likeToArrayInitialization = false;
+                                likeToFunction = true;
+                                return;
+                            }
                             importantKind = current.id();
                             likeToFunction = false;
                             lambdaIndent = lambdaIndent(ts);

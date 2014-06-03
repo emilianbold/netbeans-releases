@@ -141,14 +141,6 @@ public class RefactoringPanelContainer extends TopComponent {
         validate();
         requestActive();
     }
-
-    @Override
-    protected void componentActivated () {
-        super.componentActivated();
-        JPanel panel = getCurrentPanel();
-        if (panel!=null)
-            panel.requestFocus();
-    }
     
     void removePanel(JPanel panel) {
         RefactoringPanel.checkEventThread();
@@ -166,13 +158,13 @@ public class RefactoringPanelContainer extends TopComponent {
                 remove(tabs);
                 add(c, BorderLayout.CENTER);
             }
+            validate();
         } else {
             if (comp != null)
                 remove(comp);
             isVisible = false;
             close();
         }
-        validate();
     }
     
     void closeAllButCurrent() {
@@ -218,14 +210,16 @@ public class RefactoringPanelContainer extends TopComponent {
     }
     
     public static synchronized RefactoringPanelContainer createRefactoringComponent() {
-        if (refactorings == null)
+        if (refactorings == null) {
             refactorings = new RefactoringPanelContainer(org.openide.util.NbBundle.getMessage(RefactoringPanelContainer.class, "LBL_Refactoring"), true);
+        }
         return refactorings;
     }
     
     public static synchronized RefactoringPanelContainer createUsagesComponent() {
-        if (usages == null)
+        if (usages == null) {
             usages = new RefactoringPanelContainer(org.openide.util.NbBundle.getMessage(RefactoringPanelContainer.class, "LBL_Usages"), false);
+        }
         return usages;
     }
     

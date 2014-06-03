@@ -3113,8 +3113,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     e.getEnclosingElement().getKind() == METHOD && e.getEnclosingElement().getEnclosingElement().getKind() == FIELD))) &&
                                     !illegalForwardRefs.contains(e);
                         case FIELD:
-                            if (e.getSimpleName().contentEquals(THIS_KEYWORD) || e.getSimpleName().contentEquals(SUPER_KEYWORD))
+                            if (e.getSimpleName().contentEquals(THIS_KEYWORD)) {
+                                if (e.asType().getKind() == TypeKind.DECLARED && ((DeclaredType)e.asType()).asElement() == enclClass)
+                                    return Utilities.startsWith(e.getSimpleName().toString(), prefix) && !isStatic;
+                            } else if (e.getSimpleName().contentEquals(SUPER_KEYWORD)) {
                                 return Utilities.startsWith(e.getSimpleName().toString(), prefix) && !isStatic;
+                            }
                         case ENUM_CONSTANT:
                             return startsWith(env, e.getSimpleName().toString()) &&
                                     !illegalForwardRefs.contains(e) &&
@@ -3503,7 +3507,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (!ctorSeen[0] && kinds.contains(CONSTRUCTOR) && elem.getKind().isInterface()) {
                 results.add(javaCompletionItemFactory.createDefaultConstructorItem((TypeElement)elem, anchorOffset, isOfSmartType(env, type, smartTypes)));
             }
-            if (isStatic && elem.getKind().isInterface() && env.getController().getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0) {
+            if (isStatic && enclClass != null && elem.getKind().isInterface() && env.getController().getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0) {
                 for (TypeMirror iface : enclClass.getInterfaces()) {
                     if (((DeclaredType)iface).asElement() == elem) {
                         results.add(javaCompletionItemFactory.createKeywordItem(SUPER_KEYWORD, null, anchorOffset, isOfSmartType(env, type, smartTypes)));

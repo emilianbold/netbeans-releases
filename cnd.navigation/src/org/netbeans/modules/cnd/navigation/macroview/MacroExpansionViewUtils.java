@@ -141,7 +141,10 @@ public final class MacroExpansionViewUtils {
         if (newExpandedContextDoc == null) {
             return;
         }
-        final int expansionsNumber = CsmMacroExpansion.expand(mainDoc, startOffset, endOffset, newExpandedContextDoc);
+        final int expansionsNumber = CsmMacroExpansion.expand(mainDoc, startOffset, endOffset, newExpandedContextDoc, canceled);
+        if (canceled.get()) {
+            return;
+        }
         setOffset(newExpandedContextDoc, startOffset, endOffset);
         saveDocumentAndMarkAsReadOnly(newExpandedContextDoc);
 

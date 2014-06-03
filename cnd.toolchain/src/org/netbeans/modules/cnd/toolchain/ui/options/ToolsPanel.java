@@ -261,12 +261,13 @@ public final class ToolsPanel extends JPanel implements ActionListener,
                 return true;
             }
         }
-        
-        if (!savedCSM.getDefaultCompilerSet().getDisplayName().equals(csm.getDefaultCompilerSet().getDisplayName())) {
-            return true;
-        }
-        List<CompilerSet> currentCS = csm.getCompilerSets();
         List<CompilerSet> savedCS = savedCSM.getCompilerSets();
+        List<CompilerSet> currentCS = csm.getCompilerSets();
+        if (savedCS.size() > 0 && currentCS.size()>0) {
+            if (!savedCSM.getDefaultCompilerSet().getDisplayName().equals(csm.getDefaultCompilerSet().getDisplayName())) {
+                return true;
+            }
+        }
         if (savedCS.size() != currentCS.size()) {
             return true;
         }

@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 
 public class ProjectSupport {
@@ -87,7 +88,8 @@ public class ProjectSupport {
     public static Date lastModified(Project project) {
 	FileObject projectFile = null;
 	try {
-	    projectFile = project.getProjectDirectory().getFileObject(MakeConfiguration.NBPROJECT_FOLDER + File.separator + MakeConfiguration.MAKEFILE_IMPL); // NOI18N
+            char separator = FileSystemProvider.getFileSeparatorChar(project.getProjectDirectory().getFileSystem());
+	    projectFile = project.getProjectDirectory().getFileObject(MakeConfiguration.NBPROJECT_FOLDER + separator + MakeConfiguration.MAKEFILE_IMPL); // NOI18N
 	}
 	catch (Exception e) {
 	    // happens if project is not a MakeProject

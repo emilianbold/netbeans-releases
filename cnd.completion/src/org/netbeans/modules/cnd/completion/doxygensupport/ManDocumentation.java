@@ -111,14 +111,39 @@ public class ManDocumentation {
 //    }
     public static CompletionDocumentation getDocumentation(CsmObject obj, CsmFile file) throws IOException {
         if (CsmKindUtilities.isFunction(obj) && !CsmKindUtilities.isClassMember(obj)) {
-            return getDocumentation(((CsmFunction) obj).getName().toString(), file);
+            CsmFunction function = (CsmFunction) obj;
+            return getDoc(function.getQualifiedName().toString(), file);
         } else if (CsmKindUtilities.isClass(obj)) {
-            return getDocumentation(((CsmClass) obj).getName().toString(), file);
+            CsmClass cls = (CsmClass) obj;
+            return getDoc(cls.getQualifiedName().toString(), file);
         } else if (CsmKindUtilities.isClassMember(obj)) {
             CsmScope scope = ((CsmMember) obj).getScope();
             if (CsmKindUtilities.isClass(scope)) {
-                return getDocumentation(((CsmClass) scope).getName().toString(), file);
+                CsmClass cls = (CsmClass) scope;
+                return getDoc(cls.getQualifiedName().toString(), file);
             }
+        }
+        return null;
+    }
+
+    private static CompletionDocumentation getDoc(String name, CsmFile file) throws IOException {
+        if (name.indexOf('<') > 0) { //NOI18N
+            name = name.substring(0, name.indexOf('<')); //NOI18N
+        }
+        try {
+            CompletionDocumentation documentation = getDocumentation(name, file);
+            if (documentation != null) {
+                return documentation;
+            }
+        } catch (IOException ex) {
+            if (!name.contains("::")) { //NOI18N
+                throw ex;
+            }
+            // try name
+        }
+        if (name.contains("::")) { //NOI18N
+            name = name.substring(name.lastIndexOf(':')+1); //NOI18N
+            return getDocumentation(name, file);
         }
         return null;
     }
@@ -234,18 +259,9 @@ public class ManDocumentation {
             exitStatus = NativeProjectSupport.execute(np, "man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH}, name); // NOI18N
         } else if (platformName.contains("Solaris")) { // NOI18N
             NativeExitStatus es = NativeProjectSupport.execute(np, "man", new String[]{}, "-l", name); // NOI18N
-            String section = null;
-            String output = es.output;
-            int index1 = output.indexOf("(3"); // NOI18N
-            int index2;
-            while (section == null && index1 >= 0) {
-                if (output.charAt(index1 + 2) != 'f') { // Don't want fortran!
-                    index2 = output.substring(index1).indexOf(")"); // NOI18N
-                    section = output.substring(index1 + 1, index1 + index2);
-                    break;
-                }
-                output = output.substring(index1 + 1);
-                index1 = output.indexOf("(3"); // NOI18N
+            String section = getSection(es.output, "(2"); // NOI18N
+            if (section == null) {
+                section = getSection(es.output, "(3"); // NOI18N
             }
             if (section != null) {
                 exitStatus = NativeProjectSupport.execute(np, "man", null, "-s" + section, name); // NOI18N
@@ -256,7 +272,7 @@ public class ManDocumentation {
             // Current host locale is used here, because user possibly wants to see man pages 
             // in locale of his development host, not in remote's host one.
             final String DOT_UTF8 = ".UTF-8";  // NOI18N
-            exitStatus = NativeProjectSupport.execute(np, "man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH, "LANG=" + Locale.getDefault().toString().trim().replace(DOT_UTF8, "") + DOT_UTF8}, "-S3", name); // NOI18N
+            exitStatus = NativeProjectSupport.execute(np, "man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH, "LANG=" + Locale.getDefault().toString().trim().replace(DOT_UTF8, "") + DOT_UTF8}, "-S2:3", name); // NOI18N
         }
         StringReader sr;
         if (exitStatus != null) {
@@ -277,6 +293,23 @@ public class ManDocumentation {
         sr.close();
         return text;
     }
+
+    private static String getSection(String output, String number) {
+        String section = null;
+        int index1 = output.indexOf(number);
+        int index2;
+        while (section == null && index1 >= 0) {
+            if (output.charAt(index1 + 2) != 'f') { // Don't want fortran!
+                index2 = output.substring(index1).indexOf(")"); // NOI18N
+                section = output.substring(index1 + 1, index1 + index2);
+                break;
+            }
+            output = output.substring(index1 + 1);
+            index1 = output.indexOf(number);
+        }
+        return section;
+    }
+    
     private static final Map<String, String> TRANSLATE;
 
     static {

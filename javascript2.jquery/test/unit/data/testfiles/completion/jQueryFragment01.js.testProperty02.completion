@@ -3,181 +3,181 @@ jQuery.|event.customEvent.test();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      event                           [PUBLIC]   jQueryFragment01.js
-METHOD     Callbacks(flags): Callbacks     [PUBLIC]   jquery-api.xml
-METHOD     Deferred(beforeStart, deferred  [PUBLIC]   jquery-api.xml
-METHOD     add(jQuery object): jQuery      [PUBLIC]   jquery-api.xml
-METHOD     addBack(selector): jQuery       [PUBLIC]   jquery-api.xml
-METHOD     addClass(className): jQuery     [PUBLIC]   jquery-api.xml
-METHOD     after(content): jQuery          [PUBLIC]   jquery-api.xml
-METHOD     ajax(url, settings): jqXHR      [PUBLIC]   jquery-api.xml
-METHOD     ajaxComplete(handler(event, XM  [PUBLIC]   jquery-api.xml
-METHOD     ajaxError(handler(event, jqXHR  [PUBLIC]   jquery-api.xml
-METHOD     ajaxPrefilter(dataTypes, handl  [PUBLIC]   jquery-api.xml
-METHOD     ajaxSend(handler(event, jqXHR,  [PUBLIC]   jquery-api.xml
-METHOD     ajaxSetup(options)              [PUBLIC]   jquery-api.xml
-METHOD     ajaxStart(handler()): jQuery    [PUBLIC]   jquery-api.xml
-METHOD     ajaxStop(handler()): jQuery     [PUBLIC]   jquery-api.xml
-METHOD     ajaxSuccess(handler(event, XML  [PUBLIC]   jquery-api.xml
-METHOD     ajaxTransport(dataType, handle  [PUBLIC]   jquery-api.xml
-METHOD     andSelf(): jQuery               [PUBLIC]   jquery-api.xml
-METHOD     animate(properties, options, n  [PUBLIC]   jquery-api.xml
-METHOD     append(function(index, html)):  [PUBLIC]   jquery-api.xml
-METHOD     appendTo(target): jQuery        [PUBLIC]   jquery-api.xml
-METHOD     attr(attributes): jQuery        [PUBLIC]   jquery-api.xml
-METHOD     before(function): jQuery        [PUBLIC]   jquery-api.xml
-METHOD     bind(events): jQuery            [PUBLIC]   jquery-api.xml
-METHOD     blur(eventData, handler(eventO  [PUBLIC]   jquery-api.xml
-METHOD     change(eventData, handler(even  [PUBLIC]   jquery-api.xml
-METHOD     children(selector): jQuery      [PUBLIC]   jquery-api.xml
-METHOD     clearQueue(queueName): jQuery   [PUBLIC]   jquery-api.xml
-METHOD     click(): jQuery                 [PUBLIC]   jquery-api.xml
-METHOD     clone(withDataAndEvents): jQue  [PUBLIC]   jquery-api.xml
-METHOD     closest(selectors, context): A  [PUBLIC]   jquery-api.xml
-METHOD     contains(container, contained)  [PUBLIC]   jquery-api.xml
-METHOD     contents(): jQuery              [PUBLIC]   jquery-api.xml
-METHOD     css(propertyName, function(ind  [PUBLIC]   jquery-api.xml
-METHOD     data(obj): jQuery               [PUBLIC]   jquery-api.xml
-METHOD     dblclick(): jQuery              [PUBLIC]   jquery-api.xml
-METHOD     delay(duration, queueName): jQ  [PUBLIC]   jquery-api.xml
-METHOD     delegate(selector, eventType,   [PUBLIC]   jquery-api.xml
-METHOD     dequeue(queueName): jQuery      [PUBLIC]   jquery-api.xml
-METHOD     detach(selector): jQuery        [PUBLIC]   jquery-api.xml
-METHOD     die(): jQuery                   [PUBLIC]   jquery-api.xml
-METHOD     each(collection, callback(inde  [PUBLIC]   jquery-api.xml
-METHOD     empty(): jQuery                 [PUBLIC]   jquery-api.xml
-METHOD     end(): jQuery                   [PUBLIC]   jquery-api.xml
-METHOD     eq(index): jQuery               [PUBLIC]   jquery-api.xml
-METHOD     error(eventData, handler(event  [PUBLIC]   jquery-api.xml
-METHOD     extend(target, object1, object  [PUBLIC]   jquery-api.xml
-METHOD     fadeIn(options, now, tween, an  [PUBLIC]   jquery-api.xml
-METHOD     fadeOut(duration, easing, comp  [PUBLIC]   jquery-api.xml
-METHOD     fadeTo(duration, opacity, comp  [PUBLIC]   jquery-api.xml
-METHOD     fadeToggle(options, now, tween  [PUBLIC]   jquery-api.xml
-METHOD     filter(jQuery object): jQuery   [PUBLIC]   jquery-api.xml
-METHOD     find(selector): jQuery          [PUBLIC]   jquery-api.xml
-METHOD     finish(queue): jQuery           [PUBLIC]   jquery-api.xml
-METHOD     first(): jQuery                 [PUBLIC]   jquery-api.xml
-METHOD     focus(eventData, handler(event  [PUBLIC]   jquery-api.xml
-METHOD     focusin(handler(eventObject)):  [PUBLIC]   jquery-api.xml
-METHOD     focusout(handler(eventObject))  [PUBLIC]   jquery-api.xml
-METHOD     get(url, data, success(data, t  [PUBLIC]   jquery-api.xml
-METHOD     getJSON(url, data, success(dat  [PUBLIC]   jquery-api.xml
-METHOD     getScript(url, success(script,  [PUBLIC]   jquery-api.xml
-METHOD     globalEval(code)                [PUBLIC]   jquery-api.xml
-METHOD     grep(array, function(elementOf  [PUBLIC]   jquery-api.xml
-METHOD     has(contained): jQuery          [PUBLIC]   jquery-api.xml
-METHOD     hasClass(className): Boolean    [PUBLIC]   jquery-api.xml
-METHOD     hasData(element): Boolean       [PUBLIC]   jquery-api.xml
-METHOD     height(value): jQuery           [PUBLIC]   jquery-api.xml
-METHOD     hide(options, now, tween, anim  [PUBLIC]   jquery-api.xml
-METHOD     holdReady(hold): undefined      [PUBLIC]   jquery-api.xml
-METHOD     hover(handlerInOut(eventObject  [PUBLIC]   jquery-api.xml
-METHOD     html(function(index, oldhtml))  [PUBLIC]   jquery-api.xml
-METHOD     inArray(value, array, fromInde  [PUBLIC]   jquery-api.xml
-METHOD     index(element): Number          [PUBLIC]   jquery-api.xml
-METHOD     innerHeight(): Integer          [PUBLIC]   jquery-api.xml
-METHOD     innerWidth(): Integer           [PUBLIC]   jquery-api.xml
-METHOD     insertAfter(target): jQuery     [PUBLIC]   jquery-api.xml
-METHOD     insertBefore(target): jQuery    [PUBLIC]   jquery-api.xml
-METHOD     is(selector): Boolean           [PUBLIC]   jquery-api.xml
-METHOD     isArray(obj): boolean           [PUBLIC]   jquery-api.xml
-METHOD     isEmptyObject(object): Boolean  [PUBLIC]   jquery-api.xml
-METHOD     isFunction(obj): boolean        [PUBLIC]   jquery-api.xml
-METHOD     isNumeric(value): Boolean       [PUBLIC]   jquery-api.xml
-METHOD     isPlainObject(object): Boolean  [PUBLIC]   jquery-api.xml
-METHOD     isWindow(obj): boolean          [PUBLIC]   jquery-api.xml
-METHOD     isXMLDoc(node): Boolean         [PUBLIC]   jquery-api.xml
-METHOD     jQuery(html, attributes): jQue  [PUBLIC]   jquery-api.xml
-METHOD     keydown(eventData, handler(eve  [PUBLIC]   jquery-api.xml
-METHOD     keypress(eventData, handler(ev  [PUBLIC]   jquery-api.xml
-METHOD     keyup(eventData, handler(event  [PUBLIC]   jquery-api.xml
-METHOD     last(): jQuery                  [PUBLIC]   jquery-api.xml
-METHOD     live(events): jQuery            [PUBLIC]   jquery-api.xml
-METHOD     load(url, data, complete(respo  [PUBLIC]   jquery-api.xml
-METHOD     makeArray(obj): Array           [PUBLIC]   jquery-api.xml
-METHOD     map(array, callback(elementOfA  [PUBLIC]   jquery-api.xml
-METHOD     merge(first, second): Array     [PUBLIC]   jquery-api.xml
-METHOD     mousedown(eventData, handler(e  [PUBLIC]   jquery-api.xml
-METHOD     mouseenter(): jQuery            [PUBLIC]   jquery-api.xml
-METHOD     mouseleave(): jQuery            [PUBLIC]   jquery-api.xml
-METHOD     mousemove(): jQuery             [PUBLIC]   jquery-api.xml
-METHOD     mouseout(): jQuery              [PUBLIC]   jquery-api.xml
-METHOD     mouseover(): jQuery             [PUBLIC]   jquery-api.xml
-METHOD     mouseup(eventData, handler(eve  [PUBLIC]   jquery-api.xml
-METHOD     next(selector): jQuery          [PUBLIC]   jquery-api.xml
-METHOD     nextAll(selector): jQuery       [PUBLIC]   jquery-api.xml
-METHOD     nextUntil(selector, filter): j  [PUBLIC]   jquery-api.xml
-METHOD     noConflict(removeAll): Object   [PUBLIC]   jquery-api.xml
-METHOD     noop(): undefined               [PUBLIC]   jquery-api.xml
-METHOD     not(jQuery object): jQuery      [PUBLIC]   jquery-api.xml
-METHOD     now(): Number                   [PUBLIC]   jquery-api.xml
-METHOD     off(events, selector): jQuery   [PUBLIC]   jquery-api.xml
-METHOD     offset(): Object                [PUBLIC]   jquery-api.xml
-METHOD     offsetParent(): jQuery          [PUBLIC]   jquery-api.xml
-METHOD     on(events, selector, data): jQ  [PUBLIC]   jquery-api.xml
-METHOD     one(events, data, handler(even  [PUBLIC]   jquery-api.xml
-METHOD     outerHeight(includeMargin): In  [PUBLIC]   jquery-api.xml
-METHOD     outerWidth(includeMargin): Int  [PUBLIC]   jquery-api.xml
-METHOD     param(obj, traditional): Strin  [PUBLIC]   jquery-api.xml
-METHOD     parent(selector): jQuery        [PUBLIC]   jquery-api.xml
-METHOD     parents(selector): jQuery       [PUBLIC]   jquery-api.xml
-METHOD     parentsUntil(element, filter):  [PUBLIC]   jquery-api.xml
-METHOD     parseHTML(data, context, keepS  [PUBLIC]   jquery-api.xml
-METHOD     parseJSON(json): Object         [PUBLIC]   jquery-api.xml
-METHOD     parseXML(data): XMLDocument     [PUBLIC]   jquery-api.xml
-METHOD     position(): Object              [PUBLIC]   jquery-api.xml
-METHOD     post(url, data, success(data,   [PUBLIC]   jquery-api.xml
-METHOD     prepend(content): jQuery        [PUBLIC]   jquery-api.xml
-METHOD     prependTo(target): jQuery       [PUBLIC]   jquery-api.xml
-METHOD     prev(selector): jQuery          [PUBLIC]   jquery-api.xml
-METHOD     prevAll(selector): jQuery       [PUBLIC]   jquery-api.xml
-METHOD     prevUntil(element, filter): jQ  [PUBLIC]   jquery-api.xml
-METHOD     promise(type, target): Promise  [PUBLIC]   jquery-api.xml
-METHOD     prop(propertyName, function(in  [PUBLIC]   jquery-api.xml
-METHOD     proxy(context, name): Function  [PUBLIC]   jquery-api.xml
-METHOD     pushStack(elements, name, argu  [PUBLIC]   jquery-api.xml
-METHOD     queue(queueName, callback( nex  [PUBLIC]   jquery-api.xml
-METHOD     ready(handler): jQuery          [PUBLIC]   jquery-api.xml
-METHOD     remove(selector): jQuery        [PUBLIC]   jquery-api.xml
-METHOD     removeAttr(attributeName): jQu  [PUBLIC]   jquery-api.xml
-METHOD     removeClass(className): jQuery  [PUBLIC]   jquery-api.xml
-METHOD     removeData(name): jQuery        [PUBLIC]   jquery-api.xml
-METHOD     removeProp(propertyName): jQue  [PUBLIC]   jquery-api.xml
-METHOD     replaceAll(target): jQuery      [PUBLIC]   jquery-api.xml
-METHOD     replaceWith(function): jQuery   [PUBLIC]   jquery-api.xml
-METHOD     resize(eventData, handler(even  [PUBLIC]   jquery-api.xml
-METHOD     scroll(eventData, handler(even  [PUBLIC]   jquery-api.xml
-METHOD     scrollLeft(value): jQuery       [PUBLIC]   jquery-api.xml
-METHOD     scrollTop(value): jQuery        [PUBLIC]   jquery-api.xml
-METHOD     select(): jQuery                [PUBLIC]   jquery-api.xml
-METHOD     serialize(): String             [PUBLIC]   jquery-api.xml
-METHOD     serializeArray(): Array         [PUBLIC]   jquery-api.xml
-METHOD     show(options, now, tween, anim  [PUBLIC]   jquery-api.xml
-METHOD     siblings(selector): jQuery      [PUBLIC]   jquery-api.xml
-METHOD     size(): Integer                 [PUBLIC]   jquery-api.xml
-METHOD     slice(start, end): jQuery       [PUBLIC]   jquery-api.xml
-METHOD     slideDown(options, now, tween,  [PUBLIC]   jquery-api.xml
-METHOD     slideToggle(options, now, twee  [PUBLIC]   jquery-api.xml
-METHOD     slideUp(options, now, tween, a  [PUBLIC]   jquery-api.xml
-METHOD     stop(queue, clearQueue, jumpTo  [PUBLIC]   jquery-api.xml
-METHOD     sub(): jQuery                   [PUBLIC]   jquery-api.xml
-METHOD     submit(): jQuery                [PUBLIC]   jquery-api.xml
-METHOD     text(function(index, text)): j  [PUBLIC]   jquery-api.xml
-METHOD     toArray(): Array                [PUBLIC]   jquery-api.xml
-METHOD     toggle(duration, easing, compl  [PUBLIC]   jquery-api.xml
-METHOD     toggleClass(className): jQuery  [PUBLIC]   jquery-api.xml
-METHOD     trigger(eventType, extraParame  [PUBLIC]   jquery-api.xml
-METHOD     triggerHandler(eventType, extr  [PUBLIC]   jquery-api.xml
-METHOD     trim(str): String               [PUBLIC]   jquery-api.xml
-METHOD     type(obj): String               [PUBLIC]   jquery-api.xml
-METHOD     unbind(event): jQuery           [PUBLIC]   jquery-api.xml
-METHOD     undelegate(namespace): jQuery   [PUBLIC]   jquery-api.xml
-METHOD     unique(array): Array            [PUBLIC]   jquery-api.xml
-METHOD     unload(handler(eventObject)):   [PUBLIC]   jquery-api.xml
-METHOD     unwrap(): jQuery                [PUBLIC]   jquery-api.xml
-METHOD     val(function(index, value)): j  [PUBLIC]   jquery-api.xml
-METHOD     when(deferreds): Promise        [PUBLIC]   jquery-api.xml
-METHOD     width(value): jQuery            [PUBLIC]   jquery-api.xml
-METHOD     wrap(wrappingElement): jQuery   [PUBLIC]   jquery-api.xml
-METHOD     wrapAll(wrappingElement): jQue  [PUBLIC]   jquery-api.xml
-METHOD     wrapInner(function(index)): jQ  [PUBLIC]   jquery-api.xml
+METHOD     Callbacks(flags): Callbacks     [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     Deferred(beforeStart, deferred  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     add(html): jQuery               [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     addBack(selector): jQuery       [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     addClass(className): jQuery     [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     after(content): jQuery          [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     ajax(url, settings): jqXHR      [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     ajaxComplete(handler(event, XM  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     ajaxError(handler(event, jqXHR  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     ajaxPrefilter(dataTypes, handl  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     ajaxSend(handler(event, jqXHR,  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     ajaxSetup(options)              [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     ajaxStart(handler()): jQuery    [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     ajaxStop(handler()): jQuery     [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     ajaxSuccess(handler(event, XML  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     ajaxTransport(dataType, handle  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     andSelf(): jQuery               [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     animate(properties, options, n  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     append(content): jQuery         [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     appendTo(target): jQuery        [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     attr(attributes): jQuery        [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     before(content): jQuery         [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     bind(eventType, eventData, han  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     blur(): jQuery                  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     change(): jQuery                [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     children(selector): jQuery      [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     clearQueue(queueName): jQuery   [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     click(): jQuery                 [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     clone(withDataAndEvents): jQue  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     closest(selector): jQuery       [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     contains(container, contained)  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     contents(): jQuery              [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     css(properties): jQuery         [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     data(element, key): Object      [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     dblclick(): jQuery              [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     delay(duration, queueName): jQ  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     delegate(selector, eventType,   [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     dequeue(queueName): jQuery      [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     detach(selector): jQuery        [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     die(): jQuery                   [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     each(collection, callback(inde  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     empty(): jQuery                 [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     end(): jQuery                   [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     eq(index): jQuery               [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     error(handler(eventObject)): j  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     extend(target, object1, object  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     fadeIn(options, now, tween, an  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     fadeOut(options, now, tween, a  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     fadeTo(duration, opacity, comp  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     fadeToggle(options, now, tween  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     filter(function(index)): jQuer  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     find(selector): jQuery          [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     finish(queue): jQuery           [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     first(): jQuery                 [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     focus(): jQuery                 [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     focusin(handler(eventObject)):  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     focusout(handler(eventObject))  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     get(url, data, success(data, t  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     getJSON(url, data, success(dat  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     getScript(url, success(script,  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     globalEval(code)                [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     grep(array, function(elementOf  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     has(contained): jQuery          [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     hasClass(className): Boolean    [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     hasData(element): Boolean       [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     height(value): jQuery           [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     hide(options, now, tween, anim  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     holdReady(hold): undefined      [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     hover(handlerIn(eventObject),   [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     html(htmlString): jQuery        [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     inArray(value, array, fromInde  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     index(selector): Number         [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     innerHeight(): Integer          [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     innerWidth(): Integer           [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     insertAfter(target): jQuery     [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     insertBefore(target): jQuery    [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     is(selector): Boolean           [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     isArray(obj): boolean           [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     isEmptyObject(object): Boolean  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     isFunction(obj): boolean        [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     isNumeric(value): Boolean       [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     isPlainObject(object): Boolean  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     isWindow(obj): boolean          [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     isXMLDoc(node): Boolean         [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     jQuery(callback): jQuery        [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     keydown(): jQuery               [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     keypress(): jQuery              [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     keyup(): jQuery                 [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     last(): jQuery                  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     live(events, handler(eventObje  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     load(url, data, complete(respo  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     makeArray(obj): Array           [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     map(array, callback(elementOfA  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     merge(first, second): Array     [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     mousedown(): jQuery             [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     mouseenter(): jQuery            [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     mouseleave(): jQuery            [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     mousemove(): jQuery             [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     mouseout(): jQuery              [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     mouseover(): jQuery             [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     mouseup(): jQuery               [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     next(selector): jQuery          [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     nextAll(selector): jQuery       [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     nextUntil(selector, filter): j  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     noConflict(removeAll): Object   [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     noop(): undefined               [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     not(elements): jQuery           [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     now(): Number                   [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     off(events, selector): jQuery   [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     offset(): Object                [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     offsetParent(): jQuery          [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     on(events, selector, data): jQ  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     one(events, data, handler(even  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     outerHeight(includeMargin): In  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     outerWidth(includeMargin): Int  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     param(obj): String              [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     parent(selector): jQuery        [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     parents(selector): jQuery       [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     parentsUntil(selector, filter)  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     parseHTML(data, context, keepS  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     parseJSON(json): Object         [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     parseXML(data): XMLDocument     [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     position(): Object              [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     post(url, data, success(data,   [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     prepend(content): jQuery        [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     prependTo(target): jQuery       [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     prev(selector): jQuery          [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     prevAll(selector): jQuery       [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     prevUntil(selector, filter): j  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     promise(type, target): Promise  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     prop(propertyName, function(in  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     proxy(context, name): Function  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     pushStack(elements): jQuery     [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     queue(element, queueName, call  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     ready(handler): jQuery          [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     remove(selector): jQuery        [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     removeAttr(attributeName): jQu  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     removeClass(className): jQuery  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     removeData(name): jQuery        [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     removeProp(propertyName): jQue  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     replaceAll(target): jQuery      [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     replaceWith(newContent): jQuer  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     resize(): jQuery                [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     scroll(): jQuery                [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     scrollLeft(value): jQuery       [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     scrollTop(value): jQuery        [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     select(): jQuery                [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     serialize(): String             [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     serializeArray(): Array         [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     show(options, now, tween, anim  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     siblings(selector): jQuery      [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     size(): Integer                 [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     slice(start, end): jQuery       [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     slideDown(options, now, tween,  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     slideToggle(options, now, twee  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     slideUp(options, now, tween, a  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     stop(clearQueue, jumpToEnd): j  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     sub(): jQuery                   [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     submit(): jQuery                [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     text(textString): jQuery        [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     toArray(): Array                [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     toggle(options, now, tween, an  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     toggleClass(className): jQuery  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     trigger(eventType, extraParame  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     triggerHandler(eventType, extr  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     trim(str): String               [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     type(obj): String               [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     unbind(event): jQuery           [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     undelegate(selector, eventType  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     unique(array): Array            [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     unload(handler(eventObject)):   [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     unwrap(): jQuery                [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     val(value): jQuery              [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     when(deferreds): Promise        [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     width(value): jQuery            [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     wrap(wrappingElement): jQuery   [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     wrapAll(wrappingElement): jQue  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     wrapInner(wrappingElement): jQ  [PUBLIC]   <font color=#999999>jquery-api.xml</font>

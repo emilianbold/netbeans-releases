@@ -72,12 +72,6 @@ create_test_result() {
     echo '</testsuite>' >>$FILE
 }
 
-if [ -n "$JDEV_BUILD" ]; then
-    export CLUSTER_CONFIG="-Dcluster.config=java"
-else
-    export CLUSTER_CONFIG=
-fi
-
 #NB_BRANCH default
 if [ -z ${NB_BRANCH} ]; then
     export NB_BRANCH=default
@@ -126,15 +120,15 @@ if [ -z ${JDK_BUILDS_HOST} ]; then
     export JDK_BUILDS_HOST
 fi
 
-#JDK7_BUILDS_PATH=http://jre.us.oracle.com/java/re/jdk/7u55/promoted/all
+#JDK7_BUILDS_PATH=http://jre.us.oracle.com/java/re/jdk/7u65/promoted/all
 if [ -z ${JDK7_BUILDS_PATH} ]; then
-    JDK7_BUILDS_PATH=java/re/jdk/7u55/promoted/
+    JDK7_BUILDS_PATH=java/re/jdk/7u65/promoted/
     export JDK7_BUILDS_PATH
 fi
 
-#JDK8_BUILDS_PATH=http://jre.us.oracle.com/java/re/jdk/8u5/promoted/all/
+#JDK8_BUILDS_PATH=http://jre.us.oracle.com/java/re/jdk/8u11/promoted/all/
 if [ -z ${JDK8_BUILDS_PATH} ]; then
-    JDK8_BUILDS_PATH=java/re/jdk/8u5/promoted/
+    JDK8_BUILDS_PATH=java/re/jdk/8u11/promoted/
     export JDK8_BUILDS_PATH
 fi
 

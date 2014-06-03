@@ -212,8 +212,6 @@ final class Boolean3WayEditor implements ExPropertyEditor, InplaceEditor.Factory
         private final ButtonModel3Way model3way;
 
         Boolean3Inplace() {
-            if( !PropUtils.isAqua )
-                setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
             // Add a listener for when the mouse is pressed
             super.addMouseListener(new MouseAdapter() {
 

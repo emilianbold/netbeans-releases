@@ -103,7 +103,7 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
         getJbossWeb();
         if (deploymentDescriptorDO == null) {
             try {
-                if(FileUtil.toFileObject(jbossWebFile) != null) {
+                if (FileUtil.toFileObject(jbossWebFile) != null) {
                     deploymentDescriptorDO = deploymentDescriptorDO.find(FileUtil.toFileObject(jbossWebFile));
                     deploymentDescriptorDO.addPropertyChangeListener(this);
                 }
@@ -134,6 +134,22 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
             String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_CannotReadContextRoot", jbossWebFile.getAbsolutePath());
             throw new ConfigurationException(msg);
         }
+        if (jbossWeb.getContextRoot() == null || jbossWeb.getContextRoot().isEmpty()) {
+            try {
+                if (j2eeModule.getArchive() != null) {
+                    return j2eeModule.getArchive().getName();
+                }
+                if(j2eeModule.getUrl() != null) {
+                    if(j2eeModule.getUrl().endsWith(".war")) {
+                        return j2eeModule.getUrl().substring(1, j2eeModule.getUrl().length() -4);
+                    } else {
+                        return j2eeModule.getUrl().substring(1);
+                    }
+                }
+            } catch (IOException ex) {
+                return jbossWeb.getContextRoot();
+            }
+        }
         return jbossWeb.getContextRoot();
     }
 
@@ -146,7 +162,7 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
         // be moved to the web project
 
         String currentCP = "";
-        if(contextPath != null) {
+        if (contextPath != null) {
             currentCP = contextPath;
         }
         if (!isCorrectCP(currentCP)) {
@@ -465,7 +481,7 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
      * @param modifier
      */
     private void modifyJbossWeb(JbossWebModifier modifier) throws ConfigurationException {
-        if(deploymentDescriptorDO == null) {
+        if (deploymentDescriptorDO == null) {
             return;
         }
         assert deploymentDescriptorDO != null : "DataObject has not been initialized yet"; // NIO18N

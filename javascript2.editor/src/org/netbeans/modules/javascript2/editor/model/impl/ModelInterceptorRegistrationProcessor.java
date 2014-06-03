@@ -60,7 +60,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=Processor.class)
 @SupportedAnnotationTypes("org.netbeans.modules.javascript2.editor.spi.model.ModelInterceptor.Registration") //NOI18N
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class ModelInterceptorRegistrationProcessor extends LayerGeneratingProcessor {
 
     public ModelInterceptorRegistrationProcessor() {

@@ -76,12 +76,12 @@ public class DiffUtilities {
     }
 
     public static List<Diff> diff(String origContent, String newContent, int offset) {
-        return diff(origContent, newContent, offset, null);
+        return diff(origContent, newContent, offset, null, offset);
     }
     
-    public static List<Diff> diff(String origContent, String newContent, int offset, int[] sections) {
+    public static List<Diff> diff(String origContent, String newContent, int offset, int[] sections, int lineStart) {
         List<Diff> diffs = new ArrayList<Diff>();
-        new DiffFacility(diffs).withSections(sections).makeListMatch(origContent, newContent, offset);
+        new DiffFacility(diffs).withSections(sections, lineStart).makeListMatch(origContent, newContent, offset);
         return diffs;
     }
     

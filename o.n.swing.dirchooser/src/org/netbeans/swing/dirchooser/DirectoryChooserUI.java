@@ -419,7 +419,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         });
         
         filenameTextField.addKeyListener(new TextFieldKeyListener());
-        filenameTextField.addKeyListener(new AltUpHandler());
+        filenameTextField.addKeyListener(new AltUpHandler(filenameTextField));
         
         fnl.setLabelFor(filenameTextField);
         filenameTextField.addFocusListener(
@@ -771,7 +771,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         tree.addTreeExpansionListener(new TreeExpansionHandler());
         TreeKeyHandler keyHandler = new TreeKeyHandler();
         tree.addKeyListener(keyHandler);
-        tree.addKeyListener(new AltUpHandler());
+        tree.addKeyListener(new AltUpHandler(tree));
         tree.addFocusListener(keyHandler);
         tree.addMouseListener(dirHandler);
         tree.addFocusListener(dirHandler);
@@ -805,11 +805,18 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
      * Handles alt-up key 
      */
     private class AltUpHandler extends KeyAdapter {
+        private final JComponent component;
+
+        public AltUpHandler(JComponent component) {
+            this.component = component;
+        }
+        
         @Override
         public void keyPressed(KeyEvent evt) {
             if(evt.getKeyCode() == KeyEvent.VK_UP && (evt.getModifiers() & KeyEvent.ALT_MASK) == KeyEvent.ALT_MASK) {
                 Action action = getChangeToParentDirectoryAction();
                 action.actionPerformed(new ActionEvent(evt.getSource(), 0, ""));
+                component.requestFocus();
             }
         }        
     }

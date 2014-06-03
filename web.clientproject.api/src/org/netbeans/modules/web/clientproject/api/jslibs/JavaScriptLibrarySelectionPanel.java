@@ -1226,6 +1226,8 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
         private static final long serialVersionUID = -6832132354654L;
 
+        private static final Comparator<Library> LIBRARY_COMPARATOR = new LibraryComparator();
+
         // @GuardedBy("EDT")
         private final List<ModelItem> items = new ArrayList<ModelItem>();
 
@@ -1262,6 +1264,10 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
                             }
                             libs.add(lib);
                         }
+                    }
+                    // sort libs
+                    for (List<Library> libs : libraryMap.values()) {
+                        Collections.sort(libs, LIBRARY_COMPARATOR);
                     }
                     // refresh ui
                     EventQueue.invokeLater(new Runnable() {
@@ -1495,44 +1501,6 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
     private static final class ModelItem {
 
-        // #230467
-        private static final Pattern SANITIZE_VERSION_PATTERN = Pattern.compile("[^.0-9]"); // NOI18N
-
-        // sort libraries from latest to oldest; if the same version of library is comming
-        // from different CDNs then put higher in the list one which has documentation or
-        // regular version of JS files
-        private static final Comparator<Library> LIBRARY_COMPARATOR = new Comparator<Library>() {
-            @Override
-            public int compare(Library o1, Library o2) {
-                Version ver1 = Version.fromDottedNotationWithFallback(sanitize(o1.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION)));
-                Version ver2 = Version.fromDottedNotationWithFallback(sanitize(o2.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION)));
-                if (ver1.equals(ver2)) {
-                    if (!o1.getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
-                        return -1;
-                    }
-                    if (!o2.getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
-                        return 1;
-                    }
-                    if (!o1.getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
-                        return -1;
-                    }
-                    if (!o2.getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
-                        return 1;
-                    }
-                    return 0;
-                }
-                return ver1.isBelowOrEqual(ver2) ? 1 : -1;
-            }
-
-            public String sanitize(String version) {
-                String[] parts = SANITIZE_VERSION_PATTERN.split(version);
-                if (parts.length == 0) {
-                    return version;
-                }
-                return parts[0];
-            }
-        };
-
         // @GuardedBy("EDT")
         private final Set<LibraryVersion> versions;
 
@@ -1542,7 +1510,6 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
         public ModelItem(List<Library> libraries) {
             assert EventQueue.isDispatchThread();
-            Collections.sort(libraries, LIBRARY_COMPARATOR);
             versions = createVersions(libraries);
             selectedVersion = versions.iterator().next();
         }
@@ -1597,6 +1564,109 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         private Library getLibrary() {
             assert EventQueue.isDispatchThread();
             return versions.iterator().next().getLibrary();
+        }
+
+    }
+
+    static final class LibraryComparator implements Comparator<Library> {
+
+        // #230467
+        private static final Pattern SANITIZE_VERSION_PATTERN = Pattern.compile("[^.0-9]"); // NOI18N
+
+        private static final String[] POSTVERSIONS = new String[] {"patch"}; // NOI18N
+        private static final String[] PREVERSIONS = new String[] {"rc", "pre", "beta"}; // NOI18N
+
+        @Override
+        public int compare(Library library1, Library library2) {
+            String fullVersion1 = library1.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION);
+            String fullVersion2 = library2.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION);
+            String sanitizedVersion1 = sanitize(fullVersion1);
+            String sanitizedVersion2 = sanitize(fullVersion2);
+            Version ver1 = Version.fromDottedNotationWithFallback(sanitizedVersion1);
+            Version ver2 = Version.fromDottedNotationWithFallback(sanitizedVersion2);
+            if (ver1.equals(ver2)) {
+                Integer result = compareSameVersions(fullVersion1, fullVersion2);
+                if (result != null) {
+                    return result;
+                }
+                if (!library1.getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
+                    return -1;
+                }
+                if (!library2.getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
+                    return 1;
+                }
+                if (!library1.getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
+                    return -1;
+                }
+                if (!library2.getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
+                    return 1;
+                }
+                return 0;
+            }
+            return ver1.isBelowOrEqual(ver2) ? 1 : -1;
+        }
+
+        @CheckForNull
+        public Integer compareSameVersions(String fullVersion1, String fullVersion2) {
+            // same version, check for rc, pre, beta
+            String fullVer1 = fullVersion1.toLowerCase();
+            String fullVer2 = fullVersion2.toLowerCase();
+            if (fullVer1.equals(fullVer2)) {
+                return 0;
+            }
+            Integer result = compareVersions(POSTVERSIONS, fullVer1, fullVer2, true);
+            if (result != null) {
+                return result;
+            }
+            return compareVersions(PREVERSIONS, fullVer1, fullVer2, false);
+        }
+
+        @CheckForNull
+        private Integer compareVersions(String[] versions, String fullVersion1, String fullVersion2, boolean preferVersion) {
+            boolean found1 = false;
+            boolean found2 = false;
+            for (int i = 0; i < versions.length; i++) {
+                boolean is1 = fullVersion1.contains(versions[i]);
+                boolean is2 = fullVersion2.contains(versions[i]);
+                if (is1 && is2) {
+                    return fullVersion2.compareTo(fullVersion1);
+                }
+                if (is1 || is2) {
+                    if (is1) {
+                        found1 = true;
+                    }
+                    if (is2) {
+                        found2 = true;
+                    }
+                    String other = is1 ? fullVersion2 : fullVersion1;
+                    for (int j = i; j < versions.length; j++) {
+                        if (other.contains(versions[j])) {
+                            return is1 ? -1 : 1;
+                        }
+                    }
+                }
+            }
+            if (found1 || found2) {
+                assert !found1 || !found2 : fullVersion1 + " ::" + fullVersion2 + "[" + found1 + " :: " + found2 + "]";
+                if (preferVersion) {
+                    return found1 ? -1 : 1;
+                }
+                return found1 ? 1 : -1;
+            }
+            return null;
+        }
+
+        public String sanitize(String version) {
+            String[] parts = SANITIZE_VERSION_PATTERN.split(version);
+            if (parts.length == 0) {
+                return version;
+            }
+            for (String part : parts) {
+                if (!part.isEmpty()) {
+                    return part;
+                }
+            }
+            return parts[0];
         }
 
     }

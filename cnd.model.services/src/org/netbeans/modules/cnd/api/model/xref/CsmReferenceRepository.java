@@ -44,14 +44,22 @@
 
 package org.netbeans.modules.cnd.api.model.xref;
 
-import org.netbeans.modules.cnd.support.Interrupter;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Set;
 import java.util.Map;
+import java.util.Set;
+import javax.swing.text.StyledDocument;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.support.Interrupter;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 
 /**
@@ -123,6 +131,35 @@ public abstract class CsmReferenceRepository {
      */
     public abstract Collection<CsmReference> getReferences(CsmObject[] targets, CsmFile file, Set<CsmReferenceKind> kinds, Interrupter interrupter);
     
+    public static BaseDocument getDocument(CsmFile file) {
+        BaseDocument doc = null;
+        try {
+            doc = CsmReferenceRepository.getBaseDocument(file.getFileObject());
+        } catch (DataObjectNotFoundException ex) {
+            ex.printStackTrace(System.err);
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+        }
+        return doc;
+    }
+    
+    private static BaseDocument getBaseDocument(FileObject fileObject) throws DataObjectNotFoundException, IOException {
+        if (fileObject == null || !fileObject.isValid()) {
+            return null;
+        }
+        DataObject dataObject = DataObject.find(fileObject);
+        EditorCookie cookie = dataObject.getLookup().lookup(EditorCookie.class);
+        if (cookie == null) {
+            throw new IllegalStateException("Given file (\"" + dataObject.getName() + // NOI18N
+                                            "\", data object is instance of class " + dataObject.getClass().getName() + // NOI18N
+                                            ") does not have EditorCookie."); // NOI18N
+        }
+
+        StyledDocument doc = CsmUtilities.openDocument(cookie);
+
+        return doc instanceof BaseDocument ? (BaseDocument) doc : null;
+    }
+
     //
     // Implementation of the default Repository
     //

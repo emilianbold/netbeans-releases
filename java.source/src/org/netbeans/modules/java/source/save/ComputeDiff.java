@@ -291,8 +291,8 @@ class ComputeDiff<E> {
     public Integer[] getLongestCommonSubsequences() {
         int aStart;
         int bStart;
-        int aEnd = a.length - 1;
-        int bEnd = b.length - 1;
+        int aEnd;
+        int bEnd;
         
         int sIndex = 0;
         int sL = sections == null ? 0 : sections.length;
@@ -315,13 +315,18 @@ class ComputeDiff<E> {
             // implementation (as of JDK 1.4) that takes a comparator.
             bMatches = new TreeMap<E, List<Integer>>(comparator);
         }
+        int bEndOrig;
         do {
             aStart = aPrevStart;
             bStart = bPrevStart;
             if (sIndex < sL) {
                 aEnd = (aPrevStart = sections[sIndex++]) - 1;
                 bEnd = (bPrevStart = sections[sIndex++]) - 1;
+            } else {
+                aEnd = a.length - 1;
+                bEnd = b.length - 1;
             }
+            bEndOrig = bEnd;
 
             while (aStart <= aEnd && bStart <= bEnd && equals(a[aStart], b[bStart])) {
                 matches.put(new Integer(aStart++), new Integer(bStart++));
@@ -378,7 +383,7 @@ class ComputeDiff<E> {
                     link = (Object[])link[0];
                 }
             }
-        } while (sIndex < sL);
+        } while (bEndOrig < b.length - 1);
 
         
         return toArray(matches);

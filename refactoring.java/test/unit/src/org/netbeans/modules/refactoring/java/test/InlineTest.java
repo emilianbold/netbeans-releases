@@ -71,6 +71,107 @@ public class InlineTest extends RefactoringTestBase {
         JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
     }
     
+    public void test242995() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    public static boolean toBeInlined() {\n"
+                        + "        return toBeMatched() == 24;\n"
+                        + "    }\n"
+                        + "\n"
+                        + "    public static Integer toBeMatched() {\n"
+                        + "        return 12;\n"
+                        + "    }\n"
+                        + "\n"
+                        + "    public static void main(String[] args) {\n"
+                        + "        if(!toBeInlined()) {\n"
+                        + "            System.out.println(\"true\");\n"
+                        + "        }\n"
+                        + "    }\n"
+                        + "}\n"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    public static Integer toBeMatched() {\n"
+                        + "        return 12;\n"
+                        + "    }\n"
+                        + "\n"
+                        + "    public static void main(String[] args) {\n"
+                        + "        if(!(toBeMatched() == 24)) {\n"
+                        + "            System.out.println(\"true\");\n"
+                        + "        }\n"
+                        + "    }\n"
+                        + "}\n"));
+    }
+    
+    public void test236447a() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    private void test() {\n"
+                        + "        inline();\n"
+                        + "    }\n"
+                        + "\n"
+                        + "    private void inline() {\n"
+                        + "\n"
+                        + "        System.out.println(\"Test1\");\n"
+                        + "\n"
+                        + "        //Hmmm What now?\n"
+                        + "        System.out.println(\"Here\");\n"
+                        + "    }\n"
+                        + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 2, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    private void test() {\n"
+                        + "\n"
+                        + "        System.out.println(\"Test1\");\n"
+                        + "\n"
+                        + "        //Hmmm What now?\n"
+                        + "        System.out.println(\"Here\");\n"
+                        + "    }\n"
+                        + "}"));
+    }
+    
+    public void test236447b() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    private void bar() {\n"
+                        + "        //TODO barbar\n"
+                        + "        foo();\n"
+                        + "        //TODO barbar\n"
+                        + "    }\n"
+                        + "    \n"
+                        + "    private void foo() {\n"
+                        + "        //TODO blabla\n"
+                        + "        System.out.println(\"this = \" + this);\n"
+                        + "        //TODO blabla\n"
+                        + "    }\n"
+                        + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 2, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    private void bar() {\n"
+                        + "        //TODO barbar\n"
+                        + "        //TODO blabla\n"
+                        + "        System.out.println(\"this = \" + this);\n"
+                        + "        //TODO blabla\n"
+                        + "        //TODO barbar\n"
+                        + "    }\n"
+                        + "    \n"
+                        + "}"));
+    }
+    
     public void test238831() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -129,7 +230,7 @@ public class InlineTest extends RefactoringTestBase {
                 + "public class A {\n"
                 + "    public void usage() {\n"
                 + "        int x = 2;\n"
-                + "        if(x>3) x = 0;\n"
+                + "        if (x>3) { x = 0; }\n"
                 + "    }\n"
                 + "}"));
     }
@@ -1270,6 +1371,35 @@ public class InlineTest extends RefactoringTestBase {
                 + "        ;\n"
                 + "        System.out.println(\"Less then five?\");\n"
                 + "        return (numberOfLateDeliveries > 5) ? 2 : 1;\n"
+                + "    }\n"
+                + "    private int numberOfLateDeliveries = 6;\n"
+                + "}"));
+    }
+    
+    public void testInlineMethodReturnComments() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    private boolean moreThanFiveDeliveries() {\n"
+                + "        System.out.println(\"Less then five?\");\n"
+                + "        // Less than five?\n"
+                + "        return numberOfLateDeliveries > 5;"
+                + "    }\n"
+                + "    public int getRating() {\n"
+                + "        return (moreThanFiveDeliveries()) ? 2 : 1;\n"
+                + "    }\n"
+                + "    private int numberOfLateDeliveries = 6;\n"
+                + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public int getRating() {\n"
+                + "        System.out.println(\"Less then five?\");\n"
+                + "        return ( // Less than five?\n"
+                + "                numberOfLateDeliveries > 5) ? 2 : 1;\n"
                 + "    }\n"
                 + "    private int numberOfLateDeliveries = 6;\n"
                 + "}"));
