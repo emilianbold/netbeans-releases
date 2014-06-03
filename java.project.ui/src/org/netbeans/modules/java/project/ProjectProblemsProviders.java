@@ -87,6 +87,8 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.java.project.FixProjectSourceLevel;
+import org.netbeans.modules.java.project.ProfileProblemsProviderImpl;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;

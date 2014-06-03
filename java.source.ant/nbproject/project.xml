@@ -51,14 +51,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.java.project</code-name-base>
+                    <code-name-base>org.netbeans.modules.java.project.ui</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.28</specification-version>
+                        <specification-version>1.60</specification-version>
                     </run-dependency>
-                </dependency>
+                </dependency>                
                 <dependency>
                     <code-name-base>org.netbeans.modules.java.source.base</code-name-base>
                     <build-prerequisite/>
