@@ -294,9 +294,15 @@ public class FSCompletionUtils {
 
     public static FileObject findFileObject(final FileObject fromFO, final String path) {
         FileObject parent = fromFO;
-        FileObject targetFO = fromFO;
+        FileObject targetFO;
+        Project project = FileOwnerQuery.getOwner(fromFO);
+        String projectDirectoryPath = ""; //NOI18N
+        if (project != null) {
+            FileObject projectDirectory = project.getProjectDirectory();
+            projectDirectoryPath = projectDirectory.getPath();
+        }
         if (parent != null && !path.isEmpty()) {
-            while (parent != null) {
+            while (parent != null && parent.getPath().contains(projectDirectoryPath)) {
                 targetFO = parent.getFileObject(path);
                 if (targetFO != null) {
                     return targetFO;
