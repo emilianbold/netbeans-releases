@@ -49,6 +49,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
@@ -64,6 +66,8 @@ import org.openide.util.Exceptions;
  */
 public final class Source {
     
+    private static final Logger LOG = Logger.getLogger(Source.class.getName());
+    
     public static final String URL_PROTOCOL = "js-scripts"; // NOI18N
     
     private static final String SOURCE_CLASS = "jdk.nashorn.internal.runtime.Source";   // NOI18N
@@ -73,6 +77,8 @@ public final class Source {
     private static final String SOURCE_VAR_CONTENT = "content"; // NOI18N
     private static final String SOURCE_VAR_HASH = "hash";   // NOI18N
     private static final String SOURCE_VAR_URL = "url";     // NOI18N
+    private static final String SOURCE_VAR_DATA = "data";   // NOI18N
+    private static final String SOURCE_VAR_DATA_ARRAY = "array";    // NOI18N
     
     private static final Map<JPDADebugger, Map<Long, Source>> knownSources = new WeakHashMap<>();
 
@@ -87,6 +93,9 @@ public final class Source {
     private Source(String name, JPDAClassType classType, URL url, boolean compareContent, int hash, String content) {
         this.name = name;
         this.classType = classType;
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("new Source("+name+", "+classType.getName()+", "+url+")");
+        }
         URL rURL = null;
         int lineShift = 0;
         if (url == null || !"file".equalsIgnoreCase(url.getProtocol())) {
@@ -158,15 +167,21 @@ public final class Source {
         Field fieldContent = sourceVar.getField(SOURCE_VAR_CONTENT);
         Field fieldHash = sourceVar.getField(SOURCE_VAR_HASH);
         Field fieldURL = sourceVar.getField(SOURCE_VAR_URL);
-        if (fieldName == null || fieldContent == null ||
-            fieldHash == null || fieldURL == null) {
-            
+        if (fieldContent == null && fieldURL == null) {
+            // There is a Data inner class instead:
+            Field fieldData = sourceVar.getField(SOURCE_VAR_DATA);
+            if (fieldData != null && fieldData instanceof ObjectVariable) {
+                fieldURL = ((ObjectVariable) fieldData).getField(SOURCE_VAR_URL);
+                fieldContent = ((ObjectVariable) fieldData).getField(SOURCE_VAR_DATA_ARRAY);
+            }
+        }
+        if (fieldName == null || fieldContent == null || fieldHash == null) {
             return null;
         }
-        Object urlObj = fieldURL.createMirrorObject();
+        Object urlObj = fieldURL != null ? fieldURL.createMirrorObject() : null;
         URL url;
         boolean compareContent = false;
-        if (urlObj == null) {
+        if (urlObj == null && fieldURL != null) {
             // Check if there's a special URL handler. In that case we have to count with content shifting.
             url = readURLFromFields(fieldURL);
             compareContent = true;
