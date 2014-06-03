@@ -52,5 +52,5 @@ public class FrameworksUtils {
     
     public static final String HTML5_CLIENT_PROJECT = "org.netbeans.modules.web.clientproject"; //NOI18N
     public static final String PHP_PROJECT = "org-netbeans-modules-php-project"; //NOI18N
-    public static final String MAVEN_PROJET = "org-netbeans-modules-maven";    //NOI18N
+    public static final String MAVEN_PROJECT = "org-netbeans-modules-maven";    //NOI18N
 }
