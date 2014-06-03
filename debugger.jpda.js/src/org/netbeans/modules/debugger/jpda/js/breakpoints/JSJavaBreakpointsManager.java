@@ -52,6 +52,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -87,6 +89,8 @@ import org.openide.util.Exceptions;
 
 @DebuggerServiceRegistration(types=LazyDebuggerManagerListener.class)
 public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
+    
+    private static final Logger LOG = Logger.getLogger(JSJavaBreakpointsManager.class.getName());
     
     private final Map<JPDADebugger, ScriptsHandler> scriptHandlers = new HashMap<>();
     private final Map<URLEquality, Set<JSLineBreakpoint>> breakpointsByURL = new HashMap<>();
@@ -374,6 +378,9 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
             lb.setHidden(true);
             //lb.setPreferredClassType(source.getClassType());
             setPreferredClassType(lb, source.getClassType());
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("LineBreakpointHandler.createLineBreakpoint() classtype = "+source.getClassType().getName());
+            }
             lb.setSuspend(JPDABreakpoint.SUSPEND_EVENT_THREAD);
             lb.setSession(debugger);
             if (!jslb.isEnabled()) {
