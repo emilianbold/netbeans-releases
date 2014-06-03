@@ -163,14 +163,6 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.gsf.testrunner.ui</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.java.platform</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -216,14 +208,6 @@ made subject to such option by the copyright holder.
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.java.testrunner</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.java.testrunner.ui</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -506,6 +490,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.testng.ant</friend>
                 <friend>org.netbeans.modules.testng.maven</friend>
+                <friend>org.netbeans.modules.testng.ui</friend>
                 <package>org.netbeans.modules.testng.api</package>
                 <package>org.netbeans.modules.testng.spi</package>
             </friend-packages>

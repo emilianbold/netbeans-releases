@@ -42,25 +42,6 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
-    <folder name="Editors">
-        <folder name="text">
-<!--            <folder name="x-java">
-                <folder name="Popup">
-                    <folder name="TestNG">
-                        <attr name="position" intvalue="1630"/>
-                    </folder>
-                </folder>
-            </folder>-->
-            <folder name="x-testng+xml">
-                <folder name="HyperlinkProviders">
-                    <file name="TestNGSuiteHyperlingProvider.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.testng.TestNGSuiteHyperlingProvider"/>
-                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
-                    </file>
-                </folder>
-            </folder>
-        </folder>
-    </folder>
     <folder name="Navigator">
         <folder name="Panels">
             <folder name="text">

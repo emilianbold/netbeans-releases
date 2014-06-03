@@ -48,7 +48,7 @@ import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.junit.api.JUnitTestSuite;
 import org.netbeans.modules.java.testrunner.OutputUtils;
-import org.netbeans.modules.junit.api.TestMethodNodeAction;
+import org.netbeans.modules.gsf.testrunner.api.TestMethodNodeAction;
 import org.netbeans.modules.junit.ui.api.JUnitTestsuiteNode;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;

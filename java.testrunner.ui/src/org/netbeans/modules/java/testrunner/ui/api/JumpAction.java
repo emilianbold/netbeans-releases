@@ -58,7 +58,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Marian Petras
  */
-public final class JumpAction extends AbstractAction {
+public class JumpAction extends AbstractAction {
 
     private static final RequestProcessor RP = new RequestProcessor(JumpAction.class);
     /** */
@@ -109,6 +109,10 @@ public final class JumpAction extends AbstractAction {
         }else{
             return super.getValue(key);
         }
+    }
+
+    public Node getNode() {
+        return node;
     }
 
 }

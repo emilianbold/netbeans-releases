@@ -309,10 +309,14 @@ public final class UIJavaUtils {
         lineNumStorage[0] = lineNum;
         return file;
     }
+    
+    public static void openFile(FileObject file, int lineNum) {
+        openFile(file, lineNum, Integer.MIN_VALUE);
+    }
 
     /**
      */
-    public static void openFile(final FileObject file, final int lineNum) {
+    public static void openFile(final FileObject file, final int lineNum, final int columnNum) {
 
         /*
          * Most of the following code was copied from the Ant module, method
@@ -338,7 +342,11 @@ public final class UIJavaUtils {
                             try {
                                 Line l = ed.getLineSet().getOriginal(lineNum - 1);
                                 if (!l.isDeleted()) {
-                                    l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
+                                    if (columnNum != Integer.MIN_VALUE) {
+                                        l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, columnNum);
+                                    } else {
+                                        l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
+                                    }
                                 }
                             } catch (IndexOutOfBoundsException ioobe) {
                                 // Probably harmless. Bogus line number.

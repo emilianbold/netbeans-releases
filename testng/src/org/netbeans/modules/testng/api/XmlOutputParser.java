@@ -47,7 +47,6 @@ import org.netbeans.modules.gsf.testrunner.api.Status;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.gsf.testrunner.api.Trouble.ComparisonFailure;
-import org.netbeans.modules.testng.output.TestNGTest;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;

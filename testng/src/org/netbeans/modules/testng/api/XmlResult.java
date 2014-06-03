@@ -41,7 +41,6 @@ package org.netbeans.modules.testng.api;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.testng.output.TestNGTest;
 
 /**
  *

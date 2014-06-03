@@ -50,7 +50,7 @@ import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
-import org.netbeans.modules.junit.api.TestMethodNodeAction;
+import org.netbeans.modules.gsf.testrunner.api.TestMethodNodeAction;
 import org.netbeans.modules.junit.ui.api.JUnitTestMethodNode;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;

@@ -213,6 +213,7 @@
                 <friend>org.netbeans.modules.junit.ui</friend>
                 <friend>org.netbeans.modules.testng</friend>
                 <friend>org.netbeans.modules.testng.ant</friend>
+                <friend>org.netbeans.modules.testng.ui</friend>
                 <package>org.netbeans.modules.java.testrunner</package>
                 <package>org.netbeans.modules.java.testrunner.antutils</package>
             </friend-packages>

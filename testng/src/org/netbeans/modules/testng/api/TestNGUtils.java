@@ -42,7 +42,15 @@
 
 package org.netbeans.modules.testng.api;
 
-import org.netbeans.modules.testng.actions.TestConfigAccessor;
+import java.util.Map;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin;
+import org.netbeans.modules.java.testrunner.CommonSettings;
+import org.netbeans.modules.testng.TestConfigAccessor;
+import org.netbeans.modules.testng.TestNGPlugin;
+import org.netbeans.modules.testng.TestNGPluginTrampoline;
+import org.netbeans.modules.testng.TestNGSettings;
+import org.netbeans.modules.testng.TestUtil;
 import org.netbeans.modules.testng.spi.TestConfig;
 import org.openide.filesystems.FileObject;
 
@@ -54,6 +62,36 @@ public class TestNGUtils {
     
     public static TestConfig getTestConfig(FileObject test, boolean rerun, String pkgName, String className, String methodName) {
         return TestConfigAccessor.getDefault().createTestConfig(test, rerun, pkgName, className, methodName);
+    }
+    
+    public static boolean createTestActionCalled(FileObject[] filesToTest) {
+        // Determine the plugin to be used:
+        TestNGPlugin plugin = TestUtil.getPluginForProject(FileOwnerQuery.getOwner(filesToTest[0]));
+        return TestNGPluginTrampoline.DEFAULT.createTestActionCalled(plugin, filesToTest);
+    }
+    
+    /**
+     * Creates test classes for given source classes.
+     *
+     * @param  filesToTest  source files for which test classes should be
+     *                      created
+     * @param  targetRoot   root folder of the target source root
+     * @param  params  parameters of creating test class
+     *                 - each key is an {@code Integer} whose value is equal
+     *                 to some of the constants defined in the class;
+     *                 the value is either
+     *                 a {@code String} (for key with value {@code CLASS_NAME})
+     *                 or a {@code Boolean} (for other keys)
+     * @return  created test files
+     */
+    public static FileObject[] createTests(FileObject[] filesToTest, FileObject targetRoot, Map<CommonPlugin.CreateTestParam, Object> params) {
+        // Determine the plugin to be used:
+        TestNGPlugin plugin = TestUtil.getPluginForProject(FileOwnerQuery.getOwner(filesToTest[0]));
+        return TestNGPluginTrampoline.DEFAULT.createTests(plugin, filesToTest, targetRoot, params);
+    }
+    
+    public static CommonSettings getTestNGSettings() {
+        return TestNGSettings.getDefault();
     }
     
 }

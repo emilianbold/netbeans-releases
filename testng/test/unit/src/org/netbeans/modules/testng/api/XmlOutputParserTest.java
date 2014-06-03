@@ -45,7 +45,6 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionType;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
-import org.netbeans.modules.testng.output.TestNGTest;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;

@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.testng.spi;
 
-import org.netbeans.modules.testng.actions.TestConfigAccessor;
+import org.netbeans.modules.testng.TestConfigAccessor;
 import org.openide.filesystems.FileObject;
 
 /**
