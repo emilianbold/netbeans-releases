@@ -43,57 +43,20 @@
 package org.netbeans.modules.testng.ui;
 
 import org.netbeans.modules.gsf.testrunner.api.CoreManager;
-import org.netbeans.modules.gsf.testrunner.api.Report;
-import org.netbeans.modules.gsf.testrunner.api.TestSession;
-import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.CommonUtils;
 import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
+import org.netbeans.modules.java.testrunner.ui.api.JavaManager;
 
 /**
  *
  * @author theofanis
  */
 @CoreManager.Registration(projectType = "", testingFramework = CommonUtils.TESTNG_TF)
-public class TestNGManagerProvider extends CoreManager {
+public class TestNGManagerProvider extends JavaManager {
 
     @Override
     public void registerNodeFactory() {
         Manager.getInstance().setNodeFactory(new TestNGTestNodeFactory());
-    }
-
-    @Override
-    public void testStarted(TestSession session) {
-        Manager.getInstance().testStarted(session);
-    }
-
-    @Override
-    public void sessionFinished(TestSession session) {
-        Manager.getInstance().sessionFinished(session);
-    }
-
-    @Override
-    public void displayReport(TestSession session, Report report) {
-        Manager.getInstance().displayReport(session, report);
-    }
-
-    @Override
-    public void displayReport(TestSession session, Report report, boolean completed) {
-        Manager.getInstance().displayReport(session, report, completed);
-    }
-
-    @Override
-    public void displayOutput(TestSession session, String text, boolean error) {
-        Manager.getInstance().displayOutput(session, text, error);
-    }
-
-    @Override
-    public void displaySuiteRunning(TestSession session, TestSuite suite) {
-        Manager.getInstance().displaySuiteRunning(session, suite);
-    }
-
-    @Override
-    public void displaySuiteRunning(TestSession session, String suiteName) {
-        Manager.getInstance().displaySuiteRunning(session, suiteName);
     }
     
 }

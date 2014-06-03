@@ -45,14 +45,14 @@ package org.netbeans.modules.maven.junit.ui;
 import org.netbeans.modules.gsf.testrunner.api.CoreManager;
 import org.netbeans.modules.gsf.testrunner.api.CommonUtils;
 import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
-import org.netbeans.modules.junit.ui.api.JUnitManager;
+import org.netbeans.modules.java.testrunner.ui.api.JavaManager;
 
 /**
  *
  * @author theofanis
  */
 @CoreManager.Registration(projectType = CommonUtils.MAVEN_PROJECT_TYPE, testingFramework = CommonUtils.JUNIT_TF)
-public class MavenJUnitManagerProvider extends JUnitManager {
+public class MavenJUnitManagerProvider extends JavaManager {
 
     @Override
     public void registerNodeFactory() {

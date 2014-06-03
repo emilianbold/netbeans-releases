@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.junit.ui.api;
+package org.netbeans.modules.java.testrunner.ui.api;
 
 import org.netbeans.modules.gsf.testrunner.api.Report;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
@@ -51,7 +51,7 @@ import org.netbeans.modules.gsf.testrunner.api.CoreManager;
  *
  * @author theofanis
  */
-public class JUnitManager extends CoreManager {
+public class JavaManager extends CoreManager {
 
     @Override
     public void testStarted(TestSession session) {
