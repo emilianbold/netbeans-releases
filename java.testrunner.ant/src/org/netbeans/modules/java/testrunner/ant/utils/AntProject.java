@@ -42,63 +42,74 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.testrunner.antutils;
+package org.netbeans.modules.java.testrunner.ant.utils;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import org.apache.tools.ant.module.spi.TaskStructure;
+import org.apache.tools.ant.module.spi.AntEvent;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author  Marian Petras
  */
-final class BatchTest {
+public final class AntProject {
 
-    /** */
-    private final AntProject project;
+    /** {@code AntEvent} which serves for evaluation of Ant properties */
+    private final AntEvent event;
+    /** project's base directory. */
+    private final File baseDir;
     
-    /** */
-    private Collection<FileSet> fileSets = new ArrayList<FileSet>();
-
     /**
+     * Constructor used only in tests.
      */
-    BatchTest(AntProject project) {
-        this.project = project;
+    AntProject() {
+        event = null;
+        baseDir = null;
     }
-    
+
     /**
      */
-    void handleChildrenAndAttrs(TaskStructure struct) {
-        for (TaskStructure child : struct.getChildren()) {
-            String childName = child.getName();
-            if (childName.equals("fileset")) {                          //NOI18N
-                FileSet fs = new FileSet(project);
-                fileSets.add(fs);
-                fs.handleChildrenAndAttrs(child);
-                continue;
-            }
+    public AntProject(AntEvent event) {
+        this.event = event;
+        String baseDirName = getProperty("basedir");                    //NOI18N
+        if (baseDirName == null) {
+            baseDirName = ".";                                          //NOI18N
         }
+        baseDir = FileUtil.normalizeFile(new File(baseDirName));
     }
-    
+
     /**
+     */
+    public String getProperty(String propertyName) {
+        return event.getProperty(propertyName);
+    }
+
+    /**
+     */
+    public String replaceProperties(String value) {
+        return event.evaluate(value);
+    }
+
+    /**
+     */
+    public File resolveFile(String fileName) {
+        return FileUtils.resolveFile(baseDir, fileName);
+    }
+
+    /**
+     * Return the boolean equivalent of a string, which is considered
+     * {@code true} if either {@code "on"}, {@code "true"},
+     * or {@code "yes"} is found, ignoring case.
      *
+     * @param  s  string to convert to a boolean value
+     *
+     * @return  {@code true} if the given string is {@code "on"}, {@code "true"}
+     *          or {@code "yes"}; or {@ code false} otherwise.
      */
-    int countTestClasses() {
-        int count = 0;
-        for (FileSet fileSet : fileSets) {
-            Collection<File> matchingFiles = FileSetScanner.listFiles(fileSet);
-            for (File file : matchingFiles) {
-                final String name = file.getName();
-                if (name.endsWith(".java") || name.endsWith(".class")) {//NOI18N
-                    count++;
-                }
-            }
-        }
-        //TODO - handle the situation that two or more filesets contain
-        //       the same file
-        return count;
+    public static boolean toBoolean(String s) {
+        return ("on".equalsIgnoreCase(s)                                //NOI18N
+                || "true".equalsIgnoreCase(s)                           //NOI18N
+                || "yes".equalsIgnoreCase(s));                          //NOI18N
     }
 
 }

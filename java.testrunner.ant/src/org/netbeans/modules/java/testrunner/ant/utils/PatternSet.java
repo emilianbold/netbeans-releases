@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.testrunner.antutils;
+package org.netbeans.modules.java.testrunner.ant.utils;
 
 import java.io.BufferedReader;
 import java.io.File;

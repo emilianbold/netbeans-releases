@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.testrunner.antutils;
+package org.netbeans.modules.java.testrunner.ant.utils;
 
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.TaskStructure;

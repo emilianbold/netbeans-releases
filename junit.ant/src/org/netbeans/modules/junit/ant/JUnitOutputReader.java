@@ -77,7 +77,7 @@ import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.gsf.testrunner.api.OutputLine;
 import org.netbeans.modules.gsf.testrunner.api.Status;
-import org.netbeans.modules.java.testrunner.antutils.AntProject;
+import org.netbeans.modules.java.testrunner.ant.utils.AntProject;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

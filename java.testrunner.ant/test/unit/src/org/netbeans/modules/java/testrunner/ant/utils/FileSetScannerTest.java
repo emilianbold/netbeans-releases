@@ -42,14 +42,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.testrunner.antutils;
+package org.netbeans.modules.java.testrunner.ant.utils;
 
-import org.netbeans.modules.java.testrunner.antutils.AntProject;
-import org.netbeans.modules.java.testrunner.antutils.FileSetScanner;
-import org.netbeans.modules.java.testrunner.antutils.FileSet;
 import java.io.File;
 import junit.framework.*;
-import org.netbeans.modules.java.testrunner.antutils.FileSetScanner.AntPattern;
+import org.netbeans.modules.java.testrunner.ant.utils.FileSetScanner.AntPattern;
 
 /**
  *

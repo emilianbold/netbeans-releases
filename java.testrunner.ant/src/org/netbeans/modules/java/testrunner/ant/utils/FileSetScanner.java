@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.testrunner.antutils;
+package org.netbeans.modules.java.testrunner.ant.utils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -53,7 +53,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
-import org.netbeans.modules.java.testrunner.antutils.FileSetScanner.AntPattern.PatternPartType;
+import org.netbeans.modules.java.testrunner.ant.utils.FileSetScanner.AntPattern.PatternPartType;
 
 /**
  *

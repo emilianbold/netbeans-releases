@@ -50,7 +50,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.Report;
 import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionType;
-import org.netbeans.modules.java.testrunner.antutils.AntLoggerUtils;
+import org.netbeans.modules.java.testrunner.ant.utils.AntLoggerUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.lookup.ServiceProvider;
 

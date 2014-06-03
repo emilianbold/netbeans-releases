@@ -42,33 +42,63 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.testrunner.antutils;
+package org.netbeans.modules.java.testrunner.ant.utils;
 
 import java.io.File;
-import org.openide.filesystems.FileUtil;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import org.apache.tools.ant.module.spi.TaskStructure;
 
 /**
  *
  * @author  Marian Petras
  */
-public class FileUtils {
+final class BatchTest {
+
+    /** */
+    private final AntProject project;
+    
+    /** */
+    private Collection<FileSet> fileSets = new ArrayList<FileSet>();
 
     /**
      */
-    private FileUtils() {
+    BatchTest(AntProject project) {
+        this.project = project;
     }
-
+    
     /**
      */
-    static File resolveFile(File file, String filename) {
-        filename = filename.replace('/', File.separatorChar)
-                           .replace('\\', File.separatorChar);
-        File result = new File(filename);
-        if (!result.isAbsolute()) {
-            result = new File(file, filename);
+    void handleChildrenAndAttrs(TaskStructure struct) {
+        for (TaskStructure child : struct.getChildren()) {
+            String childName = child.getName();
+            if (childName.equals("fileset")) {                          //NOI18N
+                FileSet fs = new FileSet(project);
+                fileSets.add(fs);
+                fs.handleChildrenAndAttrs(child);
+                continue;
+            }
         }
-        return FileUtil.normalizeFile(result);
+    }
+    
+    /**
+     *
+     */
+    int countTestClasses() {
+        int count = 0;
+        for (FileSet fileSet : fileSets) {
+            Collection<File> matchingFiles = FileSetScanner.listFiles(fileSet);
+            for (File file : matchingFiles) {
+                final String name = file.getName();
+                if (name.endsWith(".java") || name.endsWith(".class")) {//NOI18N
+                    count++;
+                }
+            }
+        }
+        //TODO - handle the situation that two or more filesets contain
+        //       the same file
+        return count;
     }
 
 }
-
