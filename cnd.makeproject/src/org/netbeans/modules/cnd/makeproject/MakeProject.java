@@ -1465,7 +1465,7 @@ public final class MakeProject implements Project, MakeProjectListener {
             FileObject projectPrivateFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER);
             if (projectPrivateFolder == null) {
                 FileObject projectFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
-                if (!projectFolder.canWrite()) {
+                if (projectFolder == null || !projectFolder.canWrite()) {
                     return;
                 }
                 projectPrivateFolder = projectFolder.createFolder(MakeConfiguration.PRIVATE_FOLDER);
