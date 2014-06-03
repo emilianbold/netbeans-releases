@@ -672,6 +672,8 @@ final class JUnitOutputReader {
                     CoreManager junitManager = getManagerProvider();
                     if (junitManager != null) {
                         junitManager.displayReport(testSession, report, true);
+                    } else { // update report status as a minimum
+                        report.setCompleted(true);
                     }
             }
             report = null;
@@ -755,6 +757,8 @@ final class JUnitOutputReader {
         CoreManager junitManager = getManagerProvider();
         if(junitManager != null) {
             junitManager.displayReport(testSession, report, false);
+        } else { // update report status as a minimum
+            report.setCompleted(false);
         }
         state = State.SUITE_STARTED;
     }

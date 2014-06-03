@@ -550,6 +550,8 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             long timeinmilis = (long) (fl * 1000);
             if (junitManager != null) {
                 junitManager.displayReport(session, session.getReport(timeinmilis));
+            } else { // update report status as a minimum
+                session.getReport(timeinmilis).setCompleted(true);
             }
             File output = new File(outputDir, runningTestClass + suffix + "-output.txt");
             if (output.isFile()) {

@@ -792,6 +792,8 @@ final class TestNGOutputReader {
                         Report report = testSession.getReport(ts.getElapsedTime());
                         if (testngManager != null) {
                             testngManager.displayReport(testSession, report, true);
+                        } else { // update report status as a minimum
+                            report.setCompleted(true);
                         }
                     }
                 }
@@ -949,6 +951,8 @@ final class TestNGOutputReader {
         CoreManager testngManager = getManagerProvider();
         if (testngManager != null) {
             testngManager.displayReport(testSession, r, true);
+        } else { // update report status as a minimum
+            r.setCompleted(true);
         }
         elapsedTime = 0;
     }
@@ -1009,6 +1013,8 @@ final class TestNGOutputReader {
 	    r.update(testSession.getReport(dur));
             if (testngManager != null) {
                 testngManager.displayReport(testSession, r, false);
+            } else { // update report status as a minimum
+                r.setCompleted(false);
             }
 	}
     }
@@ -1068,6 +1074,8 @@ final class TestNGOutputReader {
             CoreManager testngManager = getManagerProvider();
             if (testngManager != null) {
                 testngManager.displayReport(testSession, r, false);
+            } else { // update report status as a minimum
+                r.setCompleted(false);
             }
 	}
     }
