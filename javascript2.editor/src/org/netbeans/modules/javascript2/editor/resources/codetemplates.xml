@@ -88,7 +88,7 @@ ${selection}${cursor}
     </codetemplate>
     <codetemplate abbreviation="for">
         <code>
-<![CDATA[for (${var default="i"} = 0; ${var} < ${max default="10"}; ${var}++) {
+<![CDATA[for (var ${var default="i"} = 0, ${max} = ${limit default="10"}; ${var} < ${max}; ${var}++) {
     ${selection}${cursor}
 }]]>
         </code>

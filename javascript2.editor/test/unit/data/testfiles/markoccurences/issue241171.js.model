@@ -27,38 +27,38 @@ issue241171_L1 : FUNCTION issue241171_L1 [ANONYMOUS: true, DECLARED: true - issu
                # PARAMETERS
                OBJECT require [ANONYMOUS: false, DECLARED: true - require, MODIFIERS: PUBLIC, PARAMETER]
                # PROPERTIES
-               Anonym$0  : OBJECT Anonym$0 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
-               Editor    : OBJECT Editor [ANONYMOUS: false, DECLARED: true - Editor, MODIFIERS: PRIVATE, OBJECT]
-                         # PROPERTIES
-                         openPage  : OBJECT openPage [ANONYMOUS: false, DECLARED: false - openPage, MODIFIERS: PUBLIC, PROPERTY]
-                         pager     : OBJECT pager [ANONYMOUS: false, DECLARED: false - pager, MODIFIERS: PUBLIC, OBJECT]
+               Editor              : OBJECT Editor [ANONYMOUS: false, DECLARED: true - Editor, MODIFIERS: PRIVATE, OBJECT]
                                    # PROPERTIES
-                                   el : OBJECT el [ANONYMOUS: false, DECLARED: false - el, MODIFIERS: PUBLIC, PROPERTY]
-                                   on : FUNCTION on [ANONYMOUS: false, DECLARED: false - on, MODIFIERS: PUBLIC, METHOD]
-                                      # PARAMETERS
-                                      OBJECT param1 [ANONYMOUS: false, DECLARED: true - param1, MODIFIERS: PUBLIC, PARAMETER]
-                                      OBJECT param2 [ANONYMOUS: false, DECLARED: true - param2, MODIFIERS: PUBLIC, PARAMETER]
-                                      OBJECT param3 [ANONYMOUS: false, DECLARED: true - param3, MODIFIERS: PUBLIC, PARAMETER]
-                                      # PROPERTIES
-                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                         prototype : OBJECT prototype [ANONYMOUS: false, DECLARED: false - prototype, MODIFIERS: PUBLIC, OBJECT]
+                                   openPage  : OBJECT openPage [ANONYMOUS: false, DECLARED: false - openPage, MODIFIERS: PUBLIC, PROPERTY]
+                                   pager     : OBJECT pager [ANONYMOUS: false, DECLARED: false - pager, MODIFIERS: PUBLIC, OBJECT]
+                                             # PROPERTIES
+                                             el : OBJECT el [ANONYMOUS: false, DECLARED: false - el, MODIFIERS: PUBLIC, PROPERTY]
+                                             on : FUNCTION on [ANONYMOUS: false, DECLARED: false - on, MODIFIERS: PUBLIC, METHOD]
+                                                # PARAMETERS
+                                                OBJECT param1 [ANONYMOUS: false, DECLARED: true - param1, MODIFIERS: PUBLIC, PARAMETER]
+                                                OBJECT param2 [ANONYMOUS: false, DECLARED: true - param2, MODIFIERS: PUBLIC, PARAMETER]
+                                                OBJECT param3 [ANONYMOUS: false, DECLARED: true - param3, MODIFIERS: PUBLIC, PARAMETER]
+                                                # PROPERTIES
+                                                arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                   prototype : OBJECT prototype [ANONYMOUS: false, DECLARED: false - prototype, MODIFIERS: PUBLIC, OBJECT]
+                                             # PROPERTIES
+                                             openEdition : FUNCTION openEdition [ANONYMOUS: false, DECLARED: true - openEdition, MODIFIERS: PUBLIC, METHOD]
+                                                         # RETURN TYPES
+                                                         undefined, RESOLVED: true
+                                                         # PARAMETERS
+                                                         OBJECT edition [ANONYMOUS: false, DECLARED: true - edition, MODIFIERS: PUBLIC, PARAMETER]
+                                                         # PROPERTIES
+                                                         arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                             welcome     : FUNCTION welcome [ANONYMOUS: false, DECLARED: true - welcome, MODIFIERS: PUBLIC, METHOD]
+                                                         # RETURN TYPES
+                                                         undefined, RESOLVED: true
+                                                         # PROPERTIES
+                                                         arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                   text      : OBJECT text [ANONYMOUS: false, DECLARED: true - text, MODIFIERS: PUBLIC, PROPERTY]
+               arguments           : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+               editor              : OBJECT editor [ANONYMOUS: false, DECLARED: true - editor, MODIFIERS: PRIVATE, VARIABLE]
                                    # PROPERTIES
-                                   openEdition : FUNCTION openEdition [ANONYMOUS: false, DECLARED: true - openEdition, MODIFIERS: PUBLIC, METHOD]
-                                               # RETURN TYPES
-                                               undefined, RESOLVED: true
-                                               # PARAMETERS
-                                               OBJECT edition [ANONYMOUS: false, DECLARED: true - edition, MODIFIERS: PUBLIC, PARAMETER]
-                                               # PROPERTIES
-                                               arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                   welcome     : FUNCTION welcome [ANONYMOUS: false, DECLARED: true - welcome, MODIFIERS: PUBLIC, METHOD]
-                                               # RETURN TYPES
-                                               undefined, RESOLVED: true
-                                               # PROPERTIES
-                                               arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                         text      : OBJECT text [ANONYMOUS: false, DECLARED: true - text, MODIFIERS: PUBLIC, PROPERTY]
-               arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-               editor    : OBJECT editor [ANONYMOUS: false, DECLARED: true - editor, MODIFIERS: PRIVATE, VARIABLE]
-                         # PROPERTIES
-                         welcome : FUNCTION welcome [ANONYMOUS: false, DECLARED: false - welcome, MODIFIERS: PUBLIC, METHOD]
-                                 # PROPERTIES
-                                 arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                   welcome : FUNCTION welcome [ANONYMOUS: false, DECLARED: false - welcome, MODIFIERS: PUBLIC, METHOD]
+                                           # PROPERTIES
+                                           arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+               issue241171Anonym$0 : OBJECT issue241171Anonym$0 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
