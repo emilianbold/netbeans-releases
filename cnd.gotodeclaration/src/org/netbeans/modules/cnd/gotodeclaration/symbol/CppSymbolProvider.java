@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.NameAcceptor;
 import org.netbeans.modules.cnd.api.model.services.CsmVisibilityQuery;
@@ -160,7 +161,12 @@ public class CppSymbolProvider implements SymbolProvider {
         }
         if (!filled) {
             long time = System.currentTimeMillis();
-            collect(context, nameAcceptor, symbols);
+            CsmCacheManager.enter();
+            try {
+                collect(context, nameAcceptor, symbols);
+            } finally {
+                CsmCacheManager.leave();
+            }
             if (TRACE) { trace("Collecting %d symbols took %d ms", symbols.size(), System.currentTimeMillis() - time); } //NOI18N
         }
         
