@@ -59,7 +59,7 @@ made subject to such option by the copyright holder.
         </transformation>
     </transformationgroup>
     <transformationgroup>
-        <description>Separate projectuiapi into desktop and NetBeans independent and dependent parts</description>
+        <description>Separate project.ant into desktop and NetBeans independent and dependent parts</description>
         <transformation>
             <trigger-dependency type="older">
                 <module-dependency codenamebase="org.netbeans.modules.project.ant" major="1" spec="1.61"/>
