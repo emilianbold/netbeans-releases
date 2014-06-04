@@ -3179,7 +3179,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
                 public void run() {
                     if (!EventQueue.isDispatchThread()) {
                         File curr2 = getFileChooser().getCurrentDirectory();
-                        if (curr2.equals(curr1)) {
+                        if (curr2 != null && curr2.equals(curr1)) {
                             parentFile = getFileChooser().getFileSystemView().getParentDirectory(curr2);
                         } else {
                             parentFile = null;

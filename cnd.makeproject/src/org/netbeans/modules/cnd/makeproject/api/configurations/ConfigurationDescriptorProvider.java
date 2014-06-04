@@ -420,7 +420,7 @@ public abstract class ConfigurationDescriptorProvider {
     }
     
     public void opened() {
-        MakeConfigurationDescriptor descr = getConfigurationDescriptor(false);
+        MakeConfigurationDescriptor descr = getConfigurationDescriptor(true);
         if (descr != null) {
             descr.opened(interrupter);
         }
