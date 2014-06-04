@@ -284,7 +284,7 @@ public final class KarmaServer {
     private boolean isDebug() {
         // XXX
         //return KarmaPreferences.isDebug(project);
-        return false;
+        return Boolean.getBoolean("nb.karma.debug"); // NOI18N
     }
 
     @Override
