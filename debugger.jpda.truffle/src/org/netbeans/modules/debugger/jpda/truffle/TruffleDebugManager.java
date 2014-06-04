@@ -57,6 +57,7 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -111,21 +112,21 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
         System.err.println("TruffleDebugManager.initBreakpoints(): submitted BP "+debugManagerLoadBP);
         TruffleAccessBreakpoints.init();
     }
-    
+
     @Override
-    public void engineAdded(DebuggerEngine engine) {
-        JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
+    public void sessionAdded(Session session) {
+        JPDADebugger debugger = session.lookupFirst(null, JPDADebugger.class);
         if (debugger == null) {
             return ;
         }
         synchronized (dmHandlers) {
             if (dmHandlers.containsKey(debugger)) {
-                // A new engine for the same debugger
+                // A new session for the same debugger?
                 return ;
             }
         }
         initLoadBP();
-        System.err.println("TruffleDebugManager.engineAdded("+engine+"), adding BP listener to "+debugManagerLoadBP);
+        System.err.println("TruffleDebugManager.sessionAdded("+session+"), adding BP listener to "+debugManagerLoadBP);
         DebugManagerHandler dmh = new DebugManagerHandler(debugger);
         debugManagerLoadBP.addJPDABreakpointListener(dmh);
         /*debugManagerLoadBP.addPropertyChangeListener(new PropertyChangeListener() {
@@ -140,10 +141,10 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
             dmHandlers.put(debugger, dmh);
         }
     }
-    
+
     @Override
-    public void engineRemoved(DebuggerEngine engine) {
-        JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
+    public void sessionRemoved(Session session) {
+        JPDADebugger debugger = session.lookupFirst(null, JPDADebugger.class);
         if (debugger == null) {
             return ;
         }
@@ -152,7 +153,7 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
             dmh = dmHandlers.remove(debugger);
         }
         if (dmh != null) {
-            System.err.println("TruffleDebugManager.engineRemoved("+engine+"), removing BP listener from "+debugManagerLoadBP);
+            System.err.println("TruffleDebugManager.engineRemoved("+session+"), removing BP listener from "+debugManagerLoadBP);
             debugManagerLoadBP.removeJPDABreakpointListener(dmh);
             dmh.destroy();
         }
