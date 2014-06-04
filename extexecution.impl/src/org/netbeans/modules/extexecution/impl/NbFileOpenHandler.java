@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.extexecution.open;
+package org.netbeans.modules.extexecution.impl;
 
 import java.io.IOException;
 import java.util.logging.Level;

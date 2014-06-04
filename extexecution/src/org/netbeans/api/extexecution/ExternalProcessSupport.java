@@ -89,7 +89,7 @@ public final class ExternalProcessSupport {
         if (pdp != null) {
             pdp.destroy(process, env);
         } else {
-            process.destroy();
+            Processes.killTree(process, env);
         }
     }
 }

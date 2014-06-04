@@ -40,29 +40,19 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.extexecution.destroy;
+package org.netbeans.modules.extexecution.process;
 
 import java.util.Map;
 import org.netbeans.processtreekiller.ProcessTreeKiller;
 import org.netbeans.spi.extexecution.base.ProcessesImplementation;
-import org.netbeans.spi.extexecution.destroy.ProcessDestroyPerformer;
 import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author mkleint
  */
-@ServiceProviders({
-    @ServiceProvider(service=ProcessDestroyPerformer.class),
-    @ServiceProvider(service=ProcessesImplementation.class)
-})
-public class ProcessesImpl implements ProcessDestroyPerformer, ProcessesImplementation {
-
-    @Override
-    public void destroy(Process process, Map<String, String> env) {
-        ProcessTreeKiller.get().kill(process, env);
-    }
+@ServiceProvider(service=ProcessesImplementation.class)
+public class ProcessesImpl implements ProcessesImplementation {
 
     @Override
     public void killTree(Process process, Map<String, String> environment) {

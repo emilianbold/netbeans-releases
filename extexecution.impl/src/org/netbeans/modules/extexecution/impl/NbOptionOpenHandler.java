@@ -39,22 +39,21 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.extexecution.open;
+package org.netbeans.modules.extexecution.impl;
 
-import java.net.URL;
-import org.netbeans.spi.extexecution.open.HttpOpenHandler;
-import org.openide.awt.HtmlBrowser;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.spi.extexecution.open.OptionOpenHandler;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Petr Hejl
  */
-@ServiceProvider(service=HttpOpenHandler.class)
-public class NbHttpOpenHandler implements HttpOpenHandler {
+@ServiceProvider(service=OptionOpenHandler.class)
+public class NbOptionOpenHandler implements OptionOpenHandler {
 
     @Override
-    public void open(URL url) {
-        HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+    public void open(String optionsPath) {
+        OptionsDisplayer.getDefault().open(optionsPath);
     }
 }
