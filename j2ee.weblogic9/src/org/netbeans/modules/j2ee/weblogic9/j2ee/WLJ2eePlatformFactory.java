@@ -586,6 +586,10 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
         @Override
         public File getDomainHome() {
+            if (dm.isRemote()) {
+                return null;
+            }
+
             File domain = new File(dm.getInstanceProperties().getProperty(
                     WLPluginProperties.DOMAIN_ROOT_ATTR));
             
@@ -623,7 +627,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             assert domainDir != null;
             String serverDir = dm.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
             assert serverDir != null;
-            WLServerLibrarySupport support = new WLServerLibrarySupport(new File(serverDir), new File(domainDir));
+            WLServerLibrarySupport support = new WLServerLibrarySupport(new File(serverDir),
+                    domainDir == null ? null : new File(domainDir));
 
             Map<ServerLibrary, List<File>> serverLibraries =  null;
             try {

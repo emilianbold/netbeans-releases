@@ -199,6 +199,9 @@ public final class WLPluginProperties {
     @CheckForNull
     public static FileObject getDomainConfigFileObject(WLDeploymentManager manager) {
         String domainDir = manager.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
+        if (domainDir == null) {
+            return null;
+        }
         return getDomainConfigFileObject(new File(domainDir));
     }
 
