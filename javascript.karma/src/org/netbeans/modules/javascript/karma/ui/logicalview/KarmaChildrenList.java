@@ -54,6 +54,7 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -72,6 +73,8 @@ import org.netbeans.modules.javascript.karma.util.KarmaUtils;
 import org.netbeans.modules.javascript.karma.util.ValidationResult;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.AbstractNode;
@@ -203,6 +206,8 @@ public class KarmaChildrenList implements NodeList<Node>, PreferenceChangeListen
                 SystemAction.get(StopKarmaServerAction.class),
                 SystemAction.get(RestartKarmaServerAction.class),
                 null,
+                SystemAction.get(DebugKarmaServerAction.class),
+                null,
                 SystemAction.get(ActiveKarmaConfigAction.class),
                 null,
                 SystemAction.get(CustomizeKarmaAction.class),
@@ -295,6 +300,64 @@ public class KarmaChildrenList implements NodeList<Node>, PreferenceChangeListen
         @Override
         public String getName() {
             return Bundle.RestartKarmaServerAction_name();
+        }
+
+    }
+
+    private static final class DebugKarmaServerAction extends CallableSystemAction implements ContextAwareAction {
+
+        @NbBundle.Messages("DebugKarmaServerAction.name=Debug")
+        @Override
+        public String getName() {
+            return Bundle.DebugKarmaServerAction_name();
+        }
+
+        @Override
+        public void performAction() {
+            assert false;
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return HelpCtx.DEFAULT_HELP;
+        }
+
+        @NbBundle.Messages("DebugKarmaServerAction.browser.none=Confirm Karma debug properties first")
+        @Override
+        public Action createContextAwareInstance(Lookup actionContext) {
+
+            final class DebugAction extends AbstractAction implements Presenter.Popup {
+
+                private final Project project;
+
+
+                private DebugAction(Lookup actionContext) {
+                    project = actionContext.lookup(Project.class);
+                    assert project != null : "Project expected in lookup: " + actionContext;
+                    putValue(NAME, Bundle.DebugKarmaServerAction_name());
+                }
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    boolean originalDebug = KarmaPreferences.isDebug(project);
+                    if (!originalDebug
+                            && !KarmaPreferences.isDebugBrowserIdSet(project)) {
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.DebugKarmaServerAction_browser_none()));
+                        project.getLookup().lookup(CustomizerProvider2.class).showCustomizer(KarmaCustomizer.IDENTIFIER, null);
+                        return;
+                    }
+                    KarmaPreferences.setDebug(project, !originalDebug);
+                }
+
+                @Override
+                public JMenuItem getPopupPresenter() {
+                    JCheckBoxMenuItem debugMenuItem = new JCheckBoxMenuItem(this);
+                    debugMenuItem.setSelected(KarmaPreferences.isDebug(project));
+                    return debugMenuItem;
+                }
+
+            }
+            return new DebugAction(actionContext);
         }
 
     }
