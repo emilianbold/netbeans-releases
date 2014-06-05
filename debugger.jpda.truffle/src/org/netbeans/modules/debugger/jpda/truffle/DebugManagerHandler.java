@@ -48,6 +48,7 @@ import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.Field;
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.IntegerValue;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.InvocationException;
 import com.sun.jdi.Method;
@@ -59,8 +60,14 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
@@ -92,6 +99,8 @@ import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccessBreakpoints;
 import static org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccessBreakpoints.BASIC_CLASS_NAME;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -109,14 +118,33 @@ class DebugManagerHandler implements JPDABreakpointListener {
     private static final String ACCESSOR_SET_UP_DEBUG_MANAGER_FOR = "setUpDebugManagerFor"; // NOI18N
     private static final String ACCESSOR_DEBUGGER_ACCESS = "debuggerAccess";    // NOI18N
     private static final String ACCESSOR_EXECUTION_HALTED = "executionHalted";  // NOI18N
+    private static final String ACCESSOR_SET_LINE_BREAKPOINT = "setLineBreakpoint"; // NOI18N
+    private static final String ACCESSOR_SET_LINE_BREAKPOINT_SIGNAT =
+            "(L"+String.class.getName().replace('.', '/')+";I)Lcom/oracle/truffle/debug/LineBreakpoint;";   // NOI18N
     
     private final JPDADebugger debugger;
     private final AtomicBoolean inited = new AtomicBoolean(false);
     private ClassType accessorClass;
+    private final Object accessorClassLock = new Object();
     private ObjectReference debugManager;
+    private List<JSLineBreakpoint> breakpointsToSubmit = new ArrayList<>();
+    private final Object breakpointsToSubmitLock = new Object();
+    private final Map<JSLineBreakpoint, ObjectReference> breakpointsMap = new HashMap<>();
     
     public DebugManagerHandler(JPDADebugger debugger) {
         this.debugger = debugger;
+        initBPsToSubmit();
+    }
+    
+    private void initBPsToSubmit() {
+        Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
+        synchronized (breakpointsToSubmitLock) {
+            for (Breakpoint bp : breakpoints) {
+                if (bp instanceof JSLineBreakpoint) {
+                    breakpointsToSubmit.add((JSLineBreakpoint) bp);
+                }
+            }
+        }
     }
 
     @Override
@@ -155,6 +183,7 @@ class DebugManagerHandler implements JPDABreakpointListener {
                         return ;
                     }
                     debugManager = (ObjectReference) ret;
+                    setBPsToSubmit(thread);
                 } catch (VMDisconnectedExceptionWrapper vmd) {
                 } catch (InvocationException iex) {
                     iextr = new InvocationExceptionTranslated(iex, thread.getDebugger());
@@ -225,14 +254,16 @@ class DebugManagerHandler implements JPDABreakpointListener {
                         return ;
                     }
                 }
-                accessorClass = serviceClass;
                 Method debugManagerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, ACCESSOR_SET_UP_DEBUG_MANAGER, "()Lorg/netbeans/modules/debugger/jpda/backend/truffle/JPDATruffleDebugManager;");
                 ret = ClassTypeWrapper.invokeMethod(serviceClass, tr, debugManagerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                 if (ret != null && !(ret instanceof ObjectReference)) {
                     LOG.log(Level.WARNING, "Could not start up debugger manager of "+serviceClass);
                     return ;
                 }
-                TruffleAccessBreakpoints.assureBPSet(debugger, accessorClass);
+                TruffleAccessBreakpoints.assureBPSet(debugger, serviceClass);
+                synchronized (accessorClassLock) {
+                    accessorClass = serviceClass;
+                }
                 debugManager = (ObjectReference) ret;
             } catch (VMDisconnectedExceptionWrapper vmd) {
             } catch (InvocationException iex) {
@@ -281,7 +312,9 @@ class DebugManagerHandler implements JPDABreakpointListener {
     }
     
     ClassType getAccessorClass() {
-        return accessorClass;
+        synchronized (accessorClassLock) {
+            return accessorClass;
+        }
     }
     
     void destroy() {
@@ -325,12 +358,92 @@ class DebugManagerHandler implements JPDABreakpointListener {
         }
                 */
     }
+    
+    /**
+     * Call in method invoking
+     */
+    private void setBPsToSubmit(JPDAThreadImpl t) {
+        assert t.isMethodInvoking();
+        List<JSLineBreakpoint> breakpoints;
+        synchronized (breakpointsToSubmitLock) {
+            breakpoints = new ArrayList<>(breakpointsToSubmit);
+            breakpointsToSubmit.clear();
+            breakpointsToSubmit = null;
+        }
+        System.err.println("DebugManagerHandler: Breakpoints to submit = "+breakpoints);
+        Map<JSLineBreakpoint, ObjectReference> bpsMap = new HashMap<>();
+        for (JSLineBreakpoint bp : breakpoints) {
+            FileObject fileObject = bp.getFileObject();
+            if (fileObject == null) {
+                continue;
+            }
+            File file = FileUtil.toFile(fileObject);
+            if (file == null) {
+                continue;
+            }
+            ObjectReference bpImpl = setLineBreakpoint(t, file.getAbsolutePath(), bp.getLineNumber());
+            bpsMap.put(bp, bpImpl);
+        }
+        synchronized (breakpointsMap) {
+            breakpointsMap.putAll(bpsMap);
+        }
+    }
+    
+    private ObjectReference setLineBreakpoint(JPDAThreadImpl t, String path, int line) {
+        assert t.isMethodInvoking();
+        ThreadReference tr = t.getThreadReference();
+        try {
+            Method setLineBreakpointMethod = ClassTypeWrapper.concreteMethodByName(
+                    accessorClass,
+                    ACCESSOR_SET_LINE_BREAKPOINT,
+                    ACCESSOR_SET_LINE_BREAKPOINT_SIGNAT);
+            //if (path.indexOf("/src") > 0) {
+            //    path = path.substring(path.indexOf("/src") + 1);
+            //}
+            StringReference pathRef = tr.virtualMachine().mirrorOf(path);
+            IntegerValue lineRef = tr.virtualMachine().mirrorOf(line);
+            List<? extends Value> args = Arrays.asList(new Value[] { pathRef, lineRef });
+            ObjectReference ret = (ObjectReference) ClassTypeWrapper.invokeMethod(
+                    accessorClass,
+                    tr,
+                    setLineBreakpointMethod,
+                    args,
+                    ObjectReference.INVOKE_SINGLE_THREADED);
+            return ret;
+        } catch (VMDisconnectedExceptionWrapper | InternalExceptionWrapper |
+                 ClassNotLoadedException | ClassNotPreparedExceptionWrapper |
+                 IncompatibleThreadStateException | InvalidTypeException |
+                 InvocationException | ObjectCollectedExceptionWrapper ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+    
+    private void submitBP(JSLineBreakpoint bp) {
+    }
+    
+    private void removeBP(JSLineBreakpoint bp) {
+    }
 
     void breakpointAdded(JSLineBreakpoint jsLineBreakpoint) {
-        
+        synchronized (breakpointsToSubmitLock) {
+            if (breakpointsToSubmit != null) {
+                breakpointsToSubmit.add(jsLineBreakpoint);
+                return ;
+            }
+        }
+        // Breakpoints were submitted already, submit this as well.
+        submitBP(jsLineBreakpoint);
     }
 
     void breakpointRemoved(JSLineBreakpoint jsLineBreakpoint) {
-        
+        synchronized (breakpointsToSubmitLock) {
+            if (breakpointsToSubmit != null) {
+                breakpointsToSubmit.remove(jsLineBreakpoint);
+                return ;
+            }
+        }
+        // Breakpoints were submitted already, remove this.
+        removeBP(jsLineBreakpoint);
     }
 }

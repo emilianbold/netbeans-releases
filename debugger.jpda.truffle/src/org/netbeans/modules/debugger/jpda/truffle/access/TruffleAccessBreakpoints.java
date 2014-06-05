@@ -185,6 +185,11 @@ public class TruffleAccessBreakpoints implements JPDABreakpointListener {
             }
         } else if (execStepIntoBP == bp) {
             System.err.println("TruffleAccessBreakpoints.breakpointReached("+event+"), exec step into.");
+            SourcePosition sp = getPosition(event.getDebugger(), event.getThread());
+            CurrentPCInfo cpci = new CurrentPCInfo(event.getThread(), sp);
+            synchronized (currentPCInfos) {
+                currentPCInfos.put(event.getDebugger(), cpci);
+            }
         } else if (dbgAccessBP == bp) {
             System.err.println("TruffleAccessBreakpoints.breakpointReached("+event+"), debugger access.");
         }

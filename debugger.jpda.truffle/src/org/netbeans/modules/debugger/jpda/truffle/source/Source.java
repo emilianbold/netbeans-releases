@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda.truffle.source;
 
 import com.sun.jdi.StringReference;
 import com.sun.jdi.Value;
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -156,7 +157,14 @@ public final class Source {
                  VMDisconnectedExceptionWrapper ex) {
             return null;
         }
-        Source src = new Source(name, null/*url*/, id, codeRef);
+        URL url = null;
+        File file = new File(path);
+        if (file.isAbsolute() && file.canRead()) {
+            try {
+                url = file.toURI().toURL();
+            } catch (MalformedURLException muex) {}
+        }
+        Source src = new Source(name, url, id, codeRef);
         synchronized (knownSources) {
             Map<Long, Source> dbgSources = knownSources.get(debugger);
             if (dbgSources == null) {
