@@ -45,7 +45,6 @@ var PROJECT_CONFIG = process.env.PROJECT_CONFIG;
 var BASE_DIR = process.env.BASE_DIR;
 var PROJECT_WEB_ROOT = process.env.PROJECT_WEB_ROOT;
 var COVERAGE = Boolean(process.env.COVERAGE);
-var DEBUG = Boolean(process.env.DEBUG);
 var AUTOWATCH = Boolean(process.env.AUTOWATCH);
 var KARMA_NETBEANS_REPORTER = process.env.KARMA_NETBEANS_REPORTER;
 
