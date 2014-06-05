@@ -219,6 +219,14 @@ public final class KarmaServers {
         return String.format(url, karmaServer.getPort());
     }
 
+    public void closeDebugUrl(Project project) {
+        KarmaServer karmaServer = getKarmaServer(project);
+        if (karmaServer == null) {
+            return;
+        }
+        karmaServer.closeDebugUrl();
+    }
+
     @CheckForNull
     private KarmaServer getKarmaServer(Project project) {
         KarmaServerInfo serverInfo = karmaServers.get(project);

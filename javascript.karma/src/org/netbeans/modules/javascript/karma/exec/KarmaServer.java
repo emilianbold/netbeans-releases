@@ -196,7 +196,7 @@ public final class KarmaServer {
         }
     }
 
-    private synchronized void closeDebugUrl() {
+    public synchronized void closeDebugUrl() {
         if (browserSupport != null) {
             browserSupport.close(true);
         }
