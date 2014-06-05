@@ -63,7 +63,7 @@ import javax.swing.border.MatteBorder;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 //import org.netbeans.modules.junit.SizeRestrictedPanel;
-import org.netbeans.modules.gsf.testrunner.ui.api.SizeRestrictedPanel;
+import org.netbeans.modules.gsf.testrunner.api.SizeRestrictedPanel;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.TreeView;

@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.testrunner.hints;
+package org.netbeans.modules.java.testrunner.ui.hints;
 
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;

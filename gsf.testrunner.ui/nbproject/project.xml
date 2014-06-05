@@ -175,7 +175,6 @@
                 <friend>org.netbeans.modules.gototest</friend>
                 <friend>org.netbeans.modules.groovy.support</friend>
                 <friend>org.netbeans.modules.hudson.ui</friend>
-                <friend>org.netbeans.modules.java.testrunner</friend>
                 <friend>org.netbeans.modules.java.testrunner.ui</friend>
                 <friend>org.netbeans.modules.javascript.jstestdriver</friend>
                 <friend>org.netbeans.modules.javascript.karma</friend>

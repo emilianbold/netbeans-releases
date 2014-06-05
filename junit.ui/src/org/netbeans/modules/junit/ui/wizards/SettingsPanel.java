@@ -58,7 +58,7 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import org.netbeans.modules.java.testrunner.GuiUtils;
 import org.netbeans.modules.gsf.testrunner.api.NamedObject;
-import org.netbeans.modules.gsf.testrunner.ui.api.SizeRestrictedPanel;
+import org.netbeans.modules.gsf.testrunner.api.SizeRestrictedPanel;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;

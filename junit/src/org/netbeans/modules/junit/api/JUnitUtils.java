@@ -67,6 +67,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataObject;
 import org.openide.util.Utilities;
 
 /**
@@ -132,21 +133,21 @@ public final class JUnitUtils {
         return false;
     }
     
-//    public static FileObject createSuiteTest(FileObject targetRootFolder, FileObject targetFolder, String suiteName, Map<CommonPlugin.CreateTestParam, Object> params) {
-//        DefaultPlugin defaultPlugin = new DefaultPlugin();
-//        
-//        if (!defaultPlugin.setupJUnitVersionByProject(targetFolder)) {
-//            return null;
-//        }
-//
-//        /* create test class(es) for the selected source class: */
-//        FileObject suite = defaultPlugin.createSuiteTest(
-//                targetRootFolder,
-//                targetFolder,
-//                suiteName,
-//                JUnitTestUtil.getSettingsMap(true));
-//        return suite;
-//    }
+    public static DataObject createSuiteTest(FileObject targetRootFolder, FileObject targetFolder, String suiteName, Map<CommonPlugin.CreateTestParam, Object> params) {
+        DefaultPlugin defaultPlugin = new DefaultPlugin();
+        
+        if (!defaultPlugin.setupJUnitVersionByProject(targetFolder)) {
+            return null;
+        }
+
+        /* create test class(es) for the selected source class: */
+        DataObject suite = defaultPlugin.createSuiteTest(
+                targetRootFolder,
+                targetFolder,
+                suiteName,
+                JUnitTestUtil.getSettingsMap(true));
+        return suite;
+    }
     
     /**
      * Identifies and collects <code>SourceGroup</code>s and folders

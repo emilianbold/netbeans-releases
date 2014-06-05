@@ -111,7 +111,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.testrunner.GuiUtils;
 import org.netbeans.modules.gsf.testrunner.api.NamedObject;
-import org.netbeans.modules.gsf.testrunner.ui.api.SizeRestrictedPanel;
+import org.netbeans.modules.gsf.testrunner.api.SizeRestrictedPanel;
 import org.netbeans.modules.java.testrunner.CommonSettings;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.DialogDescriptor;
