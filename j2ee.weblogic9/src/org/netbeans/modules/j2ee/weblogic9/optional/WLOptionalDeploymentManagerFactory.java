@@ -151,7 +151,11 @@ public class WLOptionalDeploymentManagerFactory extends OptionalDeploymentManage
 
     @Override
     public ServerLibraryManager getServerLibraryManager(DeploymentManager dm) {
-        return new WLServerLibraryManager((WLDeploymentManager) dm);
+        WLDeploymentManager manager = (WLDeploymentManager) dm;
+        if (!manager.isRemote()) {
+            return new WLServerLibraryManager(manager);
+        }
+        return null;
     }
 
     private static class WLServerInstanceDescriptor implements ServerInstanceDescriptor {
