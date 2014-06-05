@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -106,11 +107,18 @@ public class LineHyperlinkProvider implements HyperlinkProviderExt {
 
     @Override
     public void performClickAction(final Document doc, final int offset, final HyperlinkType type) {
-        final JTextComponent target = Utilities.getFocusedComponent();
+        UIGesturesSupport.submit("USG_CND_LINE_HYPERLINK", type); //NOI18N
+        goToLine(doc, Utilities.getFocusedComponent(), offset, type);
+    }
+    
+    public boolean goToLine(final Document doc, final JTextComponent target, final int offset, final HyperlinkType type) {
         if (target == null || target.getDocument() != doc) {
-            return;
+            return false;
         }
 
+        if (!isHyperlinkPoint(doc, offset, type)) {
+            return false;
+        }
         Runnable run = new Runnable() {
 
             @Override
@@ -122,6 +130,7 @@ public class LineHyperlinkProvider implements HyperlinkProviderExt {
             hyperLinkTask.cancel();
         }
         hyperLinkTask = CsmModelAccessor.getModel().enqueue(run, "Following hyperlink");// NOI18N
+        return true;
     }
 
     @Override
@@ -201,7 +210,7 @@ public class LineHyperlinkProvider implements HyperlinkProviderExt {
         LineTarget item = getLineDirective(doc, offset);
         FileObject toOpen = getTargetFileObject(item, doc);
         if (toOpen != null && toOpen.isValid()) {
-            CsmUtilities.openSource(toOpen, item.line, 1);
+            CsmUtilities.openSource(toOpen, item.line, 0);
         }
     }
     
