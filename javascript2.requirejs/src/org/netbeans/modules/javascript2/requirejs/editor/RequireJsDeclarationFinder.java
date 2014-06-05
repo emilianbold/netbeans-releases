@@ -50,6 +50,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.spi.DeclarationFinder;
+import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -65,7 +66,7 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
         FileObject fo = info.getSnapshot().getSource().getFileObject();
         if (ts != null && fo != null) {
             ts.move(caretOffset);
-            if (ts.moveNext() && ts.token().id() == JsTokenId.STRING && EditorUtils.isFileReference(ts, ts.offset())) {
+            if (ts.moveNext() && ts.token().id() == JsTokenId.STRING && EditorUtils.isFileReference(info.getSnapshot(), ts.offset())) {
                 ts.move(caretOffset);
                 ts.moveNext();
                 String path = ts.token().text().toString();
@@ -129,7 +130,7 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
                 TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
                 if (ts != null) {
                     ts.move(caretOffset);
-                    if (ts.moveNext() && ts.token().id() == JsTokenId.STRING && EditorUtils.isFileReference(ts, ts.offset())) {
+                    if (ts.moveNext() && ts.token().id() == JsTokenId.STRING && EditorUtils.isFileReference(Source.create(doc).createSnapshot(), ts.offset())) {
                         ts.move(caretOffset);
                         ts.moveNext();
                         value[0] = new OffsetRange(ts.offset(), ts.offset() + ts.token().length());
