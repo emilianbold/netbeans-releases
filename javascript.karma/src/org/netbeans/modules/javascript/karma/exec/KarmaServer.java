@@ -205,8 +205,9 @@ public final class KarmaServer {
     private void initBrowserSupport() {
         assert Thread.holdsLock(this);
         if (browserSupport == null) {
-            // XXX
-            browserSupport = BrowserSupport.create(BrowserUISupport.getBrowser("Chrome.INTEGRATED")); // NOI18N
+            String browserId = KarmaPreferences.getDebugBrowserId(project);
+            assert browserId != null;
+            browserSupport = BrowserSupport.create(BrowserUISupport.getBrowser(browserId));
         }
     }
 
@@ -282,9 +283,7 @@ public final class KarmaServer {
     }
 
     private boolean isDebug() {
-        // XXX
-        //return KarmaPreferences.isDebug(project);
-        return Boolean.getBoolean("nb.karma.debug"); // NOI18N
+        return KarmaPreferences.isDebug(project);
     }
 
     @Override
