@@ -246,6 +246,14 @@ public class CsmUtilities {
     public static CsmFile getCsmFile(Node node, boolean waitParsing) {
         return getCsmFile(node.getLookup().lookup(DataObject.class), waitParsing, false);
     }
+    
+    public static CsmFile getCsmFile(NativeFileItem item, boolean waitParsing, boolean snapShot) {
+        CsmProject csmProject = CsmModelAccessor.getModel().getProject(item.getNativeProject());
+        if (csmProject != null) {
+            return csmProject.findFile(item, waitParsing, snapShot);
+        }
+        return null;
+    }
 
     public static DataObject getDataObject(JTextComponent component) {
         if (component == null) {
