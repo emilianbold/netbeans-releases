@@ -92,11 +92,6 @@ module.exports = function(config) {
     config.reporters = arrayUnique(config.reporters);
 
     config.plugins = config.plugins || [];
-    if (DEBUG) {
-        config.plugins = config.plugins.concat([
-            'karma-chrome-launcher'
-        ]);
-    }
     config.plugins = config.plugins.concat([
         KARMA_NETBEANS_REPORTER
     ]);
@@ -107,9 +102,6 @@ module.exports = function(config) {
     }
     config.plugins = arrayUnique(config.plugins);
 
-    if (DEBUG) {
-        config.browsers = ['Chrome'];
-    }
     printMessage(BROWSERS_MESSAGE, config.browsers.join(','));
 
     config.colors = true;
