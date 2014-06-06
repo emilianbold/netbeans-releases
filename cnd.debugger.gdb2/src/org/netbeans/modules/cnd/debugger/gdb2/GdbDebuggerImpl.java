@@ -938,8 +938,27 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     @Override
     public void terminate() {
         int pid = (int) session().getPid();
-	if (pid > 0) {
-	    CommonTasksSupport.sendSignal(getHost().executionEnvironment(), pid, Signal.SIGKILL, null);
+        if (pid > 0) {
+//            CommonTasksSupport.sendSignal(getHost().executionEnvironment(), pid, Signal.SIGKILL, null);
+            MICommand command = new MiCommandImpl("kill") {
+
+                @Override
+                protected void onDone(MIRecord record) {
+                    resetCurrentLine();
+                    
+                    state().isRunning = false;
+                    state().isProcess = false;
+                    updateActions();
+                    
+                    session().setSessionState(state());
+                    session().setPid(-1);
+                    session().update();
+                    
+                    super.onDone(record);
+                }
+                
+            };
+            sendCommandInt(command);
         }
     }
 
