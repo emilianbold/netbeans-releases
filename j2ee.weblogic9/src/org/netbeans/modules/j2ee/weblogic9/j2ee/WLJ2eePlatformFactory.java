@@ -462,10 +462,13 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
             // Allow J2EE 1.4 Projects
             profiles.add(Profile.J2EE_14);
-            
+
             // Check for WebLogic Server 10x to allow Java EE 5 Projects
             Version version = dm.getDomainVersion();
-            
+            if (version == null) {
+                version = dm.getServerVersion();
+            }
+
             if (version != null) {
                 if (version.isAboveOrEqual(WLDeploymentFactory.VERSION_10)) {
                     profiles.add(Profile.JAVA_EE_5);
@@ -624,7 +627,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         public LibraryImplementation[] getLibraries(Set<ServerLibraryDependency> libraries) {
             // FIXME cache & listen for file changes
             String domainDir = dm.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
-            assert domainDir != null;
+            assert domainDir != null || dm.isRemote();
             String serverDir = dm.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
             assert serverDir != null;
             WLServerLibrarySupport support = new WLServerLibrarySupport(new File(serverDir),
