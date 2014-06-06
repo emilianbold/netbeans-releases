@@ -378,7 +378,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
                 int spaceAround
                         = (textView.getVisibleRect().height - rect.height) / 2;
                 Rectangle centeredRect = new Rectangle(
-                        rect.x, rect.y - spaceAround + rect.height,
+                        rect.x, Math.max(0, rect.y - spaceAround + rect.height),
                         rect.width, spaceAround * 2 + rect.height);
                 textView.scrollRectToVisible(centeredRect);
             }
