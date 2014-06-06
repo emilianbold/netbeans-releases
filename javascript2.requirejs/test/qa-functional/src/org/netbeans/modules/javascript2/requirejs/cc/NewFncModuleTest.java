@@ -69,7 +69,16 @@ public class NewFncModuleTest extends GeneralRequire {
                         "testLiteralMethodNested2",
                         "testDateProperty",
                         "testLiteralProperty",
-                        "testLiteralPropertyNested"
+                        "testLiteralPropertyNested",
+                        "testModArrayMethod",
+                        "testModDateMethod",
+                        "testModDateMethod2",
+                        "testModLiteralMethod",
+                        "testModLiteralMethodNested",
+                        "testModLiteralMethodNested2",
+                        "testModDateProperty",
+                        "testModLiteralProperty",
+                        "testModLiteralPropertyNested"
                 ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
 
@@ -133,6 +142,60 @@ public class NewFncModuleTest extends GeneralRequire {
     public void testLiteralPropertyNested() throws Exception {
         startTest();
         testCompletion(openFile("js|main.js", NewFncModuleTest.currentProject), 56);
+        endTest();
+    }
+
+    public void testModArrayMethod() throws Exception {// 244923
+        startTest();
+        testCompletion(openFile("js|app|mymodule.js", NewFncModuleTest.currentProject), 40);
+        endTest();
+    }
+
+    public void testModDateMethod() throws Exception { // 244923
+        startTest();
+        testCompletion(openFile("js|app|mymodule.js", NewFncModuleTest.currentProject), 42);
+        endTest();
+    }
+
+    public void testModDateMethod2() throws Exception {// 244923
+        startTest();
+        testCompletion(openFile("js|app|mymodule.js", NewFncModuleTest.currentProject), 44);
+        endTest();
+    }
+
+    public void testModLiteralMethod() throws Exception {// 244923
+        startTest();
+        testCompletion(openFile("js|app|mymodule.js", NewFncModuleTest.currentProject), 46);
+        endTest();
+    }
+
+    public void testModLiteralMethodNested() throws Exception {// 244923
+        startTest();
+        testCompletion(openFile("js|app|mymodule.js", NewFncModuleTest.currentProject), 48);
+        endTest();
+    }
+
+    public void testModLiteralMethodNested2() throws Exception {// 244923
+        startTest();
+        testCompletion(openFile("js|app|mymodule.js", NewFncModuleTest.currentProject), 50);
+        endTest();
+    }
+
+    public void testModDateProperty() throws Exception {// 244923
+        startTest();
+        testCompletion(openFile("js|app|mymodule.js", NewFncModuleTest.currentProject), 52);
+        endTest();
+    }
+
+    public void testModLiteralProperty() throws Exception {
+        startTest();
+        testCompletion(openFile("js|app|mymodule.js", NewFncModuleTest.currentProject), 54);
+        endTest();
+    }
+
+    public void testModLiteralPropertyNested() throws Exception {
+        startTest();
+        testCompletion(openFile("js|app|mymodule.js", NewFncModuleTest.currentProject), 56);
         endTest();
     }
 

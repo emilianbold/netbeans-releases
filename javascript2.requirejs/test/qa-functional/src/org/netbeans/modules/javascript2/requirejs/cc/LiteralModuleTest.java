@@ -67,7 +67,14 @@ public class LiteralModuleTest extends GeneralRequire {
                         "testLiteralNested2",
                         "testLiteralProperty",
                         "testLiteralPropertyNested",
-                        "testLiteralPropertyNested2"
+                        "testLiteralPropertyNested2",
+                        "testModDateMethod",
+                        "testModLiteralMethod",
+                        "testModLiteralNested",
+                        "testModLiteralNested2",
+                        "testModLiteralProperty",
+                        "testModLiteralPropertyNested",
+                        "testModLiteralPropertyNested2"
                 ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
 
@@ -118,7 +125,49 @@ public class LiteralModuleTest extends GeneralRequire {
 
     public void testLiteralPropertyNested2() throws Exception {
         startTest();
-        testCompletion(openFile("js |main.js", LiteralModuleTest.currentProject), 71);
+        testCompletion(openFile("js|main.js", LiteralModuleTest.currentProject), 71);
+        endTest();
+    }
+
+    public void testModDateMethod() throws Exception {
+        startTest();
+        testCompletion(openFile("js|app|mymodule.js", LiteralModuleTest.currentProject), 59);
+        endTest();
+    }
+
+    public void testModLiteralMethod() throws Exception {
+        startTest();
+        testCompletion(openFile("js|app|mymodule.js", LiteralModuleTest.currentProject), 61);
+        endTest();
+    }
+
+    public void testModLiteralNested() throws Exception {
+        startTest();
+        testCompletion(openFile("js|app|mymodule.js", LiteralModuleTest.currentProject), 63);
+        endTest();
+    }
+
+    public void testModLiteralNested2() throws Exception {
+        startTest();
+        testCompletion(openFile("js|app|mymodule.js", LiteralModuleTest.currentProject), 65);
+        endTest();
+    }
+
+    public void testModLiteralProperty() throws Exception {
+        startTest();
+        testCompletion(openFile("js|app|mymodule.js", LiteralModuleTest.currentProject), 67);
+        endTest();
+    }
+
+    public void testModLiteralPropertyNested() throws Exception {
+        startTest();
+        testCompletion(openFile("js|app|mymodule.js", LiteralModuleTest.currentProject), 69);
+        endTest();
+    }
+
+    public void testModLiteralPropertyNested2() throws Exception {
+        startTest();
+        testCompletion(openFile("js|app|mymodule.js", LiteralModuleTest.currentProject), 71);
         endTest();
     }
 

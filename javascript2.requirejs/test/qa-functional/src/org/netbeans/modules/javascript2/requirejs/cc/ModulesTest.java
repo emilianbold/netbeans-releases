@@ -65,7 +65,12 @@ public class ModulesTest extends GeneralRequire {
                         "testFncModule",
                         "testFncPropModule",
                         "testNewFncModule",
-                        "testLiteralModule"
+                        "testLiteralModule",
+                        "testModStdModule",
+                        "testModFncModule",
+                        "testModFncPropModule",
+                        "testModNewFncModule",
+                        "testModLiteralModule"
                 ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
 
@@ -105,6 +110,36 @@ public class ModulesTest extends GeneralRequire {
     public void testLiteralModule() throws Exception {
         startTest();
         testCompletion(openFile("js|main.js", ModulesTest.currentProject), 30);
+        endTest();
+    }
+
+    public void testModStdModule() throws Exception {
+        startTest();
+        testCompletion(openFile("js|app|mymodule.js", ModulesTest.currentProject), 22);
+        endTest();
+    }
+
+    public void testModFncModule() throws Exception {
+        startTest();
+        testCompletion(openFile("js|app|mymodule.js", ModulesTest.currentProject), 24);
+        endTest();
+    }
+
+    public void testModFncPropModule() throws Exception {
+        startTest();
+        testCompletion(openFile("js|app|mymodule.js", ModulesTest.currentProject), 26);
+        endTest();
+    }
+
+    public void testModNewFncModule() throws Exception {
+        startTest();
+        testCompletion(openFile("js|app|mymodule.js", ModulesTest.currentProject), 28);
+        endTest();
+    }
+
+    public void testModLiteralModule() throws Exception {
+        startTest();
+        testCompletion(openFile("js|app|mymodule.js", ModulesTest.currentProject), 30);
         endTest();
     }
 
