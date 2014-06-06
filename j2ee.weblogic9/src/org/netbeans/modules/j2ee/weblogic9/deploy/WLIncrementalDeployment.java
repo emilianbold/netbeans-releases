@@ -278,7 +278,7 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
 
     @Override
     public boolean isDeployOnSaveSupported() {
-        return true;
+        return !dm.isRemote();
     }
 
     @Override
