@@ -45,7 +45,6 @@ package org.netbeans.modules.javascript2.requirejs.editor;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +69,6 @@ import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.JsCodeCompletionBase;
 import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
-import org.netbeans.modules.javascript2.requirejs.RequireJsPreferences;
 import org.netbeans.modules.javascript2.requirejs.TestProjectSupport;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -130,6 +128,11 @@ public class RequireFileCodeCompletionBaseUrlTest extends JsCodeCompletionBase {
     public void testFSCompletion08() throws Exception {
         checkCompletion("TestProject2/public_html/js/main.js", "'pikn^ic'", false);
     }
+    
+    public void testFSBaseUrl01() throws Exception {
+        checkCompletion("TestProject2/public_html/js/main.js", "baseUrl: 'js/^lib',", false);
+    }
+    
     
     public void checkAppliedCompletion(final String file, final String caretLine, final String expectedLine, final String itemToComplete, final boolean includeModifiers) throws Exception {
         final CodeCompletionHandler.QueryType type = CodeCompletionHandler.QueryType.COMPLETION;

@@ -45,7 +45,6 @@ var PROJECT_CONFIG = process.env.PROJECT_CONFIG;
 var BASE_DIR = process.env.BASE_DIR;
 var PROJECT_WEB_ROOT = process.env.PROJECT_WEB_ROOT;
 var COVERAGE = Boolean(process.env.COVERAGE);
-var DEBUG = Boolean(process.env.DEBUG);
 var AUTOWATCH = Boolean(process.env.AUTOWATCH);
 var KARMA_NETBEANS_REPORTER = process.env.KARMA_NETBEANS_REPORTER;
 
@@ -92,11 +91,6 @@ module.exports = function(config) {
     config.reporters = arrayUnique(config.reporters);
 
     config.plugins = config.plugins || [];
-    if (DEBUG) {
-        config.plugins = config.plugins.concat([
-            'karma-chrome-launcher'
-        ]);
-    }
     config.plugins = config.plugins.concat([
         KARMA_NETBEANS_REPORTER
     ]);
@@ -107,9 +101,6 @@ module.exports = function(config) {
     }
     config.plugins = arrayUnique(config.plugins);
 
-    if (DEBUG) {
-        config.browsers = ['Chrome'];
-    }
     printMessage(BROWSERS_MESSAGE, config.browsers.join(','));
 
     config.colors = true;

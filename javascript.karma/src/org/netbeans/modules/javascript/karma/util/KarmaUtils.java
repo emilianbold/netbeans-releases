@@ -44,12 +44,15 @@ package org.netbeans.modules.javascript.karma.util;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.karma.exec.KarmaExecutable;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.api.WebBrowsers;
 import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -72,6 +75,25 @@ public final class KarmaUtils {
 
 
     private KarmaUtils() {
+    }
+
+    public static List<WebBrowser> getDebugBrowsers() {
+        List<WebBrowser> browsers = new ArrayList<>();
+        for (WebBrowser browser : WebBrowsers.getInstance().getAll(false, false, false, true)) {
+            if (!browser.isEmbedded()
+                    && browser.hasNetBeansIntegration()) {
+                browsers.add(browser);
+            }
+        }
+        return browsers;
+    }
+
+    @CheckForNull
+    public static WebBrowser getPreferredDebugBrowser() {
+        for (WebBrowser browser : getDebugBrowsers()) {
+            return browser;
+        }
+        return null;
     }
 
     public static File getConfigDir(Project project) {
