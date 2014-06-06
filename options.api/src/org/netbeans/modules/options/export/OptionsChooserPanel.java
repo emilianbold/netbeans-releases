@@ -431,10 +431,14 @@ public final class OptionsChooserPanel extends JPanel {
         String allLabel = NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.outline.all");
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(allLabel);
         ArrayList<String> enabledItems = new ArrayList<String>();
+        double buildNumberDuringExport = 0;
+        double currentBuildNumber = Double.parseDouble(getOptionsExportModel().getBuildNumber(System.getProperty("netbeans.buildnumber")));  // NOI18N
         if (panelType == PanelType.IMPORT) {
             // If the returned value is null, it means that there is no enabledItems.info in the importing zip file
             // indicating it was created from a version prior to 7.4
             enabledItems = getOptionsExportModel().getEnabledItemsDuringExport(new File(txtFile.getText()));
+            // If the returned value is -1, it means that there is no build.info in the importing zip file or userdir
+            buildNumberDuringExport = getOptionsExportModel().getBuildNumberDuringExport(new File(txtFile.getText()));
         }
         for (OptionsExportModel.Category category : getOptionsExportModel().getCategories()) {
             LOGGER.fine("category=" + category);  //NOI18N
@@ -446,7 +450,13 @@ public final class OptionsChooserPanel extends JPanel {
                     // do not show not applicable items for import
                     if (panelType == PanelType.IMPORT) {
                         // avoid false possitives, check the items that were explicitly selected by the user during export
-                        if (enabledItems == null || enabledItems.contains(category.getDisplayName().concat(item.getDisplayName()))) {
+                        if (enabledItems == null || enabledItems.contains(category.getDisplayName().concat(item.getDisplayName()))
+                                // special treatment as Projects category was introduced after 7.4, so when trying to import options,
+                                // exported from 7.4, into 8.0 or later there would be no Project category in enabledItems.info file.
+                                // There must be GeneralAll Other Unspecified present in the extracted enabledItems.info file though.
+                                || (category.getDisplayName().equals("Projects") && enabledItems.contains("GeneralAll Other Unspecified")  // NOI18N
+                                    && buildNumberDuringExport >= 201310111528.0 // build date of 7.4 version
+                                    && currentBuildNumber >= 201403101706.0)) { // build date of 8.0 version
                             categoryNode.add(new DefaultMutableTreeNode(item));
                         }
                     } else {
