@@ -592,7 +592,10 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
 
 
     private void hasSelectionChanged(boolean sel) {
-        ((AbstractOutputTab) getParent()).hasSelectionChanged(sel);
+        AbstractOutputTab parent = (AbstractOutputTab) getParent();
+        if (parent != null) { // #243686
+            parent.hasSelectionChanged(sel);
+        }
     }
 
     public final void changedUpdate(DocumentEvent e) {
