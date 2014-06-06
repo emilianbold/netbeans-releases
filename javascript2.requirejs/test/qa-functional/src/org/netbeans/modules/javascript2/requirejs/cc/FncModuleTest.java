@@ -62,7 +62,9 @@ public class FncModuleTest extends GeneralRequire {
                 NbModuleSuite.createConfiguration(FncModuleTest.class).addTest(
                         "openProject",
                         "testLiteralMethod",
-                        "testDateMethod"
+                        "testDateMethod",
+                        "testModLiteralMethod",
+                        "testModDateMethod"
                 ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
 
@@ -84,6 +86,18 @@ public class FncModuleTest extends GeneralRequire {
     public void testDateMethod() throws Exception {
         startTest();
         testCompletion(openFile("js|main.js", FncModuleTest.currentProject), 35);
+        endTest();
+    }
+
+    public void testModLiteralMethod() throws Exception {
+        startTest();
+        testCompletion(openFile("js|app|mymodule.js", FncModuleTest.currentProject), 37);
+        endTest();
+    }
+
+    public void testModDateMethod() throws Exception {
+        startTest();
+        testCompletion(openFile("js|app|mymodule.js", FncModuleTest.currentProject), 35);
         endTest();
     }
 

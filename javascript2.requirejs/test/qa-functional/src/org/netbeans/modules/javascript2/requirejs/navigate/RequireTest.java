@@ -39,8 +39,10 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.requirejs.cc;
+package org.netbeans.modules.javascript2.requirejs.navigate;
 
+import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
@@ -51,103 +53,117 @@ import org.netbeans.modules.javascript2.requirejs.GeneralRequire;
  *
  * @author Vladimir Riha
  */
-public class ModulesTest extends GeneralRequire {
+public class RequireTest extends GeneralRequire {
 
-    public ModulesTest(String arg0) {
+    public RequireTest(String arg0) {
         super(arg0);
     }
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(ModulesTest.class).addTest(
+                NbModuleSuite.createConfiguration(RequireTest.class).addTest(
                         "openProject",
                         "testStdModule",
                         "testFncModule",
-                        "testFncPropModule",
                         "testNewFncModule",
                         "testLiteralModule",
-                        "testModStdModule",
-                        "testModFncModule",
-                        "testModFncPropModule",
-                        "testModNewFncModule",
-                        "testModLiteralModule"
+                        "testLibrary",
+                        "testStdModuleParam",
+                        "testFncModuleParam",
+                        "testNewFncModuleParam",
+                        "testLiteralModuleParam",
+                        "testLibraryParam"
                 ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
 
     public void openProject() throws Exception {
         startTest();
-        ModulesTest.currentProject = "SimpleRequire";
+        RequireTest.currentProject = "SimpleRequire";
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
         openDataProjects("SimpleRequire");
-        openFile("index.html", "SimpleRequire");
+        openFile("js|main.js", "SimpleRequire");
         endTest();
     }
 
-    public void testStdModule() throws Exception {
+    public void testLibrary() {
         startTest();
-        testCompletion(openFile("js|main.js", ModulesTest.currentProject), 22);
+        navigate("main.js", "piwik.js", 19, 25, 1, 1);
         endTest();
     }
 
-    public void testFncModule() throws Exception {
+    public void testStdModule() {
         startTest();
-        testCompletion(openFile("js|main.js", ModulesTest.currentProject), 24);
+        navigate("main.js", "stdModule.js", 19, 96, 1, 1);
         endTest();
     }
 
-    public void testFncPropModule() throws Exception {
+    public void testFncModule() {
         startTest();
-        testCompletion(openFile("js|main.js", ModulesTest.currentProject), 26);
+        navigate("main.js", "function.js", 19, 39, 1, 1);
         endTest();
     }
 
-    public void testNewFncModule() throws Exception {
+    public void testNewFncModule() {
         startTest();
-        testCompletion(openFile("js|main.js", ModulesTest.currentProject), 28);
+        navigate("main.js", "newFunction.js", 19, 56, 1, 1);
         endTest();
     }
 
-    public void testLiteralModule() throws Exception {
+    public void testLiteralModule() {
         startTest();
-        testCompletion(openFile("js|main.js", ModulesTest.currentProject), 30);
+        navigate("main.js", "objectLiteral.js", 19, 78, 1, 1);
         endTest();
     }
 
-    public void testModStdModule() throws Exception {
+    public void testLibraryParam() {
         startTest();
-        testCompletion(openFile("js|app|mymodule.js", ModulesTest.currentProject), 22);
+        navigate("main.js", "piwik.js", 20, 22, 1, 1);
         endTest();
     }
 
-    public void testModFncModule() throws Exception {
+    public void testStdModuleParam() {
         startTest();
-        testCompletion(openFile("js|app|mymodule.js", ModulesTest.currentProject), 24);
+        navigate("main.js", "stdModule.js", 20, 50, 1, 1);
         endTest();
     }
 
-    public void testModFncPropModule() throws Exception {
+    public void testFncModuleParam() {
         startTest();
-        testCompletion(openFile("js|app|mymodule.js", ModulesTest.currentProject), 26);
+        navigate("main.js", "function.js", 20, 27, 1, 1);
         endTest();
     }
 
-    public void testModNewFncModule() throws Exception {
+    public void testNewFncModuleParam() {
         startTest();
-        testCompletion(openFile("js|app|mymodule.js", ModulesTest.currentProject), 28);
+        navigate("main.js", "newFunction.js", 20, 33, 1, 1);
         endTest();
     }
 
-    public void testModLiteralModule() throws Exception {
+    public void testLiteralModuleParam() {
         startTest();
-        testCompletion(openFile("js|app|mymodule.js", ModulesTest.currentProject), 30);
+        navigate("main.js", "objectLiteral.js", 20, 42, 1, 1);
         endTest();
     }
 
-    @Override
-    public void tearDown() {
-        if (!ModulesTest.currentFile.equalsIgnoreCase("index.html")) {
-            clearCurrentLine(new EditorOperator(ModulesTest.currentFile));
+    private void navigate(String fromFile, String toFile, int fromLine, int fromColumn, int toLine, int toColumn) {
+        EditorOperator eo = new EditorOperator(fromFile);
+        eo.setCaretPosition(fromLine, fromColumn);
+        evt.waitNoEvent(200);
+        new org.netbeans.jellytools.actions.Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_B, 2)).performShortcut(eo);
+        evt.waitNoEvent(500);
+        try {
+            EditorOperator ed = new EditorOperator(toFile);
+            int position = ed.txtEditorPane().getCaretPosition();
+            ed.setCaretPosition(toLine, toColumn);
+            int expectedPosition = ed.txtEditorPane().getCaretPosition();
+            assertTrue("Incorrect caret position. Expected position " + expectedPosition + " but was " + position, position == expectedPosition);
+            if (!fromFile.equals(toFile)) {
+                ed.close(false);
+            }
+        } catch (Exception e) {
+            fail(e.getMessage());
         }
+
     }
 
 }
