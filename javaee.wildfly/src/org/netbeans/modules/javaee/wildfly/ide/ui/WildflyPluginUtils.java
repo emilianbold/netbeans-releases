@@ -70,6 +70,8 @@ public class WildflyPluginUtils {
 
     public static final Version JBOSS_7_0_0 = new Version("7.0.0"); // NOI18N
 
+    public static final Version EAP_6_3_0 = new Version("7.4.0"); // NOI18N
+
     public static final Version WILDFLY_8_0_0 = new Version("8.0.0"); // NOI18N
 
     public static final Version WILDFLY_8_1_0 = new Version("8.1.0"); // NOI18N

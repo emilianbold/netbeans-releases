@@ -58,12 +58,13 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ContextRootConfig
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DatasourceConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
-import org.netbeans.modules.javaee.wildfly.config.gen.EjbRef;
+import org.netbeans.modules.javaee.wildfly.config.gen.EjbRefType;
 import org.netbeans.modules.javaee.wildfly.config.gen.JbossWeb;
-import org.netbeans.modules.javaee.wildfly.config.gen.MessageDestinationRef;
-import org.netbeans.modules.javaee.wildfly.config.gen.ResourceRef;
+import org.netbeans.modules.javaee.wildfly.config.gen.MessageDestinationRefType;
+import org.netbeans.modules.javaee.wildfly.config.gen.ResourceRefType;
 import org.netbeans.modules.javaee.wildfly.config.mdb.MessageDestinationSupport;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
+import org.netbeans.modules.schema2beans.AttrProp;
 import org.netbeans.modules.schema2beans.Common;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -104,7 +105,7 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
         if (deploymentDescriptorDO == null) {
             try {
                 if (FileUtil.toFileObject(jbossWebFile) != null) {
-                    deploymentDescriptorDO = deploymentDescriptorDO.find(FileUtil.toFileObject(jbossWebFile));
+                    deploymentDescriptorDO = DataObject.find(FileUtil.toFileObject(jbossWebFile));
                     deploymentDescriptorDO.addPropertyChangeListener(this);
                 }
             } catch (DataObjectNotFoundException donfe) {
@@ -139,11 +140,11 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
                 if (j2eeModule.getArchive() != null) {
                     return j2eeModule.getArchive().getName();
                 }
-                if(j2eeModule.getUrl() != null) {
-                    if(j2eeModule.getUrl().endsWith(".war")) {
-                        return j2eeModule.getUrl().substring(1, j2eeModule.getUrl().length() -4);
+                if (j2eeModule.getUrl() != null) {
+                    if (j2eeModule.getUrl().endsWith(".war")) {
+                        return j2eeModule.getUrl().substring(0, j2eeModule.getUrl().length() - 4);
                     } else {
-                        return j2eeModule.getUrl().substring(1);
+                        return j2eeModule.getUrl();
                     }
                 }
             } catch (IOException ex) {
@@ -180,12 +181,14 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
             currentCP = ctxRoot;
         }
         final String newContextPath = currentCP;
-        modifyJbossWeb(new JbossWebModifier() {
-            @Override
-            public void modify(JbossWeb jbossWeb) {
-                jbossWeb.setContextRoot(newContextPath);
-            }
-        });
+        if (!getContextRoot().equals(newContextPath)) {
+            modifyJbossWeb(new JbossWebModifier() {
+                @Override
+                public void modify(JbossWeb jbossWeb) {
+                    jbossWeb.setContextRoot(newContextPath);
+                }
+            });
+        }
     }
 
     /**
@@ -250,8 +253,8 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
     @Override
     public String findDatasourceJndiName(String referenceName) throws ConfigurationException {
 
-        ResourceRef resourceRefs[] = getJbossWeb().getResourceRef();
-        for (ResourceRef resourceRef : resourceRefs) {
+        ResourceRefType[] resourceRefs = getJbossWeb().getResourceRef();
+        for (ResourceRefType resourceRef : resourceRefs) {
             String rrn = resourceRef.getResRefName();
             if (referenceName.equals(rrn)) {
                 String jndiName = resourceRef.getJndiName();
@@ -274,7 +277,7 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
             public void modify(JbossWeb modifiedJbossWeb) {
 
                 // check whether resource not already defined
-                ResourceRef resourceRefs[] = modifiedJbossWeb.getResourceRef();
+                ResourceRefType resourceRefs[] = modifiedJbossWeb.getResourceRef();
                 for (int i = 0; i < resourceRefs.length; i++) {
                     String rrn = resourceRefs[i].getResRefName();
                     if (name.equals(rrn)) {
@@ -284,7 +287,7 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
                 }
 
                 //if it doesn't exist yet, create a new one
-                ResourceRef newRR = new ResourceRef();
+                ResourceRefType newRR = new ResourceRefType();
                 newRR.setResRefName(name);
                 newRR.setJndiName(jndiName);
                 modifiedJbossWeb.addResourceRef(newRR);
@@ -302,7 +305,7 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
             public void modify(JbossWeb modifiedJbossWeb) {
 
                 // check whether mail service not already defined
-                ResourceRef resourceRefs[] = modifiedJbossWeb.getResourceRef();
+                ResourceRefType resourceRefs[] = modifiedJbossWeb.getResourceRef();
                 for (int i = 0; i < resourceRefs.length; i++) {
                     String rrn = resourceRefs[i].getResRefName();
                     if (name.equals(rrn)) {
@@ -312,7 +315,7 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
                 }
 
                 //if it doesn't exist yet, create a new one
-                ResourceRef newRR = new ResourceRef();
+                ResourceRefType newRR = new ResourceRefType();
                 newRR.setResRefName(name);
                 newRR.setJndiName(MAIL_SERVICE_JNDI_NAME_JB4);
                 modifiedJbossWeb.addResourceRef(newRR);
@@ -346,7 +349,7 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
             public void modify(JbossWeb modifiedJbossWeb) {
 
                 // check whether connection factory not already defined
-                ResourceRef resourceRefs[] = modifiedJbossWeb.getResourceRef();
+                ResourceRefType resourceRefs[] = modifiedJbossWeb.getResourceRef();
                 for (int i = 0; i < resourceRefs.length; i++) {
                     String rrn = resourceRefs[i].getResRefName();
                     if (name.equals(rrn)) {
@@ -356,7 +359,7 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
                 }
 
                 //if it doesn't exist yet, create a new one
-                ResourceRef newRR = new ResourceRef();
+                ResourceRefType newRR = new ResourceRefType();
                 newRR.setResRefName(name);
                 newRR.setJndiName(MessageDestinationSupport.CONN_FACTORY_JNDI_NAME_JB4);
                 modifiedJbossWeb.addResourceRef(newRR);
@@ -376,8 +379,8 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
             public void modify(JbossWeb modifiedJbossWeb) {
 
                 // check whether message destination not already defined
-                MessageDestinationRef mdRefs[] = modifiedJbossWeb.getMessageDestinationRef();
-                for (MessageDestinationRef mdRef : mdRefs) {
+                MessageDestinationRefType mdRefs[] = modifiedJbossWeb.getMessageDestinationRef();
+                for (MessageDestinationRefType mdRef : mdRefs) {
                     String mdrn = mdRef.getMessageDestinationRefName();
                     if (name.equals(mdrn)) {
                         // already exists
@@ -386,7 +389,7 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
                 }
 
                 //if it doesn't exist yet, create a new one
-                MessageDestinationRef mdr = new MessageDestinationRef();
+                MessageDestinationRefType mdr = new MessageDestinationRefType();
                 mdr.setMessageDestinationRefName(name);
                 mdr.setJndiName(jndiName);
                 modifiedJbossWeb.addMessageDestinationRef(mdr);
@@ -396,11 +399,9 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
 
     @Override
     public void bindEjbReference(String referenceName, String ejbName) throws ConfigurationException {
-
         if (Double.parseDouble(j2eeModule.getModuleVersion()) > 2.4) {
             return;
         }
-
         addEjbReference(referenceName, ejbName);
     }
 
@@ -415,8 +416,8 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
             public void modify(JbossWeb modifiedJbossWeb) {
 
                 // check whether resource not already defined
-                EjbRef ejbRefs[] = modifiedJbossWeb.getEjbRef();
-                for (EjbRef ejbRef : ejbRefs) {
+                EjbRefType ejbRefs[] = modifiedJbossWeb.getEjbRef();
+                for (EjbRefType ejbRef : ejbRefs) {
                     String ern = ejbRef.getEjbRefName();
                     if (referenceName.equals(ern)) {
                         // already exists
@@ -425,7 +426,7 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
                 }
 
                 //if it doesn't exist yet, create a new one
-                EjbRef newER = new EjbRef();
+                EjbRefType newER = new EjbRefType();
                 newER.setEjbRefName(referenceName);
                 newER.setJndiName(ejbName);
                 modifiedJbossWeb.addEjbRef(newER);
@@ -482,6 +483,17 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
      */
     private void modifyJbossWeb(JbossWebModifier modifier) throws ConfigurationException {
         if (deploymentDescriptorDO == null) {
+            if (FileUtil.toFileObject(jbossWebFile) == null) {
+                ResourceConfigurationHelper.writeFile(jbossWebFile, jbossWeb);
+                try {
+                    deploymentDescriptorDO = DataObject.find(FileUtil.toFileObject(jbossWebFile));
+                } catch (DataObjectNotFoundException ex) {
+                    throw new ConfigurationException("Couldn't save jboss-web.xml", ex);
+                }
+                deploymentDescriptorDO.addPropertyChangeListener(this);
+            }
+        }
+        if (deploymentDescriptorDO == null) {
             return;
         }
         assert deploymentDescriptorDO != null : "DataObject has not been initialized yet"; // NIO18N
@@ -531,6 +543,8 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
                 if (cookie != null) {
                     cookie.save();
                 }
+            } else {
+                ResourceConfigurationHelper.writeFile(jbossWebFile, jbossWeb);
             }
             synchronized (this) {
                 jbossWeb = newJbossWeb;
@@ -549,8 +563,35 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
      */
     private JbossWeb generateJbossWeb() {
         JbossWeb jbossWeb = new JbossWeb(null, Common.NO_DEFAULT_VALUES);
+        if (jbossWeb._getSchemaLocation() == null) {
+            jbossWeb.createAttribute("xmlns:xsi", "xmlns:xsi", AttrProp.CDATA | AttrProp.IMPLIED, null, "http://www.w3.org/2001/XMLSchema-instance");
+            jbossWeb.setAttributeValue("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+            jbossWeb.createAttribute("xsi:schemaLocation", "xsi:schemaLocation", AttrProp.CDATA | AttrProp.IMPLIED, null, getJbossWebSchemaLocation());
+            jbossWeb._setSchemaLocation(getJbossWebSchemaLocation());
+            jbossWeb.setVersion(getJbossWebVersion());
+        }
         jbossWeb.setContextRoot(""); // NOI18N
         return jbossWeb;
+    }
+
+    private String getJbossWebVersion() {
+        if (version == null || WildflyPluginUtils.WILDFLY_8_0_0.compareTo(version) <= 0) {
+            return "8.0";
+        } else if (WildflyPluginUtils.EAP_6_3_0.compareTo(version) <= 0) {
+            return "7.2";
+        } else {
+            return "7.1";
+        }
+    }
+
+    private String getJbossWebSchemaLocation() {
+        if (version == null || WildflyPluginUtils.WILDFLY_8_0_0.compareTo(version) <= 0) {
+            return "http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-web_8_0.xsd";
+        } else if (WildflyPluginUtils.EAP_6_3_0.compareTo(version) <= 0) {
+            return "http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-web_7_2.xsd";
+        } else {
+            return "http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-web_7_1.xsd";
+        }
     }
 
     // TODO: this contextPath fix code will be removed, as soon as it will
