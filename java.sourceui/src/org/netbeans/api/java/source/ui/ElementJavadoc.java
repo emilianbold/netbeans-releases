@@ -268,8 +268,10 @@ public class ElementJavadoc {
                                 uri = URI.create(idx < 0 ? link : link.substring(0, idx));
                                 if (!uri.isAbsolute() && ElementJavadoc.this.handle != null) {
                                     Element e = ElementJavadoc.this.handle.resolve(controller);
-                                    PackageElement pe = controller.getElements().getPackageOf(e);                                        
-                                    uri = URI.create(FileObjects.getRelativePath(pe.getQualifiedName().toString(), uri.getPath()));
+                                    if (e != null) {
+                                        PackageElement pe = controller.getElements().getPackageOf(e);                                        
+                                        uri = URI.create(FileObjects.getRelativePath(pe.getQualifiedName().toString(), uri.getPath()));
+                                    }
                                 }
                             } catch (IllegalArgumentException iae) {}
                             if (uri != null) {
