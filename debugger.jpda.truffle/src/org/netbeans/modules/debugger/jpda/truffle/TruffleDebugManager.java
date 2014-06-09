@@ -75,8 +75,9 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
     
     //public static final String TRUFFLE_CLASS_DebugManager = "com.oracle.truffle.debug.DebugManager";
     //public static final String TRUFFLE_CLASS_DebugManager = "com.oracle.truffle.js.engine.TruffleJSEngine";
+    private static final String SCRIPT_CREATION_BP_CLASS = "com.oracle.truffle.api.script.TruffleScriptEngineFactory";
+    private static final String SCRIPT_CREATION_BP_METHOD = "engineCreated";
     
-    private JPDABreakpoint bpEnabler;
     private JPDABreakpoint debugManagerLoadBP;
     private static final Map<JPDADebugger, DebugManagerHandler> dmHandlers = new HashMap<>();
     
@@ -86,7 +87,7 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
     @Override
     public Breakpoint[] initBreakpoints() {
         initLoadBP();
-        return new Breakpoint[] { bpEnabler, debugManagerLoadBP };
+        return new Breakpoint[] { debugManagerLoadBP };
     }
     
     private synchronized void initLoadBP() {
@@ -97,18 +98,10 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
 //                                                    false,
 //                                                    ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED);
         //debugManagerLoadBP = MethodBreakpoint.create(TRUFFLE_CLASS_DebugManager, "<init>");
-        bpEnabler = MethodBreakpoint.create(ScriptEngineFactory.class.getName(), "getScriptEngine");
-        ((MethodBreakpoint) bpEnabler).setBreakpointType(MethodBreakpoint.TYPE_METHOD_ENTRY);
-        bpEnabler.setHidden(true);
-        bpEnabler.setSuspend(EventRequest.SUSPEND_NONE);
-        
-        debugManagerLoadBP = MethodBreakpoint.create(ScriptEngineFactory.class.getName(), "getScriptEngine");
-        ((MethodBreakpoint) debugManagerLoadBP).setBreakpointType(MethodBreakpoint.TYPE_METHOD_EXIT);
+        debugManagerLoadBP = MethodBreakpoint.create(SCRIPT_CREATION_BP_CLASS, SCRIPT_CREATION_BP_METHOD);
+        ((MethodBreakpoint) debugManagerLoadBP).setBreakpointType(MethodBreakpoint.TYPE_METHOD_ENTRY);
         debugManagerLoadBP.setHidden(true);
-        //debugManagerLoadBP.setSuspend(EventRequest.SUSPEND_ALL);
-        debugManagerLoadBP.disable(); // Disabled by default, enabled by bpEnabler
         
-        bpEnabler.setBreakpointsToEnable(Collections.singleton((Breakpoint) debugManagerLoadBP));
         System.err.println("TruffleDebugManager.initBreakpoints(): submitted BP "+debugManagerLoadBP);
         TruffleAccessBreakpoints.init();
     }

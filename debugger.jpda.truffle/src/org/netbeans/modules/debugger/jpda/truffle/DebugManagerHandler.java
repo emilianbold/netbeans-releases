@@ -75,8 +75,10 @@ import java.util.logging.Logger;
 import javax.script.ScriptEngine;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
@@ -95,6 +97,7 @@ import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccessBreakpoints;
 import static org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccessBreakpoints.BASIC_CLASS_NAME;
@@ -160,7 +163,13 @@ class DebugManagerHandler implements JPDABreakpointListener {
                 try {
                     thread.notifyMethodInvoking();
                     //This engine = thread.getCallStack(0, 1)[0].getThisVariable();
-                    Variable engine = event.getVariable();
+                    CallStackFrame csf = thread.getCallStack(0, 1)[0];
+                    LocalVariable[] args = ((CallStackFrameImpl) csf).getMethodArguments();
+                    if (args.length == 0) {
+                        LOG.warning("No arguments to "+event.getSource());
+                        return ;
+                    }
+                    Variable engine = args[0];//event.getVariable();
                     Value engineValue = ((JDIVariable) engine).getJDIValue();
                     System.err.println("breakpointReached("+event+"): engineValue = "+engineValue);
                     if (!(engineValue instanceof ObjectReference)) {
