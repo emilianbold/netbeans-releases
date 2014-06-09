@@ -643,13 +643,14 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
                         fcl.changes());
     }
 
+    @RandomlyFails // issue #237349
     public void testTextualModificationsFired() throws Exception {
-        System.setProperty("Run-OpenDocRoot-Synchronously","true");
         Layer l = new Layer("<folder name='f'><file name='x'/></folder><file name='y'/>");
         FileSystem fs = l.read();
         Listener fcl = new Listener();
         fs.addFileChangeListener(fcl);
         l.edit("<folder name='f'/><file name='y'/><file name='z'/>");
+        Thread.sleep(1000L); // make sure editing is propagated
         Set<String> changes = fcl.changes();
         //System.err.println("changes=" + changes);
         /* XXX does not work; fires too much... why?
@@ -661,6 +662,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         assertNull(fs.findResource("f/x"));
         assertNotNull(fs.findResource("z"));
         l.edit("<folder name='f'><file name='x2'/></folder><file name='y'/><file name='z'/>");
+        Thread.sleep(1000L); // make sure editing is propagated
         /* XXX fails just on JDK 1.4... why?
         changes = fcl.changes();
         //System.err.println("changes=" + changes);
@@ -668,7 +670,6 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
          */
         assertNotNull(fs.findResource("f/x2"));
         assertNotNull(fs.findResource("z"));
-        System.setProperty("Run-OpenDocRoot-Synchronously","false");
     }
 
     @RandomlyFails // NB-Core-Build #4187

@@ -111,6 +111,7 @@ public final class OptionsExportModel {
     private static final List<String> IGNORED_FOLDERS = Arrays.asList("var/cache");  // NOI18N
     private final String PASSWORDS_PATTERN = "config/Preferences/org/netbeans/modules/keyring.*";  // NOI18N
     static final String ENABLED_ITEMS_INFO = "enabledItems.info";  // NOI18N
+    static final String BUILD_INFO = "build.info";  // NOI18N
 
     /** Returns instance of export options model.
      * @param source source of export/import. It is either zip file or userdir
@@ -166,6 +167,63 @@ public final class OptionsExportModel {
             }
         }
         return enabledItems;
+    }
+    
+    double getBuildNumberDuringExport(File importSource) {
+        String buildNumber = null;
+        if (importSource.isFile()) { // importing from .zip file
+            try {
+                ZipFile zipFile = new ZipFile(importSource);
+                // Enumerate each entry
+                Enumeration<? extends ZipEntry> entries = zipFile.entries();
+                while (entries.hasMoreElements()) {
+                    ZipEntry zipEntry = (ZipEntry) entries.nextElement();
+                    if(zipEntry.getName().equals(OptionsExportModel.BUILD_INFO)) {
+                        InputStream stream = zipFile.getInputStream(zipEntry);
+                        BufferedReader br = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+                        String strLine;
+                        while ((strLine = br.readLine()) != null) {
+                            if(strLine.startsWith("ProductVersion=")) {  // NOI18N
+                                buildNumber = getBuildNumber(strLine.substring(strLine.indexOf(" (Build ") + 8, strLine.length() - 1));  // NOI18N
+                            }
+                        }
+                    }
+                }
+            } catch (ZipException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else if(importSource.isDirectory()) { // importing from directory
+            File[] children = importSource.listFiles(new java.io.FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    return pathname.getName().equals(OptionsExportModel.BUILD_INFO);
+                }
+            });
+            if (children.length == 1) {
+                BufferedReader br;
+                try {
+                    br = Files.newBufferedReader(Paths.get(Utilities.toURI(children[0])), StandardCharsets.UTF_8);
+                    String strLine;
+                    while ((strLine = br.readLine()) != null) {
+                        if (strLine.startsWith("ProductVersion=")) {  // NOI18N
+                            buildNumber = getBuildNumber(strLine.substring(strLine.indexOf(" (Build ") + 8, strLine.length() - 1));  // NOI18N
+                        }
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return buildNumber == null ? -1 : Double.parseDouble(buildNumber);
+    }
+    
+    String getBuildNumber(String build) {
+        if (build.contains("-")) { // dev build e.g. 20140606-ab7b8979c660
+            build = build.substring(0, build.indexOf("-")).concat("2359");  // NOI18N
+        }
+        return build;
     }
 
     /**
