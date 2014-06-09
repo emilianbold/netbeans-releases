@@ -42,8 +42,18 @@
 
 package org.netbeans.modules.debugger.jpda.backend.truffle;
 
+import com.oracle.truffle.api.Source;
+import com.oracle.truffle.api.frame.MaterializedFrame;
+import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.source.SourceFactory;
+import com.oracle.truffle.api.source.SourceLineLocation;
+import com.oracle.truffle.debug.LineBreakpoint;
+import com.oracle.truffle.js.engine.TruffleJSEngine;
+import javax.script.ScriptEngine;
+
 /**
- *
+ * Truffle accessor for JPDA debugger.
+ * 
  * @author Martin
  */
 public class JPDATruffleAccessor extends Object {
@@ -52,6 +62,18 @@ public class JPDATruffleAccessor extends Object {
     private static volatile boolean accessLoopRunning = false;
     //private static volatile AccessLoop accessLoopRunnable;
     private static volatile Thread accessLoopThread;
+    private static JPDATruffleDebugManager debugManager;
+    /** Explicitly set this field to true to step into script calls. */
+    static boolean isSteppingInto = false; // Step into was issued in JPDA debugger
+    /** A step command:
+     * 0 no step (continue)
+     * 1 step into
+     * 2 step over
+     * 3 step out
+     */
+    private static int stepCmd = 0;
+
+    public JPDATruffleAccessor() {}
     
     static boolean startAccessLoop() {
         if (!accessLoopRunning) {
@@ -81,10 +103,68 @@ public class JPDATruffleAccessor extends Object {
         }
     }
     
+    static JPDATruffleDebugManager setUpDebugManager() {
+        if (debugManager == null) {
+            debugManager = JPDATruffleDebugManager.setUp();
+        }
+        return debugManager;
+    }
+    
+    //static JPDATruffleDebugManager setUpDebugManagerFor(ScriptEngine engine) {
+    static JPDATruffleDebugManager setUpDebugManagerFor(Object engine) {
+        debugManager = JPDATruffleDebugManager.setUp((ScriptEngine) engine);
+        return debugManager;
+    }
+    
+    static void executionHalted(Node astNode, MaterializedFrame frame,
+                                long srcId, String srcName, String srcPath, int line, String code) {
+        // Called when the execution is halted.
+        setCommand();
+    }
+    
+    static void executionStepInto(Node astNode, String name,
+                                  long srcId, String srcName, String srcPath, int line, String code) {
+        // Called when the execution steps into a call.
+        setCommand();
+    }
+    
+    private static void setCommand() {
+        switch (stepCmd) {
+            case 0: debugManager.prepareContinue();
+                    break;
+            case 1: debugManager.prepareStep(1);
+                    break;
+            case 2: debugManager.prepareNext(1);
+                    break;
+            case 3: boolean success = debugManager.prepareStepOut();
+                    System.err.println("Successful step out = "+success);
+                    break;
+        }
+        stepCmd = 0;
+    }
+    
     static void debuggerAccess() {
         // A breakpoint is submitted on this method.
         // When accessLoopThread is interrupted, this breakpoint is hit
         // and methods can be executed via JPDA debugger.
+    }
+    
+    /*
+    static boolean inStepInto(Node astNode, String name) {
+        if (isSteppingInto) {
+            executionStepInto(astNode, name);
+            return true;
+        } else {
+            return false;
+        }
+    }
+    */
+    
+    static LineBreakpoint setLineBreakpoint(String path, int line) {
+        Source source = SourceFactory.fromFile(path, true);
+        LineBreakpoint lb = debugManager.setLineBreakpoint(new SourceLineLocation(source, line));
+        System.err.println("setLineBreakpoint("+path+", "+line+"): source = "+source+", lb = "+lb);
+        return lb;
     }
     
     private static class AccessLoop implements Runnable {
