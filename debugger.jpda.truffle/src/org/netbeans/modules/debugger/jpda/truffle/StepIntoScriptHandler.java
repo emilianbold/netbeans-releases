@@ -49,6 +49,7 @@ import com.sun.jdi.Field;
 import com.sun.jdi.InvalidTypeException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.ActionsManagerListener;
@@ -71,7 +72,7 @@ import org.openide.util.Exceptions;
 @LazyActionsManagerListener.Registration(path="netbeans-JPDASession/Java")
 public class StepIntoScriptHandler extends LazyActionsManagerListener implements PropertyChangeListener {
     
-    private static final Logger logger = Logger.getLogger(StepIntoScriptHandler.class.getCanonicalName());
+    private static final Logger LOG = Logger.getLogger(StepIntoScriptHandler.class.getCanonicalName());
     
     private final JPDADebugger debugger;
     private ClassType serviceClass;
@@ -84,7 +85,7 @@ public class StepIntoScriptHandler extends LazyActionsManagerListener implements
 
     @Override
     protected void destroy() {
-        logger.fine("\nStepIntoJSHandler.destroy()");
+        LOG.fine("\nStepIntoJSHandler.destroy()");
     }
 
     @Override
@@ -106,13 +107,13 @@ public class StepIntoScriptHandler extends LazyActionsManagerListener implements
             Object action = evt.getNewValue();
             if (ActionsManager.ACTION_STEP_INTO.equals(action)) {
                 ClassObjectReference serviceClassRef = RemoteServices.getServiceClass(debugger);
-                System.err.println("StepIntoScriptHandler.actionToBeRun: "+action+", serviceClassRef = "+serviceClassRef);
+                LOG.log(Level.FINE, "StepIntoScriptHandler.actionToBeRun: {0}, serviceClassRef = {1}", new Object[]{action, serviceClassRef});
                 if (serviceClassRef != null) {
                     try {
                         serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(serviceClassRef);
                         steppingField = ReferenceTypeWrapper.fieldByName(serviceClass, "isSteppingInto");
                         serviceClass.setValue(steppingField, serviceClass.virtualMachine().mirrorOf(true));
-                        System.err.println("StepIntoScriptHandler: isSteppingInto set to true.");
+                        LOG.fine("StepIntoScriptHandler: isSteppingInto set to true.");
                     } catch (ClassNotLoadedException | ClassNotPreparedExceptionWrapper |
                              InternalExceptionWrapper | InvalidTypeException |
                              ObjectCollectedExceptionWrapper | VMDisconnectedExceptionWrapper ex) {
@@ -133,11 +134,11 @@ public class StepIntoScriptHandler extends LazyActionsManagerListener implements
                 // Ignore resume.
                 return ;
             }
-            logger.fine("Current frame changed>");
+            LOG.fine("Current frame changed>");
             if (steppingField != null) {
                 try {
                     serviceClass.setValue(steppingField, serviceClass.virtualMachine().mirrorOf(false));
-                    System.err.println("StepIntoScriptHandler: isSteppingInto set to false.");
+                    LOG.fine("StepIntoScriptHandler: isSteppingInto set to false.");
                 } catch (InvalidTypeException | ClassNotLoadedException ex) {
                     Exceptions.printStackTrace(ex);
                 }

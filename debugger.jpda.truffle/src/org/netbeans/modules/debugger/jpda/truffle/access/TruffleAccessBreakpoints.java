@@ -56,6 +56,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
@@ -83,6 +85,8 @@ import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
  * @author Martin
  */
 public class TruffleAccessBreakpoints implements JPDABreakpointListener {
+    
+    private static final Logger LOG = Logger.getLogger(TruffleAccessBreakpoints.class.getName());
     
     public static final String BASIC_CLASS_NAME = "org.netbeans.modules.debugger.jpda.backend.truffle.JPDATruffleAccessor";    // NOI18N
     
@@ -155,6 +159,7 @@ public class TruffleAccessBreakpoints implements JPDABreakpointListener {
         //mb.setSession( );
         mb.addJPDABreakpointListener(this);
         DebuggerManager.getDebuggerManager().addBreakpoint(mb);
+        /*
         mb.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -163,7 +168,7 @@ public class TruffleAccessBreakpoints implements JPDABreakpointListener {
                 Thread.dumpStack();
             }
         });
-        
+        */
         return mb;
     }
     
@@ -177,21 +182,21 @@ public class TruffleAccessBreakpoints implements JPDABreakpointListener {
     public void breakpointReached(JPDABreakpointEvent event) {
         Object bp = event.getSource();
         if (execHaltedBP == bp) {
-            System.err.println("TruffleAccessBreakpoints.breakpointReached("+event+"), exec halted.");
+            LOG.log(Level.FINE, "TruffleAccessBreakpoints.breakpointReached({0}), exec halted.", event);
             SourcePosition sp = getPosition(event.getDebugger(), event.getThread());
             CurrentPCInfo cpci = new CurrentPCInfo(event.getThread(), sp);
             synchronized (currentPCInfos) {
                 currentPCInfos.put(event.getDebugger(), cpci);
             }
         } else if (execStepIntoBP == bp) {
-            System.err.println("TruffleAccessBreakpoints.breakpointReached("+event+"), exec step into.");
+            LOG.log(Level.FINE, "TruffleAccessBreakpoints.breakpointReached({0}), exec step into.", event);
             SourcePosition sp = getPosition(event.getDebugger(), event.getThread());
             CurrentPCInfo cpci = new CurrentPCInfo(event.getThread(), sp);
             synchronized (currentPCInfos) {
                 currentPCInfos.put(event.getDebugger(), cpci);
             }
         } else if (dbgAccessBP == bp) {
-            System.err.println("TruffleAccessBreakpoints.breakpointReached("+event+"), debugger access.");
+            LOG.log(Level.FINE, "TruffleAccessBreakpoints.breakpointReached({0}), debugger access.", event);
         }
     }
     

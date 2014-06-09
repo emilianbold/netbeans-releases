@@ -172,7 +172,7 @@ class DebugManagerHandler implements JPDABreakpointListener {
                     }
                     Variable engine = args[0];//event.getVariable();
                     Value engineValue = ((JDIVariable) engine).getJDIValue();
-                    System.err.println("breakpointReached("+event+"): engineValue = "+engineValue);
+                    LOG.log(Level.FINE, "breakpointReached({0}): engineValue = {1}", new Object[]{event, engineValue});
                     if (!(engineValue instanceof ObjectReference)) {
                         return ;
                     }
@@ -379,7 +379,9 @@ class DebugManagerHandler implements JPDABreakpointListener {
             breakpointsToSubmit.clear();
             breakpointsToSubmit = null;
         }
-        System.err.println("DebugManagerHandler: Breakpoints to submit = "+breakpoints);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("DebugManagerHandler: Breakpoints to submit = "+breakpoints);
+        }
         Map<JSLineBreakpoint, ObjectReference> bpsMap = new HashMap<>();
         for (JSLineBreakpoint bp : breakpoints) {
             FileObject fileObject = bp.getFileObject();

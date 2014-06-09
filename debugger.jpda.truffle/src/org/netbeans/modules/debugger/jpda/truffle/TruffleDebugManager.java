@@ -52,6 +52,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.script.ScriptEngineFactory;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -72,6 +74,8 @@ import org.netbeans.spi.debugger.DebuggerServiceRegistration;
  */
 @DebuggerServiceRegistration(types=LazyDebuggerManagerListener.class)
 public class TruffleDebugManager extends DebuggerManagerAdapter {
+    
+    private static final Logger LOG = Logger.getLogger(TruffleDebugManager.class.getName());
     
     //public static final String TRUFFLE_CLASS_DebugManager = "com.oracle.truffle.debug.DebugManager";
     //public static final String TRUFFLE_CLASS_DebugManager = "com.oracle.truffle.js.engine.TruffleJSEngine";
@@ -102,7 +106,7 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
         ((MethodBreakpoint) debugManagerLoadBP).setBreakpointType(MethodBreakpoint.TYPE_METHOD_ENTRY);
         debugManagerLoadBP.setHidden(true);
         
-        System.err.println("TruffleDebugManager.initBreakpoints(): submitted BP "+debugManagerLoadBP);
+        LOG.log(Level.FINE, "TruffleDebugManager.initBreakpoints(): submitted BP {0}", debugManagerLoadBP);
         TruffleAccessBreakpoints.init();
     }
 
@@ -119,7 +123,7 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
             }
         }
         initLoadBP();
-        System.err.println("TruffleDebugManager.sessionAdded("+session+"), adding BP listener to "+debugManagerLoadBP);
+        LOG.log(Level.FINE, "TruffleDebugManager.sessionAdded({0}), adding BP listener to {1}", new Object[]{session, debugManagerLoadBP});
         DebugManagerHandler dmh = new DebugManagerHandler(debugger);
         debugManagerLoadBP.addJPDABreakpointListener(dmh);
         /*debugManagerLoadBP.addPropertyChangeListener(new PropertyChangeListener() {
@@ -146,7 +150,7 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
             dmh = dmHandlers.remove(debugger);
         }
         if (dmh != null) {
-            System.err.println("TruffleDebugManager.engineRemoved("+session+"), removing BP listener from "+debugManagerLoadBP);
+            LOG.log(Level.FINE, "TruffleDebugManager.engineRemoved({0}), removing BP listener from {1}", new Object[]{session, debugManagerLoadBP});
             debugManagerLoadBP.removeJPDABreakpointListener(dmh);
             dmh.destroy();
         }
