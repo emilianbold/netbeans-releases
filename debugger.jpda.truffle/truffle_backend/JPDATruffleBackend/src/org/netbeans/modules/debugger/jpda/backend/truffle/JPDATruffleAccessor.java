@@ -42,13 +42,12 @@
 
 package org.netbeans.modules.debugger.jpda.backend.truffle;
 
-import com.oracle.truffle.api.Source;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.source.SourceFactory;
-import com.oracle.truffle.api.source.SourceLineLocation;
+import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.debug.LineBreakpoint;
 import com.oracle.truffle.js.engine.TruffleJSEngine;
+import java.io.IOException;
 import javax.script.ScriptEngine;
 
 /**
@@ -161,8 +160,14 @@ public class JPDATruffleAccessor extends Object {
     */
     
     static LineBreakpoint setLineBreakpoint(String path, int line) {
-        Source source = SourceFactory.fromFile(path, true);
-        LineBreakpoint lb = debugManager.setLineBreakpoint(new SourceLineLocation(source, line));
+        Source source;
+        try {
+            source = Source.fromFileName(path);
+        } catch (IOException ioex) {
+            System.err.println("setLineBreakpoint("+path+", "+line+"): "+ioex.getLocalizedMessage());
+            return null;
+        }
+        LineBreakpoint lb = debugManager.setLineBreakpoint(source.createLineLocation(line));
         System.err.println("setLineBreakpoint("+path+", "+line+"): source = "+source+", lb = "+lb);
         return lb;
     }

@@ -7,14 +7,14 @@
 package org.netbeans.modules.debugger.jpda.backend.truffle;
 
 import com.oracle.truffle.api.ExecutionContext;
-import com.oracle.truffle.api.Source;
-import com.oracle.truffle.api.SourceSection;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.instrument.PhylumTag;
 import com.oracle.truffle.api.instrument.Probe;
 import com.oracle.truffle.api.instrument.ProbeListener;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.source.Source;
+import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.debug.DebugClient;
 import com.oracle.truffle.debug.DebugManager;
 import com.oracle.truffle.debug.impl.AbstractDebugManager;
