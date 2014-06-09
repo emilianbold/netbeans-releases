@@ -152,6 +152,7 @@ class DebugManagerHandler implements JPDABreakpointListener {
 
     @Override
     public void breakpointReached(JPDABreakpointEvent event) {
+        LOG.log(Level.FINE, "Engine created breakpoint hit: {0}", event);
         try {
             if (debugger.equals(event.getDebugger())) {
                 if (inited.compareAndSet(false, true)) {
@@ -208,7 +209,6 @@ class DebugManagerHandler implements JPDABreakpointListener {
                 }
             }
         } finally {
-            ((Breakpoint) event.getSource()).disable();
             event.resume();
         }
     }
