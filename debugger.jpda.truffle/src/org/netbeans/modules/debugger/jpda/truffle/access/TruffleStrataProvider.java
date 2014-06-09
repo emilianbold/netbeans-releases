@@ -42,8 +42,10 @@
 
 package org.netbeans.modules.debugger.jpda.truffle.access;
 
+import com.sun.jdi.AbsentInformationException;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.spi.StrataProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
@@ -56,6 +58,8 @@ import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 public class TruffleStrataProvider implements StrataProvider {
     
     public static final String TRUFFLE_STRATUM = "TruffleScript";
+    
+    private static final String VAR_LINE = "line";
 
     @Override
     public String getDefaultStratum(CallStackFrameImpl csf) {
@@ -71,6 +75,26 @@ public class TruffleStrataProvider implements StrataProvider {
             return Collections.singletonList(TRUFFLE_STRATUM);
         }
         return null;
+    }
+
+    @Override
+    public int getStrataLineNumber(CallStackFrameImpl csf, String stratum) {
+        if (TRUFFLE_STRATUM.equals(stratum)) {
+            try {
+                LocalVariable[] methodArguments = csf.getLocalVariables();
+                for (LocalVariable lv : methodArguments) {
+                    if (VAR_LINE.equals(lv.getName())) {
+                        Object obj = lv.createMirrorObject();
+                        if (obj instanceof Integer) {
+                            return ((Integer) obj).intValue();
+                        }
+                    }
+                }
+            } catch (AbsentInformationException aiex) {
+                
+            }
+        }
+        return csf.getLineNumber(stratum);
     }
     
 }

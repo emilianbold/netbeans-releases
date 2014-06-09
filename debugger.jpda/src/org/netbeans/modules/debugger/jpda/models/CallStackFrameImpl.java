@@ -147,13 +147,29 @@ public class CallStackFrameImpl implements CallStackFrame {
     }
 
     // public interface ........................................................
+    
+    private final ThreadLocal<Boolean> getLineNumberLoopControl = new ThreadLocal<Boolean>();
         
     /**
     * Returns line number of this frame in this callstack.
     *
     * @return Returns line number of this frame in this callstack.
     */
-    public synchronized int getLineNumber (String struts) {
+    public int getLineNumber (String struts) {
+        Boolean looping = getLineNumberLoopControl.get();
+        if (looping != null && looping) {
+            return getLineNumberDefault(struts);
+        }
+        StrataProvider strataProvider = getStrataProvider();
+        getLineNumberLoopControl.set(Boolean.TRUE);
+        try {
+            return strataProvider.getStrataLineNumber(this, struts);
+        } finally {
+            getLineNumberLoopControl.remove();
+        }
+    }
+    
+    private synchronized int getLineNumberDefault (String struts) {
         if (!valid && sfLocation == null) return 0;
         try {
             Location l = getStackFrameLocation();
@@ -361,6 +377,10 @@ public class CallStackFrameImpl implements CallStackFrame {
                     }
                 }
                 return null;
+            }
+            @Override
+            public int getStrataLineNumber(CallStackFrameImpl csf, String stratum) {
+                return csf.getLineNumberDefault(stratum);
             }
         };
     }

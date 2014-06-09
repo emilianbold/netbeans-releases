@@ -73,4 +73,6 @@ public interface StrataProvider {
      * @return the desired available strata, or <code>null</code> to use the default impl.
      */
     List<String> getAvailableStrata(CallStackFrameImpl csf);
+    
+    int getStrataLineNumber(CallStackFrameImpl csf, String stratum);
 }
