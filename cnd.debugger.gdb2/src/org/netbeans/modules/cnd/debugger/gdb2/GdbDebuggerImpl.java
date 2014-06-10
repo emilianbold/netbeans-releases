@@ -940,7 +940,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         int pid = (int) session().getPid();
         if (pid > 0) {
 //            CommonTasksSupport.sendSignal(getHost().executionEnvironment(), pid, Signal.SIGKILL, null);
-            MICommand command = new MiCommandImpl("kill") {
+            MICommand command = new MiCommandImpl("kill") { // NOI18N
 
                 @Override
                 protected void onDone(MIRecord record) {
