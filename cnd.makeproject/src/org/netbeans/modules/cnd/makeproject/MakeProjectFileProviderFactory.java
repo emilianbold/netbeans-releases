@@ -596,7 +596,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                 String canPath = item.getCanonicalPath();
                 String path = item.getAbsolutePath();
                 if (!canPath.equals(path)) {
-                    return out.toString()+" link";
+                    return out.toString()+" link"; //NOI18N
                 }
             }
             return out.toString();
