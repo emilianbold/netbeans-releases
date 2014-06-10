@@ -572,7 +572,8 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
     }
     
     private static final class ItemFD extends FDImpl {
-
+        
+        private static final boolean VISUALIZE_LINK = false;
         private final Item item;
 
         public ItemFD(Item item, Project project) {
@@ -590,6 +591,13 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                 }
                 out.insert(0, parent.getDisplayName());
                 parent = parent.getParent();
+            }
+            if (VISUALIZE_LINK) {
+                String canPath = item.getCanonicalPath();
+                String path = item.getAbsolutePath();
+                if (!canPath.equals(path)) {
+                    return out.toString()+" link";
+                }
             }
             return out.toString();
         }
