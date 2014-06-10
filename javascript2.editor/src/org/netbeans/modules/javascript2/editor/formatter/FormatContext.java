@@ -51,7 +51,8 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
@@ -76,7 +77,7 @@ public final class FormatContext {
 
     private final Language<JsTokenId> languange;
 
-    private final DefaultsProvider provider;
+    private final Defaults.Provider provider;
 
     private final int initialStart;
 
@@ -98,7 +99,7 @@ public final class FormatContext {
 
     private boolean pendingContinuation;
 
-    public FormatContext(Context context, DefaultsProvider provider,
+    public FormatContext(Context context, Defaults.Provider provider,
             Snapshot snapshot, Language<JsTokenId> language) {
         this.context = context;
         this.snapshot = snapshot;
@@ -162,7 +163,7 @@ public final class FormatContext {
         }
     }
 
-    public DefaultsProvider getDefaultsProvider() {
+    public Defaults.Provider getDefaultsProvider() {
         return provider;
     }
 
@@ -368,13 +369,13 @@ public final class FormatContext {
     }
 
     public void indentLine(int voffset, int indentationSize,
-            JsFormatter.Indentation indentationCheck) {
+            JsFormatter.Indentation indentationCheck, CodeStyle.Holder codeStyle) {
 
-        indentLineWithOffsetDiff(voffset, indentationSize, indentationCheck, offsetDiff);
+        indentLineWithOffsetDiff(voffset, indentationSize, indentationCheck, offsetDiff, codeStyle);
     }
 
     public void indentLineWithOffsetDiff(int voffset, int indentationSize,
-            JsFormatter.Indentation indentationCheck, int realOffsetDiff) {
+            JsFormatter.Indentation indentationCheck, int realOffsetDiff, CodeStyle.Holder codeStyle) {
 
         if (!indentationCheck.isAllowed()) {
             return;
@@ -386,8 +387,8 @@ public final class FormatContext {
         }
 
         try {
-            int diff = GsfUtilities.setLineIndentation(getDocument(),
-                    offset + realOffsetDiff, indentationSize);
+            int diff = setLineIndentation(getDocument(),
+                    offset + realOffsetDiff, indentationSize, codeStyle);
             setOffsetDiff(offsetDiff + diff);
         } catch (BadLocationException ex) {
             LOGGER.log(Level.INFO, null, ex);
@@ -487,6 +488,62 @@ public final class FormatContext {
             }
         }
         return length;
+    }
+
+    // XXX copied from GsfUtilities
+    private static int setLineIndentation(BaseDocument doc, int lineOffset,
+            int newIndent, CodeStyle.Holder codeStyle) throws BadLocationException {
+        int lineStartOffset = Utilities.getRowStart(doc, lineOffset);
+
+        // Determine old indent first together with oldIndentEndOffset
+        int indent = 0;
+        int tabSize = -1;
+        CharSequence docText = DocumentUtilities.getText(doc);
+        int oldIndentEndOffset = lineStartOffset;
+        while (oldIndentEndOffset < docText.length()) {
+            char ch = docText.charAt(oldIndentEndOffset);
+            if (ch == '\n') {
+                break;
+            } else if (ch == '\t') {
+                if (tabSize == -1) {
+                    tabSize = codeStyle.tabSize;
+                }
+                // Round to next tab stop
+                indent = (indent + tabSize) / tabSize * tabSize;
+            } else if (Character.isWhitespace(ch)) {
+                indent++;
+            } else { // non-whitespace
+                break;
+            }
+            oldIndentEndOffset++;
+        }
+
+        String newIndentString = IndentUtils.createIndentString(newIndent, codeStyle.expandTabsToSpaces, codeStyle.tabSize);
+        // Attempt to match the begining characters
+        int offset = lineStartOffset;
+        boolean different = false;
+        int i = 0;
+        for (; i < newIndentString.length() && lineStartOffset + i < oldIndentEndOffset; i++) {
+            if (newIndentString.charAt(i) != docText.charAt(lineStartOffset + i)) {
+                offset = lineStartOffset + i;
+                newIndentString = newIndentString.substring(i);
+                different = true;
+                break;
+            }
+        }
+        if (!different) {
+            offset = lineStartOffset + i;
+            newIndentString = newIndentString.substring(i);
+        }
+
+        // Replace the old indent
+        if (offset < oldIndentEndOffset) {
+            doc.remove(offset, oldIndentEndOffset - offset);
+        }
+        if (newIndentString.length() > 0) {
+            doc.insertString(offset, newIndentString, null);
+        }
+        return newIndentString.length() - (oldIndentEndOffset - offset);
     }
 
     public static class LineWrap {
