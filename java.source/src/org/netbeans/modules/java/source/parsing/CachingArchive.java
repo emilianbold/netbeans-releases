@@ -188,7 +188,14 @@ public class CachingArchive implements Archive, FileChangeListener {
             return null;
         }
     }
-                      
+
+    @Override
+    public String toString() {
+        return String.format(
+            "%s[archive: %s]",   //NOI18N
+            getClass().getSimpleName(),
+            archiveFile.getAbsolutePath());
+    }
     // Private methods ---------------------------------------------------------
     
     /*test*/ synchronized Map<String, Folder> doInit() {
@@ -267,7 +274,13 @@ public class CachingArchive implements Archive, FileChangeListener {
             ZipFile zip = new ZipFile (file);
             try {
                 for ( Enumeration<? extends ZipEntry> e = zip.entries(); e.hasMoreElements(); ) {
-                    ZipEntry entry = e.nextElement();
+                    ZipEntry entry;
+                    try {
+                        //May throw IllegalArgumentException
+                        entry = e.nextElement();
+                    } catch (IllegalArgumentException iae) {
+                        throw new IOException(iae);
+                    }
                     String name = entry.getName();
                     String dirname;
                     String basename;

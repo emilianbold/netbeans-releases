@@ -110,14 +110,12 @@ class WildflyStartRunnable implements Runnable {
 
     private final static String NEW_IF_CONDITION_STRING
             = "\"xx\" == \"x\"";                      // NOI18N
-
-    private static final Logger LOGGER = Logger.getLogger(WildflyStartRunnable.class.getName());
-
+    
     private static final SpecificationVersion JDK_18 = new SpecificationVersion("1.8");
 
-    private WildflyDeploymentManager dm;
-    private String instanceName;
-    private WildflyStartServer startServer;
+    private final WildflyDeploymentManager dm;
+    private final String instanceName;
+    private final WildflyStartServer startServer;
 
     WildflyStartRunnable(WildflyDeploymentManager dm, WildflyStartServer startServer) {
         this.dm = dm;
@@ -150,11 +148,17 @@ class WildflyStartRunnable implements Runnable {
     private String[] createEnvironment(final InstanceProperties ip) {
 
         WildFlyProperties properties = dm.getProperties();
-
+        // get Java platform that will run the server
+        JavaPlatform platform = properties.getJavaPlatform();
         // set the JAVA_OPTS value
         String javaOpts = properties.getJavaOpts();
         StringBuilder javaOptsBuilder = new StringBuilder(javaOpts);
-        // if  JB version 4.x
+        if(platform.getSpecification().getVersion().compareTo(JDK_18) < 0) {
+            javaOptsBuilder.append(" -XX:MaxPermSize=256m");
+        }
+        if ("64".equals(platform.getSystemProperties().get("sun.arch.data.model"))) {
+            javaOptsBuilder.append(" -server");
+        }
         // use the IDE proxy settings if the 'use proxy' checkbox is selected
         // do not override a property if it was set manually by the user
         if (properties.getProxyEnabled()) {
@@ -167,22 +171,19 @@ class WildflyStartRunnable implements Runnable {
             };
 
             for (String prop : PROXY_PROPS) {
-                if (javaOpts.indexOf(prop) == -1) {
+                if (!javaOpts.contains(prop)) {
                     String value = System.getProperty(prop);
                     if (value != null) {
                         if ("http.nonProxyHosts".equals(prop)) { // NOI18N
                             try {
                                 // remove newline characters, as the value may contain them, see issue #81174
                                 BufferedReader br = new BufferedReader(new StringReader(value));
-                                String line = null;
+                                String line;
                                 StringBuilder noNL = new StringBuilder();
                                 while ((line = br.readLine()) != null) {
                                     noNL.append(line);
                                 }
-                                value = noNL.toString().replaceAll("<", "").replace(">", "").replace("\"", "").replace('|', ',').trim();
-
-                                // enclose the host list in double quotes because it may contain spaces
-                                value = '\"' + value + '\"'; // NOI18N
+                                value = noNL.toString().replaceAll("<", "").replace(">", "").replace(" ", "").replace("\"", "").replace('|', ',').trim();
                             } catch (IOException ioe) {
                                 Exceptions.attachLocalizedMessage(ioe, NbBundle.getMessage(WildflyStartRunnable.class, "ERR_NonProxyHostParsingError"));
                                 Logger.getLogger("global").log(Level.WARNING, null, ioe);
@@ -197,18 +198,17 @@ class WildflyStartRunnable implements Runnable {
             }
         }
 
-        // get Java platform that will run the server
-        JavaPlatform platform = properties.getJavaPlatform();
-        if ("64".equals(platform.getSystemProperties().get("sun.arch.data.model"))) {
-            javaOptsBuilder.append(" -server -XX:+UseCompressedOops");
-        }
-        if (startServer.getMode() == WildflyStartServer.MODE.DEBUG && javaOptsBuilder.toString().indexOf("-Xdebug") == -1
-                && javaOptsBuilder.toString().indexOf("-agentlib:jdwp") == -1) { // NOI18N
+        if (startServer.getMode() == WildflyStartServer.MODE.DEBUG && !javaOptsBuilder.toString().contains("-Xdebug")
+                && !javaOptsBuilder.toString().contains("-agentlib:jdwp")) { // NOI18N
             // if in debug mode and the debug options not specified manually
             javaOptsBuilder.append(String.format(" -agentlib:jdwp=transport=dt_socket,address=%1s,server=y,suspend=n", dm.getDebuggingPort())); // NOI18N
 
         }
         javaOptsBuilder.append(" -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true");
+        File configFile = new File(ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE));
+        if(configFile.exists() && configFile.getParentFile().exists() && configFile.getParentFile().getParentFile().exists()) {
+            javaOptsBuilder.append(" -Djboss.server.base.dir=").append(configFile.getParentFile().getParentFile().getAbsolutePath());
+        }
 
         for (StartupExtender args : StartupExtender.getExtenders(
                 Lookups.singleton(CommonServerBridge.getCommonInstance(ip.getProperty("url"))), getMode(startServer.getMode()))) {
@@ -219,13 +219,14 @@ class WildflyStartRunnable implements Runnable {
 
         // create new environment for server
         javaOpts = javaOptsBuilder.toString();
+        Logger.getLogger("global").log(Level.INFO,  JAVA_OPTS + "={0}", javaOpts);
         String javaHome = getJavaHome(platform);
 
         String envp[] = new String[]{
-            "JAVA=" + javaHome + File.separator + "bin" + File.separator + "java", // NOI18N
+            "JAVA=" + javaHome + File.separatorChar + "bin" + File.separatorChar + "java", // NOI18N
             "JAVA_HOME=" + javaHome, // NOI18N
             JBOSS_HOME + "=" + ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR), // NOI18N
-            JAVA_OPTS + "=" + javaOpts, // NOI18N
+            JAVA_OPTS + "=" + javaOpts // NOI18N
         };
         return envp;
     }

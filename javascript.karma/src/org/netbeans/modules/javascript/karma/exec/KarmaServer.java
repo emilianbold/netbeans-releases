@@ -43,11 +43,14 @@
 package org.netbeans.modules.javascript.karma.exec;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -57,6 +60,8 @@ import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.run.KarmaRunInfo;
+import org.netbeans.modules.web.browser.api.BrowserSupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -75,11 +80,14 @@ public final class KarmaServer {
 
     // @GuardedBy("this")
     private Future<Integer> server;
+    // @GuardedBy("this")
+    private BrowserSupport browserSupport;
 
     volatile boolean started = false;
     volatile boolean starting = false;
     private volatile File netBeansKarmaReporter = null;
     private volatile File netBeansKarmaConfig = null;
+    private volatile URL debugUrl = null;
 
 
     KarmaServer(int port, Project project) {
@@ -131,6 +139,9 @@ public final class KarmaServer {
         KarmaExecutable karmaExecutable = KarmaExecutable.forProject(project, true);
         assert karmaExecutable != null;
         karmaExecutable.runTests(port);
+        if (isDebug()) {
+            openDebugUrl();
+        }
     }
 
     public synchronized void stop() {
@@ -138,6 +149,7 @@ public final class KarmaServer {
         if (server == null) {
             return;
         }
+        closeDebugUrl();
         if (server.isDone()
                 || server.isCancelled()) {
             return;
@@ -172,6 +184,48 @@ public final class KarmaServer {
         return project;
     }
 
+    private synchronized void openDebugUrl() {
+        assert server != null : this;
+        initBrowserSupport();
+        URL url = getDebugUrl();
+        assert url != null;
+        if (browserSupport.canReload(url)) {
+            browserSupport.reload(url);
+        } else {
+            browserSupport.load(url, project.getProjectDirectory());
+        }
+    }
+
+    public synchronized void closeDebugUrl() {
+        if (browserSupport != null) {
+            browserSupport.close(true);
+        }
+    }
+
+    private void initBrowserSupport() {
+        assert Thread.holdsLock(this);
+        if (browserSupport == null) {
+            String browserId = KarmaPreferences.getDebugBrowserId(project);
+            assert browserId != null;
+            browserSupport = BrowserSupport.create(BrowserUISupport.getBrowser(browserId));
+        }
+    }
+
+    private URL getDebugUrl() {
+        if (debugUrl == null) {
+            try {
+                String url = KarmaServers.getInstance().getServerUrl(project, "debug.html"); // NOI18N
+                assert url != null;
+                debugUrl = new URL(url);
+            } catch (MalformedURLException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            }
+            assert debugUrl != null;
+        }
+        return debugUrl;
+    }
+
+
     void fireChange() {
         changeSupport.fireChange();
     }
@@ -200,8 +254,6 @@ public final class KarmaServer {
         envVars.put("PROJECT_WEB_ROOT", webRoot.getAbsolutePath()); // NOI18N
         // XXX
         envVars.put("COVERAGE", ""); // NOI18N
-        // XXX
-        envVars.put("DEBUG", ""); // NOI18N
         envVars.put("AUTOWATCH", KarmaPreferences.isAutowatch(project) ? "1" : ""); // NOI18N
         envVars.put("KARMA_NETBEANS_REPORTER", getNetBeansKarmaReporter().getAbsolutePath()); // NOI18N
         return envVars;
@@ -227,6 +279,10 @@ public final class KarmaServer {
             assert netBeansKarmaConfig != null;
         }
         return netBeansKarmaConfig;
+    }
+
+    private boolean isDebug() {
+        return KarmaPreferences.isDebug(project);
     }
 
     @Override

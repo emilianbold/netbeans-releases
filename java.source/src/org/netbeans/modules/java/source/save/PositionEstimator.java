@@ -653,6 +653,7 @@ public abstract class PositionEstimator {
                     matrix[i][2] = seq.index();
                 }
             }
+            initialized = true;
         }
         
         @Override()
@@ -973,6 +974,7 @@ public abstract class PositionEstimator {
                 // localResult will receive start of non-whitespace part of the statment (either statement, or comment)
                 int localResult = -1;
                 int insertPos = -1;
+                boolean nlBefore = item.getKind() != Tree.Kind.EMPTY_STATEMENT;
                 while (nonRelevant.contains((token = seq.token()).id())) {
                     switch (token.id()) {
                         case WHITESPACE:
@@ -983,6 +985,7 @@ public abstract class PositionEstimator {
                                 // whitespaces when deleting the element.
                                 insertPos = seq.offset() + (token.text().toString().indexOf('\n')) + 1;
                                 localResult = seq.offset() + indexOf + 1;
+                                nlBefore = true;
                             } else if (first || previousEnd == 0) {
                                 wsOnlyStart = previousEnd;
                             } else if (token.length() > 1) {
@@ -1032,7 +1035,7 @@ public abstract class PositionEstimator {
                                 int indexOf = t.text().toString().indexOf('\n');
                                 if (indexOf > -1) {
                                     if (commentEndPos.isEmpty()) {
-                                        wideEnd = seq.offset() + indexOf + 1;
+                                        wideEnd = seq.offset() + indexOf + (nlBefore ? 1 : 0);
                                     } else {
                                         commentEndPos.add(Pair.of(commentEndPos.getLast().first(), seq.offset() + indexOf + 1));
                                     }

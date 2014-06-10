@@ -70,7 +70,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Jan Lahoda
  */
 @SupportedAnnotationTypes({"org.netbeans.api.editor.mimelookup.MimeRegistration", "org.netbeans.api.editor.mimelookup.MimeRegistrations", "org.netbeans.spi.editor.mimelookup.MimeLocation"})
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 @ServiceProvider(service=Processor.class)
 public class CreateRegistrationProcessor extends LayerGeneratingProcessor {
 

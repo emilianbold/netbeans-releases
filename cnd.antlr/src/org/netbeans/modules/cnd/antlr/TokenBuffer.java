@@ -96,10 +96,11 @@ public class TokenBuffer {
 
     /** Get a lookahead token */
     public final Token LT(int i) {
-        if ( (p+i-1) >= size ) {
+        int dataPos = p + i - 1;
+        if ( dataPos < 0 || dataPos >= size ) {
                 return TokenImpl.EOF_TOKEN;
         }
-        return tokens.get(p + i - 1);
+        return tokens.get(dataPos);
     }
 
     public final int size() {

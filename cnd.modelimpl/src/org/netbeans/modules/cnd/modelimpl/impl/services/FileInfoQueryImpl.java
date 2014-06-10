@@ -77,9 +77,12 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindMacrosWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
+import org.netbeans.modules.cnd.modelimpl.platform.CndParserResult;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.parsing.spi.Parser;
 
 /**
  * CsmFileInfoQuery implementation
@@ -129,7 +132,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     }
 
     @Override
-    public List<CsmOffsetable> getUnusedCodeBlocks(CsmFile file) {
+    public List<CsmOffsetable> getUnusedCodeBlocks(CsmFile file, Interrupter interrupter) {
         List<CsmOffsetable> out = Collections.<CsmOffsetable>emptyList();
         if (file instanceof FileImpl) {
             FileImpl fileImpl = (FileImpl) file;
@@ -229,6 +232,14 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         }
         return false;
     }
+    
+    @Override
+    public CsmFile getCsmFile(Parser.Result parseResult) {
+        if (parseResult instanceof CndParserResult) {
+            return ((CndParserResult) parseResult).getCsmFile();
+        }
+        return null;
+    }
 
     private static final class NamedLock {
         private final CharSequence name;
@@ -267,7 +278,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     }
     
     @Override
-    public List<CsmReference> getMacroUsages(CsmFile file) {
+    public List<CsmReference> getMacroUsages(CsmFile file, final Interrupter interrupter) {
         List<CsmReference> out = Collections.<CsmReference>emptyList();
         if (file instanceof FileImpl) {
             FileImpl fileImpl = (FileImpl) file;
@@ -284,7 +295,10 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                         long lastParsedTime = fileImpl.getLastParsedTime();
                         APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage(), fileImpl.getFileLanguageFlavor());
                         if (apt != null) {
-                            Collection<APTPreprocHandler> handlers = fileImpl.getPreprocHandlersForParse();
+                            Collection<APTPreprocHandler> handlers = fileImpl.getPreprocHandlersForParse(interrupter);
+                            if (interrupter.cancelled()) {
+                                return out;
+                            }
                             if (handlers.isEmpty()) {
                                 DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + file.getAbsolutePath())); //NOI18N
                                 return Collections.<CsmReference>emptyList();
@@ -293,7 +307,13 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                                 State state = handler.getState();
                                 // ask for concurrent entry if absent
                                 APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(state, Boolean.FALSE);
-                                APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, cacheEntry);
+                                APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, cacheEntry) {
+
+                                    @Override
+                                    protected boolean isStopped() {
+                                        return super.isStopped() || interrupter.cancelled();
+                                    }
+                                };
                                 out = walker.collectMacros();
                                 // remember walk info
                                 fileImpl.setAPTCacheEntry(state, cacheEntry, false);

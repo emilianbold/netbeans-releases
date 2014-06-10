@@ -61,7 +61,6 @@ import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
@@ -97,7 +96,7 @@ import org.apache.tools.ant.Task;
  *
  * <p>Jad file is updated if and only if source jad file or jar file is newer than destination jad file.
  *
- * @author Adam Sotona, David Kaspar
+ * @author Adam Sotona, David Kaspar, Roman Svitanic
  */
 public class JadTask extends Task {
 
@@ -106,14 +105,12 @@ public class JadTask extends Task {
     private static final String LIBLET_PREFIX = "LIBlet-"; //NOI18N
     private static final String MIDLET_TEST_KEYS[] = new String[]{"MicroEdition-Configuration", "MicroEdition-Profile", "MIDlet-Name", "MIDlet-Vendor", "MIDlet-Version"}; // NO I18N
     private static final String LIBLET_TEST_KEYS[] = new String[]{"MicroEdition-Configuration", "MicroEdition-Profile", "LIBlet-Name", "LIBlet-Vendor", "LIBlet-Version"}; // NO I18N
-    private static final String DEFAULT_ENCODING = "UTF-8"; // NO I18N
-    private static final String JAR_URL_KEY = "Jar-URL"; // NO I18N
-    private static final String JAR_SIZE_KEY = "Jar-Size"; // NO I18N
-    private static final String JAR_RSA_SHA1 = "MIDlet-Jar-RSA-SHA1"; // NO I18N
-    private static final String LIBLET_JAR_SHA1 = "LIBlet-Jar-SHA1"; // NO I18N
-    private static final String CERTIFICATE = "MIDlet-Certificate-{0}-{1}"; // NO I18N
-    private static final String SHA1withRSA = "SHA1withRSA"; // NO I18N
-    private static final String SHA1 = "SHA-1"; //NOI18N
+    private static final String DEFAULT_ENCODING = "UTF-8"; // NOI18N
+    private static final String JAR_URL_KEY = "Jar-URL"; // NOI18N
+    private static final String JAR_SIZE_KEY = "Jar-Size"; // NOI18N
+    private static final String JAR_RSA_SHA1 = "Jar-RSA-SHA1-{0}"; // NOI18N
+    private static final String CERTIFICATE = "Certificate-{0}-{1}"; // NOI18N
+    private static final String SHA1withRSA = "SHA1withRSA"; // NOI18N
     private static final String MIDLET_1 = "MIDlet-1"; // NOI18N
     private static final String PKCS12 = "PKCS12"; // NOI18N
     /** Holds value of property jadFile. */
@@ -224,7 +221,10 @@ public class JadTask extends Task {
             hash.put(prefix + JAR_SIZE_KEY, jarsize);
 
             // signing
-            if (sign && !isLiblet) {
+            if (sign) {
+                String jarRsaSha1AttrName = (isLiblet ? LIBLET_PREFIX : MIDLET_PREFIX) + JAR_RSA_SHA1;
+                String certificateAttrName = (isLiblet ? LIBLET_PREFIX : MIDLET_PREFIX) + CERTIFICATE;
+
                 if (keyStore == null || !keyStore.exists() || !keyStore.isFile()) {
                     throw new BuildException(Bundle.getMessage(ERR_MissingAttr, keyStore == null ? "keystore" : keyStore.getAbsolutePath())); // NO I18N
                 }
@@ -272,11 +272,11 @@ public class JadTask extends Task {
                     stream.close();
                 }
 
-                hash.remove(JAR_RSA_SHA1);
                 for (int a = 1;; a++) {
+                    hash.remove(MessageFormat.format(jarRsaSha1AttrName, Integer.toString(a)));
                     int b = 1;
                     for (;; b++) {
-                        if (hash.remove(MessageFormat.format(CERTIFICATE, new Object[]{Integer.toString(a), Integer.toString(b)})) == null) {
+                        if (hash.remove(MessageFormat.format(certificateAttrName, new Object[]{Integer.toString(a), Integer.toString(b)})) == null) {
                             break;
                         }
                     }
@@ -308,7 +308,7 @@ public class JadTask extends Task {
                 }
                 for (int a = 0; a < certs.length; a++) {
                     final Certificate cert = certs[a];
-                    final String certAttr = MessageFormat.format(CERTIFICATE, new Object[]{"1", Integer.toString(a + 1)}); //NOI18N
+                    final String certAttr = MessageFormat.format(certificateAttrName, new Object[]{"1", Integer.toString(a + 1)}); //NOI18N
                     log(Bundle.getMessage("MSG_AddingCertificateAttr", certAttr), Project.MSG_VERBOSE); // NO I18N
                     try {
                         hash.put(certAttr, Base64.encode(cert.getEncoded()));
@@ -347,42 +347,14 @@ public class JadTask extends Task {
                         }
                     }
                     final byte signed[] = signature.sign();
-                    log(Bundle.getMessage("MSG_AddingSignAttr", JAR_RSA_SHA1), Project.MSG_INFO); // NO I18N
-                    hash.put(JAR_RSA_SHA1, Base64.encode(signed));
+                    log(Bundle.getMessage("MSG_AddingSignAttr", MessageFormat.format(jarRsaSha1AttrName, "1")), Project.MSG_INFO); // NOI18N
+                    hash.put(MessageFormat.format(jarRsaSha1AttrName, "1"), Base64.encode(signed)); // NOI18N
                 } catch (SignatureException e) {
                     throw new BuildException(e);
                 } finally {
                     fis.close();
                 }
             }
-
-            if (isLiblet) { //calculation of SHA1
-                MessageDigest md;
-                try {
-                    md = MessageDigest.getInstance(SHA1);
-                } catch (NoSuchAlgorithmException e) {
-                    throw new BuildException(Bundle.getMessage("ERR_NoSuchAlgorithmException", SHA1), e); // NO I18N
-                }
-                final byte[] mem = new byte[16384];
-                final FileInputStream fis = new FileInputStream(jarFile);
-                try {
-                    for (;;) {
-                        int i = fis.read(mem);
-                        if (i < 0) {
-                            break;
-                        }
-                        if (i >= 0) {
-                            md.update(mem, 0, i);
-                        }
-                    }
-                    final byte signed[] = md.digest();
-                    log(Bundle.getMessage("MSG_AddingSignAttr", LIBLET_JAR_SHA1), Project.MSG_INFO); // NO I18N
-                    hash.put(LIBLET_JAR_SHA1, Base64.encode(signed));
-                } finally {
-                    fis.close();
-                }
-            }
-
 
             // saving
             log(Bundle.getMessage("MSG_Saving", jadTo.toString()), Project.MSG_VERBOSE); // NO I18N

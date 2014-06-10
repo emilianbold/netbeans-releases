@@ -44,26 +44,23 @@ package org.netbeans.modules.cnd.highlight.hints;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
-import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfoHintProvider;
+import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
+import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
-import org.netbeans.spi.editor.hints.ChangeInfo;
-import org.netbeans.spi.editor.hints.EnhancedFix;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -73,14 +70,13 @@ import org.openide.util.lookup.ServiceProviders;
  */
 @ServiceProviders({
     //@ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=1400),
-    @ServiceProvider(service = CsmErrorProvider.class, position = 1000),
-    @ServiceProvider(service = CodeAuditProvider.class, position = 1000)
+    @ServiceProvider(service = CsmErrorProvider.class, position = 1100),
+    @ServiceProvider(service = CodeAuditProvider.class, position = 1100)
 })
 public final class CsmHintProvider extends CsmErrorProvider implements CodeAuditProvider {
     
-    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.highlight.hints"); //NOI18N
+    public static final String NAME = "General"; //NOI18N
     private Collection<CodeAudit> audits;
-    public static final String NAME = "Model"; //NOI18N
     private final AuditPreferences myPreferences;
 
     public static CsmErrorProvider getInstance() {
@@ -145,8 +141,14 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
     }
 
     @Override
-    public Set<EditorEvent> supportedEvents() {
-        return EnumSet.<EditorEvent>of(EditorEvent.FileBased);
+    public boolean isSupportedEvent(EditorEvent kind) {
+        for(CodeAudit audit : getAudits()) {
+            AbstractCodeAudit engine = (AbstractCodeAudit)audit;
+            if (engine.isSupportedEvent(kind)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     @Override
@@ -162,8 +164,9 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
                     if (request.isCancelled()) {
                         return;
                     }
-                    if (audit instanceof CodeAuditInfo) {
-                        ((CodeAuditInfo)audit).doGetErrors(request, response);
+                    AbstractCodeAudit engine = (AbstractCodeAudit)audit;
+                    if ((engine.isEnabled() || CndUtils.isUnitTestMode()) && engine.isSupportedEvent(request.getEvent())) {
+                        engine.doGetErrors(request, response);
                     }
                 }
             } finally {
@@ -176,9 +179,16 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
     public synchronized Collection<CodeAudit> getAudits() {
         if (audits == null) {
             List<CodeAudit> res = new ArrayList<CodeAudit>();
-            res.add(NonVirtualDestructor.create(myPreferences));
-            res.add(MethodDeclarationMissed.create(myPreferences));
-            res.add(FunctionUsedBeforDeclaration.create(myPreferences));
+            for(CodeAuditFactory factory : Lookups.forPath(CodeAuditFactory.REGISTRATION_PATH+NAME).lookupAll(CodeAuditFactory.class)) {
+                res.add(factory.create(myPreferences));
+            }
+            Collections.sort(res, new Comparator<CodeAudit>(){
+
+                @Override
+                public int compare(CodeAudit o1, CodeAudit o2) {
+                    return o1.getName().compareTo(o2.getName());
+                }
+            });
             audits = res;
         }
         return audits;
@@ -187,42 +197,5 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
     @Override
     public AuditPreferences getPreferences() {
         return myPreferences;
-    }
-
-    
-    @ServiceProvider(service = CsmErrorInfoHintProvider.class, position = 9100)
-    public final static class FixProvider extends CsmErrorInfoHintProvider {
-
-        @Override
-        protected List<Fix> doGetFixes(CsmErrorInfo info, List<Fix> alreadyFound) {
-            if (info instanceof ErrorInfoImpl) {
-                alreadyFound.add(new DisableHintFix());
-            }
-            return alreadyFound;
-        }
-    }
-    
-    
-    private static class DisableHintFix implements EnhancedFix {
-
-        DisableHintFix() {
-        }
-
-        @Override
-        public String getText() {
-            return NbBundle.getMessage(CsmHintProvider.class, "DisableHint"); // NOI18N
-        }
-
-        @Override
-        public ChangeInfo implement() throws Exception {
-            OptionsDisplayer.getDefault().open("Editor/Hints/text/x-cnd+sourcefile"); // NOI18N
-            return null;
-        }
-
-        @Override
-        public CharSequence getSortText() {
-            //Hint opening options dialog should always be the lastest in offered list
-            return Integer.toString(Integer.MAX_VALUE);
-        }
     }
 }

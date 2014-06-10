@@ -356,12 +356,7 @@ public class TestSession {
      * @see #name
      */
     public String getName() {
-        Project prj = project.get();
-        if (prj == null) {
-            prj = FileOwnerQuery.getOwner(projectURI);
-            project = new WeakReference<Project>(prj);
-        }
-        return name.length() != 0 ? name : ProjectUtils.getInformation(prj).getDisplayName();
+        return name.length() != 0 ? name : ProjectUtils.getInformation(getProject()).getDisplayName();
     }
 
     /**

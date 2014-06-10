@@ -118,7 +118,7 @@ public class PublicClass {
        
 
         
-        if(idclass[0] == null) {
+        if(idclass[0] == null || idclass[0].getClass2() == null) {
             return null;
         }
         

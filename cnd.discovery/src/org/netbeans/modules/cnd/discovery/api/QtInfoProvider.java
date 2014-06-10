@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.discovery.api;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -71,6 +70,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Pair;
@@ -162,6 +162,7 @@ public abstract class QtInfoProvider {
          */
         @Override
         public List<String> getQtIncludeDirectories(MakeConfiguration conf) {
+            char separator = FileSystemProvider.getFileSeparatorChar(conf.getDevelopmentHost().getExecutionEnvironment());
             Pair<String, String> baseDir = getBaseQtIncludeDir(conf);
             List<String> result;
             if (baseDir != null && (baseDir.first() != null || baseDir.second() != null)) {
@@ -172,105 +173,105 @@ public abstract class QtInfoProvider {
                 QmakeConfiguration qmakeConfiguration = conf.getQmakeConfiguration();
                 if (qmakeConfiguration.isCoreEnabled().getValue()) {
                     if (baseDir.second() != null) {
-                        result.add(baseDir.second() + File.separator + "QtCore.framework/Headers"); // NOI18N
+                        result.add(baseDir.second() + separator + "QtCore.framework/Headers"); // NOI18N
                     }
                     if (baseDir.first() != null) {
-                        result.add(baseDir.first() + File.separator + "QtCore"); // NOI18N
+                        result.add(baseDir.first() + separator + "QtCore"); // NOI18N
                     }
                 }
                 if (qmakeConfiguration.isWidgetsEnabled().getValue()) {
                     if (baseDir.second() != null) {
-                        result.add(baseDir.second() + File.separator + "QtWidgets.framework/Headers"); // NOI18N
+                        result.add(baseDir.second() + separator + "QtWidgets.framework/Headers"); // NOI18N
                     }
                     if (baseDir.first() != null) {
-                        result.add(baseDir.first() + File.separator + "QtWidgets"); // NOI18N
+                        result.add(baseDir.first() + separator + "QtWidgets"); // NOI18N
                     }
                 }
                 if (qmakeConfiguration.isGuiEnabled().getValue()) {
                     if (baseDir.second() != null) {
-                        result.add(baseDir.second() + File.separator + "QtGui.framework/Headers"); // NOI18N
+                        result.add(baseDir.second() + separator + "QtGui.framework/Headers"); // NOI18N
                     }
                     if (baseDir.first() != null) {
-                        result.add(baseDir.first() + File.separator + "QtGui"); // NOI18N
+                        result.add(baseDir.first() + separator + "QtGui"); // NOI18N
                     }
                 }
                 if (qmakeConfiguration.isNetworkEnabled().getValue()) {
                     if (baseDir.second() != null) {
-                        result.add(baseDir.second() + File.separator + "QtNetwork.framework/Headers"); // NOI18N
+                        result.add(baseDir.second() + separator + "QtNetwork.framework/Headers"); // NOI18N
                     }
                     if (baseDir.first() != null) {
-                        result.add(baseDir.first() + File.separator + "QtNetwork"); // NOI18N
+                        result.add(baseDir.first() + separator + "QtNetwork"); // NOI18N
                     }
                 }
                 if (qmakeConfiguration.isOpenglEnabled().getValue()) {
                     if (baseDir.second() != null) {
-                        result.add(baseDir.second() + File.separator + "QtOpenGL.framework/Headers"); // NOI18N
+                        result.add(baseDir.second() + separator + "QtOpenGL.framework/Headers"); // NOI18N
                     }
                     if (baseDir.first() != null) {
-                        result.add(baseDir.first() + File.separator + "QtOpenGL"); // NOI18N
+                        result.add(baseDir.first() + separator + "QtOpenGL"); // NOI18N
                     }
                 }
                 if (qmakeConfiguration.isPhononEnabled().getValue()) {
                     if (baseDir.second() != null) {
-                        result.add(baseDir.second() + File.separator + "phonon.framework/Headers"); // NOI18N
+                        result.add(baseDir.second() + separator + "phonon.framework/Headers"); // NOI18N
                     }
                     if (baseDir.first() != null) {
-                        result.add(baseDir.first() + File.separator + "phonon"); // NOI18N
+                        result.add(baseDir.first() + separator + "phonon"); // NOI18N
                     }
                 }
                 if (qmakeConfiguration.isQt3SupportEnabled().getValue()) {
                     if (baseDir.second() != null) {
-                        result.add(baseDir.second() + File.separator + "Qt3Support.framework/Headers"); // NOI18N
+                        result.add(baseDir.second() + separator + "Qt3Support.framework/Headers"); // NOI18N
                     }
                     if (baseDir.first() != null) {
-                        result.add(baseDir.first() + File.separator + "Qt3Support"); // NOI18N
+                        result.add(baseDir.first() + separator + "Qt3Support"); // NOI18N
                     }
                 }
                 if (qmakeConfiguration.isPrintSupportEnabled().getValue()) {
                     if (baseDir.second() != null) {
-                        result.add(baseDir.second() + File.separator + "QtPrintSupport.framework/Headers"); // NOI18N
+                        result.add(baseDir.second() + separator + "QtPrintSupport.framework/Headers"); // NOI18N
                     }
                     if (baseDir.first() != null) {
-                        result.add(baseDir.first() + File.separator + "QtPrintSupport"); // NOI18N
+                        result.add(baseDir.first() + separator + "QtPrintSupport"); // NOI18N
                     }
                 }
                 if (qmakeConfiguration.isSqlEnabled().getValue()) {
                     if (baseDir.second() != null) {
-                        result.add(baseDir.second() + File.separator + "QtSql.framework/Headers"); // NOI18N
+                        result.add(baseDir.second() + separator + "QtSql.framework/Headers"); // NOI18N
                     }
                     if (baseDir.first() != null) {
-                        result.add(baseDir.first() + File.separator + "QtSql"); // NOI18N
+                        result.add(baseDir.first() + separator + "QtSql"); // NOI18N
                     }
                 }
                 if (qmakeConfiguration.isSvgEnabled().getValue()) {
                     if (baseDir.second() != null) {
-                        result.add(baseDir.second() + File.separator + "QtSvg.framework/Headers"); // NOI18N
+                        result.add(baseDir.second() + separator + "QtSvg.framework/Headers"); // NOI18N
                     }
                     if (baseDir.first() != null) {
-                        result.add(baseDir.first() + File.separator + "QtSvg"); // NOI18N
+                        result.add(baseDir.first() + separator + "QtSvg"); // NOI18N
                     }
                 }
                 if (qmakeConfiguration.isXmlEnabled().getValue()) {
                     if (baseDir.second() != null) {
-                        result.add(baseDir.second() + File.separator + "QtXml.framework/Headers"); // NOI18N
+                        result.add(baseDir.second() + separator + "QtXml.framework/Headers"); // NOI18N
                     }
                     if (baseDir.first() != null) {
-                        result.add(baseDir.first() + File.separator + "QtXml"); // NOI18N
+                        result.add(baseDir.first() + separator + "QtXml"); // NOI18N
                     }
                 }
                 if (qmakeConfiguration.isWebkitEnabled().getValue()) {
                     if (baseDir.second() != null) {
-                        result.add(baseDir.second() + File.separator + "QtWebKit.framework/Headers"); // NOI18N
+                        result.add(baseDir.second() + separator + "QtWebKit.framework/Headers"); // NOI18N
                     }
                     if (baseDir.first() != null) {
-                        result.add(baseDir.first() + File.separator + "QtWebKit"); // NOI18N
+                        result.add(baseDir.first() + separator + "QtWebKit"); // NOI18N
                     }
                 }
                 String uiDir = qmakeConfiguration.getUiDir().getValue();
                 if (CndPathUtilities.isPathAbsolute(uiDir)) {
                     result.add(uiDir);
                 } else {
-                    result.add(conf.getBaseDir() + File.separator + uiDir);
+                    result.add(conf.getBaseDir() + separator + uiDir);
                 }
             } else {
                 result = Collections.emptyList();

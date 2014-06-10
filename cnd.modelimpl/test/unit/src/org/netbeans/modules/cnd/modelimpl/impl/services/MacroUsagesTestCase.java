@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
+import org.netbeans.modules.cnd.support.Interrupter;
 
 /**
  *
@@ -77,7 +78,7 @@ public class MacroUsagesTestCase extends TraceModelTestBase {
             CsmFile csmFile = super.getCsmFile(file);
             assertTrue(csmFile != null);
             System.out.printf("Macro references for %s\n", csmFile.getName());
-            List<CsmReference> macroRefs = CsmFileInfoQuery.getDefault().getMacroUsages(csmFile);
+            List<CsmReference> macroRefs = CsmFileInfoQuery.getDefault().getMacroUsages(csmFile, Interrupter.DUMMY);
             for (CsmReference ref : macroRefs) {
                 CsmObject refedObj = ref.getReferencedObject();
                 System.out.printf("%s %s -> %s %s\n", ref.getText(), CsmTracer.getOffsetString(ref, false), ref.getKind(), CsmTracer.getOffsetString(refedObj, true));

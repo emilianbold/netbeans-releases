@@ -11,7 +11,9 @@ ifeq (Darwin,$(OS))
   OS = MacOSX
 endif
 
-ifeq (sun4, $(ARCH))
+ifeq (armv, $(shell expr substr `arch` 1 4))
+    OS_ARCH = $(OS)-arm
+else ifeq (sun4, $(ARCH))
   OS_ARCH = $(OS)-sparc
 else
   OS_ARCH = $(OS)-x86
@@ -29,6 +31,7 @@ PNAME=fs_server
 CC_COMMON=gcc
 CC_Linux-x86      = $(CC_COMMON)
 CC_Linux-x86_64   = $(CC_COMMON)
+CC_Linux-arm      = $(CC_COMMON)
 CC_MacOSX-x86     = clang 
 CC_MacOSX-x86_64  = clang 
 CC_SunOS-sparc    = $(CC_COMMON)
@@ -67,11 +70,12 @@ EXEC=$(DIST_DIR)/$(PNAME)
 
 #CF_COMMON         = --std=c99 -s -O2
 CF_COMMON         = --std=c99 -g -Wall -Werror
+CF_Linux-arm      = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700
 CF_Linux-x86      = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m32
 CF_Linux-x86_64   = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m64
 CF_MacOSX-x86     = $(CF_COMMON) -DMAXOSX  -D_DARWIN_C_SOURCE -m32
 CF_MacOSX-x86_64  = $(CF_COMMON) -DMAXOSX  -D_DARWIN_C_SOURCE -m64
-CF_SunOS-sparc    = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS  -m32
+CF_SunOS-sparc    = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS -m32
 CF_SunOS-sparc_64 = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS -m64
 CF_SunOS-x86      = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS -m32
 CF_SunOS-x86_64   = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS -m64

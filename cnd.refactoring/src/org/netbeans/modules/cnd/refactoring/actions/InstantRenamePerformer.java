@@ -83,6 +83,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -202,7 +203,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                 Utilities.setStatusBoldText(target, getString("no-instant-rename")); // NOI18N
                 return;
             }
-            CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, caret);
+            CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, doc, caret);
             if (ref == null) {
                 Utilities.setStatusBoldText(target, getString("no-instant-rename")); // NOI18N
                 return;
@@ -272,7 +273,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             return Collections.<CsmReference>emptyList();
         }
         CsmFile file = ref.getContainingFile();
-        Collection<CsmReference> out = CsmReferenceRepository.getDefault().getReferences(resolved, file, CsmReferenceKind.ALL, null);
+        Collection<CsmReference> out = CsmReferenceRepository.getDefault().getReferences(resolved, file, CsmReferenceKind.ALL, Interrupter.DUMMY);
         return out;
     }
     

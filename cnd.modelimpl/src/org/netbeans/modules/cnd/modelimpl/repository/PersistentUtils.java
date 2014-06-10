@@ -49,9 +49,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.cnd.api.model.CsmNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
@@ -157,7 +158,7 @@ public class PersistentUtils {
         }
     }
 
-    public static CsmParameterList<?> readParameterList(RepositoryDataInput input) throws IOException {
+    public static CsmParameterList<?> readParameterList(RepositoryDataInput input, CsmScope scope) throws IOException {
         byte handler = input.readByte();
         CsmParameterList<?> paramList;
         switch (handler) {
@@ -165,16 +166,16 @@ public class PersistentUtils {
                 paramList = null;
                 break;
             case PARAM_LIST_IMPL:
-                paramList = new ParameterListImpl<>(input);
+                paramList = new ParameterListImpl<>(input, scope);
                 break;
             case FUN_PARAM_LIST_IMPL:
-                paramList = new FunctionParameterListImpl(input);
+                paramList = new FunctionParameterListImpl(input, scope);
                 break;
             case FUN_KR_PARAM_LIST_IMPL:
-                paramList = new FunctionParameterListImpl.FunctionKnRParameterListImpl(input);
+                paramList = new FunctionParameterListImpl.FunctionKnRParameterListImpl(input, scope);
                 break;
             case DUMMY_PARAMS_LIST_IMPL:
-                paramList = new DummyParametersListImpl(input);
+                paramList = new DummyParametersListImpl(input, scope);
                 break;
             default:
                 assert false : "unexpected param list implementation " + handler;
@@ -194,31 +195,31 @@ public class PersistentUtils {
         }
     }
 
-    public static Collection<CsmParameter> readParameters(RepositoryDataInput input) throws IOException {
+    public static Collection<CsmParameter> readParameters(RepositoryDataInput input, CsmScope scope) throws IOException {
         int size = input.readShort();
         if (size == 0) {
             return null;
         }
         ArrayList<CsmParameter> list = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
-            list.add(readParameter(input));
+            list.add(readParameter(input, scope));
         }
         list.trimToSize();
         return list;
     }
 
-    private static CsmParameter readParameter(RepositoryDataInput input) throws IOException {
+    private static CsmParameter readParameter(RepositoryDataInput input, CsmScope scope) throws IOException {
         byte handler = input.readByte();
         CsmParameter obj = null;
         switch (handler) {
             case DUMMY_PARAMETER_IMPL:
-                obj = new ParameterEllipsisImpl(input);
+                obj = new ParameterEllipsisImpl(input, scope);
                 break;
             case PARAMETER_ELLIPSIS_IMPL:
-                obj = new ParameterEllipsisImpl(input);
+                obj = new ParameterEllipsisImpl(input, scope);
                 break;
             case PARAMETER_IMPL:
-                obj = new ParameterImpl(input);
+                obj = new ParameterImpl(input, scope);
                 break;
             default:
                 assert false : "unexpected handler" + handler;

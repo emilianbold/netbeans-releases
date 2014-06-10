@@ -870,6 +870,10 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceWithinArrayInitBrackets, getDefaultAsBoolean(spaceWithinArrayInitBrackets));
     }
 
+    public boolean spaceWithinArrayIndexBrackets() {
+        return preferences.getBoolean(spaceWithinArrayIndexBrackets, getDefaultAsBoolean(spaceWithinArrayIndexBrackets));
+    }
+
     public boolean spaceBeforeComma() {
         return preferences.getBoolean(spaceBeforeComma, getDefaultAsBoolean(spaceBeforeComma));
     }

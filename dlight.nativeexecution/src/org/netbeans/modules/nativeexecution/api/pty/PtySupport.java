@@ -177,7 +177,7 @@ public final class PtySupport {
                 case MACOSX:
                     return true;
                 case LINUX:
-                    return hostInfo.getCpuFamily().equals(CpuFamily.X86);
+                    return hostInfo.getCpuFamily().equals(CpuFamily.X86) || hostInfo.getCpuFamily().equals(CpuFamily.ARM);
                 case SUNOS:
                     return true;
                 default:

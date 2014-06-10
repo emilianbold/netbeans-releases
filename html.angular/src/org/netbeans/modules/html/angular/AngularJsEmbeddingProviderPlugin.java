@@ -483,7 +483,6 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                 valueTrimPos = valueTrim.indexOf('}');
                 value = valueTrim.substring(0, valueTrimPos);
                 valueTrim = valueTrim.substring(valueTrimPos + 1);
-                valueTrimPos = valueTrimPos + lastPartPos + 2;
             } else {
                 valueTrim = "";
             }

@@ -156,7 +156,7 @@ public class CsmAutosProviderImpl implements AutosProvider {
         final Set<Integer> arraysStartOffsets = new HashSet<Integer>();
         final Set<Integer> excludeOffsets = new HashSet<Integer>();
         
-        CsmFileReferences.getDefault().accept(csmFile, new CsmFileReferences.Visitor() {
+        CsmFileReferences.getDefault().accept(csmFile, null, new CsmFileReferences.Visitor() {
             @SuppressWarnings("fallthrough")
             @Override
             public void visit(CsmReferenceContext context) {
@@ -203,6 +203,11 @@ public class CsmAutosProviderImpl implements AutosProvider {
                         excludeOffsets.add(context.getReference().getStartOffset());
                     }
                 }
+            }
+
+            @Override
+            public boolean cancelled() {
+                return false;
             }
         });
         

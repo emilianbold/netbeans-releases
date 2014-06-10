@@ -378,7 +378,7 @@ public class GeneratorUtils {
                 first = false;
             }
             result.append(')'); // NOI18N
-            if (init.length()>0) {
+            if (init.length()>0 || superInit.length()>0) {
                 result.append(':');  // NOI18N
                 result.append('\n');  // NOI18N
                 result.append(superInit);

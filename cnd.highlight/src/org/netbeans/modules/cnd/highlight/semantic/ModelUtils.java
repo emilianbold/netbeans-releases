@@ -48,6 +48,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
@@ -63,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.support.Interrupter;
 
 /**
  *
@@ -95,22 +97,27 @@ public class ModelUtils {
     }
 
 
-    /*package*/ static List<CsmReference> collect(final CsmFile csmFile, final ReferenceCollector collector) {
-        CsmFileReferences.getDefault().accept(csmFile, new CsmFileReferences.Visitor() {
+    /*package*/ static List<CsmReference> collect(final CsmFile csmFile, Document doc, final ReferenceCollector collector, final Interrupter interrupter) {
+        CsmFileReferences.getDefault().accept(csmFile, doc, new CsmFileReferences.Visitor() {
             @Override
-                public void visit(CsmReferenceContext context) {
-                    collector.visit(context.getReference(), csmFile);
-                }
+            public void visit(CsmReferenceContext context) {
+                collector.visit(context.getReference(), csmFile);
+            }
+
+            @Override
+            public boolean cancelled() {
+                return interrupter.cancelled();
+            }
         });
         return collector.getReferences();
     }
 
-    /*package*/ static List<CsmOffsetable> getInactiveCodeBlocks(CsmFile file) {
-        return CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(file);
+    /*package*/ static List<CsmOffsetable> getInactiveCodeBlocks(CsmFile file, Document doc, Interrupter interrupter) {
+        return CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(file, interrupter);
     }
 
-    /*package*/ static List<CsmReference> getMacroBlocks(CsmFile file) {
-        return CsmFileInfoQuery.getDefault().getMacroUsages(file);
+    /*package*/ static List<CsmReference> getMacroBlocks(CsmFile file, Document doc, Interrupter interrupter) {
+        return CsmFileInfoQuery.getDefault().getMacroUsages(file, interrupter);
     }
 
     private static abstract class AbstractReferenceCollector implements ReferenceCollector {
@@ -125,66 +132,108 @@ public class ModelUtils {
     }
 
     /*package*/ static class FieldReferenceCollector extends AbstractReferenceCollector {
+        private final Interrupter interrupter;
+
+        public FieldReferenceCollector(Interrupter interrupter) {
+            this.interrupter = interrupter;
+        }
         public String getEntityName() {
             return "class-fields"; // NOI18N
         }
         @Override
         public void visit(CsmReference ref, CsmFile file) {
-            CsmObject obj = ref.getReferencedObject();
-            if (CsmKindUtilities.isField(obj)) {
-                list.add(ref);
+            if (!cancelled()) {
+                CsmObject obj = ref.getReferencedObject();
+                if (CsmKindUtilities.isField(obj)) {
+                    list.add(ref);
+                }
             }
+        }
+
+        @Override
+        public boolean cancelled() {
+            return interrupter.cancelled();
         }
     }
 
     /*package*/ static class TypedefReferenceCollector extends AbstractReferenceCollector {
+        private final Interrupter interrupter;
+
+        public TypedefReferenceCollector(Interrupter interrupter) {
+            this.interrupter = interrupter;
+        }
         public String getEntityName() {
             return "typedefs"; // NOI18N
         }
         @Override
         public void visit(CsmReference ref, CsmFile file) {
-            CsmObject obj = ref.getReferencedObject();
-            if (CsmKindUtilities.isTypedef(obj)) {
-                list.add(ref);
+            if (!cancelled()) {
+                CsmObject obj = ref.getReferencedObject();
+                if (CsmKindUtilities.isTypedef(obj)) {
+                    list.add(ref);
+                }
             }
+        }
+
+        @Override
+        public boolean cancelled() {
+            return interrupter.cancelled();
         }
     }
     /*package*/ static class FunctionReferenceCollector extends AbstractReferenceCollector {
+        private final Interrupter interrupter;
+
+        public FunctionReferenceCollector(Interrupter interrupter) {
+            this.interrupter = interrupter;
+        }
+        
         public String getEntityName() {
             return "functions-names"; // NOI18N
         }
         @Override
         public void visit(CsmReference ref, CsmFile file) {
-            if (isWanted(ref, file)) {
-                list.add(ref);
+            if (!cancelled()) {
+                if (isWanted(ref, file)) {
+                    list.add(ref);
+                }
             }
         }
         private boolean isWanted(CsmReference ref, CsmFile file) {
             CsmObject csmObject = ref.getReferencedObject();
             return CsmKindUtilities.isFunction(csmObject);
         }
+
+        @Override
+        public boolean cancelled() {
+            return interrupter.cancelled();
+        }
     }
 
     /*package*/ static class UnusedVariableCollector implements ReferenceCollector {
         private final Map<CsmVariable, ReferenceCounter> counters;
         private Set<CsmParameter> parameters;
-        public UnusedVariableCollector() {
+        private final Interrupter interrupter;
+        
+        public UnusedVariableCollector(Interrupter interrupter) {
             counters = new LinkedHashMap<CsmVariable, ReferenceCounter>();
+            this.interrupter = interrupter;
         }
         public String getEntityName() {
             return "unused-variables"; // NOI18N
         }
         @Override
         public void visit(CsmReference ref, CsmFile file) {
-            CsmObject obj = ref.getReferencedObject();
-            if (isWanted(obj, file)) {
-                CsmVariable var = (CsmVariable) obj;
-                ReferenceCounter counter = counters.get(var);
-                if (counter == null) {
-                    counter = new ReferenceCounter(ref);
-                    counters.put(var, counter);
-                } else {
-                    counter.increment();
+            if (!cancelled()) {
+                CsmObject obj = ref.getReferencedObject();
+                if (isWanted(obj, file)) {
+                    CsmVariable var = (CsmVariable) obj;
+                    ReferenceCounter counter = counters.get(var);
+                    if (counter == null) {
+                        counter = new ReferenceCounter(ref);
+                        counters.put(var, counter);
+                    } else {
+                        counter.increment();
+                    }
                 }
             }
         }
@@ -227,6 +276,11 @@ public class ModelUtils {
                 }
             }
             return parameters;
+        }
+
+        @Override
+        public boolean cancelled() {
+            return interrupter.cancelled();
         }
     }
 

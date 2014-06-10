@@ -147,7 +147,9 @@ public final class HistoryOptionsController extends OptionsPanelController imple
         String ttl = Long.toString(HistorySettings.getInstance().getTTL());        
         String increments = Long.toString(HistorySettings.getInstance().getIncrements());        
         return !ttl.equals(panel.olderThanDaysTextField.getText())
-                || !increments.equals(panel.daysIncrementTextField.getText())
+                || HistorySettings.getInstance().getKeepForever() && panel.removeOlderRadioButton.isSelected()
+                || HistorySettings.getInstance().getLoadAll() && panel.loadIncrementsRadioButton.isSelected()
+                || panel.daysIncrementTextField.isEnabled() && !increments.equals(panel.daysIncrementTextField.getText())
                 || (panel.noLabelCleanupCheckBox.isSelected() != !HistorySettings.getInstance().getCleanUpLabeled())
                 || (panel.keepForeverRadioButton.isSelected() != HistorySettings.getInstance().getKeepForever())
                 || (panel.loadAllRadioButton.isSelected() != HistorySettings.getInstance().getLoadAll());

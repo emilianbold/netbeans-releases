@@ -245,7 +245,7 @@ public class CompletionResolverImpl implements CompletionResolver {
                 result = buildResult(context, resImpl);
                 return;
             }
-            CsmDeclaration cacheDecl = null;
+            CsmObject cacheDecl = null;
             if (fun != null) {
                 cacheDecl = fun;
             } else if (CsmKindUtilities.isVariable(context.getLastObject())) {
@@ -253,6 +253,17 @@ public class CompletionResolverImpl implements CompletionResolver {
                 if (CsmKindUtilities.isParameter(cacheDecl)) {
                     // do not cache parameters, they are local variables as well
                     cacheDecl = null;
+                } else {
+                    // Try to detect context of long chain variables separated by comma.
+                    // This code is not right but allow to fix performance problems.
+                    // TODO: Rework it.
+                    CsmScope scope = ((CsmVariable)cacheDecl).getScope();
+                    if (CsmKindUtilities.isClass(scope) ||
+                        CsmKindUtilities.isEnum(scope)) {
+                        cacheDecl = scope;
+                    } else if (CsmKindUtilities.isNamespace(scope)) {
+                        cacheDecl = scope;
+                    }
                 }
             }
             if (CsmBaseUtilities.isValid(cacheDecl) && fileReferncesContext != null) {

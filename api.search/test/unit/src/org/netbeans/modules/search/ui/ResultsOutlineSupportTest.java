@@ -41,9 +41,12 @@
  */
 package org.netbeans.modules.search.ui;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
@@ -53,8 +56,11 @@ import org.netbeans.modules.search.ResultModel;
 import org.netbeans.modules.search.SearchTestUtils;
 import org.netbeans.modules.search.ui.ResultsOutlineSupport.FolderTreeItem;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -195,5 +201,91 @@ public class ResultsOutlineSupportTest {
 
         p1.remove();
         assertEquals(0, rm.getSelectedMatchesCount());
+    }
+
+    /**
+     * Test for bug 244044.
+     *
+     * @throws java.io.IOException
+     */
+    @Test
+    public void testDeadlock244044() throws IOException {
+        final ResultModel rm = SearchTestUtils.createResultModelWithSampleData(false);
+        final ResultsOutlineSupport ros[] = new ResultsOutlineSupport[1];
+        try {
+            EventQueue.invokeAndWait(new Runnable() {
+
+                @Override
+                public void run() {
+                    ros[0] = new ResultsOutlineSupport(false, false, rm,
+                            null, Node.EMPTY);
+                }
+            });
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        assertNotNull(ros[0]);
+        final FileSystem fs = FileUtil.createMemoryFileSystem();
+
+        @SuppressWarnings("PackageVisibleField")
+        class FinishFlag {
+            volatile boolean thread1Finished = false;
+            volatile boolean thread2Finished = false;
+            boolean areThreadsFinished() {
+                return thread1Finished && thread2Finished;
+            }
+        }
+
+        for (int i = 0; i < 100; i++) {
+
+            final int fi = i;
+            final FinishFlag finishFlag = new FinishFlag();
+
+            final String fileName = "file" + fi + ".txt";
+            try {
+                fs.getRoot().createData(fileName);
+                rm.objectFound(fs.getRoot().getFileObject(fileName), Charset.defaultCharset(), null);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            // Add a new file ...
+            Thread t1 = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    ros[0].update();
+                    ros[0].getResultsNode().getChildren().getNodes();
+                    finishFlag.thread1Finished = true;
+                }
+            });
+
+            // ... and close the model at the same time.
+            Thread t2 = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    // simulate ResultsOutlineSupport.clean() - synchronize and
+                    // call ResultModel.close()
+                    synchronized (ros[0]) {
+                        rm.close();
+                        ros[0].getResultsNode().getChildren().getNodes();
+                    }
+                    finishFlag.thread2Finished = true;
+                }
+            });
+            t1.start();
+            t2.start();
+            try {
+                t1.join(10000);
+                t2.join(10000);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            if (!finishFlag.areThreadsFinished()) {
+                fail("Deadlock occured at iteration " + fi);
+            }
+        }
     }
 }

@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.refactoring.codegen.ui;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.ButtonGroup;
@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
  * @author Alexander Simon
  */
 public class SuperConstructorSelectorPanel extends JPanel {
-    private final Map<JRadioButton,ElementNode.Description> buttons = new HashMap<>();
+    private final Map<JRadioButton,ElementNode.Description> buttons = new LinkedHashMap<>();
     private JRadioButton firstButton;
 
     public SuperConstructorSelectorPanel(ElementNode.Description elementDescription) {

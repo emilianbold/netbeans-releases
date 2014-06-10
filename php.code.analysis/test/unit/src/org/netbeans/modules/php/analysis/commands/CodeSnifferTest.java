@@ -97,4 +97,19 @@ public class CodeSnifferTest extends NbTestCase {
         assertEquals(expected, parsed);
     }
 
+    public void testIssue244550() {
+        String line = "The installed coding standards are MySource, PEAR, PHPCS, PSR1, PSR2, Squiz and Zend";
+        List<String> expected = Arrays.asList(
+                "MySource",
+                "PEAR",
+                "PHPCS",
+                "PSR1",
+                "PSR2",
+                "Squiz",
+                "Zend");
+        Collections.sort(expected);
+        List<String> parsed = StandardsOutputProcessorFactory.parseStandards(line);
+        assertEquals(expected, parsed);
+    }
+
 }

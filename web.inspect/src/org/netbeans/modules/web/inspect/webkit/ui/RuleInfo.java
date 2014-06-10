@@ -183,11 +183,20 @@ public class RuleInfo {
                                     String sourcePath = sourceMap.getSourcePath(sourceIndex);
                                     folder = sourceMapFob.getParent();
                                     FileObject source = folder.getFileObject(sourcePath);
-                                    String sourceURL = source.toURL().toExternalForm();
-                                    String sourceFile = Utilities.relativeResourceName(sourceURL, project);
-                                    setMetaSourceFile(sourceFile);
-                                    setMetaSourceLine(mapping.getOriginalLine()+1);
-                                    return;
+                                    if (source == null) {
+                                        // Invalid path in the source map.
+                                        // Could be caused by incorrect options
+                                        // of the compiler, see issue 238924.
+                                        Logger.getLogger(RuleInfo.class.getName()).log(Level.INFO,
+                                                "Unable to find the file {0} relative to the source map {1}!",
+                                                new Object[] {sourcePath, sourceMapFob.getPath()});
+                                    } else {
+                                        String sourceURL = source.toURL().toExternalForm();
+                                        String sourceFile = Utilities.relativeResourceName(sourceURL, project);
+                                        setMetaSourceFile(sourceFile);
+                                        setMetaSourceLine(mapping.getOriginalLine()+1);
+                                        return;
+                                    }
                                 }
                             } catch (IOException ex) {
                                 Logger.getLogger(RuleInfo.class.getName()).log(Level.INFO, null, ex);

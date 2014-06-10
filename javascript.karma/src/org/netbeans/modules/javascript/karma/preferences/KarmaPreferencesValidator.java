@@ -60,6 +60,7 @@ public final class KarmaPreferencesValidator {
     public KarmaPreferencesValidator validate(Project project) {
         validateKarma(KarmaPreferences.getKarma(project));
         validateConfig(KarmaPreferences.getConfig(project));
+        validateDebug(KarmaPreferences.isDebug(project), KarmaPreferences.getDebugBrowserId(project));
         return this;
     }
 
@@ -77,6 +78,15 @@ public final class KarmaPreferencesValidator {
         String warning = FileUtils.validateFile(Bundle.KarmaPreferencesValidator_config_name(), config, false);
         if (warning != null) {
             result.addWarning(new ValidationResult.Message("config", warning)); // NOI18N
+        }
+        return this;
+    }
+
+    @NbBundle.Messages("KarmaPreferencesValidator.debug.browser=Browser for debugging must be set.")
+    public KarmaPreferencesValidator validateDebug(boolean debug, String debugBrowserId) {
+        if (debug
+                && debugBrowserId == null) {
+            result.addWarning(new ValidationResult.Message("debugBrowser", Bundle.KarmaPreferencesValidator_debug_browser())); // NOI18N
         }
         return this;
     }

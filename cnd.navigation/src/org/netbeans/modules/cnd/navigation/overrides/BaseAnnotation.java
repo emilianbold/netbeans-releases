@@ -57,10 +57,14 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.OverridesPopup;
@@ -100,7 +104,7 @@ public abstract class BaseAnnotation extends Annotation {
     protected final Collection<CsmUID<? extends CsmOffsetableDeclaration>> baseTemplateUIDs;
     protected final Collection<CsmUID<? extends CsmOffsetableDeclaration>> specializationUIDs;
     
-    protected BaseAnnotation(StyledDocument document, CsmOffsetableDeclaration decl, boolean toSeparateClassConstructor,
+    protected BaseAnnotation(StyledDocument document, CsmOffsetableDeclaration decl,
             Collection<? extends CsmOffsetableDeclaration> baseDecls,
             Collection<? extends CsmOffsetableDeclaration> descDecls,
             Collection<? extends CsmOffsetableDeclaration> baseTemplates,
@@ -156,7 +160,7 @@ public abstract class BaseAnnotation extends Annotation {
         }
     }
     
-    protected BaseAnnotation(StyledDocument document, CsmOffsetableDeclaration decl,
+    protected BaseAnnotation(StyledDocument document, CsmFunction decl, CsmVirtualInfoQuery.CsmOverrideInfo thisMethod, 
             Collection<CsmVirtualInfoQuery.CsmOverrideInfo> baseDecls,
             Collection<CsmVirtualInfoQuery.CsmOverrideInfo> descDecls,
             Collection<? extends CsmOffsetableDeclaration> baseTemplates,
@@ -168,6 +172,9 @@ public abstract class BaseAnnotation extends Annotation {
             // overrides only 
             if (baseDecls.isEmpty()) {
                 boolean pseudo = false;
+                if (thisMethod != null) {
+                    pseudo = !thisMethod.isVirtual();
+                }
                 for(CsmVirtualInfoQuery.CsmOverrideInfo info :descDecls) {
                     if (!info.isVirtual()) {
                         pseudo = true;

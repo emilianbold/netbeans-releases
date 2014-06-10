@@ -143,6 +143,7 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
@@ -506,9 +507,9 @@ public final class FileImpl implements CsmFile,
         return projectImpl.getPreprocHandler(fileBuffer.getAbsolutePath(), statePair);
     }
 
-    public Collection<APTPreprocHandler> getPreprocHandlersForParse() {
+    public Collection<APTPreprocHandler> getPreprocHandlersForParse(Interrupter interrupter) {
         final ProjectBase projectImpl = getProjectImpl(true);
-        return projectImpl == null ? Collections.<APTPreprocHandler>emptyList() : projectImpl.getPreprocHandlersForParse(this);
+        return projectImpl == null ? Collections.<APTPreprocHandler>emptyList() : projectImpl.getPreprocHandlersForParse(this, interrupter);
     }
 
     public Collection<PreprocessorStatePair> getPreprocStatePairs() {
@@ -579,6 +580,8 @@ public final class FileImpl implements CsmFile,
     private final AtomicInteger inEnsureParsed = new AtomicInteger(0);
     // ONLY FOR PARSER THREAD USAGE
     // Parser Queue ensures that the same file can be parsed at the same time
+    // only by one thread.// ONLY FOR PARSER THREAD USAGE
+    // Parser Queue ensures that the same file can be parsed at the same time
     // only by one thread.
     /*package*/ void ensureParsed(Collection<APTPreprocHandler> handlers) {
         if (TraceFlags.PARSE_HEADERS_WITH_SOURCES && this.isHeaderFile()) {
@@ -603,7 +606,7 @@ public final class FileImpl implements CsmFile,
             boolean tryPartialReparse = (handlers == PARTIAL_REPARSE_HANDLERS);
             boolean triggerParsingActivity = (handlers != DUMMY_HANDLERS);
             if (handlers == DUMMY_HANDLERS || handlers == PARTIAL_REPARSE_HANDLERS) {
-                handlers = getPreprocHandlersForParse();
+                handlers = getPreprocHandlersForParse(Interrupter.DUMMY);
             }
             long time;
             synchronized (stateLock) {
@@ -1265,7 +1268,7 @@ public final class FileImpl implements CsmFile,
                 return file.getTokenStream(0, Integer.MAX_VALUE, 0, true);
             }
             APTPreprocHandler preprocHandler = projectImpl.createEmptyPreprocHandler(getAbsolutePath());
-            APTPreprocHandler restorePreprocHandlerFromIncludeStack = projectImpl.restorePreprocHandlerFromIncludeStack(reverseInclStack, getAbsolutePath(), preprocHandler, thisFileStartState);
+            APTPreprocHandler restorePreprocHandlerFromIncludeStack = projectImpl.restorePreprocHandlerFromIncludeStack(reverseInclStack, getAbsolutePath(), preprocHandler, thisFileStartState, Interrupter.DUMMY);
             // using restored preprocessor handler, ask included file for parsing token stream filtered by language          
             TokenStream includedFileTS = file.createParsingTokenStreamForHandler(restorePreprocHandlerFromIncludeStack, true, null, null);
             if(includedFileTS != null) {

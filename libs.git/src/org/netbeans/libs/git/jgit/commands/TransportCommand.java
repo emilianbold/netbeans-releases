@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.jgit.errors.NotSupportedException;
 import org.eclipse.jgit.errors.TransportException;
+import org.eclipse.jgit.errors.UnsupportedCredentialItem;
 import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileBasedConfig;
@@ -74,6 +75,56 @@ abstract class TransportCommand extends GitCommand {
     private static final String PROP_ENV_GIT_SSH = "GIT_SSH"; //NOI18N
     private static final String PROP_GIT_SSH_SYSTEM_CLIENT = "versioning.git.library.useSystemSSHClient"; //NOI18N
     private CredentialsProvider credentialsProvider;
+    private static final CredentialsProvider DEFAULT_PROVIDER = new CredentialsProvider() {
+
+        @Override
+        public boolean isInteractive () {
+            return false;
+        }
+
+        @Override
+        public boolean supports (CredentialItem... items) {
+            for (CredentialItem i : items) {
+                if (!(i instanceof CredentialItem.Username
+                        || i instanceof CredentialItem.Password)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public boolean get (URIish uriish, CredentialItem... items) throws UnsupportedCredentialItem {
+            String user = uriish.getUser();
+            if (user == null) {
+                user = "";
+            }
+            String password = uriish.getPass();
+            if (password == null) {
+                password = "";
+            }
+            for (CredentialItem i : items) {
+                if (i instanceof CredentialItem.Username) {
+                    ((CredentialItem.Username) i).setValue(user);
+                    continue;
+                }
+                if (i instanceof CredentialItem.Password) {
+                    ((CredentialItem.Password) i).setValue(password.toCharArray());
+                    continue;
+                }
+                if (i instanceof CredentialItem.StringType) {
+                    if (i.getPromptText().equals("Password: ")) { //NOI18N
+                        ((CredentialItem.StringType) i).setValue(password);
+                        continue;
+                    }
+                }
+                throw new UnsupportedCredentialItem(uriish, i.getClass().getName()
+                        + ":" + i.getPromptText()); //NOI18N
+            }
+            return true;
+        }
+    };
+    
     private final String remote;
     private static final Logger LOG = Logger.getLogger(TransportCommand.class.getName());
 
@@ -121,7 +172,7 @@ abstract class TransportCommand extends GitCommand {
     }
 
     public final void setCredentialsProvider (CredentialsProvider credentialsProvider) {
-        this.credentialsProvider = credentialsProvider;
+        this.credentialsProvider = credentialsProvider == null ? DEFAULT_PROVIDER : credentialsProvider;
     }
     
     @Override

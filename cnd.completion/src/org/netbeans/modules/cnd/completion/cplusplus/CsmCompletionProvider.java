@@ -55,7 +55,6 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
@@ -88,17 +87,14 @@ public class CsmCompletionProvider implements CompletionProvider {
         if (sup == null) {
             return 0;
         }
-        if (!CompletionSupport.needShowCompletionOnTextLite(component, typedText)) {
+        String[] triggers = CsmCompletionUtils.getCppAutoCompletionTrigers();
+        if (!CompletionSupport.needShowCompletionOnTextLite(component, typedText, triggers)) {
             return 0;
         }
         final int dot = component.getCaret().getDot();
         if (CsmCompletionQuery.checkCondition(component.getDocument(), dot, false)) {
-            try {
-                if (CompletionSupport.needShowCompletionOnText(component, typedText)) {
-                    return COMPLETION_QUERY_TYPE;
-                }
-            } catch (BadLocationException ex) {
-                // skip
+            if (CompletionSupport.needShowCompletionOnText(component, typedText, triggers)) {
+                return COMPLETION_QUERY_TYPE;
             }
         }
         return 0;
@@ -591,7 +587,7 @@ public class CsmCompletionProvider implements CompletionProvider {
     private final static class LastResultItem extends CsmResultItem {
 
         private final String str;
-        private final static CsmPaintComponent.StringPaintComponent stringComponent = new CsmPaintComponent.StringPaintComponent();
+        private static CsmPaintComponent.StringPaintComponent stringComponent = null;
 
         public LastResultItem() {
             super(null, Integer.MAX_VALUE);
@@ -600,6 +596,10 @@ public class CsmCompletionProvider implements CompletionProvider {
 
         @Override
         public java.awt.Component getPaintComponent(boolean isSelected) {
+            // lack of sync is intentional, no harm if we do this twice
+            if (stringComponent == null) {
+                stringComponent = new CsmPaintComponent.StringPaintComponent();
+            }
             stringComponent.setString(str);
             return stringComponent;
         }

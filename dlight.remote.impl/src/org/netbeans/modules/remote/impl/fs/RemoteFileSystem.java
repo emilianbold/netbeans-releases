@@ -311,6 +311,14 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         try {
             String tmpName = HostInfoUtils.getHostInfo(execEnv).getTempDir();
             RemoteFileObject tmpDir = findResource(tmpName);
+            if (tmpDir == null) {
+                String dirName = PathUtilities.getDirName(tmpName);
+                FileObject parentFO = findResource(dirName);
+                if (parentFO != null) {
+                    parentFO.refresh();
+                    tmpDir = findResource(tmpName);
+                }                
+            }
             if (tmpDir != null && tmpDir.isFolder() && tmpDir.isValid()) {
                 return tmpDir;
             }

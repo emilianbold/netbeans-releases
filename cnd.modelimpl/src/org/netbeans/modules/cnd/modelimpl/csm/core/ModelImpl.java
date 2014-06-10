@@ -331,7 +331,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         if (prj != null) {
             disposeProject(prj, cleanRepository);
             if (!prj.isArtificial()) {
-                LibraryManager.getInstance(prj.getUnitId()).onProjectClose(prj.getUID());
+                LibraryManager.getInstance(prj.getUnitId()).onProjectClose(prj.getUID(), prj.getUnitId());
             }
         }
 
@@ -381,7 +381,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 
     @Override
     public Cancellable enqueue(Runnable task, CharSequence name) {
-        return enqueue(userTasksProcessor, task, clientTaskPrefix + " :" + name); // NOI18N
+        return enqueueOrCreate(true, userTasksProcessor, task, clientTaskPrefix + " :" + name); // NOI18N
     }
 
     public static ModelImpl instance() {
@@ -389,9 +389,13 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     }
 
     public RequestProcessor.Task enqueueModelTask(Runnable task, String name) {
-        return enqueue(modelProcessor, task, modelTaskPrefix + ": " + name); // NOI18N
+        return enqueueOrCreate(true, modelProcessor, task, modelTaskPrefix + ": " + name); // NOI18N
     }
-    
+
+    public RequestProcessor.Task createModelTask(Runnable task, String name) {
+        return enqueueOrCreate(true, modelProcessor, task, modelTaskPrefix + ": " + name); // NOI18N
+    }
+
     public static boolean isModelRequestProcessorThread() {
         return ModelImpl.instance().modelProcessor.isRequestProcessorThread();
     }
@@ -405,11 +409,11 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         task.waitFinished();
     }
     
-    private RequestProcessor.Task enqueue(RequestProcessor processor, final Runnable task, final String taskName) {
+    private RequestProcessor.Task enqueueOrCreate(boolean post, RequestProcessor processor, final Runnable task, final String taskName) {
         if (TraceFlags.TRACE_182342_BUG) {
             new Exception(taskName).printStackTrace(System.err);
         }
-        return processor.post(new Runnable() {
+        final Runnable r = new Runnable() {
             @Override
             public void run() {
                 String oldName = Thread.currentThread().getName();
@@ -422,7 +426,8 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                     Thread.currentThread().setName(oldName);
                 }
             }
-        });
+        };
+        return post ? processor.post(r) : processor.create(r);
     }
 
     @Override

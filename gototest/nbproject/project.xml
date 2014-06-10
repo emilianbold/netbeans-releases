@@ -140,6 +140,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.refactoring.java</friend>
                 <friend>org.netbeans.modules.ruby.project</friend>
                 <friend>org.netbeans.modules.testng</friend>
+                <friend>org.netbeans.modules.web.clientproject.api</friend>
                 <package>org.netbeans.spi.gototest</package>
             </friend-packages>
         </data>

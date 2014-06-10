@@ -149,13 +149,22 @@ public class PushBranchesStep extends AbstractWizardPanel implements WizardDescr
                     if (!branch.isRemote()) {
                         GitBranch remoteBranch = branches.get(branch.getName());
                         boolean conflicted = false;
+                        boolean updateNeeded = remoteBranch != null && !remoteBranch.getId().equals(branch.getId());
                         if (client != null && remoteBranch != null) {
                             String idLocal = branch.getId();
                             String idRemote = remoteBranch.getId();
                             if (!idLocal.equals(idRemote)) {
                                 try {
                                     GitRevisionInfo rev = client.getCommonAncestor(new String[] { idLocal, idRemote } , getProgressMonitor());
-                                    conflicted = rev == null || !idRemote.equals(rev.getRevision());
+                                    // conflict if
+                                    // A) rev == null : completely unrelated commits
+                                    // B) ancestor is neither remote branch (opposite means EQUAL or PUSH needed but not CONFLICT)
+                                    //    nor local head (opposite means EQUAL or pull needed but not CONFLICT)
+                                    conflicted = rev == null || (!idRemote.equals(rev.getRevision()) && !idLocal.equals(rev.getRevision()));
+                                    if (!conflicted && idLocal.equals(rev.getRevision())) {
+                                        // clear updateneeded flag because there are just unfetched/unmerged upstream commits
+                                        updateNeeded = false;
+                                    }
                                 } catch (GitException.MissingObjectException ex) {
                                     if (idRemote.equals(ex.getObjectName())) {
                                         conflicted = true;
@@ -167,10 +176,10 @@ public class PushBranchesStep extends AbstractWizardPanel implements WizardDescr
                                 }
                             }
                         }
-                        boolean preselected = !conflicted && remoteBranch != null && !remoteBranch.getId().equals(branch.getId());
+                        boolean preselected = !conflicted && updateNeeded;
                         l.add(new PushMapping.PushBranchMapping(remoteBranch == null ? null : remoteBranch.getName(),
                                 remoteBranch == null ? null : remoteBranch.getId(),
-                                branch, conflicted, preselected));
+                                branch, conflicted, preselected, updateNeeded));
                     }
                 }
                 if (cfg != null) {

@@ -395,4 +395,28 @@ public class NbIOFoldTest {
         AbstractLines l = createTestLines();
         l.hideFoldTree(0);
     }
+
+    /**
+     * Test for bug 242792 - NPE at
+     * o.n.core.output2.NbIO$IOFoldingImpl$NbIoFoldHandleDefinition.finish
+     */
+    @Test
+    public void testFoldingOnDisposedIO() {
+        NbIO io = new NbIO("testFoldingOnDisposed");
+        io.getOut();
+        FoldHandle fh = IOFolding.startFold(io, true);
+        io.dispose();
+
+        // This should silently ignore the fact that the IO is finished.
+        fh.silentFinish();
+
+        boolean illegalStateExceptionThrown = false;
+        try {
+            // This should throw an IllegalStateException.
+            fh.finish();
+        } catch (IllegalStateException ex) {
+            illegalStateExceptionThrown = true;
+        }
+        assertTrue(illegalStateExceptionThrown);
+    }
 }

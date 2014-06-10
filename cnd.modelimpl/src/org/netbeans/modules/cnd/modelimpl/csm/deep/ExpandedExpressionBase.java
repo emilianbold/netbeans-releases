@@ -43,6 +43,8 @@
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -51,12 +53,12 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil.ASTExpandedTokensChecker;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil.ASTTokensStringizer;
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
-import org.netbeans.modules.cnd.modelimpl.parser.TokenBasedAST;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -64,14 +66,29 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  */
 public class ExpandedExpressionBase extends ExpressionBase {
     
+    private static final Logger LOG = Logger.getLogger(ExpandedExpressionBase.class.getSimpleName());
+    
+    private static final String SKIPPED_STUB = "\"skipped\""; // NOI18N
+    
+    private static final int MAX_EXPANDING_LENGTH = 512;
+    
     private final CharSequence expandedText;
     
 
     ExpandedExpressionBase(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
-        ASTTokensStringizer stringizer = new ASTTokensStringizer();
+        ASTTokensFilteringStringizer stringizer = new ASTTokensFilteringStringizer();
         AstUtil.visitAST(stringizer, ast);
-        expandedText = DefaultCache.getManager().getString(stringizer.getText());
+        String expanded = stringizer.getText();
+        if (expanded.length() > MAX_EXPANDING_LENGTH) {
+            LOG.log(Level.FINE, "Too large expression ({0} symbols) defined inside macros: {1}:{2}", new Object[]{expanded.length(), file, getStartPosition()}); // NOI18N
+            expanded = SKIPPED_STUB; // NOI18N
+        }
+        if (stringizer.getNumberOfStringizedTokens() > 1) {
+            expandedText = CharSequences.create(expanded);
+        } else {
+            expandedText = DefaultCache.getManager().getString(expanded);
+        }
     }
 
     @Override
@@ -83,6 +100,19 @@ public class ExpandedExpressionBase extends ExpressionBase {
         ASTExpandedTokensChecker checker = new ASTExpandedTokensChecker();
         AstUtil.visitAST(checker, ast);
         return checker.HasExpanded();
+    }
+        
+    private static class ASTTokensFilteringStringizer extends ASTTokensStringizer {
+
+        @Override
+        public Action visit(AST token) {
+            if (token.getType() == CPPTokenTypes.STRING_LITERAL) {
+                sb.append(SKIPPED_STUB);
+                numStringizedTokens++;
+                return Action.CONTINUE;
+            }
+            return super.visit(token);
+        }        
     }
     
     ////////////////////////////////////////////////////////////////////////////

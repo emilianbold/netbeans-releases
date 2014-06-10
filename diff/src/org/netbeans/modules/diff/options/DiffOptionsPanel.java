@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.diff.options;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.openide.util.NbBundle;
@@ -52,9 +53,15 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.*;
 import java.io.File;
+import java.io.IOException;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.diff.DiffModuleConfig;
+import org.netbeans.modules.diff.Utils;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.Mutex;
+import org.openide.util.RequestProcessor;
 
 /**
  * Diff Options panel.
@@ -65,6 +72,7 @@ import org.netbeans.spi.options.OptionsPanelController;
 class DiffOptionsPanel extends javax.swing.JPanel implements ActionListener, DocumentListener {
 
     private boolean isChanged;
+    private final RequestProcessor.Task t = Utils.createParallelTask(new CheckCommand(true));
     
     /** Creates new form DiffOptionsPanel */
     public DiffOptionsPanel() {
@@ -85,6 +93,7 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ActionListener, Doc
         jLabel1.setEnabled(externalDiff.isSelected());
         externalCommand.setEnabled(externalDiff.isSelected());
         browseCommand.setEnabled(externalDiff.isSelected());
+        checkExternalCommand();
     }
 
     public JTextField getExternalCommand() {
@@ -142,6 +151,7 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ActionListener, Doc
             return;
         }
         if(!externalCommand.getText().equals(DiffModuleConfig.getDefault().getPreferences().get(DiffModuleConfig.PREF_EXTERNAL_DIFF_COMMAND, "diff {0} {1}"))) { // NOI18N
+            checkExternalCommand();
             isChanged = true;
             return;
         }
@@ -165,6 +175,7 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ActionListener, Doc
         jLabel1 = new javax.swing.JLabel();
         externalCommand = new javax.swing.JTextField();
         browseCommand = new javax.swing.JButton();
+        lblWarningCommand = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 0, 0, 5));
 
@@ -194,26 +205,30 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ActionListener, Doc
             }
         });
 
+        lblWarningCommand.setForeground(javax.swing.UIManager.getDefaults().getColor("nb.errorForeground"));
+        org.openide.awt.Mnemonics.setLocalizedText(lblWarningCommand, " "); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(internalDiff)
-                .addGap(33, 33, 33)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(ignoreAllWhitespace)
+                    .addComponent(internalDiff)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(jLabel1)
+                        .addComponent(externalDiff)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(ignoreWhitespace)
-                    .addComponent(ignoreCase))
-                .addGap(185, 185, 185))
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel1)
-                    .addComponent(externalDiff))
-                .addGap(31, 31, 31)
-                .addComponent(externalCommand, javax.swing.GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(browseCommand))
+                    .addComponent(ignoreAllWhitespace)
+                    .addComponent(ignoreCase)
+                    .addComponent(lblWarningCommand)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(externalCommand, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(browseCommand)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -232,6 +247,8 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ActionListener, Doc
                     .addComponent(jLabel1)
                     .addComponent(browseCommand)
                     .addComponent(externalCommand, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblWarningCommand)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -260,6 +277,7 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ActionListener, Doc
     private javax.swing.JCheckBox ignoreWhitespace;
     private javax.swing.JRadioButton internalDiff;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel lblWarningCommand;
     // End of variables declaration//GEN-END:variables
 
     @Override
@@ -282,4 +300,68 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ActionListener, Doc
     public void changedUpdate(DocumentEvent e) {
         fireChanged();
     }
+
+    void checkExternalCommand () {
+        if (getExternalDiff().isSelected()) {
+            String cmd = getExternalCommand().getText();
+            checkExternalCommand(cmd);
+        } else {
+            Mutex.EVENT.readAccess(new Runnable() {
+
+                @Override
+                public void run () {
+                    lblWarningCommand.setText(" "); //NOI18N
+                }
+                
+            });
+        }
+    }
+
+    private void checkExternalCommand (final String cmd) {
+        this.cmd = cmd;
+        final boolean inAwt = EventQueue.isDispatchThread();
+        if (inAwt) {
+            t.schedule(250);
+        } else {
+            new CheckCommand(false).run();
+        }
+    }
+    
+    private String cmd;
+    private final class CheckCommand implements Runnable {
+        private final boolean inPanel;
+        
+        private CheckCommand (boolean notifyInPanel) {
+            this.inPanel = notifyInPanel;
+        }
+        
+        @Override
+        public void run () {
+            String toCheck = cmd;
+            try {
+                Process p = Runtime.getRuntime().exec(toCheck);
+                p.destroy();
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        lblWarningCommand.setText(" "); //NOI18N
+                    }
+                });
+            } catch (IOException e) {
+                // the command seems invalid
+                if (inPanel) {
+                    EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run () {
+                            lblWarningCommand.setText(NbBundle.getMessage(DiffOptionsController.class, "MSG_InvalidDiffCommand")); //NOI18N
+                        }
+                    });
+                } else {
+                    DialogDisplayer.getDefault().notifyLater(
+                        new NotifyDescriptor.Message(NbBundle.getMessage(DiffOptionsController.class, "MSG_InvalidDiffCommand"), NotifyDescriptor.WARNING_MESSAGE));
+                }
+            }
+        }
+    };
 }

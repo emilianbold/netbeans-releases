@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
  * @author Vladimir Voskresensky
  */
 @ActionID(id = "LocalTerminalAction", category = "Window")
-@ActionRegistration(iconInMenu = true, displayName = "#CTL_LocalTerminal", iconBase = "org/netbeans/modules/dlight/terminal/action/local_term.png")
+@ActionRegistration(iconInMenu = true, displayName = "#LocalTerminalShortDescr", iconBase = "org/netbeans/modules/dlight/terminal/action/local_term.png")
 @ActionReference(path = TerminalAction.TERMINAL_ACTIONS_PATH, name = "org-netbeans-modules-dlight-terminal-action-LocalTerminalAction", position = 100)
 public final class LocalTerminalAction extends TerminalAction {
 

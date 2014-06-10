@@ -45,19 +45,13 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JLabel;
@@ -374,6 +368,12 @@ public final class OptionsChooserPanel extends JPanel {
                         public void run() {
                             LOGGER.fine("Changing options.");
                             scrollPaneOptions.setViewportView(getOutline(treeModel));
+                            if (panelType == PanelType.IMPORT) { // Check All checkboxes by default when importing
+                                Object root = treeModel.getRoot();
+                                if (root != null) {
+                                    treeDataProvider.setSelected(root, Boolean.TRUE);
+                                }
+                            }
                             dialogDescriptor.setValid(isPanelValid());
                         }
                     });
@@ -431,10 +431,14 @@ public final class OptionsChooserPanel extends JPanel {
         String allLabel = NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.outline.all");
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(allLabel);
         ArrayList<String> enabledItems = new ArrayList<String>();
+        double buildNumberDuringExport = 0;
+        double currentBuildNumber = Double.parseDouble(getOptionsExportModel().getBuildNumber(System.getProperty("netbeans.buildnumber")));  // NOI18N
         if (panelType == PanelType.IMPORT) {
             // If the returned value is null, it means that there is no enabledItems.info in the importing zip file
             // indicating it was created from a version prior to 7.4
-            enabledItems = getEnabledItemsDuringExport();
+            enabledItems = getOptionsExportModel().getEnabledItemsDuringExport(new File(txtFile.getText()));
+            // If the returned value is -1, it means that there is no build.info in the importing zip file or userdir
+            buildNumberDuringExport = getOptionsExportModel().getBuildNumberDuringExport(new File(txtFile.getText()));
         }
         for (OptionsExportModel.Category category : getOptionsExportModel().getCategories()) {
             LOGGER.fine("category=" + category);  //NOI18N
@@ -446,7 +450,13 @@ public final class OptionsChooserPanel extends JPanel {
                     // do not show not applicable items for import
                     if (panelType == PanelType.IMPORT) {
                         // avoid false possitives, check the items that were explicitly selected by the user during export
-                        if (enabledItems == null || enabledItems.contains(category.getDisplayName().concat(item.getDisplayName()))) {
+                        if (enabledItems == null || enabledItems.contains(category.getDisplayName().concat(item.getDisplayName()))
+                                // special treatment as Projects category was introduced after 7.4, so when trying to import options,
+                                // exported from 7.4, into 8.0 or later there would be no Project category in enabledItems.info file.
+                                // There must be GeneralAll Other Unspecified present in the extracted enabledItems.info file though.
+                                || (category.getDisplayName().equals("Projects") && enabledItems.contains("GeneralAll Other Unspecified")  // NOI18N
+                                    && buildNumberDuringExport >= 201310111528.0 // build date of 7.4 version
+                                    && currentBuildNumber >= 201403101706.0)) { // build date of 8.0 version
                             categoryNode.add(new DefaultMutableTreeNode(item));
                         }
                     } else {
@@ -465,37 +475,6 @@ public final class OptionsChooserPanel extends JPanel {
         }
         treeModel = new DefaultTreeModel(rootNode);
         return treeModel;
-    }
-    
-    private ArrayList<String> getEnabledItemsDuringExport() {
-        File importFile = new File(txtFile.getText());
-        ArrayList<String> enabledItems = null;
-        if (importFile.isFile()) {
-            try {
-                ZipFile zipFile = new ZipFile(importFile);
-                // Enumerate each entry
-                Enumeration<? extends ZipEntry> entries = zipFile.entries();
-                while (entries.hasMoreElements()) {
-                    ZipEntry zipEntry = (ZipEntry) entries.nextElement();
-                    if(zipEntry.getName().equals(OptionsExportModel.ENABLED_ITEMS_INFO)) {
-                        if(enabledItems == null) {
-                            enabledItems = new ArrayList<String>();
-                        }
-                        InputStream stream = zipFile.getInputStream(zipEntry);
-                        BufferedReader br = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
-                        String strLine;
-                        while ((strLine = br.readLine()) != null) {
-                            enabledItems.add(strLine);
-                        }
-                    }
-                }
-            } catch (ZipException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return enabledItems;
     }
 
     private String getSelectedFilePath() {
@@ -611,6 +590,7 @@ public final class OptionsChooserPanel extends JPanel {
 	String defaultUserdirRoot = getDefaultUserdirRoot(); // NOI18N
         fileChooserBuilder.setDefaultWorkingDirectory(new File(defaultUserdirRoot));
 	fileChooserBuilder.setFileFilter(new FileNameExtensionFilter("*.zip", "zip"));  //NOI18N
+        fileChooserBuilder.setAcceptAllFileFilterUsed(false);
         String approveText = NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.file.chooser.approve");
         fileChooserBuilder.setApproveText(approveText);
         if (panelType == PanelType.IMPORT) {

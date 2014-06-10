@@ -56,7 +56,7 @@ import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.html.editor.lib.api.elements.AttributeFilter;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
-import org.netbeans.modules.html.knockout.KODataBindTokenId;
+import org.netbeans.modules.html.knockout.api.KODataBindTokenId;
 import org.netbeans.modules.html.knockout.KOUtils;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;

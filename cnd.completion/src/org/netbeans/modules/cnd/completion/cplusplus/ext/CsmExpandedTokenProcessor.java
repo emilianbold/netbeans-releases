@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.support.Interrupter;
 
 /**
  * Macro expanded token processor.
@@ -87,7 +88,7 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
                 file = CsmUtilities.getCsmFile(doc, true, false);
             }
             if (file != null) {
-                List<CsmReference> macros = CsmFileInfoQuery.getDefault().getMacroUsages(file);
+                List<CsmReference> macros = CsmFileInfoQuery.getDefault().getMacroUsages(file, Interrupter.DUMMY);
                 if (macros != null) {
                     return create(doc, file, tp, offset, macros);
                 }
@@ -140,6 +141,13 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
                         return false;
                     }
                 } else if (inMacro) {
+                    if (tp instanceof CsmCompletionTokenProcessor) {
+                        List<CsmCompletionExpression> stack = ((CsmCompletionTokenProcessor)tp).getStack();
+                        boolean errorState = ((CsmCompletionTokenProcessor)tp).isErrorState();
+                        if (errorState && stack.isEmpty()) {
+                            ((CsmCompletionTokenProcessor)tp).setLastSeparatorOffset(tokenOffset);
+                        }
+                    }
                     inMacro = false;
                 } else {
                     inMacro = true;

@@ -545,14 +545,21 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     * @exception DataObjectNotFoundException if the file does not have a
     *   data object
     */
+    @NbBundle.Messages({
+        "# {0} - the path",
+        "EXC_FIND_4_INVALID=The file {0} seems no longer valid!"
+    })
     public static DataObject find (FileObject fo)
     throws DataObjectNotFoundException {
         if (fo == null)
             throw new IllegalArgumentException("Called DataObject.find on null"); // NOI18N
         
         try {
-            if (!fo.isValid())
-                throw new FileStateInvalidException(fo.toString());
+            if (!fo.isValid()) {
+                FileStateInvalidException ex = new FileStateInvalidException(fo.toString());
+                Exceptions.attachLocalizedMessage(ex, Bundle.EXC_FIND_4_INVALID(fo.getPath()));
+                throw ex;
+            }
             
             // try to scan directly the pool (holds only primary files)
             DataObject obj = DataObjectPool.getPOOL().find (fo);
