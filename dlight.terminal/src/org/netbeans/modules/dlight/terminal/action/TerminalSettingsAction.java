@@ -51,28 +51,28 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 
-/**
- *
- * @author ilia
- */
+@ActionID(id = "TerminalSettingsAction", category = "Window")
+@ActionRegistration(iconInMenu = true, displayName = "#TerminalOptionsShortDescr", iconBase = "org/netbeans/modules/dlight/terminal/action/terminal_options.png")
+@ActionReference(path = TerminalAction.TERMINAL_ACTIONS_PATH, name = "org-netbeans-modules-dlight-terminal-action-TerminalSettingsAction", position = 300)
 public class TerminalSettingsAction extends AbstractAction implements Presenter.Toolbar {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        System.out.println("333");
-//        OptionsDisplayer.getDefault().open("Editor/Hints/text/x-cnd+sourcefile/");
-        OptionsDisplayer.getDefault().open("Advanced/TermAdvancedOption");
+        OptionsDisplayer.getDefault().open("Advanced/TermAdvancedOption"); //NOI18N
     }
 
     @Override
     public Component getToolbarPresenter() {
         JButton component = createButton(
-                "/org/netbeans/modules/dlight/terminal/action/terminal_options.png",
-                NbBundle.getMessage(TerminalSettingsAction.class, "TerminalOptionsShortDescr")
+                "/org/netbeans/modules/dlight/terminal/action/terminal_options.png", //NOI18N
+                NbBundle.getMessage(TerminalSettingsAction.class, "TerminalOptionsShortDescr") //NOI18N
         );
 
         component.addActionListener(this);

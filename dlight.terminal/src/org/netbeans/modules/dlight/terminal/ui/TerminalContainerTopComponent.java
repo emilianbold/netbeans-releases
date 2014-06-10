@@ -144,8 +144,7 @@ public final class TerminalContainerTopComponent extends TopComponent {
     private synchronized static Action[] getToolbarActions() {
         if (actions == null) {
             List<? extends Action> termActions = Utilities.actionsForPath(TerminalAction.TERMINAL_ACTIONS_PATH);// NOI18N
-            actions = termActions.toArray(new Action[termActions.size() + 1]);
-            actions[termActions.size()] = new TerminalSettingsAction();
+            actions = termActions.toArray(new Action[termActions.size()]);
         }
         return actions;
     }
