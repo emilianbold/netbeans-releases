@@ -56,6 +56,8 @@ import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.modules.debugger.jpda.js.vars.DebuggerSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -159,9 +161,18 @@ public final class Source {
                 }
             }
         }
-        ObjectVariable sourceVar = getSourceVar(debugger, classType);
+        
+        ObjectVariable sourceVar = null;
+        if (DebuggerSupport.hasSourceInfo(debugger)) {
+            sourceVar = (ObjectVariable) DebuggerSupport.getSourceInfo(debugger, classType);
+            LOG.log(Level.FINE, "Source info for class {0} is {1}", new Object[]{classType, sourceVar});
+        }
         if (sourceVar == null) {
-            return null;
+            sourceVar = getSourceVar(debugger, classType);
+            LOG.log(Level.FINE, "Source var for class {0} is {1}", new Object[]{classType, sourceVar});
+            if (sourceVar == null) {
+                return null;
+            }
         }
         Field fieldName = sourceVar.getField(SOURCE_VAR_NAME);
         Field fieldContent = sourceVar.getField(SOURCE_VAR_CONTENT);
