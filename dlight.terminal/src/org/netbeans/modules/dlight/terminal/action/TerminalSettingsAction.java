@@ -51,14 +51,16 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 
-/**
- *
- * @author ilia
- */
+@ActionID(id = "TerminalSettingsAction", category = "Window")
+@ActionRegistration(iconInMenu = true, displayName = "#TerminalOptionsShortDescr", iconBase = "org/netbeans/modules/dlight/terminal/action/terminal_options.png")
+@ActionReference(path = TerminalAction.TERMINAL_ACTIONS_PATH, name = "org-netbeans-modules-dlight-terminal-action-TerminalSettingsAction", position = 300)
 public class TerminalSettingsAction extends AbstractAction implements Presenter.Toolbar {
 
     @Override
