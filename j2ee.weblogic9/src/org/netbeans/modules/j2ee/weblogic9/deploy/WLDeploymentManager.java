@@ -159,6 +159,9 @@ public class WLDeploymentManager implements DeploymentManager2 {
     /* GuardedBy("this") */
     private boolean proxyMisconfigured;
 
+    /* GuardedBy("this") */
+    private Boolean remote;
+
     public WLDeploymentManager(String uri, String host, String port,
             boolean disconnected, WLSharedState mutableState) {
         this.uri = uri;
@@ -189,9 +192,11 @@ public class WLDeploymentManager implements DeploymentManager2 {
         return port;
     }
 
-    public boolean isRemote() {
-        // TODO optimize
-        return Boolean.parseBoolean(getInstanceProperties().getProperty(WLPluginProperties.REMOTE_ATTR));
+    public synchronized boolean isRemote() {
+        if (remote == null) {
+            remote = Boolean.valueOf(getInstanceProperties().getProperty(WLPluginProperties.REMOTE_ATTR));
+        }
+        return remote;
     }
     
     @CheckForNull

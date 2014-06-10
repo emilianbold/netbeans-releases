@@ -562,6 +562,10 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
     }
 
     private Collection<ServerLibrary> getServerJerseyLibraries() {
+        if (platformImpl.getDeploymentManager().isRemote()) {
+            return Collections.emptySet();
+        }
+
         WLServerLibraryManager manager = getLibraryManager();
         Collection<ServerLibrary> libraries = new LinkedList<ServerLibrary>();
         libraries.addAll(findJerseyLibraries(manager.getDeployableLibraries()));

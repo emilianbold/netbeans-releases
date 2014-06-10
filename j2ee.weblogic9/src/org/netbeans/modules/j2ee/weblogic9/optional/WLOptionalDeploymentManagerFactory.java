@@ -55,7 +55,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
-import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.config.WLDatasourceManager;
 import org.netbeans.modules.j2ee.weblogic9.config.WLMessageDestinationDeployment;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibraryManager;
@@ -116,7 +115,11 @@ public class WLOptionalDeploymentManagerFactory extends OptionalDeploymentManage
      */
     @Override
     public FindJSPServlet getFindJSPServlet(DeploymentManager dm) {
-        return new WLFindJSPServlet((WLDeploymentManager) dm);
+        WLDeploymentManager manager = (WLDeploymentManager) dm;
+        if (!manager.isRemote()) {
+            return new WLFindJSPServlet(manager);
+        }
+        return null;
     }
 
     @Override
@@ -151,7 +154,11 @@ public class WLOptionalDeploymentManagerFactory extends OptionalDeploymentManage
 
     @Override
     public ServerLibraryManager getServerLibraryManager(DeploymentManager dm) {
-        return new WLServerLibraryManager((WLDeploymentManager) dm);
+        WLDeploymentManager manager = (WLDeploymentManager) dm;
+        if (!manager.isRemote()) {
+            return new WLServerLibraryManager(manager);
+        }
+        return null;
     }
 
     private static class WLServerInstanceDescriptor implements ServerInstanceDescriptor {
