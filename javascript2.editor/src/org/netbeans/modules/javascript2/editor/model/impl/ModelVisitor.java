@@ -1038,7 +1038,18 @@ public class ModelVisitor extends PathNodeVisitor {
                                 alreadyThere = ModelUtils.getJsObjectByName(modelBuilder.getCurrentDeclarationFunction(), name.getName());
                             }
                         } else {
-                            alreadyThere = ModelUtils.getJsObject(modelBuilder, fqName, true);
+                            if (fqName.size() == 1) {
+                                Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationScope());
+                                for (JsObject variable : variables) {
+                                    if (variable.getName().equals(name.getName())) {
+                                        alreadyThere = variable;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (alreadyThere == null) {
+                                alreadyThere = ModelUtils.getJsObject(modelBuilder, fqName, true);
+                            }
                         }
                     }
                      
