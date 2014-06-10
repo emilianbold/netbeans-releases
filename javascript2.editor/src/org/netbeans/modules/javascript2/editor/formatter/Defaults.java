@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.javascript2.editor.formatter;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
