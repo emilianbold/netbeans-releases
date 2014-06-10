@@ -64,6 +64,7 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractListModel;
 import javax.swing.Action;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -506,6 +507,10 @@ public final class NetworkMonitorTopComponent extends TopComponent
     public void componentClosed() {
         setReopenNetworkComponent(false);
         model.passivate();
+        // avoid memory leaks
+        model.removeListDataListener(this);
+        // avoid memory leaks
+        jRequestsList.setModel(new DefaultListModel());
         ioProvider.close();
         OpenProjects.getDefault().removePropertyChangeListener(this);
         NbPreferences.forModule(NetworkMonitorTopComponent.class).putInt("separator", jSplitPane.getDividerLocation());
