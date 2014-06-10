@@ -573,7 +573,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
     
     private static final class ItemFD extends FDImpl {
         
-        private static final boolean VISUALIZE_LINK = false;
+        private static final boolean VISUALIZE_LINK = true;
         private final Item item;
 
         public ItemFD(Item item, Project project) {
@@ -596,7 +596,8 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                 String canPath = item.getCanonicalPath();
                 String path = item.getAbsolutePath();
                 if (!canPath.equals(path)) {
-                    return out.toString()+" link"; //NOI18N
+                    // This is unicode up arrow
+                    return "\u2191"+out.toString(); //NOI18N 
                 }
             }
             return out.toString();
