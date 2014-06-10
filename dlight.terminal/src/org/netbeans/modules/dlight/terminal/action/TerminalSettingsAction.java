@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,60 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.terminal.action;
 
-package org.netbeans.modules.cnd.makeproject.spi.configurations;
-
-import java.util.List;
-import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
-import org.netbeans.modules.cnd.api.project.NativeFileSearch;
-import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.utils.FSPath;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.AbstractAction;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.border.EmptyBorder;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.Presenter;
 
 /**
- * Detect additional include paths and macros from compiler options.
- * For example:
- * Convert `pkg-config --cflags gtk-2.0` to list of paths and macros
- * Convert -xopenmp to _OPENMP macro
- * 
- * @author Alexander Simon
+ *
+ * @author ilia
  */
-public interface UserOptionsProvider {
-    List<FSPath> getItemUserIncludePaths(List<FSPath> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
-    List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
-    String getItemImportantFlags(AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
-    LanguageFlavor getLanguageFlavor(AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
-    NativeFileSearch getPackageFileSearch(ExecutionEnvironment env);
+public class TerminalSettingsAction extends AbstractAction implements Presenter.Toolbar {
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        System.out.println("333");
+//        OptionsDisplayer.getDefault().open("Editor/Hints/text/x-cnd+sourcefile/");
+        OptionsDisplayer.getDefault().open("Advanced/TermAdvancedOption");
+    }
+
+    @Override
+    public Component getToolbarPresenter() {
+        JButton component = createButton(
+                "/org/netbeans/modules/dlight/terminal/action/terminal_options.png",
+                NbBundle.getMessage(TerminalSettingsAction.class, "TerminalOptionsShortDescr")
+        );
+
+        component.addActionListener(this);
+
+        return component;
+    }
+
+    private static JButton createButton(String iconPath, String tooltip) {
+        Icon icon = ImageUtilities.loadImageIcon(iconPath, false);
+        final JButton button = new JButton(icon);
+        // ensure small size, just for the icon
+        Dimension size = new Dimension(icon.getIconWidth() + 8, icon.getIconHeight() + 8);
+        button.setPreferredSize(size);
+        button.setMargin(new Insets(1, 1, 1, 1));
+        button.setBorder(new EmptyBorder(button.getBorder().getBorderInsets(button)));
+        button.setToolTipText(tooltip);
+        button.setFocusable(false);
+        return button;
+    }
+
 }

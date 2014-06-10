@@ -160,7 +160,14 @@ public final class NativeExecutionService {
             // Currently only ansi emulation is supported (NB7.4).
             // xterm/dtterm cannot be considered as fully supported yet..
             // So will set TERM environment to 'ansi'
-            processBuilder.getEnvironment().put("TERM", "xterm" /*IOEmulation.getEmulation(descriptor.inputOutput)*/); // NOI18N
+            String termType = processBuilder.getEnvironment().get("TERM"); //NOI18N
+            if (termType != null && termType.startsWith("xterm")) { //NOI18N
+                // $TERM is one of xterm-color, xterm-16color, xterm-88color, or xterm-256color.
+                // Allows user to use his favorite one.
+                processBuilder.getEnvironment().put("TERM", termType); // NOI18N
+            } else {
+                processBuilder.getEnvironment().put("TERM", "xterm" /*IOEmulation.getEmulation(descriptor.inputOutput)*/); // NOI18N
+            }
         } else {
             processBuilder.getEnvironment().put("TERM", "dumb"); // NOI18N
         }

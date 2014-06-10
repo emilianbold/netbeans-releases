@@ -48,6 +48,7 @@ import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -62,6 +63,7 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.modules.dlight.terminal.action.TerminalAction;
+import org.netbeans.modules.dlight.terminal.action.TerminalSettingsAction;
 import org.netbeans.modules.terminal.api.TerminalContainer;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
@@ -142,7 +144,8 @@ public final class TerminalContainerTopComponent extends TopComponent {
     private synchronized static Action[] getToolbarActions() {
         if (actions == null) {
             List<? extends Action> termActions = Utilities.actionsForPath(TerminalAction.TERMINAL_ACTIONS_PATH);// NOI18N
-            actions = termActions.toArray(new Action[termActions.size()]);
+            actions = termActions.toArray(new Action[termActions.size() + 1]);
+            actions[termActions.size()] = new TerminalSettingsAction();
         }
         return actions;
     }
