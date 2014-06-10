@@ -89,7 +89,7 @@ public class JsFormatter implements Formatter {
 
     private final Language<JsTokenId> language;
 
-    private final DefaultsProvider provider;
+    private final Defaults.Provider provider;
 
     private int lastOffsetDiff = 0;
 

@@ -77,7 +77,7 @@ public final class FormatContext {
 
     private final Language<JsTokenId> languange;
 
-    private final DefaultsProvider provider;
+    private final Defaults.Provider provider;
 
     private final int initialStart;
 
@@ -99,7 +99,7 @@ public final class FormatContext {
 
     private boolean pendingContinuation;
 
-    public FormatContext(Context context, DefaultsProvider provider,
+    public FormatContext(Context context, Defaults.Provider provider,
             Snapshot snapshot, Language<JsTokenId> language) {
         this.context = context;
         this.snapshot = snapshot;
@@ -163,7 +163,7 @@ public final class FormatContext {
         }
     }
 
-    public DefaultsProvider getDefaultsProvider() {
+    public Defaults.Provider getDefaultsProvider() {
         return provider;
     }
 

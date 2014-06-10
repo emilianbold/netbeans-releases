@@ -62,21 +62,21 @@ import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
  */
 public final class CodeStyle {
 
-    private final DefaultsProvider provider;
+    private final Defaults.Provider provider;
 
     private final Preferences preferences;
 
-    private CodeStyle(DefaultsProvider provider, Preferences preferences) {
+    private CodeStyle(Defaults.Provider provider, Preferences preferences) {
         this.provider = provider;
         this.preferences = preferences;
     }
 
     /** For testing purposes only */
-    public static CodeStyle get(Preferences prefs, DefaultsProvider provider) {
+    public static CodeStyle get(Preferences prefs, Defaults.Provider provider) {
         return new CodeStyle(provider, prefs);
     }
 
-    public static CodeStyle get(Document doc, DefaultsProvider provider) {
+    public static CodeStyle get(Document doc, Defaults.Provider provider) {
         return new CodeStyle(provider, CodeStylePreferences.get(doc).getPreferences());
     }
     
@@ -88,7 +88,7 @@ public final class CodeStyle {
         return get(context.getDefaultsProvider(), context.getDocument(), context.isEmbedded());
     }
 
-    private static CodeStyle get(DefaultsProvider provider, Document doc, boolean embedded) {
+    private static CodeStyle get(Defaults.Provider provider, Document doc, boolean embedded) {
         if (embedded) {
             return new CodeStyle(provider, CodeStylePreferences.get(doc, JsTokenId.JAVASCRIPT_MIME_TYPE).getPreferences());
         }
