@@ -65,16 +65,14 @@ public class TerminalSettingsAction extends AbstractAction implements Presenter.
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        System.out.println("333");
-//        OptionsDisplayer.getDefault().open("Editor/Hints/text/x-cnd+sourcefile/");
-        OptionsDisplayer.getDefault().open("Advanced/TermAdvancedOption");
+        OptionsDisplayer.getDefault().open("Advanced/TermAdvancedOption"); //NOI18N
     }
 
     @Override
     public Component getToolbarPresenter() {
         JButton component = createButton(
-                "/org/netbeans/modules/dlight/terminal/action/terminal_options.png",
-                NbBundle.getMessage(TerminalSettingsAction.class, "TerminalOptionsShortDescr")
+                "/org/netbeans/modules/dlight/terminal/action/terminal_options.png", //NOI18N
+                NbBundle.getMessage(TerminalSettingsAction.class, "TerminalOptionsShortDescr") //NOI18N
         );
 
         component.addActionListener(this);
