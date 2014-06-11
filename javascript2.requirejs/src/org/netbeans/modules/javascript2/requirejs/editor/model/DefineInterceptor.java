@@ -131,7 +131,7 @@ public class DefineInterceptor implements FunctionInterceptor {
                         }
                     } else if (modules != null && modules.getValue() instanceof JsArray) {
                         Project project = FileOwnerQuery.getOwner(fo);
-                        if (!RequireJsPreferences.getBoolean(project, RequireJsPreferences.ENABLED)) {
+                        if (project == null || !RequireJsPreferences.getBoolean(project, RequireJsPreferences.ENABLED)) {
                             return;
                         }
                         // add assignments for the parameters
