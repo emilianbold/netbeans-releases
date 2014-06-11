@@ -1074,7 +1074,23 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue244964_02() throws Exception {
         checkOccurrences("testfiles/markoccurences/issue244964.js", "f^oo = {", true); 
     }
-        
+    
+    public void testIssue244973A_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244973A.js", "this._implement^ation = null;", true); 
+    }
+    
+    public void testIssue244973A_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244973A.js", "throw Pages^Manager.NO_IMPLEMENTATION_ERROR;", true); 
+    }
+    
+    public void testIssue244973B_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244973B.js", "PagesManager.prototype._implem^entation = null;", true); 
+    }
+    
+    public void testIssue244973B_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244973B.js", "throw Pages^Manager.NO_IMPLEMENTATION_ERROR;", true); 
+    }
+    
    private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
