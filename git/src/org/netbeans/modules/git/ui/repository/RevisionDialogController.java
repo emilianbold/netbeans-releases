@@ -306,7 +306,7 @@ public class RevisionDialogController implements ActionListener, DocumentListene
 
                         @Override
                         public boolean contains (Revision rev, String needle) {
-                            return rev.getRevision().contains(needle);
+                            return rev.getRevision().toLowerCase().contains(needle.toLowerCase());
                         }
                     });
                 }
