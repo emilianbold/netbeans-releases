@@ -186,7 +186,9 @@ public class EditorDocumentContentTest extends NbTestCase {
         Position pos2 = DocumentContentTesting.createPosition(context, 2, true);
         DocumentContentTesting.remove(context, 1, 1);
         Position pos11 = DocumentContentTesting.createPosition(context, 1, true);
-        assertSame(pos, pos11); // Reuse first BB position among ones with the same offset
+        if (pos11 != pos && pos11 != pos1 && pos11 != pos2) {
+            fail("Existing position not reused: pos=" + pos);
+        }
         DocumentContentTesting.insert(context, 1, "b");
         Position pos111 = DocumentContentTesting.createPosition(context, 1, true);
         assertSame(pos, pos111);
@@ -440,6 +442,12 @@ public class EditorDocumentContentTest extends NbTestCase {
         container.runOps(771);
         container.runOps(0);
 
+        // Testing a particular failure
+        container.runInit(1401855220204L);
+        container.runOps(7887);
+        container.runOps(1);
+        container.runOps(0);
+        
         // Run random testing)
         container.run(0L);
     }

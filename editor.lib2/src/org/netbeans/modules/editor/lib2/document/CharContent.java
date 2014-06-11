@@ -252,7 +252,8 @@ final class CharContent implements CharSequence {
     }
 
     static String gapToString(int arrayLength, int gapStart, int gapLength) {
-        return Integer.toString(arrayLength) + ":<" + gapStart + '+' + gapLength + ',' + (gapStart+gapLength) + '>';
+        return "[0," + gapStart + ")" + gapLength + '[' + (gapStart+gapLength) + // NOI18N
+                ',' + Integer.toString(arrayLength) + ']'; // NOI18N
     }
     
     public String toStringDescription() {
