@@ -145,10 +145,11 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (property == null && current.getParent() != null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
                         || current.getParent().getJSKind() == JsElement.Kind.OBJECT)) {
                     current = current.getParent();
-                    if (ModelUtils.PROTOTYPE.equals(current.getName())) {
-                        current = current.getParent();
-                    }
                     property = current.getProperty(iNode.getName());
+                    if (property == null && ModelUtils.PROTOTYPE.equals(current.getName())) {
+                        current = current.getParent();
+                        property = current.getProperty(iNode.getName());
+                    }
                 }
                 if (property == null && current.getParent() == null) {
                     // probably we are in global space and there is used this
@@ -1539,6 +1540,15 @@ public class ModelVisitor extends PathNodeVisitor {
         } else {
             JsObject current = modelBuilder.getCurrentDeclarationFunction();
             object = (JsObjectImpl)resolveThis(current);
+            if (object != null) {
+                // find out, whether is not defined in prototype
+                if (object.getProperty(fqn.get(1).getName()) == null) {
+                    JsObject prototype = object.getProperty(ModelUtils.PROTOTYPE);
+                    if (prototype != null && prototype.getProperty(fqn.get(1).getName()) != null) {
+                        object = prototype;
+                    }
+                }
+            }
         }
         
         if (object != null) {
