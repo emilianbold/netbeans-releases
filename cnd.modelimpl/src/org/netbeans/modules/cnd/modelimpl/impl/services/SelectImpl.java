@@ -52,6 +52,8 @@ import java.util.Objects;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
+import org.netbeans.modules.cnd.api.model.CsmEnum;
+import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -318,6 +320,14 @@ public class SelectImpl implements CsmSelectProvider {
     }
 
     @Override
+    public Iterator<CsmEnumerator> getEnumerators(CsmEnum en, CsmFilter filter) {
+        if (en instanceof FilterableEnumerators){
+            return ((FilterableEnumerators)en).getEnumerators(filter);
+        }
+        return en.getEnumerators().iterator();
+    }
+
+    @Override
     public boolean hasDeclarations(CsmFile file) {
         if (file instanceof FileImpl) {
             return ((FileImpl)file).hasDeclarations();
@@ -342,6 +352,10 @@ public class SelectImpl implements CsmSelectProvider {
     
     public static interface FilterableFriends {
         Iterator<CsmFriend> getFriends(CsmFilter filter);
+    }
+
+    public static interface FilterableEnumerators {
+        Iterator<CsmEnumerator> getEnumerators(CsmFilter filter);
     }
     
     @SuppressWarnings("unchecked")
@@ -370,6 +384,11 @@ public class SelectImpl implements CsmSelectProvider {
         @Override
         public CsmFilter createCompoundFilter(final CsmFilter first, final CsmFilter second) {
             return new CompoundFilterImpl(first, second);
+        }
+
+        @Override
+        public CsmFilter createOrFilter(final CsmFilter first, final CsmFilter second) {
+            return new OrFilterImpl(first, second);
         }
 
         @SuppressWarnings("unchecked")
@@ -633,6 +652,47 @@ public class SelectImpl implements CsmSelectProvider {
                     return false;
                 }
                 final CompoundFilterImpl other = (CompoundFilterImpl) obj;
+                if (Objects.equals(this.first, other.first) && Objects.equals(this.second, other.second)) {
+                    return true;
+                }                
+                // it's fine if first and second were swapped
+                return Objects.equals(this.first, other.second) && Objects.equals(this.second, other.first);
+            }
+        }
+
+        private static class OrFilterImpl implements Filter {
+            private final CsmFilter first;
+            private final CsmFilter second;
+
+            public OrFilterImpl(CsmFilter first, CsmFilter second) {
+                this.first = first;
+                this.second = second;
+            }
+
+            @Override
+            public boolean accept(CsmUID<?> uid) {
+                return ((UIDFilter) first).accept(uid) || ((UIDFilter) second).accept(uid);
+            }
+
+            @Override
+            public String toString() {
+                return "filter [" + first + "][" + second + "]"; // NOI18N
+            }
+
+            @Override
+            public int hashCode() {
+                return this.first.hashCode() ^ this.second.hashCode();
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == null) {
+                    return false;
+                }
+                if (getClass() != obj.getClass()) {
+                    return false;
+                }
+                final OrFilterImpl other = (OrFilterImpl) obj;
                 if (Objects.equals(this.first, other.first) && Objects.equals(this.second, other.second)) {
                     return true;
                 }                
