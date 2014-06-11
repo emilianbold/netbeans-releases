@@ -75,6 +75,21 @@ public class RemoteURLTestCase extends RemoteFileTestBase {
     }
 
     @ForAllEnvironments
+    public void testUrlToFileObjectParity() throws Exception {
+        String path = "/usr/include/stdio.h";
+        FileObject fo = getFileObject(path);
+        URL url = fo.toURL();
+        String str = url.toExternalForm();
+        FileObject fo2 = FileSystemProvider.urlToFileObject(str);
+        assertNotNull(fo2);
+        assertEquals("File Object ", fo, fo2);
+        str = FileSystemProvider.fileObjectToUrl(fo);
+        fo2 = FileSystemProvider.urlToFileObject(str);
+        assertNotNull(fo2);
+        assertEquals("File Object ", fo, fo2);        
+    }
+    
+    @ForAllEnvironments
     public void testUrlToFileObject() throws Exception {
         ExecutionEnvironment env = getTestExecutionEnvironment();
         String path = "/usr/include/stdio.h";
