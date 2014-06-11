@@ -163,4 +163,8 @@ public class JsConventionHintTest extends HintTestBase {
     public void testIssue221497() throws Exception {
         checkHints(this, createSemicolonHint(), "testfiles/hints/issue221497.js", null);
     }
+    
+    public void testIssue244944() throws Exception {
+        checkHints(this, createSemicolonHint(), "testfiles/hints/issue244944.js", null);
+    }
 }
