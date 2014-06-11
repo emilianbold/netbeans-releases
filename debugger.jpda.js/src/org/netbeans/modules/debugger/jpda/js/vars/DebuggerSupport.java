@@ -43,7 +43,14 @@
 package org.netbeans.modules.debugger.jpda.js.vars;
 
 import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.ClassNotPreparedException;
+import com.sun.jdi.ClassType;
+import com.sun.jdi.Method;
+import com.sun.jdi.ObjectCollectedException;
+import com.sun.jdi.ReferenceType;
+import com.sun.jdi.VMDisconnectedException;
 import java.io.InvalidObjectException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
@@ -63,7 +70,7 @@ import org.openide.util.Exceptions;
  */
 public final class DebuggerSupport {
     
-    private static final String DEBUGGER_SUPPORT_CLASS = "jdk.nashorn.internal.runtime.DebuggerSupport";    // NOI18N
+    public  static final String DEBUGGER_SUPPORT_CLASS = "jdk.nashorn.internal.runtime.DebuggerSupport";    // NOI18N
     private static final String DEBUGGER_SUPPORT_VALUE_DESC_CLASS = "jdk.nashorn.internal.runtime.DebuggerSupport$DebuggerValueDesc"; // NOI18N
     
     private static final String METHOD_VALUE_INFO  = "valueInfo";       // NOI18N
@@ -74,6 +81,8 @@ public final class DebuggerSupport {
     private static final String SIGNAT_EVAL        = "(Ljdk/nashorn/internal/runtime/ScriptObject;Ljava/lang/Object;Ljava/lang/String;Z)Ljava/lang/Object;";    // NOI18N
     private static final String METHOD_VALUE_AS_STRING = "valueAsString";       // NOI18N
     private static final String SIGNAT_VALUE_AS_STRING = "(Ljava/lang/Object;)Ljava/lang/String;";  // NOI18N
+    private static final String METHOD_SOURCE_INFO = "getSourceInfo";   // NOI18N
+    private static final String SIGNAT_SOURCE_INFO = "(Ljava/lang/Class;)Ljdk/nashorn/internal/runtime/DebuggerSupport$SourceInfo;";    // NOI18N
     
     private static final String FIELD_DESC_VALUE_AS_STRING = "valueAsString";   // NOI18N
     private static final String FIELD_DESC_KEY             = "key";             // NOI18N
@@ -149,6 +158,38 @@ public final class DebuggerSupport {
             return null;
         } catch (NoSuchMethodException | InvalidExpressionException nsmex) {
             Exceptions.printStackTrace(nsmex);
+            return null;
+        }
+    }
+    
+    public static boolean hasSourceInfo(JPDADebugger debugger) {
+        List<JPDAClassType> supportClasses = debugger.getClassesByName(DEBUGGER_SUPPORT_CLASS);
+        if (supportClasses.isEmpty()) {
+            return false;
+        }
+        JPDAClassType supportClass = supportClasses.get(0);
+        try {
+            ReferenceType supportType = (ReferenceType) supportClass.getClass().getMethod("getType").invoke(supportClass);
+            Method getSourceInfoMethod = ((ClassType) supportType).concreteMethodByName(METHOD_SOURCE_INFO, SIGNAT_SOURCE_INFO);
+            return getSourceInfoMethod != null;
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+            return false;
+        } catch (VMDisconnectedException | ClassNotPreparedException ex) {
+            return false;
+        }
+    }
+    
+    public static Variable getSourceInfo(JPDADebugger debugger, JPDAClassType classType) {
+        List<JPDAClassType> supportClasses = debugger.getClassesByName(DEBUGGER_SUPPORT_CLASS);
+        if (supportClasses.isEmpty()) {
+            return null;
+        }
+        JPDAClassType supportClass = supportClasses.get(0);
+        try {
+            Variable sourceInfo = supportClass.invokeMethod(METHOD_SOURCE_INFO, SIGNAT_SOURCE_INFO, new Variable[] { classType.classObject() });
+            return sourceInfo;
+        } catch (NoSuchMethodException | InvalidExpressionException ex) {
             return null;
         }
     }
