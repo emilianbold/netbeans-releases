@@ -55,6 +55,8 @@ import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmEnum;
+import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -151,6 +153,36 @@ public class CsmSelect {
         }
     }
     
+    public static Iterator<CsmEnumerator> getEnumerators(CsmEnum en, CsmFilter filter)  {
+        long time = System.currentTimeMillis();
+        try {
+            Iterator<CsmEnumerator> out;
+            CsmCacheMap cache = CsmCacheManager.getClientCache(ClassMembersKey.class, SELECT_INITIALIZER);
+            Object key = new EnumeratorsKey(en, filter);
+            IteratorWrapper<CsmEnumerator> wrap = (IteratorWrapper<CsmEnumerator>) CsmCacheMap.getFromCache(cache, key, null);
+            if (wrap == null) {
+                time = System.currentTimeMillis();
+                Iterator<CsmEnumerator> orig = getDefault().getEnumerators(en, filter);
+                time = System.currentTimeMillis() - time;                
+                if (cache != null) {
+                    wrap = new IteratorWrapper<CsmEnumerator>(orig);
+                    cache.put(key, CsmCacheMap.toValue(wrap, time));
+                    out = wrap.iterator();
+                } else {
+                    out = orig;
+                }
+            } else {
+                out = wrap.iterator();
+                time = System.currentTimeMillis() - time;
+            }
+            return out;
+        } finally {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "getEnumerators took {0}ms:\n\tcls={1}\n\tfilter={2}\n", new Object[]{time, getPosition(en), filter});
+            }
+        }
+    }
+
     public static Iterator<CsmFriend> getClassFrirends(CsmClass cls, CsmFilter filter)  {
         long time = System.currentTimeMillis();
         try {
@@ -295,6 +327,7 @@ public class CsmSelect {
         CsmFilter createOffsetFilter(int startOffset, int endOffset);
         CsmFilter createOffsetFilter(int innerOffset);
         CsmFilter createCompoundFilter(CsmFilter first, CsmFilter second);
+        CsmFilter createOrFilter(CsmFilter first, CsmFilter second);
         CsmFilter createNameFilter(NameAcceptor nameAcceptor);
     }
 
@@ -396,6 +429,15 @@ public class CsmSelect {
         }
 
         @Override
+        public Iterator<CsmEnumerator> getEnumerators(CsmEnum en, CsmFilter filter) {
+            CsmSelectProvider service = getService();
+            if (service != null) {
+                return service.getEnumerators(en, filter);
+            }
+            return null;
+        }
+
+        @Override
         public Iterator<CsmVariable> getStaticVariables(CsmFile file, CsmFilter filter) {
             CsmSelectProvider service = getService();
             if (service != null) {
@@ -432,7 +474,7 @@ public class CsmSelect {
         }
     }
     
-    private static CharSequence getPosition(CsmClass obj) {
+    private static CharSequence getPosition(CsmOffsetableDeclaration obj) {
         CsmFile file = obj.getContainingFile();
         String position = file.getAbsolutePath().toString();
         int[] lineColumn = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, obj.getStartOffset());
@@ -480,6 +522,42 @@ public class CsmSelect {
                 return false;
             }
             if (!this.cls.equals(other.cls)) {
+                return false;
+            }
+            return true;
+        }            
+    }
+
+    private static final class EnumeratorsKey {
+        private final CsmEnum en;
+        private final CsmFilter filter;
+
+        public EnumeratorsKey(CsmEnum cls, CsmFilter filter) {
+            this.en = cls;
+            this.filter = filter;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 67 * hash + this.en.hashCode();
+            hash = 67 * hash + this.filter.hashCode();
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final EnumeratorsKey other = (EnumeratorsKey) obj;
+            if (!this.filter.equals(other.filter)) {
+                return false;
+            }
+            if (!this.en.equals(other.en)) {
                 return false;
             }
             return true;
