@@ -60,6 +60,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import jdk.nashorn.internal.ir.ThrowNode;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Hint;
@@ -420,6 +421,14 @@ public class JsConventionRule extends JsAstRule {
             }
             return super.enter(executeNode);
         }
+
+        @Override
+        public Node enter(ThrowNode throwNode) {
+            checkSemicolon(throwNode.getExpression().getFinish());
+            return super.enter(throwNode);
+        }
+        
+        
 
         @Override
         @NbBundle.Messages({"# {0} - the eunexpected token",
