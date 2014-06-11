@@ -95,20 +95,25 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         if (handle == null) {
             return null;
         }
-        
+
         final FileObject file = handle.getFileObject();
-        final AtomicReference<Problem> problemRef = new AtomicReference<>();
+        if (file == null) {
+            return null;
+        }
+
         JavaSource jsource = JavaSource.create(ELTypeUtilities.getElimplExtendedCPI(file));
         if (jsource == null) {
             return null;
         }
+
+        final AtomicReference<Problem> problemRef = new AtomicReference<>();
         try {
             jsource.runUserActionTask(new Task<CompilationController>() {
 
                 @Override
                 public void run(CompilationController info) throws Exception {
                     info.toPhase(JavaSource.Phase.RESOLVED);
-                    
+
                     CompilationContext ccontext = CompilationContext.create(file, info);
                     Element element = handle.resolveElement(info);
                     if (element == null) {

@@ -1229,7 +1229,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                 if (Thread.interrupted()) {
                     return new ValidationResult(Boolean.FALSE, null);
                 }
-                if (type != NewMakeProjectWizardIterator.TYPE_MAKEFILE) {
+                if (type != NewMakeProjectWizardIterator.TYPE_MAKEFILE && type != NewMakeProjectWizardIterator.TYPE_BINARY) {
                     FileObject destFO = fileSystem.findResource(projectDirFO.getPath() + fsFileSeparator + MakeConfiguration.DIST_FOLDER);
                     if (destFO != null && destFO.isValid()) {
                         String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectFolderExists");//NOI18N

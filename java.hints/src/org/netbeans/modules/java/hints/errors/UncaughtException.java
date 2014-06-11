@@ -56,18 +56,22 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
 import com.sun.source.util.TreePath;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -78,6 +82,8 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.UnionType;
+import javax.swing.text.StyledDocument;
+
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -95,6 +101,7 @@ import org.netbeans.modules.java.editor.overridden.ElementDescription;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
+import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 
 /**
@@ -103,6 +110,8 @@ import org.openide.util.NbBundle;
  */
 public final class UncaughtException implements ErrorRule<Void> {
     
+    private static final Object KEY_HANDLED_EXCEPTIONS = new Object();
+
     /*only for tests, currently:*/
     static boolean allowMagicSurround = false;
     
@@ -116,18 +125,24 @@ public final class UncaughtException implements ErrorRule<Void> {
         Tree lastTree = null;
         
         while (path != null) {
-            TypeMirror tm = info.getTrees().getTypeMirror(path);
-            
-            if (tm != null && tm.getKind() == TypeKind.EXECUTABLE) {
-                for (TypeMirror mirr : ((ExecutableType) tm).getThrownTypes()) {
-                    for (Iterator<TypeMirror> it = result.iterator(); it.hasNext();)
-                        if (info.getTypes().isSameType(it.next(), mirr))
-                            it.remove();
+            Tree currentTree = path.getLeaf();
+
+            if (currentTree.getKind() == Tree.Kind.METHOD) {
+                TypeMirror tm = info.getTrees().getTypeMirror(path);
+                if (tm != null && tm.getKind() == TypeKind.EXECUTABLE) {
+                    for (TypeMirror mirr : ((ExecutableType) tm).getThrownTypes()) {
+                        for (Iterator<TypeMirror> it = result.iterator(); it.hasNext();)
+                            if (info.getTypes().isSameType(it.next(), mirr))
+                                it.remove();
+                    }
+                    break;
                 }
+            }            
+            
+            if (currentTree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+                // no checked exceptions can be thrown out of Lambda, #243106
                 break;
             }
-            
-            Tree currentTree = path.getLeaf();
             
             if (currentTree.getKind() == Kind.TRY) {
                 TryTree tt = (TryTree) currentTree;
@@ -187,6 +202,22 @@ public final class UncaughtException implements ErrorRule<Void> {
         boolean disableSurroundWithTryCatch = false;
         Element el;
         
+        Set<TypeMirror> alreadyHandled = null;
+        try {
+            int lineNumber = NbDocument.findLineNumber((StyledDocument)info.getDocument(), info.getSnapshot().getOriginalOffset(offset));
+            Map<Integer, Set<TypeMirror>> alreadyHandledMap = (Map<Integer, Set<TypeMirror>>) info.getCachedValue(KEY_HANDLED_EXCEPTIONS);
+            if (alreadyHandledMap == null) {
+                alreadyHandledMap = new HashMap<>();
+                info.putCachedValue(KEY_HANDLED_EXCEPTIONS, alreadyHandledMap, CompilationInfo.CacheClearPolicy.ON_TASK_END);
+            }
+            alreadyHandled = alreadyHandledMap.get(lineNumber);
+            if (alreadyHandled == null) {
+                alreadyHandled = new HashSet<>();
+                alreadyHandledMap.put(lineNumber, alreadyHandled);
+            }
+        } catch (IOException ex) {
+        }        
+
         OUTTER: while (path != null) {
             Tree leaf = path.getLeaf();
             
@@ -227,7 +258,6 @@ public final class UncaughtException implements ErrorRule<Void> {
 			else
 			    uncaught = ((ExecutableElement) el).getThrownTypes();
                     }
-                    path = path.getParentPath();
                     break OUTTER;
                 case THROW:
                     TypeMirror uncaughtException = info.getTrees().getTypeMirror(new TreePath(path, ((ThrowTree) leaf).getExpression()));
@@ -240,6 +270,9 @@ public final class UncaughtException implements ErrorRule<Void> {
         
         if (uncaught != null) {
             uncaught = findUncaughtExceptions(info, path, uncaught);
+
+            uncaught.removeAll(alreadyHandled);
+            alreadyHandled.addAll(uncaught);
             
             TreePath pathRec = path;
             
@@ -262,7 +295,7 @@ public final class UncaughtException implements ErrorRule<Void> {
                             inResourceSection = true;
                         }
                     case METHOD: case ANNOTATION_TYPE: case CLASS:
-                    case ENUM: case INTERFACE:
+                    case ENUM: case INTERFACE: case LAMBDA_EXPRESSION:
                         break LOOK_FOR_TWR;
                 }
                 inLast = in.getLeaf();

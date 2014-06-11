@@ -1532,6 +1532,10 @@ public class Flow {
                 if (tel == throwableEl) {
                     break;
                 }
+                TypeMirror sup = tel.getSuperclass();
+                if (sup.getKind() != TypeKind.DECLARED) {
+                    break;
+                }
                 dtt = (DeclaredType)tel.getSuperclass();
             } while (dtt != null);
         }
@@ -1673,8 +1677,9 @@ public class Flow {
 
         public Boolean visitArrayAccess(ArrayAccessTree node, ConstructorData p) {
             boolean lv = lValueDereference;
-            scan(node.getExpression(), p);
+            // even the array reference is just read from. There's no support to track array-item lvalues.
             this.lValueDereference = false;
+            scan(node.getExpression(), p);
             scan(node.getIndex(), p);
             this.lValueDereference = lv;
             return null;

@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.cookies.CloseCookie;
@@ -372,7 +373,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
 
     protected static List<CsmOffsetable> checkDeadBlocks(final CsmProject project, final FileImpl fileImpl, String docMsg, final BaseDocument doc, String msg, int expectedDeadBlocks) throws BadLocationException {
         project.waitParse();
-        List<CsmOffsetable> unusedCodeBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(fileImpl);
+        List<CsmOffsetable> unusedCodeBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(fileImpl, Interrupter.DUMMY);
         if (TraceFlags.TRACE_182342_BUG) {
             System.err.printf("%s\n==============\n%s\n===============\n", docMsg, doc.getText(0, doc.getLength()));
             if (unusedCodeBlocks.isEmpty()) {

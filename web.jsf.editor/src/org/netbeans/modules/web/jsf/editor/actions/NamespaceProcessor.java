@@ -200,9 +200,6 @@ class NamespaceProcessor {
                 }
             }
 
-            // gather namespaces and jsf: namespace usage
-            ElementUtils.visitChildren(getTopRoot(parserResult), nsCollector, ElementType.OPEN_TAG);
-
             // gather usage of namespaces
             ElementUtils.visitChildren(parserResult.root(), compCollector, ElementType.OPEN_TAG);
             for (Library library : declaredLibraries) {
@@ -240,37 +237,37 @@ class NamespaceProcessor {
     /**
      * Collects all defined prefixes and namespaces within the Facelet.
      */
-    private class NamespaceCollector implements ElementVisitor {
+    private class NamespaceCollector {
 
         private final Map<String, String> namespaces;
         private final Map<String, Attribute> namespace2Attribute = new HashMap<>();
 
         public NamespaceCollector(HtmlParserResult parserResult) {
             this.namespaces = parserResult.getNamespaces();
+            initializeNs2Attrs(parserResult);
         }
 
-        @Override
-        public void visit(Element node) {
-            OpenTag openTag = (OpenTag) node;
-            //put all NS attributes to the namespace2Attribute map and check usage of prefixes.
-            Collection<Attribute> nsAttrs = openTag.attributes(new AttributeFilter() {
-                @Override
-                public boolean accepts(Attribute attribute) {
-                    if (attribute.unquotedValue() == null) {
-                        return false;
+        // gather namespaces mapping to attributes for the removal later
+        private void initializeNs2Attrs(HtmlParserResult parserResult) {
+            for (Iterator<Element> it = parserResult.getSyntaxAnalyzerResult().getElementsIterator(); it.hasNext();) {
+                Element element = it.next();
+                if (element.type() == ElementType.OPEN_TAG) {
+                    OpenTag tag = (OpenTag) element;
+                    for (Attribute attr : tag.attributes()) {
+                        String attrName = attr.name().toString();
+                        if (attrName.startsWith("xmlns")) { //NOI18N
+                            CharSequence value = attr.unquotedValue();
+                            if (value != null) {
+                                String key = value.toString();
+                                //do not overwrite already existing entry
+                                Attribute attribute = namespace2Attribute.get(key);
+                                if (attribute == null) {
+                                    namespace2Attribute.put(key, attr);
+                                }
+                            }
+                        }
                     }
-                    CharSequence nsPrefix = attribute.namespacePrefix();
-                    if (nsPrefix == null) {
-                        return false;
-                    }
-
-                    return LexerUtils.equals("xmlns", nsPrefix, true, true); //NOI18N
                 }
-            });
-
-            for (Attribute attr : nsAttrs) {
-                // collect namespaces
-                namespace2Attribute.put(attr.unquotedValue().toString(), attr);
             }
         }
     }

@@ -51,6 +51,7 @@ import java.io.File;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -63,6 +64,8 @@ import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferencesValidator;
 import org.netbeans.modules.javascript.karma.util.KarmaUtils;
 import org.netbeans.modules.javascript.karma.util.ValidationResult;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
+import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
@@ -74,6 +77,7 @@ public class CustomizerKarma extends JPanel {
 
     private final ProjectCustomizer.Category category;
     private final Project project;
+    private final BrowserUISupport.BrowserComboBoxModel browserModel;
 
 
     public CustomizerKarma(ProjectCustomizer.Category category, Project project) {
@@ -82,6 +86,8 @@ public class CustomizerKarma extends JPanel {
 
         this.category = category;
         this.project = project;
+
+        browserModel = BrowserUISupport.createBrowserModel(KarmaPreferences.getDebugBrowserId(project), KarmaUtils.getDebugBrowsers());
 
         initComponents();
         init();
@@ -92,6 +98,11 @@ public class CustomizerKarma extends JPanel {
         karmaTextField.setText(KarmaPreferences.getKarma(project));
         configTextField.setText(KarmaPreferences.getConfig(project));
         autowatchCheckBox.setSelected(KarmaPreferences.isAutowatch(project));
+        debugCheckBox.setSelected(KarmaPreferences.isDebug(project));
+        debugBrowserIdComboBox.setModel(browserModel);
+        debugBrowserIdComboBox.setRenderer(BrowserUISupport.createBrowserRenderer());
+        // enabled
+        enableDebugBrowserComboBox(debugCheckBox.isSelected());
         // listeners
         addListeners();
         // initial validation
@@ -108,15 +119,19 @@ public class CustomizerKarma extends JPanel {
     private void addListeners() {
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         ItemListener defaultItemListener = new DefaultItemListener();
+        ActionListener defaultActionListener = new DefaultActionListener();
         karmaTextField.getDocument().addDocumentListener(defaultDocumentListener);
         configTextField.getDocument().addDocumentListener(defaultDocumentListener);
         autowatchCheckBox.addItemListener(defaultItemListener);
+        debugCheckBox.addItemListener(new DebugItemListener());
+        debugBrowserIdComboBox.addActionListener(defaultActionListener);
     }
 
     void validateData() {
         ValidationResult result = new KarmaPreferencesValidator()
                 .validateKarma(karmaTextField.getText())
                 .validateConfig(configTextField.getText())
+                .validateDebug(debugCheckBox.isSelected(), browserModel.getSelectedBrowserId())
                 .getResult();
         for (ValidationResult.Message message : result.getErrors()) {
             category.setErrorMessage(message.getMessage());
@@ -136,6 +151,12 @@ public class CustomizerKarma extends JPanel {
         KarmaPreferences.setKarma(project, karmaTextField.getText());
         KarmaPreferences.setConfig(project, configTextField.getText());
         KarmaPreferences.setAutowatch(project, autowatchCheckBox.isSelected());
+        KarmaPreferences.setDebug(project, debugCheckBox.isSelected());
+        KarmaPreferences.setDebugBrowserId(project, browserModel.getSelectedBrowserId());
+    }
+
+    void enableDebugBrowserComboBox(boolean enabled) {
+        debugBrowserIdComboBox.setEnabled(enabled);
     }
 
     private File getProjectDirectory() {
@@ -158,6 +179,9 @@ public class CustomizerKarma extends JPanel {
         configBrowseButton = new JButton();
         configSearchButton = new JButton();
         autowatchCheckBox = new JCheckBox();
+        debugCheckBox = new JCheckBox();
+        debugBrowserIdLabel = new JLabel();
+        debugBrowserIdComboBox = new JComboBox<WebBrowser>();
 
         karmaLabel.setLabelFor(karmaTextField);
         Mnemonics.setLocalizedText(karmaLabel, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.karmaLabel.text")); // NOI18N
@@ -199,6 +223,11 @@ public class CustomizerKarma extends JPanel {
 
         Mnemonics.setLocalizedText(autowatchCheckBox, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.autowatchCheckBox.text")); // NOI18N
 
+        Mnemonics.setLocalizedText(debugCheckBox, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.debugCheckBox.text")); // NOI18N
+
+        debugBrowserIdLabel.setLabelFor(debugBrowserIdComboBox);
+        Mnemonics.setLocalizedText(debugBrowserIdLabel, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.debugBrowserIdLabel.text")); // NOI18N
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -210,7 +239,7 @@ public class CustomizerKarma extends JPanel {
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(karmaTextField, GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)
+                        .addComponent(karmaTextField, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(karmaBrowseButton)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -222,8 +251,16 @@ public class CustomizerKarma extends JPanel {
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(configSearchButton))))
             .addGroup(layout.createSequentialGroup()
-                .addComponent(autowatchCheckBox)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(autowatchCheckBox)
+                    .addComponent(debugCheckBox))
                 .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(debugBrowserIdLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(debugBrowserIdComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {configBrowseButton, karmaBrowseButton});
@@ -245,7 +282,13 @@ public class CustomizerKarma extends JPanel {
                     .addComponent(configBrowseButton)
                     .addComponent(configSearchButton))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(autowatchCheckBox))
+                .addComponent(autowatchCheckBox)
+                .addGap(18, 18, 18)
+                .addComponent(debugCheckBox)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(debugBrowserIdLabel)
+                    .addComponent(debugBrowserIdComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -304,6 +347,9 @@ public class CustomizerKarma extends JPanel {
     private JLabel configLabel;
     private JButton configSearchButton;
     private JTextField configTextField;
+    private JComboBox<WebBrowser> debugBrowserIdComboBox;
+    private JLabel debugBrowserIdLabel;
+    private JCheckBox debugCheckBox;
     private JButton karmaBrowseButton;
     private JLabel karmaLabel;
     private JButton karmaSearchButton;
@@ -339,6 +385,25 @@ public class CustomizerKarma extends JPanel {
 
         @Override
         public void itemStateChanged(ItemEvent e) {
+            validateData();
+        }
+
+    }
+
+    private final class DefaultActionListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            validateData();
+        }
+
+    }
+
+    private final class DebugItemListener implements ItemListener {
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            enableDebugBrowserComboBox(e.getStateChange() == ItemEvent.SELECTED);
             validateData();
         }
 

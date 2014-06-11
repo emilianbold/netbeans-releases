@@ -50,8 +50,6 @@
 #include <stropts.h>
 #include <stdio.h>
 #include <errno.h>
-#include <sys/stream.h>
-#include <sys/termio.h>
 
 #define MAX_PASSWORD_LENGTH 64
 #define MAX_CMD_LENGTH 256

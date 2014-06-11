@@ -44,6 +44,7 @@ package org.netbeans.modules.php.nette.tester.options;
 import java.util.List;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.nette.tester.commands.Tester;
 import org.openide.util.NbPreferences;
@@ -58,6 +59,7 @@ public final class TesterOptions {
 
     // path
     private static final String TESTER_PATH = "tester.path"; // NOI18N
+    private static final String BINARY_EXECUTABLE = "binary.executable"; // NOI18N
     private static final String PHP_INI_PATH = "php.ini.path"; // NOI18N
 
     private volatile boolean testerSearched = false;
@@ -95,6 +97,19 @@ public final class TesterOptions {
 
     public void setPhpIniPath(String path) {
         getPreferences().put(PHP_INI_PATH, path);
+    }
+
+    @CheckForNull
+    public String getBinaryExecutable() {
+        return getPreferences().get(BINARY_EXECUTABLE, null);
+    }
+
+    public void setBinaryExecutable(@NullAllowed String binaryExecutable) {
+        if (binaryExecutable == null) {
+            getPreferences().remove(BINARY_EXECUTABLE);
+        } else {
+            getPreferences().put(BINARY_EXECUTABLE, binaryExecutable);
+        }
     }
 
     private Preferences getPreferences() {

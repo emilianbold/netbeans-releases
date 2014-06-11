@@ -43,15 +43,12 @@
 package org.netbeans.modules.parsing.lucene;
 
 import org.apache.lucene.store.LockObtainFailedException;
-import org.apache.lucene.store.NoLockFactory;
 import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -80,6 +77,7 @@ import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.MMapDirectory;
 import org.apache.lucene.store.NIOFSDirectory;
@@ -93,6 +91,7 @@ import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexReaderInjection;
 import org.netbeans.modules.parsing.lucene.support.StoppableConvertor;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -128,11 +127,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
     private static boolean disableLocks;
     
     private final DirCache dirCache;       
-    
-    /** unit tests */
-    public static void setDisabledLocks(final boolean disabled) {
-        disableLocks = disabled;
-    }
+
 
     public static LuceneIndex create (final File cacheRoot, final Analyzer analyzer) throws IOException {
         return new LuceneIndex (cacheRoot, analyzer);
@@ -145,10 +140,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
         this.dirCache = new DirCache(
                 refCacheRoot,
                 cachePolicy,
-                analyzer,
-                disableLocks ?
-                    NoLockFactory.getNoLockFactory():
-                    new RecordOwnerLockFactory());
+                analyzer);
     }
     
     @Override
@@ -603,12 +595,11 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
     }    
     
     private static final class DirCache implements Evictable {
-        
-        private static final String CACHE_LOCK_PREFIX = "nb-lock";  //NOI18N
+
         private static final RequestProcessor RP = new RequestProcessor(LuceneIndex.class.getName(), 1);                
         
         private final File folder;
-        private final LockFactory lockFactory;
+        private final RecordOwnerLockFactory lockFactory;
         private final CachePolicy cachePolicy;
         private final Analyzer analyzer;
         private final StoreCloseSynchronizer storeCloseSynchronizer;
@@ -631,14 +622,12 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
         private DirCache(
                 final @NonNull File folder,
                 final @NonNull CachePolicy cachePolicy,
-                final @NonNull Analyzer analyzer,
-                final @NonNull LockFactory lockFactory) throws IOException {
+                final @NonNull Analyzer analyzer) throws IOException {
             assert folder != null;
             assert cachePolicy != null;
             assert analyzer != null;
-            assert lockFactory != null;
             this.folder = folder;
-            this.lockFactory = lockFactory;
+            this.lockFactory = new RecordOwnerLockFactory();
             this.fsDir = createFSDirectory(folder, lockFactory);
             this.cachePolicy = cachePolicy;                        
             this.analyzer = analyzer;
@@ -677,9 +666,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
             // already write locked
             doClose(false);
             try {
-                if (lockFactory instanceof RecordOwnerLockFactory) {
-                    ((RecordOwnerLockFactory)lockFactory).forceRemoveLocks();
-                }
+                lockFactory.forceClearLocks();
                 final String[] content = fsDir.listAll();
                 boolean dirty = false;
                 if (content != null) {
@@ -699,19 +686,9 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                     final File cacheDir = fsDir.getDirectory();
                     final File[] children = cacheDir.listFiles();
                     if (children != null) {
-                        for (final File child : children) {                                                
-                            if (!child.delete()) {                                
-                                final Map<String,String> sts = stackTraces(Thread.getAllStackTraces());
-                                throw new IOException("Cannot delete: " + child.getAbsolutePath() + "(" +   //NOI18N
-                                        child.exists()  +","+                                               //NOI18N
-                                        child.canRead() +","+                                               //NOI18N
-                                        child.canWrite() +","+                                              //NOI18N
-                                        cacheDir.canRead() +","+                                            //NOI18N
-                                        cacheDir.canWrite() +","+                                           //NOI18N
-                                        (lockFactory instanceof RecordOwnerLockFactory ?
-                                            ((RecordOwnerLockFactory)lockFactory).getOwner():
-                                            "???") +","+                                                    //NOI18N
-                                        sts +")");                                                          //NOI18N
+                        for (final File child : children) {
+                            if (!child.delete()) {
+                                throw annotateException(new IOException("Cannot delete: " + child.getAbsolutePath()));  //NOI18N
                             }
                         }
                     }
@@ -735,13 +712,10 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                 if (txWriter.get() == writer) {
                     LOGGER.log(Level.FINE, "TX writer cleared for {0}", this);
                     txWriter.remove();
-                    owner.clear();
+                    owner.release();
                     try {
                         if (!success) {
-                            if ((lockFactory instanceof RecordOwnerLockFactory) &&
-                                ((RecordOwnerLockFactory)lockFactory).getOwner() == Thread.currentThread()) {
-                                ((RecordOwnerLockFactory)lockFactory).forceRemoveLocks();
-                            } else if (IndexWriter.isLocked(fsDir)) {
+                            if (IndexWriter.isLocked(fsDir)) {
                                 IndexWriter.unlock(fsDir);
                             }
                         }
@@ -825,18 +799,12 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
             if (force ||  valid == null) {
                 rwLock.writeLock().lock();
                 try {
-                    final Collection<? extends String> locks = getOrphanLock();
                     Status res = Status.INVALID;
-                    if (!locks.isEmpty()) {
+                    if (lockFactory.hasLocks()) {
                         if (txWriter.get() != null) {
                             res = Status.WRITING;
                         } else {
-                            LOGGER.log(Level.WARNING, "Broken (locked) index folder: {0}", folder.getAbsolutePath());   //NOI18N
-                            synchronized (this) {
-                                for (String lockName : locks) {
-                                    fsDir.deleteFile(lockName);
-                                }
-                            }
+                            LOGGER.log(Level.WARNING, "Locked index folder: {0}", folder.getAbsolutePath());   //NOI18N
                             if (force) {
                                 clear();
                             }
@@ -885,7 +853,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                     return true;
                 } finally {
                     txWriter.remove();
-                    owner.clear();
+                    owner.release();
                 }
             } else {
                 return false;
@@ -893,8 +861,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
         }
         
         void beginTx() {
-            owner.assertNoModifiedWriter();
-            owner.setOwner(Thread.currentThread());
+            owner.acquire();
         }
         
         /**
@@ -1077,20 +1044,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                 }
             }
         }
-        
-        private Collection<? extends String> getOrphanLock () {
-            final List<String> locks = new ArrayList<String>();
-            final String[] content = folder.list();
-            if (content != null) {
-                for (String name : content) {
-                    if (name.startsWith(CACHE_LOCK_PREFIX)) {
-                        locks.add(name);
-                    }
-                }
-            }
-            return locks;
-        }
-        
+
         private void checkPreconditions () throws IndexClosedException {
             if (closed) {
                 throw (IndexClosedException) new IndexClosedException().initCause(closeStackTrace);
@@ -1098,12 +1052,11 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
         }
         
         private IOException annotateException (final IOException ioe) {
-            final StringBuilder message = new StringBuilder();            
+            final StringBuilder message = new StringBuilder();
             File[] children = folder.listFiles();
             if (children == null) {
                 message.append("Non existing index folder");    //NOI18N
-            }
-            else {
+            } else {
                 message.append("Current Lucene version: ").     //NOI18N
                         append(LucenePackage.get().getSpecificationVersion()).
                         append('(').    //NOI18N
@@ -1115,17 +1068,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                     append(" w: ").append(c.canWrite()).append("\n");  //NOI18N
                 }
                 message.append("threads: ").append(stackTraces(Thread.getAllStackTraces())).append("\n");   //NOI18N
-                if (lockFactory instanceof RecordOwnerLockFactory) {
-                    final Thread ownerThread = ((RecordOwnerLockFactory)lockFactory).getOwner();
-                    if (ownerThread != null) {
-                        message.append("owner:").append(ownerThread).             //NOI18N
-                        append("(").append(ownerThread.getId()).append(")");      //NOI18N
-                    }
-                    final Exception caller = ((RecordOwnerLockFactory)lockFactory).getCaller();
-                    if (caller != null) {
-                        message.append(" from: ").append(Arrays.asList(caller.getStackTrace())); //NOI18N
-                    }
-                }
+                message.append("lockFactory: ").append(lockFactory);    //NOI18N
             }
             return Exceptions.attachMessage(ioe, message.toString());
         }
@@ -1146,7 +1089,6 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
             } else {
                 directory = FSDirectory.open(indexFolder, lockFactory);
             }
-            directory.getLockFactory().setLockPrefix(CACHE_LOCK_PREFIX);
             return directory;
         }        
 
@@ -1172,19 +1114,24 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
             return result;
         }
                 
-        private final class OwnerReference {
+        private static final class OwnerReference {
             
             //@GuardedBy("this")
-            private Thread txThread;
+            private Pair<Thread,Pair<Long,Exception>> txThread;
             //@GuardedBy("this")
             private boolean modified;
             
-            synchronized void setOwner (@NullAllowed final Thread thread) {
-                txThread = thread;
+            synchronized void acquire () {
+                assertNoModifiedWriter();
+                txThread = Pair.of(
+                    Thread.currentThread(),
+                    assertsEnabled() ?
+                        Pair.of(System.currentTimeMillis(), new Exception("Owner stack")) :  //NOI18N
+                        null);
                 modified = false;
             }
             
-            synchronized void clear() {
+            synchronized void release() {
                 txThread = null;
                 modified = false;
             }
@@ -1192,35 +1139,49 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
             synchronized void modified() {
                 modified = true;
             }
-            
-            synchronized void assertNoModifiedWriter() {
-                if (txThread != null && modified) {
-                    final Throwable t = new Throwable(String.format(
-                        "Using stale writer, possibly forgotten call to store, " +  //NOI18N
-                        "old owner Thread %s, " +           //NOI18N
-                        "new owner Thread %s .",            //NOI18N
-                            txThread,
-                            Thread.currentThread()));
-                    LOGGER.log(
-                        Level.WARNING,
-                        "Using stale writer",   //NOI18N
-                        t);
-                }
-            }
-            
+
             synchronized void assertSingleThreadWriter() {
-                if (txThread != null && txThread != Thread.currentThread()) {
+                if (txThread != null && txThread.first() != Thread.currentThread()) {
                     final Throwable t = new Throwable(String.format(
                         "Other thread using opened writer, " +       //NOI18N
                         "old owner Thread %s , " +          //NOI18N
                         "new owner Thread %s.",             //NOI18N
-                            txThread,
+                            txThread.first(),
                             Thread.currentThread()));
                     LOGGER.log(
                         Level.WARNING,
                         "Multiple writers",   //NOI18N
                         t);
                 }
+            }
+
+            private void assertNoModifiedWriter() {
+                assert Thread.holdsLock(this);
+                if (assertsEnabled() && txThread != null && modified) {
+                    final Throwable t = new Throwable(
+                        String.format(
+                            "Using stale writer, possibly forgotten call to store, " +  //NOI18N
+                            "old owner Thread %s(%d) enter time: %d, " +           //NOI18N
+                            "new owner Thread %s(%d) enter time: %d.",            //NOI18N
+                                txThread.first(),
+                                txThread.first().getId(),
+                                txThread.second().first(),
+                                Thread.currentThread(),
+                                Thread.currentThread().getId(),
+                                System.currentTimeMillis()),
+                        txThread.second().second());
+                    LOGGER.log(
+                        Level.WARNING,
+                        "Using stale writer",   //NOI18N
+                        t);
+                }
+            }
+
+            @SuppressWarnings("AssertWithSideEffects")
+            private static boolean assertsEnabled() {
+                boolean ae = false;
+                assert ae = true;
+                return ae;
             }
         }
         

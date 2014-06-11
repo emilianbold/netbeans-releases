@@ -1271,8 +1271,12 @@ public class JavacParser extends Parser {
                 final Document doc = document;
                 final JTextComponent focused = EditorRegistry.focusedComponent();
                 final Document focusedDoc = focused == null ? null : focused.getDocument();
-                if (doc != null && doc == focusedDoc) {
-                    positions.clear();
+                if (doc != null) {
+                    if (doc == focusedDoc) {
+                        positions.clear();
+                    } else if (ciImpl != null) {
+                        ciImpl.dispose();
+                    }
                 }
             }
         }

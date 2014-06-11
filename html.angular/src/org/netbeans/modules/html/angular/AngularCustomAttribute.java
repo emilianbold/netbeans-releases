@@ -58,7 +58,6 @@ import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
 import org.netbeans.modules.html.editor.lib.api.HelpItem;
 import org.netbeans.modules.html.editor.lib.api.HelpResolver;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -67,10 +66,10 @@ import org.openide.util.NbBundle;
 public class AngularCustomAttribute implements CustomAttribute {
 
     private static final Logger LOGGER = Logger.getLogger(AngularCustomAttribute.class.getSimpleName());
-    private static Map<DirectiveConvention, Collection<CustomAttribute>> dc2attr;
-    private static Collection<CustomAttribute> attributes;
+    private static Map<DirectiveConvention, Collection<CustomAttribute>> dc2attr = null;
+    private static Collection<CustomAttribute> attributes = null;
 
-    public static Collection<CustomAttribute> getCustomAttributes(DirectiveConvention convention) {
+    public static synchronized Collection<CustomAttribute> getCustomAttributes(DirectiveConvention convention) {
         if (dc2attr == null) {
             //init
             dc2attr = new EnumMap<>(DirectiveConvention.class);
@@ -85,7 +84,7 @@ public class AngularCustomAttribute implements CustomAttribute {
         return dc2attr.get(convention);
     }
 
-    public static Collection<CustomAttribute> getCustomAttributes() {
+    public static synchronized Collection<CustomAttribute> getCustomAttributes() {
         if (attributes == null) {
             //init
             attributes = new ArrayList<>();

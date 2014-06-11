@@ -450,6 +450,7 @@ final class NbEvents extends Events {
             op.setInitialValue (options [1]);
             JDialog d = op.createDialog (c, msg);
             d.setResizable (true);
+            d.pack();
             d.setVisible (true);
             
             Object res = op.getValue ();

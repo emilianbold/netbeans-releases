@@ -54,4 +54,6 @@ public interface Splitable {
     TopComponent clearSplit( int elementToActivate);
 
     int getSplitOrientation();
+    
+    boolean canSplit();
 }

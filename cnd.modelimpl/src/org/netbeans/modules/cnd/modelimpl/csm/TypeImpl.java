@@ -301,6 +301,14 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         this(null, pointerDepth, reference, arrayDepth, ast, file, null);
      }*/
     
+    public static int getStartOffset(AST node) {
+        if (AstUtil.isElaboratedKeyword(node)) {
+            AST ast = node.getNextSibling();
+            return OffsetableBase.getStartOffset(ast != null ? ast : node);
+        }
+        return OffsetableBase.getStartOffset(node);
+    }
+    
     public static int getEndOffset(AST node) {
         return getEndOffset(node, false);
     }
@@ -314,6 +322,10 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             return OffsetableBase.getEndOffset(ast);
         }
         ast = getLastNode(ast, greedy);
+        if (ast == null && AstUtil.isElaboratedKeyword(node)) {
+            ast = node.getNextSibling();
+            return OffsetableBase.getEndOffset(ast != null ? ast : node);
+        }
         if( ast instanceof OffsetableAST ) {
             return ((OffsetableAST) ast).getEndOffset();
         }
@@ -329,13 +341,17 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                     case CPPTokenTypes.CSM_VARIABLE_LIKE_FUNCTION_DECLARATION:
                     case CPPTokenTypes.CSM_QUALIFIED_ID:
                     case CPPTokenTypes.CSM_ARRAY_DECLARATION:
+                        if (AstUtil.isElaboratedKeyword(last)) {
+                            last = token;
+                            continue;
+                        }
                         return AstUtil.getLastChildRecursively(last);
                         
                     case CPPTokenTypes.LPAREN: 
                         // lparen cannot be last - entity's end should be on the left side of lparen
                         // if there are no type modificators after lparen (*, &, ...)
                         break;
-                        
+                                            
                     default:
                         last = token;
                 }

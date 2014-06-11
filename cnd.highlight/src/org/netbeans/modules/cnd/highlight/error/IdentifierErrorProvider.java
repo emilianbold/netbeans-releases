@@ -42,46 +42,34 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-import org.netbeans.api.options.OptionsDisplayer;
+import java.util.MissingResourceException;
+import org.netbeans.modules.cnd.analysis.api.AnalyzerResponse;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo.Severity;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfoHintProvider;
+import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
+import static org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit.toSeverity;
+import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.EditorEvent;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
-import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.ui.NamedOption;
-import org.netbeans.spi.editor.hints.ChangeInfo;
-import org.netbeans.spi.editor.hints.EnhancedFix;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.modules.cnd.highlight.hints.ErrorInfoImpl;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.ServiceProviders;
 
 /**
  * Provides information about unresolved identifiers.
  *
  * @author Alexey Vladykin
  */
-@ServiceProviders({
-    @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=1100),
-    @ServiceProvider(service=CsmErrorProvider.class, position=30)
-})
-public final class IdentifierErrorProvider extends CsmErrorProvider {
+public final class IdentifierErrorProvider extends AbstractCodeAudit {
 
-    private static final boolean ENABLED = CndUtils.getBoolean("cnd.identifier.error.provider", true); //NOI18N
     private static final boolean SHOW_TIMES = Boolean.getBoolean("cnd.identifier.error.provider.times");
 
     private static final int MAX_ERROR_LIMIT;
@@ -97,56 +85,44 @@ public final class IdentifierErrorProvider extends CsmErrorProvider {
         }
         MAX_ERROR_LIMIT = userInput;
     }
-
-    @Override
-    protected boolean validate(CsmErrorProvider.Request request) {
-        return super.validate(request) && ENABLED && !disableAsLibraryHeaderFile(request.getFile()) && request.getFile().isParsed();
+    private static final int UNRESOLVED = 1;
+    private static final int UNRESOLVED_TEMPLATE = 2;
+    private static final int UNRESOLVED_FORWARD = 3;
+    private final int kind;
+    private final String message;
+    
+    private IdentifierErrorProvider(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences preferences,
+            int kind, String message) {
+        super(id, name, description, defaultSeverity, defaultEnabled, preferences);
+        this.kind =kind;
+        this.message = message;
     }
 
     @Override
-    public OptionKind getKind() {
-        return OptionKind.Boolean;
-    }
-
-    @Override
-    public Object getDefaultValue() {
-        return true;//!CndUtils.isReleaseMode();
-    }
-
-    @Override
-    public Set<EditorEvent> supportedEvents() {
-        return EnumSet.<EditorEvent>of(EditorEvent.DocumentBased, EditorEvent.FileBased);
+    public boolean isSupportedEvent(EditorEvent kind) {
+            return kind == EditorEvent.DocumentBased || kind == EditorEvent.FileBased;
     }
     
     @Override
-    protected void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
-        long start = System.currentTimeMillis();
-        Thread currentThread = Thread.currentThread();
-        CsmFile file = request.getFile();
-        currentThread.setName("Provider "+getName()+" prosess "+file.getAbsolutePath()); // NOI18N
-        if (SHOW_TIMES) System.err.println("#@# Error Highlighting update() have started for file " + file.getAbsolutePath());
-        CsmFileReferences.getDefault().accept(
-                request.getFile(), new ReferenceVisitor(request, response),
-                CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
-        if (SHOW_TIMES) System.err.println("#@# Error Highlighting update() done in "+ (System.currentTimeMillis() - start) +"ms for file " + request.getFile().getAbsolutePath());
+    public void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+        if (!CsmErrorProvider.disableAsLibraryHeaderFile(request.getFile()) && request.getFile().isParsed()) {
+            long start = System.currentTimeMillis();
+            Thread currentThread = Thread.currentThread();
+            CsmFile file = request.getFile();
+            currentThread.setName("Provider "+getName()+" prosess "+file.getAbsolutePath()); // NOI18N
+            if (SHOW_TIMES) {
+                System.err.println("#@# Error Highlighting update() have started for file " + file.getAbsolutePath());
+            }
+            CsmFileReferences.getDefault().accept(
+                    request.getFile(), request.getDocument(), new ReferenceVisitor(request, response),
+                    CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
+            if (SHOW_TIMES) {
+                System.err.println("#@# Error Highlighting update() done in "+ (System.currentTimeMillis() - start) +"ms for file " + request.getFile().getAbsolutePath());
+            }
+        }
     }
     
-    @Override
-    public String getName() {
-        return "unresolved-identifier"; //NOI18N
-    }
-
-    @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(IdentifierErrorProvider.class, "Show-unresolved-identifier"); //NOI18N
-    }
-
-    @Override
-    public String getDescription() {
-        return NbBundle.getMessage(IdentifierErrorProvider.class, "Show-unresolved-identifier-AD"); //NOI18N
-    }
-
-    private static class ReferenceVisitor implements CsmFileReferences.Visitor {
+    private class ReferenceVisitor implements CsmFileReferences.Visitor {
 
         private final CsmErrorProvider.Request request;
         private final CsmErrorProvider.Response response;
@@ -173,19 +149,17 @@ public final class IdentifierErrorProvider extends CsmErrorProvider {
                     if (CsmFileReferences.isBuiltInBased(ref) || CsmFileReferences.isMacroBased(context)) {
                         return;
                     }
-                    Severity severity = Severity.ERROR;
-
+                    int whatKind = UNRESOLVED;
                     if (CsmFileReferences.isTemplateBased(context)) {
-                        severity = Severity.WARNING;
+                        whatKind = UNRESOLVED_TEMPLATE;
                     } else if (CsmKindUtilities.isClassForwardDeclaration(ref.getOwner())) { // owner is needed
-                        severity = Severity.WARNING;
+                        whatKind = UNRESOLVED_FORWARD;
                     } else if (CsmKindUtilities.isEnumForwardDeclaration(ref.getOwner())) { // owner is needed
-                        severity = Severity.WARNING;
+                        whatKind = UNRESOLVED_FORWARD;
                     }
-                    foundError++;
-                    response.addError(new ErrorInfoImpl(
-                            ref.getStartOffset(), ref.getEndOffset(),
-                            ref.getText().toString(), severity, "HighlightProvider_IdentifierMissed"));// NOI18N
+                    if (whatKind == kind) {
+                        addMessage(ref);
+                    }
                 } else if (referencedObject instanceof CsmTemplateBasedReferencedObject) {
                     if (CsmFileReferences.isAfterUnresolved(context)) {
                         return;
@@ -193,83 +167,64 @@ public final class IdentifierErrorProvider extends CsmErrorProvider {
                     if (CsmFileReferences.isBuiltInBased(ref) || CsmFileReferences.isMacroBased(context)) {
                         return;
                     }
-                    Severity severity = Severity.WARNING;
-                    foundError++;
-                    response.addError(new ErrorInfoImpl(
-                            ref.getStartOffset(), ref.getEndOffset(),
-                            ref.getText().toString(), severity, "HighlightProvider_IdentifierMissed")); //NOI18N
+                    if (kind == UNRESOLVED_TEMPLATE) {
+                        addMessage(ref);
+                    }
+                } else if (kind == UNRESOLVED_FORWARD && CsmClassifierResolver.getDefault().isForwardClassifier(referencedObject)) {
+                    addMessage(ref);
                 }
             }
         }
-    }
 
-    private final static class ErrorInfoImpl implements CsmErrorInfo {
-
-        private final int startOffset;
-        private final int endOffset;
-        private final String message;
-        private final Severity severity;
-
-        public ErrorInfoImpl(int startOffset, int endOffset, String name, Severity severity, String bundleKey) {
-            this.startOffset = startOffset;
-            this.endOffset = endOffset;
-            this.message = NbBundle.getMessage(IdentifierErrorProvider.class, bundleKey, name);
-            this.severity = severity;
-        }
-
-        @Override
-        public String getMessage() {
-            return message;
-        }
-
-        @Override
-        public Severity getSeverity() {
-            return severity;
-        }
-
-        @Override
-        public int getStartOffset() {
-            return startOffset;
-        }
-
-        @Override
-        public int getEndOffset() {
-            return endOffset;
-        }
-    }
-    
-    @ServiceProvider(service = CsmErrorInfoHintProvider.class, position = 9000)
-    public final static class IdentifiersHintProvider extends CsmErrorInfoHintProvider {
-
-        @Override
-        protected List<Fix> doGetFixes(CsmErrorInfo info, List<Fix> alreadyFound) {
-            if (info instanceof ErrorInfoImpl) {
-                alreadyFound.add(new DisableHintFix());
+        private void addMessage(CsmReference ref) throws MissingResourceException {
+            foundError++;
+            if (response instanceof AnalyzerResponse) {
+                String decoratedText = getID()+"\n"+NbBundle.getMessage(IdentifierErrorProvider.class, message, ref.getText().toString()); // NOI18N
+                ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, request.getFile().getFileObject(),
+                        new ErrorInfoImpl(CodeAssistanceHintProvider.NAME, getID(), decoratedText, toSeverity(minimalSeverity()), ref.getStartOffset(), ref.getEndOffset()));
+            } else {
+                String decoratedText = NbBundle.getMessage(IdentifierErrorProvider.class, message, ref.getText().toString()); // NOI18N
+                response.addError(
+                        new ErrorInfoImpl(CodeAssistanceHintProvider.NAME, getID(), decoratedText, toSeverity(minimalSeverity()), ref.getStartOffset(), ref.getEndOffset()));
             }
-            return alreadyFound;
+        }
+
+        @Override
+        public boolean cancelled() {
+            return request.isCancelled();
         }
     }
     
-    private static class DisableHintFix implements EnhancedFix {
-
-        DisableHintFix() {
-        }
-
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CodeAssistanceHintProvider.NAME, service = CodeAuditFactory.class, position = 4200)
+    public static final class UnresolvedFactory implements CodeAuditFactory {
         @Override
-        public String getText() {
-            return NbBundle.getMessage(IdentifierErrorProvider.class, "DisableHint"); // NOI18N
+        public AbstractCodeAudit create(AuditPreferences preferences) {
+            String name = NbBundle.getMessage(IdentifierErrorProvider.class, "IdentifierErrorProvider.unresolved.name"); //NOI18N
+            String description = NbBundle.getMessage(IdentifierErrorProvider.class, "IdentifierErrorProvider.unresolved.description"); //NOI18N
+            String message = "IdentifierErrorProvider.unresolved.message"; // NOI18N
+            return new IdentifierErrorProvider(name, name, description, "error", true, preferences, UNRESOLVED, message); // NOI18N
         }
+    }
 
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CodeAssistanceHintProvider.NAME, service = CodeAuditFactory.class, position = 4300)
+    public static final class UnresolvedTemplateFactory implements CodeAuditFactory {
         @Override
-        public ChangeInfo implement() throws Exception {
-            OptionsDisplayer.getDefault().open("Editor/MarkOccurrences/text/x-cnd+sourcefile"); // NOI18N
-            return null;
+        public AbstractCodeAudit create(AuditPreferences preferences) {
+            String name = NbBundle.getMessage(IdentifierErrorProvider.class, "IdentifierErrorProvider.unresolvedTemplate.name"); //NOI18N
+            String description = NbBundle.getMessage(IdentifierErrorProvider.class, "IdentifierErrorProvider.unresolvedTemplate.description"); //NOI18N
+            String message = "IdentifierErrorProvider.unresolvedTemplate.message"; // NOI18N
+            return new IdentifierErrorProvider(name, name, description, "warning", true, preferences, UNRESOLVED_TEMPLATE, message); // NOI18N
         }
+    }
 
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CodeAssistanceHintProvider.NAME, service = CodeAuditFactory.class, position = 4400)
+    public static final class UnresolvedForwardFactory implements CodeAuditFactory {
         @Override
-        public CharSequence getSortText() {
-            //Hint opening options dialog should always be the lastest in offered list
-            return Integer.toString(Integer.MAX_VALUE);
+        public AbstractCodeAudit create(AuditPreferences preferences) {
+            String name = NbBundle.getMessage(IdentifierErrorProvider.class, "IdentifierErrorProvider.unresolvedForward.name"); //NOI18N
+            String description = NbBundle.getMessage(IdentifierErrorProvider.class, "IdentifierErrorProvider.unresolvedForward.description"); //NOI18N
+            String message = "IdentifierErrorProvider.unresolvedForward.message"; // NOI18N
+            return new IdentifierErrorProvider(name, name, description, "warning", true, preferences, UNRESOLVED_FORWARD, message); // NOI18N
         }
     }
 }

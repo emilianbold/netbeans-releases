@@ -92,8 +92,10 @@ import org.xml.sax.ext.DefaultHandler2;
  */
 public class OpenLayerFilesAction extends CookieAction {
 
+    private static RequestProcessor RP = new RequestProcessor(OpenLayerFilesAction.class.getName());
+    
     protected @Override void performAction(final Node[] activatedNodes) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             public @Override void run() {
                     FileObject f = activatedNodes[0].getCookie(DataObject.class).getPrimaryFile();
                     openLayersForFile(f);

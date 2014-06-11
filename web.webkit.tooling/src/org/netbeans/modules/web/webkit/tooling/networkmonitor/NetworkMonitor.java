@@ -55,11 +55,11 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
 
     private static WeakReference<NetworkMonitor> lastNetworkMonitor = new WeakReference<>(null);
     
-    private NetworkMonitorTopComponent component;
-    private NetworkMonitorTopComponent.Model model;
+    private final NetworkMonitorTopComponent.Model model;
     private final BrowserFamilyId browserFamilyId;
     private final Project project;
-    private boolean debuggingSession;
+    private volatile NetworkMonitorTopComponent component;
+    private volatile boolean debuggingSession;
 
     private NetworkMonitor(Lookup projectContext, NetworkMonitorTopComponent comp, 
             NetworkMonitorTopComponent.Model mod, boolean debuggingSession) {

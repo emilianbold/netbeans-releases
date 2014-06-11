@@ -222,6 +222,8 @@ final class SelectCodeElementAction extends BaseAction {
             positions.add(new SelectionInfo(caretPos, caretPos));
             if (target.getDocument() instanceof BaseDocument) {
                 try {
+                    //as a nice side effect it also supports word selection within string literals
+                    //"foo b|ar" -> bar
                     int block[] = org.netbeans.editor.Utilities.getIdentifierBlock((BaseDocument) target.getDocument(), caretPos);
                     if (block != null) {
                         positions.add(new SelectionInfo(block[0], block[1]));
@@ -236,6 +238,17 @@ final class SelectCodeElementAction extends BaseAction {
                 int endPos = (int)sp.getEndPosition(tp.getCompilationUnit(), tree);
                 positions.add(new SelectionInfo(startPos, endPos));
 		
+                //support content selection within the string literal too
+                //"A|BC" -> ABC
+                if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
+                    positions.add(new SelectionInfo(startPos + 1, endPos - 1));
+                }
+                //support content selection within the {}-block too
+                //{A|BC} -> ABC 
+                if (tree.getKind() == Tree.Kind.BLOCK) {
+                    positions.add(new SelectionInfo(startPos + 1, endPos - 1));
+                }
+                
 		//Support selection of JavaDoc
 		int docBegin = Integer.MAX_VALUE;
                 for (Comment comment : treeUtilities.getComments(tree, true)) {
@@ -279,8 +292,12 @@ final class SelectCodeElementAction extends BaseAction {
                         endOffset = NbDocument.findLineOffset(doc, NbDocument.findLineNumber(doc, selectionInfo.getEndOffset()) + 1);
                     } catch (IndexOutOfBoundsException ioobe) {}
                     SelectionInfo next = it.hasNext() ? it.next() : null;
-                    if (next == null || startOffset >= next.startOffset && endOffset <= next.endOffset) {
-		        orderedPositions.add(new SelectionInfo(startOffset, endOffset));
+                    final boolean isEmptySelection = selectionInfo.startOffset == selectionInfo.endOffset;
+                    //don't create line selection for empty selections
+                    if (!isEmptySelection) {
+                        if (next == null || startOffset >= next.startOffset && endOffset <= next.endOffset) {
+                            orderedPositions.add(new SelectionInfo(startOffset, endOffset));
+                        }
                     }
                     selectionInfo = next;
 		}

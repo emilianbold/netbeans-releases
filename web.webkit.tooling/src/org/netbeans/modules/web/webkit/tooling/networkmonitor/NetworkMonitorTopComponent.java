@@ -51,7 +51,9 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -62,6 +64,7 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractListModel;
 import javax.swing.Action;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -96,6 +99,7 @@ import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -109,7 +113,7 @@ import org.openide.windows.RetainLocation;
     "CTL_NetworkMonitorTopComponent=Network Monitor",
     "HINT_NetworkMonitorTopComponent=This is a Network Monitor window"
 })
-public final class NetworkMonitorTopComponent extends TopComponent 
+public final class NetworkMonitorTopComponent extends TopComponent
     implements ListDataListener, ChangeListener, PropertyChangeListener {
 
     private Model model;
@@ -120,6 +124,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
     private boolean debuggingSession;
 
     NetworkMonitorTopComponent(Model m, boolean debuggingSession) {
+        assert SwingUtilities.isEventDispatchThread();
         this.debuggingSession = debuggingSession;
         initComponents();
         jResponse.setEditorKit(CloneableEditorSupport.getEditorKit("text/plain"));
@@ -161,7 +166,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         }
 
     }
-    
+
     void setModel(Model model, boolean debuggingSession) {
         this.model = model;
         this.debuggingSession = debuggingSession;
@@ -502,6 +507,10 @@ public final class NetworkMonitorTopComponent extends TopComponent
     public void componentClosed() {
         setReopenNetworkComponent(false);
         model.passivate();
+        // avoid memory leaks
+        model.removeListDataListener(this);
+        // avoid memory leaks
+        jRequestsList.setModel(new DefaultListModel());
         ioProvider.close();
         OpenProjects.getDefault().removePropertyChangeListener(this);
         NbPreferences.forModule(NetworkMonitorTopComponent.class).putInt("separator", jSplitPane.getDividerLocation());
@@ -591,7 +600,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
 
     private void updateTabVisibility(ModelItem mi) {
         int index = 0;
-        
+
         // Header - always visible
         boolean showHeaders = mi != null;
         index = showHideTab(jHeadersPanel, showHeaders, index);
@@ -669,9 +678,9 @@ public final class NetworkMonitorTopComponent extends TopComponent
             this.browserFamilyId = browserFamilyId;
             this.project = project;
             if (this.request != null) {
-                this.request.addPropertyChangeListener(this);
+                this.request.addPropertyChangeListener(WeakListeners.propertyChange(this, this.request));
             } else {
-                this.wsRequest.addPropertyChangeListener(this);
+                this.wsRequest.addPropertyChangeListener(WeakListeners.propertyChange(this, this.wsRequest));
             }
         }
 
@@ -697,7 +706,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
             if (request.getResponseCode() != -1 && request.getResponseCode() >= 400) {
                 return true;
             }
-            
+
             return request.isFailed();
         }
 
@@ -1045,7 +1054,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
                         io.getOut().println(text);
                     }
                 }
-                
+
             }
         }
 
@@ -1055,18 +1064,6 @@ public final class NetworkMonitorTopComponent extends TopComponent
             } else {
                 return request.isFailed() || request.getResponseCode() >= 400;
             }
-        }
-
-        private boolean inactive = false;
-        
-        void deactivateItem(Project p) {
-            if (project == p) {
-                inactive = true;
-            }
-        }
-
-        boolean isInactive() {
-            return inactive;
         }
 
         private boolean isLive() {
@@ -1190,20 +1187,19 @@ public final class NetworkMonitorTopComponent extends TopComponent
         return null;
     }
 
-    static class Model extends AbstractListModel implements PropertyChangeListener {
+    static class Model extends AbstractListModel {
 
-        // synchronized by this:
-        private List<ModelItem> allRequests = new ArrayList<>();
-        // synchronized by AWT thread:
-        private List<ModelItem> visibleRequests = new ArrayList<>();
-        private boolean passive = true;
+        private static final int MAX_NUMBER_OF_REQUESTS = 1000;
+
+        private final List<ModelItem> visibleRequests = Collections.synchronizedList(new ArrayList<ModelItem>());
+        private volatile boolean passive = true;
 
         public Model() {
         }
 
-        synchronized Project getProject() {
-            if (!allRequests.isEmpty()) {
-                return allRequests.get(0).project;
+        Project getProject() {
+            for (Iterator<ModelItem> iterator = visibleRequests.iterator(); iterator.hasNext();) {
+                return iterator.next().project;
             }
             return null;
         }
@@ -1220,23 +1216,14 @@ public final class NetworkMonitorTopComponent extends TopComponent
             if (passive) {
                 return;
             }
-            add(new ModelItem(r, null, browserFamilyId, project));
-            r.addPropertyChangeListener(this);
-            // with regular request do not call updateVisibleItems() here as we need
-            // to receive response headers first and they will fire Network.Request.PROP_RESPONSE event
+            r.addPropertyChangeListener(new PropertyChangeListenerImpl(r, browserFamilyId, project));
         }
 
         public void add(Network.WebSocketRequest r, BrowserFamilyId browserFamilyId, Project project) {
             if (passive) {
                 return;
             }
-            add(new ModelItem(null, r, browserFamilyId, project));
-            r.addPropertyChangeListener(this);
-            updateVisibleItems();
-        }
-
-        private synchronized void add(ModelItem item) {
-            allRequests.add(item);
+            addVisibleItem(new ModelItem(null, r, browserFamilyId, project));
         }
 
         @Override
@@ -1249,42 +1236,27 @@ public final class NetworkMonitorTopComponent extends TopComponent
             return visibleRequests.get(index);
         }
 
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (Network.Request.PROP_RESPONSE.equals(evt.getPropertyName())) {
-                updateVisibleItems();
-            }
-        }
-
-        private synchronized void updateVisibleItems() {
-            List<ModelItem> res = new ArrayList<>();
-            for (ModelItem mi : allRequests) {
-                if (mi.canBeShownToUser()) {
-                    res.add(mi);
-                }
-            }
-            updateInAWT(res);
-        }
-
-        private void updateInAWT(final List<ModelItem> res) {
+        void addVisibleItem(final ModelItem modelItem) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    visibleRequests = res;
-                    fireContentsChanged(this, 0, visibleRequests.size());
+                    visibleRequests.add(modelItem);
+                    assert modelItem.canBeShownToUser() : modelItem.toString();
+                    int index = visibleRequests.size() - 1;
+                    fireIntervalAdded(this, index, index);
+                    cleanUp();
                 }
             });
         }
 
-        private synchronized void reset() {
+        private void reset() {
             assert SwingUtilities.isEventDispatchThread();
-            int size = allRequests.size();
-            allRequests = new ArrayList<>();
-            visibleRequests = new ArrayList<>();
+            int size = visibleRequests.size();
+            visibleRequests.clear();
             fireIntervalRemoved(this, 0, size);
         }
 
-        synchronized void console(ConsoleMessage message) {
+        void console(ConsoleMessage message) {
             if (passive) {
                 return;
             }
@@ -1297,8 +1269,8 @@ public final class NetworkMonitorTopComponent extends TopComponent
             //   "source":"javascript","line":0,"repeatCount":1,"type":"log","url"
             //   :"http:\/\/localhost:8383\/nb-rest-test\/knockout-approach\/index-ko.html"}}}
 
-            if (message.getText().contains("Access-Control-Allow-Origin") && !allRequests.isEmpty()) {
-                ModelItem mi = allRequests.get(allRequests.size()-1);
+            if (message.getText().contains("Access-Control-Allow-Origin") && !visibleRequests.isEmpty()) {
+                ModelItem mi = visibleRequests.get(visibleRequests.size()-1);
                 // XXX: perhaps I should match requests here with a timestamp???
                 if (mi.request != null) {
                     mi.setFailureCause(message.getText());
@@ -1306,22 +1278,67 @@ public final class NetworkMonitorTopComponent extends TopComponent
             }
         }
 
-        synchronized void close(Project project) {
-            for (ModelItem mi : allRequests) {
-                mi.deactivateItem(project);
+        void close(Project project) {
+            // XXX does not work since all projects in ModelItems are the same so all requests are removed
+            if (true) {
+                return;
+            }
+            final int size = visibleRequests.size();
+            for (Iterator<ModelItem> iterator = visibleRequests.iterator(); iterator.hasNext();) {
+                if (iterator.next().project.equals(project)) {
+                    iterator.remove();
+                }
+            }
+            if (size != visibleRequests.size()) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        fireContentsChanged(Model.this, 0, size);
+                    }
+                });
             }
         }
 
-        public synchronized boolean canResetModel() {
-            boolean allDeactivated = true;
-            for (ModelItem mi : allRequests) {
-                if (!mi.isInactive()) {
-                    allDeactivated = false;
-                    break;
+        void cleanUp() {
+            assert SwingUtilities.isEventDispatchThread();
+            int removed = 0;
+            while (visibleRequests.size() > MAX_NUMBER_OF_REQUESTS) {
+                visibleRequests.remove(0);
+                removed++;
+            }
+            if (removed > 0) {
+                fireIntervalRemoved(this, 0, removed);
+            }
+        }
+
+        //~ Inner classes
+
+        private final class PropertyChangeListenerImpl implements PropertyChangeListener {
+
+            private final Network.Request request;
+            private final BrowserFamilyId browserFamilyId;
+            private final Project project;
+
+
+            public PropertyChangeListenerImpl(Network.Request request, BrowserFamilyId browserFamilyId, Project project) {
+                this.request = request;
+                this.browserFamilyId = browserFamilyId;
+                this.project = project;
+            }
+
+
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                assert evt.getSource() == request : evt.getSource() + " != " + request;
+                if (Network.Request.PROP_RESPONSE.equals(evt.getPropertyName())) {
+                    request.removePropertyChangeListener(this);
+                    ModelItem modelItem = new ModelItem(request, null, browserFamilyId, project);
+                    if (modelItem.canBeShownToUser()) {
+                        addVisibleItem(modelItem);
+                    }
                 }
             }
-            // if model contains only deactivated items they can be reset:
-            return allDeactivated;
+
         }
 
     }

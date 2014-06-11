@@ -52,9 +52,12 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import static org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities.getFunctionDeclaration;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.VariableImpl;
 import org.netbeans.modules.cnd.spi.model.CsmBaseUtilitiesProvider;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -67,7 +70,7 @@ public class BaseUtilitiesProviderImpl extends CsmBaseUtilitiesProvider {
     private static final BaseUtilitiesProviderImpl IMPL = new BaseUtilitiesProviderImpl();
     /**for lookup*/
     public BaseUtilitiesProviderImpl() {}
-    
+
     @Override
     public CsmFunction getFunctionDeclaration(CsmFunction fun) {
         return IMPL._getFunctionDeclaration(fun);
@@ -82,6 +85,20 @@ public class BaseUtilitiesProviderImpl extends CsmBaseUtilitiesProvider {
     public CsmNamespace getClassNamespace(CsmClassifier cls) {
         return IMPL._getClassNamespace(cls);
     }
+    
+    @Override
+    public boolean isGlobalVariable(CsmVariable var) {
+        if (var instanceof VariableImpl) {
+            CsmScope scope = (var).getScope();
+            // Cannot check on globalness class members, parameters, etc.
+            if (CsmKindUtilities.isFile(scope) || CsmKindUtilities.isNamespace(scope)) {
+                return NamespaceImpl.isNamespaceScope((VariableImpl) var, CsmKindUtilities.isFile(scope));
+            }
+            return true;
+        }
+        return true; // throw UnsupportedOperationException?
+    }
+        
     
     private CsmFunction _getFunctionDeclaration(CsmFunction fun) {
         assert (fun != null) : "must be not null";

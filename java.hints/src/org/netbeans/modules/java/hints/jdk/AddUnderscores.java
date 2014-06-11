@@ -76,10 +76,22 @@ public class AddUnderscores {
         
         TreePath tp = ctx.getPath();
         int end = (int) ctx.getInfo().getTrees().getSourcePositions().getEndPosition(tp.getCompilationUnit(), tp.getLeaf());
+        int start = (int) ctx.getInfo().getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tp.getLeaf());
         TokenSequence<?> ts = ctx.getInfo().getTokenHierarchy().tokenSequence();
         ts.move(end);
         if (!ts.movePrevious()) return null;
         String literal = ts.token().text().toString();
+        StringBuilder tokenPrefix = new StringBuilder();
+        
+        while (ts.offset() > start) {
+            if (!ts.movePrevious()) {
+                break;
+            }
+            if (ts.offset() == start) {
+                tokenPrefix.append(ts.token().text().toString());
+                break;
+            }
+        }
         if (!isReplaceLiteralsWithUnderscores(ctx.getPreferences()) && literal.contains("_")) return null;
         RadixInfo info = radixInfo(literal);
         if (info.radix == 8) return null;//octals ignored for now
@@ -103,7 +115,7 @@ public class AddUnderscores {
         if (result.equals(literal)) return null;
 
         String displayName = NbBundle.getMessage(AddUnderscores.class, "ERR_" + ID);
-        Fix f = new FixImpl(ctx.getInfo(), tp, result).toEditorFix();
+        Fix f = new FixImpl(ctx.getInfo(), tp, tokenPrefix.toString() + result).toEditorFix();
 
         return ErrorDescriptionFactory.forTree(ctx, tp, displayName, f);
     }

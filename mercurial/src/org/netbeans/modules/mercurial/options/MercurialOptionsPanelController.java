@@ -53,7 +53,6 @@ import java.awt.BorderLayout;
 import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.JButton;
-import javax.swing.JOptionPane;
 import java.util.ArrayList;
 import java.util.List;
 import java.beans.PropertyChangeListener;
@@ -104,8 +103,6 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
     }
     
     public void applyChanges() {
-        if (!validateFields()) return;
-
         getPanel().store();
         // {folder} variable setting
         Mercurial.getInstance().getMercurialAnnotator().refresh();
@@ -119,7 +116,7 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
     }
     
     public boolean isValid() {
-        return getPanel().valid();
+        return validateFields();
     }
     
     public boolean isChanged() {
@@ -171,13 +168,11 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
         return FileUtil.normalizeFile(new File(execPath));
     }
 
-    private Boolean validateFields() {
+    private boolean validateFields() {
+        getPanel().showError(null);
         String username = panel.userNameTextField.getText();
         if (!HgModuleConfig.getDefault().isUserNameValid(username)) {
-            JOptionPane.showMessageDialog(null,
-                                          NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_USER_NAME_TEXT"), // NOI18N
-                                          NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_FIELD_TITLE"), // NOI18N
-                                          JOptionPane.WARNING_MESSAGE);
+            getPanel().showError(NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_USER_NAME_TEXT")); //NOI18N
             return false;
         }
         String execpath = panel.executablePathTextField.getText();
@@ -192,17 +187,11 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
             hgExecutableParent = execpath;
         }
         if (!HgModuleConfig.getDefault().isExecPathValid(hgExecutableParent)) {
-            JOptionPane.showMessageDialog(null,
-                                          NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_EXEC_PATH_TEXT"), // NOI18N
-                                          NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_FIELD_TITLE"), // NOI18N
-                                          JOptionPane.WARNING_MESSAGE);
+            getPanel().showError(NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_EXEC_PATH_TEXT")); //NOI18N
             return false;
         }
         if (!HgUtils.isAnnotationFormatValid(HgUtils.createAnnotationFormat(panel.annotationTextField.getText()))) {
-            JOptionPane.showMessageDialog(null,
-                                          NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_ANNOTATION_FORMAT_TEXT"), // NOI18N
-                                          NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_FIELD_TITLE"), // NOI18N
-                                          JOptionPane.WARNING_MESSAGE);
+            getPanel().showError(NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_ANNOTATION_FORMAT_TEXT")); //NOI18N
             return false;
         }
         return true;
@@ -255,9 +244,10 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
     }
     
     void changed(boolean isChanged) {
+        boolean oldValue = changed;
         changed = isChanged;
-        if (!changed) {
-            pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
+        if (changed != oldValue) {
+            pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, oldValue, changed);
         }
         pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }

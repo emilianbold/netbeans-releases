@@ -114,6 +114,10 @@ public class ErrorFixesFakeHint extends AbstractHint {
                 customizer = new FinalFieldsFromCtorCustomiser(node);
                 setCreateFinalFieldsForCtor(node, isCreateFinalFieldsForCtor(node));
                 break;
+            case IMPORT_CLASS:
+                customizer = new ImportClassCustomizer(node);
+                setOrganizeAfterImportClass(node, isOrganizeAfterImportClass(node));
+                break;
             default:
                 customizer = super.getCustomizer(node);
                 break;
@@ -124,7 +128,8 @@ public class ErrorFixesFakeHint extends AbstractHint {
     public static enum FixKind {
         SURROUND_WITH_TRY_CATCH,
         CREATE_LOCAL_VARIABLE,
-        CREATE_FINAL_FIELD_CTOR;
+        CREATE_FINAL_FIELD_CTOR,
+        IMPORT_CLASS;
     }
     
     private static Map<FixKind, ErrorFixesFakeHint> kind2Hint = new  EnumMap<FixKind, ErrorFixesFakeHint>(FixKind.class);
@@ -201,6 +206,16 @@ public class ErrorFixesFakeHint extends AbstractHint {
     public static final String SURROUND_RETHROW = "surround-try-catch-rethrow"; // NOI18N
     public static final String SURROUND_USE_JAVA_LOGGER = "surround-try-catch-java-util-logging-Logger"; // NOI18N
     public static final String FINAL_FIELDS_FROM_CTOR = "create-final-fields-from-ctor"; // NOI18N
+    
+    public static final String ORGANIZE_AFTER_IMPORT_CLASS = "organize-import-class"; // NOI18N
+
+    public static void setOrganizeAfterImportClass(Preferences p, boolean v) {
+        p.putBoolean(ORGANIZE_AFTER_IMPORT_CLASS, v);
+    }
+
+    public static boolean isOrganizeAfterImportClass(Preferences p) {
+        return p.getBoolean(ORGANIZE_AFTER_IMPORT_CLASS, false);
+    }
 
     public static ErrorFixesFakeHint create(FileObject file) {
         if (file.getName().endsWith("surround")) {
@@ -211,6 +226,9 @@ public class ErrorFixesFakeHint extends AbstractHint {
         }
         if (file.getName().endsWith("finalfield")) {
             return getHint(FixKind.CREATE_FINAL_FIELD_CTOR);
+        }
+        if (file.getName().endsWith("importClass")) {
+            return getHint(FixKind.IMPORT_CLASS);
         }
         
         throw new IllegalArgumentException();

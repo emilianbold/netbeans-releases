@@ -75,7 +75,7 @@ public final class CsmRefactoringQuerySupport {
         if (offset >= 0) {
             CsmFile csmFile = CsmUtilities.getCsmFile(fo, true, false);
             if (csmFile != null) {
-                CsmReference ref = CsmReferenceResolver.getDefault().findReference(csmFile, (int) offset);
+                CsmReference ref = CsmReferenceResolver.getDefault().findReference(csmFile, null, (int) offset);
                 if (ref != null) {
                     out = CsmWhereUsedQueryPlugin.getWhereUsed(ref, Collections.<Object, Boolean>emptyMap(), null);
                 }
@@ -103,7 +103,7 @@ public final class CsmRefactoringQuerySupport {
         if (csmFile != null) {
             long offset = CsmFileInfoQuery.getDefault().getOffset(csmFile, line, col);
             if (offset >= 0) {
-                CsmReference ref = CsmReferenceResolver.getDefault().findReference(csmFile, (int)offset);
+                CsmReference ref = CsmReferenceResolver.getDefault().findReference(csmFile, null, (int)offset);
                 if (ref != null) {
                     out = CsmWhereUsedQueryPlugin.getWhereUsed(ref, DEFAULT_PARAMS, null);
                 }

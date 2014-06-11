@@ -143,6 +143,10 @@ public class ModelTest extends ModelTestBase {
     public void testIssue241171() throws Exception {
         checkModel("testfiles/markoccurences/issue241171.js");
     }
+    
+    public void testIssue242421() throws Exception {
+        checkModel("testfiles/markoccurences/issue242421.js");
+    }
 
     public void testPropertyWithNewAssignments() throws Exception {
         Model model = getModel("testfiles/model/propertyWithNew.js");
@@ -150,7 +154,7 @@ public class ModelTest extends ModelTestBase {
 
         JsObject global = model.getGlobalObject();
 
-        JsObject object = global.getProperty("Anonym$0");
+        JsObject object = global.getProperty("propertyWithNewAnonym$0");
         assertEquals(JsElement.Kind.ANONYMOUS_OBJECT, object.getJSKind());
 
         JsObject property = object.getProperty("model");

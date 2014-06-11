@@ -425,4 +425,8 @@ public abstract class BasicAbstractResultsPanel
     public void closed() {
         resultsOutlineSupport.closed();
     }
+
+    protected boolean isFinished() {
+        return finished;
+    }
 }

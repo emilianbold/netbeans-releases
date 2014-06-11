@@ -81,8 +81,8 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
 
     private List<CsmExpression> initializers;
     
-    protected ConstructorDDImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility,  boolean _virtual, boolean _explicit, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
-        super(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
+    protected ConstructorDDImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility, DefinitionKind defKind,  boolean _virtual, boolean _explicit, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+        super(name, rawName, cls, visibility, defKind, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
     }
     
     public static ConstructorDDImpl createConstructor(AST ast, final CsmFile file, FileContent fileContent, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
@@ -102,6 +102,9 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
         boolean _virtual = false;
         boolean _explicit = false;
+        boolean afterParen = false;
+        boolean afterAssignEqual = false;
+        DefinitionKind defKind = DefinitionKind.REGULAR;        
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.LITERAL_static:
@@ -113,12 +116,30 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
                 case CPPTokenTypes.LITERAL_explicit:
                     _explicit = true;
                     break;
+                case CPPTokenTypes.RPAREN:
+                    afterParen = true;
+                    break;
+                case CPPTokenTypes.ASSIGNEQUAL:
+                    if (afterParen) {
+                        afterAssignEqual = true;
+                    }
+                    break;
+                case CPPTokenTypes.LITERAL_delete:
+                    if (afterAssignEqual) {
+                        defKind = DefinitionKind.DELETE;
+                    }
+                    break;
+                case CPPTokenTypes.LITERAL_default:
+                    if (afterAssignEqual) {
+                        defKind = DefinitionKind.DEFAULT;
+                    }
+                    break;                    
             }
         }
         
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
 
-        ConstructorDDImpl constructorDDImpl = new ConstructorDDImpl(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);        
+        ConstructorDDImpl constructorDDImpl = new ConstructorDDImpl(name, rawName, cls, visibility, defKind, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);        
         temporaryRepositoryRegistration(ast, global, constructorDDImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
@@ -172,7 +193,7 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
             boolean _virtual = false;
             boolean _explicit = false;
 
-            ConstructorDDImpl method = new ConstructorDDImpl(getName(), getRawName(), cls, getVisibility(), _virtual, _explicit, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
+            ConstructorDDImpl method = new ConstructorDDImpl(getName(), getRawName(), cls, getVisibility(), DefinitionKind.REGULAR, _virtual, _explicit, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
             temporaryRepositoryRegistration(true, method);
 
             StringBuilder clsTemplateSuffix = new StringBuilder();

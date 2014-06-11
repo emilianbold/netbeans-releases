@@ -498,4 +498,23 @@ public class FileModel2Test extends TraceModelTestBase {
         // Bug 238041 - Function inside a function (in C) breaks parser
         performTest("bug238041.c");
     }
+    
+    public void testBug243560() throws Exception {
+        // Bug 243560 - inaccuracy tests (clang): explicit instantiation
+        performTest("bug243560.cpp");
+    }
+    
+    public void testBug243508() throws Exception {
+        // Bug 243508 - inaccuracy tests (clang): 'using typename' in namespace
+        performTest("bug243508.cpp");        
+    }
+    
+    public void testFunctionReturningEnum() throws Exception {
+        performTest("function_returning_enum.cpp");
+    }
+    
+    public void testBug243262() throws Exception {
+        // Bug 243262 - regression: template specializations parsed incorrectly 
+        performTest("bug243262.cpp");
+    }    
 }

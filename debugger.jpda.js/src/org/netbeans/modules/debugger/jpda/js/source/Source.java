@@ -108,7 +108,7 @@ public final class Source {
             }
         } else if (compareContent) {
             lineShift = getContentLineShift(url, content);
-            if (lineShift >= 0) {
+            if (lineShift > 0) {
                 try {
                     rURL = SourceFilesCache.getDefault().getSourceFile(name, hash, content);
                 } catch (IOException ex) {
@@ -317,7 +317,7 @@ public final class Source {
      * @return a non-negative line shift of content of 'url' in 'content', or -1
      *         when content of 'url' is not a subset of 'content'.
      */
-    private static int getContentLineShift(URL url, String content) {
+    static int getContentLineShift(URL url, String content) {
         String origContent;
         FileObject fo = URLMapper.findFileObject(url);
         if (fo != null) {

@@ -63,9 +63,11 @@ import org.netbeans.modules.php.editor.parser.astnodes.Assignment.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
@@ -280,6 +282,14 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
         @Override
         public void visit(StaticFieldAccess node) {
             // intentionally
+        }
+
+        @Override
+        public void visit(FormalParameter functionParameter) {
+            Expression parameterName = functionParameter.getParameterName();
+            if (parameterName instanceof Variable) {
+                processVariableAssignment((Variable) parameterName);
+            }
         }
 
         @Override

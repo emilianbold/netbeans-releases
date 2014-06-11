@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -60,6 +61,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -84,6 +87,7 @@ public class JsIndex {
     public static final String FIELD_PARAMETERS = "param"; //NOI18N
     public static final String FIELD_FLAG = "flag"; //NOI18N
     public static final String FIELD_ARRAY_TYPES = "array"; //NOI18N
+    public static final String FIELD_USAGE = "usage"; //NOI18N
 
     private static final String PROPERTIES_PATTERN = "\\.[^\\.]*[^" + IndexedElement.PARAMETER_POSTFIX + "]";
     
@@ -198,6 +202,8 @@ public class JsIndex {
 
             Collection<? extends IndexResult> result = querySupport.query(
                     fieldName, fieldValue, kind, fieldsToLoad);
+            
+            
             if (updateCache) {
                 WRITE_LOCK.lock();
                 try {
@@ -329,6 +335,38 @@ public class JsIndex {
     public Collection <IndexedElement> getProperties(String fqn) {
         return getProperties(fqn, 0, new ArrayList<String>());
     }
+    
+    public Collection <IndexedElement> getUsagesFromExpression(final List<String> expChain) {
+        if (expChain == null || expChain.isEmpty()) {
+            return Collections.emptyList();
+        }
+        String searchText = expChain.get(0) + ':';
+        Collection<? extends IndexResult> results = query(
+                    JsIndex.FIELD_USAGE, searchText, QuerySupport.Kind.PREFIX, JsIndex.FIELD_USAGE); //NOI18N
+        ArrayList<IndexedElement> usages = new ArrayList<IndexedElement>();
+        Set<String> alreadyUsed = new HashSet<String>();
+        for (IndexResult indexResult : results) {
+            String[] fields = indexResult.getValues(JsIndex.FIELD_USAGE);
+            FileObject fo = indexResult.getFile();
+            for (String field : fields) {
+                if (field.startsWith(searchText)) {
+                    String[] parts = field.split(":");
+                    for (String property : parts) {
+                        String[] split = property.split("#");
+                        if(split.length == 2 && !alreadyUsed.contains(split[0])) {
+                            alreadyUsed.add(split[0]);
+                            IndexedElement element = new IndexedElement(fo, split[0], split[0], false, false, split[1].equals("F") ? JsElement.Kind.FUNCTION : JsElement.Kind.OBJECT, 
+                                OffsetRange.NONE, Collections.singleton(Modifier.PUBLIC), Collections.EMPTY_LIST, false);
+                            usages.add(element);
+                        }
+                    }
+                    
+                }
+            }
+        }
+        return usages;
+    }
+            
 
     private final int MAX_FIND_PROPERTIES_RECURSION = 15;
     
@@ -352,13 +390,19 @@ public class JsIndex {
                 }
             }
             // find properties of the fqn
-            String pattern = escapeRegExp(fqn) + PROPERTIES_PATTERN; //NOI18N
+//            String pattern = escapeRegExp(fqn) + PROPERTIES_PATTERN; //NOI18N
             results = query(
-                    JsIndex.FIELD_FQ_NAME, pattern, QuerySupport.Kind.REGEXP, TERMS_BASIC_INFO); //NOI18N
+                    JsIndex.FIELD_FQ_NAME, fqn + "." , QuerySupport.Kind.PREFIX, TERMS_BASIC_INFO); //NOI18N
             for (IndexResult indexResult : results) {
-                IndexedElement property = IndexedElement.create(indexResult);
-                if (!property.getModifiers().contains(Modifier.PRIVATE)) {
-                    result.add(property);
+                String value = indexResult.getValue(JsIndex.FIELD_FQ_NAME);
+                if (!value.isEmpty() && value.charAt(value.length() - 1) != IndexedElement.PARAMETER_POSTFIX) {
+                    value = value.substring(fqn.length());
+                    if (value.lastIndexOf('.') == 0) {
+                        IndexedElement property = IndexedElement.create(indexResult);
+                        if (!property.getModifiers().contains(Modifier.PRIVATE)) {
+                            result.add(property);
+                        }
+                    }
                 }
             }
         }
@@ -366,10 +410,10 @@ public class JsIndex {
     }
 
     public Collection<? extends IndexResult> findByFqn(String fqn, String... fields) {
-        String pattern = escapeRegExp(fqn) + "."; // NOI18N
-        Collection<? extends IndexResult> results = query(
-                JsIndex.FIELD_FQ_NAME, pattern, QuerySupport.Kind.REGEXP, fields); //NOI18N
-
+        Collection<IndexResult> results = new ArrayList<IndexResult>();
+        results.addAll(query(JsIndex.FIELD_FQ_NAME, fqn + IndexedElement.ANONYMOUS_POSFIX, QuerySupport.Kind.EXACT, fields)); //NOI18N
+        results.addAll(query(JsIndex.FIELD_FQ_NAME, fqn + IndexedElement.OBJECT_POSFIX, QuerySupport.Kind.EXACT, fields)); //NOI18N
+        results.addAll(query(JsIndex.FIELD_FQ_NAME, fqn + IndexedElement.PARAMETER_POSTFIX, QuerySupport.Kind.EXACT, fields)); //NOI18N
         return results;
     }
     

@@ -119,6 +119,11 @@ final class ELFunctionCompletionItem extends DefaultCompletionProposal {
 
         @Override
         Documentation document(ParserResult info, Callable<Boolean> cancel) {
+            // in case the description of the EL function was not found
+            if (description == null) {
+                return null;
+            }
+
             return Documentation.create(description);
         }
 

@@ -48,10 +48,11 @@ import java.util.*;
 import javax.lang.model.element.*;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
@@ -66,7 +67,6 @@ import org.openide.util.Pair;
 public class InlineMethodTransformer extends RefactoringVisitor {
     
     private static final EnumSet<Tree.Kind> LITERALS = EnumSet.of(LAMBDA_EXPRESSION, PRIMITIVE_TYPE, PREFIX_INCREMENT, PREFIX_DECREMENT, BITWISE_COMPLEMENT, LEFT_SHIFT, RIGHT_SHIFT, UNSIGNED_RIGHT_SHIFT, MULTIPLY_ASSIGNMENT, DIVIDE_ASSIGNMENT, REMAINDER_ASSIGNMENT, PLUS_ASSIGNMENT, MINUS_ASSIGNMENT, LEFT_SHIFT_ASSIGNMENT, RIGHT_SHIFT_ASSIGNMENT, UNSIGNED_RIGHT_SHIFT_ASSIGNMENT, AND_ASSIGNMENT, XOR_ASSIGNMENT, OR_ASSIGNMENT, INT_LITERAL, LONG_LITERAL, FLOAT_LITERAL, DOUBLE_LITERAL, BOOLEAN_LITERAL, CHAR_LITERAL, STRING_LITERAL, NULL_LITERAL, ERRONEOUS);
-
     private Trees trees;
     private MethodTree methodTree;
     private boolean hasParameters;
@@ -93,6 +93,8 @@ public class InlineMethodTransformer extends RefactoringVisitor {
     @Override
     public Tree visitCompilationUnit(CompilationUnitTree node, Element p) {
         try {
+            GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy);
+            genUtils.importComments(node, node);
             trees = workingCopy.getTrees();
             methodTree = (MethodTree) trees.getTree(p);
             hasParameters = methodTree.getParameters().size() > 0;
@@ -194,6 +196,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
         final TreePath methodInvocationPath = getCurrentPath();
         Element el = trees.getElement(methodInvocationPath);
         if (el.getKind() == ElementKind.METHOD && methodElement.equals(el)) {
+            GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy);
             ExecutableElement method = (ExecutableElement) el;
             List<StatementTree> newStatementList = new LinkedList<>();
 
@@ -214,12 +217,13 @@ public class InlineMethodTransformer extends RefactoringVisitor {
             if (problem != null && problem.isFatal()) {
                 return node;
             }
-            body = (BlockTree) workingCopy.getTreeUtilities().translate(body, original2TranslatedBody);
+            TreeUtilities treeUtilities = workingCopy.getTreeUtilities();
+            body = (BlockTree) treeUtilities.translate(body, original2TranslatedBody);
 
             if (hasParameters) {
                 final HashMap<Tree, Tree> original2TranslatedBody2 = new HashMap<>();
                 replaceParametersWithArguments(original2TranslatedBody2, method, node, methodInvocationPath, body, newStatementList);
-                body = (BlockTree) workingCopy.getTreeUtilities().translate(body, original2TranslatedBody2);
+                body = (BlockTree) treeUtilities.translate(body, original2TranslatedBody2);
             }
 
             TreePath methodPath = trees.getPath(methodElement);
@@ -239,7 +243,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 if (!inSameClass || inStatic) {
                     statement = (StatementTree) fixReferences(statement, new TreePath(bodyPath, statement), method, scope, methodSelect);
                     if (!inSameClass) {
-                        statement = GeneratorUtilities.get(workingCopy).importFQNs(statement);
+                        statement = genUtils.importFQNs(statement);
                     }
                 }
                 newStatementList.add(statement);
@@ -275,11 +279,10 @@ public class InlineMethodTransformer extends RefactoringVisitor {
             if (lastStatement != null && (!inSameClass || inStatic)) {
                 lastStatement = fixReferences(lastStatement, new TreePath(bodyPath, lastStatement), method, scope, methodSelect);
                 if (!inSameClass) {
-                    lastStatement = GeneratorUtilities.get(workingCopy).importFQNs(lastStatement);
+                    lastStatement = genUtils.importFQNs(lastStatement);
                 }
             }
-            lastStatement = translateLastStatement(parent, grandparent, newStatementList, lastStatement, node);
-            
+            lastStatement = translateLastStatement(genUtils, parent, grandparent, newStatementList, lastStatement, node, methodInvocationPath, method);
             Element element = workingCopy.getTrees().getElement(statementPath);
             if (element != null && element.getKind() == ElementKind.FIELD) {
                 if (!newStatementList.isEmpty()) {
@@ -290,6 +293,11 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                     problem = JavaPluginUtils.chainProblems(problem,
                             new Problem(false, NbBundle.getMessage(InlineMethodTransformer.class, "WRN_InlineMethodMultipleLines", source)));
                 } else {
+                    genUtils.copyComments(methodInvocation, lastStatement, true);
+                    List<Comment> comments = workingCopy.getTreeUtilities().getComments(methodInvocation, false);
+                    for (Comment comment : comments) {
+                        make.addComment(lastStatement, Comment.create(comment.style(), comment.getText()), false);
+                    }
                     rewrite(methodInvocation, lastStatement);
                 }
             } else {
@@ -300,6 +308,11 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                     addedStatementsForBlock.put(statementTree, stats = new LinkedList<>());
                 }
                 stats.addAll(newStatementList);
+                genUtils.copyComments(methodInvocation, lastStatement, true);
+                List<Comment> comments = workingCopy.getTreeUtilities().getComments(methodInvocation, false);
+                for (Comment comment : comments) {
+                    make.addComment(lastStatement, Comment.create(comment.style(), comment.getText()), false);
+                }
                 translateMap.put(methodInvocation, lastStatement);
             }
         }
@@ -616,8 +629,9 @@ public class InlineMethodTransformer extends RefactoringVisitor {
         }
     }
 
-    private Tree translateLastStatement(Tree parent, Tree grandparent, List<StatementTree> newStatementList, Tree lastStatement, Tree node) {
+    private Tree translateLastStatement(GeneratorUtilities genUtils, Tree parent, Tree grandparent, List<StatementTree> newStatementList, Tree lastStatement, Tree node, TreePath location, Element method) {
         Tree result = lastStatement;
+        TreeDuplicator duplicator = new TreeDuplicator(make, genUtils);
         if (parent.getKind() != Tree.Kind.EXPRESSION_STATEMENT) {
             if (result != null) {
                 switch (result.getKind()) {
@@ -629,6 +643,12 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                         break;
                     default:
                     // TODO: Problem, need an expression, but last statement is not an expression.
+                }
+                if(result instanceof ExpressionTree) {
+                    boolean needsParentheses = OperatorPrecedence.needsParentheses(location, method, (ExpressionTree) result, workingCopy);
+                    if(needsParentheses) {
+                        result = workingCopy.getTreeMaker().Parenthesized((ExpressionTree) result);
+                    }
                 }
             }
         } else {
@@ -770,6 +790,9 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 break;
             }
         }
+        result = duplicator.duplicate(result);
+        genUtils.copyComments(lastStatement, result, true);
+        genUtils.copyComments(lastStatement, result, false);
         return result;
     }
 
