@@ -454,13 +454,13 @@ public class FmtOptions {
         private final List<JComponent> components = new LinkedList<JComponent>();
         private JEditorPane previewPane;
 
-        protected final DefaultsProvider provider;
+        protected final Defaults.Provider provider;
 
         private final Preferences preferences;
         private final Preferences previewPrefs;
         private final String mimeType;
 
-        protected CategorySupport(String mimeType, DefaultsProvider provider, Preferences preferences, String id,
+        protected CategorySupport(String mimeType, Defaults.Provider provider, Preferences preferences, String id,
                 JPanel panel, String previewText, String[]... forcedOptions) {
             this.mimeType = mimeType;
             this.provider = provider;
@@ -618,7 +618,7 @@ public class FmtOptions {
         public static final class Factory implements PreferencesCustomizer.Factory {
 
             private final String mimeType;
-            private final DefaultsProvider provider;
+            private final Defaults.Provider provider;
             private final String id;
             private final Class<? extends JPanel> panelClass;
             private final String previewText;
@@ -949,7 +949,7 @@ public class FmtOptions {
         }
     } // End of ProxyPreferences class
 
-    public static class BasicDefaultsProvider implements DefaultsProvider {
+    public static class BasicDefaultsProvider implements Defaults.Provider {
 
         @Override
         public int getDefaultAsInt(String key) {

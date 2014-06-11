@@ -60,7 +60,7 @@ public final class IndentContext {
 
     private final Context context;
 
-    private final DefaultsProvider provider;
+    private final Defaults.Provider provider;
 
     private final boolean embedded;
 
@@ -90,7 +90,7 @@ public final class IndentContext {
 
     private final int caretLineEnd;
 
-    public IndentContext(Context context, DefaultsProvider provider) {
+    public IndentContext(Context context, Defaults.Provider provider) {
         this.context = context;
         this.provider = provider;
 
@@ -116,7 +116,7 @@ public final class IndentContext {
         this.caretLineEnd = lineEnd;
     }
 
-    public DefaultsProvider getDefaultsProvider() {
+    public Defaults.Provider getDefaultsProvider() {
         return provider;
     }
 
