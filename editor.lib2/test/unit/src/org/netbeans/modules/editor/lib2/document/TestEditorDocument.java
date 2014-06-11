@@ -45,8 +45,10 @@
 package org.netbeans.modules.editor.lib2.document;
 
 import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.PlainDocument;
+import javax.swing.text.Position;
 
 
 public class TestEditorDocument extends PlainDocument {
@@ -58,9 +60,13 @@ public class TestEditorDocument extends PlainDocument {
         ((EditorDocumentContent)getContent()).init(this);
         lineElementRoot = new LineRootElement(this);
     }
-    
+
     EditorDocumentContent getDocumentContent() {
         return (EditorDocumentContent) getContent();
+    }
+
+    public Position createBackwardBiasPosition(int offset) throws BadLocationException {
+        return getDocumentContent().createBackwardBiasPosition(offset);
     }
 
     @Override
