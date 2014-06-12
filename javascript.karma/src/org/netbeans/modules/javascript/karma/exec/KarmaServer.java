@@ -58,10 +58,13 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
+import org.netbeans.modules.javascript.karma.coverage.CoverageWatcher;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.run.KarmaRunInfo;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
+import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
+import org.netbeans.modules.web.clientproject.api.jstesting.Coverage;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -76,15 +79,20 @@ public final class KarmaServer {
 
     private final int port;
     private final Project project;
+    private final Coverage coverage;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+    volatile boolean started = false;
+    volatile boolean starting = false;
 
     // @GuardedBy("this")
     private Future<Integer> server;
     // @GuardedBy("this")
     private BrowserSupport browserSupport;
-
-    volatile boolean started = false;
-    volatile boolean starting = false;
+    // @GuardedBy("this")
+    private File netBeansKarmaCoverageDir = null;
+    // @GuardedBy("this")
+    private CoverageWatcher coverageWatcher = null;
     private volatile File netBeansKarmaReporter = null;
     private volatile File netBeansKarmaConfig = null;
     private volatile URL debugUrl = null;
@@ -94,11 +102,13 @@ public final class KarmaServer {
         assert project != null;
         this.port = port;
         this.project = project;
+        coverage = Coverage.forProject(project);
     }
 
     @NbBundle.Messages("KarmaServer.start.error=Karma cannot start (incorrect Karma set?), review IDE log for details")
     public synchronized boolean start() {
         assert Thread.holdsLock(this);
+        initCoverageWatcher();
         if (isStarted()) {
             return true;
         }
@@ -144,8 +154,13 @@ public final class KarmaServer {
         }
     }
 
+    void rerunTests() {
+        runTests();
+    }
+
     public synchronized void stop() {
         assert Thread.holdsLock(this);
+        stopCoverageWatcher();
         if (server == null) {
             return;
         }
@@ -211,6 +226,26 @@ public final class KarmaServer {
         }
     }
 
+    private void initCoverageWatcher() {
+        assert Thread.holdsLock(this);
+        if (coverage == null) {
+            // not supported
+            return;
+        }
+        if (coverageWatcher == null) {
+            coverageWatcher = new CoverageWatcher(coverage, FileUtil.toFile(project.getProjectDirectory()), getNetBeansKarmaCoverageDir());
+            coverageWatcher.start();
+        }
+    }
+
+    private void stopCoverageWatcher() {
+        assert Thread.holdsLock(this);
+        if (coverageWatcher != null) {
+            coverageWatcher.stop();
+            coverageWatcher = null;
+        }
+    }
+
     private URL getDebugUrl() {
         if (debugUrl == null) {
             try {
@@ -250,13 +285,37 @@ public final class KarmaServer {
         if (webRoots.isEmpty()) {
             throw new IllegalStateException("Project " + project.getClass().getName() + " must provide ProjectWebRootProvider in its lookup");
         }
-        File webRoot = FileUtil.toFile(webRoots.iterator().next());
-        envVars.put("PROJECT_WEB_ROOT", webRoot.getAbsolutePath()); // NOI18N
-        // XXX
-        envVars.put("COVERAGE", ""); // NOI18N
+        FileObject projectDir = project.getProjectDirectory();
+        FileObject webRoot = webRoots.iterator().next();
+        envVars.put("PROJECT_WEB_ROOT", FileUtil.toFile(webRoot).getAbsolutePath()); // NOI18N
+        envVars.put("PROJECT_DIR", FileUtil.toFile(projectDir).getAbsolutePath()); // NOI18N
+        envVars.put("WEB_ROOT_PREFIX", relativize(projectDir, webRoot)); // NOI18N
+        envVars.put("TEST_ROOT_PREFIX", getTestRootPrefix(projectDir)); // NOI18N
         envVars.put("AUTOWATCH", KarmaPreferences.isAutowatch(project) ? "1" : ""); // NOI18N
         envVars.put("KARMA_NETBEANS_REPORTER", getNetBeansKarmaReporter().getAbsolutePath()); // NOI18N
+        // XXX
+        envVars.put("COVERAGE", isCoverageEnabled() ? "1" : ""); // NOI18N
+        envVars.put("COVERAGE_DIR", getNetBeansKarmaCoverageDir().getAbsolutePath()); // NOI18N
         return envVars;
+    }
+
+    private String relativize(FileObject parent, FileObject file) {
+        String relativePath = FileUtil.getRelativePath(parent, file);
+        if (relativePath != null) {
+            return relativePath;
+        }
+        return FileUtil.toFile(file).getAbsolutePath();
+    }
+
+    private String getTestRootPrefix(FileObject projectDir) {
+        ProjectDirectoriesProvider directoriesProvider = project.getLookup().lookup(ProjectDirectoriesProvider.class);
+        if (directoriesProvider != null) {
+            FileObject testDir = directoriesProvider.getTestDirectory();
+            if (testDir != null) {
+                return relativize(projectDir, testDir);
+            }
+        }
+        return ""; // NOI18N
     }
 
     private String getProjectConfigFile() {
@@ -281,8 +340,23 @@ public final class KarmaServer {
         return netBeansKarmaConfig;
     }
 
+    private synchronized File getNetBeansKarmaCoverageDir() {
+        assert Thread.holdsLock(this);
+        if (netBeansKarmaCoverageDir == null) {
+            FileObject nbproject = project.getProjectDirectory().getFileObject("nbproject"); // NOI18N
+            assert nbproject != null;
+            netBeansKarmaCoverageDir = new File(FileUtil.toFile(nbproject), "private" + File.separatorChar + "karma-coverage"); // NOI18N
+        }
+        return netBeansKarmaCoverageDir;
+    }
+
     private boolean isDebug() {
         return KarmaPreferences.isDebug(project);
+    }
+
+    private boolean isCoverageEnabled() {
+        return coverage != null
+                && coverage.isEnabled();
     }
 
     @Override
@@ -308,7 +382,7 @@ public final class KarmaServer {
         @Override
         public void rerun() {
             setEnabled(false);
-            karmaServer.runTests();
+            karmaServer.rerunTests();
             setEnabled(true);
         }
 

@@ -44,9 +44,13 @@ var FILE_SEPARATOR = process.env.FILE_SEPARATOR;
 var PROJECT_CONFIG = process.env.PROJECT_CONFIG;
 var BASE_DIR = process.env.BASE_DIR;
 var PROJECT_WEB_ROOT = process.env.PROJECT_WEB_ROOT;
-var COVERAGE = Boolean(process.env.COVERAGE);
+var PROJECT_DIR = process.env.PROJECT_DIR;
+var WEB_ROOT_PREFIX = process.env.WEB_ROOT_PREFIX;
+var TEST_ROOT_PREFIX = process.env.TEST_ROOT_PREFIX;
 var AUTOWATCH = Boolean(process.env.AUTOWATCH);
 var KARMA_NETBEANS_REPORTER = process.env.KARMA_NETBEANS_REPORTER;
+var COVERAGE = Boolean(process.env.COVERAGE);
+var COVERAGE_DIR = process.env.COVERAGE_DIR;
 
 var BROWSERS_MESSAGE = '$NB$netbeans browsers %s';
 
@@ -80,7 +84,6 @@ module.exports = function(config) {
 
     config.reporters = config.reporters || [];
     config.reporters = config.reporters.concat([
-        //'progress',
         'netbeans'
     ]);
     if (COVERAGE) {
@@ -111,19 +114,32 @@ module.exports = function(config) {
 
     if (COVERAGE) {
         config.preprocessors = config.preprocessors || {};
-        var projectWebRootLength = PROJECT_WEB_ROOT.length + FILE_SEPARATOR.length;
-        for (var i = 0; i < config.files.length; ++i) {
-            var file = config.files[i];
-            if (file.substr(0, projectWebRootLength) === PROJECT_WEB_ROOT + FILE_SEPARATOR) {
+        var webRootPrefix = WEB_ROOT_PREFIX + FILE_SEPARATOR;
+        var testRootPrefix = TEST_ROOT_PREFIX + FILE_SEPARATOR;
+        var webRootPrefixLength = WEB_ROOT_PREFIX.length + FILE_SEPARATOR.length;
+        var testRootPrefixLength = TEST_ROOT_PREFIX.length + FILE_SEPARATOR.length;
+        if (config.coverage) {
+            for (var i = 0; i < config.coverage.length; ++i) {
+                var file = config.coverage[i];
                 config.preprocessors[file] = config.preprocessors[file] || [];
-                config.preprocessors[file].push(['coverage']);
+                config.preprocessors[file].push('coverage');
+            }
+        } else {
+            for (var i = 0; i < config.files.length; ++i) {
+                var file = config.files[i];
+                var inWebRoot = WEB_ROOT_PREFIX && file.substr(0, webRootPrefixLength) === webRootPrefix;
+                var inTests = TEST_ROOT_PREFIX && file.substr(0, testRootPrefixLength) === testRootPrefix;
+                if (inWebRoot
+                        && !inTests) {
+                    config.preprocessors[file] = config.preprocessors[file] || [];
+                    config.preprocessors[file].push('coverage');
+                }
             }
         }
-        // XXX
         config.coverageReporter = {
-            type: 'cobertura',
-            dir: 'coverage' + fileSeparator,
-            file: 'cobertura.xml'
+            type: 'clover',
+            dir: COVERAGE_DIR + FILE_SEPARATOR,
+            file: 'clover.xml'
         };
     }
 
