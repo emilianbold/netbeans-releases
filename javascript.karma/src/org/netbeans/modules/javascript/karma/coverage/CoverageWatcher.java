@@ -59,10 +59,9 @@ public final class CoverageWatcher {
     private final Coverage coverage;
     private final File sourceDir;
     private final File coverageDir;
-    private final RequestProcessor.Task processTask;
     private final FileChangeListener fileChangeListener = new FileChangeListenerImpl();
 
-    private volatile File logFile = null;
+    private volatile boolean coverageProcessing = false;
 
 
     public CoverageWatcher(Coverage coverage, File sourceDir, File coverageDir) {
@@ -72,12 +71,6 @@ public final class CoverageWatcher {
         this.coverage = coverage;
         this.sourceDir = sourceDir;
         this.coverageDir = coverageDir;
-        processTask = RP.create(new Runnable() {
-            @Override
-            public void run() {
-                process();
-            }
-        });
     }
 
     public void start() {
@@ -88,17 +81,28 @@ public final class CoverageWatcher {
         FileUtil.removeRecursiveListener(fileChangeListener, coverageDir);
     }
 
-    void process() {
+    void process(final File logFile) {
         assert logFile.isFile();
-        if (coverage.isEnabled()) {
-            new CoverageProcessor(coverage, sourceDir, logFile).process();
+        if (coverageProcessing) {
+            return;
         }
+        coverageProcessing = true;
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                processInternal(logFile);
+            }
+        });
     }
 
-    void process(File logFile) {
-        assert logFile.isFile();
-        this.logFile = logFile;
-        processTask.schedule(200);
+    void processInternal(File logFile) {
+        try {
+            if (coverage.isEnabled()) {
+                new CoverageProcessor(coverage, sourceDir, logFile).process();
+            }
+        } finally {
+            coverageProcessing = false;
+        }
     }
 
     //~ Inner classes
