@@ -46,7 +46,7 @@ import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import static org.netbeans.modules.gsf.testrunner.ui.api.TestMethodRunnerProvider.getActionProvider;
+import org.netbeans.modules.gsf.testrunner.api.CommonUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.openide.awt.StatusDisplayer;
@@ -59,8 +59,8 @@ import org.openide.util.TaskListener;
 import org.openide.util.lookup.Lookups;
 
 /**
- *
- * @author theofanis
+ * Provider for debugging focused test method in editor
+ * @author Theofanis Oikonomou
  */
 public abstract class TestMethodDebuggerProvider {
     
@@ -68,8 +68,19 @@ public abstract class TestMethodDebuggerProvider {
     private RequestProcessor.Task singleMethodTask;
     private SingleMethod singleMethod;
     
+    /**
+     * @param activatedNode the selected node.
+     * @return <code>true</code> if selected {@link Node} can be handled/debugged by this provider, 
+     * <code>false</code> otherwise.
+     */
     public abstract boolean canHandle(Node activatedNode);
     
+    /**
+     *
+     * @param doc The active document
+     * @param caret the position of the caret
+     * @return the SingleMethod representing the method in the document containing the caret, {@code null} otherwise
+     */
     public abstract SingleMethod getTestMethod(Document doc, int caret);
     
     /**
@@ -85,6 +96,10 @@ public abstract class TestMethodDebuggerProvider {
         return true;
     }
     
+    /**
+     * Handle/Debug the selected test method
+     * @param activatedNode the selected node
+     */
     public final void debugTestMethod(Node activatedNode) {
         final Node activeNode = activatedNode;
         final Document doc;
@@ -130,7 +145,7 @@ public abstract class TestMethodDebuggerProvider {
 			Mutex.EVENT.readAccess(new Runnable() {
 			    @Override
 			    public void run() {
-				ActionProvider ap = getActionProvider(singleMethod.getFile());
+				ActionProvider ap = CommonUtils.getInstance().getActionProvider(singleMethod.getFile());
 				if (ap != null) {
 				    if (Arrays.asList(ap.getSupportedActions()).contains(command) && ap.isActionEnabled(command, Lookups.singleton(singleMethod))) {
 					ap.invokeAction(command, Lookups.singleton(singleMethod));

@@ -46,7 +46,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 public abstract class CommonTestUtilProvider {
     

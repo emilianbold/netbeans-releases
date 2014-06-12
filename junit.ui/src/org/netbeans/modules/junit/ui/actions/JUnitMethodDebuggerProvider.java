@@ -49,7 +49,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 @ServiceProvider(service=TestMethodDebuggerProvider.class, position=10)
 public class JUnitMethodDebuggerProvider extends TestMethodDebuggerProvider {

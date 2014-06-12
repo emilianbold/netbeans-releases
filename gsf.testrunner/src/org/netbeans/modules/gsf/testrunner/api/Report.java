@@ -88,6 +88,8 @@ public final class Report {
     private boolean completed;
 
     /**
+     * @param suiteClassName name of the suite class this report is build for
+     * @param project project this report is build for
      */
     public Report(String suiteClassName, Project project) {
         this.suiteClassName = suiteClassName;
@@ -123,6 +125,7 @@ public final class Report {
     }
 
     /**
+     * @param test the {@link Testcase} that will be added to this report
      */
     public void reportTest(Testcase test) {
         
@@ -135,6 +138,7 @@ public final class Report {
     }
     
     /**
+     * @param report update this {@link Report}
      */
     public void update(Report report) {
         synchronized(this){
@@ -173,6 +177,7 @@ public final class Report {
     }
     
     /**
+     * @return all {@link Testcase}s already added to this report
      */
     public Collection<Testcase> getTests() {
         
@@ -194,6 +199,7 @@ public final class Report {
     }
     
     /**
+     * @return {@code true} if this report contains any failures or errors, {@code false} otherwise
      */
     public boolean containsFailed() {
         assert EventQueue.isDispatchThread();

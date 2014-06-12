@@ -50,7 +50,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 @ServiceProvider(service=RootsProvider.class, position=10)
 public class JavaRootsProvider extends RootsProvider {

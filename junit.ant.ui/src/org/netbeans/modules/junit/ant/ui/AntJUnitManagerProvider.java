@@ -48,8 +48,9 @@ import org.netbeans.modules.gsf.testrunner.api.CoreManager;
 import org.netbeans.modules.java.testrunner.ui.api.JavaManager;
 
 /**
+ * Registers an Ant/JUnit specific {@link AntJUnitTestRunnerNodeFactory}
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 @CoreManager.Registration(projectType = CommonUtils.ANT_PROJECT_TYPE, testingFramework = CommonUtils.JUNIT_TF)
 public class AntJUnitManagerProvider extends JavaManager {

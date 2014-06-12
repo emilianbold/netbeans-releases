@@ -51,7 +51,7 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 public class AntJUnitManagerProviderTest {
     

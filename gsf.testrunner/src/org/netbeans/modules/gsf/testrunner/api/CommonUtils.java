@@ -43,10 +43,14 @@ package org.netbeans.modules.gsf.testrunner.api;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ActionProvider;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 public final class CommonUtils {
 
@@ -75,12 +79,33 @@ public final class CommonUtils {
         return instance;
     }
 
+    /**
+     *
+     * @return the testing framework, e.g. {@link #JUNIT_TF} or {@link #TESTNG_TF}
+     */
     public String getTestingFramework() {
         return testingFramework;
     }
 
+    /**
+     *
+     * @param testingFramework the selected testing framework, e.g. {@link #JUNIT_TF} or {@link #TESTNG_TF}
+     */
     public void setTestingFramework(String testingFramework) {
         this.testingFramework = testingFramework;
+    }
+
+    /**Get the ActionProvider associated with the project, if any, which "owns" the given file.
+     *
+     * @param fileObject the selected file
+     * @return the ActionProvider associated with the given file, or {@code null}
+     */
+    public ActionProvider getActionProvider(FileObject fileObject) {
+        Project owner = FileOwnerQuery.getOwner(fileObject);
+        if (owner == null) { // #183586
+            return null;
+        }
+        return owner.getLookup().lookup(ActionProvider.class);
     }
 
 }

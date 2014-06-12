@@ -50,7 +50,7 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession;
 
 /**
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 public final class AntLoggerUtils {
 

@@ -44,17 +44,13 @@ package org.netbeans.modules.gsf.testrunner.ui.api;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.api.actions.Savable;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider;
 import org.netbeans.modules.gsf.testrunner.ui.CommonTestsCfgOfCreate;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.LifecycleManager;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
@@ -63,6 +59,10 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 
+/**
+ * Displays a dialog for creating new test class
+ * @author Theofanis Oikonomou
+ */
 public final class TestCreatorPanelDisplayer {
 
     private static final TestCreatorPanelDisplayer INSTANCE = new TestCreatorPanelDisplayer();
@@ -77,6 +77,12 @@ public final class TestCreatorPanelDisplayer {
         return INSTANCE;
     }
 
+    /**
+     * Displays a dialog for creating new test class
+     * @param activatedFOs objects for which the test will be created
+     * @param location the location where the new test will be created, can be {@code null}
+     * @param testingFramework the framework to be used when the new test will be created, e.g. {@code "JUnit"} or {@code "TestNG"}, can be {@code null}
+     */
     public void displayPanel(FileObject[] activatedFOs, Object location, String testingFramework) {
 //        TODO - replace this with new parsing.api from tzezula...
 //	final DataObject[] modified = DataObject.getRegistry().getModified();
@@ -150,7 +156,6 @@ public final class TestCreatorPanelDisplayer {
     private void saveAll(Node[] activatedNodes) {
         for(Node node : activatedNodes) {
             SaveCookie saveCookie = node.getLookup().lookup(SaveCookie.class);
-            System.out.println("node="+node.getDisplayName()+", saveCookie="+saveCookie);
             if (saveCookie != null) {
                 try {
                     saveCookie.save();

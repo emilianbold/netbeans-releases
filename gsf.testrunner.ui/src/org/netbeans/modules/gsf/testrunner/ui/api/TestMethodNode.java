@@ -71,7 +71,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 
-/**
+/**Node representing a test method
  *
  * @author Marian Petras, Erno Mononen
  */
@@ -113,6 +113,10 @@ public class TestMethodNode extends AbstractNode {
 
     }
 
+    /**
+     *
+     * @return the {@link Testcase} this method belongs to
+     */
     public Testcase getTestcase() {
         return testcase;
     }
@@ -160,12 +164,7 @@ public class TestMethodNode extends AbstractNode {
         }
         return prj;
     }
-
-    Testcase getTestCase(){
-        return testcase;
-    }
-    /**
-     */
+    
     @Override
     public String getHtmlDisplayName() {
         Status status = testcase.getStatus();
@@ -204,6 +203,8 @@ public class TestMethodNode extends AbstractNode {
     }
     
     /**
+     * Gets preferred action.
+     * @return preferred action which defaults to {@code null}
      */
     @Override
     public Action getPreferredAction() {
@@ -262,6 +263,10 @@ public class TestMethodNode extends AbstractNode {
         return getIcon(type);
     }
 
+    /**
+     *
+     * @return {@code true} if the test method is error or failed, {@code false} otherwise
+     */
     public boolean failed() {
         return testcase.getStatus().equals(Status.FAILED)
                 || testcase.getStatus().equals(Status.ERROR);

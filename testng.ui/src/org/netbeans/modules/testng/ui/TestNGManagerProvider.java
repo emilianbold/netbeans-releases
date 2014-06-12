@@ -49,7 +49,7 @@ import org.netbeans.modules.java.testrunner.ui.api.JavaManager;
 
 /**
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 @CoreManager.Registration(projectType = "", testingFramework = CommonUtils.TESTNG_TF)
 public class TestNGManagerProvider extends JavaManager {

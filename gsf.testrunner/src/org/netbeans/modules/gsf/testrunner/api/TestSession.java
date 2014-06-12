@@ -174,6 +174,10 @@ public class TestSession {
         return testcases.isEmpty() ? null : testcases.get(testcases.size() - 1);
      }
 
+    /**
+     * @return the all test cases in this session or an empty list
+     * if there are none.
+     */
     public List<Testcase> getAllTestCases() {
         List<Testcase> all = new ArrayList<Testcase>();
         for (TestSuite suite : testSuites) {
@@ -290,6 +294,10 @@ public class TestSession {
         return sessionType;
     }
 
+    /**
+     *
+     * @return number of failures/errors incremented by one
+     */
     public synchronized long incrementFailuresCount() {
         return ++failuresCount;
     }
@@ -297,7 +305,7 @@ public class TestSession {
     public FileLocator getFileLocator() {
         return fileLocator;
     }
-
+    
     /**
      * @return the name of this session.
      * @see #name

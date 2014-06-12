@@ -95,6 +95,10 @@ public enum Status {
         return ABORTED.equals(status);
     }
 
+    /**
+     *
+     * @return true if the given mask is applied in this status.
+     */
     public boolean isMaskApplied(int mask){
         return (mask & getBitMask()) != 0;
     }

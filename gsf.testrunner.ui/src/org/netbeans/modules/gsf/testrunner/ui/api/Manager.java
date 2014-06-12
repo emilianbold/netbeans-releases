@@ -67,11 +67,13 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionResult;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.CommonUtils;
+import org.netbeans.modules.gsf.testrunner.api.CoreManager;
 import org.netbeans.modules.gsf.testrunner.ui.ResultDisplayHandler;
 import org.netbeans.modules.gsf.testrunner.ui.ResultWindow;
 import org.netbeans.modules.gsf.testrunner.ui.StatisticsPanel;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
+import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.openide.windows.InputOutput;
 import org.openide.windows.Mode;
@@ -79,7 +81,7 @@ import org.openide.windows.OutputWriter;
 import org.openide.windows.WindowManager;
 
 /**
- * This class gets informed about started and finished JUnit test sessions
+ * This class gets informed about started and finished test sessions
  * and manages that the result windows and reports in them are appropriately
  * displayed, closed etc.
  * <p/>
@@ -102,7 +104,7 @@ public final class Manager {
 
     /**
      * if {@code true}, the window will only be promoted
-     * at the end of Ant session
+     * at the end of the test session
      */
     private final boolean lateWindowPromotion;
 
@@ -148,6 +150,10 @@ public final class Manager {
         this.lineHandler = lineHandler;
     }
 
+    /**
+     *
+     * @return the set {@link TestRunnerNodeFactory} or a {@link DefaultTestRunnerNodeFactory} if none was set already.
+     */
     public TestRunnerNodeFactory getNodeFactory() {
         if(nodeFactory == null) {
             nodeFactory = new DefaultTestRunnerNodeFactory();
@@ -155,21 +161,31 @@ public final class Manager {
         return nodeFactory;
     }
 
+    /**
+     * An appropriate {@link TestRunnerNodeFactory} should be set by a registered {@link CoreManager}.
+     * This will take care of the creation of {@link Node}s in the Test Results Window.
+     *
+     * @param nodeFactory the {@link TestRunnerNodeFactory} to set
+     */
     public void setNodeFactory(TestRunnerNodeFactory nodeFactory) {
         this.nodeFactory = nodeFactory;
     }
     
+    /**
+     * 
+     * @see CommonUtils#setTestingFramework(java.lang.String) 
+     */
     public void setTestingFramework(String testingFramework) {
         CommonUtils.getInstance().setTestingFramework(testingFramework);
     }
 
+    /**
+     *
+     * @see CommonUtils#getTestingFramework()
+     */
     public String getTestingFramework() {
         return CommonUtils.getInstance().getTestingFramework();
     }
-
-//    public Set<TestSession> getTestSessions() {
-//        return Collections.unmodifiableSet(testSessions);
-//    }
 
     /**
      * Returns a singleton instance of this class.
@@ -236,8 +252,9 @@ public final class Manager {
         sessionFinished(session);
     }
     /**
-     * Called when an Ant task running JUnit tests is started.
-     * Displays a message in the JUnit results window.
+     * Called when a task running tests is started. Displays a message in the test results window.
+     *
+     * @param session the {@link TestSession} that is started
      */
     @NbBundle.Messages({"LBL_RunningTests=Running..."})
     public synchronized void testStarted(final TestSession session) {
@@ -249,6 +266,9 @@ public final class Manager {
     }
 
     /**
+     * Called when a task finishes running a test session.
+     *
+     * @param session the {@link TestSession} that is finished
      */
     public synchronized void sessionFinished(final TestSession session) {
         if (!testSessions.contains(session)) {
@@ -271,6 +291,11 @@ public final class Manager {
     }
 
     /**
+     * Called when a task needs to display some output of a running test session.
+     *
+     * @param session the {@link TestSession} for which output needs to be displayed
+     * @param text the text to display
+     * @param error {@code true} if this is an error, {@code false} otherwise
      */
     public synchronized void displayOutput(final TestSession session,
                        final String text,
@@ -282,9 +307,10 @@ public final class Manager {
     }
 
     /**
+     * Called when a task needs to communicate that a test suite is running.
      *
-     * @param  suiteName  name of the running suite; or {@code null} in the case
-     *                    of anonymous suite
+     * @param session the {@link TestSession} that is running
+     * @param suiteName name of the running suite; or {@code null} in the case of anonymous suite
      */
     public synchronized void displaySuiteRunning(final TestSession session,
                              final String suiteName) {
@@ -295,7 +321,10 @@ public final class Manager {
     }
 
     /**
-     * @param  suite  running suite
+     * Called when a task needs to communicate that a test suite is running.
+     *
+     * @param session the {@link TestSession} that is running
+     * @param suite the {@link TestSuite} that is running
      */
     public synchronized void displaySuiteRunning(final TestSession session,
                              final TestSuite suite) {
@@ -305,12 +334,25 @@ public final class Manager {
         displayInWindow(session, displayHandler);
     }
 
+    /**
+     * Called when a task needs to update the corresponding report of a running test session.
+     * Merely invokes {@link #displayReport(TestSession, Report, boolean)} with {@code false} as the value of the last parameter.
+     *
+     * @param session the {@link TestSession} that is running
+     * @param report the {@link Report} to be displayed
+     * @see #displayReport(TestSession, Report, boolean) 
+     */
     public void displayReport(final TestSession session,
                        final Report report) {
         displayReport(session, report, true);
     }
 
     /**
+     * Called when a task needs to update the corresponding report of a running test session.
+     *
+     * @param session the {@link TestSession} that is running
+     * @param report the {@link Report} to be displayed
+     * @param completed {@code true} if the {@link TestSession} is completed, {@code false} otherwise
      */
     public synchronized void displayReport(final TestSession session,
                        final Report report, boolean completed) {
@@ -354,60 +396,6 @@ public final class Manager {
         } else {
             displayHandler.displayMessageSessionFinished(message);
         }
-
-        //<editor-fold defaultstate="collapsed" desc="disabled code">
-        /*
-         * This method is called only from method taskStarted(AntSession)
-         * which is synchronized.
-         */
-
-        /*
-        if (pendingSessions == null) {
-            pendingSessions = new ArrayList(4);
-        }
-        pendingSessions.add(session);
-         */
-
-        /* Close all windows with reports displayed: */
-        /*
-        assert (displayedSessions == null) == (displayedReports == null);
-        if (displayedSessions != null) {
-            assert displayedReports.size() == displayedSessions.size();
-
-            ListIterator iDispRep
-                    = displayedReports.listIterator(displayedReports.size());
-            ListIterator iDispSes
-                    = displayedSessions.listIterator(displayedSessions.size());
-            final List indexes
-                    = new ArrayList(displayedReports.size());
-            while (iDispRep.hasPrevious()) {
-                int index = iDispSes.previousIndex();
-                Object r = iDispRep.previous();
-                Object s = iDispSes.previous();
-                if (r == null) {
-                    indexes.add(new Integer(index));
-                    iDispRep.remove();
-                    iDispSes.remove();
-                }
-            }
-
-            assert displayedSessions.size() == displayedReports.size();
-
-            if (displayedSessions.isEmpty()) {
-                displayedSessions = null;
-                displayedReports = null;
-            }
-            Mutex.EVENT.writeAccess(new Runnable() {
-                public void run() {
-                    ResultWindow win = ResultWindow.getInstance();
-                    for (Iterator i = indexes.iterator(); i.hasNext(); ) {
-                        win.removeView(((Integer) i.next()).intValue());
-                    }
-                }
-            });
-        }
-         */
-        //</editor-fold>
     }
 
     /**

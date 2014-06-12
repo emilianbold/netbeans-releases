@@ -48,6 +48,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.testrunner.api.CommonUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.openide.awt.StatusDisplayer;
@@ -62,8 +63,8 @@ import org.openide.util.TaskListener;
 import org.openide.util.lookup.Lookups;
 
 /**
- *
- * @author theofanis
+ * Provider for running focused test method in editor
+ * @author Theofanis Oikonomou
  */
 public abstract class TestMethodRunnerProvider {
 
@@ -71,8 +72,19 @@ public abstract class TestMethodRunnerProvider {
     private RequestProcessor.Task singleMethodTask;
     private SingleMethod singleMethod;
 
+    /**
+     * @param activatedNode the selected node.
+     * @return <code>true</code> if selected {@link Node} can be handled/run by this provider, 
+     * <code>false</code> otherwise.
+     */
     public abstract boolean canHandle(Node activatedNode);
-
+    
+    /**
+     *
+     * @param doc The active document
+     * @param caret the position of the caret
+     * @return the SingleMethod representing the method in the document containing the caret, {@code null} otherwise
+     */
     public abstract SingleMethod getTestMethod(Document doc, int caret);
     
     /**
@@ -88,6 +100,10 @@ public abstract class TestMethodRunnerProvider {
         return true;
     }
 
+    /**
+     * Handle/Run the selected test method
+     * @param activatedNode the selected node
+     */
     @NbBundle.Messages({"Search_For_Test_Method=Searching for test method",
 	"No_Test_Method_Found=No test method found"})
     public final void runTestMethod(Node activatedNode) {
@@ -135,7 +151,7 @@ public abstract class TestMethodRunnerProvider {
 			Mutex.EVENT.readAccess(new Runnable() {
 			    @Override
 			    public void run() {
-				ActionProvider ap = getActionProvider(singleMethod.getFile());
+				ActionProvider ap = CommonUtils.getInstance().getActionProvider(singleMethod.getFile());
 				if (ap != null) {
 				    if (Arrays.asList(ap.getSupportedActions()).contains(command) && ap.isActionEnabled(command, Lookups.singleton(singleMethod))) {
 					ap.invokeAction(command, Lookups.singleton(singleMethod));
@@ -149,13 +165,5 @@ public abstract class TestMethodRunnerProvider {
 	    ph.start();
 	    singleMethodTask.schedule(0);
 	}
-    }
-
-    static ActionProvider getActionProvider(FileObject fileObject) {
-        Project owner = FileOwnerQuery.getOwner(fileObject);
-        if (owner == null) { // #183586
-            return null;
-        }
-        return owner.getLookup().lookup(ActionProvider.class);
     }
 }

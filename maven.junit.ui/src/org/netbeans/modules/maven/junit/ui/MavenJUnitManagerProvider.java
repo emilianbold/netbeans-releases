@@ -49,7 +49,7 @@ import org.netbeans.modules.java.testrunner.ui.api.JavaManager;
 
 /**
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 @CoreManager.Registration(projectType = CommonUtils.MAVEN_PROJECT_TYPE, testingFramework = CommonUtils.JUNIT_TF)
 public class MavenJUnitManagerProvider extends JavaManager {

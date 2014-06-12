@@ -62,7 +62,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-/**
+/**Node representing a {@link TestSuite}
  *
  * @author Marian Petras, Erno Mononen
  */
@@ -227,6 +227,7 @@ public class TestsuiteNode extends AbstractNode {
     }
     
     /**
+     * @param report the report to display by this node
      */
     public void displayReport(final Report report) {
         assert (report != null);
@@ -292,11 +293,12 @@ public class TestsuiteNode extends AbstractNode {
     @NbBundle.Messages({
         "MSG_TestsuiteNoname=Test suite",
         "MSG_TestsuiteRunning_HTML=running..."})
+    @Override
     public String getHtmlDisplayName() {
         
         assert suiteName != null;
         
-        StringBuffer buf = new StringBuffer(60);
+        StringBuilder buf = new StringBuilder(60);
         if (suiteName != TestSuite.ANONYMOUS_SUITE) {
             buf.append(suiteName);
         } else {
@@ -307,7 +309,7 @@ public class TestsuiteNode extends AbstractNode {
             buf.append("&nbsp;&nbsp;");                                 //NOI18N
 
             buf.append("<font color='#");                               //NOI18N
-            buf.append(status.getHtmlDisplayColor() + "'>");       //NOI18N
+            buf.append(status.getHtmlDisplayColor()).append("'>");       //NOI18N
             buf.append(suiteStatusToMsg(status, true));
             buf.append("</font>");                                      //NOI18N
         } 
@@ -341,20 +343,27 @@ public class TestsuiteNode extends AbstractNode {
         } else {
             result = html ? Bundle.MSG_TestsuitePassed_HTML() : Bundle.MSG_TestsuitePassed("");
         }
-//        result = html ? result + "_HTML" : result; //NOI18N
-//        return NbBundle.getMessage(TestsuiteNode.class, result);
         return result;
     }
 
+    /**
+     *
+     * @param suite the {@link TestSuite} to associate with this node
+     */
     public void setSuite(TestSuite suite){
         this.suite = suite;
     }
 
+    /**
+     *
+     * @return the {@link TestSuite} associated with this node
+     */
     public TestSuite getSuite(){
         return suite;
     }
 
     /**
+     * @param filterMask the mask to associate with this node
      */
     public void setFilterMask(final int filterMask) {
         if (filterMask == this.filterMask) {
@@ -370,6 +379,10 @@ public class TestsuiteNode extends AbstractNode {
         return (report != null) && (report.getFailures() + report.getErrors() != 0);
     }
 
+    /**
+     * Gets preferred action.
+     * @return preferred action which defaults to {@code null}
+     */
     @Override
     public Action getPreferredAction() {
         return null;

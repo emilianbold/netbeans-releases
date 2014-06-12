@@ -49,7 +49,7 @@ import static org.junit.Assert.*;
 /**
  * Test of class <code>MessageStack</code>.
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 public class MessageStackTest extends TestCase {
 

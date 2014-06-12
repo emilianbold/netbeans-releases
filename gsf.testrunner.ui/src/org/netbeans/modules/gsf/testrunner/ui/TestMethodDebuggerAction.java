@@ -62,7 +62,7 @@ import org.openide.util.actions.NodeAction;
 
 /**
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 @ActionID(id = "org.netbeans.modules.gsf.testrunner.TestMethodDebuggerAction", category = "CommonTestRunner")
 @ActionRegistration(displayName = "#LBL_Action_DebugTestMethod")

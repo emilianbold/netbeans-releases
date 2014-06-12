@@ -53,7 +53,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 public abstract class NodeOpener {
     

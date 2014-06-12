@@ -138,7 +138,7 @@ final class TestNGOutputReader {
             final AntSessionInfo sessionInfo,
             final Project project,
             final Properties props) {
-        org.netbeans.modules.gsf.testrunner.api.CommonUtils.getInstance().setTestingFramework(org.netbeans.modules.gsf.testrunner.api.CommonUtils.TESTNG_TF);
+        CommonUtils.getInstance().setTestingFramework(CommonUtils.TESTNG_TF);
         this.project = project;
         this.sessionType = sessionInfo.getSessionType();
         this.antScript = FileUtil.normalizeFile(session.getOriginatingScript());

@@ -50,7 +50,7 @@ import java.util.logging.Logger;
 /**
  * Class that helps to log usage of unit test library used in a project to create or run tests.
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 public final class UnitTestsUsage {
     

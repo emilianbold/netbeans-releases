@@ -49,7 +49,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 @ServiceProvider(service = TestMethodRunnerProvider.class, position = 20)
 public class TestNGMethodRunnerProvider extends TestMethodRunnerProvider {

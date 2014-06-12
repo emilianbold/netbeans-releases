@@ -47,7 +47,8 @@ import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.openide.nodes.Node;
 
 /**
- *
+ * If an appropriate {@link TestRunnerNodeFactory} is not set by any registered {@link CoreManager} this one can be used as a fall back.
+ * It will take care of the creation of {@link Node}s in the Test Results Window.
  * @author Erno Mononen
  */
 public class DefaultTestRunnerNodeFactory extends TestRunnerNodeFactory {

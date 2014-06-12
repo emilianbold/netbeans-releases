@@ -72,7 +72,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 @Registration(displayName=GuiUtils.JUNIT_TEST_FRAMEWORK)
 public class JUnitTestCreatorProvider extends TestCreatorProvider {

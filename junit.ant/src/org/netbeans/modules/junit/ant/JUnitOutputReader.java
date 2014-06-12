@@ -58,6 +58,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
+import static java.util.logging.Level.FINER;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -69,37 +70,37 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.testrunner.api.CommonUtils;
+import org.netbeans.modules.gsf.testrunner.api.CoreManager;
+import org.netbeans.modules.gsf.testrunner.api.OutputLine;
 import org.netbeans.modules.gsf.testrunner.api.Report;
+import org.netbeans.modules.gsf.testrunner.api.Status;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionType;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
-import org.netbeans.modules.gsf.testrunner.api.OutputLine;
-import org.netbeans.modules.gsf.testrunner.api.Status;
-import org.netbeans.modules.java.testrunner.ant.utils.AntProject;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
-import org.xml.sax.SAXException;
-import static java.util.logging.Level.FINER;
-import org.netbeans.modules.gsf.testrunner.api.CoreManager;
-import org.netbeans.modules.junit.api.JUnitTestSuite;
-import org.netbeans.modules.junit.api.JUnitTestcase;
 import org.netbeans.modules.java.testrunner.JavaRegexpUtils;
 import static org.netbeans.modules.java.testrunner.JavaRegexpUtils.ADD_ERROR_PREFIX;
 import static org.netbeans.modules.java.testrunner.JavaRegexpUtils.ADD_FAILURE_PREFIX;
 import static org.netbeans.modules.java.testrunner.JavaRegexpUtils.END_OF_TEST_PREFIX;
 import static org.netbeans.modules.java.testrunner.JavaRegexpUtils.START_OF_TEST_PREFIX;
 import static org.netbeans.modules.java.testrunner.JavaRegexpUtils.TESTCASE_PREFIX;
-import static org.netbeans.modules.java.testrunner.JavaRegexpUtils.TEST_LISTENER_PREFIX;
-import static org.netbeans.modules.java.testrunner.JavaRegexpUtils.TESTS_COUNT_PREFIX;
 import static org.netbeans.modules.java.testrunner.JavaRegexpUtils.TESTSUITE_PREFIX;
 import static org.netbeans.modules.java.testrunner.JavaRegexpUtils.TESTSUITE_STATS_PREFIX;
+import static org.netbeans.modules.java.testrunner.JavaRegexpUtils.TESTS_COUNT_PREFIX;
+import static org.netbeans.modules.java.testrunner.JavaRegexpUtils.TEST_LISTENER_PREFIX;
+import org.netbeans.modules.java.testrunner.ant.utils.AntProject;
+import org.netbeans.modules.junit.api.JUnitTestSuite;
+import org.netbeans.modules.junit.api.JUnitTestcase;
 import org.netbeans.modules.junit.api.JUnitUtils;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.xml.sax.SAXException;
 
 /**
  * Obtains events from a single session of an Ant <code>junit</code> task
@@ -160,7 +161,7 @@ final class JUnitOutputReader {
                       final AntSessionInfo sessionInfo,
                       Project project,
                       final Properties props) {
-        org.netbeans.modules.gsf.testrunner.api.CommonUtils.getInstance().setTestingFramework(org.netbeans.modules.gsf.testrunner.api.CommonUtils.JUNIT_TF);
+        CommonUtils.getInstance().setTestingFramework(CommonUtils.JUNIT_TF);
         this.sessionType = sessionInfo.getSessionType();
         File antScript = FileUtil.normalizeFile(session.getOriginatingScript());
         this.timeOfSessionStart = sessionInfo.getTimeOfTestTaskStart();

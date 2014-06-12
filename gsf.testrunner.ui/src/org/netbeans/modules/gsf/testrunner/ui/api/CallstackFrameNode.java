@@ -48,7 +48,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 
 /**
- *
+ * Node representing a callstack
  * @author Marian Petras
  */
 public class CallstackFrameNode extends AbstractNode {
@@ -80,6 +80,8 @@ public class CallstackFrameNode extends AbstractNode {
     }
     
     /**
+     * Gets preferred action.
+     * @return preferred action which defaults to {@code null}
      */
     @Override
     public Action getPreferredAction() {

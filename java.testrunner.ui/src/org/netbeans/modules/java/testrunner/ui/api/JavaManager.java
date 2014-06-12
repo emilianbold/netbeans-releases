@@ -48,8 +48,9 @@ import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.CoreManager;
 
 /**
+ * Java common implementation of CoreManager. Merely delegates to {@link Manager}'s corresponding methods.
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 public class JavaManager extends CoreManager {
 

@@ -96,6 +96,7 @@ public final class DiffViewAction extends AbstractAction {
             "LBL_Actual=Actual",
             "LBL_OK=OK",
             "LBL_Diff=Differences"})
+    @Override
     public void actionPerformed(ActionEvent e) {
 
         StringComparisonSource expected =

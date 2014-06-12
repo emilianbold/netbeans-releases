@@ -59,7 +59,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 @Registration(displayName=GuiUtils.TESTNG_TEST_FRAMEWORK)
 public class TestNGTestCreatorProvider extends TestCreatorProvider {

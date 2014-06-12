@@ -46,7 +46,7 @@ import junit.framework.TestCase;
 
 /**
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 public class ClassNameTextFieldTest extends TestCase {
     

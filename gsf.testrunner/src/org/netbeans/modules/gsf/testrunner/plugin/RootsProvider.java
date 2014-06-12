@@ -45,8 +45,8 @@ import java.net.URL;
 import org.openide.filesystems.FileObject;
 
 /**
- *
- * @author theofanis
+ * Various utility methods mainly used during test creation.
+ * @author Theofanis Oikonomou
  */
 public abstract class RootsProvider {
     

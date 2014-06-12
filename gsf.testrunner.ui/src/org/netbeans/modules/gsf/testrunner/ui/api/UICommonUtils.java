@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 public class UICommonUtils {
     

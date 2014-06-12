@@ -65,7 +65,7 @@ import org.openide.util.Mutex;
 
 /**
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 public class TestSingleMethodSupport {
 
