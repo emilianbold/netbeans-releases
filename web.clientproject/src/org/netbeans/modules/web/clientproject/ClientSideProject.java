@@ -77,6 +77,7 @@ import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
+import org.netbeans.modules.web.clientproject.coverage.CoverageProviderImpl;
 import org.netbeans.modules.web.clientproject.grunt.NpmProblemProvider;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
@@ -446,6 +447,7 @@ public class ClientSideProject implements Project {
                     ClientSideProjectConstants.PROJECT_TEST_FOLDER, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER),
                projectBrowserProvider,
                new ProjectDirectoriesProviderImpl(),
+               new CoverageProviderImpl(this),
        });
        return new DynamicProjectLookup(this,
                LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-clientproject/Lookup"));
@@ -593,6 +595,11 @@ public class ClientSideProject implements Project {
             JsTestingProvider jsTestingProvider = project.getJsTestingProvider(false);
             if (jsTestingProvider != null) {
                 jsTestingProvider.projectOpened(project);
+            }
+            // ensure that code coverage is initialized in case it's enabled...
+            CoverageProviderImpl coverageProvider = project.getLookup().lookup(CoverageProviderImpl.class);
+            if (coverageProvider.isEnabled()) {
+                CoverageProviderImpl.notifyProjectOpened(project);
             }
             // usage logging
             FileObject cordova = project.getProjectDirectory().getFileObject(".cordova"); // NOI18N

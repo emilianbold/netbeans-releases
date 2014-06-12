@@ -163,6 +163,8 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                     <attr name="position" intvalue="720"/>
                 </file>
 
+                <!-- ??? - code coverage [dynamic] -->
+
                 <file name="sep-3.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="750"/>
@@ -223,6 +225,25 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                     <attr name="position" intvalue="3100"/>
                 </file>
 
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="javascript">
+                <!-- XXX no longer automatic; cf. GsfJar.registerCodeCoverage -->
+                <file name="org-netbeans-modules-gsf-codecoverage-CoverageHighlightsLayerFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.gsf.codecoverage.CoverageHighlightsLayerFactory"/>
+                 </file>
+            </folder>
+            <folder name="SideBar">
+                <file name="org-netbeans-modules-gsf-codecoverage-CoverageSideBar$Factory.instance">
+                    <attr name="position" intvalue="1308"/>
+                    <attr name="location" stringvalue="South"/>
+                    <attr name="scrollable" boolvalue="false"/>
+                </file>
             </folder>
         </folder>
     </folder>
