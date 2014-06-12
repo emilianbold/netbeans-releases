@@ -229,25 +229,6 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
         </folder>
     </folder>
 
-    <folder name="Editors">
-        <folder name="text">
-            <folder name="javascript">
-                <!-- XXX no longer automatic; cf. GsfJar.registerCodeCoverage -->
-                <file name="org-netbeans-modules-gsf-codecoverage-CoverageHighlightsLayerFactory.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.gsf.codecoverage.CoverageHighlightsLayerFactory"/>
-                 </file>
-            </folder>
-            <folder name="SideBar">
-                <file name="org-netbeans-modules-gsf-codecoverage-CoverageSideBar$Factory.instance">
-                    <attr name="position" intvalue="1308"/>
-                    <attr name="location" stringvalue="South"/>
-                    <attr name="scrollable" boolvalue="false"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
-
     <folder name="ProjectXMLCatalog">
         <folder name="clientside-project">
             <file name="1.xsd" url="clientside-project1.xsd"/>
