@@ -40,7 +40,7 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.coverage;
+package org.netbeans.modules.web.clientproject.api.jstesting;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -52,17 +52,22 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageManager;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageProvider;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageProviderHelper;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageDetails;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageSummary;
-import org.netbeans.modules.web.clientproject.api.jstesting.Coverage;
 import org.netbeans.modules.web.clientproject.spi.jstesting.CoverageImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 
+/**
+ * Basic implementation of {@link CoverageProvider} and {@link CoverageImplementation}.
+ * @since 1.58
+ */
 public final class CoverageProviderImpl implements CoverageProvider, CoverageImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(CoverageProviderImpl.class.getName());
@@ -75,48 +80,70 @@ public final class CoverageProviderImpl implements CoverageProvider, CoverageImp
     private Boolean enabled = null;
 
 
-    public CoverageProviderImpl(Project project) {
-        assert project != null;
+    /**
+     * Creates new instance.
+     * @param project project to be used for coverage information
+     */
+    public CoverageProviderImpl(@NonNull Project project) {
+        Parameters.notNull("project", project); // NOI18N
         this.project = project;
     }
 
-    public static void notifyProjectOpened(Project project) {
-        CoverageManager.INSTANCE.setEnabled(project, true);
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean supportsHitCounts() {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean supportsAggregation() {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isAggregating() {
         throw new IllegalStateException("Aggregating is not supported");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setAggregating(boolean aggregating) {
         throw new IllegalStateException("Aggregating is not supported");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<String> getMimeTypes() {
         return MIME_TYPES;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isEnabled() {
         if (enabled == null) {
             enabled = CoverageProviderHelper.isEnabled(project);
+            CoverageManager.INSTANCE.setEnabled(project, enabled);
         }
         return enabled;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setEnabled(boolean on) {
         if (enabled != null
@@ -127,11 +154,17 @@ public final class CoverageProviderImpl implements CoverageProvider, CoverageImp
         CoverageProviderHelper.setEnabled(project, on);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void clear() {
         files.clear();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public FileCoverageDetails getDetails(FileObject fo, Document doc) {
         Coverage.File file = files.get(FileUtil.toFile(fo).getAbsolutePath());
@@ -141,6 +174,9 @@ public final class CoverageProviderImpl implements CoverageProvider, CoverageImp
         return new FileCoverageDetailsImpl(fo, file);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<FileCoverageSummary> getResults() {
         Collection<Coverage.File> allFiles = files.values();
@@ -151,11 +187,17 @@ public final class CoverageProviderImpl implements CoverageProvider, CoverageImp
         return result;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getTestAllAction() {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setFiles(List<Coverage.File> files) {
         assert files != null;

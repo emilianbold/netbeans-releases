@@ -40,23 +40,22 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.coverage;
+package org.netbeans.modules.web.clientproject.api.jstesting;
 
 import org.netbeans.modules.gsf.codecoverage.api.CoverageType;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageDetails;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageSummary;
-import org.netbeans.modules.web.clientproject.api.jstesting.Coverage;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-public final class FileCoverageDetailsImpl implements FileCoverageDetails {
+final class FileCoverageDetailsImpl implements FileCoverageDetails {
 
     private final FileObject fo;
     private final Coverage.File file;
     private final long generated;
 
 
-    public FileCoverageDetailsImpl(FileObject fo, Coverage.File file) {
+    FileCoverageDetailsImpl(FileObject fo, Coverage.File file) {
         assert fo != null;
         assert file != null;
 

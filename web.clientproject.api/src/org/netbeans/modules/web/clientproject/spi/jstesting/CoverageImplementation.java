@@ -48,6 +48,7 @@ import org.netbeans.modules.web.clientproject.api.jstesting.Coverage;
 
 /**
  * Interface representing code coverage.
+ * @see org.netbeans.modules.web.clientproject.api.util.CoverageProviderImpl
  * @since 1.58
  */
 public interface CoverageImplementation {
