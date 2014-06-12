@@ -191,7 +191,7 @@ public class CustomizerKarma extends JPanel {
         debugBrowserIdComboBox = new JComboBox<WebBrowser>();
         coverageLabel = new JLabel();
         coverageInfoLabel = new JLabel();
-        coverageInstallLabel = new JLabel();
+        coverageLearnMoreLabel = new JLabel();
         coverageConfigLabel = new JLabel();
 
         karmaLabel.setLabelFor(karmaTextField);
@@ -243,13 +243,13 @@ public class CustomizerKarma extends JPanel {
 
         Mnemonics.setLocalizedText(coverageInfoLabel, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.coverageInfoLabel.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(coverageInstallLabel, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.coverageInstallLabel.text")); // NOI18N
-        coverageInstallLabel.addMouseListener(new MouseAdapter() {
+        Mnemonics.setLocalizedText(coverageLearnMoreLabel, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.coverageLearnMoreLabel.text")); // NOI18N
+        coverageLearnMoreLabel.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
-                coverageInstallLabelMouseEntered(evt);
+                coverageLearnMoreLabelMouseEntered(evt);
             }
             public void mousePressed(MouseEvent evt) {
-                coverageInstallLabelMousePressed(evt);
+                coverageLearnMoreLabelMousePressed(evt);
             }
         });
 
@@ -278,12 +278,6 @@ public class CustomizerKarma extends JPanel {
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(configSearchButton))))
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(autowatchCheckBox)
-                    .addComponent(debugCheckBox)
-                    .addComponent(coverageLabel))
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -292,10 +286,16 @@ public class CustomizerKarma extends JPanel {
                         .addComponent(debugBrowserIdComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(coverageInfoLabel)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(coverageInstallLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addComponent(coverageLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     .addComponent(coverageConfigLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(autowatchCheckBox)
+                    .addComponent(debugCheckBox)
+                    .addComponent(coverageLabel))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {configBrowseButton, karmaBrowseButton});
@@ -329,7 +329,7 @@ public class CustomizerKarma extends JPanel {
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(coverageInfoLabel)
-                    .addComponent(coverageInstallLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .addComponent(coverageLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(coverageConfigLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
         );
@@ -383,18 +383,18 @@ public class CustomizerKarma extends JPanel {
         StatusDisplayer.getDefault().setStatusText(Bundle.CustomizerKarma_config_none());
     }//GEN-LAST:event_configSearchButtonActionPerformed
 
-    private void coverageInstallLabelMouseEntered(MouseEvent evt) {//GEN-FIRST:event_coverageInstallLabelMouseEntered
+    private void coverageLearnMoreLabelMouseEntered(MouseEvent evt) {//GEN-FIRST:event_coverageLearnMoreLabelMouseEntered
         evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    }//GEN-LAST:event_coverageInstallLabelMouseEntered
+    }//GEN-LAST:event_coverageLearnMoreLabelMouseEntered
 
-    private void coverageInstallLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_coverageInstallLabelMousePressed
+    private void coverageLearnMoreLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_coverageLearnMoreLabelMousePressed
         try {
             URL url = new URL("https://github.com/karma-runner/karma-coverage"); // NOI18N
             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
-    }//GEN-LAST:event_coverageInstallLabelMousePressed
+    }//GEN-LAST:event_coverageLearnMoreLabelMousePressed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -405,8 +405,8 @@ public class CustomizerKarma extends JPanel {
     private JTextField configTextField;
     private JLabel coverageConfigLabel;
     private JLabel coverageInfoLabel;
-    private JLabel coverageInstallLabel;
     private JLabel coverageLabel;
+    private JLabel coverageLearnMoreLabel;
     private JComboBox<WebBrowser> debugBrowserIdComboBox;
     private JLabel debugBrowserIdLabel;
     private JCheckBox debugCheckBox;

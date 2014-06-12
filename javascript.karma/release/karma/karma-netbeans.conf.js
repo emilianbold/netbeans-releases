@@ -43,10 +43,6 @@
 var FILE_SEPARATOR = process.env.FILE_SEPARATOR;
 var PROJECT_CONFIG = process.env.PROJECT_CONFIG;
 var BASE_DIR = process.env.BASE_DIR;
-var PROJECT_WEB_ROOT = process.env.PROJECT_WEB_ROOT;
-var PROJECT_DIR = process.env.PROJECT_DIR;
-var WEB_ROOT_PREFIX = process.env.WEB_ROOT_PREFIX;
-var TEST_ROOT_PREFIX = process.env.TEST_ROOT_PREFIX;
 var AUTOWATCH = Boolean(process.env.AUTOWATCH);
 var KARMA_NETBEANS_REPORTER = process.env.KARMA_NETBEANS_REPORTER;
 var COVERAGE = Boolean(process.env.COVERAGE);
@@ -83,24 +79,16 @@ module.exports = function(config) {
     }
 
     config.reporters = config.reporters || [];
-    config.reporters = config.reporters.concat([
-        'netbeans'
-    ]);
+    config.reporters.push('netbeans');
     if (COVERAGE) {
-        config.reporters = config.reporters.concat([
-            'coverage'
-        ]);
+        config.reporters.push('coverage');
     }
     config.reporters = arrayUnique(config.reporters);
 
     config.plugins = config.plugins || [];
-    config.plugins = config.plugins.concat([
-        KARMA_NETBEANS_REPORTER
-    ]);
+    config.plugins.push(KARMA_NETBEANS_REPORTER);
     if (COVERAGE) {
-        config.plugins = config.plugins.concat([
-            'karma-coverage'
-        ]);
+        config.plugins.push('karma-coverage');
     }
     config.plugins = arrayUnique(config.plugins);
 
@@ -113,34 +101,25 @@ module.exports = function(config) {
     config.singleRun = false;
 
     if (COVERAGE) {
-        config.preprocessors = config.preprocessors || {};
-        var webRootPrefix = WEB_ROOT_PREFIX + FILE_SEPARATOR;
-        var testRootPrefix = TEST_ROOT_PREFIX + FILE_SEPARATOR;
-        var webRootPrefixLength = WEB_ROOT_PREFIX.length + FILE_SEPARATOR.length;
-        var testRootPrefixLength = TEST_ROOT_PREFIX.length + FILE_SEPARATOR.length;
-        if (config.coverage) {
-            for (var i = 0; i < config.coverage.length; ++i) {
-                var file = config.coverage[i];
-                config.preprocessors[file] = config.preprocessors[file] || [];
-                config.preprocessors[file].push('coverage');
-            }
-        } else {
-            for (var i = 0; i < config.files.length; ++i) {
-                var file = config.files[i];
-                var inWebRoot = WEB_ROOT_PREFIX && file.substr(0, webRootPrefixLength) === webRootPrefix;
-                var inTests = TEST_ROOT_PREFIX && file.substr(0, testRootPrefixLength) === testRootPrefix;
-                if (inWebRoot
-                        && !inTests) {
-                    config.preprocessors[file] = config.preprocessors[file] || [];
-                    config.preprocessors[file].push('coverage');
-                }
-            }
-        }
-        config.coverageReporter = {
+        var nbCoverageReporter = {
             type: 'clover',
             dir: COVERAGE_DIR + FILE_SEPARATOR,
             file: 'clover.xml'
         };
+        if (config.coverageReporter) {
+            if (config.coverageReporter.reporters) {
+                config.coverageReporter.reporters.push(nbCoverageReporter);
+            } else {
+                config.coverageReporter = {
+                    reporters: [
+                        nbCoverageReporter,
+                        config.coverageReporter
+                    ]
+                };
+            }
+        } else {
+            config.coverageReporter = nbCoverageReporter;
+        }
     }
 
 };

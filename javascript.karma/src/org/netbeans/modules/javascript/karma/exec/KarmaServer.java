@@ -47,7 +47,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -65,9 +64,7 @@ import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.run.KarmaRunInfo;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
-import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.Coverage;
-import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -317,41 +314,11 @@ public final class KarmaServer implements PropertyChangeListener {
         envVars.put("FILE_SEPARATOR", File.separator); // NOI18N
         envVars.put("PROJECT_CONFIG", projectConfigFile.getAbsolutePath()); // NOI18N
         envVars.put("BASE_DIR", projectConfigFile.getParentFile().getAbsolutePath()); // NOI18N
-        Collection<FileObject> webRoots = ProjectWebRootQuery.getWebRoots(project);
-        if (webRoots.isEmpty()) {
-            throw new IllegalStateException("Project " + project.getClass().getName() + " must provide ProjectWebRootProvider in its lookup");
-        }
-        FileObject projectDir = project.getProjectDirectory();
-        FileObject webRoot = webRoots.iterator().next();
-        envVars.put("PROJECT_WEB_ROOT", FileUtil.toFile(webRoot).getAbsolutePath()); // NOI18N
-        envVars.put("PROJECT_DIR", FileUtil.toFile(projectDir).getAbsolutePath()); // NOI18N
-        envVars.put("WEB_ROOT_PREFIX", relativize(projectDir, webRoot)); // NOI18N
-        envVars.put("TEST_ROOT_PREFIX", getTestRootPrefix(projectDir)); // NOI18N
         envVars.put("AUTOWATCH", KarmaPreferences.isAutowatch(project) ? "1" : ""); // NOI18N
         envVars.put("KARMA_NETBEANS_REPORTER", getNetBeansKarmaReporter().getAbsolutePath()); // NOI18N
-        // XXX
         envVars.put("COVERAGE", isCoverageEnabled() ? "1" : ""); // NOI18N
         envVars.put("COVERAGE_DIR", getNetBeansKarmaCoverageDir().getAbsolutePath()); // NOI18N
         return envVars;
-    }
-
-    private String relativize(FileObject parent, FileObject file) {
-        String relativePath = FileUtil.getRelativePath(parent, file);
-        if (relativePath != null) {
-            return relativePath;
-        }
-        return FileUtil.toFile(file).getAbsolutePath();
-    }
-
-    private String getTestRootPrefix(FileObject projectDir) {
-        ProjectDirectoriesProvider directoriesProvider = project.getLookup().lookup(ProjectDirectoriesProvider.class);
-        if (directoriesProvider != null) {
-            FileObject testDir = directoriesProvider.getTestDirectory();
-            if (testDir != null) {
-                return relativize(projectDir, testDir);
-            }
-        }
-        return ""; // NOI18N
     }
 
     private File getProjectConfigFile() {
