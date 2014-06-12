@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.javascript2.editor.formatter;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
@@ -59,23 +58,33 @@ public final class Defaults {
         JSON_SPECIAL_VALUES.put(FmtOptions.wrapProperties, CodeStyle.WrapStyle.WRAP_ALWAYS.name());
     }
 
-    public static DefaultsProvider getInstance(String mimeType) {
+    public static Provider getInstance(String mimeType) {
         if (JsTokenId.JAVASCRIPT_MIME_TYPE.equals(mimeType)) {
             return new FmtOptions.BasicDefaultsProvider();
         } else if (JsTokenId.JSON_MIME_TYPE.equals(mimeType)) {
-            DefaultsProvider basic = new FmtOptions.BasicDefaultsProvider();
+            Provider basic = new FmtOptions.BasicDefaultsProvider();
             return new ProxyDefaultsProvider(basic, JSON_SPECIAL_VALUES);
         }
         throw new IllegalStateException("Unsupported mime type " + mimeType);
     }
 
-    public static class ProxyDefaultsProvider implements DefaultsProvider {
 
-        private final DefaultsProvider provider;
+    public static interface Provider {
+
+        int getDefaultAsInt(String key);
+
+        boolean getDefaultAsBoolean(String key);
+
+        String getDefaultAsString(String key);
+    }
+    
+    public static class ProxyDefaultsProvider implements Provider {
+
+        private final Provider provider;
 
         private final Map<String, String> defaults;
 
-        public ProxyDefaultsProvider(DefaultsProvider provider, Map<String, String> defaults) {
+        public ProxyDefaultsProvider(Provider provider, Map<String, String> defaults) {
             this.provider = provider;
             this.defaults = defaults;
         }
