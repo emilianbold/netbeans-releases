@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.javascript.karma.exec;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -73,7 +75,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
-public final class KarmaServer {
+public final class KarmaServer implements PropertyChangeListener {
 
     static final Logger LOGGER = Logger.getLogger(KarmaServer.class.getName());
 
@@ -133,6 +135,7 @@ public final class KarmaServer {
         } else {
             StatusDisplayer.getDefault().setStatusText(Bundle.KarmaServer_start_error());
         }
+        addCoverageListener();
         fireChange();
         return started;
     }
@@ -161,6 +164,7 @@ public final class KarmaServer {
     public synchronized void stop() {
         assert Thread.holdsLock(this);
         stopCoverageWatcher();
+        removeCoverageListener();
         if (server == null) {
             return;
         }
@@ -181,6 +185,11 @@ public final class KarmaServer {
 
     public boolean isStarted() {
         return started;
+    }
+
+    public boolean isRunning() {
+        return isStarting()
+                || isStarted();
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -246,6 +255,18 @@ public final class KarmaServer {
         }
     }
 
+    private void addCoverageListener() {
+        if (coverage != null) {
+            coverage.addPropertyChangeListener(this);
+        }
+    }
+
+    private void removeCoverageListener() {
+        if (coverage != null) {
+            coverage.removePropertyChangeListener(this);
+        }
+    }
+
     private URL getDebugUrl() {
         if (debugUrl == null) {
             try {
@@ -259,7 +280,6 @@ public final class KarmaServer {
         }
         return debugUrl;
     }
-
 
     void fireChange() {
         changeSupport.fireChange();
@@ -362,6 +382,16 @@ public final class KarmaServer {
     @Override
     public String toString() {
         return "KarmaServer{" + "port=" + port + ", project=" + project.getProjectDirectory() + '}'; // NOI18N
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if ("enabled".equals(evt.getPropertyName())) { // NOI18N
+            if (isRunning()) {
+                // XXX ugly
+                KarmaServers.getInstance().restartServer(project);
+            }
+        }
     }
 
     //~ Inner classes
