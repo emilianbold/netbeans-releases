@@ -58,6 +58,11 @@ import org.openide.util.Parameters;
  */
 public final class Coverage {
 
+    /**
+     * Property name for changes in enabled state.
+     */
+    public static final String PROP_ENABLED = CoverageImplementation.PROP_ENABLED;
+
     private final CoverageImplementation delegate;
 
 

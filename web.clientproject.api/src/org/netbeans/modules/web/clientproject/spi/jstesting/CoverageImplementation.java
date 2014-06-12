@@ -56,6 +56,11 @@ import org.netbeans.modules.web.clientproject.api.jstesting.Coverage;
 public interface CoverageImplementation {
 
     /**
+     * Property name for changes in enabled state.
+     */
+    String PROP_ENABLED = "ENABLED"; // NOI18N
+
+    /**
      * Checks whether coverage is enabled or not.
      * @return {@code true} if coverage is enabled, {@code false} otherwise
      */

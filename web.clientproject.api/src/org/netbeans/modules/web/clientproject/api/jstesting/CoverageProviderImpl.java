@@ -173,7 +173,7 @@ public final class CoverageProviderImpl implements CoverageProvider, CoverageImp
             enabled = on;
         }
         CoverageProviderHelper.setEnabled(project, on);
-        propertyChangeSupport.firePropertyChange("enabled", !on, on); // NOI18N
+        propertyChangeSupport.firePropertyChange(PROP_ENABLED, !on, on);
     }
 
     /**

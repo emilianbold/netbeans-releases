@@ -369,7 +369,7 @@ public final class KarmaServer implements PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if ("enabled".equals(evt.getPropertyName())) { // NOI18N
+        if (Coverage.PROP_ENABLED.equals(evt.getPropertyName())) {
             if (isRunning()) {
                 // XXX ugly
                 KarmaServers.getInstance().restartServer(project);
