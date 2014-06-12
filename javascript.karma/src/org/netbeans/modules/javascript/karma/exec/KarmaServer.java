@@ -69,7 +69,11 @@ import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.Coverage;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ChangeSupport;
@@ -83,6 +87,7 @@ public final class KarmaServer implements PropertyChangeListener {
     private final Project project;
     private final Coverage coverage;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final FileChangeListener configFileChangeListener;
 
     volatile boolean started = false;
     volatile boolean starting = false;
@@ -105,6 +110,7 @@ public final class KarmaServer implements PropertyChangeListener {
         this.port = port;
         this.project = project;
         coverage = Coverage.forProject(project);
+        configFileChangeListener = new ConfigFileChangeListener(project);
     }
 
     @NbBundle.Messages("KarmaServer.start.error=Karma cannot start (incorrect Karma set?), review IDE log for details")
@@ -136,6 +142,7 @@ public final class KarmaServer implements PropertyChangeListener {
             StatusDisplayer.getDefault().setStatusText(Bundle.KarmaServer_start_error());
         }
         addCoverageListener();
+        addConfigFileListener();
         fireChange();
         return started;
     }
@@ -165,6 +172,7 @@ public final class KarmaServer implements PropertyChangeListener {
         assert Thread.holdsLock(this);
         stopCoverageWatcher();
         removeCoverageListener();
+        removeConfigFileListener();
         if (server == null) {
             return;
         }
@@ -267,6 +275,14 @@ public final class KarmaServer implements PropertyChangeListener {
         }
     }
 
+    private void addConfigFileListener() {
+        FileUtil.addFileChangeListener(configFileChangeListener, getProjectConfigFile());
+    }
+
+    private void removeConfigFileListener() {
+        FileUtil.removeFileChangeListener(configFileChangeListener, getProjectConfigFile());
+    }
+
     private URL getDebugUrl() {
         if (debugUrl == null) {
             try {
@@ -287,20 +303,20 @@ public final class KarmaServer implements PropertyChangeListener {
 
     @CheckForNull
     private KarmaRunInfo getKarmaRunInfo() {
-        String projectConfig = getProjectConfigFile();
+        File projectConfig = getProjectConfigFile();
         return new KarmaRunInfo.Builder(project)
-                .setProjectConfigFile(projectConfig)
+                .setProjectConfigFile(projectConfig.getAbsolutePath())
                 .setNbConfigFile(getNetBeansKarmaConfig().getAbsolutePath())
                 .setRerunHandler(new RerunHandlerImpl(this))
                 .addEnvVars(getEnvVars(projectConfig))
                 .build();
     }
 
-    private Map<String, String> getEnvVars(String projectConfigFile) {
+    private Map<String, String> getEnvVars(File projectConfigFile) {
         Map<String, String> envVars = new HashMap<>();
         envVars.put("FILE_SEPARATOR", File.separator); // NOI18N
-        envVars.put("PROJECT_CONFIG", projectConfigFile); // NOI18N
-        envVars.put("BASE_DIR", new File(projectConfigFile).getParentFile().getAbsolutePath()); // NOI18N
+        envVars.put("PROJECT_CONFIG", projectConfigFile.getAbsolutePath()); // NOI18N
+        envVars.put("BASE_DIR", projectConfigFile.getParentFile().getAbsolutePath()); // NOI18N
         Collection<FileObject> webRoots = ProjectWebRootQuery.getWebRoots(project);
         if (webRoots.isEmpty()) {
             throw new IllegalStateException("Project " + project.getClass().getName() + " must provide ProjectWebRootProvider in its lookup");
@@ -338,8 +354,8 @@ public final class KarmaServer implements PropertyChangeListener {
         return ""; // NOI18N
     }
 
-    private String getProjectConfigFile() {
-        return KarmaPreferences.getConfig(project);
+    private File getProjectConfigFile() {
+        return new File(KarmaPreferences.getConfig(project));
     }
 
     private File getNetBeansKarmaReporter() {
@@ -449,6 +465,39 @@ public final class KarmaServer implements PropertyChangeListener {
                 enabled = newEnabled;
                 changeSupport.fireChange();
             }
+        }
+
+    }
+
+    private static final class ConfigFileChangeListener extends FileChangeAdapter {
+
+        private final Project project;
+
+
+        public ConfigFileChangeListener(Project project) {
+            assert project != null;
+            this.project = project;
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            // XXX ugly
+            assert KarmaServers.getInstance().isServerRunning(project) : project.getProjectDirectory();
+            KarmaServers.getInstance().restartServer(project);
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            // XXX ugly
+            assert KarmaServers.getInstance().isServerRunning(project) : project.getProjectDirectory();
+            KarmaServers.getInstance().stopServer(project, false);
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            // XXX ugly
+            assert KarmaServers.getInstance().isServerRunning(project) : project.getProjectDirectory();
+            KarmaServers.getInstance().stopServer(project, false);
         }
 
     }
