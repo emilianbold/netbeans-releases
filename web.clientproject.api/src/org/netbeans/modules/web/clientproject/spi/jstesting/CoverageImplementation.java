@@ -42,8 +42,10 @@
 
 package org.netbeans.modules.web.clientproject.spi.jstesting;
 
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.web.clientproject.api.jstesting.Coverage;
 
 /**
@@ -64,5 +66,17 @@ public interface CoverageImplementation {
      * @param files coverage data for individual files
      */
     void setFiles(@NonNull List<Coverage.File> files);
+
+    /**
+     * Adds property change listener.
+     * @param listener listener to be added, can be {@code null}
+     */
+    void addPropertyChangeListener(@NullAllowed PropertyChangeListener listener);
+
+    /**
+     * Removes property change listener.
+     * @param listener listener to be removed, can be {@code null}
+     */
+    void removePropertyChangeListener(@NullAllowed PropertyChangeListener listener);
 
 }

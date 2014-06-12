@@ -42,10 +42,12 @@
 
 package org.netbeans.modules.web.clientproject.api.jstesting;
 
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.spi.jstesting.CoverageImplementation;
 import org.openide.util.Parameters;
@@ -94,6 +96,22 @@ public final class Coverage {
     public void setFiles(@NonNull List<Coverage.File> files) {
         Parameters.notNull("files", files); // NOI18N
         delegate.setFiles(files);
+    }
+
+    /**
+     * Adds property change listener.
+     * @param listener listener to be added, can be {@code null}
+     */
+    public void addPropertyChangeListener(@NullAllowed PropertyChangeListener listener) {
+        delegate.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Removes property change listener.
+     * @param listener listener to be removed, can be {@code null}
+     */
+    public void removePropertyChangeListener(@NullAllowed PropertyChangeListener listener) {
+        delegate.removePropertyChangeListener(listener);
     }
 
     //~ Inner classes

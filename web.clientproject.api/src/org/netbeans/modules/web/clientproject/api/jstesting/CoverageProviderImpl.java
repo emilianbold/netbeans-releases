@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.web.clientproject.api.jstesting;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -75,6 +77,7 @@ public final class CoverageProviderImpl implements CoverageProvider, CoverageImp
 
     private final Project project;
     private final Map<String, Coverage.File> files = new ConcurrentHashMap<>();
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     // @GuardedBy("this")
     private Boolean enabled = null;
@@ -87,6 +90,22 @@ public final class CoverageProviderImpl implements CoverageProvider, CoverageImp
     public CoverageProviderImpl(@NonNull Project project) {
         Parameters.notNull("project", project); // NOI18N
         this.project = project;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
     /**
@@ -133,7 +152,7 @@ public final class CoverageProviderImpl implements CoverageProvider, CoverageImp
      * {@inheritDoc}
      */
     @Override
-    public boolean isEnabled() {
+    public synchronized boolean isEnabled() {
         if (enabled == null) {
             enabled = CoverageProviderHelper.isEnabled(project);
             CoverageManager.INSTANCE.setEnabled(project, enabled);
@@ -146,12 +165,15 @@ public final class CoverageProviderImpl implements CoverageProvider, CoverageImp
      */
     @Override
     public void setEnabled(boolean on) {
-        if (enabled != null
-                && on == enabled) {
-            return;
+        synchronized (this) {
+            if (enabled != null
+                    && on == enabled) {
+                return;
+            }
+            enabled = on;
         }
-        enabled = on;
         CoverageProviderHelper.setEnabled(project, on);
+        propertyChangeSupport.firePropertyChange("enabled", !on, on); // NOI18N
     }
 
     /**
@@ -201,7 +223,6 @@ public final class CoverageProviderImpl implements CoverageProvider, CoverageImp
     @Override
     public void setFiles(List<Coverage.File> files) {
         assert files != null;
-        assert enabled : "Coverage provider must be enabled";
         synchronized (this.files) {
             this.files.clear();
             for (Coverage.File file : files) {
