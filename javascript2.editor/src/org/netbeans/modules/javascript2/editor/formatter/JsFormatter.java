@@ -60,7 +60,6 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
@@ -82,7 +81,7 @@ public class JsFormatter implements Formatter {
     static final Object CT_HANDLER_DOC_PROPERTY = "code-template-insert-handler"; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(JsFormatter.class.getName());
-    
+
     private static final Pattern MOOTOOLS_COMMENT = Pattern.compile("/\\*\n---\\s*\n((.|\n)+)\n\\.\\.\\.\\s*\n\\*/");
 
     private static final boolean ELSE_IF_SINGLE_LINE = true;
@@ -931,7 +930,7 @@ public class JsFormatter implements Formatter {
                 || token.getKind() == FormatToken.Kind.AFTER_BLOCK_START
                 || token.getKind() == FormatToken.Kind.AFTER_CASE
                 || token.getKind() == FormatToken.Kind.ELSE_IF_AFTER_BLOCK_START;
-            }
+    }
 
     private static CodeStyle.WrapStyle getLineWrap(List<FormatToken> tokens, int index,
             FormatContext context, CodeStyle.Holder codeStyle, boolean skipWitespace) {
@@ -1797,7 +1796,8 @@ public class JsFormatter implements Formatter {
                     // look at the beginning of next line if there is case or default
                     LexUtilities.findNextIncluding(ts, Collections.singletonList(JsTokenId.EOL));
                     LexUtilities.findNextNonWsNonComment(ts);
-                    if (ts.token().id() == JsTokenId.KEYWORD_CASE || ts.token().id() == JsTokenId.KEYWORD_DEFAULT) {
+                    if (ts.token().id() == JsTokenId.KEYWORD_CASE || ts.token().id() == JsTokenId.KEYWORD_DEFAULT
+                            || ts.token().id() == JsTokenId.BRACKET_LEFT_CURLY) {
                         return 0;
                     }
                 }
@@ -1895,7 +1895,23 @@ public class JsFormatter implements Formatter {
                                     && prevToken.id() != JsTokenId.DOC_COMMENT
                                     && prevToken.id() != JsTokenId.LINE_COMMENT) {
                                 if (beginLine != eolLine) {
-                                    return -1;
+                                    if (prevToken.id() == JsTokenId.BRACKET_RIGHT_CURLY) {
+                                        OffsetRange offsetRange = LexUtilities.findBwd(doc, inner, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY);
+                                        if (offsetRange != OffsetRange.NONE) {
+                                            inner.movePrevious();
+                                            Token<? extends JsTokenId> token = LexUtilities.findPreviousNonWsNonComment(inner);
+                                            // if this is not the whole case in block
+                                            // case 's':
+                                            // {
+                                            //    something();
+                                            // }
+                                            if (token.id() != JsTokenId.OPERATOR_COLON) {
+                                                return -1;
+                                            }
+                                        }
+                                    } else {
+                                        return -1;
+                                    }
                                 }
                             } else {
                                 int commentLine = Utilities.getLineOffset(doc, inner.offset());
