@@ -45,6 +45,7 @@ package org.netbeans.core.multitabs.prefs;
 
 import java.util.prefs.Preferences;
 import javax.swing.JTabbedPane;
+import org.netbeans.core.multitabs.impl.ProjectColorTabDecorator;
 import org.netbeans.core.multitabs.impl.ProjectSupport;
 import org.netbeans.core.windows.options.WinSysPanel;
 import org.netbeans.core.windows.options.WinSysPrefs;
@@ -118,6 +119,7 @@ public class SettingsImpl {
     boolean setSameProjectSameColor( boolean enable ) {
         boolean change = enable != isSameProjectSameColor();
         prefs.putBoolean( PROP_SAME_PROJECT_SAME_COLOR, enable );
+        ProjectColorTabDecorator.setActive( enable );
         return change;
     }
 

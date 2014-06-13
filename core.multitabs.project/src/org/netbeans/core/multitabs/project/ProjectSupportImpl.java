@@ -41,9 +41,13 @@
  */
 package org.netbeans.core.multitabs.project;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -53,6 +57,8 @@ import org.netbeans.core.multitabs.impl.ProjectSupport;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.ChangeSupport;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 
@@ -64,6 +70,10 @@ import org.openide.windows.TopComponent;
 public class ProjectSupportImpl extends ProjectSupport {
 
     private static final Map<TabData, Project> tab2project = new WeakHashMap<TabData, Project>(50);
+    private static final RequestProcessor RP = new RequestProcessor("TabProjectBridge"); //NOI18N
+    private static final Set<FileObject> currentQueries = new HashSet<FileObject>(20);
+    private static final ChangeSupport changeSupport = new ChangeSupport(RP);
+    private static PropertyChangeListener projectsListener;
     
     public ProjectSupportImpl() {
     }
@@ -74,13 +84,30 @@ public class ProjectSupportImpl extends ProjectSupport {
     }
 
     @Override
-    public void addPropertyChangeListener( PropertyChangeListener l ) {
-        OpenProjects.getDefault().addPropertyChangeListener( l );
+    public void addChangeListener( ChangeListener l ) {
+        synchronized( changeSupport ) {
+            changeSupport.addChangeListener(l);
+            if( null == projectsListener ) {
+                projectsListener = new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        changeSupport.fireChange();
+                    }
+                };
+                OpenProjects.getDefault().addPropertyChangeListener( projectsListener );
+            }
+        }
     }
 
     @Override
-    public void removePropertyChangeListener( PropertyChangeListener l ) {
-        OpenProjects.getDefault().removePropertyChangeListener( l );
+    public void removeChangeListener( ChangeListener l ) {
+        synchronized( changeSupport ) {
+            changeSupport.removeChangeListener(l);
+            if( !changeSupport.hasListeners() && null != projectsListener ) {
+                OpenProjects.getDefault().removePropertyChangeListener( projectsListener );
+                projectsListener = null;
+            }
+        }
     }
 
     @Override
@@ -96,7 +123,7 @@ public class ProjectSupportImpl extends ProjectSupport {
     }
 
     @Override
-    public ProjectProxy getProjectForTab( TabData tab ) {
+    public ProjectProxy getProjectForTab( final TabData tab ) {
         synchronized( tab2project ) {
             Project p = tab2project.get( tab );
             if( null == p ) {
@@ -104,11 +131,26 @@ public class ProjectSupportImpl extends ProjectSupport {
                     TopComponent tc = ( TopComponent ) tab.getComponent();
                     DataObject dob = tc.getLookup().lookup( DataObject.class );
                     if( null != dob ) {
-                        FileObject fo = dob.getPrimaryFile();
-                        if( fo.isData() ) {
-                            p = FileOwnerQuery.getOwner( fo );
-                            if( null != p ) {
-                                tab2project.put( tab, p );
+                        final FileObject fo = dob.getPrimaryFile();
+                        if( null != fo ) {
+                            if( currentQueries.contains(fo) ) {
+                                //there already is a file owner query for this file
+                                return null;
+                            } else {
+                                currentQueries.add(fo);
+                                RP.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Project p = FileOwnerQuery.getOwner( fo );
+                                        if( null != p ) {
+                                            synchronized( tab2project ) {
+                                                tab2project.put( tab, p );
+                                                currentQueries.remove(fo);
+                                                changeSupport.fireChange();
+                                            }
+                                        }
+                                    }
+                                });
                             }
                         }
                     }
