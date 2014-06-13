@@ -40,5 +40,17 @@ echo is_numeric($foo)
     // HINT
     : $_REQUEST[""];
 
+// OK
+echo is_null($_REQUEST['foo']);
+
+// OK
+echo is_nan($_REQUEST['foo']);
+
+// OK
+echo is_real($_REQUEST['foo']);
+
+// OK
+echo is_scalar($_REQUEST['foo']);
+
 //END
 ?>

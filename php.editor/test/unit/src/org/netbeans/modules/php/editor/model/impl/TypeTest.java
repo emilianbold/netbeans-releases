@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.jstesting;
+package org.netbeans.modules.php.editor.model.impl;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
-import org.netbeans.modules.web.clientproject.spi.jstesting.JsTestingProviderImplementation;
-import org.netbeans.spi.project.ui.support.NodeList;
-import org.openide.nodes.Node;
+/**
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
+ */
+public class TypeTest extends ModelTestBase {
 
-public abstract class JsTestingProviderAccessor {
-
-    private static volatile JsTestingProviderAccessor accessor;
-
-
-    public static synchronized JsTestingProviderAccessor getDefault() {
-        if (accessor != null) {
-            return accessor;
-        }
-        Class<?> c = JsTestingProvider.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-            assert false : ex;
-        }
-        assert accessor != null;
-        return accessor;
+    public TypeTest(String testName) {
+        super(testName);
     }
 
-    public static void setDefault(JsTestingProviderAccessor accessor) {
-        if (JsTestingProviderAccessor.accessor != null) {
-            throw new IllegalStateException("Already initialized accessor");
-        }
-        JsTestingProviderAccessor.accessor = accessor;
+    public void testIsArray() throws Exception {
+        assertTrue(Type.isArray("array"));
+        assertTrue(Type.isArray("Bar[]"));
+        assertTrue(Type.isArray("\\Foo\\Bar[]"));
     }
 
-    public abstract JsTestingProvider create(JsTestingProviderImplementation jsTestingProviderImplementation);
-
-    public abstract boolean isEnabled(JsTestingProvider jsTestingProvider, Project project);
-
-    public abstract void notifyEnabled(JsTestingProvider jsTestingProvider, Project project, boolean enabled);
-
-    public abstract NodeList<Node> createNodeList(JsTestingProvider jsTestingProvider, Project project);
+    public void testIsNotArray() throws Exception {
+        assertFalse(Type.isArray(null));
+        assertFalse(Type.isArray("string"));
+        assertFalse(Type.isArray("Bar"));
+        assertFalse(Type.isArray("\\Foo\\Bar"));
+    }
 
 }

@@ -40,5 +40,20 @@ echo is_numeric($foo)
     // HINT
     : $_SERVER[""];
 
+// OK
+$_SERVER['REQUEST_METHOD'] = 'assignment is ok';
+
+// OK
+echo is_null($_SERVER['foo']);
+
+// OK
+echo is_nan($_SERVER['foo']);
+
+// OK
+echo is_real($_SERVER['foo']);
+
+// OK
+echo is_scalar($_SERVER['foo']);
+
 //END
 ?>
