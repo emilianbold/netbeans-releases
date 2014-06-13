@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.jstesting;
+package org.netbeans.modules.php.editor.completion;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
-import org.netbeans.modules.web.clientproject.spi.jstesting.JsTestingProviderImplementation;
-import org.netbeans.spi.project.ui.support.NodeList;
-import org.openide.nodes.Node;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-public abstract class JsTestingProviderAccessor {
+/**
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
+ */
+public class PHPCodeCompletion243458Test extends PHPCodeCompletionTestBase {
 
-    private static volatile JsTestingProviderAccessor accessor;
-
-
-    public static synchronized JsTestingProviderAccessor getDefault() {
-        if (accessor != null) {
-            return accessor;
-        }
-        Class<?> c = JsTestingProvider.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-            assert false : ex;
-        }
-        assert accessor != null;
-        return accessor;
+    public PHPCodeCompletion243458Test(String testName) {
+        super(testName);
     }
 
-    public static void setDefault(JsTestingProviderAccessor accessor) {
-        if (JsTestingProviderAccessor.accessor != null) {
-            throw new IllegalStateException("Already initialized accessor");
-        }
-        JsTestingProviderAccessor.accessor = accessor;
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests243458/issue243458.php", "$e->^testMethod();", false);
     }
 
-    public abstract JsTestingProvider create(JsTestingProviderImplementation jsTestingProviderImplementation);
+    public void testUseCase2() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests243458/issue243458.php", "$ee->^testMethod();", false);
+    }
 
-    public abstract boolean isEnabled(JsTestingProvider jsTestingProvider, Project project);
-
-    public abstract void notifyEnabled(JsTestingProvider jsTestingProvider, Project project, boolean enabled);
-
-    public abstract NodeList<Node> createNodeList(JsTestingProvider jsTestingProvider, Project project);
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests243458/"))
+            })
+        );
+    }
 
 }

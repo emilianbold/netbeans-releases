@@ -45,6 +45,11 @@ Portions Copyrighted 2014 Sun Microsystems, Inc.
     <folder name="Editors">
         <folder name="text">
             <folder name="javascript">
+                <!-- XXX no longer automatic; cf. GsfJar.registerCodeCoverage -->
+                <file name="org-netbeans-modules-gsf-codecoverage-CoverageHighlightsLayerFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.gsf.codecoverage.CoverageHighlightsLayerFactory"/>
+                </file>
                 <folder name="Popup">
                     <folder name="goto">
                         <file name="org-netbeans-modules-gototest-GotoOppositeAction.shadow">
@@ -52,6 +57,13 @@ Portions Copyrighted 2014 Sun Microsystems, Inc.
                             <attr name="position" intvalue="200"/>
                         </file>
                     </folder>
+                </folder>
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-gsf-codecoverage-CoverageSideBar$Factory.instance">
+                        <attr name="position" intvalue="1308"/>
+                        <attr name="location" stringvalue="South"/>
+                        <attr name="scrollable" boolvalue="false"/>
+                    </file>
                 </folder>
             </folder>
         </folder>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,56 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.jstesting;
+package org.netbeans.modules.javascript.karma.coverage;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
-import org.netbeans.modules.web.clientproject.spi.jstesting.JsTestingProviderImplementation;
-import org.netbeans.spi.project.ui.support.NodeList;
-import org.openide.nodes.Node;
+import java.awt.EventQueue;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.Reader;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.web.clientproject.api.jstesting.Coverage;
 
-public abstract class JsTestingProviderAccessor {
+public final class CoverageProcessor {
 
-    private static volatile JsTestingProviderAccessor accessor;
+    private static final Logger LOGGER = Logger.getLogger(CoverageProcessor.class.getName());
+
+    private final Coverage coverage;
+    private final File sourceDir;
+    private final File logFile;
 
 
-    public static synchronized JsTestingProviderAccessor getDefault() {
-        if (accessor != null) {
-            return accessor;
-        }
-        Class<?> c = JsTestingProvider.class;
+    public CoverageProcessor(Coverage coverage, File sourceDir, File logFile) {
+        assert coverage != null;
+        assert sourceDir.isDirectory() : sourceDir;
+        assert logFile.isFile() : logFile;
+        this.coverage = coverage;
+        this.sourceDir = sourceDir;
+        this.logFile = logFile;
+    }
+
+    public void process() {
+        assert coverage.isEnabled();
+        assert !EventQueue.isDispatchThread();
+        Reader reader;
         try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-            assert false : ex;
+            reader = new BufferedReader(new FileReader(logFile));
+        } catch (FileNotFoundException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+            return;
         }
-        assert accessor != null;
-        return accessor;
-    }
-
-    public static void setDefault(JsTestingProviderAccessor accessor) {
-        if (JsTestingProviderAccessor.accessor != null) {
-            throw new IllegalStateException("Already initialized accessor");
+        List<Coverage.File> files = CloverLogParser.parse(reader, sourceDir);
+        if (files == null) {
+            LOGGER.info("Parsed coverage data expected but some error occured");
+            return;
         }
-        JsTestingProviderAccessor.accessor = accessor;
+        coverage.setFiles(files);
     }
-
-    public abstract JsTestingProvider create(JsTestingProviderImplementation jsTestingProviderImplementation);
-
-    public abstract boolean isEnabled(JsTestingProvider jsTestingProvider, Project project);
-
-    public abstract void notifyEnabled(JsTestingProvider jsTestingProvider, Project project, boolean enabled);
-
-    public abstract NodeList<Node> createNodeList(JsTestingProvider jsTestingProvider, Project project);
 
 }

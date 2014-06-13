@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.jstesting;
+package org.netbeans.modules.web.clientproject.spi.jstesting;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
-import org.netbeans.modules.web.clientproject.spi.jstesting.JsTestingProviderImplementation;
-import org.netbeans.spi.project.ui.support.NodeList;
-import org.openide.nodes.Node;
+import java.beans.PropertyChangeListener;
+import java.util.List;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.web.clientproject.api.jstesting.Coverage;
 
-public abstract class JsTestingProviderAccessor {
+/**
+ * Interface representing code coverage.
+ * @see org.netbeans.modules.web.clientproject.api.util.CoverageProviderImpl
+ * @since 1.58
+ */
+public interface CoverageImplementation {
 
-    private static volatile JsTestingProviderAccessor accessor;
+    /**
+     * Property name for changes in enabled state.
+     */
+    String PROP_ENABLED = "ENABLED"; // NOI18N
 
+    /**
+     * Checks whether coverage is enabled or not.
+     * @return {@code true} if coverage is enabled, {@code false} otherwise
+     */
+    boolean isEnabled();
 
-    public static synchronized JsTestingProviderAccessor getDefault() {
-        if (accessor != null) {
-            return accessor;
-        }
-        Class<?> c = JsTestingProvider.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-            assert false : ex;
-        }
-        assert accessor != null;
-        return accessor;
-    }
+    /**
+     * Sets coverage data for individual files.
+     * @param files coverage data for individual files
+     */
+    void setFiles(@NonNull List<Coverage.File> files);
 
-    public static void setDefault(JsTestingProviderAccessor accessor) {
-        if (JsTestingProviderAccessor.accessor != null) {
-            throw new IllegalStateException("Already initialized accessor");
-        }
-        JsTestingProviderAccessor.accessor = accessor;
-    }
+    /**
+     * Adds property change listener.
+     * @param listener listener to be added, can be {@code null}
+     */
+    void addPropertyChangeListener(@NullAllowed PropertyChangeListener listener);
 
-    public abstract JsTestingProvider create(JsTestingProviderImplementation jsTestingProviderImplementation);
-
-    public abstract boolean isEnabled(JsTestingProvider jsTestingProvider, Project project);
-
-    public abstract void notifyEnabled(JsTestingProvider jsTestingProvider, Project project, boolean enabled);
-
-    public abstract NodeList<Node> createNodeList(JsTestingProvider jsTestingProvider, Project project);
+    /**
+     * Removes property change listener.
+     * @param listener listener to be removed, can be {@code null}
+     */
+    void removePropertyChangeListener(@NullAllowed PropertyChangeListener listener);
 
 }

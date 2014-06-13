@@ -40,5 +40,17 @@ echo is_numeric($foo)
     // HINT
     : $_POST[""];
 
+// OK
+echo is_null($_POST['foo']);
+
+// OK
+echo is_nan($_POST['foo']);
+
+// OK
+echo is_real($_POST['foo']);
+
+// OK
+echo is_scalar($_POST['foo']);
+
 //END
 ?>
