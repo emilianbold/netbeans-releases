@@ -87,8 +87,9 @@ public abstract class TabDisplayerFactory {
             Settings settings = Settings.getDefault();
             boolean multiRow = settings.getRowCount() > 1 || settings.isTabRowPerProject();
             if( multiRow && (orientation == JTabbedPane.TOP || orientation == JTabbedPane.BOTTOM) ) {
-                if( settings.isTabRowPerProject() )
-                    return new RowPerProjectTabDisplayer( tabModel, orientation, orientation );
+                if( settings.isTabRowPerProject() ) {
+                    return new RowPerProjectTabDisplayer( tabModel, orientation );
+                }
                 return new MultiRowTabDisplayer( tabModel, orientation );
             }
             return new SimpleTabDisplayer( tabModel, orientation );

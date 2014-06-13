@@ -227,17 +227,21 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
             @Override
             public void run() {
                 showWaitCursor(true);
-                final Collection<ProjectActivity> activities = getAllowedActivities();
                 try {
-                    final List<ProjectActivity> recentActivities = client.getRecentActivities(projectHandle.getTeamProject().getId());
+                    List<ProjectActivity> recentActivities = client.getRecentActivities(projectHandle.getTeamProject().getId());
+                    if(recentActivities != null) {
+                        RecentActivitiesPanel.this.recentActivities = recentActivities;
+                    } else {
+                        RecentActivitiesPanel.this.recentActivities = Collections.emptyList();
+                    }
+                    
+                    final Collection<ProjectActivity> activities = getAllowedActivities(recentActivities);
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            if (recentActivities != null && !recentActivities.isEmpty()) {
-                                RecentActivitiesPanel.this.recentActivities = recentActivities;
+                            if (!activities.isEmpty()) {
                                 showRecentActivities(activities);
                             } else {
-                                RecentActivitiesPanel.this.recentActivities = Collections.emptyList();
                                 showEmptyContent();
                             }
                         }
@@ -250,14 +254,16 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
                             showError();
                         }
                     });
+                } finally {
+                    showWaitCursor(false);
                 }
             }
         });
     }
 
-    private Collection<ProjectActivity> getAllowedActivities() {
+    private Collection<ProjectActivity> getAllowedActivities(List<ProjectActivity> activities) {
         List<ProjectActivity> ret = new LinkedList<ProjectActivity>();
-        for (ProjectActivity projectActivity : recentActivities) {
+        for (ProjectActivity projectActivity : activities) {
             if (isActivityAllowed(projectActivity)) {
                 ret.add(projectActivity);
             }
@@ -299,58 +305,54 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
     }
 
     private void showRecentActivities(Collection<ProjectActivity> activities) {
-        try {
-            Date lastDate = null;
-            DateSeparatorPanel currentDatePanel = null;
-            pnlContent.removeAll();
-            boolean isEmpty = true;
-            for (ProjectActivity activity : activities) {
-                isEmpty = false;
-                GridBagConstraints gbc = new GridBagConstraints();
-                gbc.insets = new Insets(0, 3, 0, 0);
-                gbc.anchor = GridBagConstraints.NORTHWEST;
-                gbc.fill = GridBagConstraints.HORIZONTAL;
-                gbc.weightx = 1.0;
-                gbc.gridwidth = GridBagConstraints.REMAINDER;
-                Date currentDate = activity.getActivityDate();
-                // group activities by days
-                if (isAnotherDay(lastDate, currentDate)) {
-                    GridBagConstraints gbc1 = new GridBagConstraints();
-                    gbc1.insets = new Insets(3, 3, 0, 3);
-                    gbc1.anchor = GridBagConstraints.NORTHWEST;
-                    gbc1.fill = GridBagConstraints.HORIZONTAL;
-                    gbc1.weightx = 1.0;
-                    gbc1.gridwidth = GridBagConstraints.REMAINDER;
-                    currentDatePanel = new DateSeparatorPanel(currentDate);
-                    currentDatePanel.addMouseListener(new ExpandableMouseListener(currentDatePanel, this));
-                    pnlContent.add(currentDatePanel, gbc1);
-                }
-                if (maxWidth == -1) {
-                    maxWidth = this.getVisibleRect().width - 150;
-                }
-                ActivityPanel activityPanel = activity2Panel.get(activity);
-                if (activityPanel == null) {
-                    activityPanel = new ActivityPanel(activity, projectHandle, maxWidth);
-                    activity2Panel.put(activity, activityPanel);
-                }
-                if (activityPanel.hasDetails()) {
-                    activityPanel.addMouseListener(new ExpandableMouseListener(activityPanel, this));
-                }
-                currentDatePanel.addActivityPanel(activityPanel, gbc);
-                lastDate = currentDate;
-            }
-            if (isEmpty) {
-                showEmptyContent();
-            } else {
+        Date lastDate = null;
+        DateSeparatorPanel currentDatePanel = null;
+        pnlContent.removeAll();
+        boolean isEmpty = true;
+        for (ProjectActivity activity : activities) {
+            isEmpty = false;
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(0, 3, 0, 0);
+            gbc.anchor = GridBagConstraints.NORTHWEST;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1.0;
+            gbc.gridwidth = GridBagConstraints.REMAINDER;
+            Date currentDate = activity.getActivityDate();
+            // group activities by days
+            if (isAnotherDay(lastDate, currentDate)) {
                 GridBagConstraints gbc1 = new GridBagConstraints();
-                gbc1.weighty = 1.0;
-                gbc1.fill = GridBagConstraints.VERTICAL;
-                pnlContent.add(new JLabel(), gbc1);
-                pnlContent.revalidate();
-                this.repaint();
+                gbc1.insets = new Insets(3, 3, 0, 3);
+                gbc1.anchor = GridBagConstraints.NORTHWEST;
+                gbc1.fill = GridBagConstraints.HORIZONTAL;
+                gbc1.weightx = 1.0;
+                gbc1.gridwidth = GridBagConstraints.REMAINDER;
+                currentDatePanel = new DateSeparatorPanel(currentDate);
+                currentDatePanel.addMouseListener(new ExpandableMouseListener(currentDatePanel, this));
+                pnlContent.add(currentDatePanel, gbc1);
             }
-        } finally {    
-            showWaitCursor(false);
+            if (maxWidth == -1) {
+                maxWidth = this.getVisibleRect().width - 150;
+            }
+            ActivityPanel activityPanel = activity2Panel.get(activity);
+            if (activityPanel == null) {
+                activityPanel = new ActivityPanel(activity, projectHandle, maxWidth);
+                activity2Panel.put(activity, activityPanel);
+            }
+            if (activityPanel.hasDetails()) {
+                activityPanel.addMouseListener(new ExpandableMouseListener(activityPanel, this));
+            }
+            currentDatePanel.addActivityPanel(activityPanel, gbc);
+            lastDate = currentDate;
+        }
+        if (isEmpty) {
+            showEmptyContent();
+        } else {
+            GridBagConstraints gbc1 = new GridBagConstraints();
+            gbc1.weighty = 1.0;
+            gbc1.fill = GridBagConstraints.VERTICAL;
+            pnlContent.add(new JLabel(), gbc1);
+            pnlContent.revalidate();
+            this.repaint();
         }
     }
 
@@ -452,17 +454,21 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
         public void actionPerformed(ActionEvent e) {
             persistShowSettings();
             if (isActivityEnable(recentActivities, clazz)) {
-                showWaitCursor(true);
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
-                        final Collection<ProjectActivity> activities = getAllowedActivities();                
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                showRecentActivities(activities);
-                            }
-                        });
+                        showWaitCursor(true);
+                        try {
+                            final Collection<ProjectActivity> activities = getAllowedActivities(recentActivities);                
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    showRecentActivities(activities);
+                                }
+                            });
+                        } finally {
+                            showWaitCursor(false);
+                        }    
                     }
                 });
             }
