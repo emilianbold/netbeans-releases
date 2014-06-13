@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,54 +37,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.php.editor.model.impl;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public final class Type {
+public class TypeTest extends ModelTestBase {
 
-    private Type() {
+    public TypeTest(String testName) {
+        super(testName);
     }
 
-    public static final String STRING = "string"; //NOI18N
-    public static final String REAL = "real"; //NOI18N
-    public static final String INT = "int"; //NOI18N
-    public static final String INTEGER = "integer"; //NOI18N
-    public static final String BOOL = "bool"; //NOI18N
-    public static final String BOOLEAN = "boolean"; //NOI18N
-    public static final String ARRAY = "array"; //NOI18N
-    public static final String NULL = "null"; //NOI18N
-    public static final String FLOAT = "float"; //NOI18N
-    public static final String DOUBLE = "double"; //NOI18N
-    public static final String OBJECT = "object"; //NOI18N
-    public static final String NUMBER = "number"; //NOI18N
-    public static final String CALLBACK = "callback"; //NOI18N
-    public static final String RESOURCE = "resource"; //NOI18N
-    public static final String VOID = "void"; //NOI18N
-    public static final String MIXED = "mixed"; //NOI18N
-
-    public static boolean isPrimitive(String typeName) {
-        boolean retval = false;
-        if (BOOL.equals(typeName) || BOOLEAN.equals(typeName) || INT.equals(typeName)
-                || INTEGER.equals(typeName) || FLOAT.equals(typeName) || REAL.equals(typeName)
-                || ARRAY.equals(typeName) || OBJECT.equals(typeName) || MIXED.equals(typeName)
-                || NUMBER.equals(typeName) || CALLBACK.equals(typeName) || RESOURCE.equals(typeName)
-                || DOUBLE.equals(typeName) || STRING.equals(typeName) || NULL.equals(typeName)
-                || VOID.equals(typeName)) {
-            retval = true;
-        }
-        return retval;
+    public void testIsArray() throws Exception {
+        assertTrue(Type.isArray("array"));
+        assertTrue(Type.isArray("Bar[]"));
+        assertTrue(Type.isArray("\\Foo\\Bar[]"));
     }
 
-    public static boolean isArray(String typeName) {
-        boolean result = false;
-        if (ARRAY.equals(typeName) || (typeName != null && typeName.contains("[") && typeName.contains("]"))) { //NOI18N
-            result = true;
-        }
-        return result;
+    public void testIsNotArray() throws Exception {
+        assertFalse(Type.isArray(null));
+        assertFalse(Type.isArray("string"));
+        assertFalse(Type.isArray("Bar"));
+        assertFalse(Type.isArray("\\Foo\\Bar"));
     }
+
 }
