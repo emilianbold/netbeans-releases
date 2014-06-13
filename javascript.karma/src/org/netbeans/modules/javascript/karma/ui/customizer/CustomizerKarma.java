@@ -192,6 +192,7 @@ public class CustomizerKarma extends JPanel {
         coverageLabel = new JLabel();
         coverageInfoLabel = new JLabel();
         coverageLearnMoreLabel = new JLabel();
+        coverageIstanbulInfoLabel = new JLabel();
         coverageConfigLabel = new JLabel();
 
         karmaLabel.setLabelFor(karmaTextField);
@@ -253,6 +254,8 @@ public class CustomizerKarma extends JPanel {
             }
         });
 
+        Mnemonics.setLocalizedText(coverageIstanbulInfoLabel, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.coverageIstanbulInfoLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(coverageConfigLabel, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.coverageConfigLabel.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
@@ -278,6 +281,12 @@ public class CustomizerKarma extends JPanel {
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(configSearchButton))))
             .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(autowatchCheckBox)
+                    .addComponent(debugCheckBox)
+                    .addComponent(coverageLabel))
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -288,14 +297,9 @@ public class CustomizerKarma extends JPanel {
                         .addComponent(coverageInfoLabel)
                         .addGap(18, 18, 18)
                         .addComponent(coverageLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .addComponent(coverageIstanbulInfoLabel)
                     .addComponent(coverageConfigLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(autowatchCheckBox)
-                    .addComponent(debugCheckBox)
-                    .addComponent(coverageLabel))
-                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {configBrowseButton, karmaBrowseButton});
@@ -330,6 +334,8 @@ public class CustomizerKarma extends JPanel {
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(coverageInfoLabel)
                     .addComponent(coverageLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(coverageIstanbulInfoLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(coverageConfigLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
         );
@@ -405,6 +411,7 @@ public class CustomizerKarma extends JPanel {
     private JTextField configTextField;
     private JLabel coverageConfigLabel;
     private JLabel coverageInfoLabel;
+    private JLabel coverageIstanbulInfoLabel;
     private JLabel coverageLabel;
     private JLabel coverageLearnMoreLabel;
     private JComboBox<WebBrowser> debugBrowserIdComboBox;
