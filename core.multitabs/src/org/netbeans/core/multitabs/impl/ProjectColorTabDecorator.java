@@ -52,11 +52,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.Icon;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.core.multitabs.Settings;
 import org.netbeans.core.multitabs.TabDecorator;
 import org.netbeans.core.multitabs.impl.ProjectSupport.ProjectProxy;
 import org.netbeans.swing.tabcontrol.TabData;
-import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -75,6 +76,13 @@ public class ProjectColorTabDecorator extends TabDecorator {
     private static final Map<Object, Color> project2color = new WeakHashMap<Object, Color>(10);
     private static final Map<TabData, Color> tab2color = new WeakHashMap<TabData, Color>(10);
     private static final List<Color> backGroundColors;
+    private final static ChangeListener projectsListener = new ChangeListener() {
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            updateColorMapping();
+        }
+    };
 
     static {
         backGroundColors = new ArrayList<Color>( 10 );
@@ -88,15 +96,21 @@ public class ProjectColorTabDecorator extends TabDecorator {
         backGroundColors.add( new Color( 227, 255, 158 ) );
         backGroundColors.add( new Color( 238, 209, 255 ) );
 
-        ProjectSupport.getDefault().addPropertyChangeListener( new PropertyChangeListener() {
-
-            @Override
-            public void propertyChange( PropertyChangeEvent evt ) {
-                updateColorMapping();
-            }
-        } );
+        ProjectSupport projects = ProjectSupport.getDefault();
+        if( projects.isEnabled() && Settings.getDefault().isSameProjectSameColor() ) {
+            projects.addChangeListener(projectsListener);
+        }
 
         updateColorMapping();
+    }
+
+    public static void setActive(boolean active) {
+        if( active ) {
+            ProjectSupport.getDefault().addChangeListener(projectsListener);
+            updateColorMapping();
+        } else {
+            ProjectSupport.getDefault().removeChangeListener(projectsListener);
+        }
     }
 
     public ProjectColorTabDecorator() {

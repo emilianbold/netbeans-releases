@@ -43,7 +43,7 @@
  */
 package org.netbeans.core.multitabs.impl;
 
-import java.beans.PropertyChangeListener;
+import javax.swing.event.ChangeListener;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
@@ -72,9 +72,9 @@ public abstract class ProjectSupport {
     public abstract boolean isEnabled();
 
 
-    public abstract void addPropertyChangeListener( PropertyChangeListener l );
+    public abstract void addChangeListener( ChangeListener l );
 
-    public abstract void removePropertyChangeListener( PropertyChangeListener l );
+    public abstract void removeChangeListener( ChangeListener l );
 
     public abstract ProjectProxy[] getOpenProjects();
 
@@ -136,11 +136,11 @@ public abstract class ProjectSupport {
         }
 
         @Override
-        public void addPropertyChangeListener( PropertyChangeListener l ) {
+        public void addChangeListener( ChangeListener l ) {
         }
 
         @Override
-        public void removePropertyChangeListener( PropertyChangeListener l ) {
+        public void removeChangeListener( ChangeListener l ) {
         }
 
         @Override
