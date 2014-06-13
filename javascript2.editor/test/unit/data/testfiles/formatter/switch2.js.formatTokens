@@ -46,7 +46,6 @@ FormatToken{kind=TEXT, offset=64, text=TBODY, id=STRING}
 FormatToken{kind=TEXT, offset=69, text=', id=STRING_END}
 FormatToken{kind=TEXT, offset=70, text=:, id=OPERATOR_COLON}
 FormatToken{kind=AFTER_CASE, offset=-1, text=null, id=null}
-FormatToken{kind=INDENTATION_INC, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=71, text=
 , id=EOL}
 FormatToken{kind=WHITESPACE, offset=72, text=        , id=WHITESPACE}
@@ -144,7 +143,6 @@ FormatToken{kind=EOL, offset=251, text=
 , id=EOL}
 FormatToken{kind=EOL, offset=252, text=
 , id=EOL}
-FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=253, text=    , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=257, text=case, id=KEYWORD_CASE}
 FormatToken{kind=WHITESPACE, offset=261, text= , id=WHITESPACE}
