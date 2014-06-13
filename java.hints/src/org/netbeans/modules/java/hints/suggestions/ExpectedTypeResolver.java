@@ -1055,8 +1055,14 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
                 while (casted.getLeaf().getKind() == Tree.Kind.PARENTHESIZED) {
                     casted = new TreePath(casted, ((ParenthesizedTree)casted.getLeaf()).getExpression());
                 }
-                dontResetCast = true;
+            } else {
+                if (!info.getTypeUtilities().isCastable(
+                    info.getTrees().getTypeMirror(casted),
+                    info.getTrees().getTypeMirror(getCurrentPath()))) {
+                    notRedundant = true;
+                }
             }
+            dontResetCast = true;
             return scanParent();
         } else {
             // this is a typecast after some other expression. It's not possible to determine a type which the
