@@ -147,6 +147,8 @@
                 <friend>org.netbeans.modules.python.editor</friend>
                 <friend>org.netbeans.modules.python.project</friend>
                 <friend>org.netbeans.modules.ruby.codecoverage</friend>
+                <friend>org.netbeans.modules.web.clientproject</friend>
+                <friend>org.netbeans.modules.web.clientproject.api</friend>
                 <package>org.netbeans.modules.gsf.codecoverage.api</package>
             </friend-packages>
         </data>
