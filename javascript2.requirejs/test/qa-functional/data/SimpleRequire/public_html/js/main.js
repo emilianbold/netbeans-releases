@@ -16,7 +16,7 @@ requirejs.config({
     }
 });
 // Start the main app logic.
-requirejs(['jquery', "piwik", "app/function", "app/newFunction", "app/objectLiteral", "app/stdModule"],
+requirejs(['jquery', "piwik", "app/function", "app/newFunction", "app/objectLiteral", "app/stdModule", ""],
         function($, pi, func, newFunc, obj, stdModule) {
 
 //cc;23/1;stdModule.;0;getSomeDate,dummy,dummy2,logIt,hasOwnProperty;dum;du|mmy;conquer,yell,a
