@@ -965,6 +965,14 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
      */
     @Override
     public List<? extends TypeMirror> visitMemberSelect(MemberSelectTree tree, Object v) {
+        if (casted != null) {
+            // if the casted type is a primitive, the cast is NOT redundant as member select is applied to
+            // the originally primitive value.
+            TypeMirror castedType = info.getTrees().getTypeMirror(casted);
+            if (castedType.getKind().isPrimitive()) {
+                notRedundant = true;
+            }
+        }
         // must compute expected type of the method:
         TreePath[] p = new TreePath[1];
         ExpressionTree[] e = new ExpressionTree[1];

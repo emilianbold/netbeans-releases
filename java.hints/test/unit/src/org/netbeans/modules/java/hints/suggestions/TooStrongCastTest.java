@@ -470,4 +470,38 @@ public class TooStrongCastTest extends NbTestCase {
             run(TooStrongCast.class).
             assertWarnings("4:59-4:68:verifier:Type cast to double is too strong. float should be used instead");
     }
+    
+    public void testMemberSelectOnPrimitive() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "class Test {\n" +
+            "    void bu() {\n" +
+            "       final int i = 1234;\n" +
+            "       System.out.println(((Integer) i).byteValue());\n" +
+            "    }\n" +
+            "    void e(Number foo) {}\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings();
+    }
+    
+    /**
+     * Checks that unnecessry cast is still reported
+     * @throws Exception 
+     */
+    public void testUnnecessaryCastingPrimitiveToWrapper() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "class Test {\n" +
+            "    void bu() {\n" +
+            "        int a = 20;\n" +
+            "        e((Integer)a);\n" +
+            "    }\n" +
+            "    void e(Number foo) {}\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings("4:11-4:18:verifier:Unnecessary cast to Integer");
+    }
 }

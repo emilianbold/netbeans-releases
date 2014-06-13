@@ -191,6 +191,13 @@ public class TooStrongCast {
                     info.getTypes().isAssignable(tmErasure, castErasure)) {
                 return null;
             }
+            // special case: if a value is casted to its primitive wrapper, do not report Number or Object
+            // as the suggested type.
+            if (casteeType.getKind().isPrimitive() &&
+                Utilities.isPrimitiveWrapperType(castType) &&
+                info.getTypes().isSameType(casteeType, info.getTypes().unboxedType(castType))) {
+                continue;
+            }
             filteredTypes.add(Utilities.resolveCapturedType(info, tm));
         }
         if (filteredTypes.isEmpty()) {
