@@ -256,6 +256,10 @@ public abstract class SuperglobalsHint extends HintRule {
             VALIDATOR_FUNCTIONS.add("is_numeric"); //NOI18N
             VALIDATOR_FUNCTIONS.add("is_finite"); //NOI18N
             VALIDATOR_FUNCTIONS.add("is_infinite"); //NOI18N
+            VALIDATOR_FUNCTIONS.add("is_null"); //NOI18N
+            VALIDATOR_FUNCTIONS.add("is_nan"); //NOI18N
+            VALIDATOR_FUNCTIONS.add("is_scalar"); //NOI18N
+            VALIDATOR_FUNCTIONS.add("is_real"); //NOI18N
         }
 
         private static final Collection<String> FILTER_FUNCTIONS = new ArrayList<>();
