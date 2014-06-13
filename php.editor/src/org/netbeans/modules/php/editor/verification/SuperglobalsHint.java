@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
-import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
@@ -50,6 +50,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
@@ -273,7 +274,22 @@ public abstract class SuperglobalsHint extends HintRule {
         }
 
         public boolean isValidAccess() {
-            return isInFilterFunction() || isInValidatorFunction() || isValidatedByCondition();
+            return isInFilterFunction() || isInValidatorFunction() || isValidatedByCondition() || isOnLeftSideOfAssignment();
+        }
+
+        private boolean isOnLeftSideOfAssignment() {
+            boolean result = false;
+            ASTNode firstInPath = path.get(0);
+            for (ASTNode aSTNode : path) {
+                if (aSTNode instanceof Assignment) {
+                    Assignment assignment = (Assignment) aSTNode;
+                    if (assignment.getLeftHandSide().equals(firstInPath)) {
+                        result = true;
+                    }
+                    break;
+                }
+            }
+            return result;
         }
 
         private boolean isValidatedByCondition() {

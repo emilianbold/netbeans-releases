@@ -40,5 +40,8 @@ echo is_numeric($foo)
     // HINT
     : $_SERVER[""];
 
+// OK
+$_SERVER['REQUEST_METHOD'] = 'assignment is ok';
+
 //END
 ?>
