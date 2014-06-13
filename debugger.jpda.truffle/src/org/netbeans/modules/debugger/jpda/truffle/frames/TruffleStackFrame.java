@@ -40,48 +40,40 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.truffle.access;
+package org.netbeans.modules.debugger.jpda.truffle.frames;
 
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackInfo;
-import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
-import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 
 /**
- * Container of information about the current program counter.
- * 
+ *
  * @author Martin
  */
-public class CurrentPCInfo {
+public class TruffleStackFrame {
+
+    private final String callTargetName;
+    private final String methodName;
+    private final String sourceLocation;
     
-    private final Reference<JPDAThread> threadRef;
-    private final SourcePosition sp;
-    private final TruffleVariable[] vars;
-    private final TruffleStackInfo stack;
-    
-    public CurrentPCInfo(JPDAThread thread, SourcePosition sp,
-                         TruffleVariable[] vars, TruffleStackInfo stack) {
-        this.threadRef = new WeakReference<>(thread);
-        this.sp = sp;
-        this.vars = vars;
-        this.stack = stack;
-    }
-    
-    public JPDAThread getThread() {
-        return threadRef.get();
-    }
-    
-    public SourcePosition getSourcePosition() {
-        return sp;
+    TruffleStackFrame(String callTargetName, String methodName, String sourceLocation) {
+        this.callTargetName = callTargetName;
+        this.methodName = methodName;
+        this.sourceLocation = sourceLocation;
     }
 
-    public TruffleVariable[] getVars() {
-        return vars;
+    public String getCallTargetName() {
+        return callTargetName;
     }
 
-    public TruffleStackInfo getStack() {
-        return stack;
+    public String getMethodName() {
+        return methodName;
     }
+
+    public String getSourceLocation() {
+        return sourceLocation;
+    }
+
+    public String getDisplayName() {
+        return methodName + " ("+sourceLocation+")";
+    }
+    
 }

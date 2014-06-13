@@ -62,11 +62,14 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
@@ -77,8 +80,10 @@ import org.netbeans.modules.debugger.jpda.jdi.IntegerValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LongValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackInfo;
 import org.netbeans.modules.debugger.jpda.truffle.source.Source;
 import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
+import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
 
 /**
  *
@@ -94,11 +99,16 @@ public class TruffleAccessBreakpoints implements JPDABreakpointListener {
     private static final String METHOD_EXEC_STEP_INTO = "executionStepInto";    // NOI18N
     private static final String METHOD_DEBUGGER_ACCESS = "debuggerAccess";      // NOI18N
     private static final String VAR_NODE = "astNode";                           // NOI18N
+    private static final String VAR_FRAME = "frame";                            // NOI18N
     private static final String VAR_SRC_ID = "srcId";
     private static final String VAR_SRC_NAME = "srcName";
     private static final String VAR_SRC_PATH = "srcPath";
     private static final String VAR_SRC_LINE = "line";
     private static final String VAR_SRC_CODE = "code";
+    private static final String VAR_FRAME_SLOTS = "frameSlots";
+    private static final String VAR_SLOT_NAMES = "slotNames";
+    private static final String VAR_SLOT_TYPES = "slotTypes";                    // NOI18N
+    private static final String VAR_STACK_TRACE = "stackTrace";
     
     private static final Map<JPDADebugger, CurrentPCInfo> currentPCInfos = new WeakHashMap<>();
     
@@ -183,15 +193,13 @@ public class TruffleAccessBreakpoints implements JPDABreakpointListener {
         Object bp = event.getSource();
         if (execHaltedBP == bp) {
             LOG.log(Level.FINE, "TruffleAccessBreakpoints.breakpointReached({0}), exec halted.", event);
-            SourcePosition sp = getPosition(event.getDebugger(), event.getThread());
-            CurrentPCInfo cpci = new CurrentPCInfo(event.getThread(), sp);
+            CurrentPCInfo cpci = getCurrentPosition(event.getDebugger(), event.getThread());
             synchronized (currentPCInfos) {
                 currentPCInfos.put(event.getDebugger(), cpci);
             }
         } else if (execStepIntoBP == bp) {
             LOG.log(Level.FINE, "TruffleAccessBreakpoints.breakpointReached({0}), exec step into.", event);
-            SourcePosition sp = getPosition(event.getDebugger(), event.getThread());
-            CurrentPCInfo cpci = new CurrentPCInfo(event.getThread(), sp);
+            CurrentPCInfo cpci = getCurrentPosition(event.getDebugger(), event.getThread());
             synchronized (currentPCInfos) {
                 currentPCInfos.put(event.getDebugger(), cpci);
             }
@@ -200,12 +208,22 @@ public class TruffleAccessBreakpoints implements JPDABreakpointListener {
         }
     }
     
-    private SourcePosition getPosition(JPDADebugger debugger, JPDAThread thread) {
+    private CurrentPCInfo getCurrentPosition(JPDADebugger debugger, JPDAThread thread) {
+        //executionHalted(Node astNode, MaterializedFrame frame,
+        //                long srcId, String srcName, String srcPath, int line, String code,
+        //                FrameSlot[] frameSlots, String[] slotNames, String[] slotTypes,
+        //                FrameInstance[] stackTrace, String[] stackNames) 
         try {
             CallStackFrame csf = thread.getCallStack(0, 1)[0];
             LocalVariable[] localVariables = csf.getLocalVariables();
             long id = -1;
             int line = -1;
+            Variable[] frameSlots = null;
+            String[] slotNames = null;
+            String[] slotTypes = null;
+            //Variable[] stackTrace = null;
+            Variable stackTrace = null;
+            /*
             for (LocalVariable lv : localVariables) {
                 String name = lv.getName();
                 if (VAR_SRC_ID.equals(name)) {
@@ -243,7 +261,55 @@ public class TruffleAccessBreakpoints implements JPDABreakpointListener {
                     src = Source.getSource(debugger, id, name, path, code);
                 }
                 SourcePosition sp = new SourcePosition(debugger, id, src, line);
-                return sp;
+                TruffleStackInfo stack = new TruffleStackInfo(frameSlots, stackTrace);
+                return new CurrentPCInfo(thread, sp, stack);
+            } else {
+                return null;
+            }
+            */
+            ObjectVariable frame = null;
+            StringReference name = null;
+            StringReference path = null;
+            StringReference code = null;
+            for (LocalVariable lv : localVariables) {
+                switch (lv.getName()) {
+                    case VAR_FRAME:     frame = (ObjectVariable) lv;
+                                        break;
+                    case VAR_SRC_ID:    Value jdiValue = ((JDIVariable) lv).getJDIValue();
+                                        if (jdiValue instanceof LongValue) {
+                                            id = LongValueWrapper.value((LongValue) jdiValue);
+                                        }
+                                        break;
+                    case VAR_SRC_NAME:  name = (StringReference) ((JDIVariable) lv).getJDIValue();
+                                        break;
+                    case VAR_SRC_PATH:  path = (StringReference) ((JDIVariable) lv).getJDIValue();
+                                        break;
+                    case VAR_SRC_CODE:  code = (StringReference) ((JDIVariable) lv).getJDIValue();
+                                        break;
+                    case VAR_SRC_LINE:  jdiValue = ((JDIVariable) lv).getJDIValue();
+                                        if (jdiValue instanceof IntegerValue) {
+                                            line = IntegerValueWrapper.value((IntegerValue) jdiValue);
+                                        }
+                                        break;
+                    case VAR_FRAME_SLOTS:frameSlots = ((ObjectVariable) lv).getFields(0, Integer.MAX_VALUE);
+                                        break;
+                    case VAR_SLOT_NAMES:slotNames = (String[]) lv.createMirrorObject();
+                                        break;
+                    case VAR_SLOT_TYPES:slotTypes = (String[]) lv.createMirrorObject();
+                                        break;
+                    case VAR_STACK_TRACE:stackTrace = lv;//((ObjectVariable) lv).getFields(0, Integer.MAX_VALUE);
+                                        break;
+                }
+            }
+            if (id >= 0 && line >= 0) {
+                Source src = Source.getExistingSource(debugger, id);
+                if (src == null) {
+                    src = Source.getSource(debugger, id, name, path, code);
+                }
+                SourcePosition sp = new SourcePosition(debugger, id, src, line);
+                TruffleVariable[] vars = createVars(debugger, frame, frameSlots, slotNames, slotTypes);
+                TruffleStackInfo stack = new TruffleStackInfo(debugger, frameSlots, stackTrace);
+                return new CurrentPCInfo(thread, sp, vars, stack);
             } else {
                 return null;
             }
@@ -255,5 +321,18 @@ public class TruffleAccessBreakpoints implements JPDABreakpointListener {
     private static int getInt(JDIVariable var) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
         Value jdiValue = var.getJDIValue();
         return IntegerValueWrapper.value((IntegerValue) jdiValue);
+    }
+
+    private TruffleVariable[] createVars(JPDADebugger debugger,
+                                         ObjectVariable frame,
+                                         Variable[] frameSlots,
+                                         String[] slotNames, String[] slotTypes) {
+        int n = frameSlots.length;
+        TruffleVariable[] vars = new TruffleVariable[n];
+        for (int i = 0; i < n; i++) {
+            vars[i] = new TruffleVariable(debugger, frame, (ObjectVariable) frameSlots[i],
+                                          slotNames[i], slotTypes[i]);
+        }
+        return vars;
     }
 }

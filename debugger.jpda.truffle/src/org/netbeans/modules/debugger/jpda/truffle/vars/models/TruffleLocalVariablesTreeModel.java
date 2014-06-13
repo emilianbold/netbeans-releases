@@ -40,48 +40,37 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.truffle.access;
+package org.netbeans.modules.debugger.jpda.truffle.vars.models;
 
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackInfo;
-import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
-import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
+import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
+import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccessBreakpoints;
+import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
+import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.viewmodel.TreeModel;
+import org.netbeans.spi.viewmodel.TreeModelFilter;
+import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 /**
- * Container of information about the current program counter.
- * 
+ *
  * @author Martin
  */
-public class CurrentPCInfo {
-    
-    private final Reference<JPDAThread> threadRef;
-    private final SourcePosition sp;
-    private final TruffleVariable[] vars;
-    private final TruffleStackInfo stack;
-    
-    public CurrentPCInfo(JPDAThread thread, SourcePosition sp,
-                         TruffleVariable[] vars, TruffleStackInfo stack) {
-        this.threadRef = new WeakReference<>(thread);
-        this.sp = sp;
-        this.vars = vars;
-        this.stack = stack;
+@DebuggerServiceRegistration(path="netbeans-JPDASession/"+TruffleStrataProvider.TRUFFLE_STRATUM+"/LocalsView",  types = TreeModelFilter.class)
+public class TruffleLocalVariablesTreeModel extends TruffleVariablesTreeModel {
+
+    public TruffleLocalVariablesTreeModel(ContextProvider lookupProvider) {
+        super(lookupProvider);
     }
     
-    public JPDAThread getThread() {
-        return threadRef.get();
-    }
-    
-    public SourcePosition getSourcePosition() {
-        return sp;
+    @Override
+    public Object[] getChildren(TreeModel original, Object parent, int from, int to) throws UnknownTypeException {
+        if (parent == original.getRoot()) {
+            CurrentPCInfo currentPCInfo = TruffleAccessBreakpoints.getCurrentPCInfo(getDebugger());
+            if (currentPCInfo != null) {
+                return currentPCInfo.getVars();
+            }
+        }
+        return original.getChildren(parent, from, to);
     }
 
-    public TruffleVariable[] getVars() {
-        return vars;
-    }
-
-    public TruffleStackInfo getStack() {
-        return stack;
-    }
 }

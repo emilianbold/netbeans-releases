@@ -42,7 +42,13 @@
 
 package org.netbeans.modules.debugger.jpda.backend.truffle;
 
+import com.oracle.truffle.api.ExecutionContext;
+import com.oracle.truffle.api.frame.Frame;
+import com.oracle.truffle.api.frame.FrameInstance;
+import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.MaterializedFrame;
+import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.debug.LineBreakpoint;
@@ -116,7 +122,9 @@ public class JPDATruffleAccessor extends Object {
     }
     
     static void executionHalted(Node astNode, MaterializedFrame frame,
-                                long srcId, String srcName, String srcPath, int line, String code) {
+                                long srcId, String srcName, String srcPath, int line, String code,
+                                FrameSlot[] frameSlots, String[] slotNames, String[] slotTypes,
+                                FrameInstance[] stackTrace, String[] stackNames) {
         // Called when the execution is halted.
         setCommand();
     }
@@ -140,6 +148,37 @@ public class JPDATruffleAccessor extends Object {
                     break;
         }
         stepCmd = 0;
+    }
+    
+    static Object getSlotValue(Frame frame, FrameSlot slot) {
+        switch(slot.getKind()) {
+            case Boolean:   return FrameUtil.getBooleanSafe(frame, slot);
+            case Byte:      return FrameUtil.getByteSafe(frame, slot);
+            case Double:    return FrameUtil.getDoubleSafe(frame, slot);
+            case Float:     return FrameUtil.getFloatSafe(frame, slot);
+            case Int:       return FrameUtil.getIntSafe(frame, slot);
+            case Long:      return FrameUtil.getLongSafe(frame, slot);
+            case Object:    Object obj = FrameUtil.getObjectSafe(frame, slot);
+                            ExecutionContext context = debugManager.getContext();
+                            return context.getVisualizer().displayValue(context, obj);
+            case Illegal:   
+            default:        return null;
+        }
+    }
+    
+    static TruffleFrame[] getFramesInfo(FrameInstance[] frames) {
+        Visualizer visualizer = debugManager.getContext().getVisualizer();
+        int n = frames.length;
+        TruffleFrame[] frameInfos = new TruffleFrame[n];
+        for (int i = 0; i < n; i++) {
+            FrameInstance fi = frames[i];
+            TruffleFrame tf = new TruffleFrame();
+            tf.callTargetName = visualizer.displayCallTargetName(fi.getCallTarget());
+            tf.methodName = visualizer.displayMethodName(fi.getCallNode());
+            tf.sourceLocation = visualizer.displaySourceLocation(fi.getCallNode());
+            frameInfos[i] = tf;
+        }
+        return frameInfos;
     }
     
     static void debuggerAccess() {

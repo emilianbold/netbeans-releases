@@ -62,6 +62,7 @@ import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccessBreakpoints;
@@ -187,6 +188,17 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
             DebugManagerHandler dmh = dmHandlers.get(debugger);
             if (dmh != null) {
                 return dmh.getAccessorClass();
+            } else {
+                return null;
+            }
+        }
+    }
+    
+    public static JPDAClassType getDebugAccessorJPDAClass(JPDADebugger debugger) {
+        synchronized (dmHandlers) {
+            DebugManagerHandler dmh = dmHandlers.get(debugger);
+            if (dmh != null) {
+                return dmh.getAccessorJPDAClass();
             } else {
                 return null;
             }

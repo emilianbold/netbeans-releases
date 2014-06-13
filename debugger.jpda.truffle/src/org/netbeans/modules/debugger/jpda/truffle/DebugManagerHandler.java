@@ -76,6 +76,7 @@ import javax.script.ScriptEngine;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LocalVariable;
@@ -128,6 +129,7 @@ class DebugManagerHandler implements JPDABreakpointListener {
     private final JPDADebugger debugger;
     private final AtomicBoolean inited = new AtomicBoolean(false);
     private ClassType accessorClass;
+    private JPDAClassType accessorJPDAClass;
     private final Object accessorClassLock = new Object();
     private ObjectReference debugManager;
     private List<JSLineBreakpoint> breakpointsToSubmit = new ArrayList<>();
@@ -270,8 +272,10 @@ class DebugManagerHandler implements JPDABreakpointListener {
                     return ;
                 }
                 TruffleAccessBreakpoints.assureBPSet(debugger, serviceClass);
+                JPDAClassType serviceJPDAClass = (JPDAClassType) debugger.getClass().getMethod("getClassType", ReferenceType.class).invoke(debugger, serviceClass);
                 synchronized (accessorClassLock) {
                     accessorClass = serviceClass;
+                    accessorJPDAClass = serviceJPDAClass;
                 }
                 debugManager = (ObjectReference) ret;
             } catch (VMDisconnectedExceptionWrapper vmd) {
@@ -323,6 +327,12 @@ class DebugManagerHandler implements JPDABreakpointListener {
     ClassType getAccessorClass() {
         synchronized (accessorClassLock) {
             return accessorClass;
+        }
+    }
+    
+    JPDAClassType getAccessorJPDAClass() {
+        synchronized (accessorClassLock) {
+            return accessorJPDAClass;
         }
     }
     

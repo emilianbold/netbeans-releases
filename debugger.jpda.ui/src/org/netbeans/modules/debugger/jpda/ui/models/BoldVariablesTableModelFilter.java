@@ -125,7 +125,12 @@ Constants {
                     return null;
                 }
             } else {
-                return bold (row, (String) result, variableToValueValue);
+                if (result == null || result instanceof String) {
+                    return bold (row, (String) result, variableToValueValue);
+                } else {
+                    // No HTML value, there's a special property editor that manages the value.
+                    return null;
+                }
             }
         }
         if ( LOCALS_TO_STRING_COLUMN_ID.equals (columnID) ||
