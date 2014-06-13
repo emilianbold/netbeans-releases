@@ -92,7 +92,7 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
     static final String defaultMavenImagesPackage = "images"; //NOI18N
     static final String defaultMavenCSSPackage = "styles"; //NOI18N
     
-    static final char[] NO_FILENAME_CHARS = { ' ', '/', '<', '>', '\\', '|', '\"', '\n', '\r', '\t', '\0', '\f', '`', '?', '*', ':' };
+    static final char[] NO_FILENAME_CHARS = { '/', '<', '>', '\\', '|', '\"', '\n', '\r', '\t', '\0', '\f', '`', '?', '*', ':' }; //NOI18N
     
     private WizardDescriptor wizard;
     private SourceGroupSupport supportFXML;
