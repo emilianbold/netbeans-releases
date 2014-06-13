@@ -40,6 +40,14 @@
               </Group>
           </Group>
           <Group type="102" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="autowatchCheckBox" min="-2" max="-2" attributes="0"/>
+                  <Component id="debugCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="coverageLabel" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
@@ -52,17 +60,10 @@
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="coverageLearnMoreLabel" min="-2" max="-2" attributes="0"/>
                   </Group>
+                  <Component id="coverageIstanbulInfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="coverageConfigLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" attributes="0">
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="autowatchCheckBox" min="-2" max="-2" attributes="0"/>
-                  <Component id="debugCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="coverageLabel" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -98,6 +99,8 @@
                   <Component id="coverageInfoLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="coverageLearnMoreLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="coverageIstanbulInfoLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="coverageConfigLabel" min="-2" max="-2" attributes="0"/>
           </Group>
@@ -228,6 +231,13 @@
         <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="coverageLearnMoreLabelMouseEntered"/>
         <EventHandler event="mousePressed" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="coverageLearnMoreLabelMousePressed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="coverageIstanbulInfoLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/javascript/karma/ui/customizer/Bundle.properties" key="CustomizerKarma.coverageIstanbulInfoLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="coverageConfigLabel">
       <Properties>
