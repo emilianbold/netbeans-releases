@@ -211,7 +211,8 @@ System.err.println("Need width calc for "+tree);
         widthAnnotations(tree.mods.annotations);
         if ((tree.mods.flags & Flags.ENUM) == 0) {
             widthFlags(tree.mods.flags);
-            width(tree.vartype, tree.type);
+            if (tree.vartype != null)
+                width(tree.vartype, tree.type);
             width++;
         }
         width(tree.name);
