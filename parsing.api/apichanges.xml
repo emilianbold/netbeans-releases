@@ -110,6 +110,18 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="QuerySupport.Query.file">
+          <api name="ParsingAPI"/>
+          <summary>Added <code>QuerySupport.Query.file</code> factory for query searching index documents created for given file.</summary>
+          <version major="1" minor="75"/>
+          <date day="13" month="6" year="2014"/>
+          <author login="tzezula"/>
+          <compatibility source="compatible" binary="compatible" semantic="compatible" addition="yes"/>
+          <description>
+              Added <code>QuerySupport.Query.file</code> factory for query searching index documents created for given file.
+          </description>
+          <class package="org.netbeans.modules.parsing.spi.indexing.support" name="QuerySupport"/>
+      </change>
       <change id="CancelSupport">
           <api name="ParsingAPI"/>
           <summary>Added <code>CancelSupport</code> for thread safe testing of <code>SchedulerTask</code> cancelling.</summary>
