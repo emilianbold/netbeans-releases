@@ -274,7 +274,18 @@ class ControllerFileMaker {
     }
 
     private static String capitalize(String str) {
-        return Character.toUpperCase(str.charAt(0)) + str.substring(1);
+        final String spaceChar = " "; //NOI18N
+        if (str.contains(spaceChar)) {
+            String[] splittedName = str.trim().split(spaceChar);
+            StringBuilder sb = new StringBuilder();
+            for (String part : splittedName) {
+                sb.append(Character.toUpperCase(part.charAt(0)));
+                sb.append(part.substring(1));
+            }
+            return sb.toString();
+        } else {
+            return Character.toUpperCase(str.charAt(0)) + str.substring(1);
+        }
     }
 
     private static final String TEMPLATE_PATH = "Templates/javafx/FXMLController.java"; // NO18N
