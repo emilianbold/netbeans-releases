@@ -75,6 +75,7 @@ import org.netbeans.modules.parsing.impl.Installer;
 import org.netbeans.modules.parsing.impl.RunWhenScanFinishedSupport;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
+import org.netbeans.modules.parsing.impl.indexing.ClusteredIndexables;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.PathRecognizerRegistry;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
@@ -93,6 +94,7 @@ import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
@@ -311,7 +313,7 @@ public final class QuerySupport {
         Parameters.notNull("roots", roots); //NOI18N
         final List<URL> rootsURL = new ArrayList<URL>(roots.length);
         for (FileObject root : roots) {
-            rootsURL.add(root.getURL());
+            rootsURL.add(root.toURL());
         }
         return new QuerySupport(indexerName, indexerVersion, rootsURL.toArray(new URL[rootsURL.size()]));
     }
@@ -429,6 +431,57 @@ public final class QuerySupport {
                         fieldName,
                         fieldValue,
                         translateQueryKind(kind)));
+            }
+
+            /**
+             * Creates a query for documents created for a file.
+             * @param relativePath the relative path from source root
+             * the {@link QuerySupport} was created for
+             * @return the newly created query
+             * @since 1.75
+             */
+            @NonNull
+            public Query file(@NonNull final String relativePath) {
+                Parameters.notNull("relativePath", relativePath);   //NOI18N
+                return field(ClusteredIndexables.FIELD_PRIMARY_KEY, relativePath, Kind.EXACT);
+            }
+
+            /**
+             * Creates a query for documents created for a file.
+             * @param file  the file under a source root the {@link QuerySupport} was created for
+             * @return the newly created query
+             * @throws IllegalArgumentException if the file is not under the {@link QuerySupport} roots
+             * @since 1.75
+             */
+            @NonNull
+            public Query file(@NonNull final FileObject file) {
+                Parameters.notNull("file", file);   //NOI18N
+                String relativePath = null;
+                final Collection<? extends FileObject> roots = mapToFileObjects(qs.roots);
+                for (FileObject root : roots) {
+                    relativePath = FileUtil.getRelativePath(root, file);
+                    if (relativePath != null) {
+                        break;
+                    }
+                }
+                if (relativePath == null) {
+                    final StringBuilder rootsList = new StringBuilder();
+                    boolean first = true;
+                    for (FileObject root : roots) {
+                        if (first) {
+                            first = false;
+                        } else {
+                            rootsList.append(", "); //NOI18N
+                        }
+                        rootsList.append(FileUtil.getFileDisplayName(root));
+                    }
+                    throw new IllegalArgumentException(String.format(
+                        "The file %s is not owned by QuerySupport roots: %s",   //NOI18N
+                        FileUtil.getFileDisplayName(file),
+                        rootsList
+                    ));
+                }
+                return file(relativePath);
             }
 
             /**
@@ -574,13 +627,25 @@ public final class QuerySupport {
 
     private QuerySupport (final String indexerName, int indexerVersion, final URL... roots) throws IOException {
         this.indexerQuery = IndexerQuery.forIndexer(indexerName, indexerVersion);
-        this.roots = new LinkedList<URL>(Arrays.asList(roots));
+        this.roots = new ArrayList<URL>(Arrays.asList(roots));
 
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine(getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) //NOI18N
-                    + "[indexer=" + indexerQuery.getIndexerId() + "]:"); //NOI18N
+            LOG.log(
+                Level.FINE,
+                "{0}@{1}[indexer={2}]:", //NOI18N
+                new Object[]{
+                   getClass().getSimpleName(),
+                   Integer.toHexString(System.identityHashCode(this)),
+                   indexerQuery.getIndexerId()
+                }); //NOI18N
             for(Pair<URL, LayeredDocumentIndex> pair : indexerQuery.getIndices(this.roots)) {
-                LOG.fine(" " + pair.first() + " -> index: " + pair.second()); //NOI18N
+                LOG.log(
+                    Level.FINE,
+                    " {0} -> index: {1}",   //NOI18N
+                    new Object[]{
+                        pair.first(),
+                        pair.second()
+                    }); //NOI18N
             }
             LOG.fine("----"); //NOI18N
         }
@@ -592,13 +657,7 @@ public final class QuerySupport {
             if (binaryPaths) {
                 // Filter out roots that do not have source files available
                 for(FileObject binRoot : classpathRoots) {
-                    URL binRootUrl;
-                    try {
-                        binRootUrl = binRoot.getURL();
-                    } catch (FileStateInvalidException fsie) {
-                        continue;
-                    }
-
+                    final URL binRootUrl = binRoot.toURL();
                     URL[] srcRoots = PathRegistry.getDefault().sourceForBinaryQuery(binRootUrl, null, false);
                     if (srcRoots != null) {
                         LOG.log(Level.FINE, "Translating {0} -> {1}", new Object [] { binRootUrl, srcRoots }); //NOI18N
@@ -628,14 +687,8 @@ public final class QuerySupport {
                 roots = Arrays.asList(classpath.getRoots());
             }
         } else {
-            roots = new HashSet<FileObject>();
             Set<URL> urls = PathRegistry.getDefault().getRootsMarkedAs(classpathId);
-            for(URL url : urls) {
-                FileObject f = URLCache.getInstance().findFileObject(url, false);
-                if (f != null) {
-                    roots.add(f);
-                }
-            }
+            roots = mapToFileObjects(urls);
         }
 
         return roots;
@@ -723,9 +776,10 @@ public final class QuerySupport {
     @NonNull
     private static Collection<FileObject> mapToFileObjects(
         @NonNull final Collection<? extends URL> urls) {
+        final URLCache ucache = URLCache.getInstance();
         final Collection<FileObject> result = new ArrayList<FileObject>(urls.size());
         for (URL u : urls) {
-            final FileObject fo = URLMapper.findFileObject(u);
+            final FileObject fo = ucache.findFileObject(u, false);
             if (fo != null) {
                 result.add(fo);
             }
