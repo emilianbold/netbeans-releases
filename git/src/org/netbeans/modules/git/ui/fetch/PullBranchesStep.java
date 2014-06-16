@@ -239,7 +239,7 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
             toMerge = candidates.get(0);
         } else {
             for (BranchMapping mapping : candidates) {
-                GitBranch tracked = currentBranch.getTrackedBranch();
+                GitBranch tracked = currentBranch == null ? null : currentBranch.getTrackedBranch();
                 if (tracked != null && mapping.getLocalBranch() != null && tracked.getName().equals(mapping.getLocalBranch().getName())) {
                     toMerge = mapping;
                     break;

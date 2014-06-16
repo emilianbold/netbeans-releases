@@ -109,7 +109,7 @@ public final class ParameterEllipsisImpl extends ParameterImpl {
         super.write(output);      
     }  
     
-    public ParameterEllipsisImpl(RepositoryDataInput input) throws IOException {
-        super(input);
+    public ParameterEllipsisImpl(RepositoryDataInput input, CsmScope scope) throws IOException {
+        super(input, scope);
     } 
 }

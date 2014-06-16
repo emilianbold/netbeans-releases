@@ -87,8 +87,12 @@ final class CopyFiles extends Object {
             readPatterns(reader);
             reader.close();
         } catch (IOException ex) {
+            // set these to null to stop further copying (see copyDeep method)
+            sourceRoot = null;
+            targetRoot = null;
+            LOGGER.log(Level.WARNING, "Import settings will not proceed: {0}", ex.getMessage());
             // show error message and continue
-            JDialog dialog = Util.createJOptionDialog(new JOptionPane(ex, JOptionPane.ERROR_MESSAGE), ex.getMessage());
+            JDialog dialog = Util.createJOptionDialog(new JOptionPane(ex, JOptionPane.ERROR_MESSAGE), "Import settings will not proceed");
             dialog.setVisible(true);
             return;
         }
@@ -96,6 +100,9 @@ final class CopyFiles extends Object {
 
     public static void copyDeep(File source, File target, File patternsFile) throws IOException {
         CopyFiles copyFiles = new CopyFiles(source, target, patternsFile);
+        if(copyFiles.sourceRoot == null && copyFiles.targetRoot == null) {
+            return; // IOException was thrown in CopyFiles constructor, probably netbeans.import could not be located
+        }
         LOGGER.fine("Copying from: " + copyFiles.sourceRoot + "\nto: " + copyFiles.targetRoot);  //NOI18N
         copyFiles.copyFolder(copyFiles.sourceRoot);
     }

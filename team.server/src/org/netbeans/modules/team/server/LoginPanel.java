@@ -53,6 +53,7 @@ import java.util.concurrent.Callable;
 import javax.swing.JDialog;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.team.server.ui.common.AddInstanceAction;
 import org.netbeans.modules.team.server.ui.spi.LoginPanelSupport;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
@@ -93,6 +94,7 @@ public class LoginPanel extends javax.swing.JPanel implements org.netbeans.modul
         error.setText(errorMessage);
         error.setVisible(true);
         setLoginButtonEnabled(true);
+        pack();
     }
 
     public void showProgress() {
@@ -101,6 +103,7 @@ public class LoginPanel extends javax.swing.JPanel implements org.netbeans.modul
         progressBar.setIndeterminate(true);
         teamCombo.setEnabled(false);
         setLoginButtonEnabled(false);
+        pack();
     }
 
     public void clearStatus() {
@@ -108,6 +111,7 @@ public class LoginPanel extends javax.swing.JPanel implements org.netbeans.modul
         progressBar.setVisible(false);
         setLoginButtonEnabled(true);
         teamCombo.setEnabled(true);
+        pack();
     }
 
     @Override
@@ -127,6 +131,21 @@ public class LoginPanel extends javax.swing.JPanel implements org.netbeans.modul
         });
     }
 
+    private void pack() {
+        UIUtils.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                JRootPane rootPane = getRootPane();
+                if (rootPane != null) {
+                    JDialog parent = (JDialog) rootPane.getParent();
+                    if (parent != null) {
+                        parent.pack();
+                    }
+                }
+            }
+        });        
+    }
+    
     public LoginPanelSupport getLoginSupport () {
         return loginSupport;
     }
@@ -250,6 +269,7 @@ public class LoginPanel extends javax.swing.JPanel implements org.netbeans.modul
         invalidate();
         revalidate();
         repaint();
+        pack();
     }
 
     private LoginPanelSupport getLoginSupport (TeamServer server) {

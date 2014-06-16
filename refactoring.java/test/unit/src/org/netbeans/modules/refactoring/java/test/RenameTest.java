@@ -205,42 +205,6 @@ public class RenameTest extends RefactoringTestBase {
                 + "    TWO\n"
                 + "}"));
     }
-    
-    public void testRenameCasePackage() throws Exception {
-        writeFilesAndWaitForScan(src,
-                new File("t/A.java", "package t;\n"
-                + "public class A {\n"
-                + "}"));
-        performRenameFolder(src.getFileObject("t"), "T");
-        verifyContent(src,
-                new File("T/A.java", "package T;\n"
-                + "public class A {\n"
-                + "}"));
-    }
-    
-    public void test218766() throws Exception {
-        writeFilesAndWaitForScan(src,
-                new File("t/A.java", "package t;\n"
-                + "public class A {\n"
-                + "}"));
-        writeFilesAndWaitForScan(test,
-                new File("t/ATest.java", "package t;\n"
-                + "import junit.framework.TestCase;\n"
-                + "\n"
-                + "public class ATest extends TestCase {\n"
-                + "}"));
-        performRenameFolder(src.getFileObject("t"), "u");
-        verifyContent(src,
-                new File("u/A.java", "package u;\n"
-                + "public class A {\n"
-                + "}"));
-        verifyContent(test,
-                new File("t/ATest.java", "package t;\n"
-                + "import junit.framework.TestCase;\n"
-                + "\n"
-                + "public class ATest extends TestCase {\n"
-                + "}"));
-    }
 
     public void testRenamePropa() throws Exception {
         writeFilesAndWaitForScan(src,
@@ -1002,24 +966,6 @@ public class RenameTest extends RefactoringTestBase {
             }
         }, true);
         
-        RefactoringSession rs = RefactoringSession.create("Rename");
-        List<Problem> problems = new LinkedList<Problem>();
-
-        addAllProblems(problems, r[0].preCheck());
-        if (!problemIsFatal(problems)) {
-            addAllProblems(problems, r[0].prepare(rs));
-        }
-        if (!problemIsFatal(problems)) {
-            addAllProblems(problems, rs.doRefactoring(true));
-        }
-
-        assertProblems(Arrays.asList(expectedProblems), problems);
-    }
-    
-    private void performRenameFolder(FileObject source, final String newname, Problem... expectedProblems) throws Exception {
-        final RenameRefactoring[] r = new RenameRefactoring[1];
-        r[0] = new RenameRefactoring(Lookups.singleton(source));
-        r[0].setNewName(newname);
         RefactoringSession rs = RefactoringSession.create("Rename");
         List<Problem> problems = new LinkedList<Problem>();
 

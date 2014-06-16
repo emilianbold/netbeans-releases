@@ -43,6 +43,8 @@
 package org.netbeans.modules.cnd.utils;
 
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.filters.AllBinaryFileFilter;
 import org.netbeans.modules.cnd.utils.filters.AllFileFilter;
 import org.netbeans.modules.cnd.utils.filters.AllLibraryFileFilter;
@@ -66,6 +68,7 @@ import org.netbeans.modules.cnd.utils.filters.QtFileFilter;
 import org.netbeans.modules.cnd.utils.filters.ResourceFileFilter;
 import org.netbeans.modules.cnd.utils.filters.ShellFileFilter;
 import org.netbeans.modules.cnd.utils.filters.WorkshopProjectFilter;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Utilities;
 
 /**
@@ -81,15 +84,20 @@ public final class FileFilterFactory {
     private FileFilterFactory() {
     }
 
+    @Deprecated
     public static FileFilter[] getLibraryFilters() {
+        return getLibraryFilters(null);
+    }
+
+    public static FileFilter[] getLibraryFilters(FileSystem fs) {
         FileFilter[] filters = null;
-        if (Utilities.isWindows()) {
+        if (CndFileSystemProvider.isWindows(fs)) {
             filters = new FileFilter[]{
                         FileFilterFactory.getAllLibraryFileFilter(),
                         FileFilterFactory.getElfStaticLibraryFileFilter(),
                         FileFilterFactory.getPeDynamicLibraryFileFilter()
                     };
-        } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+        } else if (CndFileSystemProvider.isMacOS(fs)) {
             filters = new FileFilter[]{
                         FileFilterFactory.getAllLibraryFileFilter(),
                         FileFilterFactory.getElfStaticLibraryFileFilter(),
@@ -105,16 +113,21 @@ public final class FileFilterFactory {
         return filters;
     }
 
+    @Deprecated
     public static FileFilter[] getBinaryFilters() {
+        return getBinaryFilters(null);
+    }
+    
+    public static FileFilter[] getBinaryFilters(FileSystem fs) {
         FileFilter[] filters = null;
-        if (Utilities.isWindows()) {
+        if (CndFileSystemProvider.isWindows(fs)) {
             filters = new FileFilter[]{
                         FileFilterFactory.getAllBinaryFileFilter(),
                         FileFilterFactory.getPeExecutableFileFilter(),
                         FileFilterFactory.getElfStaticLibraryFileFilter(),
                         FileFilterFactory.getPeDynamicLibraryFileFilter()
                     };
-        } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+        } else if (CndFileSystemProvider.isMacOS(fs)) {
             filters = new FileFilter[]{
                         FileFilterFactory.getAllBinaryFileFilter(),
                         FileFilterFactory.getMacOSXExecutableFileFilter(),

@@ -141,7 +141,9 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                             addColoring(result, highlights, object.getDeclarationName().getOffsetRange(), coloring);
                         }
                         for(JsObject param: ((JsFunction)object).getParameters()) {
-                            count(result, param, highlights);
+                            if (!(object instanceof JsObjectReference && !((JsObjectReference)object).getOriginal().isAnonymous())) {
+                                count(result, param, highlights);
+                            }
                             if (!hasSourceOccurences(result, param)) {
                                 OffsetRange range = LexUtilities.getLexerOffsets(result, param.getDeclarationName().getOffsetRange());
                                 if (range.getStart() < range.getEnd()) {

@@ -268,8 +268,10 @@ public class ElementJavadoc {
                                 uri = URI.create(idx < 0 ? link : link.substring(0, idx));
                                 if (!uri.isAbsolute() && ElementJavadoc.this.handle != null) {
                                     Element e = ElementJavadoc.this.handle.resolve(controller);
-                                    PackageElement pe = controller.getElements().getPackageOf(e);                                        
-                                    uri = URI.create(FileObjects.getRelativePath(pe.getQualifiedName().toString(), uri.getPath()));
+                                    if (e != null) {
+                                        PackageElement pe = controller.getElements().getPackageOf(e);                                        
+                                        uri = URI.create(FileObjects.getRelativePath(pe.getQualifiedName().toString(), uri.getPath()));
+                                    }
                                 }
                             } catch (IllegalArgumentException iae) {}
                             if (uri != null) {
@@ -349,8 +351,7 @@ public class ElementJavadoc {
         StringBuilder content = new StringBuilder();
         JavadocHelper.TextStream page = null;
         if (element != null) {
-            // XXX would be better to avoid testing network connections in case we get a source fo anyway
-            page = JavadocHelper.getJavadoc(element, cancel);
+            page = JavadocHelper.getJavadoc(element, false, cancel);
             if (page != null) {
                 docURL = page.getLocation();
             }

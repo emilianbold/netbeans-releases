@@ -49,7 +49,7 @@ import org.openide.filesystems.FileObject;
  * Provider for project directories.
  * <p>
  * If supported, implementations can be found in project's lookup.
- * @sice 1.49
+ * @since 1.49
  */
 public interface ProjectDirectoriesProvider {
 

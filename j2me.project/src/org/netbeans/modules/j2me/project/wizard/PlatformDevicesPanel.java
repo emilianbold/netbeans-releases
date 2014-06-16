@@ -112,6 +112,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
     private final HashMap<String, J2MEPlatform.J2MEProfile> name2profile = new HashMap<>();
     private int firstConfigurationWidth = -1;
     private ArrayList<JCheckBox> optionalPackages;
+    private HashMap<J2MEPlatform.Device, List<String>> devices2packages;
     private J2MEProjectProperties props;
     private Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> configs;
     private DataSource[] data;
@@ -152,10 +153,10 @@ public class PlatformDevicesPanel extends SettingsPanel {
         configCombo.setRenderer(new ConfigListCellRenderer());
         configCombo.setModel(props.CONFIGS_MODEL);
         this.data = new DataSource[]{
+            new MultiCheckboxDataSource(J2MEProjectProperties.PROP_PLATFORM_APIS, optionalPackages, configCombo, configs),
             new ComboDataSource(J2MEProjectProperties.PROP_PLATFORM_DEVICE, deviceComboBox, configCombo, configs),
             new ButtonGroupDataSource(J2MEProjectProperties.PROP_PLATFORM_CONFIGURATION, configurationsGroup, configCombo, configs),
-            new ButtonGroupDataSource(J2MEProjectProperties.PROP_PLATFORM_PROFILE, profilesGroup, configCombo, configs),
-            new MultiCheckboxDataSource(J2MEProjectProperties.PROP_PLATFORM_APIS, optionalPackages, configCombo, configs)
+            new ButtonGroupDataSource(J2MEProjectProperties.PROP_PLATFORM_PROFILE, profilesGroup, configCombo, configs)
         };
         configChanged(props.activeConfig);
     }
@@ -175,6 +176,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         configurationsGroup = J2MEProjectUtils.getConfigurationsButtonGroup();
         profilesGroup = J2MEProjectUtils.getProfilesButtonGroup();
         optionalPackages = J2MEProjectUtils.getOptionalPackages();
+        devices2packages = J2MEProjectUtils.getOptionalPackagesForDevices();
     }
 
     private void postInitComponents() {
@@ -548,6 +550,9 @@ public class PlatformDevicesPanel extends SettingsPanel {
 
     private void deviceComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deviceComboBoxActionPerformed
         updateConfigsAndProfiles();
+        if (!wizard) {
+            displayCorrectOptionalPackages();
+        }
     }//GEN-LAST:event_deviceComboBoxActionPerformed
 
     private void platformComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_platformComboBoxActionPerformed
@@ -709,7 +714,6 @@ public class PlatformDevicesPanel extends SettingsPanel {
             }
         }
         updateConfigsAndProfiles();
-        updateOptionalPackages();
     }
 
     private synchronized void updateConfigsAndProfiles() {
@@ -733,25 +737,19 @@ public class PlatformDevicesPanel extends SettingsPanel {
         updateGroup(profilesGroup, name2profile.keySet(), defProf);
     }
 
-    private synchronized void updateOptionalPackages() {
-        final J2MEPlatform.Device device = getDevice();
-        String defCfg = null, defProf = null;
-        name2profile.clear();
+    private void displayCorrectOptionalPackages() {
+        J2MEPlatform.Device device = getDevice();
         if (device != null) {
-            final J2MEPlatform.J2MEProfile p[] = device.getProfiles();
-            for (J2MEPlatform.J2MEProfile p1 : p) {
-                name2profile.put(p1.toString(), p1);
-                if (p1.isDefault()) {
-                    if (J2MEPlatform.J2MEProfile.TYPE_CONFIGURATION.equals(p1.getType())) {
-                        defCfg = p1.toString();
-                    } else if (J2MEPlatform.J2MEProfile.TYPE_PROFILE.equals(p1.getType())) {
-                        defProf = p1.toString();
-                    }
+            List<String> deviceOpts = devices2packages.get(device);
+            for (JCheckBox cb : optionalPackages) {
+                if (deviceOpts.contains(cb.getActionCommand())) {
+                    cb.setVisible(true);
+                } else {
+                    cb.setSelected(false);
+                    cb.setVisible(false);
                 }
             }
         }
-        updateGroup(configurationsGroup, name2profile.keySet(), defCfg);
-        updateGroup(profilesGroup, name2profile.keySet(), defProf);
     }
 
     private void updateGroup(final ButtonGroup grp, final Set<String> enabled, final String def) {

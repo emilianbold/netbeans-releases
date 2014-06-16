@@ -67,7 +67,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Eric Barboni <skygo@netbeans.org>
  */
 @ServiceProvider(service = Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedAnnotationTypes({"org.openide.loaders.DataObject.Registration", "org.openide.loaders.DataObject.Registrations"})
 public class DataObjectFactoryProcessor extends LayerGeneratingProcessor {
 

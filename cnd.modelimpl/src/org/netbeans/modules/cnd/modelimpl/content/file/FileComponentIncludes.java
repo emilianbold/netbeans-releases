@@ -80,6 +80,11 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
         @Override
         public void appendFrom(FileComponentIncludes fileIncludes) {
         }
+
+        @Override
+        boolean addInclude(IncludeImpl includeImpl, boolean broken) {
+            return false;
+        }
         
         @Override
         void put() {

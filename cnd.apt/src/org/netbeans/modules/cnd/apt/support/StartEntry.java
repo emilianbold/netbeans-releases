@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.KeyFactory;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -68,6 +69,7 @@ public final class StartEntry implements Persistent {
     transient private final FileSystem fileSystem;
     
     public StartEntry(FileSystem fs, String startFile, Key startFileProject) {
+        Parameters.notNull("startFileProject", startFileProject); //NOI18N
         this.fileSystem = fs;
         this.startFile = FilePathCache.getManager().getString(startFile);
         this.startFileProject = startFileProject;

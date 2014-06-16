@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -60,7 +59,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
@@ -110,12 +108,12 @@ import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities.TypeInfoCollector;
 import org.netbeans.modules.cnd.utils.Antiloop;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.Pair;
 
 /**
  *
@@ -650,11 +648,11 @@ public final class CompletionSupport implements DocumentListener {
                             instantiations.add(inst);
                         }
                     }
-                    // resolving was started from macros and we should use context scope
+                    // TODO: run this check only if resolving was started from macros and we should use context scope
                     int counter = Antiloop.MAGIC_PLAIN_TYPE_RESOLVING_CONST;
-                    while (retType != null && !CsmBaseUtilities.isValid(retType.getClassifier()) && counter > 0) {
+                    while (retType != null && !CsmBaseUtilities.isValid(retType.getClassifier()) && !CharSequenceUtils.isNullOrEmpty(retType.getClassifierText()) && counter > 0) {
                         retType = CsmEntityResolver.resolveType(
-                                retType.getText(), 
+                                retType.getClassifierText(), 
                                 retType.getContainingFile(), 
                                 retType.getStartOffset(), 
                                 ctx.getContextScope(), 
@@ -969,38 +967,48 @@ public final class CompletionSupport implements DocumentListener {
         return true;
     }
 
-    public static boolean needShowCompletionOnTextLite(JTextComponent target, String typedText) {
+    public static boolean needShowCompletionOnTextLite(JTextComponent target, String typedText, String[] triggers) {
         char typedChar = typedText.charAt(typedText.length() - 1);
-        return typedChar == ' ' || typedChar == '>' || typedChar == ':' || typedChar == '.' || typedChar == '*';
+        for(String pattern : triggers) {
+            if (pattern.length() > 0) {
+                if (pattern.charAt(pattern.length()-1) == typedChar)  {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     
-    public static boolean needShowCompletionOnText(JTextComponent target, String typedText) throws BadLocationException {
-        if (needShowCompletionOnTextLite(target, typedText)) {
+    public static boolean needShowCompletionOnText(JTextComponent target, String typedText, String[] triggers) {
+        if (needShowCompletionOnTextLite(target, typedText, triggers)) {
             int dotPos = target.getCaret().getDot();
             Document doc = target.getDocument();
-            TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, dotPos, true, true);
-            if (ts == null) {
-                return false;
-            }
-            Token token = ts.token();
-            if (!ts.movePrevious()) {
-                return false;
-            }
-            TokenId id = token.id();
-            if(id instanceof CppTokenId) {
-                switch ((CppTokenId)id) {
-                    case WHITESPACE:
-                        return token.length() == 1 && id == CppTokenId.NEW;
-                    case ARROW:
-                        return true;
-                    case DOT:
-                        return true;
-                    case ARROWMBR:
-                    case DOTMBR:
-                        return true;
-                    case SCOPE:
-                        return true;
+            for (String pattern : triggers) {
+                if (!pattern.isEmpty()) {
+                    if (dotPos >= pattern.length()) {
+                        try {
+                            String text = doc.getText(dotPos-pattern.length(), pattern.length());
+                            if (pattern.equals(text)) {
+                                if (dotPos > pattern.length()) {
+                                    char prev = doc.getText(dotPos-pattern.length()-1, 1).charAt(0);
+                                    char first = pattern.charAt(0);
+                                    if (Character.isJavaIdentifierPart(first)) {
+                                        if (!Character.isJavaIdentifierPart(prev)) {
+                                            return true;
+                                        }
+                                    } else {
+                                        return true;
+                                    }
+                                } else {
+                                    return true;
+                                }
+                            }
+                        } catch (BadLocationException ex) {
+                            //
+                        }
+                    }
                 }
+                
             }
         }
         return false;

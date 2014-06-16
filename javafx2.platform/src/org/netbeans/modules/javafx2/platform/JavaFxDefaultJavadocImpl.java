@@ -45,6 +45,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.java.j2seplatform.spi.J2SEPlatformDefaultJavadoc;
@@ -59,16 +61,22 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = J2SEPlatformDefaultJavadoc.class, position = 200, path="org-netbeans-api-java/platform/j2seplatform/defaultJavadocProviders")
 public final class JavaFxDefaultJavadocImpl implements J2SEPlatformDefaultJavadoc {
 
-    private static final SpecificationVersion JDK7 = new SpecificationVersion("1.7");   //NOI18N
-    private static final String JFX_JAVADOC = "http://docs.oracle.com/javafx/2/api/";   //NOI18N
+    private static final Map<SpecificationVersion,String> OFFICIAL_JAVADOC;
+    static {
+        final Map<SpecificationVersion,String> jdocs = new HashMap<>();
+        jdocs.put(new SpecificationVersion("1.7"), "http://docs.oracle.com/javafx/2/api/"); //NOI18N
+        jdocs.put(new SpecificationVersion("1.8"), "http://docs.oracle.com/javase/8/javafx/api/"); //NOI18N
+        OFFICIAL_JAVADOC = Collections.unmodifiableMap(jdocs);
+    }
 
     @Override
     @NonNull
     public Collection<URI> getDefaultJavadoc(@NonNull final JavaPlatform platform) {
         final SpecificationVersion spec = platform.getSpecification().getVersion();
-        if (JDK7.compareTo(spec) <= 0) {
+        final String uri = OFFICIAL_JAVADOC.get(spec);
+        if (uri != null) {
             try {
-                return Collections.singletonList(new URI(JFX_JAVADOC));
+                return Collections.singletonList(new URI(uri));
             } catch (URISyntaxException ex) {
                 Exceptions.printStackTrace(ex);
             }

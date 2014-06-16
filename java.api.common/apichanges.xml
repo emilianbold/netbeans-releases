@@ -105,6 +105,20 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="SourceLevelQuery-platformType">
+            <api name="java-api-common"/>
+            <summary>Added a <code>SourceLevelQueryImplementation2</code> factory for non J2SE platform</summary>
+            <version major="1" minor="72"/>
+            <date day="16" month="4" year="2014"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                   Added a <code>SourceLevelQueryImplementation2</code> factory for non J2SE platform.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.queries" name="QuerySupport"/>
+        </change>
         <change id="LibrariesNode-bootcp">
             <api name="java-api-common"/>
             <summary>Possibility to override project's bootstrap libraries</summary>

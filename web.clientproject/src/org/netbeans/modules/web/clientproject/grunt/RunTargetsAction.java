@@ -59,12 +59,14 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.grunt.TargetLister.Target;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.Actions;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.util.ContextAwareAction;
@@ -86,7 +88,8 @@ import org.openide.util.actions.SystemAction;
 @ActionRegistration(displayName = "#LBL_run_targets_action", lazy = false)
 @ActionReferences(value = {
     @ActionReference(position = 900, path = "Editors/text/grunt+javascript/Popup"),
-    @ActionReference(position = 150, path = "Loaders/text/grunt+javascript/Actions")
+    @ActionReference(position = 150, path = "Loaders/text/grunt+javascript/Actions"),
+    @ActionReference(path="Projects/org-netbeans-modules-web-clientproject/Actions", position = 180)
 })
 public final class RunTargetsAction extends SystemAction implements ContextAwareAction {
 
@@ -137,12 +140,17 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
         
         public ContextAction(Lookup lkp) {
             super(SystemAction.get(RunTargetsAction.class).getName());
+            putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
             Collection<? extends FileObject> apcs = lkp.lookupAll(FileObject.class);
             FileObject _file = null;
             if (apcs.size() == 1) {
                 _file = apcs.iterator().next();
                 if (!_file.isValid()) {
                     _file = null;
+                }
+                Project project = lkp.lookup(Project.class);
+                if (project!=null) {
+                    _file = project.getProjectDirectory().getFileObject("Gruntfile.js");
                 }
             }
             file = _file;

@@ -143,5 +143,3 @@ class Calculator extends atoum\test {
         ;
     }
 }
-
-?>

@@ -49,6 +49,7 @@ import com.sun.jna.Structure;
 import com.sun.jna.WString;
 import com.sun.jna.win32.StdCallLibrary;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -169,6 +170,14 @@ public class Win32Protect implements EncryptionProvider {
         }
         void zero() {
             ((Memory) pbData).clear();
+        }
+
+        @Override
+        protected List getFieldOrder() {
+            return Arrays.asList( new String[] {
+                "cbData",
+                "pbData",
+            } );
         }
     }
 

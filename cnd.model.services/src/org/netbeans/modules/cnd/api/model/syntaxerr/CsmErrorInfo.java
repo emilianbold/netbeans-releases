@@ -51,9 +51,10 @@ public interface CsmErrorInfo {
     /**
      * Represents severity level
      */
-    enum Severity {
+    enum Severity { 
         ERROR,
-        WARNING
+        WARNING,
+        HINT
     }
 
     /**

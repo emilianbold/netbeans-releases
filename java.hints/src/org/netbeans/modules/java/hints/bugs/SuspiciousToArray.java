@@ -103,6 +103,9 @@ public class SuspiciousToArray {
     public static ErrorDescription run(HintContext ctx) {
         TreePath expr = ctx.getPath();
         TreePath colPath = ctx.getVariables().get("$c");
+        if (colPath == null) {
+            return null;
+        }
         CompilationInfo ci = ctx.getInfo();
         
         TypeMirror colType = ci.getTrees().getTypeMirror(colPath);

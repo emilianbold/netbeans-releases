@@ -51,6 +51,7 @@ import java.io.File;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -63,6 +64,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.nette.tester.preferences.TesterPreferences;
 import org.netbeans.modules.php.nette.tester.preferences.TesterPreferencesValidator;
+import org.netbeans.modules.php.nette.tester.util.TesterUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
@@ -95,9 +97,11 @@ public class CustomizerTester extends JPanel implements HelpCtx.Provider {
         initFile(TesterPreferences.isTesterEnabled(phpModule),
                 TesterPreferences.getTesterPath(phpModule),
                 testerCheckBox, testerTextField);
+        initBinaryExecutable();
 
-        enableFile(phpIniCheckBox.isSelected(), phpIniLabel, phpIniTextField, phpIniBrowseButton);
-        enableFile(testerCheckBox.isSelected(), testerLabel, testerTextField, testerBrowseButton);
+        enableComponents(phpIniCheckBox.isSelected(), phpIniLabel, phpIniTextField, phpIniBrowseButton);
+        enableComponents(testerCheckBox.isSelected(), testerLabel, testerTextField, testerBrowseButton);
+        enableComponents(binaryExecutableCheckBox.isSelected(), binaryExecutableLabel, binaryExecutableComboBox);
 
         addListeners();
         validateData();
@@ -114,7 +118,7 @@ public class CustomizerTester extends JPanel implements HelpCtx.Provider {
         return new HelpCtx("org.netbeans.modules.php.nette.tester.ui.customizer.CustomizerTester"); // NOI18N
     }
 
-    void enableFile(boolean enabled, JComponent... components) {
+    void enableComponents(boolean enabled, JComponent... components) {
         for (JComponent component : components) {
             component.setEnabled(enabled);
         }
@@ -144,6 +148,8 @@ public class CustomizerTester extends JPanel implements HelpCtx.Provider {
         TesterPreferences.setPhpIniPath(phpModule, phpIniTextField.getText());
         TesterPreferences.setTesterEnabled(phpModule, testerCheckBox.isSelected());
         TesterPreferences.setTesterPath(phpModule, testerTextField.getText());
+        TesterPreferences.setBinaryEnabled(phpModule, binaryExecutableCheckBox.isSelected());
+        TesterPreferences.setBinaryExecutable(phpModule, (String) binaryExecutableComboBox.getSelectedItem());
     }
 
     private void initFile(boolean enabled, String file, JCheckBox checkBox, JTextField textField) {
@@ -151,13 +157,22 @@ public class CustomizerTester extends JPanel implements HelpCtx.Provider {
         textField.setText(file);
     }
 
+    private void initBinaryExecutable() {
+        binaryExecutableCheckBox.setSelected(TesterPreferences.isBinaryEnabled(phpModule));
+        for (String binaryExecutable : TesterUtils.BINARY_EXECUTABLES) {
+            binaryExecutableComboBox.addItem(binaryExecutable);
+        }
+        binaryExecutableComboBox.setSelectedItem(TesterPreferences.getBinaryExecutable(phpModule));
+    }
+
     private void addListeners() {
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
+        ActionListener defaultActionListener = new DefaultActionListener();
 
         phpIniCheckBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
-                enableFile(e.getStateChange() == ItemEvent.SELECTED, phpIniLabel, phpIniTextField, phpIniBrowseButton);
+                enableComponents(e.getStateChange() == ItemEvent.SELECTED, phpIniLabel, phpIniTextField, phpIniBrowseButton);
                 validateData();
             }
         });
@@ -166,11 +181,20 @@ public class CustomizerTester extends JPanel implements HelpCtx.Provider {
         testerCheckBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
-                enableFile(e.getStateChange() == ItemEvent.SELECTED, testerLabel, testerTextField, testerBrowseButton);
+                enableComponents(e.getStateChange() == ItemEvent.SELECTED, testerLabel, testerTextField, testerBrowseButton);
                 validateData();
             }
         });
         testerTextField.getDocument().addDocumentListener(defaultDocumentListener);
+
+        binaryExecutableCheckBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                enableComponents(e.getStateChange() == ItemEvent.SELECTED, binaryExecutableLabel, binaryExecutableComboBox);
+                validateData();
+            }
+        });
+        binaryExecutableComboBox.addActionListener(defaultActionListener);
     }
 
     private File getDefaultDirectory() {
@@ -202,6 +226,9 @@ public class CustomizerTester extends JPanel implements HelpCtx.Provider {
         testerLabel = new JLabel();
         testerTextField = new JTextField();
         testerBrowseButton = new JButton();
+        binaryExecutableCheckBox = new JCheckBox();
+        binaryExecutableLabel = new JLabel();
+        binaryExecutableComboBox = new JComboBox<String>();
 
         Mnemonics.setLocalizedText(phpIniCheckBox, NbBundle.getMessage(CustomizerTester.class, "CustomizerTester.phpIniCheckBox.text")); // NOI18N
 
@@ -227,15 +254,15 @@ public class CustomizerTester extends JPanel implements HelpCtx.Provider {
             }
         });
 
+        Mnemonics.setLocalizedText(binaryExecutableCheckBox, NbBundle.getMessage(CustomizerTester.class, "CustomizerTester.binaryExecutableCheckBox.text")); // NOI18N
+
+        binaryExecutableLabel.setLabelFor(binaryExecutableComboBox);
+        Mnemonics.setLocalizedText(binaryExecutableLabel, NbBundle.getMessage(CustomizerTester.class, "CustomizerTester.binaryExecutableLabel.text")); // NOI18N
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(phpIniCheckBox)
-                    .addComponent(testerCheckBox))
-                .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGap(21, 21, 21)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -248,9 +275,20 @@ public class CustomizerTester extends JPanel implements HelpCtx.Provider {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(testerLabel)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(testerTextField, GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
+                        .addComponent(testerTextField)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(testerBrowseButton))))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(phpIniCheckBox)
+                    .addComponent(testerCheckBox)
+                    .addComponent(binaryExecutableCheckBox)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addComponent(binaryExecutableLabel)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(binaryExecutableComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {phpIniBrowseButton, testerBrowseButton});
@@ -271,7 +309,12 @@ public class CustomizerTester extends JPanel implements HelpCtx.Provider {
                     .addComponent(testerLabel)
                     .addComponent(testerTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(testerBrowseButton))
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(binaryExecutableCheckBox)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(binaryExecutableLabel)
+                    .addComponent(binaryExecutableComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -305,6 +348,9 @@ public class CustomizerTester extends JPanel implements HelpCtx.Provider {
     }//GEN-LAST:event_testerBrowseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JCheckBox binaryExecutableCheckBox;
+    private JComboBox<String> binaryExecutableComboBox;
+    private JLabel binaryExecutableLabel;
     private JButton phpIniBrowseButton;
     private JCheckBox phpIniCheckBox;
     private JLabel phpIniLabel;
@@ -335,6 +381,15 @@ public class CustomizerTester extends JPanel implements HelpCtx.Provider {
         }
 
         private void processUpdate() {
+            validateData();
+        }
+
+    }
+
+    private final class DefaultActionListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
             validateData();
         }
 

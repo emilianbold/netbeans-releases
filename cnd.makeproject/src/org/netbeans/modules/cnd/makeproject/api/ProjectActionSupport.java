@@ -47,6 +47,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -94,9 +95,11 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.api.terminal.TerminalSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.execution.IOTabsController;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -659,6 +662,12 @@ public class ProjectActionSupport {
             }
             return false;
         }
+        
+        private final String FILE_LOCATIONS[] = {
+            "/usr/bin", //NOI18N
+            "/usr/sbin", //NOI18N
+            "/bin" //NOI18N
+        };    
 
         private boolean checkExecutable(ProjectActionEvent pae) {
             // Check if something is specified
@@ -748,8 +757,13 @@ public class ProjectActionSupport {
                             LOGGER.log(Level.SEVERE, "Path Mapper not found for project {0} - using local path {1}", new Object[]{pae.getProject(), executable}); //NOI18N
                         }
                     }
-                    ExitStatus res = ProcessUtils.execute(execEnv, "test", "-x", executable, "-a", "-f", executable); // NOI18N
-                    ok = res.isOK();
+
+                    
+                    String testUtility = HostInfoUtils.searchFile(execEnv, Arrays.asList(FILE_LOCATIONS), "test", true); //NOI18N                    
+                    if (testUtility != null) { //otherwise will try to run/debug
+                        ExitStatus res = ProcessUtils.execute(execEnv, testUtility, "-x", executable, "-a", "-f", executable); // NOI18N
+                        ok = res.isOK();
+                    }
                 } else {
                     // FIXUP: getExecutable should really return fully qualified name to executable including .exe
                     // but it is too late to change now. For now try both with and without.

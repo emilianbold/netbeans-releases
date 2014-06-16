@@ -163,6 +163,8 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                     <attr name="position" intvalue="720"/>
                 </file>
 
+                <!-- ??? - code coverage [dynamic] -->
+
                 <file name="sep-3.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="750"/>

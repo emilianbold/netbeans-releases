@@ -32,6 +32,10 @@ package org.netbeans.modules.cnd.refactoring.elements;
 
 import java.util.EnumSet;
 import javax.swing.Icon;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.StyledDocument;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -44,6 +48,7 @@ import org.netbeans.modules.refactoring.spi.FiltersManager;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -63,6 +68,7 @@ public class CsmRefactoringElementImpl extends SimpleRefactoringElementImplement
     private final Object enclosing;
     
     private final boolean isDecl;
+    private final boolean isScope;
     private final boolean isInMacros;
     private final boolean isInDeadCode;
     private final boolean isInComments;
@@ -80,9 +86,30 @@ public class CsmRefactoringElementImpl extends SimpleRefactoringElementImplement
         }  
         this.enclosing = composite;
         this.isDecl = CsmReferenceResolver.getDefault().isKindOf(elem, EnumSet.of(CsmReferenceKind.DECLARATION, CsmReferenceKind.DEFINITION));
+        this.isScope = isScope(elem);
         this.isInMacros = CsmReferenceResolver.getDefault().isKindOf(elem, EnumSet.of(CsmReferenceKind.IN_PREPROCESSOR_DIRECTIVE));
         this.isInDeadCode = CsmReferenceResolver.getDefault().isKindOf(elem, EnumSet.of(CsmReferenceKind.IN_DEAD_BLOCK));
         this.isInComments = CsmReferenceResolver.getDefault().isKindOf(elem, EnumSet.of(CsmReferenceKind.COMMENT));
+    }
+
+    private boolean isScope(CsmReference ref) {
+        CsmFile csmFile = ref.getContainingFile();
+        int stToken = ref.getStartOffset();
+        int endToken = ref.getEndOffset();
+        CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(csmFile);
+        StyledDocument stDoc = CsmUtilities.openDocument(ces);
+        if (stDoc instanceof BaseDocument) {
+            BaseDocument doc = (BaseDocument) stDoc;
+            try {
+                int startLine = Utilities.getRowFirstNonWhite(doc, stToken);
+                int endLine = Utilities.getRowLastNonWhite(doc, endToken) + 1;
+                String restText = doc.getText(endToken, endLine - startLine).trim();
+                return restText.startsWith("::"); //NOI18N
+            } catch (BadLocationException ex) {
+                // skip
+            }
+        }
+        return false;
     }
         
     @Override
@@ -137,6 +164,9 @@ public class CsmRefactoringElementImpl extends SimpleRefactoringElementImplement
     @Override
     public boolean filter(FiltersManager manager) {
         if (isDecl && !manager.isSelected(CsmWhereUsedFilters.DECLARATIONS.getKey())) {
+            return false;
+        }
+        if (isScope && !manager.isSelected(CsmWhereUsedFilters.SCOPE.getKey())) {
             return false;
         }
         if (isInMacros && !manager.isSelected(CsmWhereUsedFilters.MACROS.getKey())) {

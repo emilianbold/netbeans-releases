@@ -53,6 +53,7 @@ import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -95,6 +96,14 @@ public class FileObjectArchive implements Archive {
     public JavaFileObject getFile(String name) throws IOException {
         final FileObject file = root.getFileObject(name);
         return file == null ? null : FileObjects.sourceFileObject(file, root, null, false);
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+            "%s[folder: %s]",   //NOI18N
+            getClass().getSimpleName(),
+            FileUtil.getFileDisplayName(root));
     }
 
 }

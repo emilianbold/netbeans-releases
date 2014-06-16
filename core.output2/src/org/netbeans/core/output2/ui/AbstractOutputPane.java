@@ -378,7 +378,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
                 int spaceAround
                         = (textView.getVisibleRect().height - rect.height) / 2;
                 Rectangle centeredRect = new Rectangle(
-                        rect.x, rect.y - spaceAround + rect.height,
+                        rect.x, Math.max(0, rect.y - spaceAround + rect.height),
                         rect.width, spaceAround * 2 + rect.height);
                 textView.scrollRectToVisible(centeredRect);
             }
@@ -592,7 +592,10 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
 
 
     private void hasSelectionChanged(boolean sel) {
-        ((AbstractOutputTab) getParent()).hasSelectionChanged(sel);
+        AbstractOutputTab parent = (AbstractOutputTab) getParent();
+        if (parent != null) { // #243686
+            parent.hasSelectionChanged(sel);
+        }
     }
 
     public final void changedUpdate(DocumentEvent e) {

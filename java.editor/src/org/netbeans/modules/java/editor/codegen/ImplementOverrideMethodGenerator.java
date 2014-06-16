@@ -179,8 +179,12 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
                                 org.netbeans.editor.Utilities.setStatusBoldText(component, message);
                             } else {
                                 ArrayList<ExecutableElement> methodElements = new ArrayList<ExecutableElement>();
-                                for (ElementHandle<? extends Element> elementHandle : panel.getSelectedMethods())
-                                    methodElements.add((ExecutableElement)elementHandle.resolve(copy));
+                                for (ElementHandle<? extends Element> elementHandle : panel.getSelectedMethods()) {
+                                    ExecutableElement methodElement = (ExecutableElement)elementHandle.resolve(copy);
+                                    if (methodElement != null) {
+                                        methodElements.add(methodElement);
+                                    }
+                                }
                                 if (!methodElements.isEmpty()) {
                                     if (isImplement)
                                         GeneratorUtils.generateAbstractMethodImplementations(copy, path, methodElements, caretOffset);

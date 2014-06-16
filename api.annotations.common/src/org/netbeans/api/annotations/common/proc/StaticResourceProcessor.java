@@ -61,7 +61,7 @@ import javax.tools.JavaFileManager;
 import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.StaticResource;
 
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class StaticResourceProcessor extends AbstractProcessor {
 
     public @Override Set<String> getSupportedAnnotationTypes() {

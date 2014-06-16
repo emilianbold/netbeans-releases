@@ -65,18 +65,19 @@ public final class ExpressionsFactory {
         } else {
             expr = new ExpressionBase(ast, file, scope);
         }
-                
-        AST token = ast.getFirstChild();
-        List<CsmStatement> lambdas = new ArrayList<>();
-        while (token != null) {
-            if(token.getType() == CPPTokenTypes.CSM_DECLARATION_STATEMENT) {
-                lambdas.add(AstRenderer.renderStatement(token, file, scope));
+        if (ast != null) {
+            AST token = ast.getFirstChild();
+            List<CsmStatement> lambdas = new ArrayList<>();
+            while (token != null) {
+                if(token.getType() == CPPTokenTypes.CSM_DECLARATION_STATEMENT) {
+                    lambdas.add(AstRenderer.renderStatement(token, file, scope));
+                }
+                token = token.getNextSibling();
             }
-            token = token.getNextSibling();
+            if(!lambdas.isEmpty()) {
+                expr.setLambdas(lambdas);
+            }
         }
-        if(!lambdas.isEmpty()) {
-            expr.setLambdas(lambdas);
-        }        
         return expr;
     }
     

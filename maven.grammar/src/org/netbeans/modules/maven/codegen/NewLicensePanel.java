@@ -200,7 +200,7 @@ public class NewLicensePanel extends javax.swing.JPanel {
                             dn = dn.substring("license-".length());
                         }
                     }
-                    Tuple tup = new Tuple(url, dn);
+                    Tuple tup = new Tuple(url.replaceFirst(" .+", ""), dn);
                     dlm.addElement(tup);
                 }
             }

@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
@@ -96,6 +97,9 @@ import org.openide.filesystems.FileUtil;
     
     ExternalUpdateListener(final ModelSupport outer) {
         this.modelSupport = outer;
+        if (TraceFlags.MERGE_EVENTS) {
+            CndUtils.assertTrue(false, "ExternalUpdateListener shoudl not be used if MERGE_EVENTS flag is set"); //NOI18N
+        }
     }
 
     /** FileChangeListener implementation. Fired when a file is changed. */
@@ -120,7 +124,7 @@ import org.openide.filesystems.FileUtil;
         if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
             LOG.log(Level.INFO, "External updates: try to register fileRenamed {0}", fe);
         }     
-        final ModelImpl model = modelSupport.theModel;
+        final ModelImpl model = modelSupport.getModel();
         if (model != null) {
             final FileObject fo = fe.getFile();
             if (isCOrCpp(fo)) {
@@ -168,7 +172,7 @@ import org.openide.filesystems.FileUtil;
                 events = new LinkedList<>();
             }            
             for (Pair pair : curEvents) {
-                ModelImpl model = modelSupport.theModel;
+                ModelImpl model = modelSupport.getModel();
                 if (model == null) {
                     return;
                 }
@@ -238,7 +242,7 @@ import org.openide.filesystems.FileUtil;
     }
 
     private void register(FileEvent fe, EventKind kind) {
-        final ModelImpl model = modelSupport.theModel;
+        final ModelImpl model = modelSupport.getModel();
         if (model != null) {
             final FileObject fo = fe.getFile();
             if (!fo.isValid() || isCOrCpp(fo)) {

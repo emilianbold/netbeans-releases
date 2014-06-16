@@ -69,7 +69,7 @@ import org.openide.util.Task;
  * @author Jan Jancura
  * @author Max Sauer
  */
-class KeymapViewModel extends DefaultTableModel {
+class KeymapViewModel extends DefaultTableModel implements Runnable {
     private KeymapModel         model = new KeymapModel ();
     
     private MutableShortcutsModel   mutableModel;
@@ -102,11 +102,28 @@ class KeymapViewModel extends DefaultTableModel {
     void update() {
         postUpdate();
     }
+
+    /**
+     * Refreshes the table model, after task that computed the data
+     * finishes.
+     */
+    @Override
+    public void run() {
+        update0();
+    }
+    
+    private void scheduleUpdate() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            run();
+        } else {
+            SwingUtilities.invokeLater(this);
+        }
+    }
     
     public Task postUpdate() {
         Task t = initTask;
         if (t != null && t.isFinished()) {
-            update0();
+            scheduleUpdate();
             return t;
         }
         if (t == null) {
@@ -116,15 +133,11 @@ class KeymapViewModel extends DefaultTableModel {
                     mutableModel.getCategories();
                     mutableModel.getItems("");
 
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            update0();
-                        }
-                    });
+                    scheduleUpdate();
                 }
             });
         } else if (t.isFinished()) {
-            update0();
+            scheduleUpdate();
         }
         return t;
     }

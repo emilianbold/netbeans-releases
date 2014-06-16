@@ -102,9 +102,14 @@ public final class DummyParameterImpl extends VariableImpl<CsmParameter> impleme
     @Override
     public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
-    }  
-    
-    public DummyParameterImpl(RepositoryDataInput input) throws IOException {
-        super(input);    
+    }
+
+    @Override
+    protected boolean isScopePersistent() {
+        return false;
+    }
+
+    public DummyParameterImpl(RepositoryDataInput input, CsmScope scope) throws IOException {
+        super(input, scope);
     } 
 }

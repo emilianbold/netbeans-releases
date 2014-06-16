@@ -54,9 +54,9 @@
  */
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
-import org.netbeans.modules.cnd.modelimpl.impl.services.MacroExpansionDocProviderImpl;
 import java.io.File;
 import java.io.PrintStream;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
@@ -108,7 +108,7 @@ public class MacroExpansionUsagesTestCase extends MacroExpansionDocProviderImplB
 
             BaseDocument doc2 = (BaseDocument)createExpandedContextDocument(doc, currentFile);
             assertNotNull(doc2);
-            mp.expand(doc, 0, doc.getLength(), doc2);
+            mp.expand(doc, 0, doc.getLength(), doc2, new AtomicBoolean(false));
             int[][] res = mp.getUsages(doc2, offset);
             if (res != null) {
                 streamOut.println("Usages: "); // NOI18N

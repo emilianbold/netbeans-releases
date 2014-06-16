@@ -240,6 +240,7 @@ public class MultiRowTabDisplayer extends AbstractTabDisplayer implements ListSe
     public void addNotify() {
         super.addNotify();
         tabModel.addComplexListDataListener( this );
+        layoutManager.doLayout();
     }
 
     @Override

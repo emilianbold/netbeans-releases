@@ -66,10 +66,11 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
         if (sup == null) {
             return 0;
         }
-        if (typedText.equals(CsmIncludeCompletionItem.QUOTE) ||
-                typedText.equals(CsmIncludeCompletionItem.SYS_OPEN) ||
-                typedText.equals(" ") || // NOI18N
-                typedText.equals(CsmIncludeCompletionItem.SLASH)) {
+        String[] triggers = CsmCompletionUtils.getPreprocAutoCompletionTrigers();
+        if (!CompletionSupport.needShowCompletionOnTextLite(component, typedText, triggers)) {
+            return 0;
+        }
+        if (CompletionSupport.needShowCompletionOnText(component, typedText, triggers)) {
             int dot = component.getCaret().getDot();
             if (TRACE) {
                 System.err.println("offset " + dot); // NOI18N

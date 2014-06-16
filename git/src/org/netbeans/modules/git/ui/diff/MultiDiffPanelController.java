@@ -888,7 +888,6 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                                 @Override
                                 public void run () {
                                     if (popupIndex == popupViewIndex && menu.isShowing()) {
-                                        menu.setVisible(false);
                                         menu.remove(dummyItem);
                                         for (Action a : actions) {
                                             if (a == null) {
@@ -900,7 +899,6 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                                         }
                                         menu.pack();
                                         menu.repaint();
-                                        menu.setVisible(true);
                                     }
                                 }
                             });

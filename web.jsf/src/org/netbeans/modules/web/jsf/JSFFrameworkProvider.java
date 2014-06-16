@@ -95,6 +95,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.api.JsfComponentUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
@@ -323,6 +324,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     @Override
     public WebModuleExtender createWebModuleExtender(WebModule webModule, ExtenderController controller) {
         boolean isFrameworkAddition = (webModule == null || !isInWebModule(webModule));
+        boolean isMaven = webModule == null ? false : JsfComponentUtils.isMavenBased(webModule);
+        controller.getProperties().setProperty("maven", isMaven);
         if (webModule != null && webModule.getDocumentBase() != null) {
             FileObject docBase = webModule.getDocumentBase();
             Project project = FileOwnerQuery.getOwner(docBase);
@@ -460,7 +463,11 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 }
             }
 
-            WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
+            WebApp ddRoot = null;
+            // issue #244100 - obviously the web project's profile can be unrecognized and the DD needn't still exist
+            if (dd != null) {
+                ddRoot = DDProvider.getDefault().getDDRoot(dd);
+            }
 
             //Add Faces Servlet and servlet-mapping into web.xml
             if (ddRoot != null && ddRoot.getStatus() == WebApp.STATE_VALID) {

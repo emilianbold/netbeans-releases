@@ -49,4 +49,11 @@ public interface Interrupter {
 
     boolean cancelled();
     
+    public static final Interrupter DUMMY = new Interrupter() {
+
+        @Override
+        public boolean cancelled() {
+            return false;
+        }
+    };
 }

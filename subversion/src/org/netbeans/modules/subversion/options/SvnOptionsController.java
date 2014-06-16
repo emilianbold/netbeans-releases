@@ -167,6 +167,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         }
         panel.excludeNewFiles.setSelected(SvnModuleConfig.getDefault().getExludeNewFiles());
         panel.prefixRepositoryPath.setSelected(SvnModuleConfig.getDefault().isRepositoryPathPrefixed());
+        panel.cbDetermineBranches.setSelected(SvnModuleConfig.getDefault().isDetermineBranchesEnabled());
         if (SvnClientFactory.isJavaHl()) {
             panel.cmbPreferredClient.setSelectedItem(panel.panelJavahl);
         } else if (SvnClientFactory.isSvnKit()) {
@@ -196,6 +197,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         SvnModuleConfig.getDefault().setAutoLock(panel.cbAutoLockFiles.isSelected());
         SvnModuleConfig.getDefault().setExcludeNewFiles(panel.excludeNewFiles.isSelected());
         SvnModuleConfig.getDefault().setRepositoryPathPrefixed(panel.prefixRepositoryPath.isSelected());
+        SvnModuleConfig.getDefault().setDetermineBranchesEnabled(panel.cbDetermineBranches.isSelected());
 
         if (clientChanged) {
             SvnClientFactory.resetClient();
@@ -205,6 +207,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         annotationSettings.applyChanges();
         Subversion.getInstance().getAnnotator().refresh();
         Subversion.getInstance().refreshAllAnnotations();        
+        Subversion.getInstance().getStatusCache().getLabelsCache().flushFileLabels((File[])null);
     }
     
     @Override
@@ -231,6 +234,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
                 || SvnModuleConfig.getDefault().getAutoOpenOutput() != panel.cbOpenOutputWindow.isSelected()
                 || SvnModuleConfig.getDefault().isAutoLock() != panel.cbAutoLockFiles.isSelected()
                 || SvnModuleConfig.getDefault().getExludeNewFiles() != panel.excludeNewFiles.isSelected()
+                || SvnModuleConfig.getDefault().isDetermineBranchesEnabled() != panel.cbDetermineBranches.isSelected()
                 || SvnModuleConfig.getDefault().isRepositoryPathPrefixed() != panel.prefixRepositoryPath.isSelected();
     }
 

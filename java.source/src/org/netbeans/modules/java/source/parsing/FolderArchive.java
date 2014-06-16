@@ -184,6 +184,15 @@ public class FolderArchive implements Archive {
         return null;
     }
 
+    @Override
+    public String toString() {
+        return String.format(
+            "%s[folder: %s]",   //NOI18N
+            getClass().getSimpleName(),
+            root.getAbsolutePath()
+        );
+    }
+
     private URL getBaseSourceRoot(final URL binRoot) {
         synchronized (this) {
             if (sourceRootInitialized) {

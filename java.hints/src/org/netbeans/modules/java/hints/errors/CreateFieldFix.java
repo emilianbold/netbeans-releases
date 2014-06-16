@@ -52,6 +52,7 @@ import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
 import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -60,7 +61,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Lahoda
  */
-public final class CreateFieldFix implements Fix {
+public final class CreateFieldFix implements EnhancedFix {
     
     private FileObject targetFile;
     private ElementHandle<TypeElement> target;
@@ -169,5 +170,12 @@ public final class CreateFieldFix implements Fix {
         return hash;
     }
     
+    @Override
+    public CharSequence getSortText() {
+        //see usage at org.netbeans.modules.editor.hints.FixData.getSortText(org.netbeans.spi.editor.hints.Fix):java.lang.CharSequence
     
+        //creates ordering top to bottom: create local variable>create field>create parameter
+        //see org.netbeans.modules.java.hints.errors.AddParameterOrLocalFix.getSortText():java.lang.CharSequence
+        return "Create 6000 " + getText();
+}
 }

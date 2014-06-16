@@ -235,9 +235,12 @@ public class RemoteProjectSupport {
 
     private static boolean isContained(String itemAbsPath, Set<FSPath> paths) {
         for (FSPath dir : paths) {
-            String alreadyAddedPath = dir.getPath() + '/';
-            if (itemAbsPath.startsWith(alreadyAddedPath)) {
-                return true;
+            String alreadyAddedPath = dir.getPath();
+            if (itemAbsPath.startsWith(alreadyAddedPath) && itemAbsPath.length() > alreadyAddedPath.length()) {
+                char c = itemAbsPath.charAt(alreadyAddedPath.length());
+                if (c == '\\' || c == '/') {
+                    return true;
+                }
             }
         }
         return false;

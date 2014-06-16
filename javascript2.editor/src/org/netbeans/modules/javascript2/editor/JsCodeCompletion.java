@@ -310,6 +310,10 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             String documentation = ((JsDocumentationElement) element).getDocumentation();
             return documentation != null ? Documentation.create(documentation) : null;
         }
+        
+        if (OffsetRange.NONE.equals(element.getOffsetRange(info))) {
+            return Documentation.create(NbBundle.getMessage(JsCodeCompletion.class, "MSG_ItemFromUsageDoc"));
+        }
 
         return Documentation.create(NbBundle.getMessage(JsCodeCompletion.class, "MSG_DocNotAvailable"));
     }
@@ -500,6 +504,19 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         List<String> expChain = ModelUtils.resolveExpressionChain(request.result.getSnapshot(), request.anchor, false);
         if (!expChain.isEmpty()) {
             Map<String, List<JsElement>> toAdd = getCompletionFromExpressionChain(request, expChain);
+            
+            FileObject fo = request.result.getSnapshot().getSource().getFileObject();
+            if (fo != null) {
+                long start = System.currentTimeMillis();
+                Collection<IndexedElement> fromUsages = JsIndex.get(request.result.getSnapshot().getSource().getFileObject()).getUsagesFromExpression(expChain);
+                for (IndexedElement indexedElement : fromUsages) {
+                    if (!fo.equals(indexedElement.getFileObject())) { // don't include usage from the edited file. It's covered by the model.
+                        addPropertyToMap(request, addedItems, indexedElement);
+                    }
+                }
+                long end = System.currentTimeMillis();
+                LOGGER.log(Level.FINE, String.format("Counting cc based on usages took: %dms", (end - start)));
+            }
             addedItems.putAll(toAdd);
         }
     }
@@ -542,6 +559,9 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             checkRecursion = 0;
             boolean addFunctionProp = processTypeInModel(request, request.result.getModel(), typeUsage, lastResolvedObjects, expChain.get(1).equals("@pro"), jsIndex, addedProperties);
             isFunction = isFunction || addFunctionProp;
+            if (typeUsage.isResolved()) {
+                addObjectPropertiesFromIndex(typeUsage.getType(), jsIndex, request, addedProperties);
+            }
         }
         for (JsObject resolved : lastResolvedObjects) {
             if(!isFunction && resolved.getJSKind().isFunction()) {
@@ -897,6 +917,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         }
         for (JsObject property : jsObject.getProperties().values()) {
             if (!(property instanceof JsFunction && ((JsFunction) property).isAnonymous())
+                    && !(ModelUtils.getDisplayName(property.getName()).isEmpty())
                     && !property.getModifiers().contains(Modifier.PRIVATE)
                     && !property.getJSKind().isPropertyGetterSetter()) {
                 addPropertyToMap(request, addedProperties, property);
@@ -923,7 +944,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
     
     private void addPropertyToMap(CompletionRequest request, Map<String, List<JsElement>> addedProperties, JsElement property) {    
         String name = property.getName();
-        if (startsWith(name, request.prefix)) {
+        if (startsWith(name, request.prefix) && !(ModelUtils.getDisplayName(property.getName()).isEmpty())) {
             if (!(name.equals(request.prefix) && !property.isDeclared() && request.anchor == property.getOffset())) { // don't include just the prefix
                 List<JsElement> elements = addedProperties.get(name);
                 if (elements == null || elements.isEmpty()) {

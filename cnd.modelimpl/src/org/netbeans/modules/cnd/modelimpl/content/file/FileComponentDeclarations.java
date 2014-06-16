@@ -100,6 +100,11 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
     private static final FileComponentDeclarations EMPTY = new FileComponentDeclarations() {
 
         @Override
+        CsmUID<CsmOffsetableDeclaration> addDeclaration(CsmOffsetableDeclaration decl) {
+            return null;
+        }
+ 
+        @Override
         void put() {
         }
     };

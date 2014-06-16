@@ -105,10 +105,10 @@ public class TooStrongCastTest extends NbTestCase {
     };
     
     private static final String[] METHOD_WARNINGS = {
-        "20:10-20:19:verifier:Unnecessary cast to JViewport", 
-        "27:41-27:63:verifier:Type cast to MouseWheelEvent is too strong. MouseEvent should be used instead", 
-        "33:22-33:29:verifier:Unnecessary cast to JButton", 
-        "39:22-39:37:verifier:Type cast to SuperDerived is too strong. Derived should be used instead"
+        "21:10-21:19:verifier:Unnecessary cast to JViewport", 
+        "28:41-28:63:verifier:Type cast to MouseWheelEvent is too strong. MouseEvent should be used instead", 
+        "34:22-34:29:verifier:Unnecessary cast to JButton", 
+        "40:22-40:37:verifier:Type cast to SuperDerived is too strong. Derived should be used instead"
     };
 
     private static final String[] RETURN_WARNINGS = {

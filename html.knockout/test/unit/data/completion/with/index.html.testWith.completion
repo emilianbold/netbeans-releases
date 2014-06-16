@@ -4,20 +4,20 @@ Code completion result for source line:
 ------------------------------------
 CONSTRUCTO Bulici(): Bulici                [PUBLIC]   index.html
 CONSTRUCTO Clobrda(jmeno): Clobrda         [PUBLIC]   index.html
-CLASS      $context                        [PRIVATE]  index.html
-CLASS      $parentContext                  [PRIVATE]  index.html
-CLASS      ko                              [PUBLIC]   Knockout
+CLASS      $context                        [PRIVATE]  <font color=#999999>index.html</font>
+CLASS      $parentContext                  [PRIVATE]  <font color=#999999>index.html</font>
+CLASS      ko                              [PUBLIC]   <font color=#999999>Knockout</font>
 METHOD     init(): undefined               [PUBLIC]   index.html
 FIELD      age: Number                     [PUBLIC]   index.html
 FIELD      jmeno                           [PUBLIC]   index.html
-VARIABLE   $data                           [PRIVATE]  index.html
-VARIABLE   $element                        [PRIVATE]  index.html
-VARIABLE   $parent: ko.$bindings           [PRIVATE]  index.html
-VARIABLE   $parents: Array                 [PRIVATE]  index.html
-VARIABLE   $root: ko.$bindings             [PRIVATE]  index.html
-VARIABLE   arguments: Arguments            [PRIVATE]  index.html
-VARIABLE   lidickove                       [PUBLIC]   index.html
-VARIABLE   undefined                       [PUBLIC]   index.html
+VARIABLE   $data                           [PRIVATE]  <font color=#999999>index.html</font>
+VARIABLE   $element                        [PRIVATE]  <font color=#999999>index.html</font>
+VARIABLE   $parent: ko.$bindings           [PRIVATE]  <font color=#999999>index.html</font>
+VARIABLE   $parents: Array                 [PRIVATE]  <font color=#999999>index.html</font>
+VARIABLE   $root: ko.$bindings             [PRIVATE]  <font color=#999999>index.html</font>
+VARIABLE   arguments: Arguments            [PRIVATE]  <font color=#999999>index.html</font>
+VARIABLE   lidickove                       [PUBLIC]   <font color=#999999>index.html</font>
+VARIABLE   undefined                       [PUBLIC]   <font color=#999999>index.html</font>
 KEYWORD    break                                      null
 KEYWORD    case                                       null
 KEYWORD    catch                                      null

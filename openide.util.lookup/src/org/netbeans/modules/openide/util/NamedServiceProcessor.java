@@ -73,7 +73,7 @@ import javax.tools.Diagnostic;
 import org.openide.util.lookup.NamedServiceDefinition;
 import org.openide.util.lookup.implspi.AbstractServiceProviderProcessor;
 
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 public final class NamedServiceProcessor extends AbstractServiceProviderProcessor {
     private static final String PATH = "META-INF/namedservices.index"; // NOI18N
     private static Pattern reference = Pattern.compile("@([^/]+)\\(\\)"); // NOI18N

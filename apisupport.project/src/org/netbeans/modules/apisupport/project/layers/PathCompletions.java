@@ -95,7 +95,7 @@ public final class PathCompletions implements Processor {
 
     @Override
     public SourceVersion getSupportedSourceVersion() {
-        return SourceVersion.RELEASE_0;
+        return SourceVersion.latest();
     }
 
     @Override

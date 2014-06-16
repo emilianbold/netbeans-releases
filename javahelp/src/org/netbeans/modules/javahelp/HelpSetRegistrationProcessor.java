@@ -83,7 +83,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 @ServiceProvider(service=Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class HelpSetRegistrationProcessor extends LayerGeneratingProcessor {
 
     public @Override Set<String> getSupportedAnnotationTypes() {

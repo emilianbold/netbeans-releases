@@ -372,7 +372,7 @@ public final class CGSInfo {
             for (PHPDocTypeNode typeNode : typeTag.getTypes()) {
                 String type = typeNode.getValue();
                 if (!Type.isPrimitive(type) && !VariousUtils.isSpecialClassName(type)) {
-                    result = type;
+                    result = typeNode.isArray() ? Type.ARRAY : type;
                     break;
                 }
             }

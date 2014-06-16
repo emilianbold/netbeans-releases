@@ -286,6 +286,15 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
         textPaneClient.setContentType(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.textPaneClient.contentType")); // NOI18N
         textPaneClient.setText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "OptionsPanel.textPaneClient.text")); // NOI18N
 
+        cbDetermineBranches.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(cbDetermineBranches, org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.cbDetermineBranches.text")); // NOI18N
+        cbDetermineBranches.setToolTipText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.cbDetermineBranches.text")); // NOI18N
+        cbDetermineBranches.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                cbDetermineBranchesStateChanged(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -327,6 +336,7 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
+                        .addGap(21, 21, 21)
                         .addComponent(jLabel7)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(manageLabelsButton))
@@ -337,20 +347,21 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
                         .addComponent(jLabel6)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(manageConnSettingsButton))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(cbOpenOutputWindow)
-                            .addComponent(excludeNewFiles)
-                            .addComponent(prefixRepositoryPath)
-                            .addComponent(cbAutoLockFiles)
-                            .addComponent(cbGetRemoteLocks))
-                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(annotationTextField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(addButton))))
+                        .addComponent(addButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(cbDetermineBranches)
+                            .addComponent(cbOpenOutputWindow)
+                            .addComponent(excludeNewFiles)
+                            .addComponent(prefixRepositoryPath)
+                            .addComponent(cbAutoLockFiles)
+                            .addComponent(cbGetRemoteLocks))
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -385,10 +396,12 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
                     .addComponent(jLabel2)
                     .addComponent(annotationTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(addButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(cbDetermineBranches)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel7)
-                    .addComponent(manageLabelsButton))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(manageLabelsButton)
+                    .addComponent(jLabel7))
                 .addGap(0, 0, 0)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
@@ -409,7 +422,7 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
                 .addComponent(excludeNewFiles)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(prefixRepositoryPath)
-                .addContainerGap(25, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         manageConnSettingsButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "ACSN_SvnOptionsPanel.manageConnSettingsButton.text")); // NOI18N
@@ -427,6 +440,12 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
         cbOpenOutputWindow.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "ACSD_SvnOptionsPanel.cbOpenOutput.text")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
+    private void cbDetermineBranchesStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_cbDetermineBranchesStateChanged
+        boolean selected = cbDetermineBranches.isSelected();
+        jLabel7.setEnabled(selected);
+        manageLabelsButton.setEnabled(selected);
+    }//GEN-LAST:event_cbDetermineBranchesStateChanged
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JButton addButton = new javax.swing.JButton();
@@ -434,6 +453,7 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
     final javax.swing.JButton browseButton = new javax.swing.JButton();
     final javax.swing.JButton browseJavahlButton = new javax.swing.JButton();
     final javax.swing.JCheckBox cbAutoLockFiles = new javax.swing.JCheckBox();
+    final javax.swing.JCheckBox cbDetermineBranches = new javax.swing.JCheckBox();
     final javax.swing.JCheckBox cbGetRemoteLocks = new javax.swing.JCheckBox();
     final javax.swing.JCheckBox cbOpenOutputWindow = new javax.swing.JCheckBox();
     final javax.swing.JComboBox cmbPreferredClient = new javax.swing.JComboBox();

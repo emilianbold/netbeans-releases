@@ -241,6 +241,15 @@ public final class FileSystemProvider {
         return true; // for other file system, let us return true - or should it be false? 
     }
     
+    public static boolean isAbsolute(FileSystem fileSystem,  String path) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileSystem)) {
+                return provider.isAbsolute(path);
+            }
+        }
+        return true; // for other file system, let us return true - or should it be false? 
+    }
+
     public static boolean isAbsolute(String path) {
         if (path == null || path.length() == 0) {
             return false;
@@ -469,19 +478,6 @@ public final class FileSystemProvider {
     public enum WarmupMode {
         FILES_CONTENT,
         RECURSIVE_LS
-    }
-    
-    public static void warmup(WarmupMode mode, Collection<FileObject> fileObjects, Collection<String> extensions) {
-        Collection<String> paths = new ArrayList<>();
-        ExecutionEnvironment env = null;
-        for (FileObject fo : fileObjects) {
-            if (env == null) {
-                env = FileSystemProvider.getExecutionEnvironment(fo);
-            } else {
-                RemoteLogger.assertTrue(env.equals(FileSystemProvider.getExecutionEnvironment(fo)));
-            }
-        }
-        warmup(mode, env, paths, extensions);
     }
 
     public static void warmup(WarmupMode mode, ExecutionEnvironment env, Collection<String> paths, Collection<String> extensions) {

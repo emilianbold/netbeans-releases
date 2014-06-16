@@ -2,21 +2,21 @@ Code completion result for source line:
 ko.observableArray("Tom").|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-METHOD     destroy(valueOrPredicate): und  [PUBLIC]   Knockout
-METHOD     destroyAll(arrayOfValues): Arr  [PUBLIC]   Knockout
-METHOD     extend(param)                   [PUBLIC]   Knockout
-METHOD     indexOf(item): Number           [PUBLIC]   Knockout
-METHOD     peek()                          [PUBLIC]   Knockout
-METHOD     pop()                           [PUBLIC]   Knockout
-METHOD     push()                          [PUBLIC]   Knockout
-METHOD     remove(valueOrPredicate): Arra  [PUBLIC]   Knockout
-METHOD     removeAll(arrayOfValues): ko.o  [PUBLIC]   Knockout
-METHOD     replace(oldItem, newItem): und  [PUBLIC]   Knockout
-METHOD     reverse()                       [PUBLIC]   Knockout
-METHOD     shift()                         [PUBLIC]   Knockout
-METHOD     slice(start, end)               [PUBLIC]   Knockout
-METHOD     sort(comparefn)                 [PUBLIC]   Knockout
-METHOD     splice(start, deleteCount)      [PUBLIC]   Knockout
-METHOD     unshift()                       [PUBLIC]   Knockout
-METHOD     valueHasMutated()               [PUBLIC]   Knockout
-METHOD     valueWillMutate()               [PUBLIC]   Knockout
+METHOD     destroy(valueOrPredicate): und  [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     destroyAll(arrayOfValues): Arr  [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     extend(param)                   [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     indexOf(item): Number           [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     peek()                          [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     pop()                           [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     push()                          [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     remove(valueOrPredicate): Arra  [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     removeAll(arrayOfValues): ko.o  [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     replace(oldItem, newItem): und  [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     reverse()                       [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     shift()                         [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     slice(start, end)               [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     sort(comparefn)                 [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     splice(start, deleteCount)      [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     unshift()                       [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     valueHasMutated()               [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     valueWillMutate()               [PUBLIC]   <font color=#999999>Knockout</font>

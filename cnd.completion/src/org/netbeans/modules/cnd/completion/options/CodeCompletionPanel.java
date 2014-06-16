@@ -66,8 +66,8 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
         this.preferences = preferences;
         initComponents();
         autoInsertIncludeDirectives.setSelected(preferences.getBoolean(CsmCompletionUtils.CPP_AUTO_INSERT_INCLUDE_DIRECTIVES, true));
-        autoCompletionTriggersField.setText(preferences.get(CsmCompletionUtils.CPP_AUTO_COMPLETION_TRIGGERS, ".->::")); //NOI18N
-        autoCompletionTriggersPreprocField.setText(preferences.get(CsmCompletionUtils.PREPRPOC_AUTO_COMPLETION_TRIGGERS, "\"<")); //NOI18N
+        autoCompletionTriggersField.setText(preferences.get(CsmCompletionUtils.CPP_AUTO_COMPLETION_TRIGGERS, CsmCompletionUtils.CPP_AUTO_COMPLETION_TRIGGERS_DEFAULT));
+        autoCompletionTriggersPreprocField.setText(preferences.get(CsmCompletionUtils.PREPRPOC_AUTO_COMPLETION_TRIGGERS, CsmCompletionUtils.PREPRPOC_AUTO_COMPLETION_TRIGGERS_DEFAULT));
         autoCompletionTriggersField.getDocument().addDocumentListener(this);
         autoCompletionTriggersPreprocField.getDocument().addDocumentListener(this);
         id2Saved.put(CsmCompletionUtils.CPP_AUTO_INSERT_INCLUDE_DIRECTIVES, autoInsertIncludeDirectives.isSelected());
@@ -124,23 +124,24 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(autoCompletionTriggersLabel)
-                    .addComponent(autoCompletionTriggersPreprocLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(autoCompletionTriggersPreprocField, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(autoCompletionTriggersField, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(33, 33, 33))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(12, 12, 12)
-                .addComponent(autoInsertIncludeDirectives)
-                .addContainerGap(44, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(autoCompletionTriggersLabel)
+                            .addComponent(autoCompletionTriggersPreprocLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(autoCompletionTriggersField, javax.swing.GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE)
+                            .addComponent(autoCompletionTriggersPreprocField)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addComponent(autoInsertIncludeDirectives)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

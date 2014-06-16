@@ -45,6 +45,7 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Map;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.PersonIdent;
@@ -826,6 +827,33 @@ public class LogTest extends AbstractGitTestCase {
         add(f);
         client.commit(files, "short message\nbla\nbla\nbla", null, null, NULL_PROGRESS_MONITOR);
         assertEquals("short message", client.log("HEAD", NULL_PROGRESS_MONITOR).getShortMessage());
+    }
+    
+    public void testLimit () throws Exception {
+        File f1 = new File(workDir, "f1");
+        write(f1, "init");
+        File f2 = new File(workDir, "f2");
+        write(f2, "init");
+        
+        File[] files = new File[] { f1, f2 };
+        add(files);
+        commit(files);
+        
+        write(f1, "modif1");
+        add(f1);
+        
+        GitClient client = getClient(workDir);
+        GitRevisionInfo c1 = client.commit(files, "m1", new GitUser("another", "netbeans.org"), new GitUser("another", "netbeans.org"), NULL_PROGRESS_MONITOR);
+        
+        write(f2, "modif2");
+        add(f2);
+        GitRevisionInfo c2 = client.commit(files, "m2", new GitUser("user", "netbeans.org"), new GitUser("user", "netbeans.org"), NULL_PROGRESS_MONITOR);
+        
+        SearchCriteria crit = new SearchCriteria();
+        crit.setLimit(1);
+        crit.setUsername("another");
+        GitRevisionInfo[] log = client.log(crit, NULL_PROGRESS_MONITOR);
+        assertEquals(c1.getRevision(), log[0].getRevision());        
     }
 
     private void assertRevisions (GitRevisionInfo expected, GitRevisionInfo info) throws GitException {

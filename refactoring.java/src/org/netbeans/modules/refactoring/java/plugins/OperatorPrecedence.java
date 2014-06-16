@@ -175,6 +175,8 @@ public class OperatorPrecedence {
             case PARENTHESIZED:
             case METHOD_INVOCATION:
             case VARIABLE:
+            case RETURN:
+            case ASSIGNMENT:
                 return false;
         }
         if(parent.getKind().equals(Tree.Kind.PLUS) && expression.getKind().equals(Tree.Kind.PLUS)) {

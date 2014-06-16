@@ -63,8 +63,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.gsf.codecoverage.api.CoverageActionFactory;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.remotefiles.RemoteFilesNodeFactory;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
@@ -307,7 +309,8 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         @Override
         public Action[] getActions(boolean arg0) {
             List<Action> actions = new LinkedList<>(Arrays.asList(CommonProjectActions.forType("org-netbeans-modules-web-clientproject"))); // NOI18N
-            addAdditionalActions(actions);
+            addGruntActions(actions);
+            addCodeCoverageAction(actions);
             return actions.toArray(new Action[actions.size()]);
         }
 
@@ -392,7 +395,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             });
         }
 
-        private void addAdditionalActions(List<Action> actions) {
+        private void addGruntActions(List<Action> actions) {
             ClientProjectEnhancedBrowserImplementation cfg = project.getEnhancedBrowserImpl();
             if (cfg == null) {
                 return;
@@ -402,9 +405,10 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                 return;
             }
             Set<String> supportedActions = new HashSet<>(Arrays.asList(actionProvider.getSupportedActions()));
-            boolean buildSupported = supportedActions.contains(ActionProvider.COMMAND_BUILD);
-            boolean rebuildSupported = supportedActions.contains(ActionProvider.COMMAND_REBUILD);
-            boolean cleanSupported = supportedActions.contains(ActionProvider.COMMAND_CLEAN);
+            boolean grunt = project.getProjectDirectory().getFileObject("Gruntfile.js") !=null;
+            boolean buildSupported = supportedActions.contains(ActionProvider.COMMAND_BUILD) || grunt;
+            boolean rebuildSupported = supportedActions.contains(ActionProvider.COMMAND_REBUILD) || grunt;
+            boolean cleanSupported = supportedActions.contains(ActionProvider.COMMAND_CLEAN) || grunt;
             int index = 1; // right after New... action
             if (buildSupported
                     || rebuildSupported
@@ -421,6 +425,27 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                 actions.add(index++, FileUtil.getConfigObject("Actions/Project/org-netbeans-modules-project-ui-CleanProject.instance", Action.class)); // NOI18N
             }
         }
+
+        private void addCodeCoverageAction(List<Action> actions) {
+            JsTestingProvider jsTestingProvider = project.getJsTestingProvider(false);
+            if (jsTestingProvider == null
+                    || !jsTestingProvider.isCoverageSupported(project)) {
+                return;
+            }
+            int secondSeparatorIndex = actions.size();
+            int separatorCount = 0;
+            for (int i = 0; i < actions.size(); i++) {
+                if (actions.get(i) == null) {
+                    separatorCount++;
+                }
+                if (separatorCount == 2) {
+                    secondSeparatorIndex = i;
+                    break;
+                }
+            }
+            actions.add(secondSeparatorIndex, CoverageActionFactory.createCollectorAction(null, null));
+        }
+
     }
 
     private static enum BasicNodes {

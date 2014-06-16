@@ -79,7 +79,6 @@ public final class SourceUtilsTestUtil2 {
     }
     
     public static void disableLocks() {
-        LuceneIndex.setDisabledLocks(true);
     }
     
 }

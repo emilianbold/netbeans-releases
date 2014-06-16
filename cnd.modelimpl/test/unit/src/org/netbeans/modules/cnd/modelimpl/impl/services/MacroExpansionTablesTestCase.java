@@ -54,9 +54,9 @@
  */
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
-import org.netbeans.modules.cnd.modelimpl.impl.services.MacroExpansionDocProviderImpl;
 import java.io.File;
 import java.io.PrintStream;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -140,7 +140,7 @@ public class MacroExpansionTablesTestCase extends MacroExpansionDocProviderImplB
 
             Document doc2 = createExpandedContextDocument(doc, currentFile);
             assertNotNull(doc2);
-            mp.expand(doc, startOffset, endOffset, doc2);
+            mp.expand(doc, startOffset, endOffset, doc2, new AtomicBoolean(false));
             res = mp.dumpTables(doc2);
             streamOut.println(res);
 

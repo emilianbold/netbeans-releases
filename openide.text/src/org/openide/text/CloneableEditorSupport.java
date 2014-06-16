@@ -1515,11 +1515,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
             return false;
         }
-        
-        if (getAnyEditor() == null) {
-            getPositionManager().documentOpened(openClose.docRef);
-        }
 
+        // Ensure that the positions get converted if a modification occurs.
+        getPositionManager().documentOpened(openClose.docRef);
         return true;
     }
 

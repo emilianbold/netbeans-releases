@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -99,7 +98,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
 
     private final String path;
     private Folder folder;
-    private File file = null;
+    private FileObject file = null;
     private final FileSystem fileSystem;
     private final String normalizedPath;
     private DataObject lastDataObject = null;
@@ -321,25 +320,20 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         return FileSystemProvider.normalizeAbsolutePath(absPath, fileSystem);
     }
     
-    public File getNormalizedFile() {
-        String aPath = getAbsPath();
-        if (aPath != null) {
-            return CndFileUtils.normalizeFile(new File(aPath));
-        }
-        ensureFileNotNull();
-        return file;
-    }
-
     public String getCanonicalPath() {
-        return getCanonicalFile().getAbsolutePath();
+        final FileObject canonicalFile = getCanonicalFile();
+        if (canonicalFile != null) {
+            return canonicalFile.getPath();
+        }
+        return getNormalizedPath();
     }
 
     private void ensureFileNotNull() {
         if (file == null) {
             try {
-                file = new File(getAbsPath()).getCanonicalFile();
+                file = CndFileUtils.getCanonicalFileObject(getFileObject());
             } catch (IOException ioe) {
-                file = CndFileUtils.normalizeFile(new File(getAbsPath()));
+                file = getFSPath().getFileObject();
             }
         }
         if (file == null) {
@@ -347,7 +341,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         }
     }
 
-    public File getCanonicalFile() {
+    public FileObject getCanonicalFile() {
         ensureFileNotNull();
         return file;
     }
@@ -690,9 +684,9 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                     result.add(new FSPath(projectFS, absPath));
                 }
             }
-            List<String> vec3 = new ArrayList<>();
+            List<FSPath> vec3 = new ArrayList<>();
             vec3 = SPI_ACCESSOR.getItemUserIncludePaths(vec3, cccCompilerConfiguration, compiler, makeConfiguration);
-            result.addAll(CndFileUtils.toFSPathList(compilerFS, vec3));
+            result.addAll(vec3);
             return SPI_ACCESSOR.expandIncludePaths(result, cccCompilerConfiguration, compiler, makeConfiguration);
         }
         return Collections.<FSPath>emptyList();
@@ -1088,9 +1082,9 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         private SpiAccessor() {
         }
 
-        private List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
+        private List<FSPath> getItemUserIncludePaths(List<FSPath> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
             if(!getUserOptionsProviders().isEmpty()) {
-                List<String> res = new ArrayList<>(includes);
+                List<FSPath> res = new ArrayList<>(includes);
                 for (UserOptionsProvider provider : getUserOptionsProviders()) {
                     res.addAll(provider.getItemUserIncludePaths(includes, compilerOptions, compiler, makeConfiguration));
                 }

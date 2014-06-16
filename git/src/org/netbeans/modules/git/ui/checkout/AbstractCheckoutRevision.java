@@ -72,7 +72,7 @@ public abstract class AbstractCheckoutRevision implements DocumentListener, Acti
     private final RevisionDialogController revisionPicker;
     private JButton okButton;
     private DialogDescriptor dd;
-    private boolean revisionValid = true;
+    private boolean revisionValid = false;
     private String msgInvalidName;
     private boolean branchNameRecommended = true;
     private String branchName;

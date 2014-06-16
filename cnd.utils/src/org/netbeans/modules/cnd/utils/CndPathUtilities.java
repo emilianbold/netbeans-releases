@@ -47,6 +47,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Stack;
 import java.util.StringTokenizer;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
@@ -531,6 +532,14 @@ public class CndPathUtilities {
             }
         }
         return s;
+    }
+
+    public static boolean isAbsolute(FileSystem fileSystem, String path) {
+        return CndFileSystemProvider.isAbsolute(fileSystem, path);
+    }
+
+    public static boolean isAbsolute(CharSequence path) {
+        return isPathAbsolute(path);
     }
 
     public static boolean isPathAbsolute(CharSequence path) {

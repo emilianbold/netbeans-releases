@@ -56,8 +56,10 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 
@@ -79,7 +81,7 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
         CsmFile file = ref.getContainingFile();
         int offset = ref.getStartOffset();
         if (kinds.contains(CsmReferenceKind.IN_DEAD_BLOCK)) {
-            if (isIn(CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(file), offset)) {
+            if (isIn(CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(file, Interrupter.DUMMY), offset)) {
                 return true;
             }
         }
@@ -105,24 +107,15 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
     }
     
     @Override
-    public CsmReference findReference(CsmFile file, int offset) {
+    public CsmReference findReference(CsmFile file, Document doc, int offset) {
         assert file != null;
-        BaseDocument doc = ReferencesSupport.getDocument(file);
         if (doc == null) {
+            doc = CsmReferenceRepository.getDocument(file);
+        }
+        if (!(doc instanceof BaseDocument)) {
             return null;
         }
-        CsmReference ref = ReferencesSupport.createReferenceImpl(file, doc, offset);
-        return ref;
-    }
-    
-    public CsmReference findReference(CsmFile file, int line, int column) {
-        assert file != null;
-        BaseDocument doc = ReferencesSupport.getDocument(file);
-        if (doc == null) {
-            return null;
-        }
-        int offset = ReferencesSupport.getDocumentOffset(doc, line, column);
-        CsmReference ref = ReferencesSupport.createReferenceImpl(file, doc, offset);
+        CsmReference ref = ReferencesSupport.createReferenceImpl(file, (BaseDocument)doc, offset);
         return ref;
     }
     

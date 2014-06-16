@@ -422,7 +422,7 @@ public abstract class APTWalker {
         }
     }     
 
-    protected final boolean isStopped() {
+    protected boolean isStopped() {
         return stopped;
     }
 

@@ -114,10 +114,9 @@ public class Utilities {
      * Sets the {@link IndexingStatus}
      * @param st an {@link IndexingStatus}
      */
-    public static void setIndexingStatus (final IndexingStatus st) {
-        assert st != null;
-        assert status == null;
-        status = st;
+    public static void setIndexingStatus (@NullAllowed final IndexingStatus st) {
+        assert st != null ? status == null : status != null;
+        status = st;        
     }
 
     public static Set<? extends RepositoryUpdater.IndexingState> getIndexingState() {

@@ -243,6 +243,10 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
                                  documentInfos[i].getSourceURI()));
             }
             Document document = documentInfos[i].getDocument();
+            // #243750 - skip incomplete tag libraries files
+            if (document == null) {
+                return;
+            }
             String namespace = document.getDocumentElement().getNamespaceURI();
             Element documentElement = document.getDocumentElement();
             NodeList libraryClass = documentElement.getElementsByTagNameNS(namespace, LIBRARY_CLASS);

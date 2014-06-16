@@ -550,6 +550,9 @@ void NbLauncher::adjustHeapAndPermGenSize() {
         logMsg("Memory settings: -J-Xmx%dm", memory);
         nbOptions += tmp;
     }
+    // -XX:MaxPermSize and -XX:PermSize are passed to nbexec as
+    // launcher options, to apply them only for JDK 7. JDK 8 and
+    // newer do not support these arguments.
     if (nbOptions.find("-J-XX:MaxPermSize") == string::npos) {
         int memory;
         if (areWeOn32bits())
@@ -557,8 +560,15 @@ void NbLauncher::adjustHeapAndPermGenSize() {
         else
             memory = 384;
         char tmp[32];
-        logMsg("Memory settings: -J-XX:MaxPermSize=%dm", memory);
-        snprintf(tmp, 32, " -J-XX:MaxPermSize=%dm", memory);
+        logMsg("Memory settings: -L-XX:MaxPermSize=%dm", memory);
+        snprintf(tmp, 32, " -L-XX:MaxPermSize=%dm", memory);
+        nbOptions += tmp;
+    }
+    if (nbOptions.find("-J-XX:PermSize") == string::npos) {
+        int memory = 32;
+        char tmp[32];
+        logMsg("Memory settings: -L-XX:PermSize=%dm", memory);
+        snprintf(tmp, 32, " -L-XX:PermSize=%dm", memory);
         nbOptions += tmp;
     }
 }

@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
 import static org.netbeans.modules.javascript2.editor.formatter.FmtOptions.*;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.formatter.Defaults;
-import org.netbeans.modules.javascript2.editor.formatter.DefaultsProvider;
+import org.netbeans.modules.javascript2.editor.formatter.Defaults;
 
 /**
  *
@@ -397,7 +397,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
 
     private static final class SpacesCategorySupport extends FmtOptions.CategorySupport {
 
-        public SpacesCategorySupport(DefaultsProvider provider, Preferences preferences, FmtSpaces panel, String preview) {
+        public SpacesCategorySupport(Defaults.Provider provider, Preferences preferences, FmtSpaces panel, String preview) {
             super(JsTokenId.JAVASCRIPT_MIME_TYPE, provider, preferences, "spaces", panel, preview); // NOI18N
             assert provider != null;
             panel.scs = this;

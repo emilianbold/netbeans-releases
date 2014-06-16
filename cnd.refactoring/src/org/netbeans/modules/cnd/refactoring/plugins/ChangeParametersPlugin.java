@@ -48,7 +48,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.Position.Bias;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
@@ -75,10 +74,10 @@ import org.netbeans.modules.cnd.refactoring.api.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult.Difference;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.refactoring.api.*;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.text.PositionRef;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -93,7 +92,7 @@ import org.openide.util.NbBundle;
  */
 public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
 
-    private ChangeParametersRefactoring refactoring;
+    private final ChangeParametersRefactoring refactoring;
     // objects affected by refactoring
     private Collection<CsmObject> referencedObjects;
 
@@ -268,7 +267,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         Collection<CsmReference> refs = new LinkedHashSet<CsmReference>();
         for (CsmObject obj : refObjects) {
             // do not interrupt refactoring
-            Collection<CsmReference> curRefs = CsmReferenceRepository.getDefault().getReferences(obj, csmFile, CsmReferenceKind.ALL, null);
+            Collection<CsmReference> curRefs = CsmReferenceRepository.getDefault().getReferences(obj, csmFile, CsmReferenceKind.ALL, Interrupter.DUMMY);
             refs.addAll(curRefs);
         }
         if (refs.size() > 0) {

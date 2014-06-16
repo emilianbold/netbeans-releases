@@ -64,7 +64,7 @@ import org.netbeans.modules.refactoring.java.ui.ChangeParametersPanel.Javadoc;
 public class ChangeParametersTest extends RefactoringTestBase {
 
     public ChangeParametersTest(String name) {
-        super(name);
+        super(name, "1.8");
     }
     
     public void test239300() throws Exception {
@@ -109,6 +109,29 @@ public class ChangeParametersTest extends RefactoringTestBase {
                 + "         System.out.println(x);\n"
                 + "    }\n"
                 + "}\n"));
+    }
+    
+    public void test242827() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                        + "public interface A {\n"
+                        + "    boolean test(int a);\n"
+                        + "\n"
+                        + "    public static void m() {\n"
+                        + "        A f2 = c -> true;\n"
+                        + "    }\n"
+                        + "}\n"));
+        ParameterInfo[] paramTable = {new ParameterInfo(0, "a", "int", null), new ParameterInfo(-1, "y", "int", "1")};
+        performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 0, false);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                        + "public interface A {\n"
+                        + "    boolean test(int a, int y);\n"
+                        + "\n"
+                        + "    public static void m() {\n"
+                        + "        A f2 = (c, y) -> true;\n"
+                        + "    }\n"
+                        + "}\n"));
     }
     
     public void test241499() throws Exception {

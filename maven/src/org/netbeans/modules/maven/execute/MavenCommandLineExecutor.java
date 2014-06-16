@@ -137,8 +137,11 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         }
 
         final BeanRunConfig clonedConfig = new BeanRunConfig(this.config);
+        clonedConfig.reassignMavenProjectFromParent();
         if (clonedConfig.getPreExecution() != null) {
-            clonedConfig.setPreExecution(new BeanRunConfig(clonedConfig.getPreExecution()));
+            final BeanRunConfig preconf = new BeanRunConfig(clonedConfig.getPreExecution());
+            preconf.reassignMavenProjectFromParent();
+            clonedConfig.setPreExecution(preconf);
         }
         int executionresult = -10;
         final InputOutput ioput = getInputOutput();

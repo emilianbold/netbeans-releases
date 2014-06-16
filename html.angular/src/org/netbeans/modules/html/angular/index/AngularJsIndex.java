@@ -49,9 +49,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
@@ -67,6 +69,7 @@ public class AngularJsIndex {
 
     private static final Map<Project, AngularJsIndex> INDEXES = new WeakHashMap<>();
     private final QuerySupport querySupport;
+    private static boolean areProjectsOpen = false;
 
     public static AngularJsIndex get(Project project) throws IOException {
         if (project == null) {
@@ -75,19 +78,34 @@ public class AngularJsIndex {
         synchronized (INDEXES) {
             AngularJsIndex index = INDEXES.get(project);
             if (index == null) {
-                index = new AngularJsIndex(project);
-                INDEXES.put(project, index);
+                if (!areProjectsOpen) {
+                    try {
+                        // just be sure that the projects are open
+                        OpenProjects.getDefault().openProjects().get();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (ExecutionException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } finally {
+                        areProjectsOpen = true;
+                    }
+                }
+                Collection<FileObject> sourceRoots = QuerySupport.findRoots(project,
+                        null /* all source roots */,
+                        Collections.<String>emptyList(),
+                        Collections.<String>emptyList());
+                QuerySupport querrySupport = QuerySupport.forRoots(AngularJsIndexer.Factory.NAME, AngularJsIndexer.Factory.VERSION, sourceRoots.toArray(new FileObject[]{}));
+                index = new AngularJsIndex(querrySupport);
+                if (sourceRoots.size() > 0) {
+                    INDEXES.put(project, index);
+                }
             }
             return index;
         }
     }
 
-    private AngularJsIndex(Project project) throws IOException {
-        Collection<FileObject> sourceRoots = QuerySupport.findRoots(project,
-                null /* all source roots */,
-                Collections.<String>emptyList(),
-                Collections.<String>emptyList());
-        this.querySupport = QuerySupport.forRoots(AngularJsIndexer.Factory.NAME, AngularJsIndexer.Factory.VERSION, sourceRoots.toArray(new FileObject[]{}));
+    private AngularJsIndex(QuerySupport querrySupport) throws IOException {        
+        this.querySupport = querrySupport;
     }
 
     public Collection<AngularJsController> getControllers(final String name, final boolean exact) {

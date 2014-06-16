@@ -208,7 +208,7 @@ public class JavadocHelper {
     }
 
     private static boolean isRemote(URL url) {
-        return url.getProtocol().startsWith("http"); // NOI18N
+        return url.getProtocol().startsWith("http") || url.getProtocol().startsWith("ftp"); // NOI18N
     }
     
     /**

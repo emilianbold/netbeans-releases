@@ -87,8 +87,11 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
 
     private CsmCompoundStatement body;
     
-    protected MethodDDImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility,  boolean _virtual, boolean _explicit, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+    private final DefinitionKind definitionKind;
+    
+    protected MethodDDImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility, DefinitionKind defKind,  boolean _virtual, boolean _explicit, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
         super(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, false, file, startOffset, endOffset, global);
+        this.definitionKind = defKind;
     }
 
     public static<T> MethodDDImpl<T> create(AST ast, final CsmFile file, FileContent fileContent, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
@@ -108,6 +111,9 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
         boolean _virtual = false;
         boolean _explicit = false;
+        boolean afterParen = false;
+        boolean afterAssignEqual = false;
+        DefinitionKind defKind = DefinitionKind.REGULAR;
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.LITERAL_static:
@@ -119,12 +125,30 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
                 case CPPTokenTypes.LITERAL_explicit:
                     _explicit = true;
                     break;
+                case CPPTokenTypes.RPAREN:
+                    afterParen = true;
+                    break;
+                case CPPTokenTypes.ASSIGNEQUAL:
+                    if (afterParen) {
+                        afterAssignEqual = true;
+                    }
+                    break;
+                case CPPTokenTypes.LITERAL_delete:
+                    if (afterAssignEqual) {
+                        defKind = DefinitionKind.DELETE;
+                    }
+                    break;
+                case CPPTokenTypes.LITERAL_default:
+                    if (afterAssignEqual) {
+                        defKind = DefinitionKind.DEFAULT;
+                    }
+                    break;
             }
         }
         
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
 
-        MethodDDImpl<T> methodDDImpl = new MethodDDImpl<>(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);        
+        MethodDDImpl<T> methodDDImpl = new MethodDDImpl<>(name, rawName, cls, visibility, defKind, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);        
         temporaryRepositoryRegistration(ast, global, methodDDImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
@@ -154,6 +178,11 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
     @Override
     public CsmFunction getDeclaration() {
         return this;
+    }
+
+    @Override
+    public DefinitionKind getDefinitionKind() {
+        return definitionKind;
     }
 
     @Override
@@ -237,7 +266,7 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
             boolean _explicit = false;
 
 
-            MethodDDImpl method = new MethodDDImpl(getName(), getRawName(), cls, getVisibility(), _virtual, _explicit, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
+            MethodDDImpl method = new MethodDDImpl(getName(), getRawName(), cls, getVisibility(), DefinitionKind.REGULAR, _virtual, _explicit, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
             temporaryRepositoryRegistration(true, method);
 
             StringBuilder clsTemplateSuffix = new StringBuilder();
@@ -284,10 +313,12 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
     public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeCompoundStatement(this.body, output);
+        output.writeByte(definitionKind.toByte());
     }
     
     public MethodDDImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.body = PersistentUtils.readCompoundStatement(input);
+        this.definitionKind = DefinitionKind.fromByte(input.readByte());
     }     
 }

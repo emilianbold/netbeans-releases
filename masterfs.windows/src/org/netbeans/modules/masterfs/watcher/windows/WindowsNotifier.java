@@ -59,6 +59,8 @@ import com.sun.jna.win32.StdCallLibrary;
 import com.sun.jna.win32.W32APIFunctionMapper;
 import com.sun.jna.win32.W32APITypeMapper;
 import java.io.InterruptedIOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
@@ -118,6 +120,17 @@ public final class WindowsNotifier extends Notifier<Void> {
         public int Offset;
         public int OffsetHigh;
         public HANDLE hEvent;
+
+        @Override
+        protected List getFieldOrder() {
+            return Arrays.asList( new String[] {
+                "Internal",
+                "InternalHigh",
+                "Offset",
+                "OffsetHigh",
+                "hEvent",
+            } );
+        }
     }
 
     public static HANDLE INVALID_HANDLE_VALUE = new HANDLE(Pointer.createConstant(
@@ -169,6 +182,16 @@ public final class WindowsNotifier extends Notifier<Void> {
             allocateMemory(size);
         }
 
+        @Override
+        protected List getFieldOrder() {
+            return Arrays.asList( new String[] {
+                "NextEntryOffset",
+                "Action",
+                "FileNameLength",
+                "FileName",
+            } );
+        }
+
         /** WARNING: this filename may be either the short or long form of the filename. */
         public String getFilename() {
             return new String(FileName, 0, FileNameLength/2);
@@ -196,6 +219,15 @@ public final class WindowsNotifier extends Notifier<Void> {
         public final int nLength = size();
         public Pointer lpSecurityDescriptor;
         public boolean bInheritHandle;
+
+        @Override
+        protected List getFieldOrder() {
+            return Arrays.asList( new String[] {
+                "nLength",
+                "lpSecurityDescriptor",
+                "bInheritHandle",
+            } );
+        }
     }
 
     interface Kernel32 extends StdCallLibrary {

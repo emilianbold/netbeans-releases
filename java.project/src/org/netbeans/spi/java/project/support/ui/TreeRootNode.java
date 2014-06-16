@@ -55,6 +55,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
@@ -104,6 +106,7 @@ import org.openide.util.lookup.ProxyLookup;
  */
 final class TreeRootNode extends FilterNode implements PropertyChangeListener {
 
+    private static final Logger LOG = Logger.getLogger(FilterNode.class.getName());
     private static final AtomicReference<Action[]> actions = new AtomicReference<Action[]>();
     private final SourceGroup g;
     
@@ -393,7 +396,17 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
         @Override
         protected Node copyNode(final Node originalNode) {
             FileObject fobj = originalNode.getLookup().lookup(FileObject.class);
-            return fobj.isFolder() ? new PackageFilterNode (originalNode) : super.copyNode(originalNode);
+            if (fobj == null) {
+                LOG.log(
+                    Level.WARNING,
+                    "The node {0} has no FileObject in its Lookup.",    //NOI18N
+                    originalNode);
+                return super.copyNode(originalNode);
+            } else {
+                return fobj.isFolder() ?
+                    new PackageFilterNode (originalNode) :
+                    super.copyNode(originalNode);
+            }
         }
     }
     

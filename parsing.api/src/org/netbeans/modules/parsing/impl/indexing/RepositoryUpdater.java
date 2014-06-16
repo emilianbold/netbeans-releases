@@ -2598,8 +2598,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         final boolean forceReindex = votes.get(factory) == Boolean.FALSE && allResources != null;
                         final boolean allFiles = cifIsChanged || forceReindex || (allResources != null && allResources.size() == resources.size());
                         if (forceReindex && resources.size() != allResources.size()) {
-                            if (getLogContext() != null) {
-                                getLogContext().reindexForced(root, factory.getIndexerName());
+                            final LogContext lc = getLogContext();
+                            if (lc != null) {
+                                lc.reindexForced(root, factory.getIndexerName());
                             }
                         }
                         if (ae && forceReindex && LOGGER.isLoggable(Level.INFO) && resources.size() != allResources.size() && !cifInfo.getMimeTypes().isEmpty()) {
@@ -2675,19 +2676,20 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         boolean containsNewIndexers = false;
                         boolean forceReindex = false;
                         final Set<EmbeddingIndexerFactory> reindexVoters = new HashSet<EmbeddingIndexerFactory>();
+                        final LogContext lc = getLogContext();
                         for(Collection<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos : indexers.eifInfosMap.values()) {
                             for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> eifInfo : eifInfos) {
                                 if (indexers.changedEifs != null && indexers.changedEifs.contains(eifInfo)) {
-                                    if (getLogContext() != null) {
-                                        getLogContext().newIndexerSeen(eifInfo.getIndexerFactory().getIndexerName());
+                                    if (lc != null) {
+                                        lc.newIndexerSeen(eifInfo.getIndexerFactory().getIndexerName());
                                     }
                                     containsNewIndexers = true;
                                 }
                                 EmbeddingIndexerFactory eif = eifInfo.getIndexerFactory();
                                 boolean indexerVote = votes.get(eif) == Boolean.FALSE;
                                 if (indexerVote) {
-                                    if (getLogContext() != null) {
-                                        getLogContext().reindexForced(root, eif.getIndexerName());
+                                    if (lc != null) {
+                                        lc.reindexForced(root, eif.getIndexerName());
                                     }
                                     reindexVoters.add(eif);
                                 }
@@ -2826,23 +2828,28 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             try {
                 int index = 0;
                 for (Map.Entry<BinaryIndexerFactory, Context> entry : contexts.entrySet()) {
-                    parkWhileSuspended();
-                    long st = System.currentTimeMillis();
-                    logStartIndexer(entry.getKey().getIndexerName());
-                    try {
-                        if (startedIndexers.get(index)) {
-                            entry.getKey().scanFinished(entry.getValue());
-                        }
-                    } catch (Throwable t) {
-                        if (t instanceof ThreadDeath) {
-                            throw (ThreadDeath) t;
-                        } else {
-                            Exceptions.printStackTrace(t);
+                    if (startedIndexers.get(index++)) {
+                        try {
+                            final long st = System.currentTimeMillis();
+                            try {
+                                parkWhileSuspended();
+                                logStartIndexer(entry.getKey().getIndexerName());
+                            } finally {
+                                try {
+                                    entry.getKey().scanFinished(entry.getValue());
+                                } finally {
+                                    long et = System.currentTimeMillis();
+                                    logIndexerTime(entry.getKey().getIndexerName(), (int)(et-st));
+                                }
+                            }
+                        } catch (Throwable t) {
+                            if (t instanceof ThreadDeath) {
+                                throw (ThreadDeath) t;
+                            } else {
+                                Exceptions.printStackTrace(t);
+                            }
                         }
                     }
-                    long et = System.currentTimeMillis();
-                    logIndexerTime(entry.getKey().getIndexerName(), (int)(et-st));
-                    index++;
                 }
             } finally {
                 boolean indexOk = true;
@@ -3197,7 +3204,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
         
         protected final void logCrawlerTime(Crawler crawler, long start) throws IOException {
-            LogContext lctx = getLogContext();
+            final LogContext lctx = getLogContext();
             if (lctx == null) {
                 return;
             }
@@ -3210,24 +3217,27 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
         
         protected final void logStartIndexer(String iName) {
-            if (getLogContext() != null) {
-                getLogContext().startIndexer(iName);
+            final LogContext lc = getLogContext();
+            if (lc != null) {
+                lc.startIndexer(iName);
             }
         }
         
         protected final void logFinishIndexer(String iName) {
-            if (getLogContext() != null) {
-                getLogContext().finishIndexer(iName);
+            final LogContext lc = getLogContext();
+            if (lc != null) {
+                lc.finishIndexer(iName);
             }
         }
 
         protected final void logIndexerTime(
                 final @NonNull String indexerName,
                 final int time) {
-            if (getLogContext() != null) {
+            final LogContext lc = getLogContext();
+            if (lc != null) {
                 // a relic, but since time is also counted in indexerStatistic, 
                 // it's less code than to finish indexer separately
-                getLogContext().addIndexerTime(indexerName, time);
+                lc.addIndexerTime(indexerName, time);
             }
             if (!reportIndexerStatistics) {
                 return;
@@ -3470,9 +3480,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
             docIndex.store(optimize);
             long span = System.currentTimeMillis() - t;
-            LogContext ctx = getLogContext();
-            if (ctx != null) {
-                ctx.addStoreTime(span);
+            LogContext lc = getLogContext();
+            if (lc != null) {
+                lc.addStoreTime(span);
             }
         }
 

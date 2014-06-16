@@ -74,7 +74,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author lahvac
  */
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedAnnotationTypes("org.netbeans.spi.java.hints.*")
 @ServiceProvider(service=Processor.class, position=100)
 public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {

@@ -60,7 +60,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Tomas Zezula
  */
 @ServiceProvider(service=Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class EmbeddingProviderRegistrationProcessor extends LayerGeneratingProcessor {
 
     @Override

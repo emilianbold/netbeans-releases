@@ -71,8 +71,8 @@ import org.openide.util.CharSequences;
  */
 public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
 
-    protected DestructorDDImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility,  boolean _virtual, boolean _explicit, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
-        super(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
+    protected DestructorDDImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility, DefinitionKind defKind,  boolean _virtual, boolean _explicit, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+        super(name, rawName, cls, visibility, defKind, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
     }
     
     public static DestructorDDImpl createDestructor(AST ast, final CsmFile file, FileContent fileContent, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
@@ -92,6 +92,9 @@ public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
         boolean _virtual = false;
         boolean _explicit = false;
+        boolean afterParen = false;
+        boolean afterAssignEqual = false;
+        DefinitionKind defKind = DefinitionKind.REGULAR;           
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.LITERAL_static:
@@ -103,12 +106,30 @@ public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
                 case CPPTokenTypes.LITERAL_explicit:
                     _explicit = true;
                     break;
+                case CPPTokenTypes.RPAREN:
+                    afterParen = true;
+                    break;
+                case CPPTokenTypes.ASSIGNEQUAL:
+                    if (afterParen) {
+                        afterAssignEqual = true;
+                    }
+                    break;
+                case CPPTokenTypes.LITERAL_delete:
+                    if (afterAssignEqual) {
+                        defKind = DefinitionKind.DELETE;
+                    }
+                    break;
+                case CPPTokenTypes.LITERAL_default:
+                    if (afterAssignEqual) {
+                        defKind = DefinitionKind.DEFAULT;
+                    }
+                    break;                      
             }
         }
         
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
 
-        DestructorDDImpl destructorDDImpl = new DestructorDDImpl(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);        
+        DestructorDDImpl destructorDDImpl = new DestructorDDImpl(name, rawName, cls, visibility, defKind, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);        
         temporaryRepositoryRegistration(ast, global, destructorDDImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
@@ -152,7 +173,7 @@ public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
             boolean _explicit = false;
 
 
-            DestructorDDImpl method = new DestructorDDImpl(getName(), getRawName(), cls, getVisibility(), _virtual, _explicit, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
+            DestructorDDImpl method = new DestructorDDImpl(getName(), getRawName(), cls, getVisibility(), DefinitionKind.REGULAR, _virtual, _explicit, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
             temporaryRepositoryRegistration(true, method);
 
             StringBuilder clsTemplateSuffix = new StringBuilder();

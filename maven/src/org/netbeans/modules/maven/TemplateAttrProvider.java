@@ -48,7 +48,6 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -188,17 +187,19 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
 
     public static String findLicenseByMavenProjectContent(MavenProject mp) {
         // try to match the project's license URL and the mavenLicenseURL attribute of license template
-        String toRet = null;
-        List<License> lst = mp.getLicenses();
-        if (!lst.isEmpty()) {
-            String url = lst.get(0).getUrl();
-            FileObject licenses = FileUtil.getConfigFile("Templates/Licenses"); //NOI18N
-            if (url != null && licenses != null) {
-                for (FileObject fo : licenses.getChildren()) {
+        FileObject licensesFO = FileUtil.getConfigFile("Templates/Licenses"); //NOI18N
+        if (licensesFO == null) {
+            return null;
+        }
+        FileObject[] licenseFiles = licensesFO.getChildren();
+        for (License license : mp.getLicenses()) {
+            String url = license.getUrl();
+            if (url != null) {
+                for (FileObject fo : licenseFiles) {
                     String str = (String)fo.getAttribute("mavenLicenseURL"); //NOI18N
-                    if (str != null && str.equalsIgnoreCase(url)) {
+                    if (str != null && Arrays.asList(str.split(" ")).contains(url)) {
                         if (fo.getName().startsWith("license-")) { // NOI18N
-                            toRet = fo.getName().substring("license-".length()); //NOI18N
+                            return fo.getName().substring("license-".length()); //NOI18N
                         } else {
                             Logger.getLogger(TemplateAttrProvider.class.getName()).log(Level.WARNING, "Bad license file name {0} (expected to start with ''license-'' prefix)", fo.getName());
                         }
@@ -207,6 +208,6 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
                 }
             }
         }
-        return toRet;
+        return null;
     }
 }

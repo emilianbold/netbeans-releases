@@ -164,11 +164,11 @@ public final class ExtractInterfacePanel extends JPanel implements CustomRefacto
         }
         memberspanel.add(filtersPanel, BorderLayout.SOUTH);
     }
-    
+
     @Override
-    public void requestFocus() {
-        super.requestFocus();
-        nameText.requestFocus();
+    public boolean requestFocusInWindow() {
+        nameText.requestFocusInWindow();
+        return true;
     }
     
 

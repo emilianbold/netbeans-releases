@@ -98,6 +98,11 @@ public class HintAnalyzerImpl extends AbstractAnalyzer {
         provider.getErrors(request, responce);
         return res;
     }
+
+    @Override
+    protected boolean isCompileUnitBased() {
+        return false;
+    }
     
     private static class ResponseImpl extends AbstractAnalyzer.AbstractResponse {
 

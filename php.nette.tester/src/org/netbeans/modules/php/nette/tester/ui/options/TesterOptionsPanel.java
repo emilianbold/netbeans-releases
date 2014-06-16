@@ -53,6 +53,7 @@ import java.net.URL;
 import java.util.List;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -62,9 +63,11 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.nette.tester.commands.Tester;
+import org.netbeans.modules.php.nette.tester.util.TesterUtils;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
@@ -89,12 +92,17 @@ public class TesterOptionsPanel extends JPanel {
         "TesterOptionsPanel.tester.hint=Full path of Nette Tester file (typically {0}).",
     })
     private void init() {
+        for (String binaryExecutable : TesterUtils.BINARY_EXECUTABLES) {
+            binaryExecutableComboBox.addItem(binaryExecutable);
+        }
         errorLabel.setText(" "); // NOI18N
         testerPathHintLabel.setText(Bundle.TesterOptionsPanel_tester_hint(Tester.TESTER_FILE_NAME));
 
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
+        ActionListener defaultActionListener = new DefaultActionListener();
         testerPathTextField.getDocument().addDocumentListener(defaultDocumentListener);
         phpIniTextField.getDocument().addDocumentListener(defaultDocumentListener);
+        binaryExecutableComboBox.addActionListener(defaultActionListener);
     }
 
     public String getTesterPath() {
@@ -111,6 +119,15 @@ public class TesterOptionsPanel extends JPanel {
 
     public void setPhpIniPath(String path) {
         phpIniTextField.setText(path);
+    }
+
+    @CheckForNull
+    public String getBinaryExecutable() {
+        return (String) binaryExecutableComboBox.getSelectedItem();
+    }
+
+    public void setBinaryExecutable(String binaryExecutable) {
+        binaryExecutableComboBox.setSelectedItem(binaryExecutable);
     }
 
     public void setError(String message) {
@@ -153,6 +170,8 @@ public class TesterOptionsPanel extends JPanel {
         phpIniLabel = new JLabel();
         phpIniTextField = new JTextField();
         phpIniBrowseButton = new JButton();
+        binaryExecutableLabel = new JLabel();
+        binaryExecutableComboBox = new JComboBox<String>();
         noteLabel = new JLabel();
         minVersionLabel = new JLabel();
         installLabel = new JLabel();
@@ -188,6 +207,9 @@ public class TesterOptionsPanel extends JPanel {
             }
         });
 
+        binaryExecutableLabel.setLabelFor(binaryExecutableComboBox);
+        Mnemonics.setLocalizedText(binaryExecutableLabel, NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.binaryExecutableLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.noteLabel.text")); // NOI18N
 
         Mnemonics.setLocalizedText(minVersionLabel, NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.minVersionLabel.text")); // NOI18N
@@ -211,27 +233,11 @@ public class TesterOptionsPanel extends JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(installLabel)
-                    .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(minVersionLabel))
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(errorLabel))
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addComponent(testerPathLabel)
                     .addComponent(phpIniLabel))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(phpIniTextField)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(phpIniBrowseButton))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(testerPathTextField)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -240,7 +246,27 @@ public class TesterOptionsPanel extends JPanel {
                         .addComponent(searchTesterButton))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(testerPathHintLabel)
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(phpIniTextField)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(phpIniBrowseButton))))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(minVersionLabel)
+                    .addComponent(installLabel)
+                    .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(binaryExecutableLabel)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(binaryExecutableComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(errorLabel))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {browseTesterButton, phpIniBrowseButton, searchTesterButton});
@@ -249,20 +275,24 @@ public class TesterOptionsPanel extends JPanel {
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                    .addComponent(testerPathLabel)
-                    .addComponent(testerPathTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(searchTesterButton)
                     .addComponent(browseTesterButton)
-                    .addComponent(searchTesterButton))
+                    .addComponent(testerPathTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(testerPathLabel))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(testerPathHintLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                    .addComponent(phpIniTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(phpIniLabel)
+                    .addComponent(phpIniTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(phpIniBrowseButton))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(binaryExecutableLabel)
+                    .addComponent(binaryExecutableComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(minVersionLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(installLabel)
@@ -346,6 +376,8 @@ public class TesterOptionsPanel extends JPanel {
     }//GEN-LAST:event_phpIniBrowseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JComboBox<String> binaryExecutableComboBox;
+    private JLabel binaryExecutableLabel;
     private JButton browseTesterButton;
     private JLabel errorLabel;
     private JLabel installLabel;
@@ -381,6 +413,15 @@ public class TesterOptionsPanel extends JPanel {
         }
 
         private void processUpdate() {
+            fireChange();
+        }
+
+    }
+
+    private final class DefaultActionListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
             fireChange();
         }
 

@@ -1125,15 +1125,20 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         // stuff to engine.
 
 
-        if ( /* OLD ConsoleTopComponent.getDefault() != null && */
-                getIOPack() != null &&
-                // getIOPack().console() != null &&
+        if ( /* OLD ConsoleTopComponent.getDefault() != null && */getIOPack() != null
+                && // getIOPack().console() != null &&
                 getIOPack().console().getTerm() != null) {
 
-            String warn = debuggerType() + " terminated\n"; // NOI18N
-            char[] warnArray = warn.toCharArray();
-            getIOPack().console().getTerm().putChars(warnArray,
-                    0, warnArray.length);
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    String warn = debuggerType() + " terminated\n"; // NOI18N
+                    char[] warnArray = warn.toCharArray();
+                    getIOPack().console().getTerm().putChars(warnArray,
+                            0, warnArray.length);
+                }
+            });
         }
         // Close if no more sessions
         NativeSession[] sessions = NativeDebuggerManager.get().getSessions();
@@ -1603,7 +1608,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	disController().updateBreakpoint(addr, bpt, false);
     }
 
-    public static String getDebuggerString(MakeConfiguration conf) {
+    public static String getDebuggerString(String debuggerID, MakeConfiguration conf) {
         // Figure out dbx command
         // Copied from GdbProfile
         CompilerSet2Configuration csconf = conf.getCompilerSet();
@@ -1632,7 +1637,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
             cs = CompilerSetFactory.getCompilerSet(exEnv, flavor, csname);
         }
         Tool debuggerTool = cs.getTool(PredefinedToolKind.DebuggerTool);
-        if (debuggerTool != null) {
+        if (debuggerTool != null && debuggerID.equals(debuggerTool.getName())) {
             String path = debuggerTool.getPath();
             if (path != null && !path.isEmpty()) {
                 return path;

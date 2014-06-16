@@ -129,12 +129,14 @@ public class ELRenameRefactoring extends ELWhereUsedQuery {
 
         for (Node targetNode : matchingNodes) {
             PositionRef[] position = RefactoringUtil.getPostionRefs(elem, targetNode);
-            String newName = RefactoringUtil.isPropertyAccessor(rename.getNewName(), returnType)
-                    ? RefactoringUtil.getPropertyName(rename.getNewName(), returnType)
-                    : rename.getNewName() + "()"; //NOI18N
-            differences.add(new Difference(Difference.Kind.CHANGE, 
-                    position[0], position[1], targetNode.getImage(),newName,
-                    NbBundle.getMessage(ELRenameRefactoring.class, "LBL_Update", targetNode.getImage())));
+            String renameNewName = rename.getNewName();
+            if (renameNewName != null) {
+                String newName = RefactoringUtil.isPropertyAccessor(renameNewName, returnType)
+                        ? RefactoringUtil.getPropertyName(renameNewName, returnType) : renameNewName + "()"; //NOI18N
+                differences.add(new Difference(Difference.Kind.CHANGE,
+                        position[0], position[1], targetNode.getImage(), newName,
+                        NbBundle.getMessage(ELRenameRefactoring.class, "LBL_Update", targetNode.getImage())));
+            }
         }
         modificationResult.addDifferences(file, differences);
 

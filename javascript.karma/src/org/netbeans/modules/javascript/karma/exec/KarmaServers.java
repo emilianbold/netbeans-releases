@@ -51,13 +51,16 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.karma.util.StringUtils;
 import org.openide.util.RequestProcessor;
 
 public final class KarmaServers {
 
     private static final Logger LOGGER = Logger.getLogger(KarmaServers.class.getName());
 
-    private static final RequestProcessor RP = new RequestProcessor(KarmaServers.class.getName(), 2);
+    private static final String SERVER_URL = "http://localhost:%d/"; // NOI18N
+
+    private static final RequestProcessor RP = new RequestProcessor(KarmaServers.class.getName(), 1); // #244536
     private static final KarmaServers INSTANCE = new KarmaServers();
 
     // write operations @GuardedBy("RP") thread
@@ -130,6 +133,13 @@ public final class KarmaServers {
         if (karmaServer != null) {
             karmaServer.stop();
             karmaServer.removeChangeListener(serverListener);
+            // #241111, #244536
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+                Thread.currentThread().interrupt();
+            }
         }
         if (cleanup) {
             karmaServers.remove(project);
@@ -150,13 +160,6 @@ public final class KarmaServers {
     void restartServerInternal(Project project) {
         assert RP.isRequestProcessorThread();
         stopServerInternal(project, false);
-        try {
-            // #241111
-            Thread.sleep(1000);
-        } catch (InterruptedException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            Thread.currentThread().interrupt();
-        }
         startServerInternal(project);
     }
 
@@ -197,8 +200,34 @@ public final class KarmaServers {
     }
 
     public boolean isServerRunning(Project project) {
-        return isServerStarting(project)
-                || isServerStarted(project);
+        KarmaServer karmaServer = getKarmaServer(project);
+        if (karmaServer == null) {
+            return false;
+        }
+        return karmaServer.isRunning();
+    }
+
+    @CheckForNull
+    public String getServerUrl(Project project, String path) {
+        assert path == null || !path.startsWith("/") : path;
+        KarmaServer karmaServer = getKarmaServer(project);
+        if (karmaServer == null) {
+            // karma not running
+            return null;
+        }
+        String url = SERVER_URL;
+        if (StringUtils.hasText(path)) {
+            url += path;
+        }
+        return String.format(url, karmaServer.getPort());
+    }
+
+    public void closeDebugUrl(Project project) {
+        KarmaServer karmaServer = getKarmaServer(project);
+        if (karmaServer == null) {
+            return;
+        }
+        karmaServer.closeDebugUrl();
     }
 
     @CheckForNull

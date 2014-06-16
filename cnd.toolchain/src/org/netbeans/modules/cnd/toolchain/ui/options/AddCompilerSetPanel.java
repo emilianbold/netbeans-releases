@@ -367,23 +367,12 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
     private void updateBaseDirectory() {
         String seed = null;
         final String chooser_key = "AddCompilerSet"; //NOI18N
-        if (tfBaseDirectory.getText().length() > 0) {
-            seed = tfBaseDirectory.getText();
+        if (tfBaseDirectory.getText().trim().length() > 0) {
+            seed = tfBaseDirectory.getText().trim();
         } else if (RemoteFileUtil.getCurrentChooserFile(chooser_key, csm.getExecutionEnvironment()) != null) {
             seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, csm.getExecutionEnvironment());
         } else {
-            ExecutionEnvironment env = csm.getExecutionEnvironment();
-            if (env.isLocal()){
-                seed = System.getProperty("user.home"); // NOI18N
-            }else if (!HostInfoUtils.isHostInfoAvailable(env) && !ConnectionManager.getInstance().isConnectedTo(env)){
-                seed = null;
-            }else{
-                    try {
-                        seed = HostInfoUtils.getHostInfo(env).getUserDir();
-                    } catch (IOException ex) {
-                    } catch (CancellationException ex) {
-                    }
-            }
+            seed = ToolsUtils.getDefaultDirectory(csm.getExecutionEnvironment());
         }
         JFileChooser fileChooser = new FileChooserBuilder(csm.getExecutionEnvironment()).createFileChooser(seed);
         fileChooser.setDialogTitle(NbBundle.getMessage(getClass(), "SELECT_BASE_DIRECTORY_TITLE"));

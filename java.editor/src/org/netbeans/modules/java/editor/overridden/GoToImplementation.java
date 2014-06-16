@@ -120,7 +120,8 @@ public final class GoToImplementation extends BaseAction {
                             return ;
                         parameter.toPhase(Phase.RESOLVED);
 
-                        Element el = resolveTarget(parameter, doc, caretPos);
+                        AtomicBoolean onDeclaration = new AtomicBoolean();
+                        Element el = resolveTarget(parameter, doc, caretPos, onDeclaration);
                         
                         if (el == null) {
                             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GoToImplementation.class, "LBL_NoMethod"));
@@ -132,7 +133,15 @@ public final class GoToImplementation extends BaseAction {
 
                         Map<ElementHandle<? extends Element>, List<ElementDescription>> overriding = new ComputeOverriders(new AtomicBoolean()).process(parameter, type, method, true);
 
-                        final List<ElementDescription> overridingMethods = overriding != null ? overriding.get(ElementHandle.create(el)) : null;
+                        List<ElementDescription> overridingMethods = overriding != null ? overriding.get(ElementHandle.create(el)) : null;
+                        if (!onDeclaration.get()) {
+                            ElementDescription ed = new ElementDescription(parameter, el, true);
+                            if (overridingMethods == null) {
+                                overridingMethods = Collections.singletonList(ed);
+                            } else {
+                                overridingMethods.add(ed);
+                            }
+                        }
 
                         if (overridingMethods == null || overridingMethods.isEmpty()) {
                             String key = el.getKind() == ElementKind.METHOD ? "LBL_NoOverridingMethod" : "LBL_NoOverridingType";
@@ -141,13 +150,14 @@ public final class GoToImplementation extends BaseAction {
                             return;
                         }
 
+                        final List<ElementDescription> finalOverridingMethods = overridingMethods;
                         final String caption = NbBundle.getMessage(GoToImplementation.class, method != null ? "LBL_ImplementorsOverridersMethod" : "LBL_ImplementorsOverridersClass");
 
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override public void run() {
                                 try {
                                     Point p = new Point(c.modelToView(caretPos).getLocation());
-                                    IsOverriddenAnnotationAction.mouseClicked(Collections.singletonMap(caption, overridingMethods), c, p);
+                                    IsOverriddenAnnotationAction.mouseClicked(Collections.singletonMap(caption, finalOverridingMethods), c, p);
                                 } catch (BadLocationException ex) {
                                     Exceptions.printStackTrace(ex);
                                 }
@@ -161,8 +171,9 @@ public final class GoToImplementation extends BaseAction {
         }
     }
     
-    static Element resolveTarget(CompilationInfo info, Document doc, int caretPos) {
+    static Element resolveTarget(CompilationInfo info, Document doc, int caretPos, AtomicBoolean onDeclaration) {
         Context context = GoToSupport.resolveContext(info, doc, caretPos, false);
+        onDeclaration.set(context == null);
 
         if (context == null) {
             TreePath tp = info.getTreeUtilities().pathFor(caretPos);

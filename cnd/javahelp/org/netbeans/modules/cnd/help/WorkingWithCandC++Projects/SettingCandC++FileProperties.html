@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2007, 2009 Oracle and/or its affiliates.
+Copyright &copy; 2007, 2014 Oracle and/or its affiliates.
 -->
 <html>
   <head>
@@ -38,17 +38,23 @@ Copyright &copy; 2007, 2009 Oracle and/or its affiliates.
       </li>
       <li>
         Select a node in the left panel and modify the property using the text fields, drop-down
-        lists, checkboxes, and buttons in the right panel.
+        lists, check boxes, and buttons in the right panel.
       </li>
     </ol>
     <p>
        You can set the following properties for a specific file:
     </p>
     <p>
-       <b>Include Directories and Headers.</b> Type the absolute or relative path to the
+       <b>Include Directories.</b> Type the absolute or relative path to the
       directories containing headers for your project, or click the button to browse to the
       directories and add them. On the file browser dialog box, you can specify Absolute or
       Relative path.
+    </p>
+      <p>
+       <b>Include Headers.</b> Type the filename of the header file to include or click the button 
+       to browse to the file and add it. This option causes
+       the compiler to treat the header file as if it appears in your source files as an #include 
+       directive.
     </p>
     <p>
        <b>Preprocessor Definitions.</b> Add definitions for macros used by the project. Click the
@@ -59,12 +65,12 @@ Copyright &copy; 2007, 2009 Oracle and/or its affiliates.
       text field or the button to open the Preprocessor Definitions dialog box to add definitions.
     </p>
     <p>
-       <b>C Standard.</b> Specifies whether project sources should be parsed as&nbsp;C89 code or
-      C99 code.
+       <b>C Standard.</b> Specifies whether project sources should be parsed as&nbsp;C89, 
+       C99, or C11 code. When set to Default, use the compiler's default C standard.
     </p>
     <p>
        <b>C++ Standard.</b> Specifies whether project sources should be parsed as&nbsp;C++98 code
-      or C++11 code.
+      or C++11 code. When set to Default, use the compiler's default C++ standard.
     </p>
     <p>
        &nbsp;

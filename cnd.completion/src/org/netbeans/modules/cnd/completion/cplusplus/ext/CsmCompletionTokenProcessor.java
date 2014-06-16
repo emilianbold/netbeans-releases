@@ -2447,6 +2447,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                 case NO_EXP: // declaration started with type name
                 case NEW: // possibly new kwdType[]
                 case PARENTHESIS_OPEN: // conversion
+                case CONVERSION_OPEN:  // conversion
                 {
                     CsmCompletionExpression kwdExp = createTokenExp(TYPE);
                     //addTokenTo(kwdExp);
@@ -2522,6 +2523,10 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     private Boolean inPP;
     public int getLastSeparatorOffset() {
         return lastSeparatorOffset;
+    }
+    
+    void setLastSeparatorOffset(int lastSeparatorOffset) {
+        this.lastSeparatorOffset = lastSeparatorOffset;
     }
 
     @Override

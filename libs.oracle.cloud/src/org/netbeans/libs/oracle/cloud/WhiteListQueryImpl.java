@@ -135,7 +135,7 @@ public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSele
                 case INTERFACE:
                 case ANNOTATION_TYPE:
                     res = icc.checkClassAllowed(vmSignatures[0]);
-                    if (!res.isAllowed() && !res.isWarningOnly()) {
+                    if (!res.isAllowed() /*&& !res.isWarningOnly()*/) {
                             return new Result(Collections.singletonList(new RuleDescription(
                                     NbBundle.getMessage(WhiteListQueryImpl.class, "WhiteListQueryImpl-name"), 
                                     res.getMessage(), WHITELIST_ID)));
@@ -146,7 +146,7 @@ public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSele
                     String methodName = vmSignatures[1];
                     List<String> params = paramsOnly(vmSignatures[2]);
                     res = icc.checkMethodAllowed(vmSignatures[0], methodName, params);
-                    if (!res.isAllowed() && !res.isWarningOnly()) {
+                    if (!res.isAllowed() /*&& !res.isWarningOnly()*/) {
                         return new Result(Collections.singletonList(new RuleDescription(
                                 NbBundle.getMessage(WhiteListQueryImpl.class, "WhiteListQueryImpl-name"), 
                                 res.getMessage(), WHITELIST_ID)));
@@ -155,7 +155,7 @@ public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSele
                 case FIELD:
                     String fieldName = vmSignatures[1];
                     res = icc.checkFieldAllowed(vmSignatures[0], fieldName);
-                    if (!res.isAllowed() && !res.isWarningOnly()) {
+                    if (!res.isAllowed() /*&& !res.isWarningOnly()*/) {
                         return new Result(Collections.singletonList(new RuleDescription(
                                 NbBundle.getMessage(WhiteListQueryImpl.class, "WhiteListQueryImpl-name"), 
                                 res.getMessage(), WHITELIST_ID)));

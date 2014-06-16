@@ -725,15 +725,15 @@ public class JavaCompletionProviderBasicTest extends CompletionTestBase {
     }
     
     public void testEmptyFileTypingFirstParameterName() throws Exception {
-        performTest("MethodStart", 40, "public void op(int a", "aI.pass");
+        performTest("MethodStart", 40, "public void op(int a", "empty.pass");
     }
     
     public void testTypingFirstParameterName() throws Exception {
-        performTest("MethodNoParamsAndThrows", 55, "int a", "aI.pass");
+        performTest("MethodNoParamsAndThrows", 55, "int a", "empty.pass");
     }
 
     public void testOnFirstParameterName() throws Exception {
-        performTest("Method", 60, null, "aI.pass");
+        performTest("Method", 60, null, "empty.pass");
     }
     
     public void testEmptyFileAfterTypingFirstParameterNameAndSpace() throws Exception {

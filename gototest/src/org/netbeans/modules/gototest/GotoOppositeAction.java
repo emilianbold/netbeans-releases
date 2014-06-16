@@ -154,7 +154,12 @@ public class GotoOppositeAction extends CallableSystemAction {
                     FileType currentFileType = getCurrentFileType();
                     if(currentFileType == FileType.NEITHER) {
                         StatusDisplayer.getDefault().setStatusText(Bundle.No_Test_Or_Tested_Class_Found());
-                        TestCreatorPanelDisplayer.getDefault().displayPanel(TopComponent.getRegistry().getActivatedNodes(), null, null);
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                TestCreatorPanelDisplayer.getDefault().displayPanel(TopComponent.getRegistry().getActivatedNodes(), null, null);
+                            }
+                        });
                     }
                     else {
                         populateLocationResults(fo, caretOffset);

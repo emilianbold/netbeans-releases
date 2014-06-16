@@ -174,6 +174,23 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
     void noteFistStop() {
         initialApply(DIRTY_WATCHES);
     }
+    
+    void noteSignalList(String source) {
+	ignoreSettingsChange = true;
+        String[] signals = source.split("\\\\n"); // NOI18N
+	Signals.InitialSignalInfo isi[] =
+	    new Signals.InitialSignalInfo[signals.length - 4];
+	for (int sx = 2; sx < signals.length -2 ; sx++) {
+            String signal[] = signals[sx].split("\\\\t"); // NOI18N
+	    isi[sx-2] = new Signals.InitialSignalInfo(0,
+						    signal[0].split(" ")[0], // NOI18N
+						    signal[4],
+						    signal[1].equals("Yes"), // NOI18N
+						    signal[1].equals("Yes")); // NOI18N
+	}
+	currentDbgProfile().signals().setDefaultSignals(isi);
+	ignoreSettingsChange = false;
+    }
 
     @Override
     protected void applyRunargs() {

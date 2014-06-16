@@ -61,7 +61,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Tomas Stupka
  */
 @ServiceProvider(service=Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class VCSRegistrationProcessor extends LayerGeneratingProcessor {
 
     @Override

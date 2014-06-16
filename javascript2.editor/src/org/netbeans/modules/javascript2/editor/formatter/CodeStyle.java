@@ -62,21 +62,21 @@ import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
  */
 public final class CodeStyle {
 
-    private final DefaultsProvider provider;
+    private final Defaults.Provider provider;
 
     private final Preferences preferences;
 
-    private CodeStyle(DefaultsProvider provider, Preferences preferences) {
+    private CodeStyle(Defaults.Provider provider, Preferences preferences) {
         this.provider = provider;
         this.preferences = preferences;
     }
 
     /** For testing purposes only */
-    public static CodeStyle get(Preferences prefs, DefaultsProvider provider) {
+    public static CodeStyle get(Preferences prefs, Defaults.Provider provider) {
         return new CodeStyle(provider, prefs);
     }
 
-    public static CodeStyle get(Document doc, DefaultsProvider provider) {
+    public static CodeStyle get(Document doc, Defaults.Provider provider) {
         return new CodeStyle(provider, CodeStylePreferences.get(doc).getPreferences());
     }
     
@@ -88,11 +88,15 @@ public final class CodeStyle {
         return get(context.getDefaultsProvider(), context.getDocument(), context.isEmbedded());
     }
 
-    private static CodeStyle get(DefaultsProvider provider, Document doc, boolean embedded) {
+    private static CodeStyle get(Defaults.Provider provider, Document doc, boolean embedded) {
         if (embedded) {
             return new CodeStyle(provider, CodeStylePreferences.get(doc, JsTokenId.JAVASCRIPT_MIME_TYPE).getPreferences());
         }
         return new CodeStyle(provider, CodeStylePreferences.get(doc).getPreferences());
+    }
+
+    public Holder toHolder() {
+        return new Holder(this);
     }
 
     // General tabs and indents ------------------------------------------------
@@ -182,85 +186,85 @@ public final class CodeStyle {
 
     // Blank lines -------------------------------------------------------------
 
-    public int getBlankLinesBeforeNamespace() {
-        return preferences.getInt(blankLinesBeforeNamespace, provider.getDefaultAsInt(blankLinesBeforeNamespace));
-    }
-
-    public int getBlankLinesAfterNamespace() {
-        return preferences.getInt(blankLinesAfterNamespace, provider.getDefaultAsInt(blankLinesAfterNamespace));
-    }
-
-    public int getBlankLinesBeforeUse() {
-        return preferences.getInt(blankLinesBeforeUse, provider.getDefaultAsInt(blankLinesBeforeUse));
-    }
-
-    public int getBlankLinesBeforeUseTrait() {
-        return preferences.getInt(blankLinesBeforeUseTrait, provider.getDefaultAsInt(blankLinesBeforeUseTrait));
-    }
-
-    public int getBlankLinesAfterUse() {
-        return preferences.getInt(blankLinesAfterUse, provider.getDefaultAsInt(blankLinesAfterUse));
-    }
-
-    public int getBlankLinesBeforeClass() {
-        return preferences.getInt(blankLinesBeforeClass, provider.getDefaultAsInt(blankLinesBeforeClass));
-    }
-
-    public int getBlankLinesAfterClass() {
-        return preferences.getInt(blankLinesAfterClass, provider.getDefaultAsInt(blankLinesAfterClass));
-    }
-
-    public int getBlankLinesAfterClassHeader() {
-        return preferences.getInt(blankLinesAfterClassHeader, provider.getDefaultAsInt(blankLinesAfterClassHeader));
-    }
-
-    public int getBlankLinesBeforeClassEnd() {
-        return preferences.getInt(blankLinesBeforeClassEnd, provider.getDefaultAsInt(blankLinesBeforeClassEnd));
-    }
-
-    public int getBlankLinesBeforeFields() {
-        return preferences.getInt(blankLinesBeforeFields, provider.getDefaultAsInt(blankLinesBeforeFields));
-    }
-
-    public int getBlankLinesBetweenFields() {
-        return preferences.getInt(blankLinesBetweenFields, provider.getDefaultAsInt(blankLinesBetweenFields));
-    }
-
-    public int getBlankLinesAfterFields() {
-        return preferences.getInt(blankLinesAfterFields, provider.getDefaultAsInt(blankLinesAfterFields));
-    }
-
-    /**
-     *
-     * @return true it the fields will be group without php doc together (no empty line between them)
-     */
-    public boolean getBlankLinesGroupFieldsWithoutDoc() {
-	return preferences.getBoolean(blankLinesGroupFieldsWithoutDoc, provider.getDefaultAsBoolean(blankLinesGroupFieldsWithoutDoc));
-    }
-
-    public int getBlankLinesBeforeFunction() {
-        return preferences.getInt(blankLinesBeforeFunction, provider.getDefaultAsInt(blankLinesBeforeFunction));
-    }
-
-    public int getBlankLinesAfterFunction() {
-        return preferences.getInt(blankLinesAfterFunction, provider.getDefaultAsInt(blankLinesAfterFunction));
-    }
-
-    public int getBlankLinesBeforeFunctionEnd() {
-        return preferences.getInt(blankLinesBeforeFunctionEnd, provider.getDefaultAsInt(blankLinesBeforeFunctionEnd));
-    }
-
-    public int getBlankLinesAfterOpenPHPTag() {
-        return preferences.getInt(blankLinesAfterOpenPHPTag, provider.getDefaultAsInt(blankLinesAfterOpenPHPTag));
-    }
-
-    public int getBlankLinesAfterOpenPHPTagInHTML() {
-        return preferences.getInt(blankLinesAfterOpenPHPTagInHTML, provider.getDefaultAsInt(blankLinesAfterOpenPHPTagInHTML));
-    }
-
-    public int getBlankLinesBeforeClosePHPTag() {
-        return preferences.getInt(blankLinesBeforeClosePHPTag, provider.getDefaultAsInt(blankLinesBeforeClosePHPTag));
-    }
+//    public int getBlankLinesBeforeNamespace() {
+//        return preferences.getInt(blankLinesBeforeNamespace, provider.getDefaultAsInt(blankLinesBeforeNamespace));
+//    }
+//
+//    public int getBlankLinesAfterNamespace() {
+//        return preferences.getInt(blankLinesAfterNamespace, provider.getDefaultAsInt(blankLinesAfterNamespace));
+//    }
+//
+//    public int getBlankLinesBeforeUse() {
+//        return preferences.getInt(blankLinesBeforeUse, provider.getDefaultAsInt(blankLinesBeforeUse));
+//    }
+//
+//    public int getBlankLinesBeforeUseTrait() {
+//        return preferences.getInt(blankLinesBeforeUseTrait, provider.getDefaultAsInt(blankLinesBeforeUseTrait));
+//    }
+//
+//    public int getBlankLinesAfterUse() {
+//        return preferences.getInt(blankLinesAfterUse, provider.getDefaultAsInt(blankLinesAfterUse));
+//    }
+//
+//    public int getBlankLinesBeforeClass() {
+//        return preferences.getInt(blankLinesBeforeClass, provider.getDefaultAsInt(blankLinesBeforeClass));
+//    }
+//
+//    public int getBlankLinesAfterClass() {
+//        return preferences.getInt(blankLinesAfterClass, provider.getDefaultAsInt(blankLinesAfterClass));
+//    }
+//
+//    public int getBlankLinesAfterClassHeader() {
+//        return preferences.getInt(blankLinesAfterClassHeader, provider.getDefaultAsInt(blankLinesAfterClassHeader));
+//    }
+//
+//    public int getBlankLinesBeforeClassEnd() {
+//        return preferences.getInt(blankLinesBeforeClassEnd, provider.getDefaultAsInt(blankLinesBeforeClassEnd));
+//    }
+//
+//    public int getBlankLinesBeforeFields() {
+//        return preferences.getInt(blankLinesBeforeFields, provider.getDefaultAsInt(blankLinesBeforeFields));
+//    }
+//
+//    public int getBlankLinesBetweenFields() {
+//        return preferences.getInt(blankLinesBetweenFields, provider.getDefaultAsInt(blankLinesBetweenFields));
+//    }
+//
+//    public int getBlankLinesAfterFields() {
+//        return preferences.getInt(blankLinesAfterFields, provider.getDefaultAsInt(blankLinesAfterFields));
+//    }
+//
+//    /**
+//     *
+//     * @return true it the fields will be group without php doc together (no empty line between them)
+//     */
+//    public boolean getBlankLinesGroupFieldsWithoutDoc() {
+//	return preferences.getBoolean(blankLinesGroupFieldsWithoutDoc, provider.getDefaultAsBoolean(blankLinesGroupFieldsWithoutDoc));
+//    }
+//
+//    public int getBlankLinesBeforeFunction() {
+//        return preferences.getInt(blankLinesBeforeFunction, provider.getDefaultAsInt(blankLinesBeforeFunction));
+//    }
+//
+//    public int getBlankLinesAfterFunction() {
+//        return preferences.getInt(blankLinesAfterFunction, provider.getDefaultAsInt(blankLinesAfterFunction));
+//    }
+//
+//    public int getBlankLinesBeforeFunctionEnd() {
+//        return preferences.getInt(blankLinesBeforeFunctionEnd, provider.getDefaultAsInt(blankLinesBeforeFunctionEnd));
+//    }
+//
+//    public int getBlankLinesAfterOpenPHPTag() {
+//        return preferences.getInt(blankLinesAfterOpenPHPTag, provider.getDefaultAsInt(blankLinesAfterOpenPHPTag));
+//    }
+//
+//    public int getBlankLinesAfterOpenPHPTagInHTML() {
+//        return preferences.getInt(blankLinesAfterOpenPHPTagInHTML, provider.getDefaultAsInt(blankLinesAfterOpenPHPTagInHTML));
+//    }
+//
+//    public int getBlankLinesBeforeClosePHPTag() {
+//        return preferences.getInt(blankLinesBeforeClosePHPTag, provider.getDefaultAsInt(blankLinesBeforeClosePHPTag));
+//    }
 
     // Spaces ------------------------------------------------------------------
 
@@ -387,19 +391,7 @@ public final class CodeStyle {
     public boolean spaceBeforeWithLeftBrace() {
         return preferences.getBoolean(spaceBeforeWithLeftBrace, provider.getDefaultAsBoolean(spaceBeforeWithLeftBrace));
     }
-//
-//    public boolean spaceBeforeSynchronizedLeftBrace() {
-//        return preferences.getBoolean(spaceBeforeSynchronizedLeftBrace, provider.getDefaultAsBoolean(spaceBeforeSynchronizedLeftBrace));
-//    }
-//
-//    public boolean spaceBeforeStaticInitLeftBrace() {
-//        return preferences.getBoolean(spaceBeforeStaticInitLeftBrace, provider.getDefaultAsBoolean(spaceBeforeStaticInitLeftBrace));
-//    }
-//
-//    public boolean spaceBeforeArrayInitLeftBrace() {
-//        return preferences.getBoolean(spaceBeforeArrayInitLeftBrace, provider.getDefaultAsBoolean(spaceBeforeArrayInitLeftBrace));
-//    }
-//
+
     public boolean spaceWithinParens() {
         return preferences.getBoolean(spaceWithinParens, provider.getDefaultAsBoolean(spaceWithinParens));
     }
@@ -435,10 +427,6 @@ public final class CodeStyle {
     public boolean spaceWithinWithParens() {
         return preferences.getBoolean(spaceWithinWithParens, provider.getDefaultAsBoolean(spaceWithinWithParens));
     }
-//
-//    public boolean spaceWithinSynchronizedParens() {
-//        return preferences.getBoolean(spaceWithinSynchronizedParens, provider.getDefaultAsBoolean(spaceWithinSynchronizedParens));
-//    }
 
     public boolean spaceWithinTypeCastParens() {
         return preferences.getBoolean(spaceWithinTypeCastParens, provider.getDefaultAsBoolean(spaceWithinTypeCastParens));
@@ -448,10 +436,6 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceWithinArrayDeclParens, provider.getDefaultAsBoolean(spaceWithinArrayDeclParens));
     }
 
-//    public boolean spaceWithinAnnotationParens() {
-//        return preferences.getBoolean(spaceWithinAnnotationParens, provider.getDefaultAsBoolean(spaceWithinAnnotationParens));
-//    }
-//
     public boolean spaceWithinBraces() {
         return preferences.getBoolean(spaceWithinBraces, provider.getDefaultAsBoolean(spaceWithinBraces));
     }
@@ -484,66 +468,66 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceAfterColon, provider.getDefaultAsBoolean(spaceAfterColon));
     }
 
-    // alignment
-    public boolean alignMultilineMethodParams() {
-        return preferences.getBoolean(alignMultilineMethodParams, provider.getDefaultAsBoolean(alignMultilineMethodParams));
-    }
-
-    public boolean alignMultilineCallArgs() {
-        return preferences.getBoolean(alignMultilineCallArgs, provider.getDefaultAsBoolean(alignMultilineCallArgs));
-    }
-
-    public boolean alignMultilineImplements() {
-        return preferences.getBoolean(alignMultilineImplements, provider.getDefaultAsBoolean(alignMultilineImplements));
-    }
-
-    public boolean alignMultilineParenthesized() {
-        return preferences.getBoolean(alignMultilineParenthesized, provider.getDefaultAsBoolean(alignMultilineParenthesized));
-    }
-
-    public boolean alignMultilineBinaryOp() {
-        return preferences.getBoolean(alignMultilineBinaryOp, provider.getDefaultAsBoolean(alignMultilineBinaryOp));
-    }
-
-    public boolean alignMultilineTernaryOp() {
-        return preferences.getBoolean(alignMultilineTernaryOp, provider.getDefaultAsBoolean(alignMultilineTernaryOp));
-    }
-
-    public boolean alignMultilineAssignment() {
-        return preferences.getBoolean(alignMultilineAssignment, provider.getDefaultAsBoolean(alignMultilineAssignment));
-    }
-
-    public boolean alignMultilineFor() {
-        return preferences.getBoolean(alignMultilineFor, provider.getDefaultAsBoolean(alignMultilineFor));
-    }
-
-    public boolean alignMultilineArrayInit() {
-        return preferences.getBoolean(alignMultilineArrayInit, provider.getDefaultAsBoolean(alignMultilineArrayInit));
-    }
-
-    public boolean placeElseOnNewLine() {
-        return preferences.getBoolean(placeElseOnNewLine, provider.getDefaultAsBoolean(placeElseOnNewLine));
-    }
-
-    public boolean placeWhileOnNewLine() {
-        return preferences.getBoolean(placeWhileOnNewLine, provider.getDefaultAsBoolean(placeWhileOnNewLine));
-    }
-
-    public boolean placeCatchOnNewLine() {
-        return preferences.getBoolean(placeCatchOnNewLine, provider.getDefaultAsBoolean(placeCatchOnNewLine));
-    }
-
-    public boolean placeNewLineAfterModifiers() {
-        return preferences.getBoolean(placeNewLineAfterModifiers, provider.getDefaultAsBoolean(placeNewLineAfterModifiers));
-    }
-
-    public boolean groupMulitlineAssignment() {
-        return preferences.getBoolean(groupAlignmentAssignment, provider.getDefaultAsBoolean(groupAlignmentAssignment));
-    }
-
-    public boolean groupMulitlineArrayInit() {
-        return preferences.getBoolean(groupAlignmentArrayInit, provider.getDefaultAsBoolean(groupAlignmentArrayInit));
-    }
+//    // alignment
+//    public boolean alignMultilineMethodParams() {
+//        return preferences.getBoolean(alignMultilineMethodParams, provider.getDefaultAsBoolean(alignMultilineMethodParams));
+//    }
+//
+//    public boolean alignMultilineCallArgs() {
+//        return preferences.getBoolean(alignMultilineCallArgs, provider.getDefaultAsBoolean(alignMultilineCallArgs));
+//    }
+//
+//    public boolean alignMultilineImplements() {
+//        return preferences.getBoolean(alignMultilineImplements, provider.getDefaultAsBoolean(alignMultilineImplements));
+//    }
+//
+//    public boolean alignMultilineParenthesized() {
+//        return preferences.getBoolean(alignMultilineParenthesized, provider.getDefaultAsBoolean(alignMultilineParenthesized));
+//    }
+//
+//    public boolean alignMultilineBinaryOp() {
+//        return preferences.getBoolean(alignMultilineBinaryOp, provider.getDefaultAsBoolean(alignMultilineBinaryOp));
+//    }
+//
+//    public boolean alignMultilineTernaryOp() {
+//        return preferences.getBoolean(alignMultilineTernaryOp, provider.getDefaultAsBoolean(alignMultilineTernaryOp));
+//    }
+//
+//    public boolean alignMultilineAssignment() {
+//        return preferences.getBoolean(alignMultilineAssignment, provider.getDefaultAsBoolean(alignMultilineAssignment));
+//    }
+//
+//    public boolean alignMultilineFor() {
+//        return preferences.getBoolean(alignMultilineFor, provider.getDefaultAsBoolean(alignMultilineFor));
+//    }
+//
+//    public boolean alignMultilineArrayInit() {
+//        return preferences.getBoolean(alignMultilineArrayInit, provider.getDefaultAsBoolean(alignMultilineArrayInit));
+//    }
+//
+//    public boolean placeElseOnNewLine() {
+//        return preferences.getBoolean(placeElseOnNewLine, provider.getDefaultAsBoolean(placeElseOnNewLine));
+//    }
+//
+//    public boolean placeWhileOnNewLine() {
+//        return preferences.getBoolean(placeWhileOnNewLine, provider.getDefaultAsBoolean(placeWhileOnNewLine));
+//    }
+//
+//    public boolean placeCatchOnNewLine() {
+//        return preferences.getBoolean(placeCatchOnNewLine, provider.getDefaultAsBoolean(placeCatchOnNewLine));
+//    }
+//
+//    public boolean placeNewLineAfterModifiers() {
+//        return preferences.getBoolean(placeNewLineAfterModifiers, provider.getDefaultAsBoolean(placeNewLineAfterModifiers));
+//    }
+//
+//    public boolean groupMulitlineAssignment() {
+//        return preferences.getBoolean(groupAlignmentAssignment, provider.getDefaultAsBoolean(groupAlignmentAssignment));
+//    }
+//
+//    public boolean groupMulitlineArrayInit() {
+//        return preferences.getBoolean(groupAlignmentArrayInit, provider.getDefaultAsBoolean(groupAlignmentArrayInit));
+//    }
 
     // Wrapping ----------------------------------------------------------------
 
@@ -659,17 +643,17 @@ public final class CodeStyle {
 
     // Uses
 
-    public boolean preferFullyQualifiedNames() {
-        return preferences.getBoolean(preferFullyQualifiedNames, provider.getDefaultAsBoolean(preferFullyQualifiedNames));
-    }
-
-    public boolean preferMultipleUseStatementsCombined() {
-        return preferences.getBoolean(preferMultipleUseStatementsCombined, provider.getDefaultAsBoolean(preferMultipleUseStatementsCombined));
-    }
-
-    public boolean startUseWithNamespaceSeparator() {
-        return preferences.getBoolean(startUseWithNamespaceSeparator, provider.getDefaultAsBoolean(startUseWithNamespaceSeparator));
-    }
+//    public boolean preferFullyQualifiedNames() {
+//        return preferences.getBoolean(preferFullyQualifiedNames, provider.getDefaultAsBoolean(preferFullyQualifiedNames));
+//    }
+//
+//    public boolean preferMultipleUseStatementsCombined() {
+//        return preferences.getBoolean(preferMultipleUseStatementsCombined, provider.getDefaultAsBoolean(preferMultipleUseStatementsCombined));
+//    }
+//
+//    public boolean startUseWithNamespaceSeparator() {
+//        return preferences.getBoolean(startUseWithNamespaceSeparator, provider.getDefaultAsBoolean(startUseWithNamespaceSeparator));
+//    }
 
     public enum BracePlacement {
         SAME_LINE,
@@ -682,5 +666,287 @@ public final class CodeStyle {
         WRAP_ALWAYS,
         WRAP_IF_LONG,
         WRAP_NEVER
+    }
+
+    final static class Holder {
+
+        final boolean expandTabsToSpaces;
+
+        final int tabSize;
+
+        final int indentSize;
+
+        final int continuationIndentSize;
+
+        final int itemsInArrayDeclarationIndentSize;
+
+        final int initialIndent;
+
+        final boolean reformatComments;
+
+        final boolean indentHtml;
+
+        final int rightMargin;
+
+        final CodeStyle.BracePlacement classDeclBracePlacement;
+
+        final CodeStyle.BracePlacement methodDeclBracePlacement;
+
+        final CodeStyle.BracePlacement ifBracePlacement;
+
+        final CodeStyle.BracePlacement forBracePlacement;
+
+        final CodeStyle.BracePlacement whileBracePlacement;
+
+        final CodeStyle.BracePlacement switchBracePlacement;
+
+        final CodeStyle.BracePlacement catchBracePlacement;
+
+        final CodeStyle.BracePlacement useTraitBodyBracePlacement;
+
+        final CodeStyle.BracePlacement otherBracePlacement;
+
+        final boolean spaceBeforeWhile;
+
+        final boolean spaceBeforeElse;
+
+        final boolean spaceBeforeCatch;
+
+        final boolean spaceBeforeFinally;
+
+        final boolean spaceBeforeMethodDeclParen;
+
+        final boolean spaceBeforeMethodCallParen;
+
+        final boolean spaceBeforeIfParen;
+
+        final boolean spaceBeforeForParen;
+
+        final boolean spaceBeforeWhileParen;
+
+        final boolean spaceBeforeCatchParen;
+
+        final boolean spaceBeforeSwitchParen;
+
+        final boolean spaceBeforeWithParen;
+
+        final boolean spaceAroundUnaryOps;
+
+        final boolean spaceAroundBinaryOps;
+
+        final boolean spaceAroundStringConcatOps;
+
+        final boolean spaceAroundTernaryOps;
+
+        final boolean spaceAroundKeyValueOps;
+
+        final boolean spaceAroundAssignOps;
+
+        final boolean spaceAroundObjectOps;
+
+        final boolean spaceBeforeClassDeclLeftBrace;
+
+        final boolean spaceBeforeMethodDeclLeftBrace;
+
+        final boolean spaceBeforeIfLeftBrace;
+
+        final boolean spaceBeforeElseLeftBrace;
+
+        final boolean spaceBeforeWhileLeftBrace;
+
+        final boolean spaceBeforeForLeftBrace;
+
+        final boolean spaceBeforeDoLeftBrace;
+
+        final boolean spaceBeforeSwitchLeftBrace;
+
+        final boolean spaceBeforeTryLeftBrace;
+
+        final boolean spaceBeforeCatchLeftBrace;
+
+        final boolean spaceBeforeFinallyLeftBrace;
+
+        final boolean spaceBeforeWithLeftBrace;
+
+        final boolean spaceWithinParens;
+
+        final boolean spaceWithinMethodDeclParens;
+
+        final boolean spaceWithinMethodCallParens;
+
+        final boolean spaceWithinIfParens;
+
+        final boolean spaceWithinForParens;
+
+        final boolean spaceWithinWhileParens;
+
+        final boolean spaceWithinSwitchParens;
+
+        final boolean spaceWithinCatchParens;
+
+        final boolean spaceWithinWithParens;
+
+        final boolean spaceWithinTypeCastParens;
+
+        final boolean spaceWithinArrayDeclParens;
+
+        final boolean spaceWithinBraces;
+
+        final boolean spaceWithinArrayBrackets;
+
+        final boolean spaceBeforeComma;
+
+        final boolean spaceAfterComma;
+
+        final boolean spaceBeforeSemi;
+
+        final boolean spaceAfterSemi;
+
+        final boolean spaceBeforeColon;
+
+        final boolean spaceAfterColon;
+
+        final CodeStyle.WrapStyle wrapStatement;
+
+        final CodeStyle.WrapStyle wrapVariables;
+
+        final CodeStyle.WrapStyle wrapMethodParams;
+
+        final CodeStyle.WrapStyle wrapMethodCallArgs;
+
+        final CodeStyle.WrapStyle wrapChainedMethodCalls;
+
+        final boolean wrapAfterDotInChainedMethodCalls;
+
+        final CodeStyle.WrapStyle wrapArrayInit;
+
+        final CodeStyle.WrapStyle wrapArrayInitItems;
+
+        final CodeStyle.WrapStyle wrapFor;
+
+        final CodeStyle.WrapStyle wrapForStatement;
+
+        final CodeStyle.WrapStyle wrapIfStatement;
+
+        final CodeStyle.WrapStyle wrapWhileStatement;
+
+        final CodeStyle.WrapStyle wrapDoWhileStatement;
+
+        final CodeStyle.WrapStyle wrapWithStatement;
+
+        final CodeStyle.WrapStyle wrapBinaryOps;
+
+        final boolean wrapAfterBinaryOps;
+
+        final CodeStyle.WrapStyle wrapTernaryOps;
+
+        final CodeStyle.WrapStyle wrapAssignOps;
+
+        final boolean wrapAfterTernaryOps;
+
+        final boolean wrapBlockBrace;
+
+        final boolean wrapStatementsOnTheSameLine;
+
+        final CodeStyle.WrapStyle wrapObjects;
+
+        final CodeStyle.WrapStyle wrapProperties;
+
+        private Holder(CodeStyle style) {
+            expandTabsToSpaces = style.expandTabToSpaces();
+            tabSize = style.getTabSize();
+            indentSize = style.getIndentSize();
+            continuationIndentSize = style.getContinuationIndentSize();
+            itemsInArrayDeclarationIndentSize = style.getItemsInArrayDeclarationIndentSize();
+            initialIndent = style.getInitialIndent();
+            reformatComments = style.reformatComments();
+            indentHtml = style.indentHtml();
+            rightMargin = style.getRightMargin();
+
+            classDeclBracePlacement = style.getClassDeclBracePlacement();
+            methodDeclBracePlacement = style.getMethodDeclBracePlacement();
+            ifBracePlacement = style.getIfBracePlacement();
+            forBracePlacement = style.getForBracePlacement();
+            whileBracePlacement = style.getWhileBracePlacement();
+            switchBracePlacement = style.getSwitchBracePlacement();
+            catchBracePlacement = style.getCatchBracePlacement();
+            useTraitBodyBracePlacement = style.getUseTraitBodyBracePlacement();
+            otherBracePlacement = style.getOtherBracePlacement();
+
+            spaceBeforeWhile = style.spaceBeforeWhile();
+            spaceBeforeElse = style.spaceBeforeElse();
+            spaceBeforeCatch = style.spaceBeforeCatch();
+            spaceBeforeFinally = style.spaceBeforeFinally();
+            spaceBeforeMethodDeclParen = style.spaceBeforeMethodDeclParen();
+            spaceBeforeMethodCallParen = style.spaceBeforeMethodCallParen();
+            spaceBeforeIfParen = style.spaceBeforeIfParen();
+            spaceBeforeForParen = style.spaceBeforeForParen();
+            spaceBeforeWhileParen = style.spaceBeforeWhileParen();
+            spaceBeforeCatchParen = style.spaceBeforeCatchParen();
+            spaceBeforeSwitchParen = style.spaceBeforeSwitchParen();
+            spaceBeforeWithParen = style.spaceBeforeWithParen();
+            spaceAroundUnaryOps = style.spaceAroundUnaryOps();
+            spaceAroundBinaryOps = style.spaceAroundBinaryOps();
+            spaceAroundStringConcatOps = style.spaceAroundStringConcatOps();
+            spaceAroundTernaryOps = style.spaceAroundTernaryOps();
+            spaceAroundKeyValueOps = style.spaceAroundKeyValueOps();
+            spaceAroundAssignOps = style.spaceAroundAssignOps();
+            spaceAroundObjectOps = style.spaceAroundObjectOps();
+            spaceBeforeClassDeclLeftBrace = style.spaceBeforeClassDeclLeftBrace();
+            spaceBeforeMethodDeclLeftBrace = style.spaceBeforeMethodDeclLeftBrace();
+            spaceBeforeIfLeftBrace = style.spaceBeforeIfLeftBrace();
+            spaceBeforeElseLeftBrace = style.spaceBeforeElseLeftBrace();
+            spaceBeforeWhileLeftBrace = style.spaceBeforeWhileLeftBrace();
+            spaceBeforeForLeftBrace = style.spaceBeforeForLeftBrace();
+            spaceBeforeDoLeftBrace = style.spaceBeforeDoLeftBrace();
+            spaceBeforeSwitchLeftBrace = style.spaceBeforeSwitchLeftBrace();
+            spaceBeforeTryLeftBrace = style.spaceBeforeTryLeftBrace();
+            spaceBeforeCatchLeftBrace = style.spaceBeforeCatchLeftBrace();
+            spaceBeforeFinallyLeftBrace = style.spaceBeforeFinallyLeftBrace();
+            spaceBeforeWithLeftBrace = style.spaceBeforeWithLeftBrace();
+            spaceWithinParens = style.spaceWithinParens();
+            spaceWithinMethodDeclParens = style.spaceWithinMethodDeclParens();
+            spaceWithinMethodCallParens = style.spaceWithinMethodCallParens();
+            spaceWithinIfParens = style.spaceWithinIfParens();
+            spaceWithinForParens = style.spaceWithinForParens();
+            spaceWithinWhileParens = style.spaceWithinWhileParens();
+            spaceWithinSwitchParens = style.spaceWithinSwitchParens();
+            spaceWithinCatchParens = style.spaceWithinCatchParens();
+            spaceWithinWithParens = style.spaceWithinWithParens();
+            spaceWithinTypeCastParens = style.spaceWithinTypeCastParens();
+            spaceWithinArrayDeclParens = style.spaceWithinArrayDeclParens();
+            spaceWithinBraces = style.spaceWithinBraces();
+            spaceWithinArrayBrackets = style.spaceWithinArrayBrackets();
+            spaceBeforeComma = style.spaceBeforeComma();
+            spaceAfterComma = style.spaceAfterComma();
+            spaceBeforeSemi = style.spaceBeforeSemi();
+            spaceAfterSemi = style.spaceAfterSemi();
+            spaceBeforeColon = style.spaceBeforeColon();
+            spaceAfterColon = style.spaceAfterColon();
+
+            wrapStatement = style.wrapStatement();
+            wrapVariables = style.wrapVariables();
+            wrapMethodParams = style.wrapMethodParams();
+            wrapMethodCallArgs = style.wrapMethodCallArgs();
+            wrapChainedMethodCalls = style.wrapChainedMethodCalls();
+            wrapAfterDotInChainedMethodCalls = style.wrapAfterDotInChainedMethodCalls();
+            wrapArrayInit = style.wrapArrayInit();
+            wrapArrayInitItems = style.wrapArrayInitItems();
+            wrapFor = style.wrapFor();
+            wrapForStatement = style.wrapForStatement();
+            wrapIfStatement = style.wrapIfStatement();
+            wrapWhileStatement = style.wrapWhileStatement();
+            wrapDoWhileStatement = style.wrapDoWhileStatement();
+            wrapWithStatement = style.wrapWithStatement();
+            wrapBinaryOps = style.wrapBinaryOps();
+            wrapAfterBinaryOps = style.wrapAfterBinaryOps();
+            wrapTernaryOps = style.wrapTernaryOps();
+            wrapAssignOps = style.wrapAssignOps();
+            wrapAfterTernaryOps = style.wrapAfterTernaryOps();
+            wrapBlockBrace = style.wrapBlockBrace();
+            wrapStatementsOnTheSameLine = style.wrapStatementsOnTheSameLine();
+            wrapObjects = style.wrapObjects();
+            wrapProperties = style.wrapProperties();
+        }
     }
 }

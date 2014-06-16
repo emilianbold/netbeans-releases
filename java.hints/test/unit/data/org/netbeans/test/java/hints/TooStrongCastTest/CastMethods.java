@@ -7,6 +7,7 @@ package org.netbeans.test.java.hints.TooStrongCastTest;
 
 import java.awt.Component;
 import java.awt.event.MouseWheelEvent;
+import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -38,6 +39,11 @@ public class CastMethods {
         JRootPane rootPane = new JRootPane();
         Object o = null;
         rootPane.add(((SuperDerived)o).c());
+    }
+    
+    public void useOverridingMethod() {
+        Object o = null;
+        DefaultCellEditor ed = new DefaultCellEditor(((SuperDerived)o).c());
     }
     
     interface Base {

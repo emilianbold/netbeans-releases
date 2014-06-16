@@ -50,7 +50,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
@@ -67,7 +72,6 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -78,6 +82,8 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
     
     private final ArtifactType artifactType;
     private static final RequestProcessor RP = new RequestProcessor("MakeArtifactChooser",1); // NOI18N
+    private ModelUpdater modelUpdater;
+    private final Object modelUpdaterLock = new Object();
     private final FSPath baseDir;
     
     /** Creates new form JarArtifactChooser */
@@ -86,9 +92,7 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
         this.baseDir = baseDir;
         
         initComponents();
-        MyDefaultListModel model = new MyDefaultListModel(null, artifactType, baseDir);
-        model.init();
-        listArtifacts.setModel( model);
+        listArtifacts.setModel(new MyDefaultListModel(false));
         chooser.addPropertyChangeListener( this );
 
 	//PathPanel pathPanel = new PathPanel();
@@ -168,35 +172,61 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
             // We have to update the Accessory
             JFileChooser chooser = (JFileChooser) e.getSource();
             File dir = chooser.getSelectedFile(); // may be null (#46744)
+            if (SwingUtilities.isEventDispatchThread()) { // in fact t's always the case, but I'd better check
+                listArtifacts.setModel(new MyDefaultListModel(true));
+            }
             if (dir != null) {
-                MyDefaultListModel oldModel  =(MyDefaultListModel) listArtifacts.getModel();
-                oldModel.cancel();
-                final MyDefaultListModel model = new MyDefaultListModel(dir, artifactType, baseDir);
-                listArtifacts.setModel(model);
-                RP.post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        if (SwingUtilities.isEventDispatchThread()) {
-                            if (!model.isCanceled()) {
-                                projectTextField.setText(model.project == null ? "" : ProjectUtils.getInformation(model.project).getDisplayName()); //NOI18N
-                                listArtifacts.setModel(model);
-                                if (model.def >=0 ) {
-                                    listArtifacts.setSelectionInterval(model.def, model.def);
-                                }
-                            }
-                        } else {
-                            model.init();
-                            if (!model.isCanceled()) {
-                                SwingUtilities.invokeLater(this);
-                            }
-                        }
+                synchronized (modelUpdaterLock) {
+                    if (modelUpdater != null) {
+                        modelUpdater.cancel();
                     }
-                });
+                    modelUpdater = new ModelUpdater(dir);
+                    RP.post(modelUpdater);
+                }
             }
         }
     }
-    
+
+    private class ModelUpdater implements Runnable {
+
+        private final AtomicBoolean cancelled = new AtomicBoolean(false);
+        private final File dir;
+        private MyDefaultListModel model;
+
+        public ModelUpdater(File dir) {
+            this.dir = dir;
+        }
+
+        public void cancel() {
+            cancelled.set(true);
+        }
+
+        @Override
+        public void run() {
+            if (SwingUtilities.isEventDispatchThread()) {
+                if (!cancelled.get() && model != null) {
+                    listArtifacts.setModel(model);
+                    Project project = model.getProject();
+                    projectTextField.setText(project== null ? "" : ProjectUtils.getInformation(project).getDisplayName()); //NOI18N
+                    listArtifacts.setModel(model);
+                    if (model.getDef() >= 0) {
+                        listArtifacts.setSelectionInterval(model.getDef(), model.getDef());
+                    }
+                }
+            } else {
+                if (!cancelled.get()) {
+                    AtomicInteger def = new AtomicInteger(-1);
+                    AtomicReference<Project> project = new AtomicReference<>(null);
+                    List<MakeArtifact> artifacts = findArtifacts(dir, def, project, cancelled);
+                    synchronized (this) {
+                        model = new MyDefaultListModel(project.get(), artifacts, def.get());
+                    }
+                    SwingUtilities.invokeLater(this);
+                }
+            }
+        }
+
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel libFilesLabel;
@@ -273,98 +303,93 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
     }
 
     private static final class MyDefaultListModel extends DefaultListModel {
-        private final File dir;
-        private final ArtifactType artifactType;
-        private Project project;
-        private int def = -1;
-        private final AtomicBoolean canceled = new AtomicBoolean(false);
-        private final FSPath baseDir;
 
-        private MyDefaultListModel(File dir, ArtifactType artifactType, FSPath baseDir){
-            this.dir = dir;
-            this.artifactType = artifactType;
-            this.baseDir = baseDir;
-            addElement(getString("LOADING_PROJECT")); // NOI18N
+        private final Project project;
+        private final int def;
+
+        private MyDefaultListModel(boolean loading) {
+            project = null;
+            def = -1;
+            if (loading) {
+                addElement(getString("LOADING_PROJECT")); // NOI18N
+            }
+        }
+
+        private MyDefaultListModel(Project project, List<MakeArtifact> artifacts, int  def) {
+            this.project = project;
+            this.def = def;
+            for (MakeArtifact a : artifacts) {
+                addElement(a);
+            }            
         }
 
         private Project getProject() {
             return project;
         }
 
-        private boolean isCanceled() {
-            return canceled.get();
+        public int getDef() {
+            return def;
         }
-        
-        private void cancel() {
-            canceled.set(true);
+    }
+
+    private List<MakeArtifact> findArtifacts(File dir, AtomicInteger def, AtomicReference<Project> project, AtomicBoolean cancelled) {
+
+        if (dir == null) {
+            return Collections.emptyList();
+        }
+        String projectAbsPath = dir.getAbsolutePath();
+        if (projectAbsPath == null) { // #46744
+            return Collections.emptyList();
+        }
+        if (cancelled.get()) {
+            return Collections.emptyList();
         }
 
-        private void init() {
-            project = _getProject(); // may be null
-            if (project == null) {
-                clear();
-                return;
+        try {
+            FileObject fo = baseDir.getFileSystem().findResource(CndFileUtils.normalizeAbsolutePath(baseDir.getFileSystem(), projectAbsPath));
+            if (fo != null && fo.isValid()) {
+                project.set(ProjectManager.getDefault().findProject(fo));
             }
-            if (!isCanceled()) {
-                populateAccessory(project);
-            }
+        } catch (IOException | IllegalArgumentException e) {
+            e.printStackTrace(System.err);
+        }
+        if (project.get() == null) {
+            return Collections.emptyList();
         }
 
-        private Project _getProject() {
-            if (dir == null) {
-                return null;
-            }
-            String projectAbsPath = dir.getAbsolutePath();
-            if (projectAbsPath == null) { // #46744
-                return null;
-            }
+        MakeArtifact[] artifacts = MakeArtifact.getMakeArtifacts(project.get());
+        if (artifacts == null) {
+            return Collections.emptyList();
+        }
+        List<MakeArtifact> result = new ArrayList<>(artifacts.length);
 
-            try {
-                FileObject fo = baseDir.getFileSystem().findResource(CndFileUtils.normalizeAbsolutePath(baseDir.getFileSystem(), projectAbsPath));
-                if (fo != null && fo.isValid()) {
-                    return ProjectManager.getDefault().findProject(fo);
+        for (int i = 0; i < artifacts.length; i++) {
+            if (cancelled.get()) {
+                return Collections.emptyList();
+            }
+            if (artifactType == ArtifactType.LIBRARY) {
+                if (artifacts[i].getConfigurationType() == MakeArtifact.TYPE_UNKNOWN &&
+                    (artifacts[i].getOutput().endsWith(".a") || // NOI18N
+                        artifacts[i].getOutput().endsWith(".so") || // NOI18N
+                        artifacts[i].getOutput().endsWith(".dylib") || // NOI18N
+                        artifacts[i].getOutput().endsWith(".lib") || // NOI18N
+                        artifacts[i].getOutput().endsWith(".dll")) || // NOI18N
+                    artifacts[i].getConfigurationType() == MakeArtifact.TYPE_DYNAMIC_LIB ||
+                    artifacts[i].getConfigurationType() == MakeArtifact.TYPE_CUSTOM || // <== FIXUP
+                    artifacts[i].getConfigurationType() == MakeArtifact.TYPE_STATIC_LIB ||
+                    artifacts[i].getConfigurationType() == MakeArtifact.TYPE_QT_DYNAMIC_LIB ||
+                    artifacts[i].getConfigurationType() == MakeArtifact.TYPE_QT_STATIC_LIB) {
+                    result.add(artifacts[i]);
                 }
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                // Return null
+            } else if (artifactType == ArtifactType.PROJECT) {
+                result.add(artifacts[i]);
+            } else {
+                assert false;
             }
-
-            return null;
-        }
-        /**
-         * Set up GUI fields according to the requested project.
-         * @param project a subproject, or null
-         */
-        private void populateAccessory( Project project ) {
-            MakeArtifact[] artifacts = MakeArtifact.getMakeArtifacts(project);
-            clear();
-            if (artifacts == null) {
-                return;
-            }
-            for (int i = 0; i < artifacts.length; i++) {
-                if (artifactType == ArtifactType.LIBRARY) {
-                    if (artifacts[i].getConfigurationType() == MakeArtifact.TYPE_UNKNOWN &&
-                        (artifacts[i].getOutput().endsWith(".a") || // NOI18N
-                            artifacts[i].getOutput().endsWith(".so") || // NOI18N
-                            artifacts[i].getOutput().endsWith(".dylib") || // NOI18N
-                            artifacts[i].getOutput().endsWith(".lib") || // NOI18N
-                            artifacts[i].getOutput().endsWith(".dll")) || // NOI18N
-                        artifacts[i].getConfigurationType() == MakeArtifact.TYPE_DYNAMIC_LIB ||
-                        artifacts[i].getConfigurationType() == MakeArtifact.TYPE_CUSTOM || // <== FIXUP
-                        artifacts[i].getConfigurationType() == MakeArtifact.TYPE_STATIC_LIB ||
-                        artifacts[i].getConfigurationType() == MakeArtifact.TYPE_QT_DYNAMIC_LIB ||
-                        artifacts[i].getConfigurationType() == MakeArtifact.TYPE_QT_STATIC_LIB) {
-                        addElement(artifacts[i]);
-                    }
-                } else if (artifactType == ArtifactType.PROJECT) {
-                    addElement(artifacts[i]);
-                } else {
-                    assert false;
-                }
-                if (artifacts[i].getActive()) {
-                    def = i;
-                }
+            if (artifacts[i].getActive()) {
+                def.set(i);
             }
         }
+        return result;
     }
 }

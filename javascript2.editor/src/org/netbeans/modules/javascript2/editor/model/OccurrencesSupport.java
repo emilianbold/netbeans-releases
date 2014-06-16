@@ -96,9 +96,17 @@ public class OccurrencesSupport {
             }
             if (!(object instanceof JsObjectReference && ModelUtils.isDescendant(object, ((JsObjectReference)object).getOriginal()))) {
                 for(JsObject property: object.getProperties().values()) {
-                    result = findOccurrence(property, offset);
-                    if (result != null) {
-                        break;
+                    if (!(property instanceof JsObjectReference && !((JsObjectReference)property).getOriginal().isAnonymous())) {
+                        result = findOccurrence(property, offset);
+                        if (result != null) {
+                            break;
+                        }
+                    } else {
+                        for(Occurrence occurrence: property.getOccurrences()) {
+                            if (occurrence.getOffsetRange().containsInclusive(offset)) {
+                                return occurrence;
+                            }
+                        }
                     }
                 }
             }

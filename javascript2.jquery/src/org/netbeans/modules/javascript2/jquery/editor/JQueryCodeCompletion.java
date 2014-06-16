@@ -435,14 +435,40 @@ public class JQueryCodeCompletion implements CompletionProvider {
                         break;
                     case TAG_ATTRIBUTE:
                         // provide attributes
-                        String tagName = prefix.substring(anchorOffsetDelta).trim();
-                        if (!tagName.isEmpty() && (tagName.charAt(0) == '.' || tagName.charAt(0) == '#')) {
+                        int index = prefix.lastIndexOf('[');
+                        String tagName = "";
+                        if (index > 0) {
+                            tagName = prefix.substring(0, index);
+                        }
+                        
+                        if (!tagName.isEmpty()) {
+                            index = tagName.lastIndexOf(' ');
+                            if (index > -1) {
+                                tagName = tagName.substring(index + 1);
+                            }
+                            index = tagName.indexOf('.');
+                            if (index > -1) {
+                                tagName = tagName.substring(0, index);
+                            }
+                            index = tagName.indexOf('#');
+                            if (index > -1) {
+                                tagName = tagName.substring(0, index);
+                            }
+                            index = tagName.lastIndexOf('(');
+                            if (index > -1) {
+                                tagName = tagName.substring(index + 1);
+                            }
+                        }
+                        
+                        
+                        
+                        if (!tagName.isEmpty() && (tagName.charAt(0) == '.' || tagName.charAt(0) == '#' || tagName.charAt(0) == '(')) {
                             if (ts.token().id() == JsTokenId.STRING_BEGIN) {
                                 ts.moveNext();
                             }
                             if (ts.token().id() == JsTokenId.STRING) {
                                 String value = ts.token().text().toString();
-                                int index = value.indexOf(prefix);
+                                index = value.indexOf(prefix);
                                 if (index > -1) {
                                     tagName = value.substring(0, index);
                                     index--;

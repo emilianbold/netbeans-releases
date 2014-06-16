@@ -48,13 +48,9 @@ import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.Lookup;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 
 import javax.swing.*;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 
 /**
  * Diff module's Options Controller.
@@ -88,7 +84,7 @@ public class DiffOptionsController extends OptionsPanelController {
 
     @Override
     public void applyChanges() {
-        checkExternalCommand();
+        panel.checkExternalCommand();
         DiffModuleConfig.getDefault().setUseInteralDiff(panel.getInternalDiff().isSelected());
         BuiltInDiffProvider.Options options = new BuiltInDiffProvider.Options();
         options.ignoreLeadingAndtrailingWhitespace = panel.getIgnoreWhitespace().isSelected();
@@ -97,19 +93,6 @@ public class DiffOptionsController extends OptionsPanelController {
         DiffModuleConfig.getDefault().setOptions(options);
         DiffModuleConfig.getDefault().getPreferences().put(DiffModuleConfig.PREF_EXTERNAL_DIFF_COMMAND, panel.getExternalCommand().getText());
         panel.setChanged(false);
-    }
-
-    private void checkExternalCommand() {
-        if (panel.getInternalDiff().isSelected()) return;
-        String cmd = panel.getExternalCommand().getText();
-        try {
-            Process p = Runtime.getRuntime().exec(cmd);
-            p.destroy();
-        } catch (IOException e) {
-            // the command seems invalid
-            DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Message(NbBundle.getMessage(DiffOptionsController.class, "MSG_InvalidDiffCommand"), NotifyDescriptor.WARNING_MESSAGE));
-        }
     }
 
     @Override

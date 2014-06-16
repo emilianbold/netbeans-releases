@@ -102,7 +102,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     public FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath) {
         if (baseFileObject instanceof RemoteFileObject) {
             ExecutionEnvironment execEnv = ((RemoteFileObject) baseFileObject).getExecutionEnvironment();
-            if (isPathAbsolute(relativeOrAbsolutePath)) {
+            if (isAbsolute(relativeOrAbsolutePath)) {
                 relativeOrAbsolutePath = RemoteFileSystemManager.getInstance().getFileSystem(execEnv).normalizeAbsolutePath(relativeOrAbsolutePath);
                 try {
                     return baseFileObject.getFileSystem().findResource(relativeOrAbsolutePath);
@@ -117,26 +117,10 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         return null;
     }
 
-    /** Copy-pasted from CndPathUtilities.isPathAbsolute */
-    private static boolean isPathAbsolute(String path) {
-        if (path == null || path.length() == 0) {
-            return false;
-        } else if (path.charAt(0) == '/') {
-            return true;
-        } else if (path.charAt(0) == '\\') {
-            return true;
-        } else if (path.indexOf(':') > 0) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     @Override
     public boolean isMine(ExecutionEnvironment env) {
         return env.isRemote();
     }
-
 
     @Override
     public boolean isMine(FileObject fileObject) {
@@ -237,7 +221,14 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
             url = url.substring(2);
         }
 
+        // Make both notations possible (with or without leading "//" and ":" before path)
+        // rfs:vk155xxx@71.152.281.291:22:/home/vk155xxx/NetBeansProjects/simple-prj
+        // rfs://vk155xxx@71.152.281.291:22/home/vk155xxx/NetBeansProjects/simple-prj
+        
         int idx = url.indexOf(":/"); // NOI18N
+        if (idx < 0) {
+            idx = url.indexOf("/"); // NOI18N
+        }
 
         String envPart;
         String pathPart;
@@ -246,7 +237,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
             pathPart = "/"; // NOI18N
         } else {
             envPart = url.substring(0, idx);
-            pathPart = url.substring(idx + 1);
+            pathPart = url.substring((url.charAt(idx) == ':') ?  idx + 1 : idx);
         }
 
         ExecutionEnvironment env = null;
@@ -328,7 +319,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         if (path == null || path.isEmpty()) {
             path = "/"; // NOI18N
         }
-        return RemoteFileURLStreamHandler.PROTOCOL_PREFIX + ExecutionEnvironmentFactory.toUniqueID(env) + ':' + path;
+        return RemoteFileURLStreamHandler.PROTOCOL_PREFIX + ExecutionEnvironmentFactory.toUniqueID(env) + /*':' +*/ path;
     }
 
     @Override
@@ -338,13 +329,13 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
      * FileObject. 
      */
     public String toURL(FileSystem fileSystem, String absPath) {
-        RemoteLogger.assertTrue(RemoteFileSystemUtils.isPathAbsolute(absPath), "Path must be absolute: " + absPath); //NOPI18N        
+        RemoteLogger.assertTrue(isAbsolute(absPath), "Path must be absolute: " + absPath); //NOPI18N        
         if (!(fileSystem instanceof RemoteFileSystem)) {
             throw new IllegalArgumentException("File system should be an istance of " + RemoteFileSystem.class.getName()); //NOI18N
         }
 
         ExecutionEnvironment env = ((RemoteFileSystem) fileSystem).getExecutionEnvironment();
-        return RemoteFileURLStreamHandler.PROTOCOL_PREFIX + ExecutionEnvironmentFactory.toUniqueID(env) + ':' + absPath;
+        return RemoteFileURLStreamHandler.PROTOCOL_PREFIX + ExecutionEnvironmentFactory.toUniqueID(env) + /*':' +*/ absPath;
     }
 
     @Override

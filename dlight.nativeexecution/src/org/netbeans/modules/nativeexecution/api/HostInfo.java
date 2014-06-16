@@ -50,6 +50,7 @@ public interface HostInfo {
 
         SPARC,
         X86,
+        ARM,
         UNKNOWN;
     }
 

@@ -77,11 +77,13 @@ import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.spi.model.services.CsmDocProvider;
+import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionViewProvider;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -145,6 +147,11 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         String coloredItemText = createDisplayName(item, cls, NbBundle.getMessage(CsmImplementsMethodCompletionItem.class, "extract.txt")); //NOI18N
         CsmFile containingFile = item.getContainingFile();
         CsmCompoundStatement body = ((CsmFunctionDefinition)item).getBody();
+        if (item.getStartOffset() == body.getStartOffset()) {
+            // Function definition iside macro expansion.
+            // ignore
+            return null;
+        }
         Document document = CsmUtilities.getDocument(containingFile);
         if (document == null) {
             CloneableEditorSupport support = CsmUtilities.findCloneableEditorSupport(containingFile);

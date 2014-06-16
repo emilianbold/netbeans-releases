@@ -59,6 +59,7 @@ import org.netbeans.modules.java.source.save.CasualDiff.Diff;
 class DiffFacility {
     private final Collection<Diff> gdiff;
     private int[] sections;
+    private int lineStart;
     
     public DiffFacility(Collection<Diff> diff) {
         this.gdiff = diff;
@@ -111,8 +112,9 @@ class DiffFacility {
         return list;
     }
     
-    public DiffFacility withSections(int[] sections) {
+    public DiffFacility withSections(int[] sections, int lineStart) {
         this.sections = sections;
+        this.lineStart = lineStart;
         return this;
     }
     
@@ -128,10 +130,11 @@ class DiffFacility {
      */
     private int[] computeLineSections(Line[] lines1, Line[] lines2, int offset) {
         int i1 = 0, i2 = 0;
+        int delta = Math.max(0, offset - lineStart);
         int res[] = new int[sections.length];
         for (int p = 0; p < sections.length; p += 2) {
             int orig = sections[p] - offset;
-            int nue = sections[p + 1];
+            int nue = sections[p + 1] - delta;
             while (i1 < lines1.length && lines1[i1].end <= orig) {
                 i1++;
             }
@@ -323,6 +326,10 @@ class DiffFacility {
             
             // change
             else { // type == 'c'
+                // Note: it's better to first REMOVE then INSERT to avoid insertion attempts into readonly (guarded)
+                // part of text (the writabl area was removed at the 1st step of the change operation). But remove-then-insert is interpreted 
+                // as 'change' by DiffUtilities.diff2ModificationResultDifference. I only wonder why the 'change' type is discarded here,
+                // then reinvented later.
                 StringBuilder builder = new StringBuilder();
                 /*for (int i = delStart; i <= delEnd; i++) {
                     builder.append(lines1[i].data);
@@ -332,8 +339,8 @@ class DiffFacility {
                 for (int i = addStart; i <= addEnd; i++) {
                     builder.append(lines2[i].data);
                 }
-                gdiff.add(Diff.insert(currentPos + (delEnd == Difference.NONE ? lines1[delStart].start : lines1[delEnd].end),
-                        builder.toString()));
+                // delEnd must not be NONE here, see `type' computation
+                gdiff.add(Diff.insert(currentPos + lines1[delEnd].end, builder.toString()));
             }
                     
         }

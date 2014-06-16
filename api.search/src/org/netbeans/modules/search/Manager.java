@@ -516,14 +516,12 @@ public final class Manager {
              */
             activateResultWindow();
         }
-        makeResultViewBusy(true);
         runTask(sTask);
     }
     
     /**
      */
     private void startReplacing(ReplaceTask rTask) {
-        makeResultViewBusy(true);
         runTask(rTask);
     }
     
@@ -643,17 +641,7 @@ public final class Manager {
             if (rTask != null) {
                 Manager.this.taskFinished(rTask);
             }
-            makeResultViewBusy(false);
         }
 
-    }
-    
-    private void makeResultViewBusy(final boolean busy) {
-        Mutex.EVENT.writeAccess(new Runnable() {
-            @Override
-            public void run() {
-                ResultView.getInstance().makeBusy(busy);
-            }
-        });
     }
 }

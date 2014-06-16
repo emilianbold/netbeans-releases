@@ -61,13 +61,13 @@ public final class APTIncludePathStorage {
     public APTIncludePathStorage() {
     }
 
-    public List<IncludeDirEntry> get(CharSequence configID,  List<FSPath> sysIncludes) {
+    public List<IncludeDirEntry> get(CharSequence configID,  List<FSPath> includes) {
         CharSequence key = CharSequences.create(configID);
         List<IncludeDirEntry> list = allIncludes.get(key);
         if (list == null) {
             // create new one with light char sequences and put in map
-            list = new ArrayList<IncludeDirEntry>(sysIncludes.size());
-            for (FSPath cs : sysIncludes) {
+            list = new ArrayList<IncludeDirEntry>(includes.size());
+            for (FSPath cs : includes) {
                 IncludeDirEntry inclEntry = IncludeDirEntry.get(cs.getFileSystem(), cs.getPath());
                 list.add(inclEntry);
             }

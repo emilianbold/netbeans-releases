@@ -81,6 +81,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.xml.sax.InputSource;
 
@@ -229,6 +230,7 @@ public class LayerUtils {
         private Exception problem;
         private final FileObject f;
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private static RequestProcessor RP = new RequestProcessor(CookieImpl.class.getName());
         public CookieImpl(FileObject f) {
             //System.err.println("new CookieImpl for " + f);
             this.f = f;
@@ -314,8 +316,14 @@ public class LayerUtils {
                 os.close();
             }
         }
-        public void fileChanged(FileEvent fe) {
-            changed(fe);
+        public void fileChanged(final FileEvent fe) {
+            RP.post(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        changed(fe);
+                    }
+                });
         }
         public void fileDeleted(FileEvent fe) {
             changed(fe);

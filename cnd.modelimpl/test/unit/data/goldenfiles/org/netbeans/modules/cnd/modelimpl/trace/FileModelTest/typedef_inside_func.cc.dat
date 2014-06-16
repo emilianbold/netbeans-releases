@@ -19,7 +19,9 @@ FUNCTION DEFINITION aaa  [1:1/0-3:2/49] FunctionDDImpl SCOPE: $Global$
     RETURNS void TEXT=void  [1:1/0-1:5/4]
     STATEMENT COMPOUND  [1:12/11-3:2/49] SCOPE: aaa 
         STATEMENT DECLARATION  [2:5/17-2:35/47] SCOPE: Stmt  [1:12/11-3:2/49]
-            TYPEDEF tE  [2:5/17-2:35/47] TYPE: E TEXT=E  [2:5/17-2:35/47] SCOPE: typedef_inside_func.cc
+            ENUM E [2:5/17-2:31/43] SCOPE: null
+                Element
+            TYPEDEF tE  [2:32/44-2:34/46] TYPE: E TEXT=E  [2:5/17-2:35/47] SCOPE: typedef_inside_func.cc
 FUNCTION DEFINITION aa  [5:1/51-7:2/85] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE aa()
     UNIQUE NAME f:aa()
@@ -39,7 +41,9 @@ FUNCTION DEFINITION aaa  [1:1/0-3:2/49] FunctionDDImpl SCOPE: $Global$
     RETURNS void TEXT=void  [1:1/0-1:5/4]
     STATEMENT COMPOUND  [1:12/11-3:2/49] SCOPE: aaa 
         STATEMENT DECLARATION  [2:5/17-2:35/47] SCOPE: Stmt  [1:12/11-3:2/49]
-            TYPEDEF tE  [2:5/17-2:35/47] TYPE: E TEXT=E  [2:5/17-2:35/47] SCOPE: typedef_inside_func.cc
+            ENUM E [2:5/17-2:31/43] SCOPE: null
+                Element
+            TYPEDEF tE  [2:32/44-2:34/46] TYPE: E TEXT=E  [2:5/17-2:35/47] SCOPE: typedef_inside_func.cc
 FUNCTION DEFINITION aa  [5:1/51-7:2/85] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE aa()
     UNIQUE NAME f:aa()

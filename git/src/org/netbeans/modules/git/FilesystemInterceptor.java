@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -66,6 +67,7 @@ import java.util.logging.Logger;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
+import org.netbeans.libs.git.GitURI;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.client.GitClient;
@@ -423,7 +425,13 @@ class FilesystemInterceptor extends VCSInterceptor {
             for (GitRemoteConfig rc : remotes.values()) {
                 List<String> uris = rc.getUris();
                 for (int i = 0; i < uris.size(); i++) {
-                    sb.append(uris.get(i)).append(';');
+                    try {
+                        GitURI u = new GitURI(uris.get(i));
+                        u = u.setUser(null).setPass(null);
+                        sb.append(u.toString()).append(';');
+                    } catch (URISyntaxException ex) {
+                        LOG.log(Level.FINE, null, ex);
+                    }
                 }
             }
             if (sb.length() > 0) {
@@ -1045,7 +1053,6 @@ class FilesystemInterceptor extends VCSInterceptor {
             if (AUTOMATIC_REFRESH_ENABLED && !"false".equals(System.getProperty("versioning.git.handleExternalEvents", "true"))) { //NOI18N
                 metadataFolder = FileUtil.normalizeFile(metadataFolder);
                 Git.STATUS_LOG.log(Level.FINER, "refreshAdminFolder: special FS event handling for {0}", metadataFolder.getAbsolutePath()); //NOI18N
-                boolean refreshNeeded = false;
                 GitFolderTimestamps cached;
                 File gitFolder = translateToGitFolder(metadataFolder);
                 if (isEnabled(gitFolder)) {
@@ -1053,10 +1060,31 @@ class FilesystemInterceptor extends VCSInterceptor {
                         cached = timestamps.get(gitFolder);
                     }
                     if (cached == null || !cached.repositoryExists() || cached.isOutdated()) {
-                        refreshIndexFileTimestamp(scanGitFolderTimestamps(gitFolder));
-                        refreshNeeded = true;
+                        synchronized (metadataFoldersToRefresh) {
+                            if (metadataFoldersToRefresh.add(gitFolder)) {
+                                refreshGitRepoTask.schedule(1000);
+                            }
+                        }
                     }
-                    if (refreshNeeded) {
+                }
+            }
+            return lastModified;
+        }
+
+        private final Set<File> metadataFoldersToRefresh = new HashSet<>();
+        private final RequestProcessor.Task refreshGitRepoTask = rp.create(new RefreshMetadata());
+        
+        private class RefreshMetadata implements Runnable {
+            
+            @Override
+            public void run () {
+                Set<File> stillLockedRepos = new HashSet<>();
+                for (File gitFolder = getNextRepository(); gitFolder != null; gitFolder = getNextRepository()) {
+                    if (GitUtils.isRepositoryLocked(gitFolder.getParentFile())) {
+                        Git.STATUS_LOG.log(Level.FINE, "refreshAdminFolder: replanning repository scan for locked {0}", gitFolder); //NOI18N
+                        stillLockedRepos.add(gitFolder);
+                    } else {
+                        refreshIndexFileTimestamp(scanGitFolderTimestamps(gitFolder));
                         File repository = gitFolder.getParentFile();
                         RepositoryInfo.refreshAsync(repository);
                         Git.STATUS_LOG.log(Level.FINE, "refreshAdminFolder: planning repository scan for {0}", repository.getAbsolutePath()); //NOI18N
@@ -1064,8 +1092,25 @@ class FilesystemInterceptor extends VCSInterceptor {
                         refreshOpenFiles(repository);
                     }
                 }
+                synchronized (metadataFoldersToRefresh) {
+                    if (metadataFoldersToRefresh.addAll(stillLockedRepos)) {
+                        refreshGitRepoTask.schedule(2000);
+                    }
+                }
             }
-            return lastModified;
+            
+            private File getNextRepository () {
+                File gitFolder = null;
+                synchronized (metadataFoldersToRefresh) {
+                    if (!metadataFoldersToRefresh.isEmpty()) {
+                        Iterator<File> it = metadataFoldersToRefresh.iterator();
+                        gitFolder = it.next();
+                        it.remove();
+                    }
+                }
+                return gitFolder;
+            }
+                        
         }
 
         private void refreshReferences (File metadataFolder, File triggerFolder) {

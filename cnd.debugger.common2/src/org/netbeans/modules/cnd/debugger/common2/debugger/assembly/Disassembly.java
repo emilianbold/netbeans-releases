@@ -48,6 +48,8 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -79,6 +81,8 @@ import org.openide.util.NbBundle;
  * @author Egor Ushakov
  */
 public abstract class Disassembly implements StateModel.Listener {
+    private static Logger LOG = Logger.getLogger(Disassembly.class.getName());
+
     private final NativeDebuggerImpl debugger;
     protected static boolean opened = false;
     private static boolean opening = false;
@@ -229,6 +233,11 @@ public abstract class Disassembly implements StateModel.Listener {
                 dis.debugger.registerDisassembly(null);
             }
         } catch (Exception e) {
+                        // #238339
+            if (e instanceof NullPointerException) {
+                DataObject dObj = getDataObject();
+                LOG.log(Level.INFO, "dObj={0}; cookie={1}", new Object[]{dObj, dObj.getCookie(CloseCookie.class)});
+            }
             Exceptions.printStackTrace(e);
         }
     }

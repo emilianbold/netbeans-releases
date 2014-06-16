@@ -985,6 +985,7 @@ public final class VariousUtils {
         int anchor = -1;
         int leftBraces = 0;
         int rightBraces = State.PARAMS.equals(state) ? 1 : 0;
+        int arrayBrackets = 0;
         StringBuilder metaAll = new StringBuilder();
         while (!state.equals(State.INVALID) && !state.equals(State.STOP) && tokenSequence.movePrevious() && skipWhitespaces(tokenSequence)) {
             Token<PHPTokenId> token = tokenSequence.token();
@@ -1006,7 +1007,12 @@ public final class VariousUtils {
                         break;
                     case IDX:
                         if (isLeftArryBracket(token)) {
-                            state = State.ARRAYREFERENCE;
+                            arrayBrackets--;
+                            if (arrayBrackets == 0) {
+                                state = State.ARRAYREFERENCE;
+                            }
+                        } else if (isRightArryBracket(token)) {
+                            arrayBrackets++;
                         } else if (CTX_DELIMITERS.contains(token.id())) {
                             state = State.INVALID;
                         }
@@ -1019,6 +1025,7 @@ public final class VariousUtils {
                             rightBraces++;
                             state = State.PARAMS;
                         } else if (isRightArryBracket(token)) {
+                            arrayBrackets++;
                             state = State.IDX;
                         } else if (isString(token)) {
                             metaAll.insert(0, token.text().toString());

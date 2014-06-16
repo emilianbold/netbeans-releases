@@ -2,6 +2,6 @@ Code completion result for source line:
 jQuery.ajaxStart().add|Class();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-METHOD     add(jQuery object): jQuery      [PUBLIC]   jquery-api.xml
-METHOD     addBack(selector): jQuery       [PUBLIC]   jquery-api.xml
-METHOD     addClass(className): jQuery     [PUBLIC]   jquery-api.xml
+METHOD     add(html): jQuery               [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     addBack(selector): jQuery       [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     addClass(className): jQuery     [PUBLIC]   <font color=#999999>jquery-api.xml</font>

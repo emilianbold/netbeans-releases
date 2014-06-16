@@ -5192,7 +5192,7 @@ public class FormatterTestCase extends EditorBase {
                 "class Foo\n" +
                 "{\n" +
                 "    Foo& operator=(const Foo& other);\n" +
-                "    Foo* operator ==(const Foo& other);\n" +
+                "    Foo* operator==(const Foo& other);\n" +
                 "    Foo& xxx(const Foo& other);\n" +
                 "};\n"
                 );
@@ -5756,6 +5756,89 @@ public class FormatterTestCase extends EditorBase {
                 "    valueA = 'a',\n" +
                 "    valueB = 'b',\n" +
                 "    valueC\n" +
+                "};\n"
+                );
+    }
+    
+    public void test244599() {
+        setLoadDocumentText(
+                "class A {\n" +
+                "    value_t operator & () {}\n" +
+                "    const value_t operator &() const {}\n" +
+                "    value_t& operator * () {}\n" +
+                "    const value_t& operator * () const {}\n" +
+                "    value_t* operator -> () {}\n" +
+                "    const value_t* operator -> () const {}\n" +
+                "    value_t& operator [] (std::size_t index) {}\n" +
+                "    const value_t& operator [] (std::size_t index) const {}\n" +
+                "};\n"
+                );
+        setDefaultsOptions();
+        reformat();
+        assertDocumentText(" 'operator ->' and 'operator []' has not empty line between methods after reformat",
+                "class A\n" +
+                "{\n" +
+                "\n" +
+                "    value_t operator&()\n" +
+                "    {\n" +
+                "    }\n" +
+                "\n" +
+                "    const value_t operator&() const\n" +
+                "    {\n" +
+                "    }\n" +
+                "\n" +
+                "    value_t& operator*()\n" +
+                "    {\n" +
+                "    }\n" +
+                "\n" +
+                "    const value_t& operator*() const\n" +
+                "    {\n" +
+                "    }\n" +
+                "\n" +
+                "    value_t* operator->()\n" +
+                "    {\n" +
+                "    }\n" +
+                "\n" +
+                "    const value_t* operator->() const\n" +
+                "    {\n" +
+                "    }\n" +
+                "\n" +
+                "    value_t& operator[](std::size_t index)\n" +
+                "    {\n" +
+                "    }\n" +
+                "\n" +
+                "    const value_t& operator[](std::size_t index) const\n" +
+                "    {\n" +
+                "    }\n" +
+                "};\n"
+                );
+    }
+    
+    public void test244600() {
+        setLoadDocumentText(
+                "class A\n" +
+                "{\n" +
+                "\n" +
+                "    bool operator <= (const A& right) const {\n" +
+                "    }\n" +
+                "\n" +
+                "    bool operator > (const A& right) const {\n" +
+                "    }\n" +
+                "};\n"
+                );
+        setDefaultsOptions();
+        reformat();
+        assertDocumentText("after reformat 'operator>' and 'operator<' has not space ",
+                "class A\n" +
+                "{\n" +
+                "\n" +
+                "    bool operator<=(const A& right) const\n" +
+                "    {\n" +
+                "    }\n" +
+                "\n" +
+                "    bool operator>(const A& right) const\n" +
+                "    {\n" +
+                "    }\n" +
                 "};\n"
                 );
     }

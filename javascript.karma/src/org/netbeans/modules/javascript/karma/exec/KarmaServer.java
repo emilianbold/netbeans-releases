@@ -42,12 +42,16 @@
 
 package org.netbeans.modules.javascript.karma.exec;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.Collection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -55,42 +59,61 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
+import org.netbeans.modules.javascript.karma.coverage.CoverageWatcher;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.run.KarmaRunInfo;
-import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
+import org.netbeans.modules.web.browser.api.BrowserSupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
+import org.netbeans.modules.web.clientproject.api.jstesting.Coverage;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
-public final class KarmaServer {
+public final class KarmaServer implements PropertyChangeListener {
 
     static final Logger LOGGER = Logger.getLogger(KarmaServer.class.getName());
 
     private final int port;
     private final Project project;
+    private final Coverage coverage;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-
-    // @GuardedBy("this")
-    private Future<Integer> server;
+    private final FileChangeListener configFileChangeListener;
 
     volatile boolean started = false;
     volatile boolean starting = false;
+
+    // @GuardedBy("this")
+    private Future<Integer> server;
+    // @GuardedBy("this")
+    private BrowserSupport browserSupport;
+    // @GuardedBy("this")
+    private File netBeansKarmaCoverageDir = null;
+    // @GuardedBy("this")
+    private CoverageWatcher coverageWatcher = null;
     private volatile File netBeansKarmaReporter = null;
     private volatile File netBeansKarmaConfig = null;
+    private volatile URL debugUrl = null;
 
 
     KarmaServer(int port, Project project) {
         assert project != null;
         this.port = port;
         this.project = project;
+        coverage = Coverage.forProject(project);
+        configFileChangeListener = new ConfigFileChangeListener(project);
     }
 
     @NbBundle.Messages("KarmaServer.start.error=Karma cannot start (incorrect Karma set?), review IDE log for details")
     public synchronized boolean start() {
         assert Thread.holdsLock(this);
+        initCoverageWatcher();
         if (isStarted()) {
             return true;
         }
@@ -115,6 +138,8 @@ public final class KarmaServer {
         } else {
             StatusDisplayer.getDefault().setStatusText(Bundle.KarmaServer_start_error());
         }
+        addCoverageListener();
+        addConfigFileListener();
         fireChange();
         return started;
     }
@@ -131,13 +156,24 @@ public final class KarmaServer {
         KarmaExecutable karmaExecutable = KarmaExecutable.forProject(project, true);
         assert karmaExecutable != null;
         karmaExecutable.runTests(port);
+        if (isDebug()) {
+            openDebugUrl();
+        }
+    }
+
+    void rerunTests() {
+        runTests();
     }
 
     public synchronized void stop() {
         assert Thread.holdsLock(this);
+        stopCoverageWatcher();
+        removeCoverageListener();
+        removeConfigFileListener();
         if (server == null) {
             return;
         }
+        closeDebugUrl();
         if (server.isDone()
                 || server.isCancelled()) {
             return;
@@ -156,6 +192,11 @@ public final class KarmaServer {
         return started;
     }
 
+    public boolean isRunning() {
+        return isStarting()
+                || isStarted();
+    }
+
     public void addChangeListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
@@ -172,43 +213,116 @@ public final class KarmaServer {
         return project;
     }
 
+    private synchronized void openDebugUrl() {
+        assert server != null : this;
+        initBrowserSupport();
+        URL url = getDebugUrl();
+        assert url != null;
+        if (browserSupport.canReload(url)) {
+            browserSupport.reload(url);
+        } else {
+            browserSupport.load(url, project.getProjectDirectory());
+        }
+    }
+
+    public synchronized void closeDebugUrl() {
+        if (browserSupport != null) {
+            browserSupport.close(true);
+        }
+    }
+
+    private void initBrowserSupport() {
+        assert Thread.holdsLock(this);
+        if (browserSupport == null) {
+            String browserId = KarmaPreferences.getDebugBrowserId(project);
+            assert browserId != null;
+            browserSupport = BrowserSupport.create(BrowserUISupport.getBrowser(browserId));
+        }
+    }
+
+    private void initCoverageWatcher() {
+        assert Thread.holdsLock(this);
+        if (coverage == null) {
+            // not supported
+            return;
+        }
+        if (coverageWatcher == null) {
+            coverageWatcher = new CoverageWatcher(coverage, FileUtil.toFile(project.getProjectDirectory()), getNetBeansKarmaCoverageDir());
+            coverageWatcher.start();
+        }
+    }
+
+    private void stopCoverageWatcher() {
+        assert Thread.holdsLock(this);
+        if (coverageWatcher != null) {
+            coverageWatcher.stop();
+            coverageWatcher = null;
+        }
+    }
+
+    private void addCoverageListener() {
+        if (coverage != null) {
+            coverage.addPropertyChangeListener(this);
+        }
+    }
+
+    private void removeCoverageListener() {
+        if (coverage != null) {
+            coverage.removePropertyChangeListener(this);
+        }
+    }
+
+    private void addConfigFileListener() {
+        FileUtil.addFileChangeListener(configFileChangeListener, getProjectConfigFile());
+    }
+
+    private void removeConfigFileListener() {
+        FileUtil.removeFileChangeListener(configFileChangeListener, getProjectConfigFile());
+    }
+
+    private URL getDebugUrl() {
+        if (debugUrl == null) {
+            try {
+                String url = KarmaServers.getInstance().getServerUrl(project, "debug.html"); // NOI18N
+                assert url != null;
+                debugUrl = new URL(url);
+            } catch (MalformedURLException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            }
+            assert debugUrl != null;
+        }
+        return debugUrl;
+    }
+
     void fireChange() {
         changeSupport.fireChange();
     }
 
     @CheckForNull
     private KarmaRunInfo getKarmaRunInfo() {
-        String projectConfig = getProjectConfigFile();
+        File projectConfig = getProjectConfigFile();
         return new KarmaRunInfo.Builder(project)
-                .setProjectConfigFile(projectConfig)
+                .setProjectConfigFile(projectConfig.getAbsolutePath())
                 .setNbConfigFile(getNetBeansKarmaConfig().getAbsolutePath())
                 .setRerunHandler(new RerunHandlerImpl(this))
                 .addEnvVars(getEnvVars(projectConfig))
                 .build();
     }
 
-    private Map<String, String> getEnvVars(String projectConfigFile) {
+    private Map<String, String> getEnvVars(File projectConfigFile) {
         Map<String, String> envVars = new HashMap<>();
         envVars.put("FILE_SEPARATOR", File.separator); // NOI18N
-        envVars.put("PROJECT_CONFIG", projectConfigFile); // NOI18N
-        envVars.put("BASE_DIR", new File(projectConfigFile).getParentFile().getAbsolutePath()); // NOI18N
-        Collection<FileObject> webRoots = ProjectWebRootQuery.getWebRoots(project);
-        if (webRoots.isEmpty()) {
-            throw new IllegalStateException("Project " + project.getClass().getName() + " must provide ProjectWebRootProvider in its lookup");
-        }
-        File webRoot = FileUtil.toFile(webRoots.iterator().next());
-        envVars.put("PROJECT_WEB_ROOT", webRoot.getAbsolutePath()); // NOI18N
-        // XXX
-        envVars.put("COVERAGE", ""); // NOI18N
-        // XXX
-        envVars.put("DEBUG", ""); // NOI18N
+        envVars.put("PROJECT_CONFIG", projectConfigFile.getAbsolutePath()); // NOI18N
+        envVars.put("BASE_DIR", projectConfigFile.getParentFile().getAbsolutePath()); // NOI18N
         envVars.put("AUTOWATCH", KarmaPreferences.isAutowatch(project) ? "1" : ""); // NOI18N
         envVars.put("KARMA_NETBEANS_REPORTER", getNetBeansKarmaReporter().getAbsolutePath()); // NOI18N
+        envVars.put("COVERAGE", isCoverageEnabled() ? "1" : ""); // NOI18N
+        envVars.put("COVERAGE_DIR", getNetBeansKarmaCoverageDir().getAbsolutePath()); // NOI18N
         return envVars;
     }
 
-    private String getProjectConfigFile() {
-        return KarmaPreferences.getConfig(project);
+    private File getProjectConfigFile() {
+        return new File(KarmaPreferences.getConfig(project));
     }
 
     private File getNetBeansKarmaReporter() {
@@ -229,9 +343,38 @@ public final class KarmaServer {
         return netBeansKarmaConfig;
     }
 
+    private synchronized File getNetBeansKarmaCoverageDir() {
+        assert Thread.holdsLock(this);
+        if (netBeansKarmaCoverageDir == null) {
+            FileObject nbproject = project.getProjectDirectory().getFileObject("nbproject"); // NOI18N
+            assert nbproject != null;
+            netBeansKarmaCoverageDir = new File(FileUtil.toFile(nbproject), "private" + File.separatorChar + "karma-coverage"); // NOI18N
+        }
+        return netBeansKarmaCoverageDir;
+    }
+
+    private boolean isDebug() {
+        return KarmaPreferences.isDebug(project);
+    }
+
+    private boolean isCoverageEnabled() {
+        return coverage != null
+                && coverage.isEnabled();
+    }
+
     @Override
     public String toString() {
         return "KarmaServer{" + "port=" + port + ", project=" + project.getProjectDirectory() + '}'; // NOI18N
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (Coverage.PROP_ENABLED.equals(evt.getPropertyName())) {
+            if (isRunning()) {
+                // XXX ugly
+                KarmaServers.getInstance().restartServer(project);
+            }
+        }
     }
 
     //~ Inner classes
@@ -252,7 +395,7 @@ public final class KarmaServer {
         @Override
         public void rerun() {
             setEnabled(false);
-            karmaServer.runTests();
+            karmaServer.rerunTests();
             setEnabled(true);
         }
 
@@ -289,6 +432,39 @@ public final class KarmaServer {
                 enabled = newEnabled;
                 changeSupport.fireChange();
             }
+        }
+
+    }
+
+    private static final class ConfigFileChangeListener extends FileChangeAdapter {
+
+        private final Project project;
+
+
+        public ConfigFileChangeListener(Project project) {
+            assert project != null;
+            this.project = project;
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            // XXX ugly
+            assert KarmaServers.getInstance().isServerRunning(project) : project.getProjectDirectory();
+            KarmaServers.getInstance().restartServer(project);
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            // XXX ugly
+            assert KarmaServers.getInstance().isServerRunning(project) : project.getProjectDirectory();
+            KarmaServers.getInstance().stopServer(project, false);
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            // XXX ugly
+            assert KarmaServers.getInstance().isServerRunning(project) : project.getProjectDirectory();
+            KarmaServers.getInstance().stopServer(project, false);
         }
 
     }

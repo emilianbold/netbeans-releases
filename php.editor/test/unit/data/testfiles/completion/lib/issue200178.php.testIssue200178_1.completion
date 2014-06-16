@@ -10,6 +10,7 @@ PACKAGE    Bar                             [PUBLIC]   Foo
 CLASS      Bar                             [PUBLIC]   Froo
 CLASS      Bar                             [PUBLIC]   issue191666.php
 CLASS      Bar                             [PUBLIC]   issue233756.php
+CLASS      Bar                             [PUBLIC]   issue243684.php
 CLASS      Barrr                           [PUBLIC]   test204104.php
 CLASS      Barrr                           [PUBLIC]   test204104_02.php
 METHOD     Barriers()                      [PUBLIC]   html.php

@@ -758,6 +758,15 @@ is divided into following sections:
                 </copy>
             </target>
 
+            <target name="-do-jar-copyliblets">
+                <property location="${{build.classes.dir}}" name="build.classes.dir.resolved"/>
+                <pathconvert property="run.classpath.without.build.classes.dir">
+                    <path path="${{run.classpath}}"/>
+                    <map from="${{build.classes.dir.resolved}}" to=""/>
+                </pathconvert>
+                <nb-copyliblets runtimeclasspath="${{run.classpath.without.build.classes.dir}}"/>
+            </target>
+
             <target name="-do-jar-delete-manifest" >
                 <xsl:attribute name="if">do.archive</xsl:attribute>
                 <delete>
@@ -766,7 +775,7 @@ is divided into following sections:
             </target>
 
             <target name="-do-jar-with-libraries">
-                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-jar,-do-jar-delete-manifest</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-jar,-do-jar-copyliblets,-do-jar-delete-manifest</xsl:attribute>
             </target>
 
             <target name="-post-jar">
@@ -796,6 +805,8 @@ is divided into following sections:
                 </condition>
                 <property name="jad.jarurl" value="${{dist.jar.file}}"/>
                 <nb-jad jadfile="${{dist.dir}}/${{dist.jad}}" jarfile="${{dist.jar}}" url="${{jad.jarurl}}" sign="${{sign.enabled}}" keystore="${{sign.keystore}}" keystorepassword="${{sign.keystore.password}}" alias="${{sign.alias}}" aliaspassword="${{sign.alias.password}}" encoding="UTF-8"/>
+                <antcall inheritall="true" inheritrefs="true" target="-add-liblets"/>
+                <antcall inheritall="true" inheritrefs="true" target="-add-services"/>
             </target>
 
             <target name="-add-midlets">
@@ -831,6 +842,89 @@ is divided into following sections:
             <target name="-add-profile" unless="contains.manifest.profile">
                 <echo file="${{dist.dir}}/${{dist.jad}}" message="MicroEdition-Profile: ${{platform.profile}}" append="true" encoding="UTF-8"/>
                 <echo file="${{dist.dir}}/${{dist.jad}}" message="${{line.separator}}" append="true"/>
+            </target>
+
+            <target name="-add-liblets">
+                <script language="javascript"><![CDATA[
+                    function isTrue(prop) {
+                        return prop != null &&
+                        (prop.toLowerCase() == "true" || prop.toLowerCase() == "yes" || prop.toLowerCase() == "on");
+                    }
+                    function addLibletProp(id, prop, val) {
+                        var src = new String(project.getBaseDir().getAbsolutePath() +
+                            "/" + new String(project.getProperty("dist.dir")) +
+                            "/" + new String(project.getProperty("dist.jad")));
+                        var srf = new java.io.File(src);
+                        var echo = project.createTask("echo");
+                        echo.setAppend(true);
+                        echo.setEncoding("UTF-8");
+                        echo.setFile(srf);
+                        if(echo != null) {
+                            echo.setMessage(prop + id + ": " + val + "\n");
+                        }
+                        echo.perform();
+                    }
+
+                    var liblet = project.getProperty("manifest.is.liblet");
+                    var packaging = "MIDlet";
+                    if (isTrue(liblet)) {
+                        packaging = "LIBlet";
+                    }
+                    var libletId = 0;
+                    while (true) {
+                        var libletDep = project.getProperty("liblets." + libletId + ".dependency");
+                        if (libletDep == null) {
+                            break;
+                        }
+                        addLibletProp(libletId + 1, packaging + "-Dependency-", libletDep);
+
+                        var libletUrl = project.getProperty("liblets." + libletId + ".url");
+                        if (libletUrl != null && libletUrl.length() > 0) {
+                            addLibletProp(libletId + 1, packaging + "-Dependency-JAD-URL-", libletUrl);
+                        }
+                        libletId++;
+                    }
+                    ]]></script>
+            </target>
+
+            <target name="-add-services">
+                <xsl:attribute name="if">manifest.is.liblet</xsl:attribute>
+                <script language="javascript"><![CDATA[
+                    function isTrue(prop) {
+                        return prop != null &&
+                        (prop.toLowerCase() == "true" || prop.toLowerCase() == "yes" || prop.toLowerCase() == "on");
+                    }
+                    var liblet = project.getProperty("manifest.is.liblet");
+                    if (isTrue(liblet)) {
+                                                var services = "";
+                        var classesDir = project.getProperty("build.classes.dir");
+                        var classesDirF = project.resolveFile(classesDir);
+                        var servicesDirF = new java.io.File(classesDirF + java.io.File.separator + "META-INF" + java.io.File.separator + "services");
+                        if (servicesDirF != null && servicesDirF.exists()) {
+                            var servicesArray = servicesDirF.listFiles();
+                            if (servicesArray != null && servicesArray.length > 0) {
+                                for (var i = 0; i < servicesArray.length; i++) {
+                                    services += servicesArray[i].getName();
+                                    if (i < servicesArray.length - 1) {
+                                        services += ",";
+                                    }
+                                }
+                                var src = new String(project.getBaseDir().getAbsolutePath() +
+                                    "/" + new String(project.getProperty("dist.dir")) +
+                                    "/" + new String(project.getProperty("dist.jad")));
+                                var srf = new java.io.File(src);
+                                var echo = project.createTask("echo");
+                                echo.setAppend(true);
+                                echo.setEncoding("UTF-8");
+                                echo.setFile(srf);
+                                if (echo != null) {
+                                    echo.setMessage("LIBlet-Services: " + services);
+                                }
+                                echo.perform();
+                            }
+                        }
+                    }
+                    ]]></script>
             </target>
 
             <target name="-do-jar-update-manifest" depends="-do-jar-create-manifest,-do-jar-copy-manifest">
@@ -892,6 +986,73 @@ is divided into following sections:
                 updateManifest(pushregistry);
                 var manifestExtra = new String(project.getProperty("manifest.manifest"));
                 updateManifest(manifestExtra);
+
+                function addLiblet(id, liblet) {
+                    var packaging = "MIDlet";
+                    var isLiblet = project.getProperty("manifest.is.liblet");
+                    if (isTrue(isLiblet)) {
+                            packaging = "LIBlet";
+                    }
+                    var src = new String(project.getProperty("tmp.manifest.file"));
+                    var srf = new java.io.File(src);
+                    var manifest = project.createTask("manifest");
+                    var mode = new org.apache.tools.ant.taskdefs.ManifestTask.Mode();
+                    mode.setValue("update");
+                    manifest.setMode(mode);
+                    manifest.setFile(srf);
+                    if(manifest != null) {
+                        var propertyAttr = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
+                        propertyAttr.setName(packaging + "-Dependency-" + id);
+                        propertyAttr.setValue(liblet);
+                        manifest.addConfiguredAttribute(propertyAttr);
+                    }
+                    manifest.perform();
+                }
+
+                var libletId = 0;
+                while (true) {
+                    var libletDep = project.getProperty("liblets." + libletId + ".dependency");
+                    if (libletDep == null) {
+                        break;
+                    }
+                    addLiblet(libletId + 1, libletDep);
+                    libletId++;
+                }
+
+                (function addServices() {
+                    var isLiblet = project.getProperty("manifest.is.liblet");
+                        if (isTrue(isLiblet)) {
+                            var services = "";
+                            var classesDir = project.getProperty("build.classes.dir");
+                            var classesDirF = project.resolveFile(classesDir);
+                            var servicesDirF = new java.io.File(classesDirF + java.io.File.separator + "META-INF" + java.io.File.separator + "services");
+                            if (servicesDirF != null && servicesDirF.exists()) {
+                                var servicesArray = servicesDirF.listFiles();
+                                if (servicesArray != null && servicesArray.length > 0) {
+                                    for (var i = 0; i < servicesArray.length; i++) {
+                                        services += servicesArray[i].getName();
+                                        if (i < servicesArray.length - 1) {
+                                            services += ",";
+                                        }
+                                    }
+                                    var src = new String(project.getProperty("tmp.manifest.file"));
+                                    var srf = new java.io.File(src);
+                                    var manifest = project.createTask("manifest");
+                                    var mode = new org.apache.tools.ant.taskdefs.ManifestTask.Mode();
+                                    mode.setValue("update");
+                                    manifest.setMode(mode);
+                                    manifest.setFile(srf);
+                                    if(manifest != null) {
+                                        var propertyAttr = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
+                                        propertyAttr.setName("LIBlet-Services");
+                                        propertyAttr.setValue(services);
+                                        manifest.addConfiguredAttribute(propertyAttr);
+                                    }
+                                    manifest.perform();
+                                }
+                            }
+                        }
+                    })();
                 ]]></script>
             </target>
 
@@ -998,7 +1159,8 @@ is divided into following sections:
                 =================
             </xsl:comment>
 
-            <target name="run" depends="init,clean,jar">
+            <target name="run">
+                <xsl:attribute name="depends">init,clean,jar</xsl:attribute>
                 <nb-run jadfile="${{dist.dir}}/${{dist.jad}}" jarfile="{{dist.jar.file}}" jadurl="${{dist.jad.url}}" device="${{platform.device}}" platformhome="${{platform.home}}" platformtype="${{platform.type}}" execmethod="${{run.method}}" commandline="${{platform.runcommandline}}" classpath="${{platform.bootclasspath}}:${{dist.dir}}/${{dist.jar}}" cmdoptions="${{run.cmd.options}}"/>
             </target>
 

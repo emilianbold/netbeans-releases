@@ -216,6 +216,7 @@
                 <friend>org.netbeans.modules.android.lint</friend>
                 <friend>org.netbeans.modules.android.lint72</friend>
                 <friend>org.netbeans.modules.cnd.analysis.api</friend>
+                <friend>org.netbeans.modules.cnd.analysis.impl</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>
                 <friend>org.netbeans.modules.findbugs</friend>
                 <friend>org.netbeans.modules.findbugs.installer</friend>
