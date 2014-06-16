@@ -68,6 +68,7 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
+import org.netbeans.modules.debugger.jpda.models.ShortenedStrings;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.openide.DialogDisplayer;
@@ -347,6 +348,29 @@ class ValuePropertyEditor implements ExPropertyEditor {
 
     @Override
     public Component getCustomEditor() {
+        //System.err.println("ValuePropertyEditor.getCustomEditor() delegateValue = "+delegateValue);
+        if (delegateValue instanceof String) {
+            ShortenedStrings.StringInfo shortenedInfo = ShortenedStrings.getShortenedInfo((String) delegateValue);
+            //System.err.println("  shortenedInfo = "+shortenedInfo);
+            if (shortenedInfo != null) {
+                int n = shortenedInfo.getLength();
+                long fm = Runtime.getRuntime().freeMemory();
+                //System.err.println("  "+fm+" > 4*"+n+" + 10000000 : "+(fm > 4*n + 10000000));
+                if (fm > 8*n + 10000000) {
+                    // We have hopefully enough memory
+                    String str = shortenedInfo.getFullString();
+                    //System.err.println("  providing full string: "+(str != null));
+                    if (str != null) {
+                        delegateValue = str;
+                        delegatePropertyEditor.setValue(str);
+                    }
+                } else {
+                    // There is a risk that the String and it's UI does not fit into the memory.
+                    Component delegateCustomEditor = delegatePropertyEditor.getCustomEditor();
+                    return new BigStringCustomEditor(delegateCustomEditor, shortenedInfo);
+                }
+            }
+        }
         return delegatePropertyEditor.getCustomEditor();
     }
 

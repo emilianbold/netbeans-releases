@@ -74,7 +74,7 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
                 if (targetFO != null) {
                     return new DeclarationLocation(targetFO, 0);
                 }
-            } else if (ts.token().id() == JsTokenId.IDENTIFIER) {
+            } else if (ts != null && ts.token() != null && ts.token().id() == JsTokenId.IDENTIFIER) {
                 int commaNumber = 0;
                 Token<? extends JsTokenId> token;
                 do {
