@@ -78,6 +78,7 @@ public final class TwigSyntax {
     public static final Map<String, Set<String>> RELATED_MACROS = new HashMap<String, Set<String>>() {
         {
             put("if", new HashSet<>(Arrays.asList("else", "elseif"))); //NOI18N
+            put("for", new HashSet<>(Arrays.asList("else"))); //NOI18N
         }
     };
 

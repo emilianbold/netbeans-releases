@@ -723,11 +723,14 @@ public class JarClassLoader extends ProxyClassLoader {
         }
         
         private JarFile callGet() throws IOException {
+            boolean interrupted = false;
+            JarFile ret;
             for (;;) {
                 try {
-                    return fjar.get();
+                    ret = fjar.get();
+                    break;
                 } catch (InterruptedException ex) {
-                    // ignore and retry
+                    interrupted = true;
                 } catch (ExecutionException ex) {
                     Throwable cause = ex.getCause();
                     if (cause instanceof IOException) {
@@ -741,6 +744,10 @@ public class JarClassLoader extends ProxyClassLoader {
                     }
                 }
             }
+            if (interrupted) {
+                Thread.currentThread().interrupt();
+            }
+            return ret;
         }
 
         private void doCloseJar() throws IOException {

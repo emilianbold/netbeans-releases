@@ -107,9 +107,12 @@ public class DialogDisplayerImpl extends DialogDisplayer {
         NbPresenter.LOG.fine("runDelayed, done");
     }
     
+    public Dialog createDialog (final DialogDescriptor d) {
+        return createDialog(d, null);
+    }
 
     /** Creates new dialog. */
-    public Dialog createDialog (final DialogDescriptor d) {
+    public Dialog createDialog (final DialogDescriptor d, final Frame preferredParent) {
         if (GraphicsEnvironment.isHeadless()) {
             throw new HeadlessException();
         }
@@ -128,21 +131,24 @@ public class DialogDisplayerImpl extends DialogDisplayer {
                     return dlg;
                 }
                 else {
-                    Window w = KeyboardFocusManager.getCurrentKeyboardFocusManager ().getActiveWindow ();
-                    if (!(w instanceof NbPresenter) || !w.isVisible()) {
-                        // undocked window is not instanceof NbPresenter although it's NetBeans's native window
-                        // all docked windows implements ModeUIBase interface
-                        if (! (w instanceof DefaultSeparateContainer.ModeUIBase)) {
-                            Container cont = SwingUtilities.getAncestorOfClass(Window.class, w);
-                            if (cont != null && (cont instanceof DefaultSeparateContainer.ModeUIBase)) {
-                                w = (Window) cont;
-                            } else {
-                                // don't set non-ide window as parent
-                                w = WindowManager.getDefault ().getMainWindow ();
+                    Window w = preferredParent;
+                    if( null == w ) {
+                        w = KeyboardFocusManager.getCurrentKeyboardFocusManager ().getActiveWindow ();
+                        if (!(w instanceof NbPresenter) || !w.isVisible()) {
+                            // undocked window is not instanceof NbPresenter although it's NetBeans's native window
+                            // all docked windows implements ModeUIBase interface
+                            if (! (w instanceof DefaultSeparateContainer.ModeUIBase)) {
+                                Container cont = SwingUtilities.getAncestorOfClass(Window.class, w);
+                                if (cont != null && (cont instanceof DefaultSeparateContainer.ModeUIBase)) {
+                                    w = (Window) cont;
+                                } else {
+                                    // don't set non-ide window as parent
+                                    w = WindowManager.getDefault ().getMainWindow ();
+                                }
                             }
+                        } else if (w instanceof NbPresenter && ((NbPresenter) w).isLeaf ()) {
+                            w = WindowManager.getDefault ().getMainWindow ();
                         }
-                    } else if (w instanceof NbPresenter && ((NbPresenter) w).isLeaf ()) {
-                        w = WindowManager.getDefault ().getMainWindow ();
                     }
                     NbDialog dlg;
                     if (w instanceof Dialog) {

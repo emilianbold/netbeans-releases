@@ -403,63 +403,154 @@ public class ArrayStringConversions {
                 value="$s.format($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
-                    @ConstraintVariableType(type = "java.lang.Object[]", variable = "$v")
+                    @ConstraintVariableType(type = "java.lang.Object[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.format($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
-                    @ConstraintVariableType(type = "int[]", variable = "$v")
+                    @ConstraintVariableType(type = "int[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.format($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
-                    @ConstraintVariableType(type = "short[]", variable = "$v")
+                    @ConstraintVariableType(type = "short[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.format($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
-                    @ConstraintVariableType(type = "byte[]", variable = "$v")
+                    @ConstraintVariableType(type = "byte[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.format($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
-                    @ConstraintVariableType(type = "long[]", variable = "$v")
+                    @ConstraintVariableType(type = "long[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.format($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
-                    @ConstraintVariableType(type = "char[]", variable = "$v")
+                    @ConstraintVariableType(type = "char[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.format($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
-                    @ConstraintVariableType(type = "float[]", variable = "$v")
+                    @ConstraintVariableType(type = "float[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.format($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
-                    @ConstraintVariableType(type = "double[]", variable = "$v")
+                    @ConstraintVariableType(type = "double[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.format($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
-                    @ConstraintVariableType(type = "boolean[]", variable = "$v")
+                    @ConstraintVariableType(type = "boolean[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+
+        @TriggerPattern(
+                value="$s.format($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
+                    @ConstraintVariableType(type = "java.lang.Object[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.format($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
+                    @ConstraintVariableType(type = "int[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.format($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
+                    @ConstraintVariableType(type = "short[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.format($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
+                    @ConstraintVariableType(type = "byte[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.format($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
+                    @ConstraintVariableType(type = "long[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.format($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
+                    @ConstraintVariableType(type = "char[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.format($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
+                    @ConstraintVariableType(type = "float[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.format($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
+                    @ConstraintVariableType(type = "double[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.format($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
+                    @ConstraintVariableType(type = "boolean[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         )
     })
@@ -473,63 +564,154 @@ public class ArrayStringConversions {
                 value="$s.printf($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
-                    @ConstraintVariableType(type = "java.lang.Object[]", variable = "$v")
+                    @ConstraintVariableType(type = "java.lang.Object[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.printf($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
-                    @ConstraintVariableType(type = "int[]", variable = "$v")
+                    @ConstraintVariableType(type = "int[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.printf($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
-                    @ConstraintVariableType(type = "short[]", variable = "$v")
+                    @ConstraintVariableType(type = "short[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.printf($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
-                    @ConstraintVariableType(type = "byte[]", variable = "$v")
+                    @ConstraintVariableType(type = "byte[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.printf($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
-                    @ConstraintVariableType(type = "long[]", variable = "$v")
+                    @ConstraintVariableType(type = "long[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.printf($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
-                    @ConstraintVariableType(type = "char[]", variable = "$v")
+                    @ConstraintVariableType(type = "char[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.printf($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
-                    @ConstraintVariableType(type = "float[]", variable = "$v")
+                    @ConstraintVariableType(type = "float[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.printf($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
-                    @ConstraintVariableType(type = "double[]", variable = "$v")
+                    @ConstraintVariableType(type = "double[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.printf($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
-                    @ConstraintVariableType(type = "boolean[]", variable = "$v")
+                    @ConstraintVariableType(type = "boolean[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+
+        @TriggerPattern(
+                value="$s.printf($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
+                    @ConstraintVariableType(type = "java.lang.Object[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.printf($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
+                    @ConstraintVariableType(type = "int[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.printf($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
+                    @ConstraintVariableType(type = "short[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.printf($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
+                    @ConstraintVariableType(type = "byte[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.printf($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
+                    @ConstraintVariableType(type = "long[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.printf($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
+                    @ConstraintVariableType(type = "char[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.printf($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
+                    @ConstraintVariableType(type = "float[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.printf($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
+                    @ConstraintVariableType(type = "double[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.printf($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
+                    @ConstraintVariableType(type = "boolean[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         )
     })
@@ -680,63 +862,154 @@ public class ArrayStringConversions {
                 value="$s.printf($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
-                    @ConstraintVariableType(type = "java.lang.Object[]", variable = "$v")
+                    @ConstraintVariableType(type = "java.lang.Object[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.printf($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
-                    @ConstraintVariableType(type = "int[]", variable = "$v")
+                    @ConstraintVariableType(type = "int[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.printf($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
-                    @ConstraintVariableType(type = "short[]", variable = "$v")
+                    @ConstraintVariableType(type = "short[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.printf($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
-                    @ConstraintVariableType(type = "byte[]", variable = "$v")
+                    @ConstraintVariableType(type = "byte[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.printf($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
-                    @ConstraintVariableType(type = "long[]", variable = "$v")
+                    @ConstraintVariableType(type = "long[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.printf($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
-                    @ConstraintVariableType(type = "char[]", variable = "$v")
+                    @ConstraintVariableType(type = "char[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.printf($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
-                    @ConstraintVariableType(type = "float[]", variable = "$v")
+                    @ConstraintVariableType(type = "float[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.printf($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
-                    @ConstraintVariableType(type = "double[]", variable = "$v")
+                    @ConstraintVariableType(type = "double[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.printf($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
-                    @ConstraintVariableType(type = "boolean[]", variable = "$v")
+                    @ConstraintVariableType(type = "boolean[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+
+        @TriggerPattern(
+                value="$s.printf($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
+                    @ConstraintVariableType(type = "java.lang.Object[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.printf($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
+                    @ConstraintVariableType(type = "int[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.printf($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
+                    @ConstraintVariableType(type = "short[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.printf($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
+                    @ConstraintVariableType(type = "byte[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.printf($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
+                    @ConstraintVariableType(type = "long[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.printf($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
+                    @ConstraintVariableType(type = "char[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.printf($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
+                    @ConstraintVariableType(type = "float[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.printf($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
+                    @ConstraintVariableType(type = "double[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.printf($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
+                    @ConstraintVariableType(type = "boolean[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         )
     })
@@ -750,63 +1023,154 @@ public class ArrayStringConversions {
                 value="$s.format($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
-                    @ConstraintVariableType(type = "java.lang.Object[]", variable = "$v")
+                    @ConstraintVariableType(type = "java.lang.Object[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.format($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
-                    @ConstraintVariableType(type = "int[]", variable = "$v")
+                    @ConstraintVariableType(type = "int[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.format($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
-                    @ConstraintVariableType(type = "short[]", variable = "$v")
+                    @ConstraintVariableType(type = "short[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.format($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
-                    @ConstraintVariableType(type = "byte[]", variable = "$v")
+                    @ConstraintVariableType(type = "byte[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.format($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
-                    @ConstraintVariableType(type = "long[]", variable = "$v")
+                    @ConstraintVariableType(type = "long[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.format($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
-                    @ConstraintVariableType(type = "char[]", variable = "$v")
+                    @ConstraintVariableType(type = "char[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.format($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
-                    @ConstraintVariableType(type = "float[]", variable = "$v")
+                    @ConstraintVariableType(type = "float[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.format($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
-                    @ConstraintVariableType(type = "double[]", variable = "$v")
+                    @ConstraintVariableType(type = "double[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         ),
         @TriggerPattern(
                 value="$s.format($f, $vars1$, $v, $vars2$)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
-                    @ConstraintVariableType(type = "boolean[]", variable = "$v")
+                    @ConstraintVariableType(type = "boolean[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+
+        @TriggerPattern(
+                value="$s.format($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
+                    @ConstraintVariableType(type = "java.lang.Object[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.format($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
+                    @ConstraintVariableType(type = "int[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.format($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
+                    @ConstraintVariableType(type = "short[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.format($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
+                    @ConstraintVariableType(type = "byte[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.format($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
+                    @ConstraintVariableType(type = "long[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.format($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
+                    @ConstraintVariableType(type = "char[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.format($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
+                    @ConstraintVariableType(type = "float[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.format($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
+                    @ConstraintVariableType(type = "double[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+                }
+        ),
+        @TriggerPattern(
+                value="$s.format($l, $f, $vars1$, $v, $vars2$)",
+                constraints = {
+                    @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
+                    @ConstraintVariableType(type = "boolean[]", variable = "$v"),
+                    @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+                    @ConstraintVariableType(type = "java.lang.String", variable = "$f")
                 }
         )
     })
@@ -838,7 +1202,11 @@ public class ArrayStringConversions {
         TreePath arrayRef = ctx.getVariables().get("$v");
         // the pattern matcher only identifies one match, it is possible that another array is passed in the subsequent
         // formatting parameters
-        ExecutableElement el = (ExecutableElement) ci.getTrees().getElement(ctx.getPath());
+        Element e = ci.getTrees().getElement(ctx.getPath());
+        if (e == null || !(e instanceof ExecutableElement)) {
+            return null;
+        }
+        ExecutableElement el = (ExecutableElement)e;
         boolean isVarArgs = el.isVarArgs();
         
         for (int index = mit.getArguments().indexOf(arrayRef.getLeaf()); index < mit.getArguments().size(); index++) {

@@ -55,8 +55,10 @@ import org.json.simple.JSONObject;
 public class Rule {
     /** Identifier of the rule (absent for user agent stylesheet and user-specified stylesheet rules). */
     private RuleId id;
-    /*** Selector of the rule. */
+    /** Selector of the rule. */
     private String selector;
+    /** Selectors of the rule. */
+    private List<Selector> selectors;
     /** Parent stylesheet resource URL. */
     private final String sourceURL;
     /** Line number of the first character of the selector. */
@@ -116,6 +118,19 @@ public class Rule {
             if (selectorList.containsKey("range")) { // NOI18N
                 selectorRange = new SourceRange((JSONObject)selectorList.get("range")); // NOI18N
             }
+            if (selectorList.containsKey("selectors")) { // NOI18N
+                JSONArray array = (JSONArray)selectorList.get("selectors"); // NOI18N
+                selectors = new ArrayList<Selector>(array.size());
+                for (Object o : array) {
+                    Selector nextSelector;
+                    if (o instanceof String) {
+                        nextSelector = new Selector((String)o);
+                    } else {
+                        nextSelector = new Selector((JSONObject)o);
+                    }
+                    selectors.add(nextSelector);
+                }
+            }
         } else {
             selector = (String)rule.get("selectorText"); // NOI18N
             if (rule.containsKey("selectorRange")) { // NOI18N
@@ -168,6 +183,13 @@ public class Rule {
      */
     public int getSourceLine() {
         int line;
+        if ((sourceLine == -1) && (selectors != null)) {
+            Selector firstSelector = selectors.get(0);
+            SourceRange range = firstSelector.getRange();
+            if (range != null) {
+                return range.getStartLine();
+            }
+        }
         if ((sourceLine == -1) && (selectorRange != null)) {
             line = selectorRange.getStartLine();
         } else {

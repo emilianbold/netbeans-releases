@@ -108,9 +108,14 @@ public class ParameterImpl extends VariableImpl<CsmParameter> implements CsmPara
     @Override
     public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);      
-    }  
-    
-    public ParameterImpl(RepositoryDataInput input) throws IOException {
-        super(input);
+    }
+
+    @Override
+    protected boolean isScopePersistent() {
+        return false;
+    }
+
+    public ParameterImpl(RepositoryDataInput input, CsmScope scope) throws IOException {
+        super(input, scope);
     } 
 }

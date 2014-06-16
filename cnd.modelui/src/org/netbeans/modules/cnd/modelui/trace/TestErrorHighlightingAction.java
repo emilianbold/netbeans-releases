@@ -276,8 +276,8 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
 
     private static class RequestImpl implements CsmErrorProvider.Request {
 
-        private CsmFile file;
-        private AtomicBoolean cancelled;
+        private final CsmFile file;
+        private final AtomicBoolean cancelled;
 
         public RequestImpl(CsmFile file, AtomicBoolean cancelled) {
             this.file = file;
@@ -297,6 +297,10 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
         @Override
         public Document getDocument() {
             return null;
+        }
+        @Override
+        public CsmErrorProvider.EditorEvent getEvent() {
+            return CsmErrorProvider.EditorEvent.FileBased;
         }
     }
 

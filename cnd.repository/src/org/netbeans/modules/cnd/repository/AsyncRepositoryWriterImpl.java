@@ -327,6 +327,7 @@ public final class AsyncRepositoryWriterImpl implements AsyncRepositoryWriter {
                 key.getPersistentFactory().write(out, REMOVED_OBJECT.equals(value) ? null : value);
             } catch (Throwable ex) {
                 RepositoryExceptions.throwException(this, key, ex);
+                out = null;
             } finally {
                 try{
                     if (out != null) {

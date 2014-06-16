@@ -66,6 +66,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -146,6 +147,7 @@ public abstract class IndexerCache <T extends SourceIndexerFactory> {
         return infos == null ? Collections.<IndexerInfo<T>>emptySet() : infos;
     }
 
+    @CheckForNull
     public Collection<? extends IndexerInfo<T>> getIndexersByName(String indexerName) {
         final Object [] data = getData(null, false);
         @SuppressWarnings("unchecked")

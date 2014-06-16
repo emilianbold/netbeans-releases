@@ -54,6 +54,7 @@
  */
 package org.netbeans.modules.cnd.navigation.macroview.impl.services;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -120,7 +121,7 @@ public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProv
                 if (expandedContextDoc == null) {
                     return;
                 }
-                final int expansionsNumber = CsmMacroExpansion.expand(mainDoc, startOffset, endOffset, expandedContextDoc);
+                final int expansionsNumber = CsmMacroExpansion.expand(mainDoc, startOffset, endOffset, expandedContextDoc, new AtomicBoolean(false));
                 MacroExpansionViewUtils.setOffset(expandedContextDoc, startOffset, endOffset);
                 MacroExpansionViewUtils.saveDocumentAndMarkAsReadOnly(expandedContextDoc);
 

@@ -164,7 +164,8 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
             }
         } else if (callNode.getFunction() instanceof ReferenceNode) {
             FunctionNode function = (FunctionNode) ((ReferenceNode) callNode.getFunction()).getReference();
-            String name = function.getIdent().getName();
+            String name = function.isAnonymous() ? function.getName() : function.getIdent().getName();
+//            String name = function.getIdent().getName();
             add(new TypeUsageImpl(ST_CALL + name, function.getStart(), false));
             return null;
         }

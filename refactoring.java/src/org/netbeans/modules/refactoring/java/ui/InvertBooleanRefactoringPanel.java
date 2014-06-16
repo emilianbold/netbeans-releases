@@ -57,7 +57,6 @@ public class InvertBooleanRefactoringPanel extends javax.swing.JPanel implements
         nameField.setText(name);
         nameField.setSelectionStart(0);
         nameField.setSelectionStart(name.length());
-        nameField.requestFocus();
         nameField.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
@@ -123,12 +122,12 @@ public class InvertBooleanRefactoringPanel extends javax.swing.JPanel implements
         nameField.setText(origName);
         nameField.setSelectionStart(0);
         nameField.setSelectionStart(origName.length());
-        nameField.requestFocus();
     }
 
     @Override
-    public void requestFocus() {
-        nameField.requestFocus();
+    public boolean requestFocusInWindow() {
+        nameField.requestFocusInWindow();
+        return true;
     }
 
     @Override

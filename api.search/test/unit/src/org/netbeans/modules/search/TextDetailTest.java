@@ -169,6 +169,24 @@ public class TextDetailTest extends NbTestCase {
         return m.group(2);
     }
 
+    /**
+     * Test for bug 243645 - OutOfMemoryError: Java heap space (OOME due do long
+     * tooltips in Search Results window).
+     */
+    public void testLongDescriptionIsAcceptablyLong() {
+        String longString = createLongString('a', "match", 'b', 1000,
+                1000);
+        TextDetail td = createMockTextDetail(longString, "match");
+        td.addSurroundingLine(2, longString);
+        td.addSurroundingLine(3, longString);
+        td.addSurroundingLine(4, longString);
+        td.addSurroundingLine(5, longString);
+        DetailNode n = new DetailNode(td, false, null);
+        assertTrue(n.getShortDescription().length()
+                <= 5 * 240 + "<html></html>".length() + 5 * "<br/>".length()
+                + "<b></b>".length() + 5 * "...".length());
+    }
+
     private TextDetail createMockTextDetail(String line, String match) {
         FileSystem fs = FileUtil.createMemoryFileSystem();
         try {

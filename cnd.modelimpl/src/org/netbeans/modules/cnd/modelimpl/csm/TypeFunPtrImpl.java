@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import static org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
@@ -69,6 +70,8 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
+import org.openide.util.CharSequences;
 
 /**
  * Represent pointer to function type
@@ -379,13 +382,23 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
         // typedef void foo_type(...);
         if (inTypedef && next.getType() == CPPTokenTypes.CSM_PARMLIST) {
             if (instance != null) {
+                // NB: null passed as scope correspond to null passed to PersistentUtils.readParameters in ctor
                 instance.functionParameters = AstRenderer.renderParameters(next, instance.getContainingFile(), fileContent, null);
             }
             return true;
         }
-
-        // last step: verify that it's followed with a closing brace
+        
         next = next.getNextSibling();
+        
+        // skip except specification
+        if (next != null && (next.getType() == CPPTokenTypes.LITERAL_throw || next.getType() == CPPTokenTypes.LITERAL_noexcept)) {
+            next = AstUtil.findSiblingOfType(next, CPPTokenTypes.RPAREN);
+            if (next != null) {
+                next = next.getNextSibling(); // closing brace of except specification
+            }
+        }
+
+        // last step: verify that it's followed with a closing brace        
         if (next != null && next.getType() == CPPTokenTypes.RPAREN) {
             next = next.getNextSibling();
             // skip LPAREN (let's not assume it's obligatory)
@@ -552,7 +565,7 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
 
         @Override
         public CharSequence getUniqueName() {
-            return type.getCanonicalText(); // NOI18N
+            return CharSequences.create(CharSequenceUtils.concatenate(Utils.getCsmDeclarationKindkey(getKind()), UNIQUE_NAME_SEPARATOR, type.getCanonicalText())); //NOI18N
         }
 
         @Override
@@ -644,7 +657,7 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
     public TypeFunPtrImpl(RepositoryDataInput input) throws IOException {
         super(input);
         functionPointerDepth = input.readShort();
-        functionParameters = PersistentUtils.readParameters(input);
+        functionParameters = PersistentUtils.readParameters(input, null);
         scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         returnType = PersistentUtils.readType(input);
     }

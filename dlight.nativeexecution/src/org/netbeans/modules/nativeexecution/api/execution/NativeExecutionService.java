@@ -160,7 +160,14 @@ public final class NativeExecutionService {
             // Currently only ansi emulation is supported (NB7.4).
             // xterm/dtterm cannot be considered as fully supported yet..
             // So will set TERM environment to 'ansi'
-            processBuilder.getEnvironment().put("TERM", "xterm" /*IOEmulation.getEmulation(descriptor.inputOutput)*/); // NOI18N
+            String termType = processBuilder.getEnvironment().get("TERM"); //NOI18N
+            if (termType != null && termType.startsWith("xterm")) { //NOI18N
+                // $TERM is one of xterm-color, xterm-16color, xterm-88color, or xterm-256color.
+                // Allows user to use his favorite one.
+                processBuilder.getEnvironment().put("TERM", termType); // NOI18N
+            } else {
+                processBuilder.getEnvironment().put("TERM", "xterm" /*IOEmulation.getEmulation(descriptor.inputOutput)*/); // NOI18N
+            }
         } else {
             processBuilder.getEnvironment().put("TERM", "dumb"); // NOI18N
         }
@@ -194,7 +201,9 @@ public final class NativeExecutionService {
 
                             @Override
                             public void actionPerformed(ActionEvent e) {
-                                descriptor.inputOutput.select();
+                                if (descriptor.inputOutput != null) {
+                                    descriptor.inputOutput.select();
+                                }
                             }
                         });
                         progressHandle.start();
@@ -338,12 +347,14 @@ public final class NativeExecutionService {
 
             @Override
             public Void run() {
-                OutputWriter w = toError
-                        ? descriptor.inputOutput.getErr()
-                        : descriptor.inputOutput.getOut();
-                if (w != null) {
-                    for (CharSequence c : cs) {
-                        w.append(c);
+                if (descriptor.inputOutput != null) {
+                    OutputWriter w = toError
+                            ? descriptor.inputOutput.getErr()
+                            : descriptor.inputOutput.getOut();
+                    if (w != null) {
+                        for (CharSequence c : cs) {
+                            w.append(c);
+                        }
                     }
                 }
                 return null;
@@ -356,8 +367,8 @@ public final class NativeExecutionService {
 
             @Override
             public Void run() {
-                final OutputWriter out = descriptor.inputOutput.getOut();
-                final OutputWriter err = descriptor.inputOutput.getErr();
+                final OutputWriter out = (descriptor.inputOutput == null) ? null : descriptor.inputOutput.getOut();
+                final OutputWriter err = (descriptor.inputOutput == null) ? null : descriptor.inputOutput.getErr();
                 if (err != null) {
                     try {
                         err.close();
@@ -451,7 +462,9 @@ public final class NativeExecutionService {
                             AdditionalOperation.OPEN,
                             AdditionalOperation.REQUEST_VISIBLE));
                 } else {
-                    descriptor.inputOutput.select();
+                    if (descriptor.inputOutput != null) { // avoid random NPE in tests
+                        descriptor.inputOutput.select();
+                    }
                 }
             }
             if (descriptor.requestFocus) {
@@ -463,7 +476,9 @@ public final class NativeExecutionService {
                         screen.requestFocusInWindow();
                     }
                 } else {
-                    descriptor.inputOutput.setFocusTaken(true);
+                    if (descriptor.inputOutput != null) { // avoid random NPE in tests
+                        descriptor.inputOutput.setFocusTaken(true);
+                    }
                 }
             }
         }

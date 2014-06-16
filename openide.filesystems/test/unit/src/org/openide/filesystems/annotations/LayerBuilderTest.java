@@ -282,7 +282,7 @@ public class LayerBuilderTest extends NbTestCase {
     public @interface A {String displayName();}
 
     @ServiceProvider(service=Processor.class)
-    @SupportedSourceVersion(SourceVersion.RELEASE_6)
+    @SupportedSourceVersion(SourceVersion.RELEASE_7)
     public static class AP extends LayerGeneratingProcessor {
         public @Override Set<String> getSupportedAnnotationTypes() {
             return Collections.singleton(A.class.getCanonicalName());
@@ -340,7 +340,7 @@ public class LayerBuilderTest extends NbTestCase {
         /** relative, must be in sourcepath */ String r2();
     }
     @ServiceProvider(service=Processor.class)
-    @SupportedSourceVersion(SourceVersion.RELEASE_6)
+    @SupportedSourceVersion(SourceVersion.RELEASE_7)
     public static class VP extends LayerGeneratingProcessor {
         public @Override Set<String> getSupportedAnnotationTypes() {
             return Collections.singleton(V.class.getCanonicalName());
@@ -407,7 +407,7 @@ public class LayerBuilderTest extends NbTestCase {
 
     public @interface I {}
     @ServiceProvider(service=Processor.class)
-    @SupportedSourceVersion(SourceVersion.RELEASE_6)
+    @SupportedSourceVersion(SourceVersion.RELEASE_7)
     public static class IP extends LayerGeneratingProcessor {
         public @Override Set<String> getSupportedAnnotationTypes() {
             return Collections.singleton(I.class.getCanonicalName());

@@ -1,7 +1,4 @@
 References in file quote_nosyshdr/customer.cc
-[44:1-44:9] <b>Customer</b>::Customer(const string initName, int initDiscount) :
-[49:5-49:13] int <b>Customer</b>::GetDiscount() const {
-[53:8-53:16] string <b>Customer</b>::GetName() const {
 [57:45-57:53] ostream&amp; operator &lt;&lt;(ostream&amp; output, const <b>Customer</b>&amp; customer) {
 References in file quote_nosyshdr/customer.h
 [59:53-59:61] friend ostream&amp; operator&lt;&lt; (ostream&amp;, const <b>Customer</b>&amp;);

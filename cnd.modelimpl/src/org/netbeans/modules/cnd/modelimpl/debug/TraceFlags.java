@@ -56,6 +56,10 @@ import org.netbeans.modules.cnd.debug.DebugUtils;
  * @author Vladimir Kvashim
  */
 public class TraceFlags {
+
+    public static final boolean MERGE_EVENTS = DebugUtils.getBoolean("cnd.model.merge.events", true);
+    public static final boolean USE_PARSER_API = DebugUtils.getBoolean("cnd.model.parser.api", false);
+
     public static volatile boolean TRACE_182342_BUG = Boolean.getBoolean("cnd.modelimpl.trace182342"); // NOI18N
     public static final boolean TRACE_191307_BUG = Boolean.getBoolean("cnd.modelimpl.trace191307"); // NOI18N
     public static final boolean DEBUG_BROKEN_REPOSITORY = Boolean.getBoolean("cnd.corrupt.repository"); // NOI18N

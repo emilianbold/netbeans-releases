@@ -212,7 +212,7 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
     }
     
     public boolean putClassifier(CsmClassifier decl) {
-        boolean changed;
+        boolean changed = false;
         CsmUID<CsmClassifier> uid = UIDCsmConverter.declarationToUID(decl);
         Map<CharSequence, CsmUID<CsmClassifier>> map;
         Map<CharSequence, CsmUID<CsmClassifier>> shortNamesMap;
@@ -236,6 +236,7 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
                                 inheritances.put(id, set);
                             }
                             set.add(UIDCsmConverter.inheritanceToUID(inh));
+                            changed = true;
                         }
                     } finally {
                         declarationsLock.writeLock().unlock();
@@ -244,7 +245,7 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
             }
         }
         CharSequence qn = decl.getQualifiedName();
-        changed = putClassifier(map, qn, uid);
+        changed |= putClassifier(map, qn, uid);
 
         // Special case for nested structs in C
         if (shortNamesMap != null) {
@@ -296,6 +297,7 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
         Map<CharSequence, CsmUID<CsmClassifier>> map;
         Map<CharSequence, CsmUID<CsmClassifier>> shortNamesMap;
         CsmUID<?> uid = UIDs.get(decl);
+        boolean changed = false;
         if (isTypedef(decl) || isTypeAlias(decl)) {
             map = typedefs;
             shortNamesMap = null;
@@ -313,6 +315,7 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
                             Set<CsmUID<CsmInheritance>> set = inheritances.get(id);
                             if (set != null) {
                                 set.remove(UIDCsmConverter.inheritanceToUID(inh));
+                                changed = true;
                             }
                         }
                     } finally {
@@ -322,7 +325,7 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
             }
         }
         CharSequence qn = decl.getQualifiedName();
-        boolean changed = removeClassifier(map, qn, uid);
+        changed |= removeClassifier(map, qn, uid);
 
         // Special case for nested structs in C
         if (shortNamesMap != null) {

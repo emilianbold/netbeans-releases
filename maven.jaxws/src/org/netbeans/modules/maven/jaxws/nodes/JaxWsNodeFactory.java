@@ -91,14 +91,13 @@ public class JaxWsNodeFactory implements NodeFactory {
         // Web Service Client
         private static final String KEY_SERVICE_REFS = "serviceRefs"; // NOI18N
         
-        private Project project;
+        private final Project project;
         private JAXWSLightSupport jaxwsSupport;
-        private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+        private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
         private Lookup.Result<JAXWSLightSupportProvider> lookupResult;
-        private AtomicReference<List<String>> nodeList; 
+        private final AtomicReference<List<String>> nodeList; 
         
         private static final RequestProcessor JAX_WS_RP = new RequestProcessor(WsNodeList.class);
-        private final RequestProcessor.Task jaxWsTask = JAX_WS_RP.create(this);
         
         public WsNodeList(Project proj) {
             project = proj;
@@ -126,9 +125,11 @@ public class JaxWsNodeFactory implements NodeFactory {
                 if (hasClients) {
                     result.add(KEY_SERVICE_REFS);
                 }
+                nodeList.set( result );
+                if (hasServices || hasClients) {
+                    fireChange();
+                }
             }
-            nodeList.set( result );
-            fireChange();
         }
 
         @Override
@@ -138,7 +139,7 @@ public class JaxWsNodeFactory implements NodeFactory {
                 nodeList.compareAndSet( keys, null);
                 return keys;
             } else {
-                jaxWsTask.schedule(100);
+                JAX_WS_RP.post(this, 100);
             }
             return Collections.emptyList();
         }

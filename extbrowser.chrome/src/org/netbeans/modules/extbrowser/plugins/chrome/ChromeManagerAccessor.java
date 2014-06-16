@@ -151,7 +151,11 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
             if ( defaultProfile == null ){
                 return ExtensionManager.ExtensitionStatus.MISSING;
             }
-            File[] prefs = defaultProfile.listFiles( new FileFinder("preferences"));
+            // #244047
+            File[] prefs = defaultProfile.listFiles(new FileFinder("protected preferences"));
+            if (prefs == null || prefs.length == 0){
+                prefs = defaultProfile.listFiles(new FileFinder("preferences"));
+            }
             if ( prefs == null || prefs.length == 0){
                 return ExtensionManager.ExtensitionStatus.MISSING;
             }

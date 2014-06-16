@@ -113,7 +113,7 @@ public class CsmFunctionCallsProviderImpl implements FunctionCallsProvider {
         final List<CsmReference> res = new ArrayList<CsmReference>();
         final AtomicBoolean cancelled = new AtomicBoolean(false);
 
-        CsmFileReferences.getDefault().accept(csmFile, new CsmFileReferences.Visitor() {
+        CsmFileReferences.getDefault().accept(csmFile, null, new CsmFileReferences.Visitor() {
             @Override
             public void visit(CsmReferenceContext context) {
                 if (cancelled.get()) {
@@ -153,6 +153,11 @@ public class CsmFunctionCallsProviderImpl implements FunctionCallsProvider {
 //                            autos.add(txt);
 //                        }
                     }
+            }
+
+            @Override
+            public boolean cancelled() {
+                return false;
             }
         });
         if (cancelled.get()) {

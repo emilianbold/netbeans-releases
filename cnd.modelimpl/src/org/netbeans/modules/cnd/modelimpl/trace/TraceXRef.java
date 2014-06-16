@@ -100,6 +100,7 @@ import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.IncludeLevel;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.spi.model.services.CsmReferenceStorage;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.CharSequences;
 import org.openide.filesystems.FileUtil;
@@ -157,7 +158,7 @@ public class TraceXRef extends TraceModel {
                     if (offset < 0) {
                         System.err.println("incorrect offset for position line=" + line + " col=" + column);
                     } else {
-                        CsmReference ref = CsmReferenceResolver.getDefault().findReference(implFile, offset);
+                        CsmReference ref = CsmReferenceResolver.getDefault().findReference(implFile, null, offset);
                         if (ref == null) {
                             System.err.println("no any references were found on position line=" + line + " col=" + column);
                         } else {
@@ -184,7 +185,7 @@ public class TraceXRef extends TraceModel {
                 CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(object, true);
                 CsmObject decl = decDef[0];
                 CsmObject def = decDef[1];
-                Collection<CsmReference> refs = xRefRepository.getReferences(decl, getProject(), CsmReferenceKind.ALL, null);
+                Collection<CsmReference> refs = xRefRepository.getReferences(decl, getProject(), CsmReferenceKind.ALL, Interrupter.DUMMY);
                 if (super.isShowTime()) {
                     time = System.currentTimeMillis() - time;
                 }
@@ -380,10 +381,10 @@ public class TraceXRef extends TraceModel {
             visitDeclarations(file.getDeclarations(), params, bag, out, printErr, canceled);
         } else if (params.reportIndex) {
             // otherwise visit active code in whole file
-            CsmFileReferences.getDefault().accept(file, new LWReportIndexVisitor(bag, printErr, canceled, params.reportIndex), params.interestedReferences);
+            CsmFileReferences.getDefault().accept(file, null, new LWReportIndexVisitor(bag, printErr, canceled, params.reportIndex), params.interestedReferences);
         } else {
             // otherwise visit active code in whole file
-            CsmFileReferences.getDefault().accept(file, new LWCheckReferenceVisitor(bag, printErr, canceled, params.reportUnresolved), params.interestedReferences);
+            CsmFileReferences.getDefault().accept(file, null, new LWCheckReferenceVisitor(bag, printErr, canceled, params.reportUnresolved), params.interestedReferences);
         }
         time = System.currentTimeMillis() - time;
         // get line num
@@ -458,6 +459,11 @@ public class TraceXRef extends TraceModel {
                 }
             }
         }
+
+        @Override
+        public boolean cancelled() {
+            return canceled.get();
+        }
     }
 
     private static final class LWReportIndexVisitor implements CsmFileReferences.Visitor {
@@ -478,7 +484,6 @@ public class TraceXRef extends TraceModel {
             if (canceled.get()) {
                 return;
             }
-            XRefResultSet.ContextEntry entry = null;
             CsmReference refFromStorage = CsmReferenceStorage.getDefault().get(ref);        
             boolean fromStorage = refFromStorage != null && refFromStorage.getReferencedObject() != null;
             CsmObject target = ref.getReferencedObject();
@@ -502,7 +507,7 @@ public class TraceXRef extends TraceModel {
                 return;
             }
             String skind;
-            entry = XRefResultSet.ContextEntry.RESOLVED;
+            XRefResultSet.ContextEntry entry = XRefResultSet.ContextEntry.RESOLVED;
             if (CsmKindUtilities.isParameter(target)) {
                 skind = "PARAMETER"; //NOI18N
             } else if(CsmKindUtilities.isDeclaration(target)) {
@@ -530,6 +535,11 @@ public class TraceXRef extends TraceModel {
                 indexed.increment(fromStorage);
             }
         }
+
+        @Override
+        public boolean cancelled() {
+            return canceled.get();
+        }
     }
     
     private static void handleFunctionDefinition(final CsmFunctionDefinition fun, final StatisticsParameters params, final XRefResultSet<XRefEntry> bag,
@@ -541,7 +551,7 @@ public class TraceXRef extends TraceModel {
             final Set<CsmObject> objectsUsedInScope = new HashSet<>();
             bag.incrementScopeCounter(funScope);
             CsmFileReferences.getDefault().accept(
-                    scope,
+                    scope, null,
                     new CsmFileReferences.Visitor() {
 
                 @Override
@@ -566,6 +576,11 @@ public class TraceXRef extends TraceModel {
                                     unres.increment();
                                 }
                             }
+                        }
+
+                        @Override
+                        public boolean cancelled() {
+                            return false;
                         }
                     },
                     params.interestedReferences);
@@ -796,7 +811,7 @@ public class TraceXRef extends TraceModel {
     private static XRefResultSet.DeclarationScope checkFileContainer(
             ObjectContext<CsmObject> objContext,
             ObjectContext<CsmFunctionDefinition> csmFunction) {
-        XRefResultSet.DeclarationScope out = XRefResultSet.DeclarationScope.UNRESOLVED;
+        XRefResultSet.DeclarationScope out;
         if (csmFunction.objFile.equals(objContext.objFile)) {
             out = XRefResultSet.DeclarationScope.FILE_THIS;
         } else if (csmFunction.objPrj.equals(objContext.objPrj)) {

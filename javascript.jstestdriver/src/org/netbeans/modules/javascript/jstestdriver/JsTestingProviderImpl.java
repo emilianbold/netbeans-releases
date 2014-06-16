@@ -91,6 +91,11 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
         return JsTestDriverPreferences.isEnabled(project);
     }
 
+    @Override
+    public boolean isCoverageSupported(Project project) {
+        return false;
+    }
+
     @NbBundle.Messages("JsTestingProviderImpl.error.config=Cannot run tests, no jsTestDriver.conf found.")
     @Override
     public void runTests(Project project, TestRunInfo runInfo) {

@@ -275,9 +275,13 @@ public class TemplateUtils {
                     if (varDecl != null && varDecl.getType() == CPPTokenTypes.LITERAL_typename) {
                         varDecl = varDecl.getNextSibling();
                     }
-                    if (varDecl != null && varDecl.getType() == CPPTokenTypes.LITERAL_enum) {
+                    if (varDecl != null && (varDecl.getType() == CPPTokenTypes.LITERAL_enum || 
+                                            varDecl.getType() == CPPTokenTypes.LITERAL_struct || 
+                                            varDecl.getType() == CPPTokenTypes.LITERAL_class ||
+                                            varDecl.getType() == CPPTokenTypes.LITERAL_union)) 
+                    {
                         varDecl = varDecl.getNextSibling();
-                        if(varDecl == null || varDecl.getType() != CPPTokenTypes.CSM_TYPE_COMPOUND) {
+                        if(varDecl == null || (varDecl.getType() != CPPTokenTypes.CSM_TYPE_COMPOUND && varDecl.getType() != CPPTokenTypes.CSM_QUALIFIED_ID)) {
                             break;                                    
                         }                                
                     }

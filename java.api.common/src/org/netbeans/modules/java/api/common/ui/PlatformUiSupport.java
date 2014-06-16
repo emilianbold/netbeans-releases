@@ -66,6 +66,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.project.support.PreferredProjectPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
@@ -731,7 +732,7 @@ public final class PlatformUiSupport {
 
         private synchronized PlatformKey[] getPlatformNames() {
             if (platformNamesCache == null) {
-                JavaPlatform[] platforms = pm.getPlatforms(null, new Specification("j2se", null)); //NOI18N
+                JavaPlatform[] platforms = pm.getPlatforms(null, new Specification(CommonProjectUtils.J2SE_PLATFORM_TYPE, null));
                 Set<PlatformKey> orderedNames = new TreeSet<PlatformKey>();
                 boolean activeFound = false;
                 for (JavaPlatform platform : platforms) {
@@ -1179,7 +1180,7 @@ public final class PlatformUiSupport {
 
     private static JavaPlatform findPlatform(String displayName) {
         JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(
-                displayName, new Specification("j2se", null)); //NOI18N
+                displayName, new Specification(CommonProjectUtils.J2SE_PLATFORM_TYPE, null));
         if (platforms.length == 0) {
             return null;
         }

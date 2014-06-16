@@ -57,6 +57,7 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -251,7 +252,9 @@ import org.netbeans.api.java.source.WorkingCopy;
     private void beautifyVariable(Tree currentTree, Set<Name> needed) {
         VariableTree varTree = (VariableTree) currentTree;
         if (needed.contains(varTree.getName())) {
-            this.correspondingTree = treeMaker.ExpressionStatement(varTree.getInitializer());
+            this.correspondingTree = varTree.getInitializer() != null
+                    ? treeMaker.ExpressionStatement(varTree.getInitializer())
+                    : null;
         } else {
 
             this.correspondingTree = this.addReturn(castToStatementTree(currentTree), getOneFromSet(needed));
@@ -453,6 +456,10 @@ import org.netbeans.api.java.source.WorkingCopy;
             ProspectiveOperation next = ls.get(i);
             Set<Name> needed = next.getNeededVariables();
             current.beautify(needed);
+        }
+        for (Iterator<ProspectiveOperation> it = ls.iterator(); it.hasNext();) {
+            if (it.next().correspondingTree == null)
+                it.remove();
         }
     }
 

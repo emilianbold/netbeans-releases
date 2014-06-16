@@ -57,5 +57,3 @@ Assert::same(3, $calculator->divide(6, 2));
 Assert::exception(function() use($calculator) {
     $calculator->divide(mt_rand(0, PHP_INT_MAX), 0);
 }, 'InvalidArgumentException', 'Cannot divide by zero');
-
-?>

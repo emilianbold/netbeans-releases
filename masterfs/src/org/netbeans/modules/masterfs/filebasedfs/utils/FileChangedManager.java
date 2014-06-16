@@ -266,6 +266,9 @@ public class FileChangedManager extends SecurityManager {
     
     private Integer put(int id, boolean state) {
         pingIO(2);
+        if (hints.size() > 150000) { // Clear cache if it gets too big. #242998
+            shrink();
+        }
         shrinkTime = System.currentTimeMillis();
         int val = toValue(state);
         Integer retval = hints.putIfAbsent(id,val);

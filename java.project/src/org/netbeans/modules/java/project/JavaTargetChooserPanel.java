@@ -151,8 +151,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
                 setErrorMessage("ERR_JavaTargetChooser_InvalidFolder");
                 return false;
             }
-        }
-        else {
+        } else {
             if (gui.getTargetName() == null) {
                 setErrorMessage("INFO_JavaTargetChooser_ProvideClassName");
                 return false;
@@ -442,7 +441,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         String relFileName = folderName + "/" + newObjectName; // NOI18N
 
         // test whether the selected folder on selected filesystem already exists
-        if (targetFolder == null) {
+        if (targetFolder == null || !targetFolder.isValid()) {
             return NbBundle.getMessage (JavaTargetChooserPanel.class, "MSG_fs_or_folder_does_not_exist"); // NOI18N
         }
         

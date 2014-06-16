@@ -51,12 +51,12 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.project.CodeAssistance;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -74,13 +74,14 @@ public class CsmCodeAssistanceProvider implements CodeAssistance, CsmProgressLis
 
     @Override
     public boolean hasCodeAssistance(NativeFileItem item) {
-        CsmFile csmFile = CsmUtilities.getCsmFile(item.getFileObject(), false, false);
+        CndUtils.assertNonUiThread();
+        CsmFile csmFile = CsmUtilities.getCsmFile(item, false, false);
         return csmFile != null;
     }
 
     @Override
     public CodeAssistance.State getCodeAssistanceState(NativeFileItem item) {
-        CsmFile csmFile = CsmUtilities.getCsmFile(item.getFileObject(), false, false);
+        CsmFile csmFile = CsmUtilities.getCsmFile(item, false, false);
         if (csmFile != null) {
             if (csmFile.isHeaderFile()) {
                 if (CsmIncludeHierarchyResolver.getDefault().getFiles(csmFile).isEmpty()) {
@@ -118,7 +119,7 @@ public class CsmCodeAssistanceProvider implements CodeAssistance, CsmProgressLis
 
     @Override
     public void projectParsingFinished(CsmProject project) {
-        fireChanges(project);
+        //fireChanges(project);
     }
 
     @Override

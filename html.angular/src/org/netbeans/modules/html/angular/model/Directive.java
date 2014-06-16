@@ -131,7 +131,7 @@ public enum Directive {
     
     //ngdoc parser is here: https://github.com/angular/angular.js/blob/master/docs/src/ngdoc.js
     //the directives documentation in .ngdoc format is here: https://github.com/angular/angular.js/blob/master/src/ng/directive/ngController.js
-    private static final String PARTIAL_DOC_URL_BASE = "http://code.angularjs.org/" + AngularDoc.DOC_VERSION + "/docs/partials/api/ng.directive:"; //NOI18N
+    private static final String PARTIAL_DOC_URL_BASE = "https://code.angularjs.org/" + AngularDoc.DOC_VERSION + "/docs/partials/api/ng/directive/"; //NOI18N
     private static final String PARTIAL_SUFFIX = ".html"; //NOI18N
     
     private static final String DOC_URL_BASE = "http://docs.angularjs.org/api/ng.directive:"; //NOI18N

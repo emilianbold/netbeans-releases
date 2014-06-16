@@ -201,36 +201,36 @@ made subject to such option by the copyright holder.
             <file name="license-apache20.txt" url="apache20-license.txt">
                 <attr name="displayName" stringvalue="Apache License 2.0"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="mavenLicenseURL" stringvalue="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
+                <attr name="mavenLicenseURL" stringvalue="http://opensource.org/licenses/Apache-2.0 http://www.apache.org/licenses/LICENSE-2.0.txt"/>
             </file>
             <file name="license-mit.txt" url="mit-license.txt">
                 <attr name="displayName" stringvalue="MIT License"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="mavenLicenseURL" stringvalue="http://www.opensource.org/licenses/mit-license.php"/>
+                <attr name="mavenLicenseURL" stringvalue="http://opensource.org/licenses/MIT http://www.opensource.org/licenses/mit-license.php"/>
             </file>
             <file name="license-gpl20.txt" url="gpl20-license.txt">
                 <attr name="displayName" stringvalue="General Public License 2.0"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="mavenLicenseURL" stringvalue="http://www.gnu.org/licenses/gpl-2.0.html"/>
+                <attr name="mavenLicenseURL" stringvalue="http://opensource.org/licenses/GPL-2.0 http://www.gnu.org/licenses/gpl-2.0.html"/>
             </file>
             <file name="license-gpl30.txt" url="gpl30-license.txt">
                 <attr name="template" boolvalue="true"/>
                 <attr name="displayName" stringvalue="General Public License 3.0"/>
-                <attr name="mavenLicenseURL" stringvalue="http://www.gnu.org/licenses/gpl-3.0.html"/>
+                <attr name="mavenLicenseURL" stringvalue="http://opensource.org/licenses/GPL-3.0 http://www.gnu.org/licenses/gpl-3.0.html"/>
             </file>
             <file name="license-lgpl21.txt" url="lgpl21-license.txt">
                 <attr name="displayName" stringvalue="Lesser GPL 2.1"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="mavenLicenseURL" stringvalue="http://www.gnu.org/licenses/lgpl-2.1.html"/>
+                <attr name="mavenLicenseURL" stringvalue="http://opensource.org/licenses/LGPL-2.1 http://www.gnu.org/licenses/lgpl-2.1.html"/>
             </file>
             <file name="license-epl10.txt" url="epl10-license.txt">
                 <attr name="displayName" stringvalue="Eclipse Public License 1.0"/>
-                <attr name="mavenLicenseURL" stringvalue="http://www.eclipse.org/legal/epl-v10.html"/>
+                <attr name="mavenLicenseURL" stringvalue="http://opensource.org/licenses/EPL-1.0 http://www.eclipse.org/legal/epl-v10.html"/>
                 <attr name="template" boolvalue="true"/>
             </file>            
             <file name="license-bsd.txt" url="bsd-license.txt">
                 <attr name="displayName" stringvalue="BSD 2-Clause License"/>
-                <attr name="mavenLicenseURL" stringvalue="http://opensource.org/licenses/bsd-license.php"/>
+                <attr name="mavenLicenseURL" stringvalue="http://opensource.org/licenses/BSD-2-Clause http://opensource.org/licenses/bsd-license.php"/>
                 <attr name="template" boolvalue="true"/>
             </file>            
             

@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
+import org.netbeans.modules.cnd.support.Interrupter;
 
 /**
  * Tests for CsmFileInfoQuery.getUnusedCodeBlocks()
@@ -77,7 +78,7 @@ public class UnusedCodeBlocksTestCase extends TraceModelTestBase {
             CsmFile csmFile = super.getCsmFile(file);
             assertTrue(csmFile != null);
             System.out.printf("Unused blocks for %s\n", csmFile.getName());
-            List<CsmOffsetable> blocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(csmFile);
+            List<CsmOffsetable> blocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(csmFile, Interrupter.DUMMY);
             for (CsmOffsetable block : blocks) {
                 System.out.printf("%s\n", CsmTracer.getOffsetString(block, false));
             }

@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.openide.util.Lookup;
 
 /**
@@ -59,6 +60,8 @@ public abstract class CsmBaseUtilitiesProvider {
     public static CsmBaseUtilitiesProvider getDefault() {
         return DEFAULT;
     }
+    
+    public abstract boolean isGlobalVariable(CsmVariable var);
 
     public abstract CsmFunction getFunctionDeclaration(CsmFunction fun);
     
@@ -75,6 +78,14 @@ public abstract class CsmBaseUtilitiesProvider {
         private final Collection<? extends CsmBaseUtilitiesProvider> svcs;;
         Default() {
             svcs = Lookup.getDefault().lookupAll(CsmBaseUtilitiesProvider.class);
+        }
+
+        @Override
+        public boolean isGlobalVariable(CsmVariable var) {
+            for (CsmBaseUtilitiesProvider provider : svcs) {
+                return provider.isGlobalVariable(var);
+            }
+            return true;
         }
 
         @Override

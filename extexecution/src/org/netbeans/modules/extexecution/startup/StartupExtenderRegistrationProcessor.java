@@ -62,7 +62,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @SupportedAnnotationTypes("org.netbeans.spi.extexecution.startup.StartupExtenderImplementation.Registration")
 @ServiceProvider(service = Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class StartupExtenderRegistrationProcessor extends LayerGeneratingProcessor {
 
     public static final String PATH = "StartupExtender"; // NOI18N

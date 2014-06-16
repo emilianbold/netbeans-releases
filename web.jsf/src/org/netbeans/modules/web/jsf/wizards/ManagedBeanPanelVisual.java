@@ -59,6 +59,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.beans.CdiUtil;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
@@ -117,7 +118,8 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
             }
         }
         Object[] scopes;
-        isCDIEnabled = JSFUtils.isCDIEnabled(wm);
+        CdiUtil cdiUtil = proj.getLookup().lookup(CdiUtil.class);
+        isCDIEnabled = cdiUtil != null && cdiUtil.isCdiEnabled();
         if (isCDIEnabled && !addToFacesConfig) {
             scopes = ManagedBeanIterator.NamedScope.values();
         } else {

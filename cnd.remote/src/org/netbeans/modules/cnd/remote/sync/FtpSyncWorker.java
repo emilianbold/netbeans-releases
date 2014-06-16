@@ -419,7 +419,7 @@ import org.openide.util.RequestProcessor;
             return;
         }
         
-        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_Zipping"));  
+        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_Zipping", toCopy.size()));  
         progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_Zipping"));            
         File zipFile = null;
         try  {
@@ -515,6 +515,9 @@ import org.openide.util.RequestProcessor;
                 if (rc != 0) {
                     throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Err_Unzip", 
                             remoteFile, executionEnvironment, rc)); // NOI18N
+                }
+                for (FileCollector.FileInfo fileInfo : toCopy) {
+                    fileData.setState(fileInfo.file, FileState.COPIED);
                 }
             }
         } finally {

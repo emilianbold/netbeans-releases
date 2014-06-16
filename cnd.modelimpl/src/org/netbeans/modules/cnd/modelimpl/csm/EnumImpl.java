@@ -48,12 +48,14 @@ import java.util.* ;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.MemberBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl.EnumeratorBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -66,7 +68,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * Implements CsmEnum
  * @author Vladimir Kvashin
  */
-public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
+public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum, SelectImpl.FilterableEnumerators {
     private final boolean stronglyTyped;
     private final List<CsmUID<CsmEnumerator>> enumerators;
     
@@ -198,6 +200,15 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         }
     }
     
+    @Override
+    public Iterator<CsmEnumerator> getEnumerators(CsmSelect.CsmFilter filter) {
+        Collection<CsmUID<CsmEnumerator>> uids = new ArrayList<>();
+        synchronized (enumerators) {
+            uids.addAll(enumerators);
+        }
+        return UIDCsmConverter.UIDsToDeclarations(uids, filter);
+    }
+    
     @SuppressWarnings("unchecked")
     @Override
     public Collection<CsmScopeElement> getScopeElements() {
@@ -231,7 +242,7 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
             ast.getType() == CPPTokenTypes.CSM_ENUM_FWD_DECLARATION) {
             AST child = ast.getFirstChild();
             if (child == null) {
-                CndUtils.assertTrueInConsole(false, "incomplete enum", ast);
+                CndUtils.assertTrueInConsole(false, "incomplete enum ", ast);
                 return false;
             }
             ast = child;
@@ -239,7 +250,7 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         while (ast.getType() != CPPTokenTypes.LITERAL_enum) {
             AST sibling = ast.getNextSibling();
             if (sibling == null) {
-                CndUtils.assertTrueInConsole(false, "incomplete enum", ast);
+                CndUtils.assertTrueInConsole(false, "incomplete enum ", ast);
                 return false;
             }
             ast = sibling;
@@ -257,7 +268,7 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         }
         return false;
     }
-    
+
     public static class EnumBuilder extends SimpleDeclarationBuilder implements MemberBuilder {
         
         private boolean stronglyTyped = false;

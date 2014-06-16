@@ -150,6 +150,11 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     protected void setCompoundStatement(CsmCompoundStatement body) {
         this.body = body;
     }    
+    
+    @Override
+    public DefinitionKind getDefinitionKind() {
+        return DefinitionKind.REGULAR;
+    }    
 
     @Override
     public void dispose() {

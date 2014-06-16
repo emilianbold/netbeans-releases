@@ -431,41 +431,5 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
         }
     }
     
-    private static final class URLEquality {
-        
-        private final String protocol;
-        private final String host;
-        private final int port;
-        private final String path;
-        
-        public URLEquality(URL url) {
-            protocol = url.getProtocol().toLowerCase();
-            String h = url.getHost();
-            if (h != null) {
-                h = h.toLowerCase();
-            }
-            host = h;
-            port = url.getPort();
-            path = url.getPath();
-        }
-
-        @Override
-        public int hashCode() {
-            return protocol.hashCode() + host.hashCode() + port + path.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof URLEquality)) {
-                return false;
-            }
-            URLEquality ue = (URLEquality) obj;
-            return protocol.equals(ue.protocol) &&
-                   (host == null && ue.host == null || host != null && host.equals(ue.host)) &&
-                   port == ue.port &&
-                   (path == null && ue.path == null || path != null && path.equals(ue.path));
-        }
-        
-    }
 
 }

@@ -448,6 +448,69 @@ public class LifecycleTest extends NbTestCase {
         assertNull("No exception should be thrown", excRef[0]);
     }
 
+
+    /**
+     * Test for bug 242979.
+     *
+     * @throws java.lang.InterruptedException
+     * @throws java.lang.reflect.InvocationTargetException
+     */
+    public void testDoubleReset() throws InterruptedException, InvocationTargetException {
+
+        io.getOut().println("First line");
+        final Object lock = new Object();
+
+        class OutputResetter implements Runnable {
+
+            @Override
+            public void run() {
+                try {
+                    final OutputWriter pw = io.getOut();
+                    synchronized (lock) {
+                        pw.reset();
+                        pw.println("test println");
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+
+        final Semaphore s = new Semaphore(0);
+        EventQueue.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(100); // block EDT for a while
+                    s.release();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+        Thread t1 = new Thread(new OutputResetter(), "Thread 1");
+        Thread t2 = new Thread(new OutputResetter(), "Thread 2");
+
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+        s.tryAcquire(100, TimeUnit.MILLISECONDS);
+
+        EventQueue.invokeAndWait(new Runnable() {
+
+            @Override
+            public void run() {
+                // process scheduled events
+            }
+        });
+
+        assertFalse(((NbWriter) io.getOut()).out().isDisposed());
+
+        io.closeInputOutput();
+    }
+
     static JComponent getIOWindow() {
         IOContainer container = IOContainer.getDefault();
         JComponent comp = null;

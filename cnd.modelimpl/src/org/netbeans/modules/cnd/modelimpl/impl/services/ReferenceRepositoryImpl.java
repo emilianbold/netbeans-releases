@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
-import org.netbeans.modules.cnd.antlr.TokenStream;
-import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,13 +51,16 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Set;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
+import javax.swing.text.Document;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
@@ -81,11 +82,11 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.indexing.api.CndTextIndex;
 import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
+import org.netbeans.modules.cnd.modelimpl.content.file.ReferencesIndex;
+import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
-import org.netbeans.modules.cnd.modelimpl.content.file.ReferencesIndex;
-import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
@@ -159,7 +160,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
                 }
                 out = new ArrayList<>(files.size() * 10);
                 for (FileImpl file : files) {
-                    if (interrupter != null && interrupter.cancelled()) {
+                    if (interrupter.cancelled()) {
                         break;
                     }
                     out.addAll(getReferences(decl, def, file, kinds,unboxInstantiation, 0, Integer.MAX_VALUE, interrupter));
@@ -197,7 +198,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
     public Map<CsmObject, Collection<CsmReference>> getReferences(CsmObject[] targets, CsmProject project, Set<CsmReferenceKind> kinds, Interrupter interrupter) {
         Map<CsmObject, Collection<CsmReference>> out = new HashMap<>(targets.length);
         for (CsmObject target : targets) {
-            if (interrupter != null && interrupter.cancelled()) {
+            if (interrupter.cancelled()) {
                 break;
             }
             out.put(target, getReferences(target, project, kinds, interrupter));
@@ -268,12 +269,13 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
             //time = System.currentTimeMillis() - time;
             System.err.println("collecting tokens");
         }
+        Document doc = getDocument(file);
         Collection<CsmReference> refs = new ArrayList<>(20);
         for (APTToken token : tokens) {
-            if (interrupter != null && interrupter.cancelled()){
+            if (interrupter.cancelled()){
                 break;
             }
-            CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, token.getOffset());
+            CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, doc, token.getOffset());
             if (ref != null) {
                 // this is candidate to resolve
                 refs.add(ref);
@@ -283,12 +285,20 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
         ReferenceVisitor visitor = new ReferenceVisitor() {
             @Override
             public void visit(CsmReference ref) {
-                if (interrupter != null && interrupter.cancelled()){
+                if (interrupter.cancelled()){
                     return;
                 }
                 if (acceptReference(ref, targetDecl, targetDef, kinds, unboxInstantiation)) {
                     out.add(ref);
                 }
+            }
+
+            @Override
+            public boolean cancelled() {
+                if (interrupter.cancelled()){
+                    return true;
+                }
+                return false;
             }
         };
         CsmFileReferences.getDefault().visit(refs, visitor);
@@ -494,5 +504,5 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
         }
         return res;
     }
-
+    
 }

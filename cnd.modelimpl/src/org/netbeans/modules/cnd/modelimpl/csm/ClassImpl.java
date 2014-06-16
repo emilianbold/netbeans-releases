@@ -747,39 +747,18 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         // inner classes and enums
                         case CPPTokenTypes.CSM_CLASS_DECLARATION:
                         case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION: {
-                            CsmScope currentScope = ClassImpl.this;  
-                            
+                            CsmScope currentScope = ClassImpl.this;                              
                             if (APTLanguageSupport.getInstance().isLanguageC(language)) {
                                 currentScope = getContainingFile().getProject().getGlobalNamespace();
-                            }
-                            
+                            }                            
                             ClassImpl innerClass = createClass(token, currentScope, ClassImpl.this);
-
-                            if(innerClass != null) {
-                                typedefs = renderTypedef(token, innerClass, ClassImpl.this);
-                                if (!typedefs.getTypesefs().isEmpty()) {
-                                    for (CsmTypedef typedef : typedefs.getTypesefs()) {
-                                        // It could be important to register in project before add as member...
-                                        if (!isRenderingLocalContext()) {
-                                            ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(typedef);
-                                        }
-                                        addMember((CsmMember) typedef,!isRenderingLocalContext());
-                                        if (typedefs.getEnclosingClassifier() != null){
-                                            typedefs.getEnclosingClassifier().addEnclosingTypedef(typedef);
-                                        }
-                                    }
-                                    if (typedefs.getEnclosingClassifier() != null && !ForwardClass.isForwardClass(typedefs.getEnclosingClassifier())) {
-                                        addMember(typedefs.getEnclosingClassifier(), !isRenderingLocalContext());
-                                    }
-                                }
-                                renderVariableInClassifier(token, innerClass, null, null);
-                            }
+                            processClassEnum(innerClass, token);
                             break;
                         }
                             
                         case CPPTokenTypes.CSM_ENUM_DECLARATION:
                             EnumImpl innerEnum = createEnum(token, ClassImpl.this, ClassImpl.this);
-                            renderVariableInClassifier(token, innerEnum, null, null);
+                            processClassEnum(innerEnum, token);
                             checkInnerIncludes(innerEnum, Collections.<CsmObject>emptyList());
                             break;
 
@@ -948,6 +927,29 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             }
             checkInnerIncludes(ClassImpl.this, ClassImpl.this.getMembers());
         }
+        
+        private void processClassEnum(ClassEnumBase innerClassEnum, AST innerClassAST) {
+            Pair typedefs;
+            if(innerClassEnum != null) {
+                typedefs = renderTypedef(innerClassAST, innerClassEnum, ClassImpl.this);
+                if (!typedefs.getTypesefs().isEmpty()) {
+                    for (CsmTypedef typedef : typedefs.getTypesefs()) {
+                        // It could be important to register in project before add as member...
+                        if (!isRenderingLocalContext()) {
+                            ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(typedef);
+                        }
+                        addMember((CsmMember) typedef,!isRenderingLocalContext());
+                        if (typedefs.getEnclosingClassifier() != null){
+                            typedefs.getEnclosingClassifier().addEnclosingTypedef(typedef);
+                        }
+                    }
+                    if (typedefs.getEnclosingClassifier() != null && !ForwardClass.isForwardClass(typedefs.getEnclosingClassifier())) {
+                        addMember(typedefs.getEnclosingClassifier(), !isRenderingLocalContext());
+                    }
+                }
+                renderVariableInClassifier(innerClassAST, innerClassEnum, null, null);
+            }            
+        }
 
         private CsmScope getFriendScope() {
             CsmScope scope = ClassImpl.this.getScope();
@@ -1113,7 +1115,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 if (typeAST.getType() == CPPTokenTypes.LITERAL_enum) {
                     typeAST = typeAST.getNextSibling();
                 }
-                if (typeAST == null || (typeAST.getType() != CPPTokenTypes.CSM_TYPE_COMPOUND)) {
+                if (typeAST == null || (typeAST.getType() != CPPTokenTypes.CSM_QUALIFIED_ID) && (typeAST.getType() != CPPTokenTypes.CSM_TYPE_COMPOUND)) {
                     return false;
                 }
             }

@@ -229,8 +229,8 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         assert (this.issue == null);
         this.issue = issue;
         instanceContent.add(issue.getIssue());
-        preparingLabel.setVisible(false);
-        issuePanel.add(issue.getController().getComponent(), BorderLayout.CENTER);
+        setVisible(preparingLabel, false);
+        issuePanelAdd(issue.getController().getComponent(), BorderLayout.CENTER);
         
         if(isOpened()) {
             // #opened() did not fire beacuse of null issue -> fire afterwards
@@ -238,7 +238,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         }
         ((DelegatingUndoRedoManager)getUndoRedo()).init();
         
-        repoPanel.setVisible(false);
+        setVisible(repoPanel, false);
         setNameAndTooltip();
         registerListeners();
         
@@ -385,14 +385,14 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             public void run() {
                 try {
                     handle.start();
-                    preparingLabel.setVisible(true);
+                    setVisible(preparingLabel, true);
                     RepositoryImpl repo = getRepository();
                     if (repo == null) {
                         return;
                     }
                     if(issue != null) {
                         if(controller != null) {
-                            issuePanel.remove(controller.getComponent());
+                            issuePanelRemove(controller.getComponent());
                             controller.closed();
                         }
                         unregisterListeners();
@@ -428,12 +428,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                         }
                     });
                 } finally {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            preparingLabel.setVisible(false);
-                        }
-                    });
+                    setVisible(preparingLabel, false);
                     handle.finish();
                     prepareTask = null;
                 }
@@ -441,6 +436,33 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         });
     }
 
+    private void issuePanelRemove(final JComponent cmp) {
+        UIUtils.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                issuePanel.remove(cmp);
+            }
+        });
+    }
+    
+    private void issuePanelAdd(final JComponent cmp, final String layout) {
+        UIUtils.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                issuePanel.add(cmp, layout);
+            }
+        });
+    }
+
+    private void setVisible(final JComponent cmp, final boolean visible) {
+        UIUtils.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                cmp.setVisible(visible);
+            }
+        });
+    }
+    
     private void unregisterListeners() {
         issue.removePropertyChangeListener(this);
         getController().removePropertyChangeListener(this);
@@ -634,14 +656,8 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_DATA_CHANGED)) {
-            UIUtils.runInAWT(new Runnable() {
-                @Override
-                public void run() {
-                    repoPanel.setVisible(false);
-                    setNameAndTooltip();
-                }
-            });
-            
+            setVisible(repoPanel, false);
+            setNameAndTooltip();
         } else if(evt.getPropertyName().equals(RepositoryRegistry.EVENT_REPOSITORIES_CHANGED)) {
             if(!repositoryComboBox.isEnabled()) {
                 // well, looks like there shuold be only one repository available

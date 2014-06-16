@@ -373,7 +373,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 }
             }
             if (root.length() > 0) {
-                this.root = CndFileUtils.normalizeFile(new File(root)).getAbsolutePath();
+                this.root = CndFileUtils.normalizeAbsolutePath(fileSystem, root);
             } else {
                 this.root = root;
             }

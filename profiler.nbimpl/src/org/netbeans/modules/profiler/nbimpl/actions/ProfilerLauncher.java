@@ -384,7 +384,7 @@ public class ProfilerLauncher {
                     Platform.getOperatingSystem(platform.getSystemProperties().get("os.name")),                 //NOI18N
                     Platform.getSystemArchitecture(platform.getSystemProperties().get("sun.arch.data.model")),   //NOI18N
                     platform.getSystemProperties().get("os.arch"),   //NOI18N
-                    platform.getProperties().get("platform.jvm.target")   //NOI18N
+                    getArchAbi(platform)
                     );
             String platformVersion = IntegrationUtils.getJavaPlatformFromJavaVersionString(platform.getPlatformJDKVersion());
             final String prefix = getRemotePlatformWorkDirectory(platform)+project.getProjectDirectory().getName()+"/dist/remotepack";   //NOI18N
@@ -410,6 +410,9 @@ public class ProfilerLauncher {
             } else if (javaVersion.equals(CommonConstants.JDK_18_STRING)) {
                 agentArgs =  IDEUtils.getAntProfilerStartArgument18(ss.getPortNo(), ss.getSystemArchitecture());
                 activateOOMProtection(gps, props, project);
+            } else if (javaVersion.equals(CommonConstants.JDK_19_STRING)) {
+                agentArgs =  IDEUtils.getAntProfilerStartArgument19(ss.getPortNo(), ss.getSystemArchitecture());
+                activateOOMProtection(gps, props, project);
             } else {
                 throw new IllegalArgumentException("Unsupported JDK " + javaVersion); // NOI18N
             }
@@ -422,6 +425,14 @@ public class ProfilerLauncher {
         }
         
         props.put("profiler.info.project.dir", project.getProjectDirectory().getPath()); //NOI18N
+    }
+    
+    private static String getArchAbi( JavaPlatform platform) {
+        String abiWord = platform.getSystemProperties().get("sun.arch.abi"); //NOI18N
+        if (abiWord == null) {
+            abiWord = "";
+        }
+        return abiWord;
     }
 
     private static boolean isRemotePlatform(final JavaPlatform platform) {

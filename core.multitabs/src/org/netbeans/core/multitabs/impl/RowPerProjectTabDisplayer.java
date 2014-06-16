@@ -43,32 +43,19 @@
  */
 package org.netbeans.core.multitabs.impl;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.swing.tabcontrol.TabDataModel;
 
 /**
  *
  * @author S. Aubrecht
  */
-public class RowPerProjectTabDisplayer extends MultiRowTabDisplayer {
+public class RowPerProjectTabDisplayer extends MultiRowTabDisplayer implements ChangeListener {
 
-    public RowPerProjectTabDisplayer( final TabDataModel tabModel, int tabsLocation, int rowCount ) {
+    public RowPerProjectTabDisplayer( final TabDataModel tabModel, int tabsLocation ) {
         super( tabModel, tabsLocation );
-
-        ProjectSupport.getDefault().addPropertyChangeListener( new PropertyChangeListener() {
-            @Override
-            public void propertyChange( PropertyChangeEvent evt ) {
-                final int projectCount = ProjectSupport.getDefault().getOpenProjects().length;
-                SwingUtilities.invokeLater( new Runnable() {
-                    @Override
-                    public void run() {
-                        adjustRows( projectCount );
-                    }
-                });
-            }
-        });
     }
 
     @Override
@@ -89,9 +76,6 @@ public class RowPerProjectTabDisplayer extends MultiRowTabDisplayer {
             addRowTable();
         }
         layoutManager.invalidate();
-        invalidate();
-        revalidate();
-        doLayout();
     }
 
     private void removeTable() {
@@ -110,7 +94,25 @@ public class RowPerProjectTabDisplayer extends MultiRowTabDisplayer {
 
     @Override
     public void addNotify() {
+        ProjectSupport.getDefault().addChangeListener(this);
         super.addNotify();
         layoutManager.invalidate();
+    }
+    
+    @Override
+    public void removeNotify() {
+        ProjectSupport.getDefault().removeChangeListener(this);
+        super.removeNotify();
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        final int projectCount = ProjectSupport.getDefault().getOpenProjects().length;
+        SwingUtilities.invokeLater( new Runnable() {
+            @Override
+            public void run() {
+                adjustRows( projectCount );
+            }
+        });
     }
 }

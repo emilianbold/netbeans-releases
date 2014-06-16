@@ -68,6 +68,14 @@ public class CommentTags {
         blockCommentEnabled = true;
     }
 
+    public CommentTags(String lineComment, boolean lineCommentEnabled, String blockCommentStart, String blockCommentEnd, boolean blockCommentEnabled) {
+        this.lineComment = lineComment;
+        this.lineCommentEnabled = lineCommentEnabled;
+        this.blockCommentStart = blockCommentStart;
+        this.blockCommentEnd = blockCommentEnd;
+        this.blockCommentEnabled = blockCommentEnabled;
+    }
+
     public CommentTags(String lineComment) {
         this.lineComment = lineComment;
         lineCommentEnabled = true;

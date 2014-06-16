@@ -67,6 +67,7 @@ import org.netbeans.modules.web.inspect.webkit.ui.CSSStylesPanel;
 import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
+import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetHeader;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.openide.util.Lookup;
@@ -501,6 +502,14 @@ public class WebKitPageModel extends PageModel {
         return new CSS.Listener() {
             @Override
             public void mediaQueryResultChanged() {
+            }
+
+            @Override
+            public void styleSheetAdded(StyleSheetHeader header) {
+            }
+
+            @Override
+            public void styleSheetRemoved(String styleSheetId) {
             }
 
             @Override

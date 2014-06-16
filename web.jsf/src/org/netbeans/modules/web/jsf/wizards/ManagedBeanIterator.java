@@ -59,6 +59,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.beans.CdiUtil;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
@@ -94,7 +95,7 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
     /**
      * List of ManagedBean scopes.
      */
-    private static final Map<ManagedBean.Scope, String> FACES_SCOPE = new EnumMap<Scope, String>(Scope.class);
+    private static final Map<ManagedBean.Scope, String> FACES_SCOPE = new EnumMap<>(Scope.class);
     static {
         FACES_SCOPE.put(ManagedBean.Scope.APPLICATION, "ApplicationScoped"); // NOI18N
         FACES_SCOPE.put(ManagedBean.Scope.NONE, "NoneScoped");               // NOI18N
@@ -106,7 +107,7 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
     /**
      * List of ContextDependencyInjection scopes.
      */
-    private static final Map<NamedScope, String> NAMED_SCOPE = new EnumMap<NamedScope, String>(NamedScope.class);
+    private static final Map<NamedScope, String> NAMED_SCOPE = new EnumMap<>(NamedScope.class);
     static {
         NAMED_SCOPE.put(NamedScope.DEPENDENT, "Dependent");             //NOI18N
         NAMED_SCOPE.put(NamedScope.APPLICATION, "ApplicationScoped");   //NOI18N
@@ -114,6 +115,7 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         NAMED_SCOPE.put(NamedScope.SESSION, "SessionScoped");           //NOI18N
         NAMED_SCOPE.put(NamedScope.CONVERSATION, "ConversationScoped"); //NOI18N
         NAMED_SCOPE.put(NamedScope.FLOW, "FlowScoped");                 //NOI18N
+        NAMED_SCOPE.put(NamedScope.VIEW, "ViewScoped");                 //NOI18N
 
     }
 
@@ -188,7 +190,8 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         if (isAnnotate && (Utilities.isJavaEE6Plus(wizard) || (JSFUtils.isJSF20Plus(wm, true) && JSFUtils.isJavaEE5(wizard)))) {
             Map<String, Object> templateProperties = new HashMap<String, Object>();
             String targetName = Templates.getTargetName(wizard);
-            if (JSFUtils.isCDIEnabled(wm)) {
+            CdiUtil cdiUtil = project.getLookup().lookup(CdiUtil.class);
+            if (cdiUtil != null && cdiUtil.isCdiEnabled()) {
                 templateProperties.put("cdiEnabled", true);
                 templateProperties.put("classAnnotation", "@Named(value=\"" + beanName + "\")");   //NOI18N
                 templateProperties.put("scope", ScopeEntry.getFor(scope));    //NOI18N
@@ -348,7 +351,8 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         REQUEST("request"),             //NOI18N
         SESSION("session"),             //NOI18N
         CONVERSATION("conversation"),   //NOI18N
-        FLOW("flow");                   //NOI18N
+        FLOW("flow"),                   //NOI18N
+        VIEW("view");                   //NOI18N
 
         private String scope;
 
@@ -407,6 +411,8 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
             String scopeSimpleName = NAMED_SCOPE.get(scope);
             if (scope == NamedScope.FLOW) {
                 return "javax.faces.flow." + scopeSimpleName; //NOI18N
+            } else if (scope == NamedScope.VIEW) {
+                return "javax.faces.view." + scopeSimpleName; //NOI18N
             } else {
                 return "javax.enterprise.context." + scopeSimpleName; //NOI18N
             }

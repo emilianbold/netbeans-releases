@@ -35,5 +35,12 @@ if (true)
 else
     $a = 1;
 
+function b($bb = true) {
+    $bb = false;
+}
+
+function c($cc) {
+    $cc = false;
+}
 //END
 ?>

@@ -222,7 +222,7 @@ public final class FunctionInstantiationImpl extends OffsetableDeclarationBase<C
         this.name = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.name != null;
         
-        this.parameterList = (FunctionParameterListImpl) PersistentUtils.readParameterList(input);
+        this.parameterList = (FunctionParameterListImpl) PersistentUtils.readParameterList(input, this);
         
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         this.scopeUID = factory.readUID(input);

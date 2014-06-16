@@ -43,7 +43,6 @@ package org.netbeans.modules.javascript2.editor.index;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.logging.Level;
@@ -58,6 +57,7 @@ import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
+import org.netbeans.modules.javascript2.editor.model.impl.ParameterObject;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -108,6 +108,14 @@ public class JsIndexer extends EmbeddingIndexer {
                 storeObject(object, object.getName(), support, indexable);
             }
         }
+        
+        IndexDocument document = support.createDocument(indexable);
+        for (JsObject object : globalObject.getProperties().values()) {
+            if (object.getParent() != null) {
+                storeUsages(object, object.getName(), document);
+            }
+        }
+        support.addDocument(document);
     }
 
     private void storeObject(JsObject object, String fqn, IndexingSupport support, Indexable indexable) {
@@ -121,7 +129,13 @@ public class JsIndexer extends EmbeddingIndexer {
                 // look for all other properties. Even if the object doesn't have to be delcared in the file
                 // there can be declared it's properties or methods
                 for (JsObject property : object.getProperties().values()) {
-                    storeObject(property, fqn + '.' + property.getName(), support, indexable);
+                    if (!(property instanceof JsObjectReference && !((JsObjectReference)property).getOriginal().isAnonymous())) {
+                        storeObject(property, fqn + '.' + property.getName(), support, indexable);
+                    } else {
+                        IndexDocument document = IndexedElement.createDocumentForReference((JsObjectReference)property, fqn + '.' + property.getName(), support, indexable);
+////                      IndexDocument document = IndexedElement.createDocument(property, fqn + '.' + property.getName(), support, indexable);
+                        support.addDocument(document);
+                    }
                 }
                 if (object instanceof JsFunction) {
                     // store parameters
@@ -145,11 +159,47 @@ public class JsIndexer extends EmbeddingIndexer {
         }
         return false;
     }
+
+    private void storeUsages(JsObject object, String name, IndexDocument document) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(object.getName());
+        for (JsObject property : object.getProperties().values()) {
+            if (storeUsage(property)) {
+                sb.append(':');
+                sb.append(property.getName()).append('#');
+                if (property.getJSKind().isFunction()) {
+                    sb.append('F');
+                } else {
+                    sb.append('P');
+                }
+            }
+        }
+        document.addPair(JsIndex.FIELD_USAGE, sb.toString(), true, true);
+        if (object instanceof JsFunction) {
+            // store parameters
+            for (JsObject parameter : ((JsFunction) object).getParameters()) {
+                storeUsages(parameter, parameter.getName(), document);
+            }
+        }
+        for (JsObject property : object.getProperties().values()) {
+            if (storeUsage(property) && (!(property instanceof JsObjectReference && !((JsObjectReference)property).getOriginal().isAnonymous()))) {
+                storeUsages(property, property.getName(), document);
+            }
+        }
+    }
+    
+    private boolean storeUsage(JsObject object) {
+        boolean result = true;
+        if ("arguments".equals(object.getName()) || object.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
+            result = false;
+        }
+        return result;
+    }
     
     public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "js"; // NOI18N
-        public static final int VERSION = 11;
+        public static final int VERSION = 13;
         private static final int PRIORITY = 100;
         
         private static final ThreadLocal<Collection<Runnable>> postScanTasks = new ThreadLocal<Collection<Runnable>>();

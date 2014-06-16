@@ -75,7 +75,7 @@ function_call returns [int value]
     :
         id = qualified_id 
         args = balance_lparen_rparen
-        { $value = vp==null ? 0 : vp.getValue($id.q + $args.s); }
+        { $value = vp==null ? 0 : vp.getFunCallValue($id.q + $args.s); }
     ;
 
 variable returns [int value]

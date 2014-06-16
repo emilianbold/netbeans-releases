@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.api.model.syntaxerr;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -95,6 +94,8 @@ public abstract class CsmErrorProvider extends NamedOption {
         boolean isCancelled();
 
         Document getDocument();
+        
+        EditorEvent getEvent();
     }
 
     /** Response for adding errors for a particular file */
@@ -152,7 +153,7 @@ public abstract class CsmErrorProvider extends NamedOption {
     
     protected abstract void doGetErrors(Request request, Response response);
     
-    public abstract Set<EditorEvent> supportedEvents();
+    public abstract boolean isSupportedEvent(EditorEvent kind);
 
     public static boolean disableAsLibraryHeaderFile(CsmFile file) {
         // partially included files are excluded
@@ -229,8 +230,8 @@ public abstract class CsmErrorProvider extends NamedOption {
         }
 
         @Override
-        public Set<EditorEvent> supportedEvents() {
-            return EnumSet.<EditorEvent>of(EditorEvent.DocumentBased, EditorEvent.FileBased);
+        public boolean isSupportedEvent(EditorEvent kind) {
+            return kind == EditorEvent.DocumentBased || kind == EditorEvent.FileBased;
         }
     }
 
@@ -272,8 +273,8 @@ public abstract class CsmErrorProvider extends NamedOption {
         }
 
         @Override
-        public Set<EditorEvent> supportedEvents() {
-            return EnumSet.<EditorEvent>of(EditorEvent.DocumentBased, EditorEvent.FileBased);
+        public boolean isSupportedEvent(EditorEvent kind) {
+            return kind == EditorEvent.DocumentBased || kind == EditorEvent.FileBased;
         }
     }
     

@@ -45,6 +45,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,7 +77,7 @@ public class PrimefacesCustomizerPanel extends javax.swing.JPanel implements Hel
 
     /**
      * Creates new form PrimefacesCustomizerPanel.
-     * @param changeListener {@code ChangeListener} which should be notified about changes.
+     * @param customizer PrimeFaces customizer
      */
     public PrimefacesCustomizerPanel(PrimefacesCustomizer customizer) {
         this.customizer = customizer;
@@ -101,9 +102,13 @@ public class PrimefacesCustomizerPanel extends javax.swing.JPanel implements Hel
      * Initialize {@link #primefacesLibrariesComboBox} with all PrimeFaces libraries.
      * @param setStoredValue {@code true} if should be selected stored value from preferences, {@code false} otherwise
      */
+    @NbBundle.Messages({
+        "PrimefacesCustomizerPanel.lbl.searching=Searching Primefaces Libraries..."
+    })
     public final void initLibraries(final boolean setStoredValue) {
+        setPrimefacesLibrariesComboBox(Arrays.asList(Bundle.PrimefacesCustomizerPanel_lbl_searching()));
         long time = System.currentTimeMillis();
-        final List<Library> primefacesLibraries = new ArrayList<Library>();
+        final List<Library> primefacesLibraries = new ArrayList<>();
 
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
@@ -144,7 +149,7 @@ public class PrimefacesCustomizerPanel extends javax.swing.JPanel implements Hel
         return null;
     }
 
-    private void setPrimefacesLibrariesComboBox(List<Library> items) {
+    private void setPrimefacesLibrariesComboBox(List items) {
         primefacesLibrariesComboBox.setModel(new DefaultComboBoxModel(items.toArray()));
         primefacesLibrariesComboBox.setRenderer(new LibraryComboBoxRenderer());
         primefacesLibrariesComboBox.setEnabled(!items.isEmpty());

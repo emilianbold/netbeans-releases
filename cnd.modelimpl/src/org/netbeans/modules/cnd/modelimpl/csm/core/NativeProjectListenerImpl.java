@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * Implementation of the NativeProjectItemsListener interface
@@ -74,6 +75,10 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
     public NativeProjectListenerImpl(ModelImpl model, NativeProject nativeProject, ProjectBase project) {
         this.nativeProject = nativeProject;
         this.projectBase = project;
+        if (TraceFlags.MERGE_EVENTS) {
+            CndUtils.assertTrue(false, "NativeProjectListenerImpl shoudl not be used if MERGE_EVENTS flag is set"); //NOI18N
+        }
+
     }
 
     @Override

@@ -135,12 +135,14 @@ public final class CodingStandardsFixerReportParser extends DefaultHandler {
     }
 
     private void processFileEnd() {
-        assert currentFile != null;
         currentFile = null;
     }
 
     private void processResultStart(Attributes attributes) {
-        assert currentFile != null;
+        if (currentFile == null) {
+            // #242935
+            return;
+        }
         assert currentResult == null : currentResult.getFilePath();
         assert description == null : description.toString();
 
@@ -152,10 +154,12 @@ public final class CodingStandardsFixerReportParser extends DefaultHandler {
     }
 
     private void processResultEnd() {
-        assert currentResult != null;
-        assert description != null;
-        currentResult.setDescription(formatDescription(description.toString()));
-        results.add(currentResult);
+        if (currentFile != null) {
+            assert currentResult != null;
+            assert description != null;
+            currentResult.setDescription(formatDescription(description.toString()));
+            results.add(currentResult);
+        }
         currentResult = null;
         appliedFixers.clear();
         description = null;
@@ -169,7 +173,10 @@ public final class CodingStandardsFixerReportParser extends DefaultHandler {
     private String getCurrentFile(String fileName) {
         if (root.isFolder()) {
             FileObject current = root.getFileObject(fileName);
-            assert current != null;
+            if (current == null) {
+                // #242935
+                return null;
+            }
             return FileUtil.toFile(current).getAbsolutePath();
         }
         return fileName;

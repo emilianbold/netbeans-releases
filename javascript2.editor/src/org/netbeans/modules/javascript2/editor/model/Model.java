@@ -439,13 +439,11 @@ public final class Model {
     private void processWindowsProperties(JsObject globalObject) {
         JsObject window = globalObject.getProperty("window");
         if (window != null) {
+//            JsObjectImpl.moveOccurrenceOfProperties((JsObjectImpl)window, globalObject);
             for (JsObject winProp: window.getProperties().values()) {
                 JsObject globalVar = globalObject.getProperty(winProp.getName());
                 if (globalVar != null) {
-                    globalVar.addOccurrence(winProp.getDeclarationName().getOffsetRange());
-                    for (Occurrence occurrence:  winProp.getOccurrences()) {
-                        globalVar.addOccurrence(occurrence.getOffsetRange());
-                    }
+                    JsObjectImpl.moveOccurrence((JsObjectImpl)globalVar, winProp);
                     JsObjectImpl.moveOccurrenceOfProperties((JsObjectImpl) winProp, globalVar);
                 }
             }
@@ -500,6 +498,7 @@ public final class Model {
             }
         }
         ArrayList<JsObject> copy = new ArrayList(object.getProperties().values());
+        Collections.reverse(copy);  // resolve the properties in revers order (how was added)
         for(JsObject property: copy) {
             resolveLocalTypes(property, docHolder);
         }

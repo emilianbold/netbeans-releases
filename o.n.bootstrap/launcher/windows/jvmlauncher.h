@@ -74,6 +74,7 @@ public:
 
     bool initialize(const char *javaPathOrMinVersion);
     bool getJavaPath(std::string &path);
+    bool isPermSizeSupported();
     bool start(const char *mainClassName, const std::list<std::string> &args, const std::list<std::string> &options, bool &separateProcess, DWORD *retCode);
 
     void setSuppressConsole(bool val) {
@@ -101,6 +102,7 @@ private:
     std::string javaServerDllPath;
     std::string javaPath;
     std::string javaBinPath;
+    std::string javaVersion;
 
     class PrepareDllPath {
     public:

@@ -43,14 +43,10 @@
 package org.netbeans.libs.git.jgit.commands;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.eclipse.jgit.errors.IncorrectObjectTypeException;
+import java.util.ArrayList;
+import java.util.List;
 import org.eclipse.jgit.errors.MissingObjectException;
-import org.eclipse.jgit.errors.NoMergeBaseException;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.merge.RecursiveMerger;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.revwalk.filter.RevFilter;
@@ -81,33 +77,13 @@ public class GetCommonAncestorCommand extends GitCommand {
         try {
             if (revisions.length == 0) {
                 revision = null;
-            } else if (revisions.length == 1) {
-                revision = getClassFactory().createRevisionInfo(Utils.findCommit(repository, revisions[0]), repository);
             } else {
-                // it would be great if JGit exposed RecursiveMerger.getBaseCommit as public
                 walk = new RevWalk(repository);
+                List<RevCommit> commits = new ArrayList<>(revisions.length);
                 for (String rev : revisions) {
-                    walk.markStart(walk.lookupCommit(Utils.findCommit(repository, rev)));
+                    commits.add(Utils.findCommit(repository, rev, walk));
                 }
-                walk.setRevFilter(RevFilter.MERGE_BASE);
-                Iterator<RevCommit> it = walk.iterator();
-                if (it.hasNext()) {
-                    revision = getClassFactory().createRevisionInfo(it.next(), repository);
-                }
-                if (it.hasNext()) {
-                    revision = null;
-                }
-                if (revision == null) {
-                    // try resursive strategy
-                    DummyMerger merger = new DummyMerger(repository);
-                    RevCommit base = merger.getBaseCommit(Utils.findCommit(repository, revisions[0]), Utils.findCommit(repository, revisions[1]));
-                    for (int i = 2; base != null && i < revisions.length; ++i) {
-                        base = merger.getBaseCommit(base, Utils.findCommit(repository, revisions[i]));
-                    }
-                    if (base != null) {
-                        revision = getClassFactory().createRevisionInfo(base, repository);
-                    }
-                }
+                revision = getSingleBaseCommit(walk, commits);
             }
         } catch (MissingObjectException ex) {
             throw new GitException.MissingObjectException(ex.getObjectId().toString(), GitObjectType.COMMIT);
@@ -132,17 +108,23 @@ public class GetCommonAncestorCommand extends GitCommand {
     public GitRevisionInfo getRevision () {
         return revision;
     }
-    
-    private class DummyMerger extends RecursiveMerger {
-        
-        private DummyMerger (Repository repository) {
-            super(repository);
-        }
 
-        @Override
-        protected RevCommit getBaseCommit (RevCommit a, RevCommit b) throws IncorrectObjectTypeException, IOException {
-            return super.getBaseCommit(a, b);
+    private GitRevisionInfo getSingleBaseCommit (RevWalk walk, List<RevCommit> commits) throws IOException {
+        while (commits.size() > 1) {
+            walk.reset();
+            for (RevCommit c : commits) {
+                walk.markStart(walk.parseCommit(c));
+            }
+            walk.setRevFilter(RevFilter.MERGE_BASE);
+            commits.clear();
+            for (RevCommit commit = walk.next(); commit != null; commit = walk.next()) {
+                commits.add(commit);
+            }
         }
-        
+        if (commits.isEmpty()) {
+            return null;
+        } else {
+            return getClassFactory().createRevisionInfo(commits.get(0), getRepository());
+        }
     }
 }

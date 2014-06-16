@@ -57,10 +57,11 @@
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
-          <Group type="102" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
+                      <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
                       <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
                       <Component id="manageLabelsButton" min="-2" max="-2" attributes="1"/>
@@ -74,8 +75,16 @@
                       <EmptySpace max="32767" attributes="0"/>
                       <Component id="manageConnSettingsButton" min="-2" max="-2" attributes="0"/>
                   </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="annotationTextField" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="addButton" min="-2" max="-2" attributes="1"/>
+                  </Group>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="cbDetermineBranches" min="-2" max="-2" attributes="0"/>
                           <Component id="cbOpenOutputWindow" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="excludeNewFiles" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="prefixRepositoryPath" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -83,13 +92,6 @@
                           <Component id="cbGetRemoteLocks" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="1" attributes="0">
-                      <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="annotationTextField" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="addButton" min="-2" max="-2" attributes="1"/>
                   </Group>
               </Group>
           </Group>
@@ -134,10 +136,12 @@
                   <Component id="annotationTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="addButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Component id="cbDetermineBranches" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jLabel7" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="manageLabelsButton" alignment="3" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="2" attributes="0">
+                  <Component id="manageLabelsButton" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="jLabel7" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
               <Component id="jScrollPane2" min="-2" max="-2" attributes="0"/>
@@ -161,7 +165,7 @@
               <Component id="excludeNewFiles" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="prefixRepositoryPath" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="25" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -672,6 +676,23 @@
     <Component class="javax.swing.JSeparator" name="jSeparator4">
     </Component>
     <Component class="javax.swing.JSeparator" name="jSeparator3">
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="cbDetermineBranches">
+      <Properties>
+        <Property name="selected" type="boolean" value="true"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/subversion/options/Bundle.properties" key="SvnOptionsPanel.cbDetermineBranches.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/subversion/options/Bundle.properties" key="SvnOptionsPanel.cbDetermineBranches.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="cbDetermineBranchesStateChanged"/>
+      </Events>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>

@@ -2,6 +2,7 @@ Code completion result for source line:
 <input type="button" onclick="alert(myvar.p|)" value="Click me"/>
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+CLASS      p                               [PUBLIC]   <font color=#999999>test.js</font>
 CLASS      prototype                       [PUBLIC]   JS Platform
 METHOD     preventExtensions(O: Object):   [PUBLIC,   JS Platform
 METHOD     propertyIsEnumerable(V: String  [PUBLIC]   JS Platform

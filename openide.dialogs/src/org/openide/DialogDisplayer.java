@@ -136,6 +136,22 @@ public abstract class DialogDisplayer {
      * @return the new dialog
      */
     public abstract Dialog createDialog(DialogDescriptor descriptor);
+    
+    /**
+     * Same as #createDialog(org.openide.DialogDescriptor) except that it's possible
+     * to specify dialog's parent Frame window. When a document window is floated
+     * and has focus then new dialog window will use it as a parent window by default.
+     * That means non-modal dialogs will close when that document window is closed.
+     * To avoid such situation pass WindowManager.getDefault().getMainWindow() as
+     * dialog parent window.
+     * @param descriptor general description of the dialog
+     * @param parent Dialgo parent frame.
+     * @return New dialog
+     * @since 7.38
+     */
+    public Dialog createDialog(DialogDescriptor descriptor, Frame parent) {
+        return createDialog(descriptor);
+    }
 
     /**
      * Minimal implementation suited for standalone usage.

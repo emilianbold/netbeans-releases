@@ -304,7 +304,7 @@ ${selection}${cursor}
         </code>
     </codetemplate>
 
-    <codetemplate abbreviation="par" contexts="{EXPRESSION}">
+    <codetemplate abbreviation="par" contexts="EXPRESSION">
         <code>
 <![CDATA[${no-format}(${selection}${cursor})]]>
         </code>

@@ -53,6 +53,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -103,6 +105,7 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
     private static DocumentsDlg defaultInstance;
     
     private final ExplorerManager explorer = new ExplorerManager();
+    private Dimension previousDialogSize;
 
     /** Creates new form DocumentsDlg */
     private DocumentsDlg () {
@@ -408,6 +411,9 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
     }//GEN-LAST:event_activate
 
     private void closeDialog() {
+        //save dialog size on closing via dialog buttons
+        getDefault().previousDialogSize=this.getSize();
+
         Window w = SwingUtilities.getWindowAncestor(this);
         w.setVisible(false);
         w.dispose();
@@ -422,6 +428,10 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
     }
     
     public void removeNotify () {
+        // save dialog size on click at [x] in titlebar
+        Window dlg = SwingUtilities.getWindowAncestor(this);
+        if( null != dlg )
+            getDefault().previousDialogSize = dlg.getSize();
         super.removeNotify();
         explorer.removePropertyChangeListener(this);
     }
@@ -441,12 +451,18 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
             null
         );
         dlgDesc.setHelpCtx( null ); //hide the default Help button
-        Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
+        final Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
         dlg.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_DocumentsDialog"));
         if( dlg instanceof JDialog ) {
             HelpCtx.setHelpIDString(((JDialog)dlg).getRootPane(), documentsPanel.getHelpCtx().getHelpID());
         }
         getDefault().updateNodes();
+        
+        if (getDefault().previousDialogSize != null) {
+            dlg.setSize(getDefault().previousDialogSize);
+            dlg.setLocationRelativeTo(null);
+        }
+
         dlg.setVisible(true);
         getDefault().clearNodes();
     }

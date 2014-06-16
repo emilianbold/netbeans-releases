@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.ui.DocumentAdapter;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -340,7 +341,8 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         } else {
             seed = System.getProperty("user.home"); // NOI18N
         }
-        FileFilter[] filters = FileFilterFactory.getBinaryFilters();
+        FileSystem fs = NewProjectWizardUtils.getFileSystem(controller.getWizardDescriptor());
+        FileFilter[] filters = FileFilterFactory.getBinaryFilters(fs);
         JFileChooser fileChooser = NewProjectWizardUtils.createFileChooser(
                 controller.getWizardDescriptor(),
                 getString("OUTPUT_CHOOSER_TITLE_TXT"),

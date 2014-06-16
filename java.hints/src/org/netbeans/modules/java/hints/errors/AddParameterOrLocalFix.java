@@ -84,13 +84,14 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.java.hints.errors.Utilities.isEnhancedForLoopIdentifier;
+import org.netbeans.spi.editor.hints.EnhancedFix;
 
 
 /**
  *
  * @author Jan Lahoda
  */
-public class AddParameterOrLocalFix implements Fix {
+public class AddParameterOrLocalFix implements EnhancedFix {
     
     private FileObject file;
     private TypeMirrorHandle type;
@@ -487,5 +488,17 @@ public class AddParameterOrLocalFix implements Fix {
         return hash;
     }
     
+    @Override
+    public CharSequence getSortText() {
+        //see usage at org.netbeans.modules.editor.hints.FixData.getSortText(org.netbeans.spi.editor.hints.Fix):java.lang.CharSequence
+    
+        //creates ordering top to bottom: create local variable>create field>create parameter
+        //see org.netbeans.modules.java.hints.errors.CreateFieldFix.getSortText():java.lang.CharSequence
+        if (parameter) {
+            return "Create 7000 " + getText();
+        } else {
+            return "Create 5000 " + getText();
+}
+    }
     
 }

@@ -362,9 +362,12 @@ public class DocumentationScrollPane extends JScrollPane {
     }
     
     private void goToSource() {
-        Action action = currentDocumentation.getGotoSourceAction();
-        if (action != null)
-            action.actionPerformed(new ActionEvent(currentDocumentation, 0, null));        
+        if (currentDocumentation != null) {
+            final Action action = currentDocumentation.getGotoSourceAction();
+            if (action != null) {
+                action.actionPerformed(new ActionEvent(currentDocumentation, 0, null));
+            }
+        }
     }
 
     /** Attempt to find the editor keystroke for the given editor action. */

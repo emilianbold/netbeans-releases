@@ -43,14 +43,15 @@ package org.netbeans.modules.cnd.remote.actions;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileView;
 import org.netbeans.api.project.Project;
@@ -65,7 +66,7 @@ import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -254,6 +255,7 @@ public class RemoteOpenHelper {
                                 NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenProjectButtonText"),
                                 JFileChooser.DIRECTORIES_ONLY, null, homeDirCallable, true);
                         fileChooser.setFileView(new ProjectSelectionFileView(fileChooser));
+                        fileChooser.setMultiSelectionEnabled(true);
                         int ret = fileChooser.showOpenDialog(WindowManager.getDefault().getMainWindow());
                         if (ret == JFileChooser.CANCEL_OPTION) {
                             return;
@@ -261,28 +263,39 @@ public class RemoteOpenHelper {
                         Runnable worker = new Runnable() {
                             @Override
                             public void run() {
-                                FileObject remoteProjectFO = FileSystemProvider.fileToFileObject(fileChooser.getSelectedFile());
-                                if (remoteProjectFO == null) {
+                                File[] files = fileChooser.getSelectedFiles();
+                                if (files == null || files.length == 0) {
                                     return;
                                 }
-                                FileObject parent = remoteProjectFO.getParent();
-                                if (parent != null) {
-                                    lastUsedDirs.put(env, parent.getPath());
-                                }
-                                if (!remoteProjectFO.isValid() || !remoteProjectFO.isFolder()) {
-                                    return;
-                                }
-                                Project project;
-                                try {
-                                    project = ProjectManager.getDefault().findProject(remoteProjectFO);
-                                    if (project != null) {
-                                        OpenProjects.getDefault().open(new Project[]{project}, false, true);
+                                FileObject parent = null;
+                                List<Project> projects = new ArrayList<>(files.length);
+                                for (File file : files) {
+                                    FileObject remoteProjectFO = FileSystemProvider.fileToFileObject(file);
+                                    if (remoteProjectFO == null) {
+                                        continue;
                                     }
-                                } catch (IOException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                } catch (IllegalArgumentException ex) {
-                                    Exceptions.printStackTrace(ex);
+                                    if (parent == null) {
+                                        parent = remoteProjectFO.getParent();
+                                        if (parent != null) {
+                                            lastUsedDirs.put(env, parent.getPath());
+                                        }
+                                    }
+                                    if (!remoteProjectFO.isValid() || !remoteProjectFO.isFolder()) {
+                                        continue;
+                                    }
+                                    try {
+                                        Project project = ProjectManager.getDefault().findProject(remoteProjectFO);
+                                        if (project != null) {
+                                            projects.add(project);
+                                        }
+                                    } catch (IOException ex) {
+                                        StatusDisplayer.getDefault().setStatusText(ex.getLocalizedMessage());
+                                        ex.printStackTrace(System.err);
+                                    } catch (IllegalArgumentException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    }
                                 }
+                                OpenProjects.getDefault().open(projects.toArray(new Project[projects.size()]), false, true);
                             }
                         };
                         RP.post(worker);

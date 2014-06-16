@@ -83,17 +83,17 @@
 				<tocitem text="Using the Type Hierarchy Window" target="TypeView" />
 				<tocitem text="Using the Include Hierarchy Window" target="IncludeView" />
 			</tocitem>
-			<tocitem text="Using Remote Build Hosts for C/C++/Fortran Projects">
-				<tocitem text="Overview of C/C++ Remote Development" target="RemoteDevelopment" />
-				<tocitem text="Configuring C/C++ Remote Build Hosts" target="RemoteDevelopmentConfigureHost" />
-				<tocitem text="Setting Remote Host Properties" target="RemoteDevelopmentManageHosts" />
-				<tocitem text="C/C++ Remote Development Modes" target="RemoteModes" />
-				<tocitem text="Sharing Files With Remote Build Hosts" target="RemoteDevelopmentFileSharing" />
-				<tocitem text="Setting Up C/C++ Projects for Remote Development" target="RemoteDevelopmentProjects" />
-				<tocitem text="Opening a Terminal Window for a Build Host" target="RemoteDevelopmentTerminal" />
-				<tocitem text="Managing Build Hosts" target="RemoteDevelopmentBrowsing" />
-				<tocitem text="Working with Remote Build Hosts Using the Toolbar" target="RemoteDevelopmentToolbar" />
-			</tocitem>
+                 </tocitem>
+                <tocitem text="Using Remote Development for C/C++/Fortran Projects">
+			<tocitem text="Overview of C/C++ Remote Development" target="RemoteDevelopment" />
+			<tocitem text="Configuring C/C++ Remote Build Hosts" target="RemoteDevelopmentConfigureHost" />
+			<tocitem text="Setting Remote Host Properties" target="RemoteDevelopmentManageHosts" />
+			<tocitem text="C/C++ Remote Development Modes" target="RemoteModes" />
+			<tocitem text="Sharing Files With Remote Build Hosts" target="RemoteDevelopmentFileSharing" />
+			<tocitem text="Setting Up C/C++ Projects for Remote Development" target="RemoteDevelopmentProjects" />
+			<tocitem text="Opening a Terminal Window for a Build Host" target="RemoteDevelopmentTerminal" />
+			<tocitem text="Managing Build Hosts" target="RemoteDevelopmentBrowsing" />
+			<tocitem text="Working with Remote Build Hosts Using the Toolbar" target="RemoteDevelopmentToolbar" />
 		</tocitem>
 		<tocitem text="Testing C/C++ Projects">
 			<tocitem text="About C and C++ Unit Tests" target="c_unit_about" />

@@ -947,7 +947,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                         true,
                         new OffsetRange(node.getStartOffset(), node.getEndOffset()),
                         VariableNameImpl.toOffsetRange(variable),
-                        CodeUtils.extractUnqualifiedTypeName(node));
+                        CodeUtils.extractQualifiedName(node.getClassName()));
                 varNameImpl.addElement(varAssignment);
             }
         }

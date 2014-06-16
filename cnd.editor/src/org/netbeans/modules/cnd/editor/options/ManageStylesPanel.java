@@ -251,8 +251,13 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         int maxId = 0;
         try {
             for (String key : CodeStylePreferencesProvider.INSTANCE.forDocument(null, MIMENames.C_MIME_TYPE).node(EditorOptions.CODE_STYLE_NODE).keys()) {// NOI18N
-                if (key.endsWith("_Style_Name") && key.startsWith(prefix+"_")) { // NOI18N
-                    String v = key.substring(6, key.length() - 11);
+                int start = key.lastIndexOf("_Style_Name"); // NOI18N
+                if (start <= 0) {
+                    continue;
+                }
+                key = key.substring(0, start);
+                if (key.startsWith(prefix+"_")) { // NOI18N
+                    String v = key.substring(prefix.length()+1);
                     int n = 0;
                     try {
                         n = Integer.parseInt(v);

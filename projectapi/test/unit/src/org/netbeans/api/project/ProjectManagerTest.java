@@ -222,6 +222,31 @@ public class ProjectManagerTest extends NbTestCase {
         }
     }
     
+    public void testIsProject() throws Exception {
+        assertTrue("Should have recognized goodproject", pm.isProject(goodproject));
+        
+        assertTrue("Should have recognized badproject", pm.isProject(badproject));
+        
+        assertFalse("Should not have been able to load mysteryproject", pm.isProject(mysteryproject));
+    }
+    
+    public void testIsProject2() throws Exception {
+        ProjectManager.Result r = pm.isProject2(goodproject);
+        assertNotNull("Should have recognized goodproject", r);
+        assertEquals(goodproject.getName(), r.getDisplayName());
+        assertEquals(TestUtil.TEST_PROJECT_ICON, r.getIcon());
+        assertEquals(TestUtil.TEST_PROJECT_TYPE, r.getProjectType());
+        
+        ProjectManager.Result r2 = pm.isProject2(badproject);
+        assertNotNull("Should have recognized badproject", r2);
+        assertNull("Should not have a project name for badproject", r2.getDisplayName());
+        assertEquals(TestUtil.TEST_PROJECT_ICON, r2.getIcon());
+        assertNull("Should not have a project type for badproject", r2.getProjectType());
+        
+        ProjectManager.Result r3 = pm.isProject2(mysteryproject);
+        assertNull("Should not have been able to load mysteryproject", r3);
+    }
+    
     public void testModify() throws Exception {
         Project p1 = pm.findProject(goodproject);
         Project p2 = pm.findProject(goodproject2);

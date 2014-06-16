@@ -217,7 +217,10 @@ implements LookupListener, FlavorListener, AWTEventListener
                 long curr = System.currentTimeMillis();
                 int waitTime = Integer.getInteger("sun.awt.datatransfer.timeout", 1000); // NOI18N
                 if (waitTime > 0 && !Boolean.TRUE.equals(FIRING.get())) {
-                    scheduleGetFromSystemClipboard(false).waitFinished (waitTime);
+                    boolean ok = scheduleGetFromSystemClipboard(false).waitFinished (waitTime);
+                    if (!ok) {
+                        log.log(Level.FINE, "Time out waiting for sync with system clipboard for {0} ms", waitTime);
+                    }
                 }
                 prev = super.getContents (requestor);
             } else {

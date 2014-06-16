@@ -82,6 +82,14 @@ public interface JsTestingProviderImplementation {
     boolean isEnabled(@NonNull Project project);
 
     /**
+     * Checks whether this JS testing provider supports code coverage.
+     * @param project target project
+     * @return {@code true} if this provider supports code coverage, {@code false} otherwise
+     * @since 1.58
+     */
+    boolean isCoverageSupported(@NonNull Project project);
+
+    /**
      * Run tests for the given {@link TestRunInfo info}.
      * <p>
      * This method is always called in a background thread.

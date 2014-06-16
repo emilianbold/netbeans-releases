@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
  * @author Vladimir Voskresensky
  */
 @ActionID(id = "RemoteTerminalAction", category = "Window")
-@ActionRegistration(iconInMenu = true, displayName = "#CTL_RemoteTerminalAction", iconBase = "org/netbeans/modules/dlight/terminal/action/remote_term.png")
+@ActionRegistration(iconInMenu = true, displayName = "#RemoteTerminalShortDescr", iconBase = "org/netbeans/modules/dlight/terminal/action/remote_term.png")
 @ActionReference(path = TerminalAction.TERMINAL_ACTIONS_PATH, name = "org-netbeans-modules-dlight-terminal-action-RemoteTerminalAction", position = 200)
 public final class RemoteTerminalAction extends TerminalAction {
 

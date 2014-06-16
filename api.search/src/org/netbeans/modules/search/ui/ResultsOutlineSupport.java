@@ -60,6 +60,8 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
@@ -173,6 +175,8 @@ public class ResultsOutlineSupport {
         FontMetrics fm = outlineView.getOutline().getFontMetrics(font);
         outlineView.getOutline().setRowHeight(
                 Math.max(16, fm.getHeight()) + VERTICAL_ROW_SPACE);
+        outlineView.setTreeHorizontalScrollBarPolicy(
+                OutlineView.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         setTooltipHidingBehavior();
     }
 
@@ -330,7 +334,7 @@ public class ResultsOutlineSupport {
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
     }
 
-    public void update() {
+    public synchronized void update() {
         resultsNode.update();
     }
 
@@ -472,12 +476,22 @@ public class ResultsOutlineSupport {
         }
         MatchingObjectNode mon =
                 new MatchingObjectNode(delegate, children, key, replacing);
-        synchronized (this) {
-            if (!closed) {
-                matchingObjectNodes.add(mon);
-            }
+
+        assert warnIfNotSynchronized();
+        if (!closed) {
+            matchingObjectNodes.add(mon);
         }
         return mon;
+    }
+
+    private boolean warnIfNotSynchronized() {
+        if (!Thread.holdsLock(this)) {
+            Logger.getLogger(ResultsOutlineSupport.class.getName()).log(
+                    Level.WARNING,
+                    "Thread does not hold lock ResultsOutlineSupport", //NOI18N
+                    new Exception());
+        }
+        return true;
     }
 
     public synchronized void addMatchingObject(MatchingObject mo) {
@@ -825,11 +839,11 @@ public class ResultsOutlineSupport {
         }
     }
 
-    public void setFolderTreeMode() {
+    public synchronized void setFolderTreeMode() {
         resultsNode.setFolderTreeMode();
     }
 
-    public void setFlatMode() {
+    public synchronized void setFlatMode() {
         resultsNode.setFlatMode();
     }
 

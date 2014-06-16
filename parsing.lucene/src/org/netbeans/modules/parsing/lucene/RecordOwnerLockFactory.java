@@ -42,131 +42,147 @@
 package org.netbeans.modules.parsing.lucene;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Queue;
 import org.apache.lucene.store.Lock;
-import org.apache.lucene.store.NativeFSLockFactory;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NonNull;
-import org.openide.util.Parameters;
+import org.apache.lucene.store.LockFactory;
 
 /**
  *
  * @author Tomas Zezula
  */
-class RecordOwnerLockFactory extends NativeFSLockFactory {
-    
-    private final Set</*@GuardedBy("this")*/RecordOwnerLock> locked = Collections.newSetFromMap(new IdentityHashMap<RecordOwnerLock, Boolean>());
-    //@GuardedBy("this")
-    private Thread owner;
-    //@GuardedBy("this")
-    private Exception caller;
+//@ThreadSafe
+class RecordOwnerLockFactory extends LockFactory {
+
+    private final Map<String,/*@GuardedBy("locks")*/RecordOwnerLock> locks =
+        new HashMap<>();
 
     RecordOwnerLockFactory() throws IOException {
         super();
     }
-    
-    @CheckForNull
-    Thread getOwner() {
-        return owner;
+
+    @Override
+    public Lock makeLock(String lockName) {
+        synchronized (locks) {
+            RecordOwnerLock res = locks.get(lockName);
+            if (res == null) {
+                res = new RecordOwnerLock();
+                locks.put(lockName, res);
+            }
+            return res;
+        }
     }
 
-    @CheckForNull
-    Exception getCaller() {
-        return caller;
+    @Override
+    public void clearLock(String lockName) throws IOException {
+        synchronized (locks) {
+            final RecordOwnerLock lock = locks.remove(lockName);
+            if (lock != null) {
+                lock.release();
+            }
+        }
     }
 
-    /**
-     * Force freeing of lock file.
-     * Lucene IndexWriter.closeInternal does not free lock file when exception
-     * happens in it. This method tries to do the best to do free it.
-     * @throws IOException if lock(s) cannot be freed.
-     */
-    synchronized void forceRemoveLocks() throws IOException {
-        final Collection<? extends RecordOwnerLock> safeIt = new ArrayList<RecordOwnerLock>(locked);
-        Throwable cause = null;
-        for (RecordOwnerLock l : safeIt) {
-            try {
-                l.release();
-            } catch (Throwable t) {
-                if (t instanceof ThreadDeath) {
-                    throw (ThreadDeath) t;
-                } else if (cause == null) {
-                    cause = t;
+    boolean hasLocks() {
+        synchronized (locks) {
+            boolean res = false;
+            for (RecordOwnerLock lock : locks.values()) {
+                res|=lock.isLocked();
+            }
+            return res;
+        }
+    }
+
+    Collection<? extends Lock> forceClearLocks() {
+        synchronized (locks) {
+            final Queue<RecordOwnerLock> locked = new ArrayDeque<>();
+            for (Iterator<RecordOwnerLock> it = locks.values().iterator();
+                it.hasNext();) {
+                RecordOwnerLock lock = it.next();
+                if (lock.isLocked()) {
+                    it.remove();
+                    locked.offer(lock);
+                }
+            }
+            return locked;
+        }
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(getClass().getSimpleName());
+        sb.append('['); //NOI18N
+        synchronized (locks) {
+            boolean first = true;
+            for (Map.Entry<String,RecordOwnerLock> e : locks.entrySet()) {
+                if (!first) {
+                    sb.append(','); //NOI18N
+                } else {
+                    first = false;
+                }
+                sb.append("name: ").append(e.getKey()).append("->").append(e.getValue());   //NOI18N
+            }
+        }
+        sb.append(']'); //NOI18N
+        return sb.toString();
+    }
+
+
+    private final class RecordOwnerLock extends Lock {
+
+        //@GuardedBy("locks")
+        private Thread owner;
+        //@GuardedBy("locks")
+        private Exception caller;
+
+        private RecordOwnerLock() {
+        }
+
+        @Override
+        public boolean obtain() {
+            synchronized (RecordOwnerLockFactory.this.locks) {
+                if (this.owner == null) {
+                    this.owner = Thread.currentThread();
+                    this.caller = new Exception();
+                    return true;
+                } else {
+                    return false;
                 }
             }
         }
-        if (cause != null) {
-            throw new IOException(cause);
-        }
-    }
-    
-    
-    @Override
-    public Lock makeLock(String lockName) {
-        return new RecordOwnerLock(super.makeLock(lockName));
-    }
-    
-    @Override
-    public void clearLock(String lockName) throws IOException {
-        super.clearLock(lockName);
-        synchronized (this) {
-            owner = null;
-            caller = null;
-        }
-    }
-
-
-    private synchronized void recordOwner(
-        @NonNull final Thread t,
-        @NonNull final RecordOwnerLock l) {
-        Parameters.notNull("t", t); //NOI18N
-        Parameters.notNull("l", l); //NOI18N
-        if (owner != t) {
-            owner = t;
-            caller = new Exception();
-        }
-        locked.add(l);
-    }
-
-    private synchronized void clearOwner(
-        @NonNull final RecordOwnerLock l) {
-        Parameters.notNull("l", l); //NOI18N
-        locked.remove(l);
-        owner = null;
-        caller = null;
-    }
-    
-    private class RecordOwnerLock extends Lock {
-        
-        private final Lock delegate;
-        
-        private RecordOwnerLock(@NonNull final Lock delegate) {
-            assert delegate != null;
-            this.delegate = delegate;
-        }
 
         @Override
-        public boolean obtain() throws IOException {
-            final boolean result = delegate.obtain();
-            if (result) {
-                recordOwner(Thread.currentThread(), this);
+        public void release() {
+            synchronized (RecordOwnerLockFactory.this.locks) {
+                this.owner = null;
+                this.caller = null;
             }
-            return result;
         }
 
         @Override
-        public void release() throws IOException {
-            delegate.release();
-            clearOwner(this);
+        public boolean isLocked() {
+            synchronized (RecordOwnerLockFactory.this.locks) {
+                return this.owner != null;
+            }
         }
 
         @Override
-        public boolean isLocked() throws IOException {
-            return delegate.isLocked();
+        public String toString() {
+            synchronized (RecordOwnerLockFactory.this.locks) {
+                return String.format(
+                    "%s[owned by: %s(%d), created from: %s]",   //NOI18N
+                    this.getClass().getSimpleName(),
+                    owner,
+                    owner == null ? -1 : owner.getId(),
+                    caller == null ? Collections.emptySet() : Arrays.asList(caller.getStackTrace()));
+            }
         }
-    }    
+    }
 }

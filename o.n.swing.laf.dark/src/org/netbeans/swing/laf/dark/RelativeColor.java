@@ -51,6 +51,8 @@ package org.netbeans.swing.laf.dark;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -191,7 +193,15 @@ public class RelativeColor implements UIDefaults.LazyValue {
             return value;
         }
         Color actual = getActualColor();
+        if( null == actual ) {
+            Logger.getLogger(RelativeColor.class.getName()).log(Level.INFO, "'actual' color not available");
+            return Color.gray;
+        }
         Color base = getBaseColor();
+        if( null == base ) {
+            Logger.getLogger(RelativeColor.class.getName()).log(Level.INFO, "'base' color not available");
+            return Color.gray;
+        }
         if (actual.equals(base)) {
             value = getTargetColor();
         } else {

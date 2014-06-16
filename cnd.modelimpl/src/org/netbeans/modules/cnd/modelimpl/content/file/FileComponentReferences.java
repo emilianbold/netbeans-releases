@@ -95,6 +95,16 @@ public class FileComponentReferences extends FileComponent implements Persistent
     private static final FileComponentReferences EMPTY = new FileComponentReferences() {
 
         @Override
+        public boolean addReference(CsmReference ref, CsmObject referencedObject) {
+            return false;
+        }
+
+        @Override
+        public boolean addResolvedReference(CsmReference ref, CsmObject cls) {
+            return false;
+        }
+
+        @Override
         void put() {
         }
     };

@@ -121,4 +121,75 @@ public class FileModelCpp11Test extends TraceModelTestBase {
         // Bug 242729 - Some c++11 features not recognized by code assistance engine
         performTest("bug242729.cpp");
     }    
+    
+    public void test243514() throws Exception {
+        // Bug 243514 - inaccuracy tests (clang): unexpected token 'auto'
+        // Bug 243550 - inaccuracy tests (clang): variadic template and auto 
+        performTest("bug243514.cpp");
+    }        
+    
+    public void testBug235968() throws Exception {
+        // Bug 235968 - [74cat] Unexpected token 'virtual' in class destructor.
+        performTest("bug235968.cpp");
+    }        
+    
+    public void testBug243513() throws Exception {
+        // Bug 243513 - inaccuracy tests (clang): trailing return types
+        performTest("bug243513.cpp");
+    }            
+    
+    public void testBug243515() throws Exception {
+        // Bug 243515 - inaccuracy tests (clang): C++11 ref-qualifiers
+        performTest("bug243515.cpp");
+    }
+    
+    public void testBug243527() throws Exception {
+        // Bug 243527 - inaccuracy tests (clang): complex test with C++11 ref-qualifiers
+        performTest("bug243527.cpp");
+    }    
+    
+    public void testBug243518() throws Exception {
+        // Bug 243518 - inaccuracy tests (clang): function with spec returning function with spec
+        performTest("bug243518.cpp");
+    }    
+    
+    public void testBug243523() throws Exception {
+        // Bug 243523 - inaccuracy tests (clang): C++11 ref-qualifiers as a arguments 
+        performTest("bug243523.cpp");
+    }    
+    
+    public void testBug243524() throws Exception {
+        // Bug 243524 - inaccuracy tests (clang): lambda and throw
+        performTest("bug243524.cpp");
+    }        
+    
+    public void testBug243528() throws Exception {
+        // Bug 243528 - inaccuracy tests (clang): constructor in template
+        performTest("bug243528.cpp");
+    }            
+    
+    public void testBug243522() throws Exception {
+        // Bug 243522 - inaccuracy tests (clang): alignas
+        performTest("bug243522.cpp");
+    }                
+    
+    public void testBug243510() throws Exception {
+        // Bug 243510 - inaccuracy tests (clang): constexpr keyword
+        performTest("bug243510.cpp");
+    }                    
+    
+    public void testBug243525() throws Exception {
+        // Bug 243525 - inaccuracy tests (clang): digraphs
+        performTest("bug243525.cpp");
+    }    
+    
+    public void testBug225045() throws Exception {
+        // Bug 225045 - C++11 "final" keyword improperly scoped
+        performTest("bug225045.cpp");
+    }    
+    
+    public void testBug243940() throws Exception {
+        // Bug 243940 - inaccuracy tests (cpp11): forward declaration of enumerations 
+        performTest("bug243940.cpp");
+    }    
 }

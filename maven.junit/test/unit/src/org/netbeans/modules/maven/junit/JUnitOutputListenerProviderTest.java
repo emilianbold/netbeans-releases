@@ -113,4 +113,14 @@ public class JUnitOutputListenerProviderTest {
         
     }
 
+    @Test
+    public void testIsFullJavaId() {
+        assertTrue("This is a java FQN", JUnitOutputListenerProvider.isFullJavaId("org.netbeans.modules.MyClass"));
+        assertTrue("This is a java FQN", JUnitOutputListenerProvider.isFullJavaId("o.n.m.MyClass"));
+        assertTrue("This is a java FQN", JUnitOutputListenerProvider.isFullJavaId("a.b.c"));
+        assertTrue("This is a java FQN", JUnitOutputListenerProvider.isFullJavaId("aa.aa.a"));
+        assertFalse("This is not a java FQN", JUnitOutputListenerProvider.isFullJavaId("org.netbeans.modules.MyClass."));
+        assertFalse("This is not a java FQN", JUnitOutputListenerProvider.isFullJavaId("a.b. c"));
+    }
+
 }

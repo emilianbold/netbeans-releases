@@ -189,8 +189,8 @@ public final class AttachPanel extends TopComponent {
     }
 
     private void initializeNew() {
+        lastHostChoice = ServerList.getDefaultRecord().getDisplayName();
         initRemoteHost();
-        lastHostChoice = null;
         lastFilter = (String) filterCombo.getSelectedItem();
     }
 
@@ -486,7 +486,7 @@ public final class AttachPanel extends TopComponent {
 
             @Override
             public void mouseClicked(MouseEvent evt) {
-                if (procTable.isEnabled()) {
+                if (procTable.isEnabled() && !isTableInfoShown()) {
                     procTableClicked(evt);
                 }
             }
@@ -497,7 +497,7 @@ public final class AttachPanel extends TopComponent {
         sm.addListSelectionListener(new ListSelectionListener() {
 
             public void valueChanged(ListSelectionEvent e) {
-                if (e.getValueIsAdjusting()) {
+                if (e.getValueIsAdjusting() || isTableInfoShown()) {
                     return;
                 }
                 checkValid();
@@ -633,6 +633,15 @@ public final class AttachPanel extends TopComponent {
         });
     }
     
+    // See bugs #244267, #193443
+    // There is one column in the table if "ps" task failed and returned null.
+    // In this case "tableInfo(String)" sets an error message as a table Vector
+    // instead of a list of processes. After that the table has 1 row and 1 column,
+    // which leads to the exception (in #244267).
+    private boolean isTableInfoShown() {
+        return procTable.getSelectedRow() == 0 && processModel.getColumnCount() <= 1;
+    }
+
     private void setUIEnabled(boolean st) {
         filterCombo.setEnabled(st);
         refreshButton.setEnabled(st);

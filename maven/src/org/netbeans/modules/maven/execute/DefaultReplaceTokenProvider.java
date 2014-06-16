@@ -269,15 +269,22 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
             URI[] roots = prj.getSourceRoots(testRoots);
             for (URI uri : roots) {
                 FileObject root = FileUtil.toFileObject(Utilities.toFile(uri));
-                for (FileObject candidate : candidates) {
-                    String relativePath = FileUtil.getRelativePath(root, candidate);
-                    if (relativePath != null) {
-                        if (testRoots) {
-                            relativePath = relativePath.replace(".java", "").replace('/', '.'); //NOI18N
-                        } else {
-                            relativePath = relativePath.replace(".java", "Test").replace('/', '.'); //NOI18N
+                // test if root isn't null - NbMavenProjectImpl.getSourceRoots() might return a bogus 
+                // non test uri in case there are only test source roots.
+                // NOTE that not sure if this is generaly the right place for the fix. Even though it is 
+                // MavenProject which returns those uris, not sure if e.g. that behaviour wasn't somewhere on the way overriden 
+                // by the nb maven module ...
+                if(root != null) {
+                    for (FileObject candidate : candidates) {
+                        String relativePath = FileUtil.getRelativePath(root, candidate);
+                        if (relativePath != null) {
+                            if (testRoots) {
+                                relativePath = relativePath.replace(".java", "").replace('/', '.'); //NOI18N
+                            } else {
+                                relativePath = relativePath.replace(".java", "Test").replace('/', '.'); //NOI18N
+                            }
+                            test.add(relativePath);
                         }
-                        test.add(relativePath);
                     }
                 }
             }

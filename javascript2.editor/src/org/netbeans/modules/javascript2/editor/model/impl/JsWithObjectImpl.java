@@ -9,7 +9,6 @@ import java.util.Set;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.JsWith;
@@ -65,21 +64,21 @@ import static org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl.fi
  */
 public class JsWithObjectImpl extends JsObjectImpl implements JsWith {
 
-    private Collection<TypeUsage> withTypes;
-    private JsWith outerWith;
-    private Collection<JsWith> innerWith = new ArrayList<JsWith>();
-    private OffsetRange expressionRange;
-    private Set<JsObject> assignedIn = new HashSet<JsObject>();
+    private final Collection<TypeUsage> withTypes;
+    private final JsWith outerWith;
+    private final Collection<JsWith> innerWith = new ArrayList<JsWith>();
+    private final OffsetRange expressionRange;
+    private final Set<JsObject> assignedIn = new HashSet<JsObject>();
     
     public JsWithObjectImpl(JsObject parent, String name, Collection<TypeUsage> withTypes,
-            OffsetRange offsetRange, OffsetRange expressionRange, String mimeType, String sourceLabel) {
+            OffsetRange offsetRange, OffsetRange expressionRange, JsWith outer, String mimeType, String sourceLabel) {
         super(parent, name, false, offsetRange, EnumSet.of(Modifier.PUBLIC), mimeType, sourceLabel);
         this.withTypes = withTypes;
 //        while (parent != null && !(parent instanceof JsWithObjectImpl)) {
 //            parent = parent.getParent();
 //        }
-        if (parent instanceof JsWith) {
-            outerWith = (JsWith)parent;
+        this.outerWith = outer;
+        if (this.outerWith != null) {
             ((JsWithObjectImpl)outerWith).addInnerWith(this);
         }
         this.expressionRange = expressionRange;

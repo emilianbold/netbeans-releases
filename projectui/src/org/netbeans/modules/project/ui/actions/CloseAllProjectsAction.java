@@ -72,20 +72,13 @@ public final class CloseAllProjectsAction implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         RP.post(new Runnable() { //#239718
             @Override
-            public void run() {
-                SwingUtilities.invokeLater(
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            OpenProjects manager = OpenProjects.getDefault();
-                            List<Project> openProjects = new ArrayList<Project>(Arrays.asList(manager.getOpenProjects()));
-                            if (!openProjects.isEmpty()) {
-                                Project[] projectsToBeClosed = openProjects.toArray(new Project[openProjects.size()]);
-                                manager.close(projectsToBeClosed);
-                            }
-                        }
-                    }
-                );
+            public void run() { 
+                OpenProjects manager = OpenProjects.getDefault();
+                List<Project> openProjects = new ArrayList<Project>(Arrays.asList(manager.getOpenProjects()));
+                if (!openProjects.isEmpty()) {
+                    Project[] projectsToBeClosed = openProjects.toArray(new Project[openProjects.size()]);
+                    manager.close(projectsToBeClosed);
+                }
             }
         });
     }

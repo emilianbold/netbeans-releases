@@ -43,14 +43,20 @@
 package org.netbeans.modules.javascript.karma.ui.customizer;
 
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -63,17 +69,22 @@ import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferencesValidator;
 import org.netbeans.modules.javascript.karma.util.KarmaUtils;
 import org.netbeans.modules.javascript.karma.util.ValidationResult;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
+import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 public class CustomizerKarma extends JPanel {
 
     private final ProjectCustomizer.Category category;
     private final Project project;
+    private final BrowserUISupport.BrowserComboBoxModel browserModel;
 
 
     public CustomizerKarma(ProjectCustomizer.Category category, Project project) {
@@ -82,6 +93,8 @@ public class CustomizerKarma extends JPanel {
 
         this.category = category;
         this.project = project;
+
+        browserModel = BrowserUISupport.createBrowserModel(KarmaPreferences.getDebugBrowserId(project), KarmaUtils.getDebugBrowsers());
 
         initComponents();
         init();
@@ -92,6 +105,11 @@ public class CustomizerKarma extends JPanel {
         karmaTextField.setText(KarmaPreferences.getKarma(project));
         configTextField.setText(KarmaPreferences.getConfig(project));
         autowatchCheckBox.setSelected(KarmaPreferences.isAutowatch(project));
+        debugCheckBox.setSelected(KarmaPreferences.isDebug(project));
+        debugBrowserIdComboBox.setModel(browserModel);
+        debugBrowserIdComboBox.setRenderer(BrowserUISupport.createBrowserRenderer());
+        // enabled
+        enableDebugBrowserComboBox(debugCheckBox.isSelected());
         // listeners
         addListeners();
         // initial validation
@@ -108,15 +126,19 @@ public class CustomizerKarma extends JPanel {
     private void addListeners() {
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         ItemListener defaultItemListener = new DefaultItemListener();
+        ActionListener defaultActionListener = new DefaultActionListener();
         karmaTextField.getDocument().addDocumentListener(defaultDocumentListener);
         configTextField.getDocument().addDocumentListener(defaultDocumentListener);
         autowatchCheckBox.addItemListener(defaultItemListener);
+        debugCheckBox.addItemListener(new DebugItemListener());
+        debugBrowserIdComboBox.addActionListener(defaultActionListener);
     }
 
     void validateData() {
         ValidationResult result = new KarmaPreferencesValidator()
                 .validateKarma(karmaTextField.getText())
                 .validateConfig(configTextField.getText())
+                .validateDebug(debugCheckBox.isSelected(), browserModel.getSelectedBrowserId())
                 .getResult();
         for (ValidationResult.Message message : result.getErrors()) {
             category.setErrorMessage(message.getMessage());
@@ -136,6 +158,12 @@ public class CustomizerKarma extends JPanel {
         KarmaPreferences.setKarma(project, karmaTextField.getText());
         KarmaPreferences.setConfig(project, configTextField.getText());
         KarmaPreferences.setAutowatch(project, autowatchCheckBox.isSelected());
+        KarmaPreferences.setDebug(project, debugCheckBox.isSelected());
+        KarmaPreferences.setDebugBrowserId(project, browserModel.getSelectedBrowserId());
+    }
+
+    void enableDebugBrowserComboBox(boolean enabled) {
+        debugBrowserIdComboBox.setEnabled(enabled);
     }
 
     private File getProjectDirectory() {
@@ -158,6 +186,14 @@ public class CustomizerKarma extends JPanel {
         configBrowseButton = new JButton();
         configSearchButton = new JButton();
         autowatchCheckBox = new JCheckBox();
+        debugCheckBox = new JCheckBox();
+        debugBrowserIdLabel = new JLabel();
+        debugBrowserIdComboBox = new JComboBox<WebBrowser>();
+        coverageLabel = new JLabel();
+        coverageInfoLabel = new JLabel();
+        coverageLearnMoreLabel = new JLabel();
+        coverageIstanbulInfoLabel = new JLabel();
+        coverageConfigLabel = new JLabel();
 
         karmaLabel.setLabelFor(karmaTextField);
         Mnemonics.setLocalizedText(karmaLabel, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.karmaLabel.text")); // NOI18N
@@ -199,6 +235,29 @@ public class CustomizerKarma extends JPanel {
 
         Mnemonics.setLocalizedText(autowatchCheckBox, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.autowatchCheckBox.text")); // NOI18N
 
+        Mnemonics.setLocalizedText(debugCheckBox, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.debugCheckBox.text")); // NOI18N
+
+        debugBrowserIdLabel.setLabelFor(debugBrowserIdComboBox);
+        Mnemonics.setLocalizedText(debugBrowserIdLabel, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.debugBrowserIdLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(coverageLabel, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.coverageLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(coverageInfoLabel, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.coverageInfoLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(coverageLearnMoreLabel, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.coverageLearnMoreLabel.text")); // NOI18N
+        coverageLearnMoreLabel.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
+                coverageLearnMoreLabelMouseEntered(evt);
+            }
+            public void mousePressed(MouseEvent evt) {
+                coverageLearnMoreLabelMousePressed(evt);
+            }
+        });
+
+        Mnemonics.setLocalizedText(coverageIstanbulInfoLabel, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.coverageIstanbulInfoLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(coverageConfigLabel, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.coverageConfigLabel.text")); // NOI18N
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -210,7 +269,7 @@ public class CustomizerKarma extends JPanel {
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(karmaTextField, GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)
+                        .addComponent(karmaTextField, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(karmaBrowseButton)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -222,8 +281,25 @@ public class CustomizerKarma extends JPanel {
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(configSearchButton))))
             .addGroup(layout.createSequentialGroup()
-                .addComponent(autowatchCheckBox)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(autowatchCheckBox)
+                    .addComponent(debugCheckBox)
+                    .addComponent(coverageLabel))
                 .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(debugBrowserIdLabel)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(debugBrowserIdComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(coverageInfoLabel)
+                        .addGap(18, 18, 18)
+                        .addComponent(coverageLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .addComponent(coverageIstanbulInfoLabel)
+                    .addComponent(coverageConfigLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {configBrowseButton, karmaBrowseButton});
@@ -245,7 +321,23 @@ public class CustomizerKarma extends JPanel {
                     .addComponent(configBrowseButton)
                     .addComponent(configSearchButton))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(autowatchCheckBox))
+                .addComponent(autowatchCheckBox)
+                .addGap(18, 18, 18)
+                .addComponent(debugCheckBox)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(debugBrowserIdLabel)
+                    .addComponent(debugBrowserIdComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(coverageLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(coverageInfoLabel)
+                    .addComponent(coverageLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(coverageIstanbulInfoLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(coverageConfigLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -297,6 +389,19 @@ public class CustomizerKarma extends JPanel {
         StatusDisplayer.getDefault().setStatusText(Bundle.CustomizerKarma_config_none());
     }//GEN-LAST:event_configSearchButtonActionPerformed
 
+    private void coverageLearnMoreLabelMouseEntered(MouseEvent evt) {//GEN-FIRST:event_coverageLearnMoreLabelMouseEntered
+        evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_coverageLearnMoreLabelMouseEntered
+
+    private void coverageLearnMoreLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_coverageLearnMoreLabelMousePressed
+        try {
+            URL url = new URL("https://github.com/karma-runner/karma-coverage"); // NOI18N
+            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }//GEN-LAST:event_coverageLearnMoreLabelMousePressed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JCheckBox autowatchCheckBox;
@@ -304,6 +409,14 @@ public class CustomizerKarma extends JPanel {
     private JLabel configLabel;
     private JButton configSearchButton;
     private JTextField configTextField;
+    private JLabel coverageConfigLabel;
+    private JLabel coverageInfoLabel;
+    private JLabel coverageIstanbulInfoLabel;
+    private JLabel coverageLabel;
+    private JLabel coverageLearnMoreLabel;
+    private JComboBox<WebBrowser> debugBrowserIdComboBox;
+    private JLabel debugBrowserIdLabel;
+    private JCheckBox debugCheckBox;
     private JButton karmaBrowseButton;
     private JLabel karmaLabel;
     private JButton karmaSearchButton;
@@ -339,6 +452,25 @@ public class CustomizerKarma extends JPanel {
 
         @Override
         public void itemStateChanged(ItemEvent e) {
+            validateData();
+        }
+
+    }
+
+    private final class DefaultActionListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            validateData();
+        }
+
+    }
+
+    private final class DebugItemListener implements ItemListener {
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            enableDebugBrowserComboBox(e.getStateChange() == ItemEvent.SELECTED);
             validateData();
         }
 

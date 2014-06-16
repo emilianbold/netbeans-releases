@@ -55,12 +55,12 @@ import org.openide.util.NbBundle;
  */
 /*package*/ class OverrideAnnotation extends BaseAnnotation {
 
-    public OverrideAnnotation(StyledDocument document, CsmFunction decl, 
+    public OverrideAnnotation(StyledDocument document, CsmFunction decl, CsmVirtualInfoQuery.CsmOverrideInfo thisMethod,
             Collection<CsmVirtualInfoQuery.CsmOverrideInfo> baseDecls, 
             Collection<CsmVirtualInfoQuery.CsmOverrideInfo> descDecls,
             Collection<? extends CsmOffsetableDeclaration> baseTemplates, 
             Collection<? extends CsmOffsetableDeclaration> templateSpecializations) {
-        super(document, decl, baseDecls, descDecls, baseTemplates, templateSpecializations);
+        super(document, decl, thisMethod, baseDecls, descDecls, baseTemplates, templateSpecializations);
     }
 
     @Override

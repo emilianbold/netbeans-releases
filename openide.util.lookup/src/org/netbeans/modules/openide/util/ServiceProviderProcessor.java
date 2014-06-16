@@ -65,7 +65,7 @@ import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 import org.openide.util.lookup.implspi.AbstractServiceProviderProcessor;
 
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class ServiceProviderProcessor extends AbstractServiceProviderProcessor {
 
     public @Override Set<String> getSupportedAnnotationTypes() {

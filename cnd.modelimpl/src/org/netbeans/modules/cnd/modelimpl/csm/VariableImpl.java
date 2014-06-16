@@ -435,13 +435,18 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     }
 
     private void _setScope(CsmScope scope) {
-        // for variables declared in bodies scope is CsmCompoundStatement - it is not Identifiable
-        if ((scope instanceof CsmIdentifiable)) {
-            this.scopeUID = UIDCsmConverter.scopeToUID(scope);
-            assert scopeUID != null;
+        if (isScopePersistent()) {
+            // for variables declared in bodies scope is CsmCompoundStatement - it is not Identifiable
+            if ((scope instanceof CsmIdentifiable)) {
+                this.scopeUID = UIDCsmConverter.scopeToUID(scope);
+                assert scopeUID != null;
+            } else {
+                this.scopeRef = scope;
+            }
         } else {
+            this.scopeUID = null;
             this.scopeRef = scope;
-        }
+        }    
     }
 
     @Override
@@ -501,12 +506,24 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         output.writeByte(pack);
         PersistentUtils.writeExpression(initExpr, output);
         PersistentUtils.writeType(type, output);
+        if (isScopePersistent()) {
+            // could be null UID (i.e. parameter)
+            UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
+        }
+    }
 
-        // could be null UID (i.e. parameter)
-        UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
+    protected boolean isScopePersistent() {
+        return true;
     }
 
     public VariableImpl(RepositoryDataInput input) throws IOException {
+        this(input, null);
+        this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        // could be null UID (i.e. parameter)
+        this.scopeRef = null;
+    }
+    
+    protected VariableImpl(RepositoryDataInput input, CsmScope scope) throws IOException {
         super(input);
         this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.name != null;
@@ -515,12 +532,10 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         this._extern = (pack & 2) == 2;
         this.initExpr = (ExpressionBase) PersistentUtils.readExpression(input);
         this.type = PersistentUtils.readType(input);
-
-        this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
-        // could be null UID (i.e. parameter)
-        this.scopeRef = null;
+        this.scopeUID = null;
+        this.scopeRef = scope;
     }
-
+    
     @Override
     public String toString() {
         return (isExtern() ? "EXTERN " : "") + super.toString(); // NOI18N

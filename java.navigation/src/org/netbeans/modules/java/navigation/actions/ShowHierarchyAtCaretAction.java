@@ -70,9 +70,9 @@ id = "org.netbeans.modules.java.navigation.actions.ShowHierarchyAtCaretAction")
 public final class ShowHierarchyAtCaretAction extends BaseAction {
 
     public ShowHierarchyAtCaretAction() {
-        putValue(Action.NAME, Bundle.CTL_ShowHierarchyAtCaretAction());
-        putValue(SHORT_DESCRIPTION, getValue(NAME));
-        putValue(ExtKit.TRIMMED_TEXT,getValue(NAME));
+        putValue(Action.NAME, Bundle.CTL_ShowHierarchyAtCaretAction());        
+        putValue(SHORT_DESCRIPTION, "");
+        putValue(ExtKit.TRIMMED_TEXT, Bundle.CTL_ShowHierarchyAtCaretActionPopUp());
         putValue(BaseAction.POPUP_MENU_TEXT, Bundle.CTL_ShowHierarchyAtCaretActionPopUp());
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }

@@ -58,6 +58,7 @@ import java.util.logging.Logger;
 import java.util.zip.CRC32;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
@@ -308,7 +309,11 @@ final class Utilities {
         return rpBuildScript;
     }
     
-    protected static String getTargetOSForRP(String os, String arch, String abi, String vmName) {
+    protected static String getTargetOSForRP(
+            @NonNull final String os,
+            @NonNull final String arch,
+            @NullAllowed final String abi,
+            @NonNull final String vmName) {
         String targetOS;
         if (os.toLowerCase().contains("win")) { //NOI18N
             targetOS="win"; //NOI18N
@@ -323,7 +328,7 @@ final class Utilities {
             targetOS="linux"; //NOI18N
             if (arch.toLowerCase().contains("arm")) { //NOI18N
                 targetOS+="arm"; //NOI18N
-                if (abi.toLowerCase().contains("abihf")) { //NOI18N
+                if (abi != null && abi.toLowerCase().contains("abihf")) { //NOI18N
                     targetOS+="vfphflt"; //NOI18N
                 }
                 targetOS += "-15"; //NOI18N

@@ -44,16 +44,29 @@
 
 package org.netbeans.modules.j2me.project.ui.customizer;
 
+import java.awt.CardLayout;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
-import javax.swing.UIManager;
+import javax.swing.JRadioButton;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import javax.swing.text.Document;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2me.project.J2MEProjectUtils;
+import org.netbeans.modules.j2me.project.ui.LibletListCellRenderer;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.java.api.common.project.ui.LogicalViewProvider2;
@@ -198,11 +211,114 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
         } else {
             librariesLocation.setText(uiProperties.getProject().getHelper().getLibrariesLocation());
         }
-        
+
         //TODO: remove unused tabs completely from this class
         jTabbedPane1.remove(jPanelRun);
         jTabbedPane1.remove(jPanelCompileTests);
         jTabbedPane1.remove(jPanelRunTests);
+
+        //sync compile classpath libs and liblets from project properties
+        updateLiblets();
+        jComboBoxLiblet.setModel(uiProperties.LIBLETS_MODEL);
+        jComboBoxLiblet.setRenderer(new LibletListCellRenderer());
+        updateLibletFormValues();
+        jTextFieldLibletUrl.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                updateUrl();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                updateUrl();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                updateUrl();
+            }
+            
+            private void updateUrl() {
+                LibletInfo li = (LibletInfo) jComboBoxLiblet.getSelectedItem();
+                if (li != null) {
+                    li.setUrl(jTextFieldLibletUrl.getText());
+                }
+            }
+        });
+        
+        DocumentListener documentListener = new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                updateDocument(e.getDocument());
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                updateDocument(e.getDocument());
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                updateDocument(e.getDocument());
+            }
+            
+            private void updateDocument(Document doc) {
+                LibletInfo li = (LibletInfo) jComboBoxLiblet.getSelectedItem();
+                if (li == null) {
+                    return;
+                }
+                if (doc.equals(jTextFieldLibletNameValue.getDocument())) {
+                    li.setName(jTextFieldLibletNameValue.getText());
+                } else if (doc.equals(jTextFieldLibletVendorValue.getDocument())) {
+                    li.setVendor(jTextFieldLibletVendorValue.getText());
+                } else if (doc.equals(jTextFieldLibletVersionValue.getDocument())) {
+                    li.setVersion(jTextFieldLibletVersionValue.getText());
+                }
+                jComboBoxLiblet.repaint();
+            }
+        };
+        jTextFieldLibletNameValue.getDocument().addDocumentListener(documentListener);
+        jTextFieldLibletVendorValue.getDocument().addDocumentListener(documentListener);
+        jTextFieldLibletVersionValue.getDocument().addDocumentListener(documentListener);
+        
+        ChangeListener radioLevelListener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                JRadioButton button = (JRadioButton) e.getSource();
+                if (button.isSelected()) {
+                    LibletInfo li = (LibletInfo) jComboBoxLiblet.getSelectedItem();
+                    if (li != null) {
+                        li.setRequirement(LibletInfo.Requirement.valueOf(button.getActionCommand()));
+                    }
+                }
+            }
+        };
+        jRadioButtonOptional.addChangeListener(radioLevelListener);
+        jRadioButtonRequired.addChangeListener(radioLevelListener);
+        
+        ChangeListener radioTypeListener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                JRadioButton button = (JRadioButton) e.getSource();
+                if (button.isSelected()) {
+                    LibletInfo li = (LibletInfo) jComboBoxLiblet.getSelectedItem();
+                    if (li != null) {
+                        li.setType(LibletInfo.LibletType.valueOf(button.getActionCommand()));
+                        jTextFieldLibletVendorValue.setText(li.getType() != LibletInfo.LibletType.SERVICE ? li.getVendor() : "");
+                        jTextFieldLibletVersionValue.setText(li.getType() != LibletInfo.LibletType.SERVICE ? li.getVersion() : "");
+                        jTextFieldLibletVendorValue.setEnabled(li.getType() != LibletInfo.LibletType.LIBLET && li.getType() != LibletInfo.LibletType.SERVICE);
+                        jTextFieldLibletVersionValue.setEnabled(li.getType() != LibletInfo.LibletType.SERVICE);
+                        jComboBoxLiblet.repaint();
+                    }
+                }
+            }
+        };
+        jRadioButtonLiblet.addChangeListener(radioTypeListener);
+        jRadioButtonStandard.addChangeListener(radioTypeListener);
+        jRadioButtonService.addChangeListener(radioTypeListener);
+        jRadioButtonProprietary.addChangeListener(radioTypeListener);
     }
 
     /** split file name into folder and name */
@@ -304,18 +420,77 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
     
     
     public void intervalRemoved( ListDataEvent e ) {
-        testBroken(); 
+        testBroken();
+        updateLiblets();
     }
 
+    @Override
     public void intervalAdded( ListDataEvent e ) {
-        // NOP
+        updateLiblets();
     }
 
     public void contentsChanged( ListDataEvent e ) {
         // NOP
     }
-    
-    
+
+    private void updateLiblets() {
+        DefaultComboBoxModel<LibletInfo> liblets = uiProperties.LIBLETS_MODEL;
+        if (liblets == null) {
+            uiProperties.LIBLETS_MODEL = new DefaultComboBoxModel();
+            liblets = uiProperties.LIBLETS_MODEL;
+        }
+
+        LibletInfo li = null;
+        List<ClassPathSupport.Item> allLibs = ClassPathUiSupport.getList(uiProperties.JAVAC_CLASSPATH_MODEL);
+        for (ClassPathSupport.Item item : allLibs) {
+            if (item.getType() == ClassPathSupport.Item.TYPE_JAR) { //JAR file added as lib
+                boolean liblet = J2MEProjectUtils.isLibraryLiblet(item.getResolvedFile());
+                if (liblet) {
+                    li = LibletInfo.createLibletInfoForJar(item);
+                }
+            } else if (item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) { // Project added as lib
+                AntArtifact artifact = item.getArtifact();
+                if (artifact != null) {
+                    Project project = artifact.getProject();
+                    boolean liblet = J2MEProjectUtils.isLibraryLiblet(project);
+                    if (liblet) {
+                        li = LibletInfo.createLibletInfoForProject(item);
+                    }
+                }
+            }
+
+            if (li != null) {
+                if (liblets.getIndexOf(li) == -1) {
+                    liblets.addElement(li);
+                } else if (liblets.getIndexOf(li) != -1) {
+                    LibletInfo libletInfo = liblets.getElementAt(liblets.getIndexOf(li));
+                    if (libletInfo.getItem() == null) {
+                        libletInfo.setItem(li.getItem());
+                    }
+                }
+            }
+        }
+
+        //remove liblets that have been removed from comile classpath
+        List<LibletInfo> removed = new ArrayList<>();
+        for (int i = 0; i < liblets.getSize(); i++) {
+            LibletInfo lInfo = (LibletInfo) liblets.getElementAt(i);
+            if (!allLibs.contains(lInfo.getItem()) && lInfo.getType() == LibletInfo.LibletType.LIBLET) {
+                removed.add(lInfo);
+            }
+        }
+        for (LibletInfo lInfo : removed) {
+            liblets.removeElement(lInfo);
+        }
+        
+        //show or hide customizer for liblets
+        if (liblets.getSize() == 0) {
+            ((CardLayout)jPanelLibletsCards.getLayout()).show(jPanelLibletsCards, "panelNoLiblets");
+        } else {
+            ((CardLayout)jPanelLibletsCards.getLayout()).show(jPanelLibletsCards, "panelLibletSettings");
+        }
+    }
+
     private void showSubCategory (String name) {
         if (name.equals(COMPILE)) {
             jTabbedPane1.setSelectedIndex (0);
@@ -344,6 +519,8 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        buttonGroupLibletLevel = new javax.swing.ButtonGroup();
+        buttonGroupLibletType = new javax.swing.ButtonGroup();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanelCompile = new javax.swing.JPanel();
         librariesJLabel1 = new javax.swing.JLabel();
@@ -401,6 +578,36 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
         jButtonRemoveRT = new javax.swing.JButton();
         jButtonMoveUpRT = new javax.swing.JButton();
         jButtonMoveDownRT = new javax.swing.JButton();
+        jPanelLiblets = new javax.swing.JPanel();
+        labelLibletsNote = new javax.swing.JLabel();
+        jPanelLibletsCards = new javax.swing.JPanel();
+        jPanelLibletSettings = new javax.swing.JPanel();
+        jTextFieldLibletUrl = new javax.swing.JTextField();
+        jRadioButtonRequired = new javax.swing.JRadioButton();
+        jComboBoxLiblet = new javax.swing.JComboBox();
+        labelLibletVersion = new javax.swing.JLabel();
+        labelLibletName = new javax.swing.JLabel();
+        labelLibletLevel = new javax.swing.JLabel();
+        jRadioButtonOptional = new javax.swing.JRadioButton();
+        libletLabel = new javax.swing.JLabel();
+        labelLibletUrl = new javax.swing.JLabel();
+        labelLibletVendor = new javax.swing.JLabel();
+        labelLibletInfo = new javax.swing.JLabel();
+        buttonBrowseJad = new javax.swing.JButton();
+        labelLibletLocalJad = new javax.swing.JLabel();
+        labelLibletType = new javax.swing.JLabel();
+        jRadioButtonLiblet = new javax.swing.JRadioButton();
+        jRadioButtonStandard = new javax.swing.JRadioButton();
+        jRadioButtonService = new javax.swing.JRadioButton();
+        jRadioButtonProprietary = new javax.swing.JRadioButton();
+        buttonRemoveLiblet = new javax.swing.JButton();
+        buttonAddLiblet = new javax.swing.JButton();
+        jTextFieldLibletVersionValue = new javax.swing.JTextField();
+        jTextFieldLibletNameValue = new javax.swing.JTextField();
+        jTextFieldLibletVendorValue = new javax.swing.JTextField();
+        jPanelNoLiblets = new javax.swing.JPanel();
+        labelNoLiblets = new javax.swing.JLabel();
+        bAddFirstLiblet = new javax.swing.JButton();
         jCheckBoxBuildSubprojects = new javax.swing.JCheckBox();
         sharedLibrariesLabel = new javax.swing.JLabel();
         librariesLocation = new javax.swing.JTextField();
@@ -973,6 +1180,247 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(J2MELibrariesPanel.class, "LBL_CustomizeLibraries_RunTests_Tab"), jPanelRunTests); // NOI18N
 
+        labelLibletsNote.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/j2me/project/ui/resources/info.png"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(labelLibletsNote, java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/project/ui/customizer/Bundle").getString("TXT_CustomizeLibraries_labelLibletsNote"), new Object[] {})); // NOI18N
+
+        jPanelLibletsCards.setLayout(new java.awt.CardLayout());
+
+        buttonGroupLibletLevel.add(jRadioButtonRequired);
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButtonRequired, java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/project/ui/customizer/Bundle").getString("LBL_CustomizeLibraries_jRadioButtonRequired"), new Object[] {})); // NOI18N
+        jRadioButtonRequired.setActionCommand("REQUIRED");
+
+        jComboBoxLiblet.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jComboBoxLiblet.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboBoxLibletActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(labelLibletVersion, java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/project/ui/customizer/Bundle").getString("LBL_CustomizeLibraries_labelLibletVersion"), new Object[] {})); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(labelLibletName, java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/project/ui/customizer/Bundle").getString("LBL_CustomizeLibraries_labelLibletName"), new Object[] {})); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(labelLibletLevel, java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/project/ui/customizer/Bundle").getString("LBL_CustomizeLibraries_labelLibletLevel"), new Object[] {})); // NOI18N
+
+        buttonGroupLibletLevel.add(jRadioButtonOptional);
+        jRadioButtonOptional.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButtonOptional, java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/project/ui/customizer/Bundle").getString("LBL_CustomizeLibraries_jRadioButtonOptional"), new Object[] {})); // NOI18N
+        jRadioButtonOptional.setActionCommand("OPTIONAL");
+
+        org.openide.awt.Mnemonics.setLocalizedText(libletLabel, java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/project/ui/customizer/Bundle").getString("LBL_CustomizeLibraries_libletLabel"), new Object[] {})); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(labelLibletUrl, java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/project/ui/customizer/Bundle").getString("LBL_CustomizeLibraries_labelLibletUrl"), new Object[] {})); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(labelLibletVendor, java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/project/ui/customizer/Bundle").getString("LBL_CustomizeLibraries_labelLibletVendor"), new Object[] {})); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(labelLibletInfo, java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/project/ui/customizer/Bundle").getString("LBL_CustomizeLibraries_labelLibletInfo"), new Object[] {})); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(buttonBrowseJad, java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/project/ui/customizer/Bundle").getString("LBL_CustomizeLibraries_buttonBrowseJad"), new Object[] {})); // NOI18N
+        buttonBrowseJad.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonBrowseJadActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(labelLibletLocalJad, java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/project/ui/customizer/Bundle").getString("LBL_CustomizeLibraries_labelLibletLocalJad"), new Object[] {})); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(labelLibletType, "Type:");
+
+        buttonGroupLibletType.add(jRadioButtonLiblet);
+        jRadioButtonLiblet.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButtonLiblet, "liblet");
+        jRadioButtonLiblet.setActionCommand("LIBLET");
+
+        buttonGroupLibletType.add(jRadioButtonStandard);
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButtonStandard, "standard");
+        jRadioButtonStandard.setActionCommand("STANDARD");
+
+        buttonGroupLibletType.add(jRadioButtonService);
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButtonService, "service");
+        jRadioButtonService.setActionCommand("SERVICE");
+
+        buttonGroupLibletType.add(jRadioButtonProprietary);
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButtonProprietary, "proprietary");
+        jRadioButtonProprietary.setActionCommand("PROPRIETARY");
+
+        org.openide.awt.Mnemonics.setLocalizedText(buttonRemoveLiblet, "Remove...");
+        buttonRemoveLiblet.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonRemoveLibletActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(buttonAddLiblet, "Add...");
+        buttonAddLiblet.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonAddLibletActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanelLibletSettingsLayout = new javax.swing.GroupLayout(jPanelLibletSettings);
+        jPanelLibletSettings.setLayout(jPanelLibletSettingsLayout);
+        jPanelLibletSettingsLayout.setHorizontalGroup(
+            jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelLibletSettingsLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanelLibletSettingsLayout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addGroup(jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelLibletSettingsLayout.createSequentialGroup()
+                                .addGroup(jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(labelLibletName)
+                                    .addComponent(labelLibletVendor))
+                                .addGap(18, 18, 18))
+                            .addGroup(jPanelLibletSettingsLayout.createSequentialGroup()
+                                .addComponent(labelLibletVersion)
+                                .addGap(17, 17, 17)))
+                        .addGroup(jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jTextFieldLibletNameValue, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
+                            .addComponent(jTextFieldLibletVendorValue)
+                            .addComponent(jTextFieldLibletVersionValue))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(jPanelLibletSettingsLayout.createSequentialGroup()
+                        .addComponent(labelLibletInfo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanelLibletSettingsLayout.createSequentialGroup()
+                        .addGroup(jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(labelLibletUrl)
+                            .addComponent(libletLabel)
+                            .addComponent(labelLibletLevel)
+                            .addComponent(labelLibletType))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanelLibletSettingsLayout.createSequentialGroup()
+                                .addComponent(jTextFieldLibletUrl)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(buttonBrowseJad))
+                            .addGroup(jPanelLibletSettingsLayout.createSequentialGroup()
+                                .addGroup(jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanelLibletSettingsLayout.createSequentialGroup()
+                                        .addComponent(jComboBoxLiblet, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(buttonAddLiblet, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(jPanelLibletSettingsLayout.createSequentialGroup()
+                                        .addComponent(jRadioButtonOptional)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(jRadioButtonRequired))
+                                    .addGroup(jPanelLibletSettingsLayout.createSequentialGroup()
+                                        .addComponent(jRadioButtonLiblet)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(jRadioButtonStandard)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(jRadioButtonService)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(jRadioButtonProprietary)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(buttonRemoveLiblet))
+                            .addComponent(labelLibletLocalJad))
+                        .addContainerGap())))
+        );
+        jPanelLibletSettingsLayout.setVerticalGroup(
+            jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelLibletSettingsLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(libletLabel)
+                    .addComponent(jComboBoxLiblet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(buttonRemoveLiblet)
+                    .addComponent(buttonAddLiblet))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(labelLibletLevel)
+                    .addComponent(jRadioButtonOptional)
+                    .addComponent(jRadioButtonRequired))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(labelLibletType)
+                    .addComponent(jRadioButtonLiblet)
+                    .addComponent(jRadioButtonStandard)
+                    .addComponent(jRadioButtonService)
+                    .addComponent(jRadioButtonProprietary))
+                .addGap(18, 18, 18)
+                .addGroup(jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(labelLibletUrl)
+                    .addComponent(jTextFieldLibletUrl, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(buttonBrowseJad))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(labelLibletLocalJad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(labelLibletInfo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(labelLibletName)
+                    .addComponent(jTextFieldLibletNameValue, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(labelLibletVendor)
+                    .addComponent(jTextFieldLibletVendorValue, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanelLibletSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(labelLibletVersion)
+                    .addComponent(jTextFieldLibletVersionValue, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(42, Short.MAX_VALUE))
+        );
+
+        jComboBoxLiblet.getAccessibleContext().setAccessibleDescription(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/project/ui/customizer/Bundle").getString("ACSD_CustomizeLibraries_jComboBoxLiblet"), new Object[] {})); // NOI18N
+        buttonBrowseJad.getAccessibleContext().setAccessibleDescription(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/project/ui/customizer/Bundle").getString("ACSD_CustomizeLibraries_buttonBrowseJad"), new Object[] {})); // NOI18N
+
+        jPanelLibletsCards.add(jPanelLibletSettings, "panelLibletSettings");
+
+        org.openide.awt.Mnemonics.setLocalizedText(labelNoLiblets, java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/project/ui/customizer/Bundle").getString("LBL_CustomizeLibraries_labelNoLiblet"), new Object[] {})); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(bAddFirstLiblet, "Add...");
+        bAddFirstLiblet.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonAddLibletActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanelNoLibletsLayout = new javax.swing.GroupLayout(jPanelNoLiblets);
+        jPanelNoLiblets.setLayout(jPanelNoLibletsLayout);
+        jPanelNoLibletsLayout.setHorizontalGroup(
+            jPanelNoLibletsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelNoLibletsLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanelNoLibletsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(labelNoLiblets)
+                    .addComponent(bAddFirstLiblet))
+                .addContainerGap())
+        );
+        jPanelNoLibletsLayout.setVerticalGroup(
+            jPanelNoLibletsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelNoLibletsLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(labelNoLiblets)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(bAddFirstLiblet)
+                .addContainerGap(252, Short.MAX_VALUE))
+        );
+
+        jPanelLibletsCards.add(jPanelNoLiblets, "panelNoLiblets");
+
+        javax.swing.GroupLayout jPanelLibletsLayout = new javax.swing.GroupLayout(jPanelLiblets);
+        jPanelLiblets.setLayout(jPanelLibletsLayout);
+        jPanelLibletsLayout.setHorizontalGroup(
+            jPanelLibletsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanelLibletsCards, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(jPanelLibletsLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(labelLibletsNote)
+                .addContainerGap())
+        );
+        jPanelLibletsLayout.setVerticalGroup(
+            jPanelLibletsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelLibletsLayout.createSequentialGroup()
+                .addComponent(jPanelLibletsCards, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(labelLibletsNote, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        jTabbedPane1.addTab(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/project/ui/customizer/Bundle").getString("LBL_CustomizeLibraries_LibletsTab"), new Object[] {}), jPanelLiblets); // NOI18N
+
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxBuildSubprojects, org.openide.util.NbBundle.getMessage(J2MELibrariesPanel.class, "LBL_CustomizeLibraries_Build_Subprojects")); // NOI18N
 
         sharedLibrariesLabel.setLabelFor(librariesLocation);
@@ -994,11 +1442,11 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
             .addGroup(layout.createSequentialGroup()
                 .addComponent(sharedLibrariesLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(librariesLocation, javax.swing.GroupLayout.DEFAULT_SIZE, 587, Short.MAX_VALUE)
+                .addComponent(librariesLocation)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(librariesBrowse, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE))
-            .addComponent(jCheckBoxBuildSubprojects, javax.swing.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
-            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
+            .addComponent(jCheckBoxBuildSubprojects, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jTabbedPane1)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1009,7 +1457,7 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
                     .addComponent(librariesBrowse)
                     .addComponent(librariesLocation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jCheckBoxBuildSubprojects))
         );
@@ -1062,7 +1510,44 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
             }
         }
 }//GEN-LAST:event_librariesBrowseActionPerformed
-   
+
+    private void buttonAddLibletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAddLibletActionPerformed
+        int origSize = uiProperties.LIBLETS_MODEL.getSize();
+        uiProperties.LIBLETS_MODEL.addElement(new LibletInfo(LibletInfo.LibletType.STANDARD, "liblet-name", "liblet-vendor", "1.0", LibletInfo.Requirement.OPTIONAL, null)); //NOI18N
+        uiProperties.LIBLETS_MODEL.setSelectedItem(uiProperties.LIBLETS_MODEL.getElementAt(uiProperties.LIBLETS_MODEL.getSize() - 1));
+        if (origSize == 0 && uiProperties.LIBLETS_MODEL.getSize() != 0) {
+            ((CardLayout)jPanelLibletsCards.getLayout()).show(jPanelLibletsCards, "panelLibletSettings");
+        }
+    }//GEN-LAST:event_buttonAddLibletActionPerformed
+
+    private void buttonRemoveLibletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRemoveLibletActionPerformed
+        int origSize = uiProperties.LIBLETS_MODEL.getSize();
+        uiProperties.LIBLETS_MODEL.removeElement(uiProperties.LIBLETS_MODEL.getSelectedItem());
+        if (origSize != 0 && uiProperties.LIBLETS_MODEL.getSize() == 0) {
+            ((CardLayout)jPanelLibletsCards.getLayout()).show(jPanelLibletsCards, "panelNoLiblets");
+        }
+    }//GEN-LAST:event_buttonRemoveLibletActionPerformed
+
+    private void jComboBoxLibletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxLibletActionPerformed
+        updateLibletFormValues();
+    }//GEN-LAST:event_jComboBoxLibletActionPerformed
+
+    private void buttonBrowseJadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonBrowseJadActionPerformed
+        LibletInfo selected = (LibletInfo) jComboBoxLiblet.getSelectedItem();
+        if (selected != null) {
+            switch (selected.getItem().getType()) {
+                case ClassPathSupport.Item.TYPE_ARTIFACT:
+                LibletInfo li = LibletInfo.createLibletInfoForProject(selected.getItem());
+                jTextFieldLibletUrl.setText(li.getUrl());
+                break;
+                case ClassPathSupport.Item.TYPE_JAR:
+                LibletInfo liJar = LibletInfo.createLibletInfoForJar(selected.getItem());
+                jTextFieldLibletUrl.setText(liJar.getUrl());
+                break;
+            }
+        }
+    }//GEN-LAST:event_buttonBrowseJadActionPerformed
+
     private void updateJars(DefaultListModel model) {
         for (int i = 0; i < model.size(); i++) {
             ClassPathSupport.Item item = (ClassPathSupport.Item) model.get(i);
@@ -1075,8 +1560,13 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
         
     }
     
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton bAddFirstLiblet;
+    private javax.swing.JButton buttonAddLiblet;
+    private javax.swing.JButton buttonBrowseJad;
+    private javax.swing.ButtonGroup buttonGroupLibletLevel;
+    private javax.swing.ButtonGroup buttonGroupLibletType;
+    private javax.swing.JButton buttonRemoveLiblet;
     private javax.swing.JButton jButtonAddArtifactC;
     private javax.swing.JButton jButtonAddArtifactCT;
     private javax.swing.JButton jButtonAddArtifactP;
@@ -1113,6 +1603,7 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
     private javax.swing.JButton jButtonRemoveR;
     private javax.swing.JButton jButtonRemoveRT;
     private javax.swing.JCheckBox jCheckBoxBuildSubprojects;
+    private javax.swing.JComboBox jComboBoxLiblet;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JList jListCpC;
     private javax.swing.JList jListCpCT;
@@ -1122,9 +1613,34 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
     private javax.swing.JPanel jPanelCompile;
     private javax.swing.JPanel jPanelCompileProcessor;
     private javax.swing.JPanel jPanelCompileTests;
+    private javax.swing.JPanel jPanelLibletSettings;
+    private javax.swing.JPanel jPanelLiblets;
+    private javax.swing.JPanel jPanelLibletsCards;
+    private javax.swing.JPanel jPanelNoLiblets;
     private javax.swing.JPanel jPanelRun;
     private javax.swing.JPanel jPanelRunTests;
+    private javax.swing.JRadioButton jRadioButtonLiblet;
+    private javax.swing.JRadioButton jRadioButtonOptional;
+    private javax.swing.JRadioButton jRadioButtonProprietary;
+    private javax.swing.JRadioButton jRadioButtonRequired;
+    private javax.swing.JRadioButton jRadioButtonService;
+    private javax.swing.JRadioButton jRadioButtonStandard;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JTextField jTextFieldLibletNameValue;
+    private javax.swing.JTextField jTextFieldLibletUrl;
+    private javax.swing.JTextField jTextFieldLibletVendorValue;
+    private javax.swing.JTextField jTextFieldLibletVersionValue;
+    private javax.swing.JLabel labelLibletInfo;
+    private javax.swing.JLabel labelLibletLevel;
+    private javax.swing.JLabel labelLibletLocalJad;
+    private javax.swing.JLabel labelLibletName;
+    private javax.swing.JLabel labelLibletType;
+    private javax.swing.JLabel labelLibletUrl;
+    private javax.swing.JLabel labelLibletVendor;
+    private javax.swing.JLabel labelLibletVersion;
+    private javax.swing.JLabel labelLibletsNote;
+    private javax.swing.JLabel labelNoLiblets;
+    private javax.swing.JLabel libletLabel;
     private javax.swing.JButton librariesBrowse;
     private javax.swing.JLabel librariesJLabel1;
     private javax.swing.JLabel librariesJLabel2;
@@ -1139,6 +1655,40 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
     private javax.swing.JTextField librariesLocation;
     private javax.swing.JLabel sharedLibrariesLabel;
     // End of variables declaration//GEN-END:variables
-        
-        
+
+    private void updateLibletFormValues() {
+        LibletInfo selected = (LibletInfo) jComboBoxLiblet.getSelectedItem();
+        if (selected != null) {
+            jRadioButtonOptional.setSelected(jRadioButtonOptional.getActionCommand().equals(selected.getRequirement().name()));
+            jRadioButtonRequired.setSelected(jRadioButtonRequired.getActionCommand().equals(selected.getRequirement().name()));
+            if (selected.getType() == LibletInfo.LibletType.LIBLET) {
+                jTextFieldLibletUrl.setText(selected.getUrl());
+            } else {
+                jTextFieldLibletUrl.setText(null);
+            }
+            labelLibletUrl.setEnabled(selected.getType() == LibletInfo.LibletType.LIBLET);
+            jTextFieldLibletUrl.setEnabled(selected.getType() == LibletInfo.LibletType.LIBLET);
+            buttonBrowseJad.setEnabled(selected.getType() == LibletInfo.LibletType.LIBLET);
+            labelLibletLocalJad.setEnabled(selected.getType() == LibletInfo.LibletType.LIBLET);
+
+            jRadioButtonLiblet.setSelected(jRadioButtonLiblet.getActionCommand().equals(selected.getType().name()));
+            jRadioButtonStandard.setSelected(jRadioButtonStandard.getActionCommand().equals(selected.getType().name()));
+            jRadioButtonService.setSelected(jRadioButtonService.getActionCommand().equals(selected.getType().name()));
+            jRadioButtonProprietary.setSelected(jRadioButtonProprietary.getActionCommand().equals(selected.getType().name()));
+            jRadioButtonLiblet.setEnabled(selected.getType() == LibletInfo.LibletType.LIBLET);
+            jRadioButtonStandard.setEnabled(selected.getType() != LibletInfo.LibletType.LIBLET);
+            jRadioButtonService.setEnabled(selected.getType() != LibletInfo.LibletType.LIBLET);
+            jRadioButtonProprietary.setEnabled(selected.getType() != LibletInfo.LibletType.LIBLET);
+
+            buttonRemoveLiblet.setEnabled(selected.getType() != LibletInfo.LibletType.LIBLET);
+
+            jTextFieldLibletNameValue.setText(selected.getName());
+            jTextFieldLibletVendorValue.setText(selected.getType() != LibletInfo.LibletType.SERVICE ? selected.getVendor() : "");
+            jTextFieldLibletVersionValue.setText(selected.getType() != LibletInfo.LibletType.SERVICE ? selected.getVersion() : "");
+
+            jTextFieldLibletNameValue.setEnabled(selected.getType() != LibletInfo.LibletType.LIBLET);
+            jTextFieldLibletVendorValue.setEnabled(selected.getType() != LibletInfo.LibletType.LIBLET && selected.getType() != LibletInfo.LibletType.SERVICE);
+            jTextFieldLibletVersionValue.setEnabled(selected.getType() != LibletInfo.LibletType.SERVICE);
+        }
+    }
 }

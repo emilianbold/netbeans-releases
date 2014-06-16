@@ -102,9 +102,9 @@ public class ModelSupport implements PropertyChangeListener {
 
     private static final AtomicBoolean hasOpenedProjects = new AtomicBoolean(false);
     private static final ModelSupport instance = new ModelSupport();
-    /*package*/volatile ModelImpl theModel;
+    private volatile ModelImpl theModel;
     private final Set<Lookup.Provider> openedProjects = new HashSet<>();
-    final ModifiedObjectsChangeListener modifiedListener = new ModifiedObjectsChangeListener();
+    final ModifiedObjectsChangeListener modifiedListener = TraceFlags.USE_PARSER_API ? null : new ModifiedObjectsChangeListener();
     private SuspendableFileChangeListener fileChangeListener;
     private static final boolean TRACE_STARTUP = Boolean.getBoolean("cnd.modelsupport.startup.trace");// NOI18N
     private volatile boolean postponeParse = false;
@@ -115,7 +115,7 @@ public class ModelSupport implements PropertyChangeListener {
                     public void run() {
                         openProjectsIfNeeded();
                     }
-                }); 
+                });
 
     private ModelSupport() {
     }
@@ -135,16 +135,25 @@ public class ModelSupport implements PropertyChangeListener {
     public void setModel(ModelImpl model) {
         this.theModel = model;
         synchronized (this) {
-            if (fileChangeListener != null) {
-                CndFileSystemProvider.removeFileChangeListener(fileChangeListener);
-                fileChangeListener = null;
-            }
-            if (model != null && !CndTraceFlags.USE_INDEXING_API) {
-                fileChangeListener = new SuspendableFileChangeListener(new ExternalUpdateListener(this));
-                CndFileSystemProvider.addFileChangeListener(fileChangeListener);
+            if (TraceFlags.MERGE_EVENTS) {
+                if (model == null) {
+                    CsmEventDispatcher.getInstance().shutdown();
+                } else {
+                    CsmEventDispatcher.getInstance().startup();
+                }
+            } else {
+                if (fileChangeListener != null) {
+                    CndFileSystemProvider.removeFileChangeListener(fileChangeListener);
+                    fileChangeListener = null;
+                }
+                if (model != null && !CndTraceFlags.USE_INDEXING_API) {
+                    fileChangeListener = new SuspendableFileChangeListener(new ExternalUpdateListener(this));
+                    CndFileSystemProvider.addFileChangeListener(fileChangeListener);
+                }
             }
         }
     }
+
     /** copy pasted version from CndUtils to prevent load of CndUtils during startup */
     private static boolean getBoolean(String name, boolean result) {
         String text = System.getProperty(name);
@@ -167,8 +176,10 @@ public class ModelSupport implements PropertyChangeListener {
     }
     
     public void startup() {
-        modifiedListener.clean();
-        DataObject.getRegistry().addChangeListener(modifiedListener);
+        if (!TraceFlags.USE_PARSER_API) {
+            modifiedListener.clean();
+            DataObject.getRegistry().addChangeListener(modifiedListener);
+        }
 
         if (!isStandalone()) {
             openedProjects.clear();
@@ -209,8 +220,10 @@ public class ModelSupport implements PropertyChangeListener {
     }
 
     public void shutdown() {
-        DataObject.getRegistry().removeChangeListener(modifiedListener);
-        modifiedListener.clean();
+        if (!TraceFlags.USE_PARSER_API) {
+            DataObject.getRegistry().removeChangeListener(modifiedListener);
+            modifiedListener.clean();
+        }
         ModelImpl model = theModel;
         if (model != null) {
             CsmCorePackageAccessor.get().notifyClosing(model);
@@ -544,7 +557,8 @@ public class ModelSupport implements PropertyChangeListener {
         public final long lastModified;
     }
 
-    class ModifiedObjectsChangeListener implements ChangeListener {
+    // remove as soon as TraceFlags.USE_PARSER_API becomes always true
+    private class ModifiedObjectsChangeListener implements ChangeListener {
 
         private final Map<DataObject, Collection<BufAndProj>> buffers = new HashMap<>();
 
@@ -728,20 +742,24 @@ public class ModelSupport implements PropertyChangeListener {
     }
 
     public void suspendDeleteEvents() {
-        if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-            ExternalUpdateListener.LOG.info("External updates: suspendDeleteEvents");
-        }        
-        if (fileChangeListener != null) {
-            fileChangeListener.suspendRemoves();
+        if (!TraceFlags.MERGE_EVENTS) {
+            if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
+                ExternalUpdateListener.LOG.info("External updates: suspendDeleteEvents");
+            }
+            if (fileChangeListener != null) {
+                fileChangeListener.suspendRemoves();
+            }
         }
     }
 
     public void resumeDeleteEvents() {
-        if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-            ExternalUpdateListener.LOG.info("External updates: resumeDeleteEvents");
-        }
-        if (fileChangeListener != null) {
-            fileChangeListener.resumeRemoves();
+        if (!TraceFlags.MERGE_EVENTS) {
+            if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
+                ExternalUpdateListener.LOG.info("External updates: resumeDeleteEvents");
+            }
+            if (fileChangeListener != null) {
+                fileChangeListener.resumeRemoves();
+            }
         }
     }
 }

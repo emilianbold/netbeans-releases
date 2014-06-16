@@ -51,6 +51,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2me.project.J2MEProject;
+import org.netbeans.modules.j2me.project.ui.customizer.J2MELibrariesPanel;
 import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
@@ -162,7 +163,7 @@ public class LibrariesNodeProvider implements NodeFactory {
                             LibrariesNode.createAddLibraryAction(prj.getReferenceHelper(), sources, null),
                             LibrariesNode.createAddFolderAction(prj.getHelper(), sources),
                             null,
-                            ProjectUISupport.createPreselectPropertiesAction(prj, "Libraries", null)). // NOI18N)
+                            ProjectUISupport.createPreselectPropertiesAction(prj, "Libraries", J2MELibrariesPanel.COMPILE)). // NOI18N)
                         build();
                 case TESTS:
                     return new LibrariesNode.Builder(
