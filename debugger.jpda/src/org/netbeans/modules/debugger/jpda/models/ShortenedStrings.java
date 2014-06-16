@@ -53,6 +53,8 @@ import com.sun.jdi.Type;
 import com.sun.jdi.Value;
 import java.io.IOException;
 import java.io.Reader;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -80,10 +82,10 @@ import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 public final class ShortenedStrings {
     
     private static final Map<String, StringInfo> infoStrings = new WeakHashMap<String, StringInfo>();
-    private static final Map<StringReference, String> stringsCache = new WeakHashMap<StringReference, String>();
+    private static final Map<StringReference, StringValueInfo> stringsCache = new WeakHashMap<StringReference, StringValueInfo>();
     private static final Set<StringReference> retrievingStrings = new HashSet<StringReference>();
 
-    private ShortenedStrings() {
+    static {
         DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_SESSIONS,
                                                                  new DebuggerManagerAdapter() {
 
@@ -105,6 +107,8 @@ public final class ShortenedStrings {
                                                                  });
     }
 
+    private ShortenedStrings() {}
+    
     public static StringInfo getShortenedInfo(String s) {
         synchronized (infoStrings) {
             return infoStrings.get(s);
@@ -121,9 +125,16 @@ public final class ShortenedStrings {
     static String getStringWithLengthControl(StringReference sr) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
         boolean retrieved = false;
         synchronized (stringsCache) {
-            String ss = stringsCache.get(sr);
-            if (ss != null) {
-                return ss;
+            StringValueInfo svi = stringsCache.get(sr);
+            if (svi != null) {
+                if (svi.isShort) {
+                    return StringReferenceWrapper.value(sr);
+                } else {
+                    String str = svi.shortValueRef.get();
+                    if (str != null) {
+                        return str;
+                    }
+                }
             }
             if (retrievingStrings.contains(sr)) {
                 try {
@@ -138,8 +149,8 @@ public final class ShortenedStrings {
             return getStringWithLengthControl(sr);
         }
         String string = null;
+        boolean isShort = true;
         try {
-            boolean isShort;
             ReferenceType st = ObjectReferenceWrapper.referenceType(sr);
             ArrayReference sa = null;
             int saLength = 0;
@@ -203,7 +214,13 @@ public final class ShortenedStrings {
         } finally {
             synchronized (stringsCache) {
                 if (string != null) {
-                    stringsCache.put(sr, string);
+                    StringValueInfo svi;
+                    if (isShort) {
+                        svi = new StringValueInfo(isShort);
+                    } else {
+                        svi = new StringValueInfo(string);
+                    }
+                    stringsCache.put(sr, svi);
                 }
                 retrievingStrings.remove(sr);
                 stringsCache.notifyAll();
@@ -282,6 +299,20 @@ public final class ShortenedStrings {
                 public void close() throws IOException {
                 }
             };
+        }
+    }
+    
+    private static class StringValueInfo {
+        boolean isShort; // if true, StringReference.value() caches the value
+        Reference<String> shortValueRef; // reference to the shortened version of the String value
+        
+        StringValueInfo(boolean isShort) {
+            this.isShort = isShort;
+        }
+        
+        StringValueInfo(String shortenedValue) {
+            this.isShort = false;
+            this.shortValueRef = new WeakReference<String>(shortenedValue);
         }
     }
 }
