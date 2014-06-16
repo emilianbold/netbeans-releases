@@ -136,18 +136,22 @@ public class PushAction extends SingleRepositoryAction {
             uris = remote.getUris();
         }
         if (uris.size() != 1) {
-            Utils.post(new Runnable () {
-                @Override
-                public void run () {
-                    push(repository);
-                }
-            });
+            push(repository);
         } else {
             push(repository, uris.get(0), pushMappins, remote.getFetchRefSpecs(), null);
         }
     }
     
     public void push (final File repository) {
+        if (EventQueue.isDispatchThread()) {
+            Utils.post(new Runnable () {
+                @Override
+                public void run () {
+                    push(repository);
+                }
+            });
+            return;
+        }
         RepositoryInfo info = RepositoryInfo.getInstance(repository);
         try {
             info.refreshRemotes();
