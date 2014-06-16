@@ -156,6 +156,17 @@ public class TooStrongCast {
             }
             TypeMirror tmErasure = info.getTypes().erasure(tm);
             if (info.getTypes().isAssignable(casteeType, tm) && !exp.isNotRedundant()) {
+                if (Utilities.loosesPrecision(casteeType, castType)) {
+                    continue;
+                }
+                // special case: widening primitive conversion which is usually redundant
+                // except autoboxing to Object/Number which will result in different Number subtype
+                // to be created.
+                if (casteeType.getKind().isPrimitive() && castType.getKind().isPrimitive()) {
+                    if (!tm.getKind().isPrimitive()) {
+                        continue;
+                    }
+                }
                 boolean report = true;
                 // note: it is possible that the if the cast is not there, a method call becomes ambiguous. So in the
                 // case of method/constructor invocation, check if removing the cast will select exactly one method:
@@ -190,6 +201,13 @@ public class TooStrongCast {
                     info.getTypes().isSameType(tmErasure, castErasure) : 
                     info.getTypes().isAssignable(tmErasure, castErasure)) {
                 return null;
+            }
+            // special case: if a value is casted to its primitive wrapper, do not report Number or Object
+            // as the suggested type.
+            if (casteeType.getKind().isPrimitive() &&
+                Utilities.isPrimitiveWrapperType(castType) &&
+                info.getTypes().isSameType(casteeType, info.getTypes().unboxedType(castType))) {
+                continue;
             }
             filteredTypes.add(Utilities.resolveCapturedType(info, tm));
         }

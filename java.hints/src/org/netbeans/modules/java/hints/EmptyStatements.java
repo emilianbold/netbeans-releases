@@ -57,7 +57,7 @@ public class EmptyStatements {
 
     private static final String SUPPRESS_WARNINGS_KEY = "empty-statement";
     
-    @Hint(displayName = "#LBL_Empty_BLOCK", description = "#DSC_Empty_BLOCK", category = "empty", hintKind = Hint.Kind.INSPECTION, severity = Severity.WARNING, suppressWarnings = SUPPRESS_WARNINGS_KEY, id = "EmptyStatements_BLOCK")
+    @Hint(displayName = "#LBL_Empty_BLOCK", description = "#DSC_Empty_BLOCK", category = "empty", hintKind = Hint.Kind.INSPECTION, severity = Severity.VERIFIER, suppressWarnings = SUPPRESS_WARNINGS_KEY, id = "EmptyStatements_BLOCK")
     @TriggerTreeKind(Tree.Kind.EMPTY_STATEMENT)
     @NbBundle.Messages({"ERR_EmptyBLOCK=Remove semicolon"})
     public static ErrorDescription forBLOCK(HintContext ctx) {
@@ -74,7 +74,7 @@ public class EmptyStatements {
         return createErrorDescription(ctx, ctx.getPath().getLeaf(), fixes, Kind.BLOCK);
     }
     
-    @Hint(displayName = "#LBL_Empty_WHILE_LOOP", description = "#DSC_Empty_WHILE_LOOP", category = "empty", hintKind = Hint.Kind.INSPECTION, severity = Severity.WARNING, suppressWarnings = SUPPRESS_WARNINGS_KEY, id = "EmptyStatements_WHILE_LOOP")
+    @Hint(displayName = "#LBL_Empty_WHILE_LOOP", description = "#DSC_Empty_WHILE_LOOP", category = "empty", hintKind = Hint.Kind.INSPECTION, severity = Severity.VERIFIER, suppressWarnings = SUPPRESS_WARNINGS_KEY, id = "EmptyStatements_WHILE_LOOP")
     @TriggerTreeKind(Tree.Kind.EMPTY_STATEMENT)
     public static ErrorDescription forWHILE_LOOP(HintContext ctx) {
         final TreePath parentPath = ctx.getPath().getParentPath();
@@ -89,7 +89,7 @@ public class EmptyStatements {
         return createErrorDescription(ctx, parentLeaf, fixes, Kind.WHILE_LOOP);
     }
     
-    @Hint(displayName = "#LBL_Empty_IF", description = "#DSC_Empty_IF", category = "empty", hintKind = Hint.Kind.INSPECTION, severity = Severity.WARNING, suppressWarnings = SUPPRESS_WARNINGS_KEY, id = "EmptyStatements_IF", enabled = false)
+    @Hint(displayName = "#LBL_Empty_IF", description = "#DSC_Empty_IF", category = "empty", hintKind = Hint.Kind.INSPECTION, severity = Severity.VERIFIER, suppressWarnings = SUPPRESS_WARNINGS_KEY, id = "EmptyStatements_IF", enabled = false)
     @TriggerTreeKind(Tree.Kind.EMPTY_STATEMENT)
     public static ErrorDescription forIF(HintContext ctx) {
         final TreePath treePath = ctx.getPath();
@@ -116,7 +116,7 @@ public class EmptyStatements {
         return createErrorDescription(ctx, parent, fixes, parent.getKind());
     }
 
-    @Hint(displayName = "#LBL_Empty_FOR_LOOP", description = "#DSC_Empty_FOR_LOOP", category = "empty", hintKind = Hint.Kind.INSPECTION, severity = Severity.WARNING, suppressWarnings = SUPPRESS_WARNINGS_KEY, id = "EmptyStatements_FOR_LOOP")
+    @Hint(displayName = "#LBL_Empty_FOR_LOOP", description = "#DSC_Empty_FOR_LOOP", category = "empty", hintKind = Hint.Kind.INSPECTION, severity = Severity.VERIFIER, suppressWarnings = SUPPRESS_WARNINGS_KEY, id = "EmptyStatements_FOR_LOOP")
     @TriggerTreeKind(Tree.Kind.EMPTY_STATEMENT)
     public static ErrorDescription forFOR_LOOP(HintContext ctx) {
     
@@ -131,7 +131,7 @@ public class EmptyStatements {
         return createErrorDescription(ctx, parent, fixes, parent.getKind());
     }
     
-    @Hint(displayName = "#LBL_Empty_DO_WHILE_LOOP", description = "#DSC_Empty_DO_WHILE_LOOP", category = "empty", hintKind = Hint.Kind.INSPECTION, severity = Severity.WARNING, suppressWarnings = SUPPRESS_WARNINGS_KEY, id = "EmptyStatements_DO_WHILE_LOOP")
+    @Hint(displayName = "#LBL_Empty_DO_WHILE_LOOP", description = "#DSC_Empty_DO_WHILE_LOOP", category = "empty", hintKind = Hint.Kind.INSPECTION, severity = Severity.VERIFIER, suppressWarnings = SUPPRESS_WARNINGS_KEY, id = "EmptyStatements_DO_WHILE_LOOP")
     @TriggerTreeKind(Tree.Kind.EMPTY_STATEMENT)
     public static ErrorDescription forDO_WHILE_LOOP(HintContext ctx) {
     

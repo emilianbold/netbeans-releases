@@ -309,4 +309,31 @@ public class ThrowableNotThrownTest extends NbTestCase {
                 .assertWarnings();
     }
 
+    public void testThrowableCompared() throws Exception {
+        HintTest.create()
+                .input(
+                "package test;\n" +
+                "import java.io.FileInputStream;\n" +
+                "import java.io.IOException;\n" +
+                "\n" +
+                "public class Test {    \n" +
+                "    void test() throws Exception {\n" +
+                "        try {\n" +
+                "            new FileInputStream(\"/foo\");\n" +
+                "        } catch (IOException ex) {\n" +
+                "            Exception foo = processException(ex);\n" +
+                "            if (foo == null) {\n" +
+                "                throw ex;\n" +
+                "            }\n" +
+                "        }\n" +
+                "    } \n" +
+                "    \n" +
+                "    private Exception processException(Exception ex) {\n" +
+                "        return null;\n" +
+                "    }\n" +
+                "}"
+                )
+                .run(ThrowableNotThrown.class)
+                .assertWarnings();
+    }
 }

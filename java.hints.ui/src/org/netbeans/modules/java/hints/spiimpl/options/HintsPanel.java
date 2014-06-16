@@ -915,8 +915,8 @@ public final class HintsPanel extends javax.swing.JPanel   {
         logic.connect(errorTree, errorTreeModel, severityLabel, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea, configCombo, editScriptButton, overlay, direct);
     }
     
-    void cancel() {
-        if (!initialized.get()) return;
+    synchronized void cancel() {
+        if (logic == null || !initialized.get()) return;
         logic.disconnect();
         logic = null;
     }
