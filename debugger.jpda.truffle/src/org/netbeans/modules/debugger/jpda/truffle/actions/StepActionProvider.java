@@ -59,7 +59,7 @@ import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.truffle.TruffleDebugManager;
 import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
-import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccessBreakpoints;
+import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -100,7 +100,7 @@ public class StepActionProvider extends JPDADebuggerActionProvider {
                 i.next (),
                 (debuggerState == JPDADebugger.STATE_STOPPED) &&
                 (getDebuggerImpl ().getCurrentThread () != null) &&
-                (TruffleAccessBreakpoints.getCurrentPCInfo(getDebuggerImpl()) != null)
+                (TruffleAccess.getCurrentPCInfo(getDebuggerImpl()) != null)
             );
         }
     }
@@ -109,7 +109,7 @@ public class StepActionProvider extends JPDADebuggerActionProvider {
     public void doAction(Object action) {
         LOG.fine("doAction("+action+")");
         JPDADebuggerImpl debugger = getDebuggerImpl();
-        //CurrentPCInfo currentPCInfo = TruffleAccessBreakpoints.getCurrentPCInfo(debugger);
+        //CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
         int stepCmd = 0;
         final String stepInto = (String) ActionsManager.ACTION_STEP_INTO;
         if (ActionsManager.ACTION_CONTINUE.equals(action)) {

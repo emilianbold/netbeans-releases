@@ -44,7 +44,7 @@ package org.netbeans.modules.debugger.jpda.truffle.vars.models;
 
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
-import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccessBreakpoints;
+import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
 import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
 import org.netbeans.spi.debugger.ContextProvider;

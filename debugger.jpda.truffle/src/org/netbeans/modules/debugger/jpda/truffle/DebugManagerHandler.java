@@ -100,8 +100,8 @@ import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
-import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccessBreakpoints;
-import static org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccessBreakpoints.BASIC_CLASS_NAME;
+import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
+import static org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess.BASIC_CLASS_NAME;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -271,7 +271,7 @@ class DebugManagerHandler implements JPDABreakpointListener {
                     LOG.log(Level.WARNING, "Could not start up debugger manager of "+serviceClass);
                     return ;
                 }
-                TruffleAccessBreakpoints.assureBPSet(debugger, serviceClass);
+                TruffleAccess.assureBPSet(debugger, serviceClass);
                 JPDAClassType serviceJPDAClass = (JPDAClassType) debugger.getClass().getMethod("getClassType", ReferenceType.class).invoke(debugger, serviceClass);
                 synchronized (accessorClassLock) {
                     accessorClass = serviceClass;

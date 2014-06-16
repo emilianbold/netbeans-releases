@@ -89,9 +89,9 @@ import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
  *
  * @author Martin
  */
-public class TruffleAccessBreakpoints implements JPDABreakpointListener {
+public class TruffleAccess implements JPDABreakpointListener {
     
-    private static final Logger LOG = Logger.getLogger(TruffleAccessBreakpoints.class.getName());
+    private static final Logger LOG = Logger.getLogger(TruffleAccess.class.getName());
     
     public static final String BASIC_CLASS_NAME = "org.netbeans.modules.debugger.jpda.backend.truffle.JPDATruffleAccessor";    // NOI18N
     
@@ -112,13 +112,13 @@ public class TruffleAccessBreakpoints implements JPDABreakpointListener {
     
     private static final Map<JPDADebugger, CurrentPCInfo> currentPCInfos = new WeakHashMap<>();
     
-    private static final TruffleAccessBreakpoints DEFAULT = new TruffleAccessBreakpoints();
+    private static final TruffleAccess DEFAULT = new TruffleAccess();
 
     private JPDABreakpoint execHaltedBP;
     private JPDABreakpoint execStepIntoBP;
     private JPDABreakpoint dbgAccessBP;
     
-    private TruffleAccessBreakpoints() {}
+    private TruffleAccess() {}
     
     public static void init() {
         DEFAULT.initBPs();

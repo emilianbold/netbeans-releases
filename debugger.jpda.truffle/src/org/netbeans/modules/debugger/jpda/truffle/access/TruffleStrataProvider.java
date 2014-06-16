@@ -63,7 +63,7 @@ public class TruffleStrataProvider implements StrataProvider {
 
     @Override
     public String getDefaultStratum(CallStackFrameImpl csf) {
-        if (TruffleAccessBreakpoints.BASIC_CLASS_NAME.equals(csf.getClassName())) {
+        if (TruffleAccess.BASIC_CLASS_NAME.equals(csf.getClassName())) {
             return TRUFFLE_STRATUM;
         }
         return null;
@@ -71,7 +71,7 @@ public class TruffleStrataProvider implements StrataProvider {
 
     @Override
     public List<String> getAvailableStrata(CallStackFrameImpl csf) {
-        if (TruffleAccessBreakpoints.BASIC_CLASS_NAME.equals(csf.getClassName())) {
+        if (TruffleAccess.BASIC_CLASS_NAME.equals(csf.getClassName())) {
             return Collections.singletonList(TRUFFLE_STRATUM);
         }
         return null;

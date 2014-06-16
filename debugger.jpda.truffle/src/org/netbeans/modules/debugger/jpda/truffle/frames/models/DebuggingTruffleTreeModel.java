@@ -49,7 +49,7 @@ import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
-import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccessBreakpoints;
+import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -86,7 +86,7 @@ public class DebuggingTruffleTreeModel implements TreeModelFilter {
     public Object[] getChildren(TreeModel original, Object parent, int from, int to) throws UnknownTypeException {
         Object[] children = original.getChildren(parent, from, to);
         if (parent instanceof JPDAThread && children.length > 0) {
-            CurrentPCInfo currentPCInfo = TruffleAccessBreakpoints.getCurrentPCInfo(debugger);
+            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
             if (currentPCInfo != null) {
                 TruffleStackFrame[] stackFrames = currentPCInfo.getStack().getStackFrames();
                 children = filterAndAppend(children, stackFrames);

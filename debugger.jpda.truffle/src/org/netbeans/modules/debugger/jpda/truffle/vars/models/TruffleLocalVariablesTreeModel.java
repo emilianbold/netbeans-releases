@@ -43,7 +43,7 @@
 package org.netbeans.modules.debugger.jpda.truffle.vars.models;
 
 import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
-import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccessBreakpoints;
+import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
@@ -65,7 +65,7 @@ public class TruffleLocalVariablesTreeModel extends TruffleVariablesTreeModel {
     @Override
     public Object[] getChildren(TreeModel original, Object parent, int from, int to) throws UnknownTypeException {
         if (parent == original.getRoot()) {
-            CurrentPCInfo currentPCInfo = TruffleAccessBreakpoints.getCurrentPCInfo(getDebugger());
+            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(getDebugger());
             if (currentPCInfo != null) {
                 return currentPCInfo.getVars();
             }

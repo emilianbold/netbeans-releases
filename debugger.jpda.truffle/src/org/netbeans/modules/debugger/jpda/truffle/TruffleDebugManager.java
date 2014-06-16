@@ -65,7 +65,7 @@ import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
-import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccessBreakpoints;
+import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
@@ -108,7 +108,7 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
         debugManagerLoadBP.setHidden(true);
         
         LOG.log(Level.FINE, "TruffleDebugManager.initBreakpoints(): submitted BP {0}", debugManagerLoadBP);
-        TruffleAccessBreakpoints.init();
+        TruffleAccess.init();
     }
 
     @Override
