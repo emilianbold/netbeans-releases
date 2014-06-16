@@ -45,7 +45,7 @@
 
         <jboss-web xmlns="http://www.jboss.com/xml/ns/javaee"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-web_7_0.xsd"
+           xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/schema/jbossas/jboss-web_7_0.xsd"
            version="7.0">
 
 	       ...
@@ -837,7 +837,7 @@
       <xsd:element name="file-size-threshold" type="xsd:integer" minOccurs="0" maxOccurs="1"/>
     </xsd:sequence>
   </xsd:complexType>
-  
+
   <xsd:complexType name="enable-websocketsType">
       <xsd:annotation>
          <xsd:documentation>
