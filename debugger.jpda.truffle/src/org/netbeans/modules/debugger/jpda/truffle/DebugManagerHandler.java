@@ -84,6 +84,7 @@ import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
@@ -272,7 +273,7 @@ class DebugManagerHandler implements JPDABreakpointListener {
                     return ;
                 }
                 TruffleAccess.assureBPSet(debugger, serviceClass);
-                JPDAClassType serviceJPDAClass = (JPDAClassType) debugger.getClass().getMethod("getClassType", ReferenceType.class).invoke(debugger, serviceClass);
+                JPDAClassType serviceJPDAClass = ((JPDADebuggerImpl) debugger).getClassType(serviceClass);
                 synchronized (accessorClassLock) {
                     accessorClass = serviceClass;
                     accessorJPDAClass = serviceJPDAClass;

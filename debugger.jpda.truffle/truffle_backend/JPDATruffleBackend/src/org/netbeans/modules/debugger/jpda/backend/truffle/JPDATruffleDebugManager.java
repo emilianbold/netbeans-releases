@@ -55,11 +55,14 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
     
     private final ScriptEngine engine;
     private final ExecutionContext context;
+    private final TopFrameHolder topFrameHolder;
 
     public JPDATruffleDebugManager(ScriptEngine engine, ExecutionContext context, DebugClient dbgClient) {
         super(context, dbgClient);
         this.engine = engine;
         this.context = context;
+        this.topFrameHolder = new TopFrameHolder();
+        ((JPDADebugClient) dbgClient).setTopFrameHolder(topFrameHolder);
         nodeProberDelegate.addNodeProber(
                 new JPDAJSNodeProber((JSContext) context, this, new JPDAInstrumentProxy(instrumentCallback)));
         System.err.println("new JPDATruffleDebugManager("+engine+")");
@@ -116,6 +119,10 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
             endExecution(source);
         }
     }
+    
+    Object eval(Source source) {
+        return eval(source, topFrameHolder.currentNode, topFrameHolder.currentTopFrame);
+    }
 
     @Override
     public Object eval(Source source, Node node, MaterializedFrame frame) {
@@ -154,6 +161,7 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
     private static class JPDADebugClient implements DebugClient {
         
         private final ExecutionContext context;
+        private TopFrameHolder topFrameHolder;
         
         public JPDADebugClient(ExecutionContext context) {
             this.context = context;
@@ -161,6 +169,8 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
 
         @Override
         public void haltedAt(Node astNode, MaterializedFrame frame) {
+            topFrameHolder.currentTopFrame = frame;
+            topFrameHolder.currentNode = astNode;
             SourcePosition position = getPosition(astNode);
             Visualizer visualizer = context.getVisualizer();
             
@@ -215,6 +225,13 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
                     position.line, position.code,
                     slots, slotNames, slotTypes,
                     stackTrace, stackNames);
+            
+            topFrameHolder.currentTopFrame = null;
+            topFrameHolder.currentNode = null;
+        }
+
+        private void setTopFrameHolder(TopFrameHolder topFrameHolder) {
+            this.topFrameHolder = topFrameHolder;
         }
         
     }
@@ -341,6 +358,11 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
             probers.add(nodeProber);
         }
         
+    }
+    
+    private static class TopFrameHolder {
+        MaterializedFrame currentTopFrame;
+        Node currentNode;
     }
     
     /*

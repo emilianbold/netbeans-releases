@@ -211,6 +211,20 @@ public class JPDATruffleAccessor extends Object {
         return lb;
     }
     
+    static String evaluate(String expression) {
+        System.err.println("evaluate("+expression+")");
+        final Source source = Source.fromText(expression, "EVAL");
+        Object value = debugManager.eval(source);
+        System.err.println("  value = "+value);
+        if (value == null) {
+            return null;
+        }
+        Visualizer visualizer = debugManager.getContext().getVisualizer();
+        String strValue = visualizer.displayValue(debugManager.getContext(), value);
+        System.err.println("evaluate("+expression+") = "+strValue);
+        return strValue;
+    }
+    
     private static class AccessLoop implements Runnable {
 
         @Override
