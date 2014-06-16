@@ -375,11 +375,11 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         @Override
         public final Action[] getActions (boolean context) {
-            return options.contains(Option.ENABLE_POPUP) ? getPopupActions(context) : RepositoryBrowserNode.this.getPopupActions(context);
+            return options.contains(Option.ENABLE_POPUP) ? getPopupActions(context) : getDefaultActions();
         }
 
         protected Action[] getPopupActions (boolean context) {
-            return new Action[0];
+            return getDefaultActions();
         }
         
         protected Image getFolderIcon (int type) {
@@ -428,6 +428,10 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             }
 
             return null;
+        }
+
+        private Action[] getDefaultActions () {
+            return new Action[0];
         }
 
     }
@@ -1146,7 +1150,24 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         @Override
         public Action getPreferredAction () {
-            if (currRevision != null) {
+            if (options.contains(Option.ENABLE_POPUP)) {
+                if (currRepository != null && branchName != null) {
+                    final File repo = currRepository;
+                    final String branch = branchName;
+                    return new AbstractAction(NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevisionAction_PopupName")) { //NOI18N
+                        @Override
+                        public void actionPerformed (ActionEvent e) {
+                            Utils.postParallel(new Runnable () {
+                                @Override
+                                public void run() {
+                                    CheckoutRevisionAction action = SystemAction.get(CheckoutRevisionAction.class);
+                                    action.checkoutRevision(repo, branch);
+                                }
+                            }, 0);
+                        }
+                    };
+                }
+            } else if (currRevision != null) {
                 return new AbstractAction() {
                     @Override
                     public void actionPerformed (ActionEvent e) {
@@ -1513,7 +1534,24 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         @Override
         public Action getPreferredAction () {
-            if (currRevision != null) {
+            if (options.contains(Option.ENABLE_POPUP)) {
+                if (currRepository != null && tagName != null) {
+                    final File repo = currRepository;
+                    final String tag = tagName;
+                    return new AbstractAction(NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevisionAction_PopupName")) { //NOI18N
+                        @Override
+                        public void actionPerformed (ActionEvent e) {
+                            Utils.postParallel(new Runnable () {
+                                @Override
+                                public void run() {
+                                    CheckoutRevisionAction action = SystemAction.get(CheckoutRevisionAction.class);
+                                    action.checkoutRevision(repo, tag);
+                                }
+                            }, 0);
+                        }
+                    };
+                }
+            } else if (currRevision != null) {
                 return new AbstractAction() {
                     @Override
                     public void actionPerformed (ActionEvent e) {
