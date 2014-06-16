@@ -586,11 +586,11 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
 
     private String getJbossWebSchemaLocation() {
         if (version == null || WildflyPluginUtils.WILDFLY_8_0_0.compareTo(version) <= 0) {
-            return "http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-web_8_0.xsd";
+            return "http://www.jboss.com/xml/ns/javaee http://www.jboss.org/schema/jbossas/jboss-web_8_0.xsd";
         } else if (WildflyPluginUtils.EAP_6_3_0.compareTo(version) <= 0) {
-            return "http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-web_7_2.xsd";
+            return "http://www.jboss.com/xml/ns/javaee http://www.jboss.org/schema/jbossas/jboss-web_7_2.xsd";
         } else {
-            return "http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-web_7_1.xsd";
+            return "http://www.jboss.com/xml/ns/javaee http://www.jboss.org/schema/jbossas/jboss-web_7_1.xsd";
         }
     }
 
