@@ -130,6 +130,7 @@ import org.openide.windows.TopComponent;
  */
 public class RepositoryBrowserPanel extends JPanel implements Provider, PropertyChangeListener, ListSelectionListener,
         MouseListener {
+    private int sliderPos;
 
     AbstractNode root;
     private static final RequestProcessor RP = new RequestProcessor("RepositoryPanel", 1); //NOI18N
@@ -217,6 +218,15 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     int width = revisionsPanel1.getPreferredSize().width;
                     int leftPanelWidth = jSplitPane1.getPreferredSize().width - width;
                     jSplitPane1.setDividerLocation(Math.min(200, leftPanelWidth));
+                    if (sliderPos > 0) {
+                        EventQueue.invokeLater(new Runnable() {
+
+                            @Override
+                            public void run () {
+                                jSplitPane1.setDividerLocation(sliderPos);
+                            }
+                        });
+                    }
                 }
             });
         }
@@ -329,6 +339,17 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     @Override
     public boolean requestFocusInWindow () {
         return tree.requestFocusInWindow();
+    }
+    
+    void setSliderPosition (int pos) {
+        assert options.contains(Option.DISPLAY_REVISIONS);
+        sliderPos = pos;
+        jSplitPane1.setDividerLocation(pos);
+    }
+    
+    int getSliderPosition () {
+        assert options.contains(Option.DISPLAY_REVISIONS);
+        return jSplitPane1.getDividerLocation();
     }
 
     private void attachToolbarListeners () {
