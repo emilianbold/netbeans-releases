@@ -150,6 +150,10 @@ public class RequireFileCodeCompletionTest extends JsCodeCompletionBase {
         checkCompletion("TestProject1/js/folder2/fs.js", "'lib/api/v0.1/^',", false);        
     }
     
+    public void testIssue245041() throws Exception {
+        checkCompletion("TestProject1/js/fileCC/folder2/issue245041.js", "define([\"f^\"], function(e){", false);        
+    }
+    
     public void testMappingCompletion04() throws Exception {
         checkCompletion("TestProject1/js/folder2/fs.js", "'lib/api/v0.1/OM^',", false);        
     }
