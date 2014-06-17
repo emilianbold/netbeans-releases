@@ -66,7 +66,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.search.provider.SearchFilter;
 import org.netbeans.api.search.provider.SearchInfoUtils;
-import org.netbeans.modules.jumpto.common.Factory;
+import org.netbeans.modules.jumpto.common.Models;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
@@ -189,9 +189,11 @@ final class Worker implements Runnable {
 
     @NonNull
     static Collector newCollector(
-        @NonNull final Factory<Void,Collector> doneCallBack,
+        @NonNull final Models.MutableListModel<FileDescriptor> model,
+        @NonNull final Runnable updateCallBack,
+        @NonNull final Runnable doneCallBack,
         final long startTime) {
-        return new Collector(doneCallBack, startTime);
+        return new Collector(model, updateCallBack, doneCallBack, startTime);
     }
 
     @NonNull
@@ -309,16 +311,23 @@ final class Worker implements Runnable {
     }
 
     static final class Collector {
+        private final Models.MutableListModel<FileDescriptor> model;
+        private final Runnable updateCallBack;
+        private final Runnable doneCallBack;
         private final long startTime;
-        private final Factory<Void, Collector> doneCallBack;
         private final Set<Worker> active = Collections.newSetFromMap(new ConcurrentHashMap<Worker, Boolean>());
-        private final List<FileDescriptor> collected = Collections.synchronizedList(new ArrayList<FileDescriptor>());
         private volatile boolean frozen;
 
         private Collector(
-            @NonNull final Factory<Void,Collector> doneCallBack,
+            @NonNull final Models.MutableListModel<FileDescriptor> model,
+            @NonNull final Runnable updateCallBack,
+            @NonNull final Runnable doneCallBack,
             final long startTime) {
+            Parameters.notNull("model", model); //NOI18N
+            Parameters.notNull("updateCallBack", updateCallBack);   //NOI18N
             Parameters.notNull("doneCallBack", doneCallBack);   //NOI18N
+            this.model = model;
+            this.updateCallBack = updateCallBack;
             this.doneCallBack = doneCallBack;
             this.startTime = startTime;
         }
@@ -335,10 +344,6 @@ final class Worker implements Runnable {
 
         boolean isDone() {
             return frozen && active.isEmpty();
-        }
-
-        List<FileDescriptor> files() {
-            return this.collected;
         }
 
         private void configure(@NonNull final Worker worker) {
@@ -368,7 +373,8 @@ final class Worker implements Runnable {
             @NonNull final List<? extends FileDescriptor> files) {
             Parameters.notNull("worker", worker);   //NOI18N
             Parameters.notNull("files", files); //NOI18N
-            collected.addAll(files);
+            model.add(files);
+            updateCallBack.run();
         }
 
         private void done(@NonNull final Worker worker) {
@@ -380,7 +386,7 @@ final class Worker implements Runnable {
                     this));
             }
             if (active.isEmpty()) {
-                doneCallBack.create(this);
+                doneCallBack.run();
             }
         }
     }

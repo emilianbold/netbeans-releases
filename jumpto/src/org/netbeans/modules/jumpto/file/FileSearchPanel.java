@@ -51,9 +51,10 @@ package org.netbeans.modules.jumpto.file;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.Action;
@@ -67,6 +68,8 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
@@ -74,25 +77,25 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.jumpto.SearchHistory;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 
 /**
  *
- * @author  Petr Hrebejk, Andrei Badea
+ * @author  Petr Hrebejk, Andrei Badea, Tomas Zezula
  */
 public class FileSearchPanel extends javax.swing.JPanel implements ActionListener {
 
     public static final String SEARCH_IN_PROGRES = NbBundle.getMessage(FileSearchPanel.class, "TXT_SearchingOtherProjects"); // NOI18N
+    private static final Logger LOG = Logger.getLogger(FileSearchPanel.class.getName());
     private static final int BRIGHTER_COLOR_COMPONENT = 10;
     private final ContentProvider contentProvider;
     private final Project currentProject;
     private boolean containsScrollPane;
-    
     private JLabel messageLabel;
     private String oldText;
+    private List<?> selectedItems;
     /* package */ long time;
 
     private FileDescriptor[] selectedFile;
@@ -146,6 +149,16 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
                 resultList,
                 fileNameTextField.getDocument(),
                 caseSensitiveCheckBox.getModel()));
+        resultList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                selectedItems = resultList.getSelectedValuesList();
+                LOG.log(
+                    Level.FINE,
+                    "New selected items: {0}",  //NOI18N
+                    selectedItems);
+            }
+        });
         contentProvider.setListModel( this, null );
                 
         fileNameTextField.getDocument().addDocumentListener(new DocumentListener() {
@@ -176,63 +189,85 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
         super.removeNotify();
     }
   
-    //Good for setting model form any thread  
-    public void setModel( final ListModel model ) {
+    //Good for setting model form any thread
+    void setModel(
+            @NonNull final ListModel model,
+            final boolean done) {
         // XXX measure time here
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
-               if (model.getSize() > 0 || getText() == null || getText().trim().length() == 0 ) {
-                   resultList.setModel(model);
-                   resultList.setSelectedIndex(0);
-                   ((FileSearchAction.Renderer) resultList.getCellRenderer()).setColorPrefered(isPreferedProject());
-                   setListPanelContent(null,false);
-                   if ( time != -1 ) {
-                       FileSearchAction.LOGGER.fine("Real search time " + (System.currentTimeMillis() - time) + " ms.");
-                       time = -1;
-                   }
-               }
-               else {
-                   if (getText()!=null) {
-                       try {
-                           Pattern.compile(getText().replace(".", "\\.").replace( "*", ".*" ).replace( '?', '.' ), Pattern.CASE_INSENSITIVE); // NOI18N
-                           setListPanelContent( NbBundle.getMessage(FileSearchPanel.class, "TXT_NoTypesFound") ,false ); // NOI18N
-                       } catch (PatternSyntaxException pse) {
-                           setListPanelContent( NbBundle.getMessage(FileSearchPanel.class, "TXT_SyntaxError", pse.getDescription(),pse.getIndex()) ,false ); // NOI18N
-                       }
-                   } else
-                       setListPanelContent( NbBundle.getMessage(FileSearchPanel.class, "TXT_NoTypesFound") ,false ); // NOI18N
-               }
-           }
-       });
+                LOG.log(
+                    Level.FINE,
+                    "Reset selected items");    //NOI18N
+                selectedItems = null;
+                resultList.setModel(model);
+                ((FileSearchAction.Renderer) resultList.getCellRenderer()).setColorPrefered(isPreferedProject());
+                if (done) {
+                    setListPanelContent(null,false);
+                }
+            }
+        });
     }
 
-//    public Project[] getProjects() {
-//        return OpenProjects.getDefault().getOpenProjects();
-//    }
-//
-//    public void openSelectedItems() {
-//        Object[] selectedValues = resultList.getSelectedValues();
-//        if ( selectedValues != null ) {
-//            for(Object v : selectedValues) {
-//                if ( v instanceof FileDescription) {
-//                    ((FileDescription)v).open();
-//                }
-//            }
-//        }
-//    }
-//
-//    public Project getPreferedProject() {
-//        if ( !isPreferedProject() ) {
-//            return null;
-//        }
-//        else {
-//            return currentProject;
-//        }
-//
-//    }
-    
+    void searchProgress() {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                if (resultList.getModel().getSize() > 0) {
+                    if (!containsScrollPane) {
+                        setListPanelContent(null,false);
+                        final int index = resultList.getSelectedIndex();
+                        if (index == -1) {
+                            LOG.log(
+                                Level.FINE,
+                                "Select first item.");  //NOI18N
+                            resultList.setSelectedIndex(0);
+                        }
+                    } else if (selectedItems != null && !selectedItems.isEmpty()) {
+                        LOG.log(
+                            Level.FINE,
+                            "Reselect selected items"); //NOI18N
+                        final int[] indexes = new int[selectedItems.size()];
+                        final ListModel<?> model = resultList.getModel();
+                        int startj = 0, i = 0;
+                        for (Object selectedItem : selectedItems) {
+                            for (int j = startj; j<model.getSize(); j++) {
+                                if (selectedItem == model.getElementAt(j)) {
+                                    startj = j;
+                                    indexes[i] = j;
+                                    break;
+                                }
+                            }
+                            i++;
+                        }
+                        resultList.setSelectedIndices(indexes);
+                        resultList.ensureIndexIsVisible(indexes[0]);
+                    }
+                }
+            }
+        });
+    }
+
+    void searchCompleted() {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                if (resultList.getModel().getSize() > 0) {
+                    //Todo: hide partial update message.
+                } else {
+                    try {
+                       Pattern.compile(getText().replace(".", "\\.").replace( "*", ".*" ).replace( '?', '.' ), Pattern.CASE_INSENSITIVE); // NOI18N
+                       setListPanelContent( NbBundle.getMessage(FileSearchPanel.class, "TXT_NoTypesFound") ,false ); // NOI18N
+                   } catch (PatternSyntaxException pse) {
+                       setListPanelContent( NbBundle.getMessage(FileSearchPanel.class, "TXT_SyntaxError", pse.getDescription(),pse.getIndex()) ,false ); // NOI18N
+                   }
+                }
+            }
+        });
+    }
+
     void setListPanelContent( String message, boolean waitIcon ) {
-        
         if ( message == null && !containsScrollPane ) {
            listPanel.remove( messageLabel );
            listPanel.add( resultScrollPane );

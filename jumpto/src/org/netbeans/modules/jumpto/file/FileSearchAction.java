@@ -60,9 +60,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -128,7 +125,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
     private static final char LINE_NUMBER_SEPARATOR = ':';    //NOI18N
     private static final Pattern PATTERN_WITH_LINE_NUMBER = Pattern.compile("(.*)"+LINE_NUMBER_SEPARATOR+"(\\d*)");    //NOI18N
 
-    private static ListModel EMPTY_LIST_MODEL = new DefaultListModel();
+    private static final ListModel EMPTY_LIST_MODEL = new DefaultListModel();
     //Threading: Throughput 1 required due to inherent sequential code in Work.Request.exclude
     private static final RequestProcessor rp = new RequestProcessor ("FileSearchAction-RequestProcessor",1);
     //@GuardedBy("this")
@@ -187,16 +184,13 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         cancel();
 
         if ( text == null ) {
-            panel.setModel(EMPTY_LIST_MODEL);
+            panel.setModel(EMPTY_LIST_MODEL, true);
             return;
         }
-
         boolean exact = text.endsWith(" "); // NOI18N
-
         text = text.trim();
-
         if ( text.length() == 0) {
-            panel.setModel(EMPTY_LIST_MODEL);
+            panel.setModel(EMPTY_LIST_MODEL, true);
             return;
         }
 
@@ -236,39 +230,44 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
         // Compute in other thread
         synchronized(this) {
+            final Models.MutableListModel baseListModel = Models.mutable(
+                    new FileComarator(
+                        panel.isPreferedProject(),
+                        panel.isCaseSensitive()));
+            panel.setModel(Models.refreshable(
+                    baseListModel,
+                    new Factory<FileDescriptor, Pair<FileDescriptor,Runnable>>() {
+                        @Override
+                        public FileDescriptor create(@NonNull final Pair<FileDescriptor,Runnable> param) {
+                            return new AsyncFileDescriptor(param.first(), param.second());
+                        }
+                    }),
+                    false);
             final Worker.Request request = Worker.newRequest(
                 text,
                 nameKind,
                 panel.getCurrentProject(),
                 lineNr);
             final Worker.Collector collector = Worker.newCollector(
-                new Factory<Void, Worker.Collector>() {
+                baseListModel,
+                new Runnable(){
                     @Override
-                    public Void create(@NonNull final Worker.Collector collector) {
-                        final List<FileDescriptor> files = collector.files();
-                        Collections.sort(files, new FileComarator(
-                                panel.isPreferedProject(),
-                                panel.isCaseSensitive()));
-                        final ListModel model = Models.refreshable(
-                                Models.fromList(files),
-                                new Factory<FileDescriptor, Pair<FileDescriptor,Runnable>>() {
-                                    @Override
-                                    public FileDescriptor create(@NonNull final Pair<FileDescriptor,Runnable> param) {
-                                        return new AsyncFileDescriptor(param.first(), param.second());
-                                    }
-                                });
-                        if (model != null) {
-                            SwingUtilities.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    panel.setModel(model);
-                                    if (openBtn != null && !files.isEmpty()) {
-                                        openBtn.setEnabled (true);
-                                    }
+                    public void run() {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                panel.searchProgress();
+                                if (openBtn != null && baseListModel.getSize() > 0) {
+                                    openBtn.setEnabled (true);
                                 }
-                            });
-                        }
-                        return null;
+                            }
+                        });
+                    }
+                },
+                new Runnable(){
+                    @Override
+                    public void run() {
+                        panel.searchCompleted();
                     }
                 },
                 panel.time);
