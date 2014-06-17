@@ -92,6 +92,11 @@ public abstract class Lookup {
 
     /** default instance */
     private static Lookup defaultLookup;
+    
+    /**
+     * Default instance's provider
+     */
+    private static Lookup.Provider defaultLookupProvider;
 
     /** Empty constructor for use by subclasses. */
     public Lookup() {
@@ -110,7 +115,13 @@ public abstract class Lookup {
      * @see ServiceProvider
      */
     public static synchronized Lookup getDefault() {
-        if (defaultLookup != null) {
+        if (defaultLookup != null || defaultLookupProvider != null) {
+            if (defaultLookupProvider != null) {
+                Lookup lkp = defaultLookupProvider.getLookup();
+                if (lkp != null) {
+                    return lkp;
+                }
+            }
             return defaultLookup;
         }
         LOG.log(Level.FINER, "About to initialize Lookup@{0}.getDefault() by {1}", 
@@ -130,8 +141,17 @@ public abstract class Lookup {
         LOG.log(Level.FINER, "Searching in classloader {0}", l);
         try {
             if (className != null) {
-                defaultLookup = (Lookup) Class.forName(className, true, l).newInstance();
+                Object o = Class.forName(className, true, l).newInstance();
+                defaultLookup = (Lookup)o;
                 LOG.log(Level.FINE, "Default lookup initialized {0}", defaultLookup);
+                // for testing purposes, tests may setup a class implementing both interfaces
+                if (o instanceof Lookup.Provider) {
+                    defaultLookupProvider = (Lookup.Provider)o;
+                    Lookup lkp = defaultLookupProvider.getLookup();
+                    if (lkp != null) {
+                        return lkp;
+                    }
+                }
                 return defaultLookup;
             }
         } catch (Exception e) {
@@ -145,6 +165,13 @@ public abstract class Lookup {
         defaultLookup = misl.lookup(Lookup.class);
         LOG.log(Level.FINER, "Searching for {0} in {1} yields {2}", new Object[]{Lookup.class, misl, defaultLookup});
         if (defaultLookup != null) {
+            if (defaultLookup instanceof Lookup.Provider) {
+                defaultLookupProvider = (Lookup.Provider)defaultLookup;
+                Lookup lkp = defaultLookupProvider.getLookup();
+                if (lkp != null) {
+                    return lkp;
+                }
+            }
             LOG.log(Level.FINE, "Default lookup initialized {0}", defaultLookup);
             return defaultLookup;
         }
@@ -193,11 +220,17 @@ public abstract class Lookup {
     
     /** Called from MockServices to reset default lookup in case services change
      */
-    private static void resetDefaultLookup() {
-        if (defaultLookup instanceof DefLookup) {
+    private static synchronized void resetDefaultLookup() {
+        if (defaultLookup == null || defaultLookup instanceof DefLookup) {
             DefLookup def = (DefLookup)defaultLookup;
             ClassLoader l = Thread.currentThread().getContextClassLoader();
-            def.init(l, Lookups.metaInfServices(l), true);
+            Lookup misl = Lookups.metaInfServices(l);
+            if (def == null) {
+                def = new DefLookup();
+                def.init(l, misl, false);
+                defaultLookup = def;
+            }
+            def.init(l, misl, true);
         }
     }
 
