@@ -83,6 +83,9 @@ public class TruffleVariablesTreeModel implements TreeModelFilter {
 
     @Override
     public Object[] getChildren(TreeModel original, Object parent, int from, int to) throws UnknownTypeException {
+        if (parent instanceof TruffleVariable) {
+            return ((TruffleVariable) parent).getChildren();
+        }
         return original.getChildren(parent, from, to);
     }
 

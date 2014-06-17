@@ -42,15 +42,13 @@
 
 package org.netbeans.modules.debugger.jpda.truffle.access;
 
-import com.sun.jdi.StringReference;
-import com.sun.jdi.VirtualMachine;
 import java.io.InvalidObjectException;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.truffle.TruffleDebugManager;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -63,16 +61,22 @@ public class TruffleEval {
     
     private TruffleEval() {}
 
-    public static String evaluate(JPDADebugger debugger, String expression) throws InvalidExpressionException {
+    public static Variable evaluate(JPDADebugger debugger, String expression) throws InvalidExpressionException {
         JPDAClassType debugAccessor = TruffleDebugManager.getDebugAccessorJPDAClass(debugger);
         try {
             Variable mirrorExpression = debugger.createMirrorVar(expression);
             Variable valueVar = debugAccessor.invokeMethod(METHOD_EVALUATE,
                                                            METHOD_EVALUATE_SIG,
                                                            new Variable[] { mirrorExpression });
-            return valueVar.getValue();
+            return valueVar;
         } catch (InvalidObjectException | NoSuchMethodException ex) {
-            return ex.getLocalizedMessage();
+            try {
+                return debugger.createMirrorVar(ex.getLocalizedMessage());
+            } catch (InvalidObjectException iex) {
+                Exceptions.printStackTrace(iex);
+                return null;
+            }
+            //return ex.getLocalizedMessage();
         }
     }
 

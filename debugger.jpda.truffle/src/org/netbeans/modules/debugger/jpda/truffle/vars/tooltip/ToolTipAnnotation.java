@@ -200,7 +200,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             }
             toolTipText = expression + " = " + DebuggerSupport.getVarValue(d, result);
                     */
-            toolTipText = expression + " = " + TruffleEval.evaluate(d, expression);
+            toolTipText = expression + " = " + TruffleEval.evaluate(d, expression).getValue();
         } catch (InvalidExpressionException ex) {
             toolTipText = expression + " = >" + ex.getMessage () + "<";
         }

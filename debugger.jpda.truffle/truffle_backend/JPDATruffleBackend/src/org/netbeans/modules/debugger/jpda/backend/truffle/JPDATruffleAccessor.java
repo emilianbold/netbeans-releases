@@ -54,6 +54,7 @@ import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.debug.LineBreakpoint;
 import com.oracle.truffle.js.engine.TruffleJSEngine;
 import java.io.IOException;
+import java.util.Arrays;
 import javax.script.ScriptEngine;
 
 /**
@@ -160,7 +161,13 @@ public class JPDATruffleAccessor extends Object {
             case Long:      return FrameUtil.getLongSafe(frame, slot);
             case Object:    Object obj = FrameUtil.getObjectSafe(frame, slot);
                             ExecutionContext context = debugManager.getContext();
-                            return context.getVisualizer().displayValue(context, obj);
+                            //return context.getVisualizer().displayValue(context, obj);
+                            String name = context.getVisualizer().displayIdentifier(slot);
+                            TruffleObject to = new TruffleObject(context, name, obj);
+                            System.err.println("TruffleObject: "+to);
+                            System.err.println("  children Generic = "+Arrays.toString(to.getChildrenGeneric()));
+                            System.err.println("  children JS = "+Arrays.toString(to.getChildrenJS()));
+                            return to;
             case Illegal:   
             default:        return null;
         }

@@ -47,7 +47,7 @@ import java.lang.ref.WeakReference;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackInfo;
 import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
-import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
+import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleSlotVariable;
 
 /**
  * Container of information about the current program counter.
@@ -58,11 +58,11 @@ public class CurrentPCInfo {
     
     private final Reference<JPDAThread> threadRef;
     private final SourcePosition sp;
-    private final TruffleVariable[] vars;
+    private final TruffleSlotVariable[] vars;
     private final TruffleStackInfo stack;
     
     public CurrentPCInfo(JPDAThread thread, SourcePosition sp,
-                         TruffleVariable[] vars, TruffleStackInfo stack) {
+                         TruffleSlotVariable[] vars, TruffleStackInfo stack) {
         this.threadRef = new WeakReference<>(thread);
         this.sp = sp;
         this.vars = vars;
@@ -77,7 +77,7 @@ public class CurrentPCInfo {
         return sp;
     }
 
-    public TruffleVariable[] getVars() {
+    public TruffleSlotVariable[] getVars() {
         return vars;
     }
 

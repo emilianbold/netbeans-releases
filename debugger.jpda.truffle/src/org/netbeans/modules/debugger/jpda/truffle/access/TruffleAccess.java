@@ -83,7 +83,7 @@ import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackInfo;
 import org.netbeans.modules.debugger.jpda.truffle.source.Source;
 import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
-import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
+import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleSlotVariable;
 
 /**
  *
@@ -307,7 +307,7 @@ public class TruffleAccess implements JPDABreakpointListener {
                     src = Source.getSource(debugger, id, name, path, code);
                 }
                 SourcePosition sp = new SourcePosition(debugger, id, src, line);
-                TruffleVariable[] vars = createVars(debugger, frame, frameSlots, slotNames, slotTypes);
+                TruffleSlotVariable[] vars = createVars(debugger, frame, frameSlots, slotNames, slotTypes);
                 TruffleStackInfo stack = new TruffleStackInfo(debugger, frameSlots, stackTrace);
                 return new CurrentPCInfo(thread, sp, vars, stack);
             } else {
@@ -323,15 +323,15 @@ public class TruffleAccess implements JPDABreakpointListener {
         return IntegerValueWrapper.value((IntegerValue) jdiValue);
     }
 
-    private TruffleVariable[] createVars(JPDADebugger debugger,
+    private TruffleSlotVariable[] createVars(JPDADebugger debugger,
                                          ObjectVariable frame,
                                          Variable[] frameSlots,
                                          String[] slotNames, String[] slotTypes) {
         int n = frameSlots.length;
-        TruffleVariable[] vars = new TruffleVariable[n];
+        TruffleSlotVariable[] vars = new TruffleSlotVariable[n];
         for (int i = 0; i < n; i++) {
-            vars[i] = new TruffleVariable(debugger, frame, (ObjectVariable) frameSlots[i],
-                                          slotNames[i], slotTypes[i]);
+            vars[i] = new TruffleSlotVariable(debugger, frame, (ObjectVariable) frameSlots[i],
+                                              slotNames[i], slotTypes[i]);
         }
         return vars;
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,43 +37,56 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.truffle.vars.models;
+package org.netbeans.modules.debugger.jpda.truffle.vars;
 
-import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
-import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
+import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.modules.debugger.jpda.truffle.access.TruffleEval;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
-import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.spi.debugger.DebuggerServiceRegistration;
-import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.TreeModelFilter;
-import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.netbeans.spi.debugger.jpda.Evaluator;
 
 /**
  *
  * @author Martin
  */
-@DebuggerServiceRegistration(path="netbeans-JPDASession/"+TruffleStrataProvider.TRUFFLE_STRATUM+"/LocalsView",  types = TreeModelFilter.class)
-public class TruffleLocalVariablesTreeModel extends TruffleVariablesTreeModel {
+@Evaluator.Registration(language=TruffleStrataProvider.TRUFFLE_STRATUM)
+public class TruffleEvaluator implements Evaluator<TruffleExpression> {
 
-    public TruffleLocalVariablesTreeModel(ContextProvider lookupProvider) {
-        super(lookupProvider);
+    private final JPDADebugger debugger;
+
+    public TruffleEvaluator (ContextProvider lookupProvider) {
+        debugger = lookupProvider.lookupFirst (null, JPDADebugger.class);
+    }
+
+    @Override
+    public Result evaluate(Expression<TruffleExpression> expression, Context context) throws InvalidExpressionException {
+        ObjectVariable contextVariable = context.getContextVariable();
+        if (contextVariable != null) {
+            // String value of the context variable is 
+            if ("toString()".equals(expression.getExpression())) {              // NOI18N
+                //return new Result(DebuggerSupport.getVarStringValueAsVar(debugger, contextVariable));
+                return new Result(contextVariable); // TODO
+            }
+        }
+        TruffleExpression expr = expression.getPreprocessedObject();
+        if (expr == null) {
+            expr = TruffleExpression.parse(expression.getExpression());
+            expression.setPreprocessedObject(expr);
+        }
+        Variable ret = evaluateIn(expr, context.getCallStackFrame(), contextVariable);
+        return new Result(ret);
+    }
+
+    private Variable evaluateIn(TruffleExpression expr, CallStackFrame callStackFrame, ObjectVariable contextVar) throws InvalidExpressionException {
+        //return DebuggerSupport.evaluate(debugger, callStackFrame, expr.getExpression(), contextVar);
+        return TruffleEval.evaluate(debugger, expr.getExpression());
     }
     
-    @Override
-    public Object[] getChildren(TreeModel original, Object parent, int from, int to) throws UnknownTypeException {
-        if (parent == original.getRoot()) {
-            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(getDebugger());
-            if (currentPCInfo != null) {
-                return currentPCInfo.getVars();
-            }
-        } else if (parent instanceof TruffleVariable) {
-            return ((TruffleVariable) parent).getChildren();
-        }
-        return original.getChildren(parent, from, to);
-    }
-
 }
