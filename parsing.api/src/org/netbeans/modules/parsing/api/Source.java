@@ -89,6 +89,7 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
@@ -133,7 +134,7 @@ public final class Source {
             return null;
         }
         
-        return _get(fileObject.getMIMEType(), fileObject);
+        return _get(fileObject.getMIMEType(), fileObject, Lookup.getDefault());
     }
     
     /**
@@ -191,7 +192,7 @@ public final class Source {
             if (source == null) {
                 FileObject fileObject = Utilities.getFileObject(document);
                 if (fileObject != null) {
-                    source = Source._get(mimeType, fileObject);
+                    source = Source._get(mimeType, fileObject, Lookup.getDefault());
                 } else {
                     if ("text/x-dialog-binding".equals(mimeType)) { //NOI18N
                         InputAttributes attributes = (InputAttributes) document.getProperty(InputAttributes.class);
@@ -203,7 +204,7 @@ public final class Source {
                             fileObject = (FileObject) attributes.getValue(path, "dialogBinding.fileObject"); //NOI18N
                         }
                     }
-                    source = new Source(mimeType, document, fileObject);
+                    source = new Source(mimeType, document, fileObject, Lookup.getDefault());
                 }
                 document.putProperty(Source.class, new WeakReference<Source>(source));
             }
@@ -461,6 +462,7 @@ public final class Source {
         SourceAccessor.setINSTANCE(new MySourceAccessor());
     }
         
+    private final Lookup context;
     private final String mimeType;
     private final FileObject fileObject;
     private final Document document;
@@ -492,16 +494,18 @@ public final class Source {
     private Source (
         String              mimeType,
         Document            document,
-        FileObject          fileObject
+        FileObject          fileObject,
+        Lookup              context
     ) {
         this.mimeType =     mimeType;
         this.document =     document;
         this.fileObject =   fileObject;
+        this.context =      context;
         
         sourceEnv = Utilities.createEnvironment(this, ctrl);
     }
 
-    private static Source _get(String mimeType, FileObject fileObject) {
+    private static Source _get(String mimeType, FileObject fileObject, Lookup context) {
         assert mimeType != null;
         assert fileObject != null;
         
@@ -510,9 +514,10 @@ public final class Source {
             Source source = sourceRef == null ? null : sourceRef.get();
 
             if (source == null) {
-                source = new Source(mimeType, null, fileObject);
+                source = new Source(mimeType, null, fileObject, context);
                 instances.put(fileObject, new WeakReference<Source>(source));
             }
+            assert source.context == context;
             // XXX: we may want to update the mime type to the one from the document,
             // but I'm not sure what would that mean for the rest of the infrastructure.
             // It would probably need to throw everything (?) away and start from scratch.
@@ -561,16 +566,8 @@ public final class Source {
         ASourceModificationEvent newSourceModificationEvent;
         do {
             oldSourceModificationEvent = sourceModificationEvent.get();
-            if (sourceChanged) {
-                if (oldSourceModificationEvent == null || !oldSourceModificationEvent.sourceChanged()) {
-                    newSourceModificationEvent = new ASourceModificationEvent (this, sourceChanged, startOffset, endOffset);                    
-                } else {
-                    oldSourceModificationEvent.add(startOffset, endOffset);
-                    newSourceModificationEvent = oldSourceModificationEvent;
-                }
-            } else {
-                newSourceModificationEvent = oldSourceModificationEvent == null ? new ASourceModificationEvent(this, sourceChanged, startOffset, endOffset) : oldSourceModificationEvent;
-            }
+            boolean mergedChange = sourceChanged | (oldSourceModificationEvent == null ? false : oldSourceModificationEvent.sourceChanged());
+            newSourceModificationEvent = new ASourceModificationEvent (this, mergedChange, startOffset, endOffset);                
         } while (!sourceModificationEvent.compareAndSet(oldSourceModificationEvent, newSourceModificationEvent));
     }
 
@@ -1004,5 +1001,8 @@ public final class Source {
         }
 
     }
-
+    
+    public Lookup getContext() {
+        return context;
+    }
 }

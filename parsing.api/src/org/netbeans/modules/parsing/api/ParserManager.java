@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.parsing.api;
 
-import org.netbeans.modules.parsing.spi.LowMemoryWatcher;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.Collection;
@@ -53,9 +52,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 import org.netbeans.api.annotations.common.NonNull;
-
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.parsing.impl.*;
+import org.netbeans.modules.parsing.spi.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
@@ -390,21 +389,7 @@ public final class ParserManager {
     }
 
     private static Parser findParser (final String mimeType) {
-        Parser p = null;
-        final Reference<Parser> ref = cachedParsers.get (mimeType);
-        if (ref != null) {
-            p = ref.get();
-        }
-        if (p == null) {
-            final Lookup lookup = MimeLookup.getLookup (mimeType);
-            final ParserFactory parserFactory = lookup.lookup (ParserFactory.class);
-            if (parserFactory == null) {
-                throw new IllegalArgumentException("No parser for mime type: " + mimeType);
-            }
-            p = parserFactory.createParser(Collections.<Snapshot>emptyList());
-            cachedParsers.put(mimeType, new SoftReference<Parser>(p));
-        }
-        return p;
+        return Utilities.getEnvFactory().findMimeParser(Lookup.getDefault(), mimeType);
     }
     
     /**

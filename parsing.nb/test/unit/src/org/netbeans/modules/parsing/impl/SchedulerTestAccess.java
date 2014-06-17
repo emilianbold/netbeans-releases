@@ -43,6 +43,7 @@
 package org.netbeans.modules.parsing.impl;
 
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -50,7 +51,7 @@ import org.netbeans.modules.parsing.spi.Scheduler;
  */
 public class SchedulerTestAccess {
     public static <T extends Scheduler> T getScheduler(Class<T> clazz) {
-        for (Scheduler scheduler : Schedulers.getSchedulers ()) {
+        for (Scheduler scheduler : Utilities.getEnvFactory().getSchedulers(Lookup.getDefault())) {
             if (clazz.isInstance(scheduler)) {
                 return (T)scheduler;
             }

@@ -227,6 +227,6 @@ public abstract class SourceAccessor {
     public abstract void attachScheduler(Source src, SchedulerControl sched, boolean attach);
     
     public final void init() {
-        Schedulers.init();
+        Utilities.getEnvFactory().getSchedulers(Lookup.getDefault());
     }
 }

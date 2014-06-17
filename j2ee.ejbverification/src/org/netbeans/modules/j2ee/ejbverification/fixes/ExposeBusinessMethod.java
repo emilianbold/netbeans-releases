@@ -163,7 +163,7 @@ public class ExposeBusinessMethod implements Fix {
                         final Position start = d.getStartPosition();
                         Document doc = d.openDocument();
                         if (docToSave == null) {
-                            target.getLookup().lookup(CloneableEditorSupport.class);
+                            docToSave = target.getLookup().lookup(CloneableEditorSupport.class);
                         }
                         final Position[] pos = new Position[1];
                         final Document fdoc = doc;

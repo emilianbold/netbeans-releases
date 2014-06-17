@@ -232,6 +232,7 @@ public class MockServices {
                         PrintWriter pw = new PrintWriter(new OutputStreamWriter(baos, "UTF-8"));
                         for (String impl : impls) {
                             pw.println(impl);
+                            pw.println("#position=100");
                         }
                         pw.close();
                         final URL u = new URL("metainfservices", null, 0, xface.getName(), new URLStreamHandler() {

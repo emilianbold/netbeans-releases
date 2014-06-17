@@ -43,22 +43,35 @@
 package org.netbeans.modules.parsing.nb;
 
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.TokenHierarchyListener;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.impl.Schedulers;
 import org.netbeans.modules.parsing.impl.indexing.IndexingManagerAccessor;
 import org.netbeans.modules.parsing.implspi.EnvironmentFactory;
 import org.netbeans.modules.parsing.implspi.SchedulerControl;
 import org.netbeans.modules.parsing.implspi.SourceControl;
 import org.netbeans.modules.parsing.implspi.SourceEnvironment;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Lookup;
 import org.openide.util.UserQuestionException;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -72,6 +85,7 @@ import org.openide.util.lookup.ServiceProvider;
 // on parsing.api tests will receive the testing environment.
 @ServiceProvider(service = EnvironmentFactory.class, position = 40000) 
 public final class DataObjectEnvFactory extends SourceEnvironment implements EnvironmentFactory {
+    private static Map<String,Reference<Parser>> cachedParsers = new HashMap<String,Reference<Parser>>();    
     
     static {
         IndexingManagerAccessor.setReleaseCompletion(new Runnable() {
@@ -82,16 +96,44 @@ public final class DataObjectEnvFactory extends SourceEnvironment implements Env
     }
 
     @Override
-    public Scheduler createScheduler(String schedulerName) {
+    public Lookup getContextLookup() {
+        return Lookup.getDefault();
+    }
+
+    @Override
+    public Collection<? extends Scheduler> getSchedulers(Lookup context) {
+        return Schedulers.getSchedulers();
+    }
+
+    public Parser findMimeParser(Lookup context, final String mimeType) {
+        Parser p = null;
+        final Reference<Parser> ref = cachedParsers.get (mimeType);
+        if (ref != null) {
+            p = ref.get();
+        }
+        if (p == null) {
+            final Lookup lookup = MimeLookup.getLookup (mimeType);
+            final ParserFactory parserFactory = lookup.lookup (ParserFactory.class);
+            if (parserFactory == null) {
+                throw new IllegalArgumentException("No parser for mime type: " + mimeType);
+            }
+            p = parserFactory.createParser(Collections.<Snapshot>emptyList());
+            cachedParsers.put(mimeType, new SoftReference<Parser>(p));
+        }
+        return p;
+    }
+    
+    @Override
+    public Class<? extends Scheduler> findStandardScheduler(String schedulerName) {
         switch (schedulerName) {
             case "CURSOR_SENSITIVE_TASK_SCHEDULER": // NOI18N
-                return new CursorSensitiveScheduler();
+                return CursorSensitiveScheduler.class;
             
             case "EDITOR_SENSITIVE_TASK_SCHEDULER": // NOI18N
-                return new CurrentDocumentScheduler();
+                return CurrentDocumentScheduler.class;
                 
             case "SELECTED_NODES_SENSITIVE_TASK_SCHEDULER": // NOI18N
-                return new SelectedNodesScheduler();
+                return SelectedNodesScheduler.class;
                 
             default:
                 return null;
