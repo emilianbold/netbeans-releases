@@ -58,7 +58,9 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.ButtonModel;
+import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.KeyStroke;
@@ -77,6 +79,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.jumpto.SearchHistory;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
@@ -88,6 +91,7 @@ import org.openide.util.NbCollections;
 public class FileSearchPanel extends javax.swing.JPanel implements ActionListener {
 
     public static final String SEARCH_IN_PROGRES = NbBundle.getMessage(FileSearchPanel.class, "TXT_SearchingOtherProjects"); // NOI18N
+    private static Icon WARN_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/jumpto/resources/warning.png", false); // NOI18N
     private static final Logger LOG = Logger.getLogger(FileSearchPanel.class.getName());
     private static final int BRIGHTER_COLOR_COMPONENT = 10;
     private final ContentProvider contentProvider;
@@ -217,6 +221,9 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
                 if (resultList.getModel().getSize() > 0) {
                     if (!containsScrollPane) {
                         setListPanelContent(null,false);
+                        setWarning(NbBundle.getMessage(
+                            FileSearchPanel.class,
+                            "TXT_PartialResults"));
                         final int index = resultList.getSelectedIndex();
                         if (index == -1) {
                             LOG.log(
@@ -254,7 +261,7 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
             @Override
             public void run() {
                 if (resultList.getModel().getSize() > 0) {
-                    //Todo: hide partial update message.
+                    setWarning(null);
                 } else {
                     try {
                        Pattern.compile(getText().replace(".", "\\.").replace( "*", ".*" ).replace( '?', '.' ), Pattern.CASE_INSENSITIVE); // NOI18N
@@ -311,13 +318,18 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
         contentProvider.setListModel(this, text);
     }
 
-//
-//    void cleanup() {
-//        if ( search != null ) {
-//            search.cancel( true );
-//        }
-//    }
-    
+    private void setWarning(String warningMessage) {
+        if (warningMessage != null) {
+            jLabelWarningMessage.setIcon(WARN_ICON);
+            jLabelWarningMessage.setBorder(
+                BorderFactory.createEmptyBorder(3, 1, 1, 1));
+        } else {
+            jLabelWarningMessage.setIcon(null);
+            jLabelWarningMessage.setBorder(null);
+        }
+        jLabelWarningMessage.setText(warningMessage);
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -333,6 +345,7 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
         listPanel = new javax.swing.JPanel();
         resultScrollPane = new javax.swing.JScrollPane();
         resultList = new javax.swing.JList();
+        jLabelWarningMessage = new javax.swing.JLabel();
         caseSensitiveCheckBox = new javax.swing.JCheckBox();
         hiddenFilesCheckBox = new javax.swing.JCheckBox();
         mainProjectCheckBox = new javax.swing.JCheckBox();
@@ -401,6 +414,7 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
         resultList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FileSearchPanel.class, "AD_MatchingList")); // NOI18N
 
         listPanel.add(resultScrollPane, java.awt.BorderLayout.CENTER);
+        listPanel.add(jLabelWarningMessage, java.awt.BorderLayout.PAGE_END);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -548,6 +562,7 @@ private void resultListValueChanged(javax.swing.event.ListSelectionEvent evt) {/
     private javax.swing.JTextField fileNameTextField;
     private javax.swing.JCheckBox hiddenFilesCheckBox;
     private javax.swing.JLabel jLabelLocation;
+    private javax.swing.JLabel jLabelWarningMessage;
     private javax.swing.JTextField jTextFieldLocation;
     private javax.swing.JPanel listPanel;
     private javax.swing.JCheckBox mainProjectCheckBox;
