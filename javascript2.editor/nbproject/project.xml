@@ -414,6 +414,7 @@
                 <friend>org.netbeans.modules.javascript2.extjs</friend>
                 <friend>org.netbeans.modules.javascript2.jquery</friend>
                 <friend>org.netbeans.modules.javascript2.knockout</friend>
+                <friend>org.netbeans.modules.javascript2.prototypejs</friend>
                 <friend>org.netbeans.modules.javascript2.requirejs</friend>
                 <friend>org.netbeans.modules.nodejscodecompletion</friend>
                 <package>org.netbeans.modules.javascript2.editor.api</package>
