@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.parsing.implspi;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import javax.swing.text.Document;
@@ -49,8 +50,10 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  * Factory for {@link SourceEnvironment} instances. The Factory method is given
@@ -61,16 +64,30 @@ import org.openide.filesystems.FileObject;
  * instance found will be used.
  */
 public interface EnvironmentFactory {
-
     /**
-     * Creates an instance of predefined Scheduler.
+     * Provides access to context-dependent Lookup, to multi-user environment
+     * @return context-depedent Lookup
+     */
+    public Lookup   getContextLookup();
+    
+    /**
+     * Parovides a class of a predefined Scheduler.
      * The predefined Schedulers are available as final field values.
      *
      * @param schedulerName
      * @return
      */
     @CheckForNull
-    public Scheduler createScheduler(@NonNull String schedulerName);
+    public Class<? extends Scheduler> findStandardScheduler(@NonNull String schedulerName);
+    
+    /**
+     * Creates parser for the mime type
+     * @param mimeType
+     * @return 
+     */
+    public Parser   findMimeParser(Lookup context, String mimeType);
+    
+    public Collection<? extends Scheduler> getSchedulers(Lookup context);
 
     /**
      * Extracts FileObject instance from the Document. It may require reading an

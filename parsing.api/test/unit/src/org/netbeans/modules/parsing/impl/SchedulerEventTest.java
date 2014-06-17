@@ -69,6 +69,7 @@ import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -122,7 +123,7 @@ public class SchedulerEventTest extends IndexingAwareTestCase {
         final Modification mod = Modification.getDefault();
         mod.expect(Task1.class, 0);
         mod.expect(Task2.class, 0);
-        for (Scheduler scheduler : Schedulers.getSchedulers ()) {
+        for (Scheduler scheduler : Utilities.getEnvFactory().getSchedulers(Lookup.getDefault())) {
             if (scheduler instanceof BaseScheduler) {
                 ((BaseScheduler) scheduler).schedule (source);
             }

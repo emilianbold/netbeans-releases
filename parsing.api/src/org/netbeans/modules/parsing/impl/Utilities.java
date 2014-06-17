@@ -245,7 +245,7 @@ public class Utilities {
 
     private static volatile EnvironmentFactory   envFactory;
     
-    static synchronized EnvironmentFactory getEnvFactory() {
+    public static synchronized EnvironmentFactory getEnvFactory() {
         EnvironmentFactory f = envFactory;
         if (f == null) {
             f = envFactory = Lookup.getDefault().lookup(EnvironmentFactory.class);
@@ -269,8 +269,7 @@ public class Utilities {
     
     public static Class<? extends Scheduler> findDefaultScheduler(String type) {
         EnvironmentFactory f = getEnvFactory();
-        Scheduler o = f.createScheduler(type);
-        return o == null ? NopScheduler.class : o.getClass();
+        return f.findStandardScheduler(type);
     }
     
     public static final class NopScheduler extends Scheduler {

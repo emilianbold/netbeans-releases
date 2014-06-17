@@ -44,21 +44,25 @@ package org.netbeans.modules.parsing.api;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
-
 import javax.swing.text.Document;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 
-import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.modules.parsing.implspi.EnvironmentFactory;
 import org.netbeans.modules.parsing.implspi.SchedulerControl;
 import org.netbeans.modules.parsing.implspi.SourceControl;
 import org.netbeans.modules.parsing.implspi.SourceEnvironment;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -71,7 +75,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class TestEnvironmentFactory implements EnvironmentFactory {
 
     @Override
-    public Scheduler createScheduler(String schedulerName) {
+    public Class<? extends Scheduler> findStandardScheduler(String schedulerName) {
         return null;
     }
 
@@ -102,6 +106,21 @@ public class TestEnvironmentFactory implements EnvironmentFactory {
         "text/x-java",
         "text/x-foo"
     }));
+
+    @Override
+    public Lookup getContextLookup() {
+        return Lookup.getDefault();
+    }
+
+    @Override
+    public Parser findMimeParser(Lookup context, String mimeType) {
+        return MimeLookup.getDefault().lookup(ParserFactory.class).createParser(Collections.<Snapshot>emptyList());
+    }
+
+    @Override
+    public Collection<? extends Scheduler> getSchedulers(Lookup context) {
+        return getContextLookup().lookupAll(Scheduler.class);
+    }
     
     @Override
     public Set<String> findSupportedMIMETypes() {
@@ -133,6 +152,8 @@ public class TestEnvironmentFactory implements EnvironmentFactory {
 
         @Override
         public void attachScheduler(SchedulerControl s, boolean attach) {
+            // FIXME - schedulers will not react if the source file changes
+            // because of rename etc.
         }
 
         @Override

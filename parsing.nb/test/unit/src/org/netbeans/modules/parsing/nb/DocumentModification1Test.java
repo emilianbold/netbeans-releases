@@ -248,7 +248,7 @@ public class DocumentModification1Test extends IndexingAwareTestCase {
                     });
                 }
             }
-        );
+        ); 
         MockMimeLookup.setInstances (
             MimePath.get ("text/boo"),
             new ParserFactory () {
