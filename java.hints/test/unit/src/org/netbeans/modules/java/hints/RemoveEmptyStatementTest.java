@@ -62,7 +62,7 @@ public class RemoveEmptyStatementTest {
                         + "    }\n"
                         + "}\n")
                 .run(EmptyStatements.class)
-                .findWarning("3:42-3:43:warning:" + getDisplayName(Tree.Kind.BLOCK))
+                .findWarning("3:42-3:43:verifier:" + getDisplayName(Tree.Kind.BLOCK))
                 .applyFix(Bundle.ERR_EmptyBLOCK())
                 .assertCompilable()
                 .assertOutput("package test;\n"
@@ -83,7 +83,7 @@ public class RemoveEmptyStatementTest {
                         + "    }\n"
                         + "}\n")
                 .run(EmptyStatements.class)
-                .findWarning("3:8-3:20:warning:" + getDisplayName(Tree.Kind.WHILE_LOOP))
+                .findWarning("3:8-3:20:verifier:" + getDisplayName(Tree.Kind.WHILE_LOOP))
                 .assertFixes();
     }
 
@@ -97,7 +97,7 @@ public class RemoveEmptyStatementTest {
                         + "    }\n"
                         + "}\n")
                 .run(EmptyStatements.class)
-                .findWarning("3:8-3:30:warning:" + getDisplayName(Tree.Kind.FOR_LOOP))
+                .findWarning("3:8-3:30:verifier:" + getDisplayName(Tree.Kind.FOR_LOOP))
                 .assertFixes();
     }
 
@@ -113,7 +113,7 @@ public class RemoveEmptyStatementTest {
                         + "    }\n"
                         + "}\n")
                 .run(EmptyStatements.class)
-                .findWarning("3:80-3:99:warning:" + getDisplayName(Tree.Kind.ENHANCED_FOR_LOOP))
+                .findWarning("3:80-3:99:verifier:" + getDisplayName(Tree.Kind.ENHANCED_FOR_LOOP))
                 .assertFixes();
     }
 
@@ -127,14 +127,14 @@ public class RemoveEmptyStatementTest {
                         + "    }\n"
                         + "}\n")
                 .run(EmptyStatements.class)
-                .findWarning("3:8-3:23:warning:" + getDisplayName(Tree.Kind.DO_WHILE_LOOP))
+                .findWarning("3:8-3:23:verifier:" + getDisplayName(Tree.Kind.DO_WHILE_LOOP))
                 .assertFixes();
     }
 
     @Test
     public void testRemoveEmptyIF() throws Exception {
-        final String ifWarn = "3:8-4:13:warning:" + getDisplayName(Tree.Kind.IF);
-        final String elseWarn = "3:8-4:13:warning:" + getDisplayName(Tree.Kind.IF);
+        final String ifWarn = "3:8-4:13:verifier:" + getDisplayName(Tree.Kind.IF);
+        final String elseWarn = "3:8-4:13:verifier:" + getDisplayName(Tree.Kind.IF);
         HintTest.create()
                 .input("package test;\n"
                         + "public class Test {\n"
