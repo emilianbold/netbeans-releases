@@ -48,14 +48,18 @@ import com.sun.jdi.IntegerValue;
 import com.sun.jdi.LongValue;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StringReference;
+import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
@@ -76,14 +80,20 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.breakpoints.BreakpointsEngineListener;
 import org.netbeans.modules.debugger.jpda.breakpoints.MethodBreakpointImpl;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
+import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IntegerValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LongValueWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.netbeans.modules.debugger.jpda.truffle.RemoteServices;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackInfo;
 import org.netbeans.modules.debugger.jpda.truffle.source.Source;
 import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
 import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleSlotVariable;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -117,6 +127,10 @@ public class TruffleAccess implements JPDABreakpointListener {
     private JPDABreakpoint execHaltedBP;
     private JPDABreakpoint execStepIntoBP;
     private JPDABreakpoint dbgAccessBP;
+    
+    private final Object methodCallAccessLock = new Object();//new ReentrantReadWriteLock(true).writeLock();
+    private MethodCallsAccess methodCallsRunnable;
+    private static final MethodCallsAccess METHOD_CALLS_SUCCESSFUL = new MethodCallsAccess(){@Override public void callMethods(JPDAThread thread) {}};
     
     private TruffleAccess() {}
     
@@ -205,6 +219,17 @@ public class TruffleAccess implements JPDABreakpointListener {
             }
         } else if (dbgAccessBP == bp) {
             LOG.log(Level.FINE, "TruffleAccessBreakpoints.breakpointReached({0}), debugger access.", event);
+            try {
+                synchronized (methodCallAccessLock) {
+                    if (methodCallsRunnable != null) {
+                        invokeMethodCalls(event.getThread(), methodCallsRunnable);
+                    }
+                    methodCallsRunnable = METHOD_CALLS_SUCCESSFUL;
+                    methodCallAccessLock.notifyAll();
+                }
+            } finally {
+                event.resume();
+            }
         }
     }
     
@@ -334,5 +359,89 @@ public class TruffleAccess implements JPDABreakpointListener {
                                               slotNames[i], slotTypes[i]);
         }
         return vars;
+    }
+    
+    /**
+     * Safe access to method calls in the backend accessor class.
+     * @param methodCalls The runnable, that is called under write lock on the current thread.
+     * @return <code>true</code> when the runnable with method calls is executed,
+     *         <code>false</code> when method execution is not possible.
+     */
+    public static boolean methodCallingAccess(final JPDADebugger debugger, MethodCallsAccess methodCalls) {
+        synchronized (DEFAULT.methodCallAccessLock) {
+            while (DEFAULT.methodCallsRunnable != null) {
+                // we're already processing some method calls...
+                try {
+                    DEFAULT.methodCallAccessLock.wait();
+                } catch (InterruptedException ex) {
+                    return false;
+                }
+            }
+            CurrentPCInfo currentPCInfo = getCurrentPCInfo(debugger);
+            if (currentPCInfo != null) {
+                JPDAThread thread = currentPCInfo.getThread();
+                if (thread != null) {
+                    boolean success = invokeMethodCalls(thread, methodCalls);
+                    if (success) {
+                        return true;
+                    }
+                }
+            }
+            // Was not able to invoke methods
+            ThreadReference serviceAccessThread = RemoteServices.getServiceAccessThread(debugger);
+            if (serviceAccessThread == null) {
+                return false;
+            }
+            try {
+                ThreadReferenceWrapper.interrupt(serviceAccessThread);
+            } catch (InternalExceptionWrapper | VMDisconnectedExceptionWrapper | ObjectCollectedExceptionWrapper | IllegalThreadStateExceptionWrapper ex) {
+                return false;
+            }
+            PropertyChangeListener finishListener = new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (JPDADebugger.STATE_DISCONNECTED == debugger.getState()) {
+                        synchronized (DEFAULT.methodCallAccessLock) {
+                            DEFAULT.methodCallAccessLock.notifyAll();
+                        }
+                    }
+                }
+            };
+            debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, finishListener);
+            DEFAULT.methodCallsRunnable = methodCalls;
+            try {
+                DEFAULT.methodCallAccessLock.wait();
+            } catch (InterruptedException ex) {
+                return false;
+            } finally {
+                debugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, finishListener);
+            }
+            boolean success = (DEFAULT.methodCallsRunnable == METHOD_CALLS_SUCCESSFUL);
+            DEFAULT.methodCallsRunnable = null;
+            return success;
+        }
+    }
+    
+    private static boolean invokeMethodCalls(JPDAThread thread, MethodCallsAccess methodCalls) {
+        assert Thread.holdsLock(DEFAULT.methodCallAccessLock);
+        boolean invoking = false;
+        try {
+            ((JPDAThreadImpl) thread).notifyMethodInvoking();
+            invoking = true;
+            methodCalls.callMethods(thread);
+            return true;
+        } catch (PropertyVetoException pvex) {
+            return false;
+        } finally {
+            if (invoking) {
+                ((JPDAThreadImpl) thread).notifyMethodInvokeDone();
+            }
+        }
+    }
+    
+    public static interface MethodCallsAccess {
+        
+        void callMethods(JPDAThread thread);
+        
     }
 }

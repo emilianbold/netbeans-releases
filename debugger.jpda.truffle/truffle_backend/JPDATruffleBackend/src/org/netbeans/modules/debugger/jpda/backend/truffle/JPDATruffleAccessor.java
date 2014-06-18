@@ -51,6 +51,7 @@ import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
+import com.oracle.truffle.debug.Breakpoint;
 import com.oracle.truffle.debug.LineBreakpoint;
 import com.oracle.truffle.js.engine.TruffleJSEngine;
 import java.io.IOException;
@@ -81,7 +82,7 @@ public class JPDATruffleAccessor extends Object {
 
     public JPDATruffleAccessor() {}
     
-    static boolean startAccessLoop() {
+    static Thread startAccessLoop() {
         if (!accessLoopRunning) {
             Thread loop;
             AccessLoop accessLoop;
@@ -91,14 +92,14 @@ public class JPDATruffleAccessor extends Object {
                 loop.setDaemon(true);
                 loop.setPriority(Thread.MIN_PRIORITY);
             } catch (SecurityException se) {
-                return false;
+                return null;
             }
             accessLoopThread = loop;
             //accessLoopRunnable = accessLoop;
             accessLoopRunning = true;
             loop.start();
         }
-        return true;
+        return accessLoopThread;
     }
     
     static void stopAccessLoop() {
@@ -106,6 +107,7 @@ public class JPDATruffleAccessor extends Object {
         //accessLoopRunnable = null;
         if (accessLoopThread != null) {
             accessLoopThread.interrupt();
+            accessLoopThread = null;
         }
     }
     
@@ -218,6 +220,10 @@ public class JPDATruffleAccessor extends Object {
         return lb;
     }
     
+    static void removeBreakpoint(Object br) {
+        ((Breakpoint) br).dispose();
+    }
+    
     static String evaluate(String expression) {
         System.err.println("evaluate("+expression+")");
         final Source source = Source.fromText(expression, "EVAL");
@@ -241,7 +247,9 @@ public class JPDATruffleAccessor extends Object {
                 try {
                     Thread.sleep(Long.MAX_VALUE);
                 } catch (InterruptedException iex) {}
-                debuggerAccess();
+                if (accessLoopRunning) {
+                    debuggerAccess();
+                }
             }
         }
         

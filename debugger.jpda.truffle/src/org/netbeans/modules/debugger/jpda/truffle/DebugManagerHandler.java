@@ -126,6 +126,8 @@ class DebugManagerHandler implements JPDABreakpointListener {
     private static final String ACCESSOR_SET_LINE_BREAKPOINT = "setLineBreakpoint"; // NOI18N
     private static final String ACCESSOR_SET_LINE_BREAKPOINT_SIGNAT =
             "(L"+String.class.getName().replace('.', '/')+";I)Lcom/oracle/truffle/debug/LineBreakpoint;";   // NOI18N
+    private static final String ACCESSOR_REMOVE_LINE_BREAKPOINT = "removeLineBreakpoint"; // NOI18N
+    private static final String ACCESSOR_REMOVE_LINE_BREAKPOINT_SIGNAT = "(Lcom/oracle/truffle/debug/LineBreakpoint;)V";    // NOI18N
     
     private final JPDADebugger debugger;
     private final AtomicBoolean inited = new AtomicBoolean(false);
@@ -254,17 +256,20 @@ class DebugManagerHandler implements JPDABreakpointListener {
             ClassType serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(cor);//RemoteServices.getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
 
             InvocationExceptionTranslated iextr = null;
-            Method startMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, ACCESSOR_START_ACCESS_LOOP, "()Z");
+            Method startMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, ACCESSOR_START_ACCESS_LOOP, "()Ljava/lang/Thread;");
+            if (startMethod == null) {
+                LOG.log(Level.WARNING, "Could not start the access loop of "+serviceClass+", no "+ACCESSOR_START_ACCESS_LOOP+" method.");
+                return ;
+            }
             try {
                 t.notifyMethodInvoking();
                 Value ret = ClassTypeWrapper.invokeMethod(serviceClass, tr, startMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-                if (ret instanceof PrimitiveValue) {
-                    boolean success = PrimitiveValueWrapper.booleanValue((PrimitiveValue) ret);
-                    RemoteServices.setAccessLoopStarted(t.getDebugger(), success);
-                    if (!success) {
-                        LOG.log(Level.WARNING, "Could not start the access loop of "+serviceClass);
-                        return ;
-                    }
+                if (ret instanceof ThreadReference) {
+                    //boolean success = PrimitiveValueWrapper.booleanValue((PrimitiveValue) ret);
+                    RemoteServices.setAccessLoopStarted(t.getDebugger(), (ThreadReference) ret);
+                } else {
+                    LOG.log(Level.WARNING, "Could not start the access loop of "+serviceClass);
+                    return ;
                 }
                 Method debugManagerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, ACCESSOR_SET_UP_DEBUG_MANAGER, "()Lorg/netbeans/modules/debugger/jpda/backend/truffle/JPDATruffleDebugManager;");
                 ret = ClassTypeWrapper.invokeMethod(serviceClass, tr, debugManagerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
@@ -442,9 +447,97 @@ class DebugManagerHandler implements JPDABreakpointListener {
     }
     
     private void submitBP(JSLineBreakpoint bp) {
+        FileObject fileObject = bp.getFileObject();
+        if (fileObject == null) {
+            return ;
+        }
+        File file = FileUtil.toFile(fileObject);
+        if (file == null) {
+            return ;
+        }
+        final String path = file.getAbsolutePath();
+        final int line = bp.getLineNumber();
+        final ObjectReference[] bpRef = new ObjectReference[] { null };
+        try {
+            final Method setLineBreakpointMethod = ClassTypeWrapper.concreteMethodByName(
+                    accessorClass,
+                    ACCESSOR_SET_LINE_BREAKPOINT,
+                    ACCESSOR_SET_LINE_BREAKPOINT_SIGNAT);
+            TruffleAccess.methodCallingAccess(debugger, new TruffleAccess.MethodCallsAccess() {
+                @Override
+                public void callMethods(JPDAThread thread) {
+                    ThreadReference tr = ((JPDAThreadImpl) thread).getThreadReference();
+                    StringReference pathRef = tr.virtualMachine().mirrorOf(path);
+                    IntegerValue lineRef = tr.virtualMachine().mirrorOf(line);
+                    List<? extends Value> args = Arrays.asList(new Value[] { pathRef, lineRef });
+                    try {
+                        ObjectReference ret = (ObjectReference) ClassTypeWrapper.invokeMethod(
+                                accessorClass,
+                                tr,
+                                setLineBreakpointMethod,
+                                args,
+                                ObjectReference.INVOKE_SINGLE_THREADED);
+                        bpRef[0] = ret;
+                    } catch (InvalidTypeException | ClassNotLoadedException |
+                             IncompatibleThreadStateException | InvocationException |
+                             InternalExceptionWrapper | VMDisconnectedExceptionWrapper |
+                             ObjectCollectedExceptionWrapper ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+        } catch (ClassNotPreparedExceptionWrapper | InternalExceptionWrapper |
+                 VMDisconnectedExceptionWrapper ex) {
+        }
+        if (bpRef[0] != null) {
+            synchronized (breakpointsMap) {
+                breakpointsMap.put(bp, bpRef[0]);
+            }
+        }
     }
     
-    private void removeBP(JSLineBreakpoint bp) {
+    private boolean removeBP(JSLineBreakpoint bp) {
+        final ObjectReference bpImpl;
+        synchronized (breakpointsMap) {
+            bpImpl = breakpointsMap.remove(bp);
+        }
+        if (bpImpl == null) {
+            return false;
+        }
+        final boolean[] successPtr = new boolean[] { false };
+        try {
+            final Method removeLineBreakpointMethod = ClassTypeWrapper.concreteMethodByName(
+                    accessorClass,
+                    //ACCESSOR_REMOVE_LINE_BREAKPOINT,
+                    //ACCESSOR_REMOVE_LINE_BREAKPOINT_SIGNAT);
+                    "removeBreakpoint",
+                    //"(Lcom/oracle/truffle/debug/Breakpoint;)V");
+                    "(Ljava/lang/Object;)V");
+            TruffleAccess.methodCallingAccess(debugger, new TruffleAccess.MethodCallsAccess() {
+                @Override
+                public void callMethods(JPDAThread thread) {
+                    ThreadReference tr = ((JPDAThreadImpl) thread).getThreadReference();
+                    List<? extends Value> args = Arrays.asList(new Value[] { bpImpl });
+                    try {
+                        ClassTypeWrapper.invokeMethod(
+                                accessorClass,
+                                tr,
+                                removeLineBreakpointMethod,
+                                args,
+                                ObjectReference.INVOKE_SINGLE_THREADED);
+                        successPtr[0] = true;
+                    } catch (InvalidTypeException | ClassNotLoadedException |
+                             IncompatibleThreadStateException | InvocationException |
+                             InternalExceptionWrapper | VMDisconnectedExceptionWrapper |
+                             ObjectCollectedExceptionWrapper ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+        } catch (ClassNotPreparedExceptionWrapper | InternalExceptionWrapper |
+                 VMDisconnectedExceptionWrapper ex) {
+        }
+        return successPtr[0];
     }
 
     void breakpointAdded(JSLineBreakpoint jsLineBreakpoint) {

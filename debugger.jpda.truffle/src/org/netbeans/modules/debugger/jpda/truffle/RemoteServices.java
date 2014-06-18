@@ -128,12 +128,12 @@ public class RemoteServices {
     
     private static final String REMOTE_CLASSES_ZIPFILE = "/org/netbeans/modules/debugger/jpda/truffle/resources/JPDATruffleBackend.jar";
     
-    private static final Map<JPDADebugger, ClassObjectReference> remoteServiceClasses = new WeakHashMap<JPDADebugger, ClassObjectReference>();
-    private static final Map<JPDADebugger, Boolean> remoteServiceAccess = new WeakHashMap<JPDADebugger, Boolean>();
+    private static final Map<JPDADebugger, ClassObjectReference> remoteServiceClasses = new WeakHashMap<>();
+    private static final Map<JPDADebugger, ThreadReference> remoteServiceAccess = new WeakHashMap<>();
     
     private static final RequestProcessor AUTORESUME_AFTER_SUSPEND_RP = new RequestProcessor("Autoresume after suspend", 1);
     
-    private static final Set<PropertyChangeListener> serviceListeners = new WeakSet<PropertyChangeListener>();
+    private static final Set<PropertyChangeListener> serviceListeners = new WeakSet<>();
 
     private RemoteServices() {}
     
@@ -695,23 +695,23 @@ public class RemoteServices {
         }
     }
     
-    static void setAccessLoopStarted(JPDADebugger debugger, boolean success) {
+    static void setAccessLoopStarted(JPDADebugger debugger, ThreadReference accessThread) {
         synchronized (remoteServiceAccess) {
-            remoteServiceAccess.put(debugger, success);
+            remoteServiceAccess.put(debugger, accessThread);
         }
         fireServiceClass(debugger);
     }
     
-    public static boolean hasServiceAccess(JPDADebugger debugger) {
+    public static ThreadReference getServiceAccessThread(JPDADebugger debugger) {
         ClassObjectReference serviceClass = getServiceClass(debugger);
         if (serviceClass != null) {
-            Boolean has;
+            ThreadReference accessThread;
             synchronized (remoteServiceAccess) {
-                has = remoteServiceAccess.get(debugger);
+                accessThread = remoteServiceAccess.get(debugger);
             }
-            return has != null && has.booleanValue();
+            return accessThread;
         } else {
-            return false;
+            return null;
         }
     }
     
