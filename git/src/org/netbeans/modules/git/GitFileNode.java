@@ -74,7 +74,7 @@ public abstract class GitFileNode<T extends FileNodeInformation> extends VCSFile
     }
     
     @Override
-    public abstract FileNodeInformation getInformation ();
+    public abstract T getInformation ();
 
     public static class GitLocalFileNode extends GitFileNode<FileInformation> {
         
@@ -209,5 +209,24 @@ public abstract class GitFileNode<T extends FileNodeInformation> extends VCSFile
             return format.getFormat().format(new Object[] { name, "" });
         }
         
+    }
+    
+    public static class GitDelegatingFileNode extends GitFileNode<FileInformation> {
+        private final VCSFileNode<FileInformation> delegate;
+        
+        public GitDelegatingFileNode (File root, VCSFileNode<FileInformation> delegate) {
+            super(root, delegate.getFile());
+            this.delegate = delegate;
+        }
+        
+        @Override
+        public FileInformation getInformation() {
+            return delegate.getInformation();
+        }
+
+        @Override
+        public VCSCommitOptions getDefaultCommitOption (boolean withExclusions) {
+            return delegate.getDefaultCommitOption(withExclusions);
+        }
     }
 }

@@ -55,8 +55,8 @@ import org.openide.cookies.SaveCookie;
  * @author Tomas Stupka
  */
 public abstract class VCSCommitDiffProvider {
-    private HashMap<File, JComponent> displayedDiffs = new HashMap<File, JComponent>();
-        
+    
+    private final HashMap<File, JComponent> displayedDiffs = new HashMap<File, JComponent>();
         
     JComponent getDiffComponent(File file) {
         JComponent component = displayedDiffs.get(file);
@@ -68,6 +68,10 @@ public abstract class VCSCommitDiffProvider {
     }
 
     protected abstract JComponent createDiffComponent(File file);
+    
+    protected JComponent getDiffComponent (VCSFileNode[] files) {
+        return null;
+    }
 
     protected Set<File> getModifiedFiles() {
         return Collections.emptySet();
@@ -79,5 +83,14 @@ public abstract class VCSCommitDiffProvider {
 
     protected EditorCookie[] getEditorCookies() {
         return new EditorCookie[0];
+    }
+
+    /**
+     * Selects the file in the opened diff view. Makes sense only if the diff
+     * view is capable of showing more files.
+     * @param file file to select
+     */
+    protected void selectFile (File file) {
+        
     }
 }
