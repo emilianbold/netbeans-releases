@@ -319,6 +319,7 @@ public class PullAction extends SingleRepositoryAction {
                     cont = false;
                     try {
                         GitMergeResult result = client.merge(branchToMerge, getProgressMonitor());
+                        mrp.processResult(result);
                         if (result.getMergeStatus() == GitMergeResult.MergeStatus.ALREADY_UP_TO_DATE
                                 || result.getMergeStatus() == GitMergeResult.MergeStatus.FAST_FORWARD
                                 || result.getMergeStatus() == GitMergeResult.MergeStatus.MERGED) {
