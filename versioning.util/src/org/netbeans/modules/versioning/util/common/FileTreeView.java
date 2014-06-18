@@ -107,6 +107,7 @@ public abstract class FileTreeView<T extends Node> implements FileViewComponent<
     private final ViewContainer viewComponent;
     private T[] nodes;
     private final Map<T, TreeFilterNode> nodeMapping = Collections.synchronizedMap(new WeakHashMap<T, TreeFilterNode>());
+    private boolean internalTraverse;
     
     private static class ViewContainer extends JPanel implements ExplorerManager.Provider {
 
@@ -205,7 +206,7 @@ public abstract class FileTreeView<T extends Node> implements FileViewComponent<
 
     @Override
     public void propertyChange (PropertyChangeEvent evt) {
-        if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+        if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()) && !internalTraverse) {
             Node[] selectedNodes = em.getSelectedNodes();
             if (selectedNodes.length == 1) {
                 // single selection
@@ -414,7 +415,17 @@ public abstract class FileTreeView<T extends Node> implements FileViewComponent<
     }
     
     private Node findShiftNode (Node startingNode, int direction, boolean canExpand) {
-        return startingNode == null ? null : findDetailNode(startingNode, direction, view, canExpand);
+        boolean oldVal = internalTraverse;
+        Node[] selected = em.getSelectedNodes();
+        try {
+            internalTraverse = true;
+            return startingNode == null ? null : findDetailNode(startingNode, direction, view, canExpand);
+        } finally {
+            try {
+                em.setSelectedNodes(selected);
+            } catch (PropertyVetoException ex) { }
+            internalTraverse = oldVal;
+        }
     }
 
     private Node findDetailNode(Node fromNode, int direction,

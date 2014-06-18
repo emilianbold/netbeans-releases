@@ -552,6 +552,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         } else {
             panel.btnCommit.setVisible(false);
             panel.btnRevert.setVisible(false);
+            panel.btnRefresh.setVisible(false);
         }
         if (showingFileComponent()) {
             panel.listButton.addActionListener(this);
