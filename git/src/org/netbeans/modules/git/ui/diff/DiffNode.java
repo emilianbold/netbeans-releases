@@ -133,7 +133,7 @@ public abstract class DiffNode<T extends GitFileNode> extends GitStatusNode<T> i
 
         @Override
         public String getStatusText () {
-            return node.getInformation().getStatusText();
+            return node.getStatusText();
         }
 
         @Override

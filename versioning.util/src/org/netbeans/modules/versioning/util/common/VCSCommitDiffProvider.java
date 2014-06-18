@@ -54,7 +54,7 @@ import org.openide.cookies.SaveCookie;
  *
  * @author Tomas Stupka
  */
-public abstract class VCSCommitDiffProvider {
+public abstract class VCSCommitDiffProvider<T extends VCSFileNode> {
     
     private final HashMap<File, JComponent> displayedDiffs = new HashMap<File, JComponent>();
         
@@ -69,7 +69,7 @@ public abstract class VCSCommitDiffProvider {
 
     protected abstract JComponent createDiffComponent(File file);
     
-    protected JComponent getDiffComponent (VCSFileNode[] files) {
+    protected JComponent getDiffComponent (T[] files) {
         return null;
     }
 

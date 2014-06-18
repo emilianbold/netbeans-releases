@@ -236,7 +236,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         refreshSelectionCombos();
     }
 
-    public MultiDiffPanelController (VCSFileNode[] files, Mode mode) {
+    public MultiDiffPanelController (GitFileNode[] files, Mode mode) {
         this(null, Revision.HEAD, Revision.LOCAL, true);
         for (JComponent c : new JComponent[] { panel.tgbHeadVsIndex, panel.tgbHeadVsWorking, panel.tgbIndexVsWorking }) {
             c.setVisible(false);
@@ -1030,19 +1030,18 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         }
     }
 
-    public final void changeFiles (VCSFileNode[] files, Mode mode) {
+    public final void changeFiles (GitFileNode[] files, Mode mode) {
         lastDividerLoc = 0;
         dividerSet = false;
         this.mode = mode;
         final List<DiffNode> nodes = new ArrayList<>(files.length);
         final Map<File, Setup> localSetups = new HashMap<>(files.length);
         Git git = Git.getInstance();
-        for (VCSFileNode<FileInformation> fNode : files) {
+        for (GitFileNode<FileInformation> fNode : files) {
             File root = git.getRepositoryRoot(fNode.getFile());
             if (root != null) {
-                GitFileNode node = new GitFileNode.GitDelegatingFileNode(root, fNode);
-                Setup setup = new Setup(node, mode, Revision.HEAD);
-                DiffNode diffNode = new DiffNode.DiffImmutableNode(node, setup, DiffUtils.getEditorCookie(setup));
+                Setup setup = new Setup(fNode, mode, Revision.HEAD);
+                DiffNode diffNode = new DiffNode.DiffImmutableNode(fNode, setup, DiffUtils.getEditorCookie(setup));
                 nodes.add(diffNode);
                 setup.setNode(diffNode);
                 localSetups.put(fNode.getFile(), setup);

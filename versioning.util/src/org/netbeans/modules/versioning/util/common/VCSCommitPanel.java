@@ -443,13 +443,14 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
     @NbBundle.Messages({
         "VCSCommitPanel.DiffTab.name=Diff"
     })
-    void openDiff (VCSFileNode[] nodes, List<VCSFileNode> allNodes) {
+    void openDiff (F[] nodes, List<F> allNodes) {
         if(diffProvider == null) {
             return;
         }
         boolean newDiff = false;
         
-        JComponent component = diffProvider.getDiffComponent(allNodes.toArray(new VCSFileNode[allNodes.size()])); 
+        F[] nodeArray = allNodes.toArray((F[]) java.lang.reflect.Array.newInstance((Class<F>) nodes.getClass().getComponentType(), allNodes.size()));
+        JComponent component = diffProvider.getDiffComponent(nodeArray); 
         if (component == null) {
             // fallback to old behavior (one by one tabs)
             for (VCSFileNode node : nodes) {

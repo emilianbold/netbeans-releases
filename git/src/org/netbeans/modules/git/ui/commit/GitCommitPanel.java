@@ -71,6 +71,7 @@ import org.netbeans.modules.git.FileInformation.Mode;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.FileStatusCache;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.GitFileNode;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
@@ -212,7 +213,7 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
         final String preparingMessage = NbBundle.getMessage(CommitAction.class, "Progress_Preparing_Commit"); //NOI18N
         setupProgress(preparingMessage, support.getProgressComponent());
         if (diffProvider.isOpen()) {
-            diffProvider.refreshFiles(new VCSFileNode[0], getAcceptedMode(getSelectedFilter()));
+            diffProvider.refreshFiles(new GitFileNode[0], getAcceptedMode(getSelectedFilter()));
         }
         Task task = support.start(rp, repository, preparingMessage);
         
@@ -326,7 +327,7 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
             List<GitLocalFileNode> nodesList = new ArrayList<>(fileList.size());
             for (File file : fileList) {
                 if (GitUtils.isFromRepository(repository, file)) {
-                    GitLocalFileNode node = new GitLocalFileNode(repository, file);
+                    GitLocalFileNode node = new GitLocalFileNode(repository, file, getAcceptedMode(filter));
                     nodesList.add(node);
                 }
             }
@@ -353,7 +354,7 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
         throw new IllegalStateException("wrong filter " + (f != null ? f.getID() : "NULL"));    // NOI18N        
     }
     
-    private static Mode getAcceptedMode (VCSCommitFilter f) {
+    private static FileInformation.Mode getAcceptedMode (VCSCommitFilter f) {
         if (f == FILTER_HEAD_VS_INDEX) {
             return Mode.HEAD_VS_INDEX;
         } else if (f == FILTER_HEAD_VS_WORKING) {
@@ -362,10 +363,10 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
         throw new IllegalStateException("wrong filter " + (f != null ? f.getID() : "NULL")); //NOI18N
     }
 
-    private static class DiffProvider extends VCSCommitDiffProvider {
+    private static class DiffProvider extends VCSCommitDiffProvider<GitFileNode> {
 
         private MultiDiffPanelController controller;
-        private VCSFileNode[] files;
+        private GitFileNode[] files;
         private Mode mode;
 
         @Override
@@ -385,16 +386,16 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
         @Override
         public JComponent createDiffComponent (File file) {
             componentClosed();
-            controller = new MultiDiffPanelController(new VCSFileNode[0], mode);
+            controller = new MultiDiffPanelController(new GitFileNode[0], mode);
             return controller.getPanel();
         }
 
         @Override
-        protected JComponent getDiffComponent (VCSFileNode[] files) {
+        protected JComponent getDiffComponent (GitFileNode[] files) {
             return getDiffComponent(files, mode);
         }
 
-        private JComponent getDiffComponent (VCSFileNode[] files, Mode mode) {
+        private JComponent getDiffComponent (GitFileNode[] files, Mode mode) {
             if (controller != null && (!Arrays.equals(this.files, files) || mode != this.mode)) {
                 beforeFilesChanged();
                 this.files = Arrays.copyOf(files, files.length);
@@ -419,7 +420,7 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
             this.mode = mode;
         }
         
-        private void refreshFiles (VCSFileNode[] files, Mode mode) {
+        private void refreshFiles (GitFileNode[] files, Mode mode) {
             getDiffComponent(files, mode);
         }
 
@@ -593,7 +594,7 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
                     ArrayList<GitLocalFileNode> nodesList = new ArrayList<GitLocalFileNode>(files.length);
 
                     for (File file : files) {
-                        GitLocalFileNode node = new GitLocalFileNode(repository, file);
+                        GitLocalFileNode node = new GitLocalFileNode(repository, file, getAcceptedMode(filter));
                         nodesList.add(node);
                     }
                     final GitLocalFileNode[] nodes = nodesList.toArray(new GitLocalFileNode[files.length]);

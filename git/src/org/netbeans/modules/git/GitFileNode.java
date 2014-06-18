@@ -77,14 +77,25 @@ public abstract class GitFileNode<T extends FileNodeInformation> extends VCSFile
     public abstract T getInformation ();
 
     public static class GitLocalFileNode extends GitFileNode<FileInformation> {
+        private FileInformation.Mode mode;
         
         public GitLocalFileNode(File root, File file) {
             super(root, file);
         }
         
+        public GitLocalFileNode(File root, File file, FileInformation.Mode mode) {
+            super(root, file);
+            this.mode = mode;
+        }
+        
         @Override
         public FileInformation getInformation() {
             return Git.getInstance().getFileStatusCache().getStatus(getFile());
+        }
+
+        @Override
+        public String getStatusText () {
+            return mode == null ? getInformation().getStatusText() : getInformation().getStatusText(mode);
         }
 
         @Override
@@ -209,24 +220,5 @@ public abstract class GitFileNode<T extends FileNodeInformation> extends VCSFile
             return format.getFormat().format(new Object[] { name, "" });
         }
         
-    }
-    
-    public static class GitDelegatingFileNode extends GitFileNode<FileInformation> {
-        private final VCSFileNode<FileInformation> delegate;
-        
-        public GitDelegatingFileNode (File root, VCSFileNode<FileInformation> delegate) {
-            super(root, delegate.getFile());
-            this.delegate = delegate;
-        }
-        
-        @Override
-        public FileInformation getInformation() {
-            return delegate.getInformation();
-        }
-
-        @Override
-        public VCSCommitOptions getDefaultCommitOption (boolean withExclusions) {
-            return delegate.getDefaultCommitOption(withExclusions);
-        }
     }
 }

@@ -73,6 +73,10 @@ public abstract class VCSFileNode<I extends VCSFileInformation> {
     public abstract VCSCommitOptions getDefaultCommitOption (boolean withExclusions);
     public abstract I getInformation();
     
+    public String getStatusText () {
+        return getInformation().getStatusText();
+    }
+    
     public VCSCommitOptions getCommitOptions() {
         if(commitOption == null) {
             commitOption = getDefaultCommitOption(true);
