@@ -52,7 +52,6 @@ import org.netbeans.api.diff.StreamSource;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Mode;
 import org.netbeans.modules.git.GitFileNode;
-import org.netbeans.modules.git.GitFileNode.GitLocalFileNode;
 import org.netbeans.modules.git.ui.repository.Revision;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.diff.AbstractDiffSetup;
@@ -77,7 +76,7 @@ public final class Setup extends AbstractDiffSetup {
 
     private String    title;
 
-    public Setup (GitLocalFileNode node, Mode mode, Revision revision) {
+    public Setup (GitFileNode<FileInformation> node, Mode mode, Revision revision) {
         this.baseFile = node.getFile();
 
         ResourceBundle loc = NbBundle.getBundle(Setup.class);

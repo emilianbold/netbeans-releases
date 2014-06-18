@@ -66,7 +66,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.*;
-import javax.swing.plaf.UIResource;
 import javax.swing.table.TableCellRenderer;
 import org.openide.awt.Mnemonics;
 
@@ -454,11 +453,11 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
 
     private void openDiff () {
         int[] rows = table.getSelectedRows();
-        VCSFileNode[] nodes = new VCSFileNode[rows.length];
+        F[] nodes = (F[]) java.lang.reflect.Array.newInstance((Class<F>) tableModel.getNodes().getClass().getComponentType(), rows.length);
         for (int i = 0; i < rows.length; ++i) {
             nodes[i] = tableModel.getNode(sorter.modelIndex(rows[i]));
         }
-        commitPanel.openDiff(nodes);
+        commitPanel.openDiff(nodes, tableModel.getCommitFiles());
     }
 
     private class CommitStringsCellRenderer extends DefaultTableCellRenderer {

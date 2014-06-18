@@ -375,14 +375,16 @@ public class RebaseAction extends SingleRepositoryAction {
                     break;
                 case STOPPED:
                     sb.append(Bundle.MSG_RebaseAction_result_conflict());
-                    printConflicts(sb, result.getConflicts());
+                    printConflicts(logger, sb, result.getConflicts());
                     nextAction = resolveRebaseConflicts(result.getConflicts());
                     break;
                 case UP_TO_DATE:
                     sb.append(Bundle.MSG_RebaseAction_result_alreadyUpToDate(onto));
                     break;
             }
-            logger.outputLine(sb.toString());
+            if (sb.length() > 0) {
+                logger.outputLine(sb.toString());
+            }
             if (logActions) {
                 logRebaseResult(info.getRevision(), base);
             }

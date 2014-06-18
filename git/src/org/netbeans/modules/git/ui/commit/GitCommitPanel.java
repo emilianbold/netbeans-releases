@@ -71,6 +71,7 @@ import org.netbeans.modules.git.FileInformation.Mode;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.FileStatusCache;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.GitFileNode;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
@@ -78,6 +79,7 @@ import org.netbeans.modules.git.GitFileNode.GitLocalFileNode;
 import org.netbeans.modules.git.ui.diff.MultiDiffPanelController;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
 import org.netbeans.modules.versioning.hooks.GitHook;
 import org.netbeans.modules.versioning.hooks.GitHookContext;
 import org.netbeans.modules.versioning.hooks.VCSHookContext;
@@ -88,6 +90,7 @@ import org.netbeans.modules.versioning.util.common.VCSCommitDiffProvider;
 import org.netbeans.modules.versioning.util.common.VCSCommitFilter;
 import org.netbeans.modules.versioning.util.common.VCSCommitPanel;
 import org.netbeans.modules.versioning.util.common.VCSCommitParameters.DefaultCommitParameters;
+import org.netbeans.modules.versioning.util.common.VCSFileNode;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.HelpCtx;
@@ -126,6 +129,7 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
         this.repository = repository;
         this.hooks = hooks;
         this.fromGitView = fromGitView;
+        diffProvider.setMode(getAcceptedMode(getSelectedFilter()));
     }
 
     public static GitCommitPanel create(final File[] roots, final File repository, GitUser user, boolean fromGitView) {
@@ -191,9 +195,7 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
         if (ok && !fromGitView) {
             GitModuleConfig.getDefault().setLastUsedCommitViewMode(getSelectedFilter() == GitCommitPanel.FILTER_HEAD_VS_INDEX ? Mode.HEAD_VS_INDEX : Mode.HEAD_VS_WORKING_TREE);
         }
-        for (Map.Entry<File, MultiDiffPanelController> e : diffProvider.controllers.entrySet()) {
-            e.getValue().componentClosed();
-        }
+        diffProvider.componentClosed();
         return ok;
     }
     
@@ -210,6 +212,9 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
         support = getProgressSupport(refreshFinnished);
         final String preparingMessage = NbBundle.getMessage(CommitAction.class, "Progress_Preparing_Commit"); //NOI18N
         setupProgress(preparingMessage, support.getProgressComponent());
+        if (diffProvider.isOpen()) {
+            diffProvider.refreshFiles(new GitFileNode[0], getAcceptedMode(getSelectedFilter()));
+        }
         Task task = support.start(rp, repository, preparingMessage);
         
         // do not show progress in dialog if task finnished early        
@@ -232,15 +237,17 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
 
     // merge-type commit dialog can hook into this method
     protected GitProgressSupport getProgressSupport (final boolean[] refreshFinished) {
-        return new GitCommitDialogProgressSupport(refreshFinished);
+        return new GitCommitDialogProgressSupport(refreshFinished, getSelectedFilter());
     }
 
     private class GitCommitDialogProgressSupport extends GitProgressSupport {
 
         private final boolean[] refreshFinished;
+        private final VCSCommitFilter filter;
 
-        public GitCommitDialogProgressSupport(boolean[] refreshFinished) {
+        public GitCommitDialogProgressSupport (boolean[] refreshFinished, VCSCommitFilter filter) {
             this.refreshFinished = refreshFinished;
+            this.filter = filter;
         }
 
         @Override
@@ -289,12 +296,13 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
             // which only makes the dialog flicker
             refreshFinished[0] = true;
             File[][] split = Utils.splitFlatOthers(roots);
-            List<File> fileList = new ArrayList<File>();
+            List<File> fileList = new ArrayList<>();
+            EnumSet<Status> acceptedStatus = getAcceptedStatus(filter);
             for (int c = 0; c < split.length; c++) {
                 File[] splitRoots = split[c];
                 boolean recursive = c == 1;
                 if (recursive) {
-                    File[] files = cache.listFiles(splitRoots, getAcceptedStatus());
+                    File[] files = cache.listFiles(splitRoots, acceptedStatus);
                     for (int i = 0; i < files.length; i++) {
                         for (int r = 0; r < splitRoots.length; r++) {
                             if (Utils.isAncestorOrEqual(splitRoots[r], files[i])) {
@@ -305,7 +313,7 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
                         }
                     }
                 } else {
-                    File[] files = GitUtils.flatten(splitRoots, getAcceptedStatus());
+                    File[] files = GitUtils.flatten(splitRoots, acceptedStatus);
                     for (int i = 0; i < files.length; i++) {
                         if (!fileList.contains(files[i])) {
                             fileList.add(files[i]);
@@ -319,7 +327,7 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
             List<GitLocalFileNode> nodesList = new ArrayList<>(fileList.size());
             for (File file : fileList) {
                 if (GitUtils.isFromRepository(repository, file)) {
-                    GitLocalFileNode node = new GitLocalFileNode(repository, file);
+                    GitLocalFileNode node = new GitLocalFileNode(repository, file, getAcceptedMode(filter));
                     nodesList.add(node);
                 }
             }
@@ -328,14 +336,16 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
                 @Override
                 public void run() {
                     getCommitTable().setNodes(nodes);
+                    if (diffProvider.isOpen()) {
+                        diffProvider.refreshFiles(nodes, getAcceptedMode(filter));
+                    }
                 }
             });
             return false;
         }
     }
     
-    private EnumSet<Status> getAcceptedStatus() {
-        VCSCommitFilter f = getSelectedFilter();
+    private static EnumSet<Status> getAcceptedStatus (VCSCommitFilter f) {
         if(f == FILTER_HEAD_VS_INDEX) {
             return FileInformation.STATUS_MODIFIED_HEAD_VS_INDEX;
         } else if(f == FILTER_HEAD_VS_WORKING) {
@@ -343,10 +353,21 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
         }         
         throw new IllegalStateException("wrong filter " + (f != null ? f.getID() : "NULL"));    // NOI18N        
     }
+    
+    private static FileInformation.Mode getAcceptedMode (VCSCommitFilter f) {
+        if (f == FILTER_HEAD_VS_INDEX) {
+            return Mode.HEAD_VS_INDEX;
+        } else if (f == FILTER_HEAD_VS_WORKING) {
+            return Mode.HEAD_VS_WORKING_TREE;
+        }
+        throw new IllegalStateException("wrong filter " + (f != null ? f.getID() : "NULL")); //NOI18N
+    }
 
-    private static class DiffProvider extends VCSCommitDiffProvider {
+    private static class DiffProvider extends VCSCommitDiffProvider<GitFileNode> {
 
-        private final Map<File, MultiDiffPanelController> controllers = new HashMap<File, MultiDiffPanelController>();
+        private MultiDiffPanelController controller;
+        private GitFileNode[] files;
+        private Mode mode;
 
         @Override
         public Set<File> getModifiedFiles () {
@@ -354,23 +375,77 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
         }
 
         private Map<File, SaveCookie> getSaveCookiesPerFile () {
-            Map<File, SaveCookie> modifiedFiles = new HashMap<File, SaveCookie>();
-            for (Map.Entry<File, MultiDiffPanelController> e : controllers.entrySet()) {
-                SaveCookie[] cookies = e.getValue().getSaveCookies(false);
-                if (cookies.length > 0) {
-                    modifiedFiles.put(e.getKey(), cookies[0]);
-                }
+            Map<File, SaveCookie> modifiedFiles = new HashMap<>();
+            if (controller != null) {
+                Map<File, SaveCookie> cookies = controller.getSaveCookies(false);
+                modifiedFiles.putAll(cookies);
             }
             return modifiedFiles;
         }
 
         @Override
         public JComponent createDiffComponent (File file) {
-            MultiDiffPanelController controller = new MultiDiffPanelController(file);
-            controllers.put(file, controller);
+            componentClosed();
+            controller = new MultiDiffPanelController(new GitFileNode[0], mode);
             return controller.getPanel();
         }
+
+        @Override
+        protected JComponent getDiffComponent (GitFileNode[] files) {
+            return getDiffComponent(files, mode);
+        }
+
+        private JComponent getDiffComponent (GitFileNode[] files, Mode mode) {
+            if (controller != null && (!Arrays.equals(this.files, files) || mode != this.mode)) {
+                beforeFilesChanged();
+                this.files = Arrays.copyOf(files, files.length);
+                controller.changeFiles(files, mode);
+            }
+            setMode(mode);
+            if (controller == null) {
+                this.files = Arrays.copyOf(files, files.length);
+                controller = new MultiDiffPanelController(files, mode);
+            }
+            return controller.getPanel();
+        }
+
+        @Override
+        protected void selectFile (File file) {
+            if (controller != null) {
+                controller.selectFile(file);
+            }
+        }
+
+        private void setMode (Mode mode) {
+            this.mode = mode;
+        }
         
+        private void refreshFiles (GitFileNode[] files, Mode mode) {
+            getDiffComponent(files, mode);
+        }
+
+        private void componentClosed () {
+            if (controller != null) {
+                controller.componentClosed();
+                controller = null;
+            }
+        }
+
+        private void beforeFilesChanged () {
+            if (controller != null) {
+                SaveCookie[] saveCookies = getSaveCookies();
+                if (saveCookies.length > 0 && SaveBeforeClosingDiffConfirmation.allSaved(saveCookies)) {
+                    EditorCookie[] editorCookies = getEditorCookies();
+                    for (EditorCookie cookie : editorCookies) {
+                        cookie.open();
+                    }
+                }
+            }
+        }
+
+        private boolean isOpen () {
+            return controller != null;
+        }
 
         /**
          * Returns save cookies available for files in the commit table
@@ -388,8 +463,8 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
         @Override
         protected EditorCookie[] getEditorCookies () {
             LinkedList<EditorCookie> allCookies = new LinkedList<EditorCookie>();
-            for (Map.Entry<File, MultiDiffPanelController> e : controllers.entrySet()) {
-                EditorCookie[] cookies = e.getValue().getEditorCookies(true);
+            if (controller != null) {
+                EditorCookie[] cookies = controller.getEditorCookies(true);
                 if (cookies.length > 0) {
                     allCookies.add(cookies[0]);
                 }
@@ -435,6 +510,7 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
     static class GitCommitPanelMerged extends GitCommitPanel {
 
         private final File repository;
+        private final DiffProvider diffProvider;
 
         static GitCommitPanel create(File[] roots, File repository, GitUser user, String mergeCommitMessage) {
             Preferences preferences = GitModuleConfig.getDefault().getPreferences();
@@ -456,6 +532,7 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
                 Preferences preferences, Collection<GitHook> hooks, GitHookContext hooksCtx, DiffProvider diffProvider) {
             super(gitCommitTable, roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider, true, createFilters());
             this.repository = repository;
+            this.diffProvider = diffProvider;
         }
 
         private static List<VCSCommitFilter> createFilters() {
@@ -466,15 +543,17 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
 
         @Override
         protected GitProgressSupport getProgressSupport(boolean[] refreshFinnished) {
-            return new MergedCommitDialogProgressSupport(refreshFinnished);
+            return new MergedCommitDialogProgressSupport(refreshFinnished, getSelectedFilter());
         }
 
         private class MergedCommitDialogProgressSupport extends GitProgressSupport {
 
             private final boolean refreshFinished[];
+            private final VCSCommitFilter filter;
 
-            MergedCommitDialogProgressSupport(boolean[] refreshFinished) {
+            MergedCommitDialogProgressSupport(boolean[] refreshFinished, VCSCommitFilter filter) {
                 this.refreshFinished = refreshFinished;
+                this.filter = filter;
             }
 
             @Override
@@ -515,7 +594,7 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
                     ArrayList<GitLocalFileNode> nodesList = new ArrayList<GitLocalFileNode>(files.length);
 
                     for (File file : files) {
-                        GitLocalFileNode node = new GitLocalFileNode(repository, file);
+                        GitLocalFileNode node = new GitLocalFileNode(repository, file, getAcceptedMode(filter));
                         nodesList.add(node);
                     }
                     final GitLocalFileNode[] nodes = nodesList.toArray(new GitLocalFileNode[files.length]);
@@ -524,6 +603,9 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
                         @Override
                         public void run() {
                             getCommitTable().setNodes(nodes);
+                            if (diffProvider.isOpen()) {
+                                diffProvider.refreshFiles(nodes, getAcceptedMode(filter));
+                            }
                         }
                     });
                 } finally {

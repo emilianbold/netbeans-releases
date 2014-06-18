@@ -80,7 +80,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.swing.etable.ETable;
 import org.netbeans.swing.etable.ETableColumn;
-import org.netbeans.swing.etable.ETableColumnModel;
 import org.openide.awt.MouseUtils;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport.ReadOnly;
@@ -281,7 +280,9 @@ public abstract class VCSStatusTable<T extends VCSStatusNode> implements MouseLi
                 // invoke later so the selection on the table will be set first
                 if (table.isShowing()) {
                     JPopupMenu menu = getPopup();
-                    menu.show(table, e.getX(), e.getY());
+                    if (menu != null) {
+                        menu.show(table, e.getX(), e.getY());
+                    }
                 }
             }
         });
@@ -348,9 +349,6 @@ public abstract class VCSStatusTable<T extends VCSStatusNode> implements MouseLi
         List<VCSStatusNode> selectedNodes = new ArrayList<VCSStatusNode>();
         ListSelectionModel selection = table.getSelectionModel();
         final TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, table);
-        if (tc == null) {
-            return; // table is no longer in component hierarchy
-        }
         int min = selection.getMinSelectionIndex();
         if (min != -1) {
             int max = selection.getMaxSelectionIndex();
@@ -370,7 +368,9 @@ public abstract class VCSStatusTable<T extends VCSStatusNode> implements MouseLi
                     selectedFiles[i] = nodeArray[i].getFile();
                 }
                 support.firePropertyChange(PROP_SELECTED_FILES, null, selectedFiles);
-                tc.setActivatedNodes(nodeArray);
+                if (tc != null) {
+                    tc.setActivatedNodes(nodeArray);
+                }
             }
         });
     }// </editor-fold>
