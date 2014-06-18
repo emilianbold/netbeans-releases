@@ -15,5 +15,9 @@ public class ArrayAccess {
         ar[(int)idx2] = 0;
         ar[(byte)idx2] = 0;
         ar[(byte)((int)idx)] = 1;
+        ar[(byte)((int)idx)] = (float)1;
+        
+        double[] ar2 = new double[5];
+        ar2[idx] = (float)1;
     }
 }

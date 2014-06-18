@@ -277,6 +277,7 @@ public class ThrowableNotThrown {
                         // OK, exception used.
                         return true;
 
+                    case IF:
                     case RETURN:
                         return true;
                         
@@ -335,7 +336,7 @@ public class ThrowableNotThrown {
                         return nct.getArguments().contains(prevLeaf);
                     }
                         
-
+                    case EQUAL_TO: case NOT_EQUAL_TO: case INSTANCE_OF:
                     case PARENTHESIZED:
                     case TYPE_CAST: 
                         // escalate furter

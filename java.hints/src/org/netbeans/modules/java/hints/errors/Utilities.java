@@ -1971,5 +1971,24 @@ public class Utilities {
         }
         return ll;
     }
-    
+
+    /**
+     * Determines if assignment looses precision.
+     * Works only for primitive types, false for references.
+     * 
+     * @param from the assigned value type
+     * @param to the target type
+     * @return true, if precision is lost
+     */
+    public static boolean loosesPrecision(TypeMirror from, TypeMirror to) {
+        if (!from.getKind().isPrimitive() || !to.getKind().isPrimitive()) {
+            return false;
+        }
+        if (to.getKind() == TypeKind.CHAR) {
+            return true;
+        } else if (from.getKind() == TypeKind.CHAR) {
+            return to.getKind() == TypeKind.BYTE || to.getKind() == TypeKind.SHORT;
+        }
+        return to.getKind().ordinal() < from.getKind().ordinal();
+    }
 }
