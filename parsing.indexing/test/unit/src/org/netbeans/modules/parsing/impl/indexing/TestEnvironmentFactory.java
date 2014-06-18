@@ -120,12 +120,12 @@ public class TestEnvironmentFactory implements EnvironmentFactory {
     }
 
     @Override
-    public Parser findMimeParser(String mimeType) {
+    public Parser findMimeParser(Lookup context, String mimeType) {
         return MimeLookup.getLookup(mimeType).lookup(ParserFactory.class).createParser(Collections.<Snapshot>emptySet());
     }
 
     @Override
-    public Collection<? extends Scheduler> getSchedulers() {
+    public Collection<? extends Scheduler> getSchedulers(Lookup context) {
         return Schedulers.getSchedulers();
     }
 
@@ -168,8 +168,7 @@ public class TestEnvironmentFactory implements EnvironmentFactory {
     public Set<String> findSupportedMIMETypes() {
         return TEST_MIME_TYPES;
     }
-    
-    
+
     static class Env extends SourceEnvironment {
         private SourceControl ctrl;
 
