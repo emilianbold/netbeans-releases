@@ -110,7 +110,7 @@ class WildflyStartRunnable implements Runnable {
 
     private final static String NEW_IF_CONDITION_STRING
             = "\"xx\" == \"x\"";                      // NOI18N
-    
+
     private static final SpecificationVersion JDK_18 = new SpecificationVersion("1.8");
 
     private final WildflyDeploymentManager dm;
@@ -207,7 +207,10 @@ class WildflyStartRunnable implements Runnable {
         javaOptsBuilder.append(" -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true");
         File configFile = new File(ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE));
         if(configFile.exists() && configFile.getParentFile().exists() && configFile.getParentFile().getParentFile().exists()) {
-            javaOptsBuilder.append(" -Djboss.server.base.dir=").append(configFile.getParentFile().getParentFile().getAbsolutePath());
+            String baseDir = configFile.getParentFile().getParentFile().getAbsolutePath();
+            if(!baseDir.equals(ip.getProperty(WildflyPluginProperties.PROPERTY_SERVER_DIR))) {
+                javaOptsBuilder.append(" -Djboss.server.base.dir=").append(baseDir);
+            }
         }
 
         for (StartupExtender args : StartupExtender.getExtenders(
@@ -313,8 +316,7 @@ class WildflyStartRunnable implements Runnable {
             }
             return pd.exec(null, envp, true, rootFile);
         } catch (java.io.IOException ioe) {
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
-
+            Logger.getLogger("global").log(Level.WARNING, null, ioe);
             final String serverLocation = ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR);
             final String serverRunFileName = serverLocation + (Utilities.isWindows() ? STANDALONE_BAT : STANDALONE_SH);
             fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_START_SERVER_FAILED_PD", serverRunFileName));
