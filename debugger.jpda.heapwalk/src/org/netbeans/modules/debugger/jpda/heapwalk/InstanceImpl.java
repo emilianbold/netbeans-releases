@@ -139,7 +139,7 @@ public class InstanceImpl implements Instance {
     }*/
     
     @Override
-    public int getSize() {
+    public long getSize() {
         return 0;
     }
 
@@ -271,12 +271,12 @@ public class InstanceImpl implements Instance {
     }
 
     @Override
-    public int getRetainedSize() {
+    public long getRetainedSize() {
         return 0;
     }
 
     @Override
-    public int getReachableSize() {
+    public long getReachableSize() {
         return 0;
     }
     

@@ -123,7 +123,7 @@ public class JsStructureScanner implements StructureScanner {
             if (!(child instanceof JsObjectReference && ModelUtils.isDescendant(child, ((JsObjectReference)child).getOriginal()))) {
                 children = getEmbededItems(result, child, children);
             }
-            if ((child.hasExactName() || child.isAnonymous()) && child.getJSKind().isFunction()) {
+            if ((child.hasExactName() || child.isAnonymous() || child.getJSKind() == JsElement.Kind.CONSTRUCTOR) && child.getJSKind().isFunction()) {
                 JsFunction function = (JsFunction)child;
                 if (function.isAnonymous()) {
                     collectedItems.addAll(children);
