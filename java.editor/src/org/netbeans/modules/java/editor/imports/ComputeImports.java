@@ -791,7 +791,7 @@ public class ComputeImports {
                             currentFormal = formal.next();
                         
                         if (!info.getTypes().isAssignable(info.getTypes().erasure(currentReal), info.getTypes().erasure(currentFormal))) {
-                            if (((ExecutableElement) c).isVarArgs() && !formal.hasNext()) {
+                            if (((ExecutableElement) c).isVarArgs() && !formal.hasNext() && currentFormal.getKind() == TypeKind.ARRAY) {
                                 currentFormal = ((ArrayType) currentFormal).getComponentType();
                                 
                                 if (!info.getTypes().isAssignable(info.getTypes().erasure(currentReal), info.getTypes().erasure(currentFormal))) {

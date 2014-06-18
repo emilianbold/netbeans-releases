@@ -658,8 +658,8 @@ final class MarkVector {
     public String toString() {
         return (isBackwardBiasMarks() ? "BB:" : "") + "markCount=" + markCount() + // NOI18N
                 ", gap:" + CharContent.gapToString(markArray.length, gapStart, gapLength) + // NOI18N
-                ", OGap:<" + offsetGapStart + '+' + offsetGapLength + // NOI18N
-                ',' + (offsetGapStart+offsetGapLength) + '>'; // NOI18N
+                ", OGap:<0," + offsetGapStart + ")" + offsetGapLength + // NOI18N
+                '<' + (offsetGapStart+offsetGapLength) + ",...>"; // NOI18N
     }
     
     public String toStringDetail(Mark accentMark) {

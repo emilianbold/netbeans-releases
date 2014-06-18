@@ -30,365 +30,133 @@
  */
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
-import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
-import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
+import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author phrebejk
+ * @author markiewb (refactoring)
  */
-public class EmptyStatements extends AbstractHint {
+public class EmptyStatements {
 
     private static final String SUPPRESS_WARNINGS_KEY = "empty-statement";
     
-    static final EnumSet<JavaTokenId> nonRelevant = EnumSet.<JavaTokenId>of(
-            JavaTokenId.LINE_COMMENT, 
-            JavaTokenId.BLOCK_COMMENT,
-            JavaTokenId.JAVADOC_COMMENT,
-            JavaTokenId.WHITESPACE
-    );
+    @Hint(displayName = "#LBL_Empty_BLOCK", description = "#DSC_Empty_BLOCK", category = "empty", hintKind = Hint.Kind.INSPECTION, severity = Severity.VERIFIER, suppressWarnings = SUPPRESS_WARNINGS_KEY, id = "EmptyStatements_BLOCK")
+    @TriggerTreeKind(Tree.Kind.EMPTY_STATEMENT)
+    @NbBundle.Messages({"ERR_EmptyBLOCK=Remove semicolon"})
+    public static ErrorDescription forBLOCK(HintContext ctx) {
     
-    private String EMPTY_STATEMENTS_ID = "EmptyStatements_"; // NOI18N
-    
-    private Tree.Kind treeKind;
-    private Set<Tree.Kind> treeKinds = EnumSet.<Tree.Kind>of(Tree.Kind.EMPTY_STATEMENT);
-    private Set<Tree.Kind> NO_KINDS = EnumSet.noneOf(Tree.Kind.class);
-
-    private static EmptyStatements delegate;
-    private static EmptyStatements esFor;
-    private static EmptyStatements esWhile;
-    private static EmptyStatements esDoWhile;
-    private static EmptyStatements esIf;
-    private static EmptyStatements esBlock;
-    
-    private EmptyStatements( Tree.Kind treeKind ) {
-        super( treeKind == Tree.Kind.IF ? false : true, true, HintSeverity.WARNING, SUPPRESS_WARNINGS_KEY );
-        this.treeKind = treeKind;                
-    }
-
-    public static EmptyStatements createDelegate() {
-        return getDelegate();
-    }
-    
-    public static EmptyStatements createFor() {
-        EmptyStatements d = getDelegate();
-        d.esFor = new EmptyStatements( Tree.Kind.FOR_LOOP );
-        return d.esFor;
-    }
-    
-    public static EmptyStatements createWhile() {
-        EmptyStatements d = getDelegate();
-        d.esWhile = new EmptyStatements( Tree.Kind.WHILE_LOOP );
-        return d.esWhile;
-    }
-    
-    public static EmptyStatements createDoWhile() {
-        EmptyStatements d = getDelegate();
-        d.esDoWhile = new EmptyStatements( Tree.Kind.DO_WHILE_LOOP );
-        return d.esDoWhile;
-    }
-    
-    public static EmptyStatements createIf() {
-        EmptyStatements d = getDelegate();
-        d.esIf = new EmptyStatements( Tree.Kind.IF );
-        return d.esIf;
-    }
-    
-    public static EmptyStatements createBlock() {
-        EmptyStatements d = getDelegate();
-        d.esBlock = new EmptyStatements( Tree.Kind.BLOCK );
-        return d.esBlock;
-    }
-    
-    public static synchronized EmptyStatements getDelegate() {
-        if ( delegate == null ) {
-            delegate = new EmptyStatements(null);
-        }
-        return delegate;
-    }
-    
-    public Set<Kind> getTreeKinds() {
-        return treeKind == null ? treeKinds : NO_KINDS;
-    }
-
-    public List<ErrorDescription> run(CompilationInfo compilationInfo, TreePath treePath) {
-        
-        Tree tree = treePath.getLeaf();
-        
-        if( tree.getKind() != Tree.Kind.EMPTY_STATEMENT ) {
+        Tree parent = ctx.getPath().getParentPath().getLeaf();
+        if (!EnumSet.of(Kind.BLOCK).contains(parent.getKind())) {
             return null;
-        }
-        
+    }
+
+        final List<Fix> fixes = new ArrayList<>();
+        fixes.add(FixFactory.createSuppressWarningsFix(ctx.getInfo(), ctx.getPath(), SUPPRESS_WARNINGS_KEY));
+        fixes.add(JavaFixUtilities.removeFromParent(ctx, Bundle.ERR_EmptyBLOCK(), ctx.getPath()));
+    
+        return createErrorDescription(ctx, ctx.getPath().getLeaf(), fixes, Kind.BLOCK);
+    }
+    
+    @Hint(displayName = "#LBL_Empty_WHILE_LOOP", description = "#DSC_Empty_WHILE_LOOP", category = "empty", hintKind = Hint.Kind.INSPECTION, severity = Severity.VERIFIER, suppressWarnings = SUPPRESS_WARNINGS_KEY, id = "EmptyStatements_WHILE_LOOP")
+    @TriggerTreeKind(Tree.Kind.EMPTY_STATEMENT)
+    public static ErrorDescription forWHILE_LOOP(HintContext ctx) {
+        final TreePath parentPath = ctx.getPath().getParentPath();
+        final Tree parentLeaf = parentPath.getLeaf();
+        if (!EnumSet.of(Kind.WHILE_LOOP).contains(parentLeaf.getKind())) {
+            return null;
+    }
+    
+        final List<Fix> fixes = new ArrayList<>();
+        fixes.add(FixFactory.createSuppressWarningsFix(ctx.getInfo(), parentPath, SUPPRESS_WARNINGS_KEY));
+    
+        return createErrorDescription(ctx, parentLeaf, fixes, Kind.WHILE_LOOP);
+    }
+    
+    @Hint(displayName = "#LBL_Empty_IF", description = "#DSC_Empty_IF", category = "empty", hintKind = Hint.Kind.INSPECTION, severity = Severity.VERIFIER, suppressWarnings = SUPPRESS_WARNINGS_KEY, id = "EmptyStatements_IF", enabled = false)
+    @TriggerTreeKind(Tree.Kind.EMPTY_STATEMENT)
+    public static ErrorDescription forIF(HintContext ctx) {
+        final TreePath treePath = ctx.getPath();
+    
         Tree parent = treePath.getParentPath().getLeaf();        
-        
-        if ( !isEnabled(parent.getKind()) ) {
+        if (!EnumSet.of(Kind.IF).contains(parent.getKind())) {
             return null;
         }
         
-        ErrorDescription ed = null;
-                
-        switch( parent.getKind() ) {
-            case FOR_LOOP:
-            case ENHANCED_FOR_LOOP:                    
-            case WHILE_LOOP:
-            case DO_WHILE_LOOP:        
-                
-                ed = createErrorDescription(treePath.getParentPath(), parent.getKind(), compilationInfo);
-                if ( ed != null ) {                    
-                    return Collections.singletonList(ed);
+        TreePath treePathForWarning = treePath;
+        IfTree it = (IfTree) parent;
+        if (it.getThenStatement() != null
+                && it.getThenStatement().getKind() == Tree.Kind.EMPTY_STATEMENT) {
+            treePathForWarning = treePath.getParentPath();
                 }
-                break;         
-            case BLOCK:    
-                ed = createErrorDescription(treePath, parent.getKind(), compilationInfo);
-                if ( ed != null ) {                    
-                    return Collections.singletonList(ed);
+        if (it.getElseStatement() != null
+                && it.getElseStatement().getKind() == Tree.Kind.EMPTY_STATEMENT) {
+            treePathForWarning = treePath;
                 }
-                break;
-            case IF:
-                List<ErrorDescription> result = new ArrayList<ErrorDescription>(2);
-                IfTree it = (IfTree)parent;
-                if ( it.getThenStatement() != null && 
-                     it.getThenStatement().getKind() == Tree.Kind.EMPTY_STATEMENT ) {
-                    result.add( createErrorDescription(treePath.getParentPath(), parent.getKind(), compilationInfo) );
-                }
-                if ( it.getElseStatement() != null &&
-                     it.getElseStatement().getKind() == Tree.Kind.EMPTY_STATEMENT ) {
-                    result.add( createErrorDescription(treePath, parent.getKind(), compilationInfo) ); 
-                }
-                return result;
-        }       
         
-        return Collections.<ErrorDescription>emptyList();
-    }
+        final List<Fix> fixes = new ArrayList<>();
+        fixes.add(FixFactory.createSuppressWarningsFix(ctx.getInfo(), treePathForWarning, SUPPRESS_WARNINGS_KEY));
         
-    public void cancel() {
-        // Does nothing
+        return createErrorDescription(ctx, parent, fixes, parent.getKind());
     }
 
-    public String getId() {
-        return EMPTY_STATEMENTS_ID + treeKind;
-    }
+    @Hint(displayName = "#LBL_Empty_FOR_LOOP", description = "#DSC_Empty_FOR_LOOP", category = "empty", hintKind = Hint.Kind.INSPECTION, severity = Severity.VERIFIER, suppressWarnings = SUPPRESS_WARNINGS_KEY, id = "EmptyStatements_FOR_LOOP")
+    @TriggerTreeKind(Tree.Kind.EMPTY_STATEMENT)
+    public static ErrorDescription forFOR_LOOP(HintContext ctx) {
     
-    public String getDisplayName() {
-        if ( treeKind == null ) {
-            return "Empty Statements Delegate"; // NOI18N
-        }
-        return NbBundle.getMessage(EmptyStatements.class, "LBL_Empty_" + treeKind.toString() ); // NOI18N                
-    }
-
-    public String getDescription() {
-        if ( treeKind == null ) {
-            return "Empty Statements Delegate"; // NOI18N
-        }
-        return NbBundle.getMessage(EmptyStatements.class, "DSC_Empty_" + treeKind.toString() ); // NOI18N
-    }
-    
-    // Private methods ---------------------------------------------------------
-    
-    private ErrorDescription createErrorDescription( TreePath tp, Tree.Kind kind, CompilationInfo info )  {
-                        
-        return ErrorDescriptionFactory.createErrorDescription(
-                    getSeverity().toEditorSeverity(), 
-                    // getDisplayName(),
-                    NbBundle.getMessage(EmptyStatements.class, "LBL_Empty_" + kind.toString()),
-                    // Collections.<Fix>singletonList(new EmptyStatementFix( info.getFileObject(), TreePathHandle.create(tp, info) ) ), 
-                    FixFactory.createSuppressWarnings( info, tp, SUPPRESS_WARNINGS_KEY),
-                    info.getFileObject(),
-                    (int)info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), tp.getLeaf()),
-                    (int)info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), tp.getLeaf()));
-    }
-    
-    private boolean isEnabled( Tree.Kind kind ) {
-        switch( kind ) {
-            case FOR_LOOP:
-            case ENHANCED_FOR_LOOP:      
-                return esFor.isEnabled();
-            case WHILE_LOOP:
-                return esWhile.isEnabled();
-            case DO_WHILE_LOOP:        
-                return esDoWhile.isEnabled();
-            case BLOCK:    
-                return esBlock.isEnabled();
-            case IF:
-                return esIf.isEnabled();
-        }
-        return false;
-    }
-    
-    /*
-    private List<ErrorDescription> checkifStatements( StatementTree thenSt, StatementTree elseSt, TreePath tp, CompilationInfo info )  {
-        
-        boolean fixThen = false;
-        boolean fixElse = false;
-        
-        if ( thenSt != null && 
-             thenSt.getKind() != Tree.Kind.EMPTY_STATEMENT && 
-             thenSt.getKind() != Tree.Kind.BLOCK &&
-             thenSt.getKind() != Tree.Kind.ERRONEOUS &&
-             !isErroneousExpression( thenSt )) {
-            fixThen = true;
-        }
-        
-        if ( elseSt != null && 
-             elseSt.getKind() != Tree.Kind.EMPTY_STATEMENT && 
-             elseSt.getKind() != Tree.Kind.BLOCK &&
-             elseSt.getKind() != Tree.Kind.ERRONEOUS &&
-             !isErroneousExpression( elseSt )) {
-            fixElse = true;
-        }
-        
-        List<ErrorDescription> result = new ArrayList<ErrorDescription>();
-        
-        if ( fixThen ) {
-            EmptyStatementFix bf  = new EmptyStatementFix( info.getFileObject(), TreePathHandle.create(tp, info));
-            bf.fixThen = fixThen;
-            bf.fixElse = fixElse;
-            result.add( ErrorDescriptionFactory.createErrorDescription(
-                getSeverity().toEditorSeverity(), 
-                getDisplayName(), 
-                Collections.<Fix>singletonList( bf ), 
-                info.getFileObject(),
-                (int)info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), thenSt ),
-                (int)info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), thenSt ) ) ); 
-        }
-        
-        if ( fixElse ) {
-            EmptyStatementFix bf  = new EmptyStatementFix( info.getFileObject(), TreePathHandle.create(tp, info));
-            bf.fixThen = fixThen;
-            bf.fixElse = fixElse;
-            result.add( ErrorDescriptionFactory.createErrorDescription(
-                getSeverity().toEditorSeverity(), 
-                getDisplayName(), 
-                Collections.<Fix>singletonList( bf ), 
-                info.getFileObject(),
-                (int)info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), elseSt ),
-                (int)info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), elseSt ) ) ); 
-
-        }
-                
-        return result;
-    }
-    
-    private boolean isErroneousExpression(StatementTree statement) {
-        if ( statement instanceof ExpressionStatementTree ) {
-            if ( ((ExpressionStatementTree)statement).getExpression().getKind() == Kind.ERRONEOUS ) {
-                return true;
-            }
-        }
-        return false;
-    }
-    */ 
-    
-    private static class EmptyStatementFix implements Fix, Task<WorkingCopy> {
-
-        
-        FileObject file;
-        TreePathHandle tph;
-        Tree.Kind kind;
-        
-        boolean fixThen;
-        boolean fixElse;
-        
-        public EmptyStatementFix(FileObject file, TreePathHandle tph, Tree.Kind kind ) {
-            this.file = file;
-            this.tph = tph;
-            this.kind = kind;
-        }
-        
-        public String getText() {
-            return NbBundle.getMessage(Braces.class, "LBL_Empty_Fix" + kind.toString()); // NOI18N
-        }
-
-        public ChangeInfo implement() {
-            JavaSource js = JavaSource.forFileObject(file);
-            try {
-                js.runModificationTask(this).commit();
-            }
-            catch( IOException e ) {
-                Exceptions.printStackTrace(e);
-            }
+        Tree parent = ctx.getPath().getParentPath().getLeaf();
+        if (!EnumSet.of(Kind.FOR_LOOP, Kind.ENHANCED_FOR_LOOP).contains(parent.getKind())) {
             return null;
         }
 
-        public void run(WorkingCopy copy) throws Exception {
-            /*
-            copy.toPhase(JavaSource.Phase.PARSED);
-            TreePath path = tph.resolve(copy);
+        final List<Fix> fixes = new ArrayList<>();
+        fixes.add(FixFactory.createSuppressWarningsFix(ctx.getInfo(), ctx.getPath().getParentPath(), SUPPRESS_WARNINGS_KEY));
+    
+        return createErrorDescription(ctx, parent, fixes, parent.getKind());
+    }
+    
+    @Hint(displayName = "#LBL_Empty_DO_WHILE_LOOP", description = "#DSC_Empty_DO_WHILE_LOOP", category = "empty", hintKind = Hint.Kind.INSPECTION, severity = Severity.VERIFIER, suppressWarnings = SUPPRESS_WARNINGS_KEY, id = "EmptyStatements_DO_WHILE_LOOP")
+    @TriggerTreeKind(Tree.Kind.EMPTY_STATEMENT)
+    public static ErrorDescription forDO_WHILE_LOOP(HintContext ctx) {
+    
+        Tree parent = ctx.getPath().getParentPath().getLeaf();
+        if (!Kind.DO_WHILE_LOOP.equals(parent.getKind())) {
+            return null;
+        }
+
+        final List<Fix> fixes = new ArrayList<>();
+        fixes.add(FixFactory.createSuppressWarningsFix(ctx.getInfo(), ctx.getPath().getParentPath(), SUPPRESS_WARNINGS_KEY));
             
-            if ( path != null ) {
-                
-                TreeMaker make = copy.getTreeMaker();
-                Tree oldTree = path.getLeaf();                 
-                
-                switch( oldTree.getKind() ) {
-                case FOR_LOOP:
-                    ForLoopTree oldFor = (ForLoopTree)oldTree;
-                    StatementTree oldBlock = oldFor.getStatement();
-                    BlockTree newBlock = make.Block(Collections.<StatementTree>singletonList(oldBlock), false);
-                    copy.rewrite(oldBlock, newBlock);
-                    break;
-                case ENHANCED_FOR_LOOP:
-                    EnhancedForLoopTree oldEnhancedFor = (EnhancedForLoopTree)oldTree;
-                    oldBlock = oldEnhancedFor.getStatement();
-                    newBlock = make.Block(Collections.<StatementTree>singletonList(oldBlock), false);                    
-                    copy.rewrite(oldBlock, newBlock);
-                    break;
-                case WHILE_LOOP:
-                    WhileLoopTree oldWhile = (WhileLoopTree)oldTree;
-                    oldBlock = oldWhile.getStatement();
-                    newBlock = make.Block(Collections.<StatementTree>singletonList(oldBlock), false);                    
-                    copy.rewrite(oldBlock, newBlock);
-                    break;
-                case DO_WHILE_LOOP:
-                    DoWhileLoopTree oldDoWhile = (DoWhileLoopTree)oldTree;
-                    oldBlock = oldDoWhile.getStatement();
-                    newBlock = make.Block(Collections.<StatementTree>singletonList(oldBlock), false);                    
-                    copy.rewrite(oldBlock, newBlock);
-                    break;
-                case IF:
-                    IfTree oldIf = (IfTree)oldTree;
-                    if ( fixThen ) {
-                        oldBlock = oldIf.getThenStatement();
-                        newBlock = make.Block(Collections.<StatementTree>singletonList(oldBlock), false);
-                        copy.rewrite(oldBlock, newBlock);
+        return createErrorDescription(ctx, parent, fixes, parent.getKind());
                     }
-                    if ( fixElse ) {
-                        oldBlock = oldIf.getElseStatement();
-                        newBlock = make.Block(Collections.<StatementTree>singletonList(oldBlock), false);
-                        copy.rewrite(oldBlock, newBlock);
-                    } 
                     
-                }
-            }
+    /**
+     * package private for reuse in unit tests.
              */ 
+    static String getDisplayName(@NonNull Kind treeKind) {
+        //same pattern as in @Hint(displayName = "#LBL_Empty_XXXX"
+        return NbBundle.getMessage(EmptyStatements.class, "LBL_Empty_" + treeKind.toString()); // NOI18N                
         }
         
-                
+    private static ErrorDescription createErrorDescription(HintContext ctx, final Tree leaf, final List<Fix> fixes, Kind treeKind) {
+        int start = (int) ctx.getInfo().getTrees().getSourcePositions().getStartPosition(ctx.getInfo().getCompilationUnit(), leaf);
+        int end = (int) ctx.getInfo().getTrees().getSourcePositions().getEndPosition(ctx.getInfo().getCompilationUnit(), leaf);
+        return org.netbeans.spi.java.hints.ErrorDescriptionFactory.forSpan(ctx, start, end, getDisplayName(treeKind), fixes.toArray(new Fix[fixes.size()]));
     }
-
-    
-    
 }

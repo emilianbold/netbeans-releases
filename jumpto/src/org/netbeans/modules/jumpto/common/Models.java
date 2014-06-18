@@ -44,15 +44,28 @@
 
 package org.netbeans.modules.jumpto.common;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractListModel;
 import javax.swing.ListModel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.util.Pair;
 
 /**
  * (copied from org.netbeans.modules.java.source.util.Models
- * @author Petr Hrebejk
+ * @author Petr Hrebejk, Tomas Zezula
  */
 public final class Models {
 
@@ -71,13 +84,23 @@ public final class Models {
     }
 
     public static <R,P> ListModel refreshable(
-            @NonNull final ListModel model,
+            @NonNull final ListModel<P> model,
             @NonNull Factory<R,Pair<P,Runnable>> convertor) {
         return new RefreshableListModel(model, convertor);
     }
- 
-    // Private innerclasses ----------------------------------------------------        
-    
+
+    public static <T> MutableListModel<T> mutable(@NullAllowed final Comparator<? super T> comparator) {
+        return new MutableListModelImpl(comparator);
+    }
+
+    // Exported types
+    public interface MutableListModel<T> extends ListModel<T> {
+        public void add(@NonNull Collection<? extends T> values);
+        public void remove (@NonNull Collection<? extends T> values);
+    }
+
+    // Private innerclasses ----------------------------------------------------
+
     private static class ListListModel<T> implements ListModel {
     
         private List<? extends T> list;
@@ -107,7 +130,7 @@ public final class Models {
         }
 
     }
-    
+
     private static class TranslatingListModel<T,P> implements ListModel {
     
         private Factory<T,P> factory;
@@ -144,54 +167,176 @@ public final class Models {
 
     }
 
-    private static final class RefreshableListModel<R,P> extends AbstractListModel {
+    private static final class RefreshableListModel<R,P> extends AbstractListModel implements ListDataListener {
 
         private final ListModel delegate;
         private final Factory<R,Pair<P,Runnable>> convertor;
-        private final Object[] cache;
+        private final Map<P,R> cache;
 
         RefreshableListModel(
                 @NonNull final ListModel delegate,
                 @NonNull final Factory<R,Pair<P,Runnable>> convertor) {
             this.delegate = delegate;
             this.convertor = convertor;
-            this.cache = new Object[delegate.getSize()];
+            this.cache = new IdentityHashMap<>();
+            delegate.addListDataListener(this);
         }
 
         @Override
         public int getSize() {
-            if (cache.length != delegate.getSize()) {
-                throw new IllegalStateException("Base model changed, only static models are suported.");    //NOI18N
-            }
-            return cache.length;
+            return delegate.getSize();
         }
 
         @Override
         @SuppressWarnings("unchecked")
         public Object getElementAt(final int index) {
-            if (index < 0 || index >= cache.length) {
+            if (index < 0 || index >= delegate.getSize()) {
                 throw new IllegalArgumentException(
                     String.format(
                         "Invalid index: %d, model size: %d.",    //NOI18M
                         index,
-                        cache.length));
+                        delegate.getSize()));
             }
-            R result = (R) cache[index];
+            final P orig = (P) delegate.getElementAt(index);
+            R result = cache.get(orig);
             if (result != null) {
                 return result;
             }
-            final P param = (P) delegate.getElementAt(index);
             result = convertor.create(Pair.<P,Runnable>of(
-                param,
+                orig,
                 new Runnable() {
                     @Override
                     public void run() {
-                        fireContentsChanged(RefreshableListModel.this, index, index);
+                        int index = -1;
+                        for (int i = 0; i < delegate.getSize(); i++) {
+                            if (orig == delegate.getElementAt(i)) {
+                                index = i;
+                                break;
+                            }
+                        }
+                        if (index != -1) {
+                            fireContentsChanged(RefreshableListModel.this, index, index);
+                        }
                     }
                 }));
-            cache[index] = result;
+            cache.put(orig,result);
             return result;
         }
+
+        @Override
+        public void intervalAdded(ListDataEvent e) {
+            fireIntervalAdded(this, e.getIndex0(), e.getIndex1());
+        }
+
+        @Override
+        public void intervalRemoved(ListDataEvent e) {
+            fireIntervalRemoved(this, e.getIndex0(), e.getIndex1());
+        }
+
+        @Override
+        public void contentsChanged(ListDataEvent e) {
+            fireContentsChanged(this, e.getIndex0(), e.getIndex1());
+        }
     }
-    
+
+    private static final class MutableListModelImpl<T> extends AbstractListModel<T> implements MutableListModel<T> {
+
+        private final Comparator<T> comparator;
+        private List<T> items;
+
+        MutableListModelImpl(@NullAllowed final Comparator<T> comparator) {
+            this.comparator = comparator;
+            items = Collections.<T>emptyList();
+        }
+
+        @Override
+        public int getSize() {
+            assert SwingUtilities.isEventDispatchThread();
+            return items.size();
+        }
+
+        @Override
+        public T getElementAt(int index) {
+            assert SwingUtilities.isEventDispatchThread();
+            return items.get(index);
+        }
+
+        @Override
+        public void add(Collection<? extends T> values) {
+            boolean success;
+            do {
+                final Pair<List<T>,List<T>> data = getData();
+                data.second().addAll(values);
+                if (comparator != null) {
+                    Collections.sort(data.second(), comparator);
+                }
+                success = casData(data.first(), data.second());
+            } while (!success);
+        }
+
+        @Override
+        public void remove(Collection<? extends T> values) {
+            boolean success;
+            do {
+                final Pair<List<T>,List<T>> data = getData();
+                data.second().removeAll(values);
+                success = casData(data.first(), data.second());
+            } while (!success);
+        }
+
+        private Pair<List<T>,List<T>> getData() {
+            try {
+                return invokeInEDT(new Callable<Pair<List<T>,List<T>>>() {
+                    @Override
+                    public Pair<List<T>, List<T>> call() throws Exception {
+                        final List<T> copy = new ArrayList<>(items);
+                        return Pair.<List<T>,List<T>>of(items, copy);
+                    }
+                });
+            } catch (InterruptedException | InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        private boolean casData(final List<T> expected, final List<T> update) {
+            try {
+                return invokeInEDT(new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        if (items == expected) {
+                            int oldSize = items.size();
+                            items = update;
+                            int newSize = items.size();
+                            fireContentsChanged(this, 0, Math.min(oldSize, newSize));
+                            if (oldSize < newSize) {
+                                fireIntervalAdded(this, oldSize, newSize);
+                            } else if (oldSize > newSize) {
+                                fireIntervalRemoved(this, newSize, oldSize);
+                            }
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                });
+            }catch (InterruptedException | InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        private static <R> R invokeInEDT(@NonNull final Callable<R> call) throws InterruptedException, InvocationTargetException {
+            final AtomicReference<R> res = new AtomicReference<>();
+            SwingUtilities.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        res.set(call.call());
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+            return res.get();
+        }
+    }
 }
