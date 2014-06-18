@@ -566,7 +566,7 @@ retry:  while (true) {
             return;
         final Map<Class<? extends Scheduler>,? extends SchedulerEvent> schedulerEvents =
                 SourceAccessor.getINSTANCE ().createSchedulerEvents (source, 
-                        Utilities.getEnvFactory().getSchedulers(source.getContext()), sourceModificationEvent);
+                        Utilities.getEnvFactory().getSchedulers(source.getLookup()), sourceModificationEvent);
         if (schedulerEvents.isEmpty ()) {
             return;
         }

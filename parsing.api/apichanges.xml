@@ -110,7 +110,27 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
-      <change id="Parsing.Netbeans.Cleanup">
+      <change id="Source.Context.Lookup">
+          <api name="ParsingAPI"/>
+          <summary>Source provides access to Lookup</summary>
+          <version major="9" minor="2"/>
+          <date day="18" month="6" year="2014"/>
+          <author login="sdedic"/>
+          <compatibility source="compatible" binary="compatible" addition="yes"/>
+          <description>
+              <p>
+                  In the presence of multiple scopes or users, the parsing system needs
+                  to access the proper context even though the work is done by different 
+                  threads. It also has to propagate the proper context back to the user
+                  tasks.
+              </p>
+              <p>
+                  Source can now be created with a Lookup that provides such proper context,
+                  or automatically uses Lookup.getDefault if no explicit Lookup is given.
+              </p>
+          </description>
+      </change>
+    <change id="Parsing.Netbeans.Cleanup">
           <api name="ParsingAPI"/>
           <summary>Parsing API cleaned up from IDE dependencies</summary>
           <version major="9" minor="1"/>

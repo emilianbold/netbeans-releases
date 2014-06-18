@@ -109,11 +109,17 @@ import org.openide.util.RequestProcessor;
  * calls for the same file or document will return two different <code>Source</code>
  * instances if the first instance is garbage collected prior the second call.
  *
+ * <p>
+ * The Source can be created with a {@link Lookup} instance. This Lookup should be used
+ * by parsing system, or callback tasks to locate services, that depend on the execution
+ * context (ie which user is executing the task). Check the specific service's documentation 
+ * on details of the service's context dependencies.
  * 
  * @author Jan Jancura
  * @author Tomas Zezula
+ * @since 9.2 implements Lookup.Provider
  */
-public final class Source {
+public final class Source implements Lookup.Provider {
 
     /**
      * Gets a <code>Source</code> instance for a file. The <code>FileObject</code>
@@ -137,6 +143,32 @@ public final class Source {
         return _get(fileObject.getMIMEType(), fileObject, Lookup.getDefault());
     }
     
+    /**
+     * Gets a <code>Source</code> instance for a file. The <code>FileObject</code>
+     * passed to this method has to be a valid data file. There is no <code>Source</code>
+     * representation for a folder.
+     * <p/>
+     * This form allows to specify Lookup that provides access to context-dependent
+     * services for the parsing system and the user tasks called from parsing API.
+     * 
+     * @param fileObject The file to get <code>Source</code> for.
+     * @param lkp The Lookup that provides the context
+     * @return The <code>Source</code> for the given file or <code>null</code>
+     *   if the file doesn't exist.
+     * @since 9.2
+     */
+    public static Source create (
+        FileObject          fileObject, Lookup lkp
+    ) {
+        Parameters.notNull("fileObject", fileObject); //NOI18N
+        Parameters.notNull("lkp", lkp); //NOI18N
+        if (!fileObject.isValid() || !fileObject.isData()) {
+            return null;
+        }
+        
+        return _get(fileObject.getMIMEType(), fileObject, lkp);
+    }
+
     /**
      * Gets a <code>Source</code> instance for a <code>Document</code>. This method
      * is consistent with {@link #create(org.openide.filesystems.FileObject)} in the way
@@ -171,6 +203,23 @@ public final class Source {
     public static Source create (
         Document            document
     ) {
+        return create(document, Lookup.getDefault());
+    }
+    
+    /**
+     * Gets a <code>Source</cide> instance for a <code>Document</code>. For details, please 
+     * see {@link #create(javax.swing.text.Document)}; this form allows to specify
+     * a Lookup that provides access to user or context-dependent services.
+     * 
+     * @param document the document to get <code>Source</code> for
+     * @param lkp the context for the source
+     * @return the Source instance
+     * @see #create(javax.swing.text.Document) 
+     * @since 9.2
+     */
+    public static Source create (
+        Document            document, Lookup lkp
+    ) {
         Parameters.notNull("document", document); //NOI18N
 
         String mimeType = DocumentUtilities.getMimeType(document);
@@ -192,7 +241,7 @@ public final class Source {
             if (source == null) {
                 FileObject fileObject = Utilities.getFileObject(document);
                 if (fileObject != null) {
-                    source = Source._get(mimeType, fileObject, Lookup.getDefault());
+                    source = Source._get(mimeType, fileObject, lkp);
                 } else {
                     if ("text/x-dialog-binding".equals(mimeType)) { //NOI18N
                         InputAttributes attributes = (InputAttributes) document.getProperty(InputAttributes.class);
@@ -204,7 +253,7 @@ public final class Source {
                             fileObject = (FileObject) attributes.getValue(path, "dialogBinding.fileObject"); //NOI18N
                         }
                     }
-                    source = new Source(mimeType, document, fileObject, Lookup.getDefault());
+                    source = new Source(mimeType, document, fileObject, lkp);
                 }
                 document.putProperty(Source.class, new WeakReference<Source>(source));
             }
@@ -1002,7 +1051,16 @@ public final class Source {
 
     }
     
-    public Lookup getContext() {
+    /**
+     * Returns a Lookup providing a context for the source.
+     * In the presence of multiple scopes or users in the system, this Lookup may
+     * provide access to necessary context-dependent services or scope-dependent data.
+     * <p/>
+     * A Source may be created with a Lookup, or it will use the default Lookup as a context
+     * @return Lookup.
+     * @since 9.2
+     */
+    public Lookup getLookup() {
         return context;
     }
 }
