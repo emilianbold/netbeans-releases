@@ -48,6 +48,7 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.BeanInfo;
@@ -56,6 +57,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -72,6 +74,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -130,6 +133,7 @@ import org.openide.windows.TopComponent;
  */
 public class RepositoryBrowserPanel extends JPanel implements Provider, PropertyChangeListener, ListSelectionListener,
         MouseListener {
+    private int sliderPos;
 
     AbstractNode root;
     private static final RequestProcessor RP = new RequestProcessor("RepositoryPanel", 1); //NOI18N
@@ -147,6 +151,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     public static final String PROP_REVISION_ACCEPTED = "RepositoryBrowserPanel.acceptedRevision"; //NOI18N
     private final File[] roots;
     private String branchMergeWith;
+    private static final String PROP_DELETE_ACTION = "RepoBrowser.deleteAction"; //NOI18N
 
     public static enum Option {
         DISPLAY_ALL_REPOSITORIES,
@@ -191,6 +196,10 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             remove(jSplitPane1);
             add(tree, BorderLayout.CENTER);
         }
+        if (options.contains(Option.ENABLE_POPUP)) {
+            getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete"); // NOI18N
+            getActionMap().put("delete", new DeleteAction()); // NOI18N
+        }
     }
 
     @Override
@@ -217,6 +226,15 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     int width = revisionsPanel1.getPreferredSize().width;
                     int leftPanelWidth = jSplitPane1.getPreferredSize().width - width;
                     jSplitPane1.setDividerLocation(Math.min(200, leftPanelWidth));
+                    if (sliderPos > 0) {
+                        EventQueue.invokeLater(new Runnable() {
+
+                            @Override
+                            public void run () {
+                                jSplitPane1.setDividerLocation(sliderPos);
+                            }
+                        });
+                    }
                 }
             });
         }
@@ -330,6 +348,17 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     public boolean requestFocusInWindow () {
         return tree.requestFocusInWindow();
     }
+    
+    void setSliderPosition (int pos) {
+        assert options.contains(Option.DISPLAY_REVISIONS);
+        sliderPos = pos;
+        jSplitPane1.setDividerLocation(pos);
+    }
+    
+    int getSliderPosition () {
+        assert options.contains(Option.DISPLAY_REVISIONS);
+        return jSplitPane1.getDividerLocation();
+    }
 
     private void attachToolbarListeners () {
 
@@ -363,6 +392,45 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     }
 
     private static final HashMap<String, Image> cachedIcons = new HashMap<String, Image>(2);
+
+    @NbBundle.Messages({
+        "RepoBrowserPanel.DeleteAction.name=Delete"
+    })
+    private class DeleteAction extends AbstractAction {
+
+        public DeleteAction () {
+            super(Bundle.RepoBrowserPanel_DeleteAction_name());
+        }
+
+        @Override
+        public boolean isEnabled () {
+            return !getDeleteDelegates().isEmpty();
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            List<Action> delegetaActions = getDeleteDelegates();
+            for (Action a : delegetaActions) {
+                a.actionPerformed(e);
+            }
+        }
+
+        private List<Action> getDeleteDelegates () {
+            Node[] nodes = getExplorerManager().getSelectedNodes();
+            Action delegate = null;
+            // works only for one node at the moment
+            if (nodes.length == 1) {
+                Action[] actions = nodes[0].getActions(true);
+                for (Action a : actions) {
+                    if (a != null && Boolean.TRUE.equals(a.getValue(PROP_DELETE_ACTION)) && a.isEnabled()) {
+                        delegate = a;
+                    }
+                }
+            }
+            return delegate == null ? Collections.<Action>emptyList() : Arrays.asList(delegate);
+        }
+    }
+    
     private abstract class RepositoryBrowserNode extends AbstractNode {
         
         protected RepositoryBrowserNode (Children children, File repository) {
@@ -1094,7 +1162,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                         return !active;
                     }
                 });
-                actions.add(new AbstractAction(NbBundle.getMessage(DeleteBranchAction.class, "LBL_DeleteBranchAction_PopupName")) { //NOI18N
+                Action a = new AbstractAction(NbBundle.getMessage(DeleteBranchAction.class, "LBL_DeleteBranchAction_PopupName")) { //NOI18N
                     @Override
                     public void actionPerformed (ActionEvent e) {
                         EventQueue.invokeLater(new Runnable() {
@@ -1110,7 +1178,9 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     public boolean isEnabled() {
                         return !active;
                     }
-                });
+                };
+                a.putValue(PROP_DELETE_ACTION, Boolean.TRUE);
+                actions.add(a);
                 if (!remote) {
                     actions.add(null);
                     if (trackedBranch != null) {
@@ -1502,7 +1572,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                         return !active;
                     }
                 });
-                actions.add(new AbstractAction(Bundle.CTL_TagNode_deleteTag_action()) {
+                Action a = new AbstractAction(Bundle.CTL_TagNode_deleteTag_action()) {
                     @Override
                     public void actionPerformed (ActionEvent e) {
                         EventQueue.invokeLater(new Runnable() {
@@ -1527,7 +1597,9 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                             }
                         });
                     }
-                });
+                };
+                a.putValue(PROP_DELETE_ACTION, Boolean.TRUE);
+                actions.add(a);
             }
             return actions.toArray(new Action[actions.size()]);
         }
