@@ -179,7 +179,7 @@ public class MergeRevisionAction extends SingleRepositoryAction {
                     break;
                 case CONFLICTING:
                     sb.append(NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.result.conflict", revision)); //NOI18N
-                    printConflicts(sb, result.getConflicts());
+                    printConflicts(logger, sb, result.getConflicts());
                     resolveConflicts(result.getConflicts());
                     break;
                 case FAILED:
@@ -197,7 +197,7 @@ public class MergeRevisionAction extends SingleRepositoryAction {
                         }
                     }
                     sb.append(NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.result.failedFiles", revision)); //NOI18N
-                    printConflicts(sb, result.getFailures());
+                    printConflicts(logger, sb, result.getFailures());
                     DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
                             NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.result.failed", revision), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
                     break;
@@ -207,7 +207,9 @@ public class MergeRevisionAction extends SingleRepositoryAction {
                             NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.result.unsupported"), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
                     break;
             }
-            logger.outputLine(sb.toString());
+            if (sb.length() > 0) {
+                logger.outputLine(sb.toString());
+            }
             if (logActions) {
                 LogUtils.logBranchUpdateReview(repository, current.getName(),
                         current.getId(), result.getNewHead(), logger);

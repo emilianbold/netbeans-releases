@@ -160,7 +160,7 @@ public class RevertCommitAction extends SingleRepositoryAction {
                     break;
                 case CONFLICTING:
                     sb.append(NbBundle.getMessage(RevertCommit.class, "MSG_RevertCommitAction.result.conflict", revision)); //NOI18N
-                    printConflicts(sb, result.getConflicts());
+                    printConflicts(logger, sb, result.getConflicts());
                     resolveConflicts(result.getConflicts());
                     break;
                 case FAILED:
@@ -178,12 +178,14 @@ public class RevertCommitAction extends SingleRepositoryAction {
                         }
                     }
                     sb.append(NbBundle.getMessage(RevertCommit.class, "MSG_RevertCommitAction.result.failedFiles", revision)); //NOI18N
-                    printConflicts(sb, result.getFailures());
+                    printConflicts(logger, sb, result.getFailures());
                     DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
                             NbBundle.getMessage(RevertCommit.class, "MSG_RevertCommitAction.result.failed", revision), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
                     break;
             }
-            logger.outputLine(sb.toString());
+            if (sb.length() > 0) {
+                logger.outputLine(sb.toString());
+            }
         }
     }
 }

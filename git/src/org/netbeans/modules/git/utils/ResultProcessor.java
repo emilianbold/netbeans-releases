@@ -57,6 +57,7 @@ import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsExecutor;
+import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
@@ -81,9 +82,16 @@ public class ResultProcessor {
         this.pm = pm;
     }
 
-    protected final void printConflicts (StringBuilder sb, Collection<File> conflicts) {
+    protected final void printConflicts (OutputLogger logger, StringBuilder sb, Collection<File> conflicts) {
+        if (sb.length() > 0) {
+            if (sb.charAt(sb.length() - 1) == '\n') {
+                sb.delete(sb.length() - 1, sb.length());
+            }
+            logger.outputLine(sb.toString());
+            sb.delete(0, sb.length());
+        }
         for (File f : conflicts) {
-            sb.append(f.getAbsolutePath()).append('\n');
+            logger.outputFile(f.getAbsolutePath(), f, 0);
         }
     }
 
