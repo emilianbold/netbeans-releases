@@ -60,6 +60,17 @@ public class TruffleStackFrame {
         this.sourceLocation = sourceLocation;
     }
 
+    public TruffleStackFrame(String frameDefinition) {
+        int i1 = 0;
+        int i2 = frameDefinition.indexOf('\n');
+        callTargetName = frameDefinition.substring(i1, i2);
+        i1 = i2 + 1;
+        i2 = frameDefinition.indexOf('\n', i1);
+        methodName = frameDefinition.substring(i1, i2);
+        i1 = i2 + 1;
+        sourceLocation = frameDefinition.substring(i1);
+    }
+    
     public String getCallTargetName() {
         return callTargetName;
     }

@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.debugger.jpda.truffle.frames;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
@@ -58,7 +60,8 @@ import org.openide.util.Exceptions;
 public class TruffleStackInfo {
     
     private static final String METHOD_GET_FRAMES_INFO = "getFramesInfo";       // NOI18N
-    private static final String METHOD_GET_FRAMES_INFO_SIG = "([Lcom/oracle/truffle/api/frame/FrameInstance;)[Lorg/netbeans/modules/debugger/jpda/backend/truffle/TruffleFrame;";   // NOI18N
+    //private static final String METHOD_GET_FRAMES_INFO_SIG = "([Lcom/oracle/truffle/api/frame/FrameInstance;)[Lorg/netbeans/modules/debugger/jpda/backend/truffle/TruffleFrame;";   // NOI18N
+    private static final String METHOD_GET_FRAMES_INFO_SIG = "([Lcom/oracle/truffle/api/frame/FrameInstance;)Ljava/lang/String;";   // NOI18N
     
     private final JPDADebugger debugger;
     private final Variable stackTrace;
@@ -88,6 +91,7 @@ public class TruffleStackInfo {
             Variable framesVar = debugAccessor.invokeMethod(METHOD_GET_FRAMES_INFO,
                                                             METHOD_GET_FRAMES_INFO_SIG,
                                                             new Variable[] { stackTrace });
+            /*
             Field[] frames = ((ObjectVariable) framesVar).getFields(0, Integer.MAX_VALUE);
             int n = frames.length;
             TruffleStackFrame[] truffleFrames = new TruffleStackFrame[n];
@@ -97,7 +101,17 @@ public class TruffleStackInfo {
                 String sourceLocation = ((ObjectVariable) frames[i]).getField("sourceLocation").getValue();
                 truffleFrames[i] = new TruffleStackFrame(callTargetName, methodName, sourceLocation);
             }
-            return truffleFrames;
+             */
+            String framesDesc = (String) framesVar.createMirrorObject();
+            int i1 = 0;
+            int i2;
+            List<TruffleStackFrame> truffleFrames = new ArrayList<>();
+            while ((i2 = framesDesc.indexOf("\n\n", i1)) > 0) {
+                TruffleStackFrame tsf = new TruffleStackFrame(framesDesc.substring(i1, i2));
+                truffleFrames.add(tsf);
+                i1 = i2 + 2;
+            }
+            return truffleFrames.toArray(new TruffleStackFrame[truffleFrames.size()]);
         } catch (InvalidExpressionException | NoSuchMethodException ex) {
             Exceptions.printStackTrace(ex);
             return new TruffleStackFrame[] {};

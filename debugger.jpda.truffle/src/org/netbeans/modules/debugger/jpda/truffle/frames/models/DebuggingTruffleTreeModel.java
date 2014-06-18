@@ -89,7 +89,7 @@ public class DebuggingTruffleTreeModel implements TreeModelFilter {
             CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
             if (currentPCInfo != null) {
                 TruffleStackFrame[] stackFrames = currentPCInfo.getStack().getStackFrames();
-                children = filterAndAppend(children, stackFrames);
+                children = filterAndAppend(children, stackFrames, currentPCInfo.getTopFrame());
             }
         }
         return children;
@@ -117,7 +117,8 @@ public class DebuggingTruffleTreeModel implements TreeModelFilter {
     public void removeModelListener(ModelListener l) {
     }
 
-    private Object[] filterAndAppend(Object[] children, TruffleStackFrame[] stackFrames) {
+    private Object[] filterAndAppend(Object[] children, TruffleStackFrame[] stackFrames,
+                                     TruffleStackFrame topFrame) {
         List<Object> newChildren = new ArrayList<>(children.length);
         //newChildren.addAll(Arrays.asList(children));
         for (Object ch : children) {
@@ -133,6 +134,7 @@ public class DebuggingTruffleTreeModel implements TreeModelFilter {
             newChildren.add(ch);
         }
         int i = 0;
+        newChildren.add(i++, topFrame);
         for (TruffleStackFrame tsf : stackFrames) {
             newChildren.add(i++, tsf);
         }

@@ -212,19 +212,24 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
                 stackTraceArr.add(fi);
             }
             FrameInstance[] stackTrace = stackTraceArr.toArray(new FrameInstance[]{});
+            /*
             String[] stackNames = new String[stackTrace.length];
             for (int i = 0; i < stackTrace.length; i++) {
                 //stackNames[i] = stackTrace[i].getCallNode().getDescription();
                 stackNames[i] = visualizer.displaySourceLocation(stackTrace[i].getCallNode());
-            }
+            }*/
             System.err.println("  stack trace = "+Arrays.toString(stackTrace));
-            System.err.println("  stack names = "+Arrays.toString(stackNames));
+            //System.err.println("  stack names = "+Arrays.toString(stackNames));
+            String topFrame = visualizer.displayCallTargetName(astNode.getRootNode().getCallTarget())+"\n"+
+                              visualizer.displayMethodName(astNode)+"\n"+
+                              visualizer.displaySourceLocation(astNode);
+            //System.err.println("  top frame = \n'"+topFrame+"'");
             
             JPDATruffleAccessor.executionHalted(astNode, frame,
                     position.id, position.name, position.path,
                     position.line, position.code,
                     slots, slotNames, slotTypes,
-                    stackTrace, stackNames);
+                    stackTrace, topFrame);
             
             topFrameHolder.currentTopFrame = null;
             topFrameHolder.currentNode = null;

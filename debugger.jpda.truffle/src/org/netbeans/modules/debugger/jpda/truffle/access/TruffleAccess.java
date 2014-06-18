@@ -89,6 +89,7 @@ import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.truffle.RemoteServices;
+import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackInfo;
 import org.netbeans.modules.debugger.jpda.truffle.source.Source;
 import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
@@ -117,8 +118,9 @@ public class TruffleAccess implements JPDABreakpointListener {
     private static final String VAR_SRC_CODE = "code";
     private static final String VAR_FRAME_SLOTS = "frameSlots";
     private static final String VAR_SLOT_NAMES = "slotNames";
-    private static final String VAR_SLOT_TYPES = "slotTypes";                    // NOI18N
+    private static final String VAR_SLOT_TYPES = "slotTypes";                   // NOI18N
     private static final String VAR_STACK_TRACE = "stackTrace";
+    private static final String VAR_TOP_FRAME = "topFrame";                     // NOI18N
     
     private static final Map<JPDADebugger, CurrentPCInfo> currentPCInfos = new WeakHashMap<>();
     
@@ -237,7 +239,7 @@ public class TruffleAccess implements JPDABreakpointListener {
         //executionHalted(Node astNode, MaterializedFrame frame,
         //                long srcId, String srcName, String srcPath, int line, String code,
         //                FrameSlot[] frameSlots, String[] slotNames, String[] slotTypes,
-        //                FrameInstance[] stackTrace, String[] stackNames) 
+        //                FrameInstance[] stackTrace, String topFrame) 
         try {
             CallStackFrame csf = thread.getCallStack(0, 1)[0];
             LocalVariable[] localVariables = csf.getLocalVariables();
@@ -248,6 +250,7 @@ public class TruffleAccess implements JPDABreakpointListener {
             String[] slotTypes = null;
             //Variable[] stackTrace = null;
             Variable stackTrace = null;
+            TruffleStackFrame topFrame = null;
             /*
             for (LocalVariable lv : localVariables) {
                 String name = lv.getName();
@@ -324,6 +327,9 @@ public class TruffleAccess implements JPDABreakpointListener {
                                         break;
                     case VAR_STACK_TRACE:stackTrace = lv;//((ObjectVariable) lv).getFields(0, Integer.MAX_VALUE);
                                         break;
+                    case VAR_TOP_FRAME: String topFrameDescription = (String) lv.createMirrorObject();
+                                        topFrame = new TruffleStackFrame(topFrameDescription);
+                                        break;
                 }
             }
             if (id >= 0 && line >= 0) {
@@ -334,7 +340,7 @@ public class TruffleAccess implements JPDABreakpointListener {
                 SourcePosition sp = new SourcePosition(debugger, id, src, line);
                 TruffleSlotVariable[] vars = createVars(debugger, frame, frameSlots, slotNames, slotTypes);
                 TruffleStackInfo stack = new TruffleStackInfo(debugger, frameSlots, stackTrace);
-                return new CurrentPCInfo(thread, sp, vars, stack);
+                return new CurrentPCInfo(thread, sp, vars, topFrame, stack);
             } else {
                 return null;
             }

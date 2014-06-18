@@ -127,7 +127,7 @@ public class JPDATruffleAccessor extends Object {
     static void executionHalted(Node astNode, MaterializedFrame frame,
                                 long srcId, String srcName, String srcPath, int line, String code,
                                 FrameSlot[] frameSlots, String[] slotNames, String[] slotTypes,
-                                FrameInstance[] stackTrace, String[] stackNames) {
+                                FrameInstance[] stackTrace, String topFrame) {
         // Called when the execution is halted.
         setCommand();
     }
@@ -175,6 +175,7 @@ public class JPDATruffleAccessor extends Object {
         }
     }
     
+    /*
     static TruffleFrame[] getFramesInfo(FrameInstance[] frames) {
         Visualizer visualizer = debugManager.getContext().getVisualizer();
         int n = frames.length;
@@ -188,6 +189,24 @@ public class JPDATruffleAccessor extends Object {
             frameInfos[i] = tf;
         }
         return frameInfos;
+    }
+    */
+    static String getFramesInfo(FrameInstance[] frames) {
+        Visualizer visualizer = debugManager.getContext().getVisualizer();
+        int n = frames.length;
+        //TruffleFrame[] frameInfos = new TruffleFrame[n];
+        StringBuilder frameInfos = new StringBuilder();
+        for (int i = 0; i < n; i++) {
+            FrameInstance fi = frames[i];
+            //TruffleFrame tf = new TruffleFrame();
+            frameInfos.append(visualizer.displayCallTargetName(fi.getCallTarget()));
+            frameInfos.append('\n');
+            frameInfos.append(visualizer.displayMethodName(fi.getCallNode()));
+            frameInfos.append('\n');
+            frameInfos.append(visualizer.displaySourceLocation(fi.getCallNode()));
+            frameInfos.append("\n\n");
+        }
+        return frameInfos.toString();
     }
     
     static void debuggerAccess() {

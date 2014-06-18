@@ -45,6 +45,7 @@ package org.netbeans.modules.debugger.jpda.truffle.access;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackInfo;
 import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
 import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleSlotVariable;
@@ -59,13 +60,16 @@ public class CurrentPCInfo {
     private final Reference<JPDAThread> threadRef;
     private final SourcePosition sp;
     private final TruffleSlotVariable[] vars;
+    private final TruffleStackFrame topFrame;
     private final TruffleStackInfo stack;
     
     public CurrentPCInfo(JPDAThread thread, SourcePosition sp,
-                         TruffleSlotVariable[] vars, TruffleStackInfo stack) {
+                         TruffleSlotVariable[] vars, TruffleStackFrame topFrame,
+                         TruffleStackInfo stack) {
         this.threadRef = new WeakReference<>(thread);
         this.sp = sp;
         this.vars = vars;
+        this.topFrame = topFrame;
         this.stack = stack;
     }
     
@@ -79,6 +83,10 @@ public class CurrentPCInfo {
 
     public TruffleSlotVariable[] getVars() {
         return vars;
+    }
+    
+    public TruffleStackFrame getTopFrame() {
+        return topFrame;
     }
 
     public TruffleStackInfo getStack() {
