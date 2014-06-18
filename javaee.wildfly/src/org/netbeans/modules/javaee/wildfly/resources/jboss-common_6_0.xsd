@@ -4,7 +4,7 @@
             xmlns:javaee="http://java.sun.com/xml/ns/javaee"
             xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            elementFormDefault="qualified" 
+            elementFormDefault="qualified"
             attributeFormDefault="unqualified"
             version="6.0">
 
@@ -46,7 +46,7 @@
          consistency with the Servlet API. </xsd:documentation>
    </xsd:annotation>
 
-   <xsd:import namespace="http://java.sun.com/xml/ns/javaee" schemaLocation="http://java.sun.com/xml/ns/javaee/javaee_6.xsd"/>
+   <xsd:import namespace="http://java.sun.com/xml/ns/javaee" schemaLocation="javaee_6.xsd"/>
 
    <xsd:group name="descriptionGroup">
       <xsd:sequence>
@@ -284,7 +284,7 @@
             ejb-jar.xml, but you provide a jndi-name in jboss.xml Used in: entity, session,
             message-driven, consumer, and service </xsd:documentation>
       </xsd:annotation>
-      
+
       <xsd:sequence>
          <xsd:element name="description" type="javaee:descriptionType" minOccurs="0" maxOccurs="unbounded"/>
          <xsd:element name="ejb-ref-name" type="javaee:ejb-ref-nameType" minOccurs="0"/>
@@ -295,8 +295,8 @@
          <xsd:group ref="jboss:resourceGroup"/>
       </xsd:sequence>
       <xsd:attribute name="id" type="xsd:ID"/>
-      
-      <!-- 
+
+      <!--
       <xsd:complexContent>
          <xsd:extension base="javaee:ejb-refType">
             <xsd:sequence>
@@ -367,7 +367,7 @@
          </xsd:choice>
 
          <xsd:element name="injection-target" type="jboss:injection-targetType" minOccurs="0" maxOccurs="unbounded" />
-         
+
          <xsd:element name="ignore-dependency" type="javaee:emptyType" minOccurs="0"/>
 
       </xsd:sequence>
@@ -433,7 +433,7 @@ Examples:
    <xsd:complexType name="service-refType">
       <xsd:annotation>
          <xsd:documentation>
-            <![CDATA[     
+            <![CDATA[
   Runtime settings for a web service reference. In the simplest case,
   there is no runtime information required for a service ref.  Runtime info
   is only needed in the following cases :

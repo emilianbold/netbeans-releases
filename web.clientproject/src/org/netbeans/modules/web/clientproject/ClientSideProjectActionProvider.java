@@ -51,7 +51,9 @@ import org.netbeans.modules.web.clientproject.grunt.GruntfileExecutor;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.project.ActionProvider;
+
 import static org.netbeans.spi.project.ActionProvider.COMMAND_TEST;
+
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
@@ -158,7 +160,7 @@ public class ClientSideProjectActionProvider implements ActionProvider {
             });
             return;
         }
-        
+
         if (tryGrunt(command, true, false)) {
             return;
         }

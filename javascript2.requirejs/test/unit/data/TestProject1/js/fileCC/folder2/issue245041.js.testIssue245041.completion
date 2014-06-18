@@ -1,0 +1,9 @@
+Code completion result for source line:
+define(["f|"], function(e){
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+FILE       fileCC                                     
+FILE       folder1                                    
+FILE       folder1                                    
+FILE       folder2                                    
+FILE       folder2                                    

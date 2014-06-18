@@ -46,10 +46,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -67,6 +69,7 @@ import org.netbeans.modules.javascript2.requirejs.RequireJsPreferences;
 import org.netbeans.modules.javascript2.requirejs.editor.index.RequireJsIndex;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -125,48 +128,68 @@ public class RequireJSCodeCompletion implements CompletionProvider {
             }
 
             FileObject fo = snapshot.getSource().getFileObject();
+            Project project = FileOwnerQuery.getOwner(fo);
+            RequireJsIndex rIndex = null;
             if (fo != null && EditorUtils.isFileReference(snapshot, offset)) {
                 List<FileObject> relativeTo = new ArrayList<FileObject>();
+                //get already written files
                 Collection<String> usedFileInDefine = EditorUtils.getUsedFileInDefine(snapshot, offset);
                 for (String path : usedFileInDefine) {
-                    if (writtenPath.isEmpty() || path.startsWith(writtenPath)) {
+//                    if (writtenPath.isEmpty() || path.startsWith(writtenPath)) {
+                        // try to find the root the js files from already used files
                         FileObject targetFO = FSCompletionUtils.findMappedFileObject(path, fo);
+                        String[] folders = path.split("/");
                         if (targetFO != null) {
-                            String[] folders = path.split("/");
                             for (int i = 0; i < folders.length; i++) {
                                 targetFO = targetFO.getParent();
                             }
                             if (!relativeTo.contains(targetFO)) {
                                 relativeTo.add(targetFO);
                             }
+                        } else {
+                            // try to find on the local file system
+                            if (project != null && folders.length == 1) {
+                                targetFO = fo.getParent();
+
+                                while (!targetFO.equals(project.getProjectDirectory())) {
+                                    for (Enumeration<? extends FileObject> children = targetFO.getChildren(false); children.hasMoreElements();) {
+                                        FileObject child = children.nextElement();
+                                        if (child.getName().startsWith(folders[folders.length - 1]) && !relativeTo.contains(targetFO)) {
+                                            relativeTo.add(targetFO);
+                                        }
+
+                                    }
+                                    targetFO = targetFO.getParent();
+                                }
+                                
+                            }
                         }
+//                    }
+                }
+                
+                if (project != null) {
+                    try {
+                        rIndex = RequireJsIndex.get(project);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 }
 
                 if (relativeTo.isEmpty()) {
-                    Project project = FileOwnerQuery.getOwner(fo);
                     Collection<String> basePaths = new ArrayList();
-                    if (project != null) {
-                        RequireJsIndex rIndex = null;
-                        try {
-                            rIndex = RequireJsIndex.get(project);
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-
-                        if (rIndex != null) {
-                            basePaths = rIndex.getBasePaths();
-                        }
-                    }
-                    relativeTo.add(fo.getParent());
-                    if (!basePaths.isEmpty()) {
-                        for (String path : basePaths) {
-                            FileObject findFO = FSCompletionUtils.findFileObject(fo, path);
-                            if (findFO != null) {
-                                relativeTo.add(findFO);
+                    if (rIndex != null) {
+                        basePaths = rIndex.getBasePaths();
+                        relativeTo.add(fo.getParent());
+                        if (!basePaths.isEmpty()) {
+                            for (String path : basePaths) {
+                                FileObject findFO = FSCompletionUtils.findFileObject(fo, path);
+                                if (findFO != null) {
+                                    relativeTo.add(findFO);
+                                }
                             }
                         }
                     }
+                    
                 }
 
                 List<CompletionProposal> result = new ArrayList();
@@ -203,14 +226,8 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                         Exceptions.printStackTrace(ex);
                     }
                 }
-                Project project = FileOwnerQuery.getOwner(fo);
+
                 Map<String, String> mappings = new HashMap();
-                RequireJsIndex rIndex = null;
-                try {
-                    rIndex = RequireJsIndex.get(project);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
                 if (rIndex != null) {
                     mappings.putAll(rIndex.getPathMappings(writtenPath));
                 }

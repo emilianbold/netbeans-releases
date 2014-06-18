@@ -40,5 +40,17 @@ echo is_numeric($foo)
     // HINT
     : $_ENV[""];
 
+// OK
+echo is_null($_ENV['foo']);
+
+// OK
+echo is_nan($_ENV['foo']);
+
+// OK
+echo is_real($_ENV['foo']);
+
+// OK
+echo is_scalar($_ENV['foo']);
+
 //END
 ?>

@@ -200,8 +200,11 @@ public final class KarmaServers {
     }
 
     public boolean isServerRunning(Project project) {
-        return isServerStarting(project)
-                || isServerStarted(project);
+        KarmaServer karmaServer = getKarmaServer(project);
+        if (karmaServer == null) {
+            return false;
+        }
+        return karmaServer.isRunning();
     }
 
     @CheckForNull

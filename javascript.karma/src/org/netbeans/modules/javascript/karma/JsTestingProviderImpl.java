@@ -88,6 +88,11 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
     }
 
     @Override
+    public boolean isCoverageSupported(Project project) {
+        return true;
+    }
+
+    @Override
     public void runTests(Project project, TestRunInfo runInfo) {
         KarmaServers.getInstance().runTests(project);
     }

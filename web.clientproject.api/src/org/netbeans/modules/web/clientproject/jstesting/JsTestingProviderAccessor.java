@@ -42,14 +42,10 @@
 
 package org.netbeans.modules.web.clientproject.jstesting;
 
-import java.net.URL;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
-import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
 import org.netbeans.modules.web.clientproject.spi.jstesting.JsTestingProviderImplementation;
 import org.netbeans.spi.project.ui.support.NodeList;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 
 public abstract class JsTestingProviderAccessor {
@@ -80,25 +76,9 @@ public abstract class JsTestingProviderAccessor {
 
     public abstract JsTestingProvider create(JsTestingProviderImplementation jsTestingProviderImplementation);
 
-    public abstract String getIdentifier(JsTestingProvider jsTestingProvider);
-
-    public abstract String getDisplayName(JsTestingProvider jsTestingProvider);
-
     public abstract boolean isEnabled(JsTestingProvider jsTestingProvider, Project project);
 
-    public abstract void runTests(JsTestingProvider jsTestingProvider, Project project, TestRunInfo runInfo);
-
-    public abstract FileObject fromServer(JsTestingProvider jsTestingProvider, Project project, URL serverUrl);
-
-    public abstract URL toServer(JsTestingProvider jsTestingProvider, Project project, FileObject projectFile);
-
-    public abstract ProjectCustomizer.CompositeCategoryProvider createCustomizer(JsTestingProvider jsTestingProvider, Project project);
-
     public abstract void notifyEnabled(JsTestingProvider jsTestingProvider, Project project, boolean enabled);
-
-    public abstract void projectOpened(JsTestingProvider jsTestingProvider, Project project);
-
-    public abstract void projectClosed(JsTestingProvider jsTestingProvider, Project project);
 
     public abstract NodeList<Node> createNodeList(JsTestingProvider jsTestingProvider, Project project);
 
