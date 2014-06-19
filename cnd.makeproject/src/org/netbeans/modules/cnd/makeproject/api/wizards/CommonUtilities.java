@@ -64,6 +64,10 @@ public final class CommonUtilities {
     private CommonUtilities() {
     }
 
+    public static boolean resolveSymbolicLinks() {
+        return MakeOptions.getInstance().getResolveSymbolicLinks();
+    }
+    
     public static String getLdLibraryPath() {
         return getLdLibraryPath(ExecutionEnvironmentFactory.getLocal());
     }

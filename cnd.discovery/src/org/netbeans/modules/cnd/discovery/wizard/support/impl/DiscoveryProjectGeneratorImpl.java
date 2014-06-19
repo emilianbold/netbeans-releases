@@ -795,7 +795,7 @@ public class DiscoveryProjectGeneratorImpl {
                             } else {
                                 if (DEBUG) {System.err.println("Source is header:"+item.getAbsPath());} // NOI18N
                             }
-                            ProjectBridge.setExclude(item, prefferedFolder.isDiskFolder());
+                            ProjectBridge.setExclude(item, true);
                             ProjectBridge.excludeItemFromOtherConfigurations(item);
                             isNeedAdd = false;
                         }
@@ -906,7 +906,7 @@ public class DiscoveryProjectGeneratorImpl {
                     item = added.addItem(item);
                     ProjectBridge.excludeItemFromOtherConfigurations(item);
                 }
-                ProjectBridge.setExclude(item, added.isDiskFolder());
+                ProjectBridge.setExclude(item, true);
                 ProjectBridge.setHeaderTool(item);
             }
         }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,59 +34,19 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.spi.utils;
 
-package org.netbeans.modules.cnd.discovery.api;
-
-import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileObject;
 
 /**
- *
- * @author Alexander Simon
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
-public interface ProjectProxy {
-
-    /**
-     * Return true if project can be divided on subprojects
-     */
-    boolean createSubProjects();
+public interface FileObjectRedirector {
     
-    /**
-     * Returns native project if provider called for existent project
-     */
-    Project getProject();
-
-    /**
-     * Returns path to makefile
-     */
-    String getMakefile();
-
-    /**
-     * Returns path to sources
-     */
-    String getSourceRoot();
-
-    /**
-     * Returns path to build result
-     */
-    String getExecutable();
-
-    /**
-     * Returns path to working folder
-     */
-    String getWorkingFolder();
-    
-    /**
-     * Returns true if discovered properties are merged with project properties
-     */
-    boolean mergeProjectProperties();
-    
-    /**
-     * Case: binary file compiled from symbolic link.
-     * By default project will contain only real compiled sources (i.e. links).
-     * User expectation is: project contains original source files.
-     * 
-     * @return true if project should contain resolved links.
-     */
-    boolean resolveSymbolicLinks();
+    FileObject redirect(FileObject file);
 }

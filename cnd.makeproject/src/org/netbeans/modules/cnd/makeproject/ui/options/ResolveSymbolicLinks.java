@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,19 +37,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelutil.spi;
+package org.netbeans.modules.cnd.makeproject.ui.options;
 
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
+import org.netbeans.modules.cnd.utils.ui.NamedOption;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
+ *
+ * @author Alexander Simon
  */
-public interface FileObjectRedirector {
+@ServiceProvider(path=NamedOption.MAKE_PROJECT_CATEGORY, service=NamedOption.class, position=2000)
+public class ResolveSymbolicLinks extends NamedOption {
+    // Reuse
+    public static final String RESOLVE_SYMBOLIC_LINKS = "resolveSymbolicLinks";  // NOI18N
     
-    FileObject redirect(FileObject file);
-    
-    DataObject redirect(DataObject file);
+    @Override
+    public String getName() {
+        return RESOLVE_SYMBOLIC_LINKS;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return NbBundle.getMessage(ReuseOutputTab.class, "RESOLVE_SYMBOLIC_LINKS_CHECKBOX_TXT"); //NOI18N
+    }
+
+    @Override
+    public String getDescription() {
+        return NbBundle.getMessage(ReuseOutputTab.class, "RESOLVE_SYMBOLIC_LINKS_CHECKBOX_AD"); //NOI18N
+    }
+
+    @Override
+    public NamedOption.OptionKind getKind() {
+        return NamedOption.OptionKind.Boolean;
+    }
+
+    @Override
+    public Object getDefaultValue() {
+        return false;
+    }
+
+    @Override
+    public boolean isVisible() {
+        return true;
+    }
 }

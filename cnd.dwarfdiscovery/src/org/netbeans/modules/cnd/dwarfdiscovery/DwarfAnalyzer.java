@@ -108,6 +108,11 @@ public class DwarfAnalyzer {
             public boolean mergeProjectProperties() {
                 return false;
             }
+
+            @Override
+            public boolean resolveSymbolicLinks() {
+                return false;
+            }
         });
     }
     

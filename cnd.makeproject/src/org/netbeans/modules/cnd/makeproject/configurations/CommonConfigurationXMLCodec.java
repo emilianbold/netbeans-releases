@@ -100,6 +100,8 @@ import org.openide.util.Exceptions;
  * 
  * Change History:
  * 
+ * V95 - NB 8.0.1
+ *    Introduce resolving symbolic links (RESOLVE_SYMBOLIC_LINKS)
  * V94 - NB 8.0
  *    Introduce exclude from code assistance pattern (CODE_ASSISTANCE_EXCLUDE_PATTERN)
  * V93 - NB 8.0
@@ -289,7 +291,7 @@ public abstract class CommonConfigurationXMLCodec
         implements XMLEncoder {
     
     public final static int VERSION_WITH_INVERTED_SERIALIZATION = 88;
-    public final static int CURRENT_VERSION = 94;
+    public final static int CURRENT_VERSION = 95;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -361,6 +363,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String CODE_ASSISTANCE_ELEMENT = "codeAssistance"; // NOI18N
     protected final static String BUILD_ANALAZYER_ELEMENT = "buildAnalyzer"; // NOI18N
     protected final static String BUILD_ANALAZYER_TOOLS_ELEMENT = "buildAnalyzerTools"; // NOI18N
+    protected final static String RESOLVE_SYMBOLIC_LINKS = "resolveSymbolicLinks"; // NOI18N
     protected final static String CODE_ASSISTANCE_ENVIRONMENT_ELEMENT = "envVariables"; // NOI18N
     protected final static String CODE_ASSISTANCE_TRANSIENT_MACROS_ELEMENT = "transientMacros"; // NOI18N
     protected final static String CODE_ASSISTANCE_INCLUDE_ADDITIONAL = "includeAdditional"; // NOI18N
@@ -1487,6 +1490,9 @@ public abstract class CommonConfigurationXMLCodec
         xes.elementOpen(CODE_ASSISTANCE_ELEMENT);
         if (codeAssistanceConfiguration.getBuildAnalyzer().getModified()) {
             xes.element(BUILD_ANALAZYER_ELEMENT, "" + codeAssistanceConfiguration.getBuildAnalyzer().getValue()); // NOI18N
+        }
+        if (codeAssistanceConfiguration.getResolveSymbolicLinks().getModified()) {
+            xes.element(RESOLVE_SYMBOLIC_LINKS, "" + codeAssistanceConfiguration.getBuildAnalyzer().getValue()); // NOI18N
         }
         if (codeAssistanceConfiguration.getIncludeInCA().getModified()) {
             xes.element(CODE_ASSISTANCE_INCLUDE_ADDITIONAL, "" + codeAssistanceConfiguration.getIncludeInCA().getValue()); // NOI18N
