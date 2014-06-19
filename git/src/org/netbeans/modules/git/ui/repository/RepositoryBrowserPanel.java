@@ -100,6 +100,7 @@ import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.fetch.PullAction;
+import org.netbeans.modules.git.ui.history.SearchHistoryAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
 import org.netbeans.modules.git.ui.push.PushAction;
 import org.netbeans.modules.git.ui.push.PushMapping;
@@ -1022,6 +1023,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         private String lastTrackingOtherId;
         private final Boolean mergeStatus;
         private final boolean remote;
+        private String trackingStatus;
 
         public BranchNode (File repository, GitBranchInfo branchInfo) {
             super(Children.LEAF, repository, Lookups.singleton(new Revision.BranchReference(branchInfo.branch)));
@@ -1064,6 +1066,10 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             return getName(false);
         }
         
+        @NbBundle.Messages({
+            "# {0} - tracked branch", "LBL_BranchNode.basedOn= (based on {0})",
+            "# {0} - tracking status", "LBL_BranchNode.trackingStatus= ({0})"
+        })
         public String getName (boolean html) {
             StringBuilder sb = new StringBuilder();
             if (active && html) {
@@ -1072,10 +1078,12 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 sb.append(branchName).append(getMergeStatus(mergeStatus));
             }
             if (options.contains(Option.DISPLAY_COMMIT_IDS)) {
-                if (trackedBranch != null) {
-                    sb.append(NbBundle.getMessage(RepositoryBrowserPanel.class, "LBL_BranchNode.basedOn", trackedBranch.getName())); //NOI18N
+                if (trackingStatus != null) {
+                    sb.append(Bundle.LBL_BranchNode_trackingStatus(trackingStatus));
+                } else if (trackedBranch != null) {
+                    sb.append(Bundle.LBL_BranchNode_basedOn(trackedBranch.getName()));
                 }
-                sb.append(" - ").append(branchId); //NOI18N
+                sb.append(" - ").append(branchId.substring(0, 10)); //NOI18N
             }
             return sb.toString();
         }
@@ -1160,6 +1168,25 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     @Override
                     public boolean isEnabled() {
                         return !active;
+                    }
+                });
+                actions.add(new AbstractAction(NbBundle.getMessage(SearchHistoryAction.class, "LBL_SearchHistoryAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                SearchHistoryAction.openSearch(repo, new File[] { repo }, branch,
+                                        Utils.getContextDisplayName(VCSContext.forNodes(new Node[] {
+                                            new AbstractNode(Children.LEAF, Lookups.fixed(repo)) {
+                                                @Override
+                                                public String getDisplayName () {
+                                                    return repo.getName();
+                                                }
+                                            }
+                                        })));
+                            }
+                        });
                     }
                 });
                 Action a = new AbstractAction(NbBundle.getMessage(DeleteBranchAction.class, "LBL_DeleteBranchAction_PopupName")) { //NOI18N
@@ -1248,13 +1275,22 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             return null;
         }
 
+        @NbBundle.Messages({
+            "# {0} - tracked branch name", "MSG_BranchNode.trackingStatus.inSync=in sync with \"{0}\"",
+            "# {0} - tracked branch name", "MSG_BranchNode.trackingStatus.merge=merge with \"{0}\"",
+            "# {0} - tracked branch name", "MSG_BranchNode.trackingStatus.behind=behind \"{0}\"",
+            "# {0} - tracked branch name", "MSG_BranchNode.trackingStatus.ahead=ahead of \"{0}\""
+        })
         private void refreshTracking (final GitBranch trackedBranch, final File repository) {
             if (trackedBranch != null && repository != null && options.contains(Option.DISPLAY_COMMIT_IDS)
                     && (!branchId.equals(lastTrackingMyId) || !trackedBranch.getId().equals(lastTrackingOtherId))) {
                 lastTrackingMyId = branchId;
                 lastTrackingOtherId = trackedBranch.getId();
                 if (trackedBranch.getId().equals(branchId)) {
+                    String oldName = getHtmlDisplayName();
+                    trackingStatus = Bundle.MSG_BranchNode_trackingStatus_inSync(trackedBranch.getName());
                     setShortDescription(NbBundle.getMessage(RepositoryBrowserPanel.class, "MSG_BranchNode.tracking.inSync", trackedBranch.getName())); //NOI18N
+                    fireDisplayNameChange(oldName, getHtmlDisplayName());
                 } else {
                     final String id = branchId;
                     RP.post(new Runnable() {
@@ -1267,7 +1303,13 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                                 GitRevisionInfo info = client.getCommonAncestor(new String[] { id, trackedBranch.getId() }, GitUtils.NULL_PROGRESS_MONITOR);
                                 if (info == null || !(info.getRevision().equals(id) || info.getRevision().equals(trackedBranch.getId()))) {
                                     tt = NbBundle.getMessage(RepositoryBrowserPanel.class, "MSG_BranchNode.tracking.mergeNeeded", trackedBranch.getName()); //NOI18N
+                                    setTrackingStatus(Bundle.MSG_BranchNode_trackingStatus_merge(trackedBranch.getName()));
                                 } else {
+                                    if (info.getRevision().equals(trackedBranch.getId())) {
+                                        setTrackingStatus(Bundle.MSG_BranchNode_trackingStatus_ahead(trackedBranch.getName()));
+                                    } else if (info.getRevision().equals(id)) {
+                                        setTrackingStatus(Bundle.MSG_BranchNode_trackingStatus_behind(trackedBranch.getName()));
+                                    }
                                     SearchCriteria crit = new SearchCriteria();
                                     if (info.getRevision().equals(trackedBranch.getId())) {
                                         crit.setRevisionFrom(trackedBranch.getId());
@@ -1300,6 +1342,17 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                                 @Override
                                 public void run () {
                                     setShortDescription(toolTip);
+                                }
+                            });
+                        }
+                        
+                        private void setTrackingStatus (final String status) {
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run () {
+                                    String oldName = getHtmlDisplayName();
+                                    trackingStatus = status;
+                                    fireDisplayNameChange(oldName, getHtmlDisplayName());
                                 }
                             });
                         }
@@ -1570,6 +1623,24 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     @Override
                     public boolean isEnabled() {
                         return !active;
+                    }
+                });
+                actions.add(new AbstractAction(NbBundle.getMessage(SearchHistoryAction.class, "LBL_SearchHistoryAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                SearchHistoryAction.openSearch(repo, repo, Utils.getContextDisplayName(VCSContext.forNodes(new Node[] {
+                                    new AbstractNode(Children.LEAF, Lookups.fixed(repo)) {
+                                        @Override
+                                        public String getDisplayName () {
+                                            return repo.getName();
+                                        }
+                                    }
+                                })), null, tag);
+                            }
+                        });
                     }
                 });
                 Action a = new AbstractAction(Bundle.CTL_TagNode_deleteTag_action()) {
