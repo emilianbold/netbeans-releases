@@ -49,13 +49,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.project.Project;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.project.spi.intern.ProjectIDEServicesImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Cancellable;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.UserQuestionException;
@@ -83,6 +84,11 @@ public class IDEServicesImpl implements ProjectIDEServicesImplementation {
             Logger.getLogger(IDEServicesImpl.class.getName()).log(Level.FINE, null, e);
             return null;
         }   
+    }
+
+    @Override
+    public boolean isEventDispatchThread() {
+        return SwingUtilities.isEventDispatchThread();
     }
 
     private static class DataObjectSource implements FileBuiltQuerySource {
@@ -126,6 +132,54 @@ public class IDEServicesImpl implements ProjectIDEServicesImplementation {
             support.removePropertyChangeListener(l);
         }
         
+    }
+    
+@Override
+    public ProgressHandle createProgressHandle(String displayName, Cancellable allowToCancel) {
+        final org.netbeans.api.progress.ProgressHandle h = ProgressHandleFactory.createHandle(displayName, allowToCancel);
+        return new ProgressHandle() {
+
+            @Override
+            public void start() {
+                h.start();
+            }
+
+            @Override
+            public void progress(String message) {
+                h.progress(message);
+            }
+
+            @Override
+            public void progress(int workunit) {
+                h.progress(workunit);
+            }
+
+            @Override
+            public void progress(String message, int workunit) {
+                h.progress(message, workunit);
+            }
+
+            @Override
+            public void switchToDeterminate(int workunits) {
+                h.switchToDeterminate(workunits);
+            }
+
+            @Override
+            public void finish() {
+                h.finish();
+            }
+
+            @Override
+            public void switchToIndeterminate() {
+                h.switchToIndeterminate();
+            }
+
+            @Override
+            public void setDisplayName(String displayName) {
+                h.setDisplayName(displayName);
+            }
+
+        };
     }
     
     @Override

@@ -43,7 +43,9 @@ package org.netbeans.modules.project.spi.intern;
 
 import java.io.IOException;
 import javax.swing.Icon;
+import org.netbeans.modules.project.spi.intern.ProjectIDEServicesImplementation.ProgressHandle;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 
 /**
@@ -61,22 +63,41 @@ public final class ProjectIDEServices {
     }
     
     public static boolean isUserQuestionException(IOException ioe) {
-        return getImpl().isUserQuestionException(ioe);
+        ProjectIDEServicesImplementation i = getImpl();
+        return i != null ? getImpl().isUserQuestionException(ioe) : false;
     }
 
     public static void handleUserQuestionException(IOException e, final ProjectIDEServicesImplementation.UserQuestionExceptionCallback callback) {
-        getImpl().handleUserQuestionException(e, callback);
+        ProjectIDEServicesImplementation i = getImpl();
+        if(i != null) {
+            i.handleUserQuestionException(e, callback);
+        }
     }
     
     public static void notifyWarning(String message) {
-        getImpl().notifyWarning(message);
+        ProjectIDEServicesImplementation i = getImpl();
+        if(i != null) {
+            i.notifyWarning(message);
+        }
     }
     
     public static ProjectIDEServicesImplementation.FileBuiltQuerySource createFileBuiltQuerySource(FileObject sourceFile) {
-        return getImpl().createFileBuiltQuerySource(sourceFile);
+        ProjectIDEServicesImplementation i = getImpl();
+        return i != null ? i.createFileBuiltQuerySource(sourceFile) : null;
     }
     
-    public static final Icon loadImageIcon( String resource, boolean localized ) {
-        return getImpl().loadIcon(resource, localized);
+    public static Icon loadImageIcon( String resource, boolean localized ) {
+        ProjectIDEServicesImplementation i = getImpl();
+        return i != null ? i.loadIcon(resource, localized) : null;
+    }
+    
+    public static ProgressHandle createProgressHandle(String displayName, Cancellable allowToCancel) {
+        ProjectIDEServicesImplementation i = getImpl();
+        return i != null ? i.createProgressHandle(displayName, allowToCancel) : null;
+    }
+
+    public static boolean isEventDispatchThread() {
+        ProjectIDEServicesImplementation i = getImpl();
+        return i != null ? i.isEventDispatchThread() : false;
     }
 }

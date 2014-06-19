@@ -45,6 +45,8 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import javax.swing.Icon;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Cancellable;
+import org.openide.util.UserQuestionException;
 
 /**
  *
@@ -62,7 +64,7 @@ public interface ProjectIDEServicesImplementation {
      * @return 
      */
     public FileBuiltQuerySource createFileBuiltQuerySource(FileObject sourceFile);
-    
+
     /**
      * Represents a source object for a FileBuiltQuery.Status as it doesn't 
      * necessarily be a FileObject - e.g. a DataObject is used in case of the
@@ -127,6 +129,37 @@ public interface ProjectIDEServicesImplementation {
      */
     public void notifyWarning(String message);
     
+    /**
+     * Create a progress ui handle for a long lasting task.
+     * @param allowToCancel either null, if the task cannot be cancelled or 
+     *          an instance of {@link org.openide.util.Cancellable} that will be called when user 
+     *          triggers cancel of the task.
+     * @param displayName to be shown in the progress UI
+     * @return an instance of {@link org.netbeans.api.progress.ProgressHandle}, initialized but not started.
+     */
+    public ProgressHandle createProgressHandle(String displayName, Cancellable allowToCancel);
+    
+    public static interface ProgressHandle {
+
+        public void start();
+
+        public void progress(String message);
+        
+        public void progress(int workunit);
+
+        public void progress(String message, int workunit);
+        
+        public void switchToDeterminate(int workunits);
+
+        public void finish();
+
+        public void switchToIndeterminate();
+
+        public void setDisplayName(String displayName);
+    
+    }
+    
+
     ////////////////////////////////////////////////////////////////////////////
     // Misc utils & co.
     ////////////////////////////////////////////////////////////////////////////
@@ -145,5 +178,7 @@ public interface ProjectIDEServicesImplementation {
      * @return ImageIcon or null, if the icon cannot be loaded.
      */
     public Icon loadIcon( String resource, boolean localized ); 
+
+    public boolean isEventDispatchThread();
     
 }

@@ -184,6 +184,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.maven.graph</friend>
                 <friend>org.netbeans.modules.maven.hints</friend>
                 <friend>org.netbeans.modules.maven.indexer</friend>
+                <friend>org.netbeans.modules.maven.indexer.ui</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.maven.jaxws</friend>
                 <friend>org.netbeans.modules.maven.junit</friend>

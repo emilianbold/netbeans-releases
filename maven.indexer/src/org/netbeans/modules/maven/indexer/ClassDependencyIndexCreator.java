@@ -84,7 +84,7 @@ import org.codehaus.plexus.util.Base64;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries.ClassUsage;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 /**
  * Scans classes in (local) JARs for their Java dependencies.
@@ -336,7 +336,7 @@ class ClassDependencyIndexCreator extends AbstractIndexCreator {
                 break;
             default:
                 // E.g. com/ibm/icu/icu4j/2.6.1/icu4j-2.6.1.jar!/com/ibm/icu/impl/data/LocaleElements_zh__PINYIN.class is corrupt even acc. to javap.
-                LOG.log(Level.FINE, "jar:{4}!/{3}.class: Unrecognized constant pool tag {0} at index {1}; running UTF-8 strings: {2}", new Object[] {tag, i, Arrays.asList(utf8Strings), clazz, Utilities.toURI(jar)});
+                LOG.log(Level.FINE, "jar:{4}!/{3}.class: Unrecognized constant pool tag {0} at index {1}; running UTF-8 strings: {2}", new Object[] {tag, i, Arrays.asList(utf8Strings), clazz, BaseUtilities.toURI(jar)});
                 continue;
             }
         }

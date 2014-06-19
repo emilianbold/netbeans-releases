@@ -58,6 +58,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.project.ant</friend>
+                <friend>org.netbeans.modules.maven.indexer</friend>
                 <friend>org.netbeans.modules.project.spi.intern.impl</friend>
                 <package>org.netbeans.modules.project.spi.intern</package>
             </friend-packages>
