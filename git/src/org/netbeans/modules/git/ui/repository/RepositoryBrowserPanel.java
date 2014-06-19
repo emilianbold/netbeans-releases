@@ -100,6 +100,7 @@ import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.fetch.PullAction;
+import org.netbeans.modules.git.ui.history.SearchHistoryAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
 import org.netbeans.modules.git.ui.push.PushAction;
 import org.netbeans.modules.git.ui.push.PushMapping;
@@ -1162,6 +1163,25 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                         return !active;
                     }
                 });
+                actions.add(new AbstractAction(NbBundle.getMessage(SearchHistoryAction.class, "LBL_SearchHistoryAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                SearchHistoryAction.openSearch(repo, new File[] { repo }, branch,
+                                        Utils.getContextDisplayName(VCSContext.forNodes(new Node[] {
+                                            new AbstractNode(Children.LEAF, Lookups.fixed(repo)) {
+                                                @Override
+                                                public String getDisplayName () {
+                                                    return repo.getName();
+                                                }
+                                            }
+                                        })));
+                            }
+                        });
+                    }
+                });
                 Action a = new AbstractAction(NbBundle.getMessage(DeleteBranchAction.class, "LBL_DeleteBranchAction_PopupName")) { //NOI18N
                     @Override
                     public void actionPerformed (ActionEvent e) {
@@ -1570,6 +1590,24 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     @Override
                     public boolean isEnabled() {
                         return !active;
+                    }
+                });
+                actions.add(new AbstractAction(NbBundle.getMessage(SearchHistoryAction.class, "LBL_SearchHistoryAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                SearchHistoryAction.openSearch(repo, repo, Utils.getContextDisplayName(VCSContext.forNodes(new Node[] {
+                                    new AbstractNode(Children.LEAF, Lookups.fixed(repo)) {
+                                        @Override
+                                        public String getDisplayName () {
+                                            return repo.getName();
+                                        }
+                                    }
+                                })), null, tag);
+                            }
+                        });
                     }
                 });
                 Action a = new AbstractAction(Bundle.CTL_TagNode_deleteTag_action()) {
