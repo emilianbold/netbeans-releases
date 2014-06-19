@@ -317,6 +317,9 @@
                         <test/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.project.spi.intern.impl</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.projectapi.nb</code-name-base>
                     </test-dependency>
                     <test-dependency>
