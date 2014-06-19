@@ -119,10 +119,8 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                 }
                 if (ts.token().id() == JsTokenId.STRING) {
                     String text = ts.token().text().toString();
-                    if (!text.startsWith(prefix)) {
-                        // this is needed, because from JS the prefix is split with '.'
-                        writtenPath = text.substring(0, offset - ts.offset());
-                    }
+                    // this is needed, because from JS the prefix is split with '.' and '/'
+                    writtenPath = text.substring(0, offset - ts.offset());
                 }
 
             }
