@@ -52,12 +52,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.indexer.NexusRepositoryIndexerImpl;
 import org.netbeans.modules.maven.indexer.spi.*;
+import org.netbeans.modules.project.spi.intern.ProjectIDEServices;
 import org.openide.util.Lookup;
 
 /**
@@ -107,7 +106,7 @@ public final class RepositoryQueries {
          * waits for currently unaccessible indexes to finish, not to be called in AWT thread.
          */
         public void waitForSkipped() {
-            assert !SwingUtilities.isEventDispatchThread();
+            assert !ProjectIDEServices.isEventDispatchThread();
             redoAction.run(this);
             synchronized (this) {
                 skipped.clear();

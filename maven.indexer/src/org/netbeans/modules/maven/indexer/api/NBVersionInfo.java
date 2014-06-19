@@ -43,7 +43,6 @@ package org.netbeans.modules.maven.indexer.api;
 
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.openide.util.Utilities;
 
 /**
  *

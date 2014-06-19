@@ -45,14 +45,13 @@ package org.netbeans.modules.maven.indexer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
-import org.openide.modules.ModuleInstall;
 import org.openide.util.Lookup;
 
-public class Installer extends ModuleInstall {
-
-    @SuppressWarnings("deprecation")
-    public @Override void close() {
-        Logger LOG = Logger.getLogger(Installer.class.getName());
+@org.openide.modules.OnStop
+public class OnStop implements Runnable {
+    @Override
+    public void run() {
+        Logger LOG = Logger.getLogger(org.netbeans.modules.maven.indexer.OnStop.class.getName());
         if (!Cancellation.cancelAll()) {
             // Cf. #188883. Hard to kill HTTP connections.
             for (Thread t : RemoteIndexTransferListener.getActiveTransfersOrScans()) {
@@ -75,5 +74,4 @@ public class Installer extends ModuleInstall {
             }
         }
     }
-
 }
