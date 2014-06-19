@@ -153,7 +153,12 @@ public final class ProjectManager {
      */
     @CheckForNull
     public Project findProject(@NonNull final FileObject projectDirectory) throws IOException, IllegalArgumentException {
-        Parameters.notNull("projectDirectory", projectDirectory);   //NOI18N
+        if (projectDirectory == null) {
+            throw new IllegalArgumentException("Attempted to pass a null directory to findProject"); // NOI18N
+        }
+        if (!projectDirectory.isFolder()) {
+            throw new IllegalArgumentException("Attempted to pass a non-directory to findProject: " + projectDirectory); // NOI18N
+        }
         return impl.findProject(projectDirectory);
     }
         
@@ -180,7 +185,6 @@ public final class ProjectManager {
      * @throws IllegalArgumentException if the supplied file object is null or not a folder
      */
     public boolean isProject(@NonNull final FileObject projectDirectory) throws IllegalArgumentException {
-        Parameters.notNull("projectDirectory", projectDirectory);   //NOI18N
         return isProject2(projectDirectory) != null;
     }
 
@@ -209,7 +213,18 @@ public final class ProjectManager {
      */
     @CheckForNull
     public Result isProject2(@NonNull final FileObject projectDirectory) throws IllegalArgumentException {
-        Parameters.notNull("projectDirectory", projectDirectory);   //NOI18N
+        if (projectDirectory == null) {
+            throw new IllegalArgumentException("Attempted to pass a null directory to isProject"); // NOI18N
+        }
+        if (!projectDirectory.isFolder() ) {
+            //#78215 it can happen that a no longer existing folder is queried. throw
+            // exception only for real wrong usage..
+            if (projectDirectory.isValid()) {
+                throw new IllegalArgumentException("Attempted to pass a non-directory to isProject: " + projectDirectory); // NOI18N
+            } else {
+                return null;
+            }
+        }
         return impl.isProject(projectDirectory);
     }
         

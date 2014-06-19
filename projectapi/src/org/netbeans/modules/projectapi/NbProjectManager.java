@@ -227,13 +227,8 @@ public final class NbProjectManager implements ProjectManagerImplementation {
      * @throws IOException if the project was recognized but could not be loaded
      * @throws IllegalArgumentException if the supplied file object is null or not a folder
      */
+    @Override
     public Project findProject(final FileObject projectDirectory) throws IOException, IllegalArgumentException {
-        if (projectDirectory == null) {
-            throw new IllegalArgumentException("Attempted to pass a null directory to findProject"); // NOI18N
-        }
-        if (!projectDirectory.isFolder()) {
-            throw new IllegalArgumentException("Attempted to pass a non-directory to findProject: " + projectDirectory); // NOI18N
-        }
         try {
             return getMutex().readAccess(new Mutex.ExceptionAction<Project>() {
                 @Override
@@ -389,18 +384,6 @@ public final class NbProjectManager implements ProjectManagerImplementation {
 
     @Override
     public Result isProject(final FileObject projectDirectory) throws IllegalArgumentException {
-        if (projectDirectory == null) {
-            throw new IllegalArgumentException("Attempted to pass a null directory to isProject"); // NOI18N
-        }
-        if (!projectDirectory.isFolder() ) {
-            //#78215 it can happen that a no longer existing folder is queried. throw 
-            // exception only for real wrong usage..
-            if (projectDirectory.isValid()) {
-                throw new IllegalArgumentException("Attempted to pass a non-directory to isProject: " + projectDirectory); // NOI18N
-            } else {
-                return null;
-            }
-        }
         return getMutex().readAccess(new Mutex.Action<Result>() {
             @Override
             public Result run() {
