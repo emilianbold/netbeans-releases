@@ -151,7 +151,7 @@ public class DwarfReader extends ElfReader {
             case DW_FORM_indirect:
                 return readForm(FORM.get(readUnsignedLEB128()));
             case DW_FORM_flag_present:
-                return 1;
+                return true;
             case DW_FORM_sig8:
                 return readLong();
             default:
