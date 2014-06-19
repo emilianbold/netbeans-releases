@@ -87,6 +87,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Utilities;
@@ -902,7 +903,7 @@ public class LogReader {
                 if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                     DwarfSource.LOG.log(Level.FINE, "**** Gotcha: {0}", file);
                 }
-                result.add(new CommandLineSource(li, artifacts.languageArtifacts, workingDir, what, userIncludesCached, userFilesCached, userMacrosCached,
+                result.add(new CommandLineSource(li, artifacts.languageArtifacts, workingDir, convertSymbolicLink(what), userIncludesCached, userFilesCached, userMacrosCached,
                         artifacts.undefinedMacros, storage, artifacts.getImportantFlags()));
                 continue;
             }
@@ -915,7 +916,7 @@ public class LogReader {
                         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                             DwarfSource.LOG.log(Level.FINE, "**** Gotcha: {0}", file);
                         }
-                        result.add(new CommandLineSource(li, artifacts.languageArtifacts, workingDir, what, userIncludesCached, userFilesCached, userMacrosCached,
+                        result.add(new CommandLineSource(li, artifacts.languageArtifacts, workingDir, convertSymbolicLink(what), userIncludesCached, userFilesCached, userMacrosCached,
                                 artifacts.undefinedMacros, storage, artifacts.getImportantFlags()));
                         continue;
                     }
@@ -928,7 +929,7 @@ public class LogReader {
                     if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                         DwarfSource.LOG.log(Level.FINE, "**** Gotcha guess: {0}", file);
                     }
-                    result.add(new CommandLineSource(li, artifacts.languageArtifacts, guessWorkingDir, what, userIncludesCached, userFilesCached, userMacrosCached,
+                    result.add(new CommandLineSource(li, artifacts.languageArtifacts, guessWorkingDir, convertSymbolicLink(what), userIncludesCached, userFilesCached, userMacrosCached,
                             artifacts.undefinedMacros, storage, artifacts.getImportantFlags()));
                     continue;
                 }
@@ -944,7 +945,7 @@ public class LogReader {
                     }
                 } else {
                     if (res.size() == 1) {
-                        result.add(new CommandLineSource(li, artifacts.languageArtifacts, res.get(0), what, userIncludesCached, userFilesCached, userMacrosCached,
+                        result.add(new CommandLineSource(li, artifacts.languageArtifacts, res.get(0), convertSymbolicLink(what), userIncludesCached, userFilesCached, userMacrosCached,
                                 artifacts.undefinedMacros, storage, artifacts.getImportantFlags()));
                         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                             DwarfSource.LOG.log(Level.FINE, "** Gotcha: {0}{1}{2}", new Object[]{res.get(0), File.separator, what});
@@ -997,6 +998,16 @@ public class LogReader {
         }
     }
     
+    private String convertSymbolicLink(String fullName) {
+        if (project.resolveSymbolicLinks() && FileSystemProvider.getExecutionEnvironment(fileSystem).isLocal()) {
+            String resolvedLink = DiscoveryUtils.resolveSymbolicLink(fullName);
+            if (resolvedLink != null) {
+                fullName = resolvedLink;
+            }
+        }
+        return fullName;
+    }
+
     //copy of CndPathUtilities.isPathAbsolute(CharSequence)
     // except checking on windows
     private boolean isPathAbsolute(CharSequence path) {
