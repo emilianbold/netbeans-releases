@@ -54,6 +54,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.projectapi.nb.NbProjectInformationProvider;
+import org.netbeans.modules.projectapi.nb.NbProjectManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
@@ -82,7 +84,10 @@ public class OpenProjectsTrampolineImplTest extends NbTestCase {
 //        badproject = scratch.createFolder("bad");
 //        badproject.createFolder("testproject").createData("broken");
 //        mysteryproject = scratch.createFolder("mystery");
-        MockLookup.setLookup(Lookups.singleton(TestUtil.testProjectFactory()));
+        MockLookup.setLookup(Lookups.fixed(
+            new NbProjectManager(),
+            new NbProjectInformationProvider(),
+            TestUtil.testProjectFactory()));
         pm = ProjectManager.getDefault();
         OpenProjectList.waitProjectsFullyOpen();
     }

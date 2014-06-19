@@ -40,8 +40,9 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.projectapi;
+package org.netbeans.modules.projectapi.nb;
 
+import org.netbeans.modules.projectapi.nb.NbProjectManager;
 import org.netbeans.spi.project.ProjectManagerImplementation;
 import org.openide.util.Lookup;
 
