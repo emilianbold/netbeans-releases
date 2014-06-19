@@ -42,14 +42,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.projectapi;
+package org.netbeans.modules.projectapi.nb;
 
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -65,7 +64,6 @@ import javax.swing.Icon;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.*;
 import org.netbeans.api.project.ProjectManager.Result;
-import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectManagerImplementation;

@@ -51,7 +51,7 @@ import java.lang.ref.WeakReference;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.projectapi.NbProjectManagerAccessor;
+import org.netbeans.modules.projectapi.nb.NbProjectManagerAccessor;
 import org.netbeans.spi.project.ProjectIconAnnotator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;

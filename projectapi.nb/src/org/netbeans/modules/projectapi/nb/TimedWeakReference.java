@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.projectapi;
+package org.netbeans.modules.projectapi.nb;
 
 // XXX COPIED from org.openide.util w/ changes:
 //     weak -> soft
