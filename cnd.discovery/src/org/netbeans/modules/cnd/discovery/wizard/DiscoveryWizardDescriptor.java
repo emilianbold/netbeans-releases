@@ -79,6 +79,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public static final String SEARCH_PATHS = "DW:searchPaths"; // NOI18N
     public static final String ERRORS = "DW:errors"; // NOI18N
     public static final String INCREMENTAL = "DW:incremental"; // NOI18N
+    public static final String RESOLVE_SYMBOLIC_LINKS = "DW:resolveLinks"; // NOI18N
     
     private boolean stateChanged = true;
     private boolean simple = true;
@@ -311,6 +312,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     @Override
     public void setIncrementalMode(boolean incremental) {
         putProperty(INCREMENTAL, incremental);
+    }
+
+    @Override
+    public boolean isResolveSymbolicLinks() {
+        return Boolean.TRUE.equals(getProperty(RESOLVE_SYMBOLIC_LINKS));
+    }
+
+    @Override
+    public void setResolveSymbolicLinks(boolean resolveSymbolicLinks) {
+        putProperty(RESOLVE_SYMBOLIC_LINKS, resolveSymbolicLinks);
     }
    
     private static class DiscoveryWizardDescriptorAdapter implements DiscoveryDescriptor{
@@ -545,6 +556,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         @Override
         public void setIncrementalMode(boolean incremental) {
             wizard.putProperty(INCREMENTAL, incremental);
+        }
+
+        @Override
+        public boolean isResolveSymbolicLinks() {
+            return Boolean.TRUE.equals(wizard.getProperty(RESOLVE_SYMBOLIC_LINKS));
+        }
+
+        @Override
+        public void setResolveSymbolicLinks(boolean resolveSymbolicLinks) {
+            wizard.putProperty(RESOLVE_SYMBOLIC_LINKS, resolveSymbolicLinks);
         }
     }
 
@@ -781,6 +802,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         @Override
         public void setIncrementalMode(boolean incremental) {
             map.put(INCREMENTAL, incremental);
+        }
+        
+        @Override
+        public boolean isResolveSymbolicLinks() {
+            return Boolean.TRUE.equals(map.get(RESOLVE_SYMBOLIC_LINKS));
+        }
+
+        @Override
+        public void setResolveSymbolicLinks(boolean resolveSymbolicLinks) {
+            map.put(RESOLVE_SYMBOLIC_LINKS, resolveSymbolicLinks);
         }
     }
 }

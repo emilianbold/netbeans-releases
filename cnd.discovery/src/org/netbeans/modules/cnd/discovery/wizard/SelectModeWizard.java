@@ -236,6 +236,11 @@ public class SelectModeWizard implements WizardDescriptor.AsynchronousValidating
             public boolean mergeProjectProperties() {
                 return false;
             }
+
+            @Override
+            public boolean resolveSymbolicLinks() {
+                return wizardDescriptor.isResolveSymbolicLinks();
+            }
         };
         DiscoveryProvider def = null;
         int assurance = 0;

@@ -353,6 +353,11 @@ public class DwarfDiscoveryTest  extends NbTestCase {
             public boolean mergeProjectProperties() {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
+
+            @Override
+            public boolean resolveSymbolicLinks() {
+                return false;
+            }
         }, null);
         String compilerName = canAnalyze.getCompilerName();
         String sourceRoot = canAnalyze.getSourceRoot();
@@ -417,6 +422,11 @@ public class DwarfDiscoveryTest  extends NbTestCase {
             @Override
             public boolean mergeProjectProperties() {
                 throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
+            public boolean resolveSymbolicLinks() {
+                return false;
             }
         }, null, null);
         assertEquals(1, analyze.size());

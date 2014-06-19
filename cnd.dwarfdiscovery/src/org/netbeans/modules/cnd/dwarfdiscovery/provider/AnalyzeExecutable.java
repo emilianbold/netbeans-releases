@@ -279,7 +279,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
         Set<String> dlls = new HashSet<String>();
         FileSystem fs = (FileSystem) getProperty(FILE_SYSTEM).getValue();
         if (fs == null) {
-            ApplicableImpl applicable = sizeComilationUnit(set, dlls, findMain);
+            ApplicableImpl applicable = sizeComilationUnit(project, set, dlls, findMain);
             if (applicable.isApplicable()) {
                 return new ApplicableImpl(true, applicable.getErrors(), applicable.getCompilerName(), 70, applicable.isSunStudio(),
                         applicable.getDependencies(), applicable.getSearchPaths(), applicable.getSourceRoot(), applicable.getMainFunction());

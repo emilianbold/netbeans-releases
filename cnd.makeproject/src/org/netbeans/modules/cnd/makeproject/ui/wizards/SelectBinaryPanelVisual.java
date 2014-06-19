@@ -228,6 +228,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
             final Map<String, Object> map = new HashMap<>();
             map.put("DW:buildResult", controller.getWizardStorage().getBinaryPath().getPath()); // NOI18N
+            map.put("DW:resolveLinks", CommonUtilities.resolveSymbolicLinks()); // NOI18N
             if (env.isRemote()) {
                 map.put("DW:fileSystem", fileSystem); // NOI18N
             }
@@ -462,6 +463,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                         final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
                         final Map<String, Object> map = new HashMap<>();
                         map.put("DW:buildResult", entry.getValue()); // NOI18N
+                        map.put("DW:resolveLinks", Boolean.TRUE); // NOI18N
                         if (env.isRemote()) {
                             map.put("DW:fileSystem", fileSystem); // NOI18N
                         }
