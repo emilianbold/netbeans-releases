@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.projectapi.SPIAccessor;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectManagerImplementation;
 import org.openide.filesystems.FileObject;
@@ -74,11 +75,12 @@ public final class ProjectManager {
         if (this.impl == null) {
             throw new IllegalStateException("No ProjectManagerImplementation found in global Lookup."); //NOI18N
         }
+        this.impl.init(SPIAccessor.getInstance().createProjectManagerCallBack());
         LOG.log(
             Level.FINE,
             "ProjectManager created with implementation: {0}", //NOI18N
             this.impl);
-    }       
+    }
 
     /**
      * Returns the singleton project manager instance.
@@ -153,7 +155,12 @@ public final class ProjectManager {
      */
     @CheckForNull
     public Project findProject(@NonNull final FileObject projectDirectory) throws IOException, IllegalArgumentException {
-        Parameters.notNull("projectDirectory", projectDirectory);   //NOI18N
+        if (projectDirectory == null) {
+            throw new IllegalArgumentException("Attempted to pass a null directory to findProject"); // NOI18N
+        }
+        if (!projectDirectory.isFolder()) {
+            throw new IllegalArgumentException("Attempted to pass a non-directory to findProject: " + projectDirectory); // NOI18N
+        }
         return impl.findProject(projectDirectory);
     }
         
@@ -180,7 +187,6 @@ public final class ProjectManager {
      * @throws IllegalArgumentException if the supplied file object is null or not a folder
      */
     public boolean isProject(@NonNull final FileObject projectDirectory) throws IllegalArgumentException {
-        Parameters.notNull("projectDirectory", projectDirectory);   //NOI18N
         return isProject2(projectDirectory) != null;
     }
 
@@ -209,7 +215,18 @@ public final class ProjectManager {
      */
     @CheckForNull
     public Result isProject2(@NonNull final FileObject projectDirectory) throws IllegalArgumentException {
-        Parameters.notNull("projectDirectory", projectDirectory);   //NOI18N
+        if (projectDirectory == null) {
+            throw new IllegalArgumentException("Attempted to pass a null directory to isProject"); // NOI18N
+        }
+        if (!projectDirectory.isFolder() ) {
+            //#78215 it can happen that a no longer existing folder is queried. throw
+            // exception only for real wrong usage..
+            if (projectDirectory.isValid()) {
+                throw new IllegalArgumentException("Attempted to pass a non-directory to isProject: " + projectDirectory); // NOI18N
+            } else {
+                return null;
+            }
+        }
         return impl.isProject(projectDirectory);
     }
         

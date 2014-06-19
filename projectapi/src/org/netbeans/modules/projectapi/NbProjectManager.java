@@ -173,6 +173,17 @@ public final class NbProjectManager implements ProjectManagerImplementation {
      */
     private ThreadLocal<Set<FileObject>> loadingThread = new ThreadLocal<Set<FileObject>>();
 
+    /**
+     * Callback to ProjectManager.
+     */
+    private volatile ProjectManagerCallBack callBack;
+
+    @Override
+    public void init(@NonNull final ProjectManagerCallBack callBack) {
+        Parameters.notNull("callBack", callBack);   //NOI18N
+        this.callBack = callBack;
+    }
+
     @NonNull
     @Override
     public Mutex getMutex() {
@@ -227,13 +238,9 @@ public final class NbProjectManager implements ProjectManagerImplementation {
      * @throws IOException if the project was recognized but could not be loaded
      * @throws IllegalArgumentException if the supplied file object is null or not a folder
      */
+    @Override
     public Project findProject(final FileObject projectDirectory) throws IOException, IllegalArgumentException {
-        if (projectDirectory == null) {
-            throw new IllegalArgumentException("Attempted to pass a null directory to findProject"); // NOI18N
-        }
-        if (!projectDirectory.isFolder()) {
-            throw new IllegalArgumentException("Attempted to pass a non-directory to findProject: " + projectDirectory); // NOI18N
-        }
+        Parameters.notNull("projectDirectory", projectDirectory);   //NOI18N
         try {
             return getMutex().readAccess(new Mutex.ExceptionAction<Project>() {
                 @Override
@@ -389,18 +396,7 @@ public final class NbProjectManager implements ProjectManagerImplementation {
 
     @Override
     public Result isProject(final FileObject projectDirectory) throws IllegalArgumentException {
-        if (projectDirectory == null) {
-            throw new IllegalArgumentException("Attempted to pass a null directory to isProject"); // NOI18N
-        }
-        if (!projectDirectory.isFolder() ) {
-            //#78215 it can happen that a no longer existing folder is queried. throw 
-            // exception only for real wrong usage..
-            if (projectDirectory.isValid()) {
-                throw new IllegalArgumentException("Attempted to pass a non-directory to isProject: " + projectDirectory); // NOI18N
-            } else {
-                return null;
-            }
-        }
+        Parameters.notNull("projectDirectory", projectDirectory);
         return getMutex().readAccess(new Mutex.Action<Result>() {
             @Override
             public Result run() {
@@ -555,24 +551,13 @@ public final class NbProjectManager implements ProjectManagerImplementation {
                     if (!removedProjects.add(p)) {
                         LOG.log(Level.WARNING, "An attempt to call notifyDeleted more than once. Project: {0}", dir);
                     }
-                    resetSimpleFileOwnerQuery();
+                    callBack.notifyDeleted(p);
                     return null;
                 }
             });
         }
 
     }
-
-    private void resetSimpleFileOwnerQuery() {
-        //#111892
-        Collection<? extends FileOwnerQueryImplementation> col = Lookup.getDefault().lookupAll(FileOwnerQueryImplementation.class);
-        for (FileOwnerQueryImplementation impl : col) {
-            if (impl instanceof SimpleFileOwnerQueryImplementation) {
-                ((SimpleFileOwnerQueryImplementation)impl).resetLastFoundReferences();
-            }
-        }
-    }
-    
     /**
      * Get a list of all projects which are modified and need to be saved.
      * <p>Acquires read access.
@@ -717,8 +702,10 @@ public final class NbProjectManager implements ProjectManagerImplementation {
         public void fileDeleted(FileEvent fe) {
             synchronized (dir2Proj) {
                 LOG.log(Level.FINE, "deleted: {0}", fe.getFile());
-                dir2Proj.remove(fe.getFile());
-                resetSimpleFileOwnerQuery();            
+                final Union2<Reference<Project>, LoadStatus> prjOrLs = dir2Proj.remove(fe.getFile());
+                callBack.notifyDeleted((prjOrLs != null && prjOrLs.hasFirst()) ?
+                    prjOrLs.first().get() :
+                    null);
             }
         }
 
@@ -726,9 +713,10 @@ public final class NbProjectManager implements ProjectManagerImplementation {
         public void fileRenamed(FileRenameEvent fe) {
             synchronized (dir2Proj) {
                 LOG.log(Level.FINE, "renamed: {0}", fe.getFile());
-                dir2Proj.remove(fe.getFile());
-                resetSimpleFileOwnerQuery();            
-                
+                final Union2<Reference<Project>, LoadStatus> prjOrLs = dir2Proj.remove(fe.getFile());
+                callBack.notifyDeleted((prjOrLs != null && prjOrLs.hasFirst()) ?
+                    prjOrLs.first().get() :
+                    null);
             }
         }
         

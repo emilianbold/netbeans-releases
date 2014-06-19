@@ -43,12 +43,17 @@
 package org.netbeans.spi.project;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.projectapi.SPIAccessor;
+import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 
 /**
@@ -57,6 +62,14 @@ import org.openide.util.Mutex;
  * @since 1.59
  */
 public interface ProjectManagerImplementation {
+
+    /**
+     * Configures {@link ProjectManagerImplementation}.
+     * Called before the {@link ProjectManager} starts to use
+     * the implementation.
+     * @param callBack the callBack
+     */
+    void init(@NonNull final ProjectManagerCallBack callBack);
 
     /**
      * Get a read/write lock to be used for all project metadata accesses.
@@ -192,4 +205,46 @@ public interface ProjectManagerImplementation {
      */
     void saveAllProjects() throws IOException;
 
+    /**
+     * Callback to notify the {@link ProjectManager} about changes.
+     */
+    final class ProjectManagerCallBack {
+
+        static {
+            SPIAccessor.setInstance(new SPIAccessorImpl());
+        }
+
+        private ProjectManagerCallBack(){
+        }
+
+        /**
+         * Project was modified.
+         * @param project the modified project
+         */
+        public void notifyModified(@NonNull Project project) {
+
+        }
+
+        /**
+         * Project was deleted or renamed.
+         * @param project the deleted (renamed) project
+         */
+        public void notifyDeleted(@NullAllowed Project project) {
+            //Reset SimpleFileOwnerQueryImplementation cache
+            final Collection<? extends FileOwnerQueryImplementation> col = Lookup.getDefault().lookupAll(FileOwnerQueryImplementation.class);
+            for (FileOwnerQueryImplementation impl : col) {
+                if (impl instanceof SimpleFileOwnerQueryImplementation) {
+                    ((SimpleFileOwnerQueryImplementation)impl).resetLastFoundReferences();
+                }
+            }
+        }
+
+        private static final class SPIAccessorImpl extends SPIAccessor {
+            @NonNull
+            @Override
+            public ProjectManagerCallBack createProjectManagerCallBack() {
+                return new ProjectManagerCallBack();
+            }
+        }
+    }
 }
