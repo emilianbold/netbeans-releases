@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.projectapi.SPIAccessor;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectManagerImplementation;
 import org.openide.filesystems.FileObject;
@@ -74,11 +75,12 @@ public final class ProjectManager {
         if (this.impl == null) {
             throw new IllegalStateException("No ProjectManagerImplementation found in global Lookup."); //NOI18N
         }
+        this.impl.init(SPIAccessor.getInstance().createProjectManagerCallBack());
         LOG.log(
             Level.FINE,
             "ProjectManager created with implementation: {0}", //NOI18N
             this.impl);
-    }       
+    }
 
     /**
      * Returns the singleton project manager instance.
