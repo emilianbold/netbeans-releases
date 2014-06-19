@@ -410,7 +410,6 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     }
                     foundDebug++;
                     String path = cu.getSourceFileAbsolutePath();
-                    incrementRoot(path, realRoots);
                     path = myCommpilerSettings.getNormalizedPath(path);
                     if (!CndFileUtils.isExistingFile(path)) {
                         String fileFinder = Dwarf.fileFinder(objFileName, path);
@@ -707,7 +706,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                         }
                         source.process(cu);
                         if (project.resolveSymbolicLinks()) {
-                            String resolvedLink = DiscoveryUtils.resolveSymbolicLink(cu.getSourceFileAbsolutePath());
+                            String resolvedLink = DiscoveryUtils.resolveSymbolicLink(name);
                             if (resolvedLink != null) {
                                 old = map.get(resolvedLink);
                                 if (old != null && old.getUserInludePaths().size() > 0) {
