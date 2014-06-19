@@ -330,7 +330,7 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
 
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(WildflyDeploymentFactory.class, "SERVER_NAME"); // NOI18N
+        return NbBundle.getMessage(WildflyDeploymentFactory.class, "WILDFLY_SERVER_NAME"); // NOI18N
     }
 
     private DeploymentFactory getFactory(String instanceURL) {

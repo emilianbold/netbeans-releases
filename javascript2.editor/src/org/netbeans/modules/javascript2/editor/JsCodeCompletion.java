@@ -433,12 +433,15 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 if (lastChar == '@') { //NOI18N
                     return QueryType.COMPLETION;
                 }
+            } else if (currentTokenId == JsTokenId.STRING && lastChar == '/') {
+                return QueryType.COMPLETION;
             } else {
                 switch (lastChar) {
                     case '.': //NOI18N
                         if (OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionAfterDot()) {
                             return QueryType.COMPLETION;
                         }
+                        break;
                     default:
                         if (OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionFull()) {
                             if (!Character.isWhitespace(lastChar) && CHARS_NO_AUTO_COMPLETE.indexOf(lastChar) == -1) {
@@ -1001,7 +1004,9 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         int bracketIndex = prefix.lastIndexOf("[") + 1; //NOI18N
         int columnIndex = prefix.lastIndexOf(":") + 1; //NOI18N
         int parenIndex = prefix.lastIndexOf("(") + 1; //NOI18N
-        return (Math.max(0, Math.max(hashIndex, Math.max(dotIndex, Math.max(parenIndex,Math.max(columnIndex, Math.max(bracketIndex, spaceIndex)))))));
+        // for file code completion
+        int slashIndex = prefix.lastIndexOf('/') + 1; //NOI18N
+        return (Math.max(0, Math.max(hashIndex, Math.max(dotIndex, Math.max(parenIndex,Math.max(columnIndex, Math.max(bracketIndex, Math.max(spaceIndex, slashIndex))))))));
     }
 
 }
