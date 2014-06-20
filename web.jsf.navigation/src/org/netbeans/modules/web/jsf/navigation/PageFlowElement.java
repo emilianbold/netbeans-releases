@@ -97,10 +97,12 @@ public class PageFlowElement extends CloneableEditor implements MultiViewElement
         getTopComponent().setName(context.getFacesConfigFile().getName());
     }
 
+    @Override
     public JComponent getVisualRepresentation() {
         return getTopComponent();
     }
 
+    @Override
     public JComponent getToolbarRepresentation() {
         if (toolbar == null) {
             toolbar = getTopComponent().getToolbarRepresentation();
@@ -115,6 +117,7 @@ public class PageFlowElement extends CloneableEditor implements MultiViewElement
         return tc;
     }
 
+    @Override
     public Action[] getActions() {
         Action[] a = getTopComponent().getActions();
 
@@ -143,12 +146,14 @@ public class PageFlowElement extends CloneableEditor implements MultiViewElement
         return getTopComponent().getLookup();
     }
 
+    @Override
     public void componentOpened() {
         getTopComponent().registerListeners();
 //            tc.startBackgroundPinAddingProcess();
         LOG.finest("PageFlowEditor componentOpened");
     }
 
+    @Override
     public void componentClosed() {
         long time = System.currentTimeMillis();
         final FileObject storageFile = PageFlowView.getStorageFile(context.getFacesConfigFile());
@@ -178,7 +183,7 @@ public class PageFlowElement extends CloneableEditor implements MultiViewElement
         toolbar = null;
         tc = null;
 
-        LOG.finest("PageFlowEditor componentClosed took: " + (System.currentTimeMillis() - time) + " ms");
+        LOG.log(Level.FINEST, "PageFlowEditor componentClosed took: {0} ms", (System.currentTimeMillis() - time));
     }
 
     @Override
@@ -190,16 +195,19 @@ public class PageFlowElement extends CloneableEditor implements MultiViewElement
         getTopComponent().getPageFlowController().flushGraphIfDirty();
     }
 
+    @Override
     public void componentHidden() {
         LOG.finest("PageFlowEditor componentHidden");
     }
 
+    @Override
     public void componentActivated() {
         //tc.requestFocusInWindow();
         LOG.finest("PageFlowView componentActivated");
         getTopComponent().requestActive();
     }
 
+    @Override
     public void componentDeactivated() {
         LOG.finest("PageFlowView Deactivated");
     }
@@ -264,6 +272,7 @@ public class PageFlowElement extends CloneableEditor implements MultiViewElement
         return (DataEditorSupport) cloneableEditorSupport();
     }
 
+    @Override
     public UndoRedo getUndoRedo() {
         return context.getUndoRedo();
     }
