@@ -56,6 +56,7 @@ import java.util.Set;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
@@ -373,7 +374,11 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                             }
                             File file = new File(path);
                             if (CndFileUtils.exists(file)) {
-                                unique.add(CndFileUtils.normalizeFile(file).getAbsolutePath());
+                                final String absolutePath = CndFileUtils.normalizeFile(file).getAbsolutePath();
+                                if (project.resolveSymbolicLinks()) {
+                                    DiscoveryUtils.resolveSymbolicLink(absolutePath);
+                                }
+                                unique.add(absolutePath);
                             }
                         }
                         myIncludedFiles = new ArrayList<String>(unique);
