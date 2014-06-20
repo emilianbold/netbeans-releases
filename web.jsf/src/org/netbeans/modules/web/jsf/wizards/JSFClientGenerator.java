@@ -914,7 +914,7 @@ public class JSFClientGenerator {
             }
         }
         boolean nrIsNew = false;
-        if (nr == null) {
+        if (nr == null || nc == null) {
             nr = model.getFactory().createNavigationRule();
             nc = model.getFactory().createNavigationCase();
             nrIsNew = true;
@@ -924,6 +924,7 @@ public class JSFClientGenerator {
         nc.setToViewId(toViewId);
         if (nrIsNew) {
             nr.addNavigationCase(nc);
+            nr.setFromViewId("*"); // NOI18N
             config.addNavigationRule(nr);
         }
     }
