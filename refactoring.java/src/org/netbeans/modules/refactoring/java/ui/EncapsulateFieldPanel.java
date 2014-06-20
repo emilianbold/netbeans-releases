@@ -143,12 +143,12 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         jCheckAccess.setSelected(RefactoringModule.getOption(ENCAPSULATE_FIELDS_USE_ACCESSORS_PREF, true));
         boundCheckBox.setSelected(RefactoringModule.getOption(PROPERTY_SUPPORT_PREF, false));
         vetoableCheckBox.setSelected(RefactoringModule.getOption(VETOABLE_SUPPORT_PREF, false));
-        jTableFields.requestFocus();
     }
 
     @Override
-    public void requestFocus() {
-        jTableFields.requestFocus();
+    public boolean requestFocusInWindow() {
+        jTableFields.requestFocusInWindow();
+        return true;
     }
 
     @Override

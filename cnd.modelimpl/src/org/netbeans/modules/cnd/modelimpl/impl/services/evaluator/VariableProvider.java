@@ -89,6 +89,7 @@ import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 import org.netbeans.modules.cnd.modelimpl.util.MapHierarchy;
 import org.netbeans.modules.cnd.utils.Antiloop;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  *
@@ -189,12 +190,12 @@ public class VariableProvider {
                     }
                 }
                 if(CsmKindUtilities.isClass(decl)) {
+                    String varName = variableName.replaceAll(".*::(.*)", "$1"); // NOI18N
                     final CsmClass clazz = (CsmClass) decl;
                     MemberResolverImpl r = new MemberResolverImpl();
-                    final Iterator<CsmMember> classMembers = r.getDeclarations(clazz, variableName);
-                    if (classMembers.hasNext()) {
-                        CsmMember member = classMembers.next();
-                        if(member.isStatic() && CsmKindUtilities.isField(member) && member.getName().toString().equals(variableName)) {
+                    final CsmMember member = r.getDeclaration(clazz, varName);
+                    if (member != null) {
+                        if(member.isStatic() && CsmKindUtilities.isField(member) && member.getName().toString().equals(varName)) {
                             CsmExpression expr = ((CsmField)member).getInitialValue();
                             if(CsmKindUtilities.isInstantiation(member)) {
                                 Object eval = new ExpressionEvaluator(level+1).eval(
@@ -361,8 +362,13 @@ public class VariableProvider {
     }
     
     public int getSizeOfValue(String obj) {
+        if (true) {
+            return Integer.MAX_VALUE; // Not supported yet
+        }
+        
         List<CsmInstantiation> instantiations = null;
         
+        // TODO: think how to get right isntantiations here
         if (CsmKindUtilities.isInstantiation(decl)) {
             instantiations = new ArrayList<>();
             CsmInstantiation inst = (CsmInstantiation) decl;
@@ -392,8 +398,14 @@ public class VariableProvider {
         
         // This is necessary to resolve classifiers defined in macroses
         int counter = Antiloop.MAGIC_PLAIN_TYPE_RESOLVING_CONST;
-        while (objType != null && !CsmBaseUtilities.isValid(objType.getClassifier()) && counter > 0) {
-            objType = CsmEntityResolver.resolveType(objType.getText(), variableFile, variableEndOffset, objScope, instantiations);
+        while (objType != null && !CsmBaseUtilities.isValid(objType.getClassifier()) && !CharSequenceUtils.isNullOrEmpty(objType.getClassifierText()) && counter > 0) {
+            objType = CsmEntityResolver.resolveType(
+                objType.getClassifierText(), 
+                variableFile, 
+                variableEndOffset, 
+                objScope, 
+                instantiations
+            );
             counter--;
         }
         

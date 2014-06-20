@@ -75,8 +75,10 @@ import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
+import org.netbeans.modules.web.clientproject.api.jstesting.CoverageProviderImpl;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
+import org.netbeans.modules.web.clientproject.grunt.NpmProblemProvider;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserProvider;
@@ -438,12 +440,14 @@ public class ClientSideProject implements Project {
                new ClientSideModuleImpl(this),
                ProjectPropertiesProblemProvider.createForProject(this),
                CssPreprocessors.getDefault().createProjectProblemsProvider(this),
+               NpmProblemProvider.create(this),
                UILookupMergerSupport.createProjectProblemsProviderMerger(),
                new TemplateAttributesProviderImpl(projectHelper, fileEncodingQuery),
                SharabilityQueryImpl.create(projectHelper, eval, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
                     ClientSideProjectConstants.PROJECT_TEST_FOLDER, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER),
                projectBrowserProvider,
                new ProjectDirectoriesProviderImpl(),
+               new CoverageProviderImpl(this),
        });
        return new DynamicProjectLookup(this,
                LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-clientproject/Lookup"));

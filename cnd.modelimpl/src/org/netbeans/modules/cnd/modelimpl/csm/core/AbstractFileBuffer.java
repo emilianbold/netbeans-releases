@@ -91,18 +91,6 @@ public abstract class AbstractFileBuffer implements FileBuffer {
 //        }
     }
 
-    protected final String getEncoding() {
-        FileObject fo = getFileObject();
-        Charset cs = null;
-        if (fo != null && fo.isValid()) {
-            cs = FileEncodingQuery.getEncoding(fo);
-        }
-        if (cs == null) {
-            cs = FileEncodingQuery.getDefaultEncoding();
-        }
-        return cs.name();
-    }
-    
     private static FileSystem getFileSystem(FileObject fileObject) {
         try {
             return fileObject.getFileSystem();

@@ -3,6 +3,4 @@ $('div[t|itle]')
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 ATTRIBUTE  tabindex                                   null
-ATTRIBUTE  target                                     null
 ATTRIBUTE  title                                      null
-ATTRIBUTE  type                                       null

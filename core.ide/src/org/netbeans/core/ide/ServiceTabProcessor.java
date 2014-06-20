@@ -76,7 +76,7 @@ import org.openide.util.lookup.ServiceProvider;
     showInFileChooser={"#PlainResolver.FileChooserName", "#ResourceFiles"}
 )
 @ServiceProvider(service=Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class ServiceTabProcessor extends LayerGeneratingProcessor {
 
     public @Override Set<String> getSupportedAnnotationTypes() {

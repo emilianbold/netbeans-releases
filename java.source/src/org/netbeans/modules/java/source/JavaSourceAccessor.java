@@ -301,6 +301,7 @@ public abstract class JavaSourceAccessor {
             }
         }        
         
+        @Override
         public ClasspathInfo getClasspathInfo () {
             return javaSource.getClasspathInfo();
         }

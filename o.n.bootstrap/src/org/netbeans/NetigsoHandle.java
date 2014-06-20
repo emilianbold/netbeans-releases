@@ -74,12 +74,23 @@ final class NetigsoHandle {
 
     private NetigsoFramework getDefault(Lookup lkp) {
         synchronized (NetigsoFramework.class) {
-            if (framework == null && lkp != null) {
-                NetigsoFramework prototype = lkp.lookup(NetigsoFramework.class);
-                if (prototype == null) {
-                    throw new IllegalStateException("No NetigsoFramework found, is org.netbeans.core.netigso module enabled?"); // NOI18N
-                }
-                framework = prototype.bindTo(mgr);
+            if (framework != null) {
+                return framework;
+            }
+        }
+        
+        NetigsoFramework created = null;
+        if (lkp != null) {
+            NetigsoFramework prototype = lkp.lookup(NetigsoFramework.class);
+            if (prototype == null) {
+                throw new IllegalStateException("No NetigsoFramework found, is org.netbeans.core.netigso module enabled?"); // NOI18N
+            }
+            created = prototype.bindTo(mgr);
+        }
+        
+        synchronized (NetigsoFramework.class) {
+            if (framework == null && created != null) {
+                framework = created;
             }
             return framework;
         }

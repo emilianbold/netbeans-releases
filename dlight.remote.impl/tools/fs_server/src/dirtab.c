@@ -423,7 +423,7 @@ dirtab_element *dirtab_get_element(const char* abspath) {
 
 static void trace_lock_unlock(dirtab_element *el, bool lock) {
     //trace("# %s mutex for %s\n", lock ? "locking" : "unlocking", el->abspath);
-};
+}
 
 /** just a wrapper for tracing/logging/debugging */
 void dirtab_lock(dirtab_element *el) {

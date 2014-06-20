@@ -72,7 +72,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @ServiceProvider(service=Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class MIMEResolverProcessor extends LayerGeneratingProcessor {
 
     @Override

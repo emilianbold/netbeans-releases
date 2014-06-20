@@ -123,7 +123,7 @@ public class JsStructureScanner implements StructureScanner {
             if (!(child instanceof JsObjectReference && ModelUtils.isDescendant(child, ((JsObjectReference)child).getOriginal()))) {
                 children = getEmbededItems(result, child, children);
             }
-            if ((child.hasExactName() || child.isAnonymous()) && child.getJSKind().isFunction()) {
+            if ((child.hasExactName() || child.isAnonymous() || child.getJSKind() == JsElement.Kind.CONSTRUCTOR) && child.getJSKind().isFunction()) {
                 JsFunction function = (JsFunction)child;
                 if (function.isAnonymous()) {
                     collectedItems.addAll(children);
@@ -147,7 +147,7 @@ public class JsStructureScanner implements StructureScanner {
         
         if (jsObject instanceof JsFunction) {
             for (JsObject param: ((JsFunction)jsObject).getParameters()) {
-                if (hasDeclaredProperty(param)) { 
+                if (hasDeclaredProperty(param) && !(jsObject instanceof JsObjectReference && !((JsObjectReference)jsObject).getOriginal().isAnonymous())) { 
                     final List<StructureItem> items = new ArrayList<StructureItem>();
                     getEmbededItems(result, param, items);
                     collectedItems.add(new JsObjectStructureItem(param, items, result));

@@ -36,4 +36,3 @@ KEYWORD    var                                        null
 KEYWORD    void                                       null
 KEYWORD    while                                      null
 KEYWORD    with                                       null
-OTHER      With$0                          [PUBLIC]   issue234373.js

@@ -211,6 +211,17 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
                         case CPPTokenTypes.CSM_ENUM_FWD_DECLARATION:
                         {
                             EnumImpl csmEnum = createEnum(token, currentNamespace, container);
+                            Pair typedefs = renderTypedef(token, csmEnum, currentNamespace);
+                            if (!typedefs.getTypesefs().isEmpty()) {
+                                addTypedefs(typedefs.getTypesefs(), currentNamespace, container, csmEnum);
+                                for (CsmTypedef typedef : typedefs.getTypesefs()) {
+                                    declarators.add(typedef);
+                                    //FIXME: class do not allow register enclosing typedef that does not in repository
+                                    //if (cls != null) {
+                                    //   cls.addEnclosingTypedef(typedefs[i]);
+                                    //}
+                                }
+                            }                            
                             renderVariableInClassifier(token, csmEnum, currentNamespace, container);
                             break;
                         }

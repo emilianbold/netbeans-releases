@@ -87,8 +87,7 @@ public class TooStrongCastTest extends NbTestCase {
     private static final String[] ARRAY_WARNINGS = {
         "13:12-13:15:verifier:Unnecessary cast to int", 
         "15:11-15:21:verifier:Type cast to byte is too strong. int should be used instead", 
-        "16:12-16:16:verifier:Unnecessary cast to byte", 
-        "16:19-16:22:verifier:Unnecessary cast to int"
+        "20:20-20:25:verifier:Unnecessary cast to float"
     };
     
     private static final String[] ASSIGNMENT_WARNINGS = {
@@ -105,10 +104,10 @@ public class TooStrongCastTest extends NbTestCase {
     };
     
     private static final String[] METHOD_WARNINGS = {
-        "20:10-20:19:verifier:Unnecessary cast to JViewport", 
-        "27:41-27:63:verifier:Type cast to MouseWheelEvent is too strong. MouseEvent should be used instead", 
-        "33:22-33:29:verifier:Unnecessary cast to JButton", 
-        "39:22-39:37:verifier:Type cast to SuperDerived is too strong. Derived should be used instead"
+        "21:10-21:19:verifier:Unnecessary cast to JViewport", 
+        "28:41-28:63:verifier:Type cast to MouseWheelEvent is too strong. MouseEvent should be used instead", 
+        "34:22-34:29:verifier:Unnecessary cast to JButton", 
+        "40:22-40:37:verifier:Type cast to SuperDerived is too strong. Derived should be used instead"
     };
 
     private static final String[] RETURN_WARNINGS = {
@@ -469,5 +468,65 @@ public class TooStrongCastTest extends NbTestCase {
             "").
             run(TooStrongCast.class).
             assertWarnings("4:59-4:68:verifier:Type cast to double is too strong. float should be used instead");
+    }
+    
+    public void testMemberSelectOnPrimitive() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "class Test {\n" +
+            "    void bu() {\n" +
+            "       final int i = 1234;\n" +
+            "       System.out.println(((Integer) i).byteValue());\n" +
+            "    }\n" +
+            "    void e(Number foo) {}\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings();
+    }
+    
+    /**
+     * Checks that unnecessry cast is still reported
+     * @throws Exception 
+     */
+    public void testUnnecessaryCastingPrimitiveToWrapper() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "class Test {\n" +
+            "    void bu() {\n" +
+            "        int a = 20;\n" +
+            "        e((Integer)a);\n" +
+            "    }\n" +
+            "    void e(Number foo) {}\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings("4:11-4:18:verifier:Unnecessary cast to Integer");
+    }
+    
+    public void testCastLoosingPrecision() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "class Test {\n" +
+            "   public double foo(double x) {\n" +
+            "        return (int) x;\n" +
+            "   }" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings();
+    }
+    
+    public void testCastWideningPrimitive() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "class Test {\n" +
+            "   public float foo(int x) {\n" +
+            "        return (long) x;\n" +
+            "   }" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings("3:16-3:20:verifier:Unnecessary cast to long");
     }
 }

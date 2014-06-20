@@ -48,7 +48,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
@@ -212,29 +214,18 @@ public class Dwarf {
 
     private CompilationUnitIterator iteratorFileCompilationUnits() throws IOException {
         DwarfDebugInfoSection debugInfo = (DwarfDebugInfoSection)dwarfReader.getSection(SECTIONS.DEBUG_INFO);
-        CompilationUnitIterator result;
-        if (debugInfo != null) {
-            result = debugInfo.iteratorCompilationUnits();
+        StabIndexSection stab = (StabIndexSection) dwarfReader.getSection(SECTIONS.STAB_INDEX);
+        if (debugInfo != null && stab == null) {
+            return debugInfo.iteratorCompilationUnits();
+        } else if (debugInfo == null && stab != null) {
+            return stab.compilationUnits();
+        } else if (debugInfo != null && stab != null) {
+            return new JoinIterator(stab.compilationUnits(), debugInfo.iteratorCompilationUnits());            
         } else {
-            StabIndexSection stab = (StabIndexSection) dwarfReader.getSection(SECTIONS.STAB_INDEX);
-            if (stab != null) {
-                result = stab.compilationUnits();
-            } else {
-                result = new CompilationUnitIterator() {
-
-                    public boolean hasNext() throws IOException{
-                        return false;
-                    }
-
-                    public CompilationUnit next() throws IOException{
-                        return null;
-                    }
-                };
-            }
+            return new DummyIterator();
         }
-        return result;
     }
-
+    
     /**
      * If project was relocated method tries to find source path of file against binary file or source root.
      * Method return best name that consist from binary prefix + common path + source suffix.
@@ -455,4 +446,49 @@ public class Dwarf {
         boolean hasNext() throws IOException;
         CompilationUnitInterface next() throws IOException;
     }
+    
+    private class JoinIterator implements  CompilationUnitIterator {
+
+        private final CompilationUnitIterator[] delegates;
+        private int curr;
+
+        public JoinIterator(CompilationUnitIterator... delegates) {
+            this.delegates = delegates;
+            curr = 0;
+        }
+        
+        public boolean hasNext() throws IOException {
+            for (int i = curr; i < delegates.length; i++) {
+                if (delegates[i].hasNext()) {
+                    return true;
+                }                
+            }
+            return false;
+        }
+
+        public CompilationUnitInterface next() throws IOException {
+            while (true) {
+                if (delegates[curr].hasNext()) {
+                    return delegates[curr].next();
+                } else {
+                    if (curr < delegates.length - 1) {
+                        curr++;
+                    } else {
+                        break;
+                    }                    
+                }
+            }
+            return null;
+        }
+    }
+    
+    private static class DummyIterator implements CompilationUnitIterator {
+        public boolean hasNext() throws IOException{
+            return false;
+        }
+        public CompilationUnit next() throws IOException{
+            return null;
+        }
+    };
 }
+

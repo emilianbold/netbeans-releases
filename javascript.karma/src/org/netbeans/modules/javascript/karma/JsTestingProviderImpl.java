@@ -42,7 +42,12 @@
 
 package org.netbeans.modules.javascript.karma;
 
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.karma.exec.KarmaServers;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
@@ -51,15 +56,20 @@ import org.netbeans.modules.javascript.karma.ui.logicalview.KarmaChildrenList;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
 import org.netbeans.modules.web.clientproject.spi.jstesting.JsTestingProviderImplementation;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service = JsTestingProviderImplementation.class, path = JsTestingProviders.JS_TESTING_PATH, position = 100)
 public class JsTestingProviderImpl implements JsTestingProviderImplementation {
+
+    private static final Logger LOGGER = Logger.getLogger(JsTestingProviderImpl.class.getName());
+
 
     @Override
     public String getIdentifier() {
@@ -78,19 +88,53 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
     }
 
     @Override
+    public boolean isCoverageSupported(Project project) {
+        return true;
+    }
+
+    @Override
     public void runTests(Project project, TestRunInfo runInfo) {
         KarmaServers.getInstance().runTests(project);
     }
 
     @Override
     public FileObject fromServer(Project project, URL serverUrl) {
-        // XXX
+        String serverUrlString = WebUtils.urlToString(serverUrl);
+        String prefix = KarmaServers.getInstance().getServerUrl(project, "base/"); // NOI18N
+        if (prefix == null) {
+            return null;
+        }
+        assert prefix.endsWith("/") : prefix;
+        if (!serverUrlString.startsWith(prefix)) {
+            return null;
+        }
+        String projectRelativePath = serverUrlString.substring(prefix.length());
+        try {
+            projectRelativePath = URLDecoder.decode(projectRelativePath, "UTF-8"); // NOI18N
+        } catch (UnsupportedEncodingException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
+        if (!projectRelativePath.isEmpty()) {
+            return project.getProjectDirectory().getFileObject(projectRelativePath);
+        }
         return null;
     }
 
     @Override
     public URL toServer(Project project, FileObject projectFile) {
-        // XXX
+        String prefix = KarmaServers.getInstance().getServerUrl(project, "base/"); // NOI18N
+        if (prefix == null) {
+            return null;
+        }
+        assert prefix.endsWith("/") : prefix;
+        String relativePath = FileUtil.getRelativePath(project.getProjectDirectory(), projectFile);
+        if (relativePath != null) {
+            try {
+                return new URL(prefix + relativePath);
+            } catch (MalformedURLException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            }
+        }
         return null;
     }
 

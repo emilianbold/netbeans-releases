@@ -123,6 +123,7 @@ private:
     std::string parentProcID;
 
     std::list<std::string> javaOptions;
+    std::list<std::string> launcherOptions;
     std::list<std::string> progArgs;
     JvmLauncher jvmLauncher;
     std::set<std::string> addedToCP;

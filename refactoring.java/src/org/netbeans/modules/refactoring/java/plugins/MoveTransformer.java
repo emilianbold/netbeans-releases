@@ -44,7 +44,11 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.source.doctree.DocTree;
+import com.sun.source.doctree.ReferenceTree;
 import com.sun.source.tree.*;
+import com.sun.source.util.DocTreePath;
+import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.*;
@@ -85,6 +89,7 @@ public class MoveTransformer extends RefactoringVisitor {
     }
 
     public MoveTransformer(MoveFileRefactoringPlugin move) {
+        super(true);
         this.move = move;
         classes2Move = move.classes;
     }
@@ -176,6 +181,33 @@ public class MoveTransformer extends RefactoringVisitor {
             }
         }
         return super.visitMemberSelect(node, p);
+    }
+    
+    @Override
+    public DocTree visitReference(ReferenceTree node, Element p) {
+        DocTrees trees = workingCopy.getDocTrees();
+        DocTreePath currentDocPath = getCurrentDocPath();
+        Element el = currentDocPath != null ? trees.getElement(currentDocPath) : null;
+        if(el != null) {
+            if (isElementMoving(el)) {
+                ReferenceTree newRef;
+                ExpressionTree classReference = workingCopy.getTreeUtilities().getReferenceClass(currentDocPath);
+                if(classReference != null && classReference.getKind() == Tree.Kind.MEMBER_SELECT) {
+                    Name memberName = workingCopy.getTreeUtilities().getReferenceName(currentDocPath);
+                    List<? extends Tree> methodParameters = workingCopy.getTreeUtilities().getReferenceParameters(currentDocPath);
+                    String newPackageName = getTargetPackageName(el);
+                    MemberSelectTree nju = make.MemberSelect(make.Identifier(newPackageName), el);
+                    newRef = make.Reference(nju, memberName, methodParameters);
+                    rewrite(currentDocPath.getTreePath().getLeaf(), node, newRef);
+                }
+            } else if (isPackageRename()
+                    && el.getKind() == ElementKind.PACKAGE
+                    && ((PackageElement) el).getQualifiedName().contentEquals(originalPackage)) {
+                ReferenceTree newRef = make.Reference((ExpressionTree) make.Type(getTargetPackageName(el)),null, null);
+                rewrite(currentDocPath.getTreePath().getLeaf(), node, newRef);
+            }
+        }
+        return super.visitReference(node, p);
     }
     
     @Override

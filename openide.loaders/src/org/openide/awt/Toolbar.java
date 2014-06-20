@@ -47,6 +47,9 @@ package org.openide.awt;
 import org.netbeans.modules.openide.loaders.AWTTask;
 import java.awt.Component;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.EventListener;
 import java.util.EventObject;
@@ -65,6 +68,7 @@ import javax.swing.UIManager;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import org.netbeans.modules.openide.loaders.DataObjectAccessor;
 import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.FolderInstance;
@@ -342,6 +346,7 @@ public class Toolbar extends ToolbarWithOverflow /*implemented by patchsuperclas
             super (backingFolder);
             DataObjectAccessor.DEFAULT.precreateInstances(this);
             recreate ();
+            acceleratorBindingsWarmUp();
         }
 
         /**
@@ -500,8 +505,48 @@ public class Toolbar extends ToolbarWithOverflow /*implemented by patchsuperclas
         protected Task postCreationTask (Runnable run) {
             return new AWTTask (run, this);
         }
-
+        
     } // end of inner class Folder
+
+    private static Action emptyAction;
+    
+    private static void acceleratorBindingsWarmUp() {
+        if( null == emptyAction ) {
+            emptyAction = new Action() {
+
+                @Override
+                public Object getValue(String key) {
+                    return null;
+                }
+
+                @Override
+                public void putValue(String key, Object value) {
+                }
+
+                @Override
+                public void setEnabled(boolean b) {
+                }
+
+                @Override
+                public boolean isEnabled() {
+                    return true;
+                }
+
+                @Override
+                public void addPropertyChangeListener(PropertyChangeListener listener) {
+                }
+
+                @Override
+                public void removePropertyChangeListener(PropertyChangeListener listener) {
+                }
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                }
+            };
+            AcceleratorBinding.setAccelerator(emptyAction, FileUtil.getConfigRoot());
+        }
+    }
 
     @Override
     public void setUI(javax.swing.plaf.ToolBarUI ui) {

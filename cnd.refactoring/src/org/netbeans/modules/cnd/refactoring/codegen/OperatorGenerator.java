@@ -130,7 +130,7 @@ public class OperatorGenerator implements CodeGenerator {
                     List<CsmConstructor> list = new ArrayList<>();
                     for (CsmMember member : baseClass.getMembers()) {
                         if (CsmKindUtilities.isConstructor(member) &&
-                            CsmInheritanceUtilities.matchVisibility(member, csmInheritance.getVisibility()) &&
+                            CsmInheritanceUtilities.matchVisibility(member, CsmVisibility.PROTECTED) &&
                             !isCopyConstructor(baseClass, (CsmConstructor)member)) {
                             list.add((CsmConstructor)member);
                         }
@@ -642,7 +642,7 @@ public class OperatorGenerator implements CodeGenerator {
 
         @Override
         public CharSequence getUniqueName() {
-            return name;
+            return "F:"+name; //NOI18N
         }
 
         @Override

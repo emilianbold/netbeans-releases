@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
+import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -60,7 +61,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 public class DeclarationReferenceResolverImpl extends CsmReferenceResolver {
 
     @Override
-    public CsmReference findReference(CsmFile file, int offset) {
+    public CsmReference findReference(CsmFile file, Document doc, int offset) {
         if (file instanceof FileImpl) {
             FileImpl impl = (FileImpl) file;
             return impl.getReference(offset);

@@ -56,6 +56,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
@@ -253,13 +254,18 @@ public final class ToolchainManagerImpl {
 
     private boolean read(FileObject file, FileObject[] files, CompilerVendor v, Set<FileObject> antiloop, Map<String, String> cache) {
         if (antiloop.contains(file)) {
-            LOG.log(Level.INFO, "Recursive inclusion of file {0}", file.getNameExt()); // NOI18N
+            LOG.log(Level.INFO, "Recursive inclusion of file {0}", file.getPath()); // NOI18N
             return false;
         }
         antiloop.add(file);
         String originalFile = (String) file.getAttribute("originalFile"); // NOI18N
         if (originalFile != null) {
-            file = FileUtil.getConfigFile(originalFile);
+            FileObject redirect = FileUtil.getConfigFile(originalFile);
+            if (redirect != null) {
+                file = redirect;
+            } else {
+                LOG.log(Level.INFO, "Not found original file {0} in file {1}", new Object[]{originalFile, file.getPath()}); // NOI18N
+            }
         }
         String baseName = (String) file.getAttribute("extends"); // NOI18N
         if (baseName != null && baseName.length() > 0) {
@@ -267,7 +273,7 @@ public final class ToolchainManagerImpl {
             for (FileObject base : files) {
                 if (baseName.equals(base.getNameExt())) {
                     if (!read(base, files, v, antiloop, cache)) {
-                        LOG.log(Level.INFO, "Cannot read base file {0}", base.getNameExt()); // NOI18N
+                        LOG.log(Level.INFO, "Cannot read base file {0}", file.getPath()); // NOI18N
                         return false;
                     }
                     find = true;
@@ -280,6 +286,13 @@ public final class ToolchainManagerImpl {
         try {
             return read(file.getInputStream(), v, cache);
         } catch (IOException ex) {
+            LOG.log(Level.INFO, "Cannot read file {0}", file.getPath()); // NOI18N
+            ex.printStackTrace(System.err);
+        } catch (SAXException ex) {
+            LOG.log(Level.INFO, "Wrong content of file {0}", file.getPath()); // NOI18N
+            ex.printStackTrace(System.err);
+        } catch (ParserConfigurationException ex) {
+            LOG.log(Level.INFO, "Error in xml parser on parse file {0}", file.getPath()); // NOI18N
             ex.printStackTrace(System.err);
         }
         return false;
@@ -293,27 +306,15 @@ public final class ToolchainManagerImpl {
         return res;
     }
 
-    private boolean read(InputStream inputStream, CompilerVendor v, Map<String, String> cache) {
+    private boolean read(InputStream inputStream, CompilerVendor v, Map<String, String> cache) throws SAXException, ParserConfigurationException, IOException {
         SAXParserFactory spf = SAXParserFactory.newInstance();
         spf.setValidating(false);
-        XMLReader xmlReader;
-        try {
-            SAXParser saxParser = spf.newSAXParser();
-            xmlReader = saxParser.getXMLReader();
-        } catch (Exception ex) {
-            ex.printStackTrace(System.err);
-            return false;
-        }
+        SAXParser saxParser = spf.newSAXParser();
+        XMLReader xmlReader = saxParser.getXMLReader();
         SAXHandler handler = new SAXHandler(v, cache);
         xmlReader.setContentHandler(handler);
-
-        try {
-            InputSource source = new InputSource(inputStream);
-            xmlReader.parse(source);
-        } catch (Exception ex) {
-            ex.printStackTrace(System.err);
-            return false;
-        }
+        InputSource source = new InputSource(inputStream);
+        xmlReader.parse(source);
         return true;
     }
 

@@ -306,11 +306,6 @@ public class RepositoryRegistry {
         RepositoryInfo info = repository.getInfo();
         final String key = getRepositoryKey(info);
         SPIAccessor.IMPL.store(getPreferences(), info, key);
-
-        char[] password = info.getPassword();
-        char[] httpPassword = info.getHttpPassword();
-        BugtrackingUtil.savePassword(password, null, info.getUsername(), info.getUrl());
-        BugtrackingUtil.savePassword(httpPassword, "http", info.getHttpUsername(), info.getUrl()); // NOI18N
     }
     
     private Preferences getPreferences() {

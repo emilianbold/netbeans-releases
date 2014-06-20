@@ -200,10 +200,10 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         }
         return null;
     }
-    
+
     @Override
-    public void requestFocus() {
-        super.requestFocus();
+    public boolean requestFocusInWindow() {
+        return false;
     }
     
     /** This method is called from within the constructor to

@@ -136,7 +136,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     static final Object EVENT_SETTINGS_CHANGED = new Object();
     private static final boolean DEFAULT_DISPLAY_FILES = true;
     private static final boolean DEFAULT_DISPLAY_HOOKS = false;
-    private static final Icon ICON_INFO = ImageUtilities.loadImageIcon("/org/netbeans/modules/mercurial/resources/icons/info.png", true); //NOI18N
+    private static final Icon ICON_INFO = ImageUtilities.loadImageIcon("org/netbeans/modules/mercurial/resources/icons/info.png", true); //NOI18N
     private static final Icon ICON_WARNING = ImageUtilities.loadImageIcon("org/netbeans/modules/mercurial/resources/icons/warning.gif", true); //NOI18N
 
     final JLabel filesLabel = new JLabel();

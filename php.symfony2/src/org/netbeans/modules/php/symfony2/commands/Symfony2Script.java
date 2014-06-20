@@ -81,6 +81,9 @@ public final class Symfony2Script {
 
     private static final String XML_CHARSET_NAME = "UTF-8"; // NOI18N
 
+    // #239750
+    private static final String SHELL_INTERACTIVE = "SHELL_INTERACTIVE"; // NOI18N
+
     private static final List<String> CACHE_CLEAR_COMMAND = Collections.singletonList("cache:clear"); // NOI18N
     private static final List<String> CACHE_WARMUP_COMMAND = Collections.singletonList("cache:warmup"); // NOI18N
     private static final List<String> LIST_COMMANDS_COMMAND = Arrays.asList("list", "--xml"); // NOI18N
@@ -226,6 +229,7 @@ public final class Symfony2Script {
 
     private PhpExecutable createExecutable(PhpModule phpModule) {
         return new PhpExecutable(symfony2Path)
+                .environmentVariables(Collections.singletonMap(SHELL_INTERACTIVE, "true")) // NOI18N
                 .workDir(FileUtil.toFile(phpModule.getSourceDirectory()));
     }
 

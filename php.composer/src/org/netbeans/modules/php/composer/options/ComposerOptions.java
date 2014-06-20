@@ -75,7 +75,7 @@ public class ComposerOptions {
         String composerPath = getPreferences().get(COMPOSER_PATH, null);
         if (composerPath == null && !composerSearched) {
             composerSearched = true;
-            List<String> paths = FileUtils.findFileOnUsersPath(Composer.NAME, Composer.LONG_NAME);
+            List<String> paths = FileUtils.findFileOnUsersPath(Composer.COMPOSER_FILENAMES.toArray(new String[0]));
             if (!paths.isEmpty()) {
                 composerPath = paths.get(0);
                 setComposerPath(composerPath);

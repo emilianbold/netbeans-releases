@@ -42,9 +42,12 @@
 
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
+import java.io.IOException;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 /**
  *
@@ -63,5 +66,23 @@ public class ToolsUtils {
     public static boolean isDevHostValid(ExecutionEnvironment env) {
         ServerRecord record = ServerList.get(env);
         return record != null && record.isOnline();
+    }
+
+    public static String getDefaultDirectory(ExecutionEnvironment env) {
+        String seed;
+        if (env.isLocal()) {
+            seed = System.getProperty("user.home"); // NOI18N
+        } else if (!HostInfoUtils.isHostInfoAvailable(env) && !ConnectionManager.getInstance().isConnectedTo(env)) {
+            seed = null;
+        } else {
+            try {
+                seed = HostInfoUtils.getHostInfo(env).getUserDir();
+            } catch (IOException ex) {
+                seed = null;
+            } catch (ConnectionManager.CancellationException ex) {
+                seed = null;
+            }
+        }
+        return seed;
     }
 }

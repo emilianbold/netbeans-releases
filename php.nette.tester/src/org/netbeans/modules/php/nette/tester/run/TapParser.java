@@ -202,7 +202,10 @@ public final class TapParser {
 
     private void processDiff(String line) {
         Matcher matcher = DIFF_LINE_PATTERN.matcher(line);
-        assert matcher.matches() : line;
+        if (!matcher.matches()) {
+            assert false : line;
+            return;
+        }
         testCase.setDiff(new TestCase.Diff(new DiffReader(matcher.group(1)), new DiffReader(matcher.group(2))));
     }
 
@@ -215,7 +218,10 @@ public final class TapParser {
 
     private void setFileLine(String line) {
         Matcher matcher = FILE_LINE_PATTERN.matcher(line);
-        assert matcher.matches() : line;
+        if (!matcher.matches()) {
+            assert false : line;
+            return;
+        }
         assert testCase != null;
         String file = matcher.group(1);
         String fileLine = matcher.group(2);

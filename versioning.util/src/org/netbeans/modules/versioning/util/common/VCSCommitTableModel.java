@@ -192,9 +192,7 @@ public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableMod
         //    String branch = HgUtils.getCopy(nodes[rowIndex].getFile());
         //    return branch == null ? "" : branch; // NOI18N
         } else if (col.equals(COLUMN_NAME_STATUS)) {
-            node = nodes[rowIndex];
-            VCSFileInformation finfo =  node.getInformation();
-            return finfo.getStatusText();
+            return nodes[rowIndex].getStatusText();
         } else if (col.equals(COLUMN_NAME_ACTION)) {
             return nodes[rowIndex].getCommitOptions();
         } else if (col.equals(COLUMN_NAME_PATH)) {

@@ -82,6 +82,16 @@ public class AstUtil {
 	return (ast == null || ast.getType() == CPPTokenTypes.EOF);
     }
 
+    public static boolean isElaboratedKeyword(AST ast) {
+        if (ast != null) {
+            return ast.getType() == CPPTokenTypes.LITERAL_struct ||
+                   ast.getType() == CPPTokenTypes.LITERAL_class ||
+                   ast.getType() == CPPTokenTypes.LITERAL_union ||
+                   ast.getType() == CPPTokenTypes.LITERAL_enum;
+        }
+        return false;
+    }
+    
     public static CharSequence getRawNameInChildren(AST ast) {
         return getRawName(findIdToken(ast));
     }
@@ -488,6 +498,17 @@ public class AstUtil {
      * @return "cloned" AST
      */
     public static AST cloneAST(AST source, AST stopNode) {
+        return cloneAST(source, stopNode, true);
+    }
+    
+    /**
+     * Clones AST until stop node is reached
+     * @param source
+     * @param stopNode
+     * @param includeLast - true if stopNode should be included
+     * @return "cloned" AST
+     */    
+    public static AST cloneAST(AST source, AST stopNode, boolean includeLast) {
         if (source == null) {
             return null;
         }
@@ -508,6 +529,14 @@ public class AstUtil {
             source = source.getNextSibling();
             prevClonedAST = currentClonedAST;
             currentClonedAST = createFakeClone(source);
+        }
+        
+        if (!includeLast) {
+            if (prevClonedAST == null) {
+                return null;
+            } else {
+                prevClonedAST.setNextSibling(null);
+            }
         }
         
         return firstClonedNode;
@@ -561,13 +590,15 @@ public class AstUtil {
     }    
     
     public static class ASTTokensStringizer implements ASTTokenVisitor {
+        protected int numStringizedTokens = 0;
     
-        private final StringBuilder sb = new StringBuilder();
+        protected final StringBuilder sb = new StringBuilder();
 
         @Override
         public Action visit(AST token) {
             if (token.getFirstChild() == null) {
                 sb.append(token.getText());
+                numStringizedTokens++;
             }
             return Action.CONTINUE;
         }
@@ -575,6 +606,10 @@ public class AstUtil {
         public String getText() {
             return sb.toString();
         }
+
+        public int getNumberOfStringizedTokens() {
+            return numStringizedTokens;
+        }     
     }        
 }
 

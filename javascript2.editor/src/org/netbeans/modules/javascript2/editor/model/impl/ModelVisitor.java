@@ -63,9 +63,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.ConcurrentModificationException;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,8 +74,6 @@ import jdk.nashorn.internal.ir.ForNode;
 import jdk.nashorn.internal.ir.WithNode;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.javascript2.editor.doc.DocumentationUtils;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
@@ -95,7 +91,6 @@ import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.JsWith;
 import org.netbeans.modules.javascript2.editor.model.Model;
-import org.netbeans.modules.javascript2.editor.model.ModelFactory;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
@@ -120,6 +115,7 @@ public class ModelVisitor extends PathNodeVisitor {
     // keeps objects that are created as arguments of a function call
     private final Stack<Collection<JsObjectImpl>> functionArgumentStack = new Stack<Collection<JsObjectImpl>>();
     private Map<FunctionInterceptor, Collection<FunctionCall>> functionCalls = null;
+    private final String scriptName;
     
 //    private JsObjectImpl fromAN = null;
 
@@ -130,6 +126,7 @@ public class ModelVisitor extends PathNodeVisitor {
         this.occurrenceBuilder = occurrenceBuilder;
         this.functionStack = new ArrayList<List<FunctionNode>>();
         this.parserResult = parserResult; 
+        this.scriptName = fileObject != null ? fileObject.getName() : "";
     }
 
     public JsObject getGlobalObject() {
@@ -148,10 +145,11 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (property == null && current.getParent() != null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
                         || current.getParent().getJSKind() == JsElement.Kind.OBJECT)) {
                     current = current.getParent();
-                    if (ModelUtils.PROTOTYPE.equals(current.getName())) {
-                        current = current.getParent();
-                    }
                     property = current.getProperty(iNode.getName());
+                    if (property == null && ModelUtils.PROTOTYPE.equals(current.getName())) {
+                        current = current.getParent();
+                        property = current.getProperty(iNode.getName());
+                    }
                 }
                 if (property == null && current.getParent() == null) {
                     // probably we are in global space and there is used this
@@ -329,8 +327,16 @@ public class ModelVisitor extends PathNodeVisitor {
     @Override
     public Node leave(CallNode callNode) {
         Collection<JsObjectImpl> functionArguments = functionArgumentStack.pop();
-        if(callNode.getFunction() instanceof AccessNode) {
-                List<Identifier> funcName = getName((AccessNode)callNode.getFunction(), parserResult);
+
+        Node function = callNode.getFunction();
+        if (function instanceof AccessNode || function instanceof IdentNode) {
+            List<Identifier> funcName;
+            if (function instanceof AccessNode) {
+                funcName = getName((AccessNode) function, parserResult);
+            } else {
+                funcName = new ArrayList<Identifier>();
+                funcName.add(new IdentifierImpl(((IdentNode) function).getName(), ((IdentNode) function).getStart()));
+            }
                 if (funcName != null) {
                     StringBuilder sb = new StringBuilder();
                     for (Identifier identifier : funcName) {
@@ -594,7 +600,9 @@ public class ModelVisitor extends PathNodeVisitor {
                 // the function is alredy there
                 return null;
             }
-            name.add(new IdentifierImpl(functionNode.getIdent().getName(), new OffsetRange(start, end)));
+            String funcName = functionNode.isAnonymous() ? functionNode.getName() : functionNode.getIdent().getName();
+//            String funcName = functionNode.getIdent().getName();            
+            name.add(new IdentifierImpl(funcName, new OffsetRange(start, end)));
             if (pathSize > 2 && getPath().get(pathSize - 2) instanceof FunctionNode) {
                 isPrivate = true;
                 //isStatic = true;
@@ -657,7 +665,14 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 }
             }
-        }
+        } 
+//        else {
+            for(FunctionNode cFunction: functionNode.getFunctions()) {
+                if (cFunction.isAnonymous()) {
+                    cFunction.setName(scriptName + cFunction.getIdent().getName());
+                }
+            }
+//        }
         if (fncScope != null) {
             JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
             // create variables that are declared in the function
@@ -1024,7 +1039,18 @@ public class ModelVisitor extends PathNodeVisitor {
                                 alreadyThere = ModelUtils.getJsObjectByName(modelBuilder.getCurrentDeclarationFunction(), name.getName());
                             }
                         } else {
-                            alreadyThere = ModelUtils.getJsObject(modelBuilder, fqName, true);
+                            if (fqName.size() == 1) {
+                                Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationScope());
+                                for (JsObject variable : variables) {
+                                    if (variable.getName().equals(name.getName())) {
+                                        alreadyThere = variable;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (alreadyThere == null) {
+                                alreadyThere = ModelUtils.getJsObject(modelBuilder, fqName, true);
+                            }
                         }
                     }
                      
@@ -1136,9 +1162,12 @@ public class ModelVisitor extends PathNodeVisitor {
     public Node enter(ReferenceNode referenceNode) {
         FunctionNode reference = referenceNode.getReference();
         if (reference != null) {
-            addToPath(referenceNode);
-            reference.accept(this);
-            removeFromPathTheLast();
+            Node lastNode = getPreviousFromPath(1);
+            if (!( lastNode instanceof VarNode && !reference.isAnonymous())) {
+                addToPath(referenceNode);
+                reference.accept(this);
+                removeFromPathTheLast();
+            } 
             return null;
         }
         return super.enter(referenceNode);
@@ -1276,6 +1305,23 @@ public class ModelVisitor extends PathNodeVisitor {
                     modelBuilder.setCurrentObject(variable);
                 }
             }
+        } else if (varNode.getInit() instanceof ReferenceNode) {
+            ReferenceNode rnode = (ReferenceNode)varNode.getInit();
+            if (rnode.getReference() != null && rnode.getReference() instanceof FunctionNode) {
+                FunctionNode fnode = (FunctionNode)rnode.getReference();
+                if (!fnode.isAnonymous()) {
+                    // we expect case like: var prom = function name () {}
+                    JsObjectImpl function = modelBuilder.getCurrentDeclarationFunction();
+                    JsObject origFunction = function.getProperty(fnode.getName());
+                    Identifier name = ModelElementFactory.create(parserResult, varNode.getName());
+                    if (name != null && origFunction != null && origFunction instanceof JsFunction) {
+                        JsObjectImpl oldVariable = (JsObjectImpl)function.getProperty(name.getName());
+                        JsObjectImpl variable = new JsFunctionReference(function, name, (JsFunction)origFunction, true, 
+                                oldVariable != null ? oldVariable.getModifiers() : null );
+                        function.addProperty(variable.getName(), variable);
+                    }
+                }
+            }
         }
         return super.enter(varNode);
     }
@@ -1295,7 +1341,7 @@ public class ModelVisitor extends PathNodeVisitor {
         JsObjectImpl currentObject = modelBuilder.getCurrentObject();
         Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(modelBuilder, withNode.getExpression());
         JsWithObjectImpl withObject = new JsWithObjectImpl(currentObject, modelBuilder.getUnigueNameForWithObject(), types, new OffsetRange(withNode.getStart(), withNode.getFinish()), 
-                        new OffsetRange(withNode.getExpression().getStart(), withNode.getExpression().getFinish()),parserResult.getSnapshot().getMimeType(), null);
+                        new OffsetRange(withNode.getExpression().getStart(), withNode.getExpression().getFinish()), modelBuilder.getCurrentWith(), parserResult.getSnapshot().getMimeType(), null);
         currentObject.addProperty(withObject.getName(), withObject);
 //        withNode.getExpression().accept(this); // expression should be visted when the with object is the current object.
         modelBuilder.setCurrentObject(withObject);
@@ -1494,6 +1540,15 @@ public class ModelVisitor extends PathNodeVisitor {
         } else {
             JsObject current = modelBuilder.getCurrentDeclarationFunction();
             object = (JsObjectImpl)resolveThis(current);
+            if (object != null) {
+                // find out, whether is not defined in prototype
+                if (object.getProperty(fqn.get(1).getName()) == null) {
+                    JsObject prototype = object.getProperty(ModelUtils.PROTOTYPE);
+                    if (prototype != null && prototype.getProperty(fqn.get(1).getName()) != null) {
+                        object = prototype;
+                    }
+                }
+            }
         }
         
         if (object != null) {

@@ -155,6 +155,11 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
             return null;
         }
         updateNodes(data);
+        createComponent();
+        return panel;
+    }
+
+    public void createComponent() {
         synchronized (LOCK) {
             panel = new JPanel(new GridBagLayout());
             panel.setOpaque(false);
@@ -203,12 +208,13 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
             panel.add(new JLabel(), new GridBagConstraints(9, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
         }
-        return panel;
     }
 
     public void setStalled(boolean isStalled) {
         synchronized (LOCK) {
-            lblStalled.setVisible(isStalled);
+            if(lblStalled != null) {
+                lblStalled.setVisible(isStalled);
+            }
         }
     }
     

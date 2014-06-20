@@ -61,6 +61,7 @@ import org.openide.util.NbBundle;
 public class CodeAssistanceConfiguration implements Cloneable {
     private MakeConfiguration makeConfiguration;
     private BooleanConfiguration buildAnalyzer;
+    private BooleanConfiguration resolveSymbolicLinks;
     private VectorConfiguration<String> transientMacros;
     private VectorConfiguration<String> environmentVariables;
     private StringConfiguration tools;
@@ -72,6 +73,7 @@ public class CodeAssistanceConfiguration implements Cloneable {
     public CodeAssistanceConfiguration(MakeConfiguration makeConfiguration) {
         this.makeConfiguration = makeConfiguration;
         buildAnalyzer = new BooleanConfiguration(true);
+        resolveSymbolicLinks =  new BooleanConfiguration(false);
         tools = new StringConfiguration(null, DEFAULT_TOOLS);
         transientMacros = new VectorConfiguration<>(null);
         environmentVariables = new VectorConfiguration<>(null);
@@ -80,7 +82,7 @@ public class CodeAssistanceConfiguration implements Cloneable {
     }
 
     public boolean getModified() {
-        return getBuildAnalyzer().getModified() || getTools().getModified() || 
+        return getBuildAnalyzer().getModified() ||  getResolveSymbolicLinks().getModified() ||getTools().getModified() || 
                 getEnvironmentVariables().getModified() || getTransientMacros().getModified() ||
                 getIncludeInCA().getModified() || getExcludeInCA().getModified();
     }
@@ -101,6 +103,15 @@ public class CodeAssistanceConfiguration implements Cloneable {
 
     public BooleanConfiguration getBuildAnalyzer() {
         return buildAnalyzer;
+    }
+
+    // Resolve symbolic links
+    public void setResolveSymbolicLinks(BooleanConfiguration resolveSymbolicLinks) {
+        this.resolveSymbolicLinks = resolveSymbolicLinks;
+    }
+
+    public BooleanConfiguration getResolveSymbolicLinks() {
+        return resolveSymbolicLinks;
     }
 
     // Tool
@@ -159,6 +170,7 @@ public class CodeAssistanceConfiguration implements Cloneable {
     // Clone and assign
     public void assign(CodeAssistanceConfiguration conf) {
         getBuildAnalyzer().assign(conf.getBuildAnalyzer());
+        getResolveSymbolicLinks().assign(conf.getResolveSymbolicLinks());
         getTools().assign(conf.getTools());
         getTransientMacros().assign(conf.getTransientMacros());
         getEnvironmentVariables().assign(conf.getEnvironmentVariables());
@@ -170,6 +182,7 @@ public class CodeAssistanceConfiguration implements Cloneable {
     public CodeAssistanceConfiguration clone() {
         CodeAssistanceConfiguration clone = new CodeAssistanceConfiguration(getMakeConfiguration());
         clone.setBuildAnalyzer(getBuildAnalyzer().clone());
+        clone.setResolveSymbolicLinks(getResolveSymbolicLinks().clone());
         clone.setTools(getTools().clone());
         clone.setTransientMacros(getTransientMacros().clone());
         clone.setEnvironmentVariables(getEnvironmentVariables().clone());
@@ -230,6 +243,7 @@ public class CodeAssistanceConfiguration implements Cloneable {
         set.setShortDescription(getString("IncludeInCodeAssistanceHint")); // NOI18N
         set.put(new BooleanNodeProp(getIncludeInCA(), true, "IncludeFlag", getString("IncludeFlagTxt"), getString("IncludeFlagHint"))); // NOI18N
         set.put(new PatternNodeProp(getExcludeInCA(), "", "ExcludePattern", getString("ExcludePatternTxt"), getString("ExcludePatternHint"))); // NOI18N
+        set.put(new BooleanNodeProp(getResolveSymbolicLinks(), false, "ResolveSymbolicLinks", getString("ResolveSymbolicLinksTxt"), getString("ResolveSymbolicLinksHint"))); // NOI18N
         sheet.put(set);
         
         return sheet;

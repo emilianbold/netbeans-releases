@@ -92,5 +92,3 @@ final class Flash {
     }
 
 }
-
-?>

@@ -15,12 +15,15 @@ import javax.microedition.midlet.MIDlet;
  */
 public class ${name} extends MIDlet {
 
+    <#if java15style?? && java15style>
+    @Override
+    </#if>
     public void startApp() {
     }
 
-    public void pauseApp() {
-    }
-
+    <#if java15style?? && java15style>
+    @Override
+    </#if>
     public void destroyApp(boolean unconditional) {
     }
 }

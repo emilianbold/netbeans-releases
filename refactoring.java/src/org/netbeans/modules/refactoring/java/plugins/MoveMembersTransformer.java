@@ -726,8 +726,8 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     // Scan the initializer and fix references
                     ExpressionTree initializer = field.getInitializer();
                     initializer = fixReferences(initializer, target, resolvedPath);
-
-                    newMember = make.Variable(modifiers, field.getName(), field.getType(), initializer);
+                    VariableTree importFQNs = GeneratorUtilities.get(workingCopy).importFQNs(field);
+                    newMember = make.Variable(modifiers, field.getName(), importFQNs.getType(), initializer);
                 }
 
                 // Insert the member and copy its comments

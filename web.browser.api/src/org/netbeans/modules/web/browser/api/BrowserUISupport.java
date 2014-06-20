@@ -60,6 +60,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.web.browser.ui.picker.BrowserCombo;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 /**
  * Support for web browser selection in the UI.
@@ -109,6 +110,22 @@ public final class BrowserUISupport {
         if (selectedBrowserId == null) {
             selectedBrowserId = getDefaultBrowserChoice(showIDEGlobalBrowserOption).getId();
         }
+        return createBrowserModel(selectedBrowserId, browsers);
+    }
+
+    /**
+     * Create model for component with given browsers.
+     * <p>
+     * If the browser identifier is {@code null} (likely not set yet?), then the first browser in the list
+     * will be selected.
+     * @param selectedBrowserId browser identifier, can be {@code null} if e.g. not set yet
+     * @param browsers list of browsers
+     * @return model for component with browsers
+     * @see WebBrowsers#getAll(boolean, boolean, boolean, boolean)
+     * @since 1.40
+     */
+    public static BrowserComboBoxModel createBrowserModel(@NullAllowed String selectedBrowserId, List<WebBrowser> browsers) {
+        Parameters.notNull("browsers", browsers); // NOI18N
         BrowserComboBoxModel model = new BrowserComboBoxModel(browsers);
         for (int i = 0; i < model.getSize(); i++) {
             WebBrowser browser = model.getElementAt(i);

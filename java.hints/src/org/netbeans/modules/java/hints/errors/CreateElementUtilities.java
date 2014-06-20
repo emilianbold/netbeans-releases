@@ -829,6 +829,10 @@ public final class CreateElementUtilities {
                 
                 ExecutableType et = (ExecutableType) executable;
                 
+                if (realArgumentError >= et.getParameterTypes().size()) {
+                    return null;
+                }
+                
                 proposedTypes.add(et.getParameterTypes().get(realArgumentError));
             }
             

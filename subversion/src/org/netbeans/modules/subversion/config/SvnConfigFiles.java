@@ -105,6 +105,7 @@ public class SvnConfigFiles {
     private static final String WINDOWS_GLOBAL_CONFIG_DIR = getGlobalAPPDATA() + "\\Subversion";                                // NOI18N
     private static final List<String> DEFAULT_GLOBAL_IGNORES = 
             parseGlobalIgnores("*.o *.lo *.la #*# .*.rej *.rej .*~ *~ .#* .DS_Store");                                          // NOI18N
+    private static final boolean DO_NOT_SAVE_PASSPHRASE = Boolean.getBoolean("versioning.subversion.noPassphraseInConfig"); // NOI18N
 
     private String recentUrl;
 
@@ -179,19 +180,23 @@ public class SvnConfigFiles {
      * Stores the cert file and password, proxy host, port, username and password for the given
      * {@link SVNUrl} in the
      * <b>servers</b> file used by the Subversion module.  
+     * 
+     * It returns an instance of config file that should be deleted as soon as possible
+     * because it contains sensitive private data such as passwords or passphrases.
      *     
      * @param host the host
      */
-    public void storeSvnServersSettings(SVNUrl url, ConnectionType connType) {
+    public File storeSvnServersSettings(SVNUrl url, ConnectionType connType) {
                         
         assert url != null : "can\'t do anything for a null host";     // NOI18N
+        File sensitiveConfigFile = null;
                          
         if(!(url.getProtocol().startsWith("http") ||                    //NOI18N
              url.getProtocol().startsWith("https") ||                   //NOI18N
              url.getProtocol().startsWith("svn+")) )                    //NOI18N
         {            
             // we need the settings only for remote http and https repositories
-            return;
+            return sensitiveConfigFile;
         }
 
         boolean changes = false;
@@ -217,42 +222,52 @@ public class SvnConfigFiles {
                     setExternalCommand(SvnUtils.getTunnelName(url.getProtocol()), rc.getExternalCommand());
                 }
             }
+            boolean hasPassphrase = false;
             if(url.getProtocol().startsWith("https")) {
-                setSSLCert(rc, nbGlobalSection);
+                hasPassphrase = setSSLCert(rc, nbGlobalSection);
             }
-            setProxy(url, nbGlobalSection);
-            storeIni(nbServers, "servers");                    // NOI18N
+            hasPassphrase = setProxy(url, nbGlobalSection) | hasPassphrase;
+            File configFile = storeIni(nbServers, "servers"); //NOI18N
             recentUrl = url.toString();
+            if (hasPassphrase) {
+                sensitiveConfigFile = configFile;
+                recentUrl = null; //must be regenerated on next run
+            }
         }
+        return sensitiveConfigFile;
     }
 
     private boolean setSSLCert(RepositoryConnection rc, Ini.Section nbGlobalSection) {
         if(rc == null) {
-            return true;
+            return false;
         }
         String certFile = rc.getCertFile();
         if(certFile == null || certFile.equals("")) {
-            return true;
+            return false;
         }
         char[] certPasswordChars = rc.getCertPassword();
         String certPassword = certPasswordChars == null ? "" : new String(certPasswordChars); //NOI18N
         if(certPassword.equals("")) { // NOI18N
-            return true;
+            return false;
         }
         nbGlobalSection.put("ssl-client-cert-file", certFile);
-        nbGlobalSection.put("ssl-client-cert-password", certPassword);
-        return true;
+        if (!DO_NOT_SAVE_PASSPHRASE) {
+            nbGlobalSection.put("ssl-client-cert-password", certPassword);
+            return true;
+        }
+        return false;
     }
 
     private boolean setProxy(SVNUrl url, Ini.Section nbGlobalSection) {
         String host =  SvnUtils.ripUserFromHost(url.getHost());        
         Ini.Section svnGlobalSection = svnServers.get(GLOBAL_SECTION);
         URI uri = null;
+        boolean passwordAdded = false;
         try {
             uri = new URI(url.toString());
         } catch (URISyntaxException ex) {
             Subversion.LOG.log(Level.INFO, null, ex);
-            return true;
+            return passwordAdded;
         }
         String proxyHost = NetworkSettings.getProxyHost(uri);
         // check DIRECT connection
@@ -269,12 +284,13 @@ public class SvnConfigFiles {
 
                 nbGlobalSection.put("http-proxy-username", username);                               // NOI18N
                 nbGlobalSection.put("http-proxy-password", password);                               // NOI18N
+                passwordAdded = true;
             }
         }
         // check if there are also some no proxy settings
         // we should get from the original svn servers file
         mergeNonProxyKeys(host, svnGlobalSection, nbGlobalSection);
-        return true;
+        return passwordAdded;
     }
 
     private void mergeNonProxyKeys(String host, Ini.Section svnGlobalSection, Ini.Section nbGlobalSection) {                             
@@ -324,10 +340,10 @@ public class SvnConfigFiles {
         return section;
     }
     
-    private void storeIni(Ini ini, String iniFile) {
+    private File storeIni (Ini ini, String iniFile) {
         BufferedOutputStream bos = null;
+        File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/" + iniFile));   // NOI18N
         try {
-            File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/" + iniFile));   // NOI18N
             file.getParentFile().mkdirs();
             ini.store(bos = FileUtils.createOutputStream(file));
         } catch (IOException ex) {
@@ -341,6 +357,7 @@ public class SvnConfigFiles {
                 }
             }
         }
+        return file;
     }    
 
     /**
@@ -692,7 +709,7 @@ public class SvnConfigFiles {
     }
 
     private String getProxyPassword(String key) {
-        char[] pwd = KeyringSupport.read(key, null);
+        char[] pwd = KeyringSupport.read("", key);
         return pwd == null ? "" : new String(pwd); //NOI18N
     }
     

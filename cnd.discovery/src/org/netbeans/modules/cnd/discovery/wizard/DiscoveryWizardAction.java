@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -109,6 +110,20 @@ public final class DiscoveryWizardAction extends NodeAction {
         wizardDescriptor.setProject(project);
         wizardDescriptor.setRootFolder(findSourceRoot(project));
         wizardDescriptor.setBuildResult(findBuildResult(project));
+        boolean resolveSymbolic = CommonUtilities.resolveSymbolicLinks();
+        if (project != null) {
+            ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            if (cdp != null && cdp.gotDescriptor()) {
+                MakeConfigurationDescriptor cd = cdp.getConfigurationDescriptor();
+                if (cd != null) {
+                    MakeConfiguration activeConfiguration = cd.getActiveConfiguration();
+                    if (activeConfiguration != null) {
+                        resolveSymbolic = activeConfiguration.getCodeAssistanceConfiguration().getResolveSymbolicLinks().getValue();
+                    }
+                }
+            }
+        }
+        wizardDescriptor.setResolveSymbolicLinks(resolveSymbolic);
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
         wizardDescriptor.setTitle(getString("WIZARD_TITLE_TXT")); // NOI18N

@@ -57,6 +57,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.apt.impl.support.APTMacroParamExpansion;
 import org.netbeans.modules.cnd.apt.impl.support.APTSystemMacroMap;
@@ -263,11 +264,12 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
 		l.add(next);
 		out = new ListBasedTokenStream(l);
 	    }
-        }  
-        APTUtils.LOG.log(Level.INFO, 
+        }
+        if (APTUtils.LOG.isLoggable(Level.INFO)) {
+            APTUtils.LOG.log(Level.INFO, 
                         "token {0} \n was expanded by macro substitution to \n {1}", // NOI18N
                         new Object[] { token, out }); 
-        
+        }
         return out;
     }
 

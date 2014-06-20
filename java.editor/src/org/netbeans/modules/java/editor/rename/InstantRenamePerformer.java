@@ -83,6 +83,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -136,6 +137,7 @@ import org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor.Context;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -223,6 +225,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         span = region.getFirstRegionLength();
         
         registry.add(this);
+        sendUndoableEdit(doc, CloneableEditorSupport.BEGIN_COMMIT_GROUP);
     }
     
     public static void invokeInstantRename(JTextComponent target) {
@@ -718,6 +721,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             //already released
             return ;
         }
+        sendUndoableEdit(doc, CloneableEditorSupport.END_COMMIT_GROUP);
         target.putClientProperty("NetBeansEditor.navigateBoundaries", null); // NOI18N
         target.putClientProperty(InstantRenamePerformer.class, null);
         if (doc instanceof BaseDocument) {
@@ -866,6 +870,16 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         return bag;
     }
     
+    private static void sendUndoableEdit(Document d, UndoableEdit ue) {
+        if(d instanceof AbstractDocument) {
+            UndoableEditListener[] uels = ((AbstractDocument)d).getUndoableEditListeners();
+            UndoableEditEvent ev = new UndoableEditEvent(d, ue);
+            for(UndoableEditListener uel : uels) {
+                uel.undoableEditHappened(ev);
+            }
+        }
+    }
+
     private static class CancelInstantRenameUndoableEdit extends AbstractUndoableEdit {
 
         private final Reference<InstantRenamePerformer> performer;

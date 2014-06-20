@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+            <code-name-base>org.eclipse.jgit.java7</code-name-base>
+            <module-dependencies/>
+            <public-packages/>
+            <class-path-extension>
+                <runtime-relative-path>org-eclipse-jgit-java7.jar</runtime-relative-path>
+                <binary-origin>external/org.eclipse.jgit.java7-3.3.1.201403241930-r.jar</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>

@@ -88,7 +88,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.43.1</specification-version>
+                        <specification-version>1.43.10</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -112,7 +112,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.24.1</specification-version>
+                        <specification-version>1.25.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -390,6 +390,7 @@
                 <friend>com.sun.tools.tuxedo.codemodel.bridge</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
                 <friend>org.netbeans.modules.cnd.analysis.api</friend>
+                <friend>org.netbeans.modules.cnd.analysis.impl</friend>
                 <friend>org.netbeans.modules.cnd.audit</friend>
                 <friend>org.netbeans.modules.cnd.cncppunit</friend>
                 <friend>org.netbeans.modules.cnd.debugger.common2</friend>
@@ -418,6 +419,8 @@
                 <package>org.netbeans.modules.cnd.makeproject.api.support</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.ui</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.wizards</package>
+                <package>org.netbeans.modules.cnd.makeproject.launchers</package>
+                <package>org.netbeans.modules.cnd.makeproject.launchers.actions</package>
                 <package>org.netbeans.modules.cnd.makeproject.spi</package>
                 <package>org.netbeans.modules.cnd.makeproject.spi.configurations</package>
             </friend-packages>

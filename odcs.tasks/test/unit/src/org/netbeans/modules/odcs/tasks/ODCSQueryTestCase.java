@@ -162,7 +162,7 @@ public class ODCSQueryTestCase extends AbstractODCSTestCase {
     public void testPredefinedQueries() throws IOException {
         IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), PredefinedTaskQuery.RECENT.toString());
         query.setUrl(CloudDevConstants.PREDEFINED_QUERY);
-        query.setAttribute(CloudDevConstants.QUERY_NAME, PredefinedTaskQuery.RELATED.toString());
+        query.setAttribute(CloudDevConstants.QUERY_NAME, PredefinedTaskQuery.MINE.toString());
         
         Collector c = new Collector("testPredefinedQueries");
         IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
@@ -172,7 +172,7 @@ public class ODCSQueryTestCase extends AbstractODCSTestCase {
     
     public void testEqualsQueryCriteria() throws IOException, CoreException {
         IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), ""); // NOI18N
-  
+    
         String summary = UNIT_TEST_SUMMARY;
         CriteriaBuilder cb = new CriteriaBuilder();
         cb.column(QueryParameters.Column.SUMMARY.toString(), Criteria.Operator.EQUALS, summary);
@@ -294,7 +294,7 @@ public class ODCSQueryTestCase extends AbstractODCSTestCase {
     }
 
     public void testGetManyTasks() throws IOException, CoreException {
-        IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), PredefinedTaskQuery.RECENT.toString());
+        IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), PredefinedTaskQuery.RELATED.toString());
         query.setUrl(CloudDevConstants.PREDEFINED_QUERY);
         query.setAttribute(CloudDevConstants.QUERY_NAME, PredefinedTaskQuery.RELATED.toString());
         

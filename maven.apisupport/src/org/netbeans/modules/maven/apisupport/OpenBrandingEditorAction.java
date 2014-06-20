@@ -63,6 +63,7 @@ import org.netbeans.modules.apisupport.project.api.ManifestManager;
 import org.netbeans.modules.apisupport.project.spi.BrandingModel;
 import org.netbeans.modules.apisupport.project.spi.BrandingSupport;
 import org.netbeans.modules.apisupport.project.spi.PlatformJarProvider;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import static org.netbeans.modules.maven.apisupport.Bundle.*;
@@ -150,7 +151,11 @@ public class OpenBrandingEditorAction extends AbstractAction implements ContextA
 
     private String brandingPath(Project mavenProject) {
         String brandingPath = PluginPropertyUtils.getPluginProperty(mavenProject, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "brandingSources", "branding", null); //NOI18N
-        return brandingPath != null ? brandingPath : "src/main/nbm-branding"; //NOI18N
+        if(brandingPath != null) {
+            return FileUtilities.getRelativePath(FileUtil.toFile(mavenProject.getProjectDirectory()),
+                FileUtilities.resolveFilePath(FileUtil.toFile(mavenProject.getProjectDirectory()), brandingPath));
+        } 
+        return "src/main/nbm-branding";
     }
 
     /**

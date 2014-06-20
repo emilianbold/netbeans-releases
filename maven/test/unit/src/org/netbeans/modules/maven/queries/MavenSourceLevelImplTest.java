@@ -62,6 +62,7 @@ public class MavenSourceLevelImplTest extends NbTestCase {
     private FileObject wd;
 
     protected @Override void setUp() throws Exception {
+        System.setProperty("level", "1.4");// workaround for testSystemPropertySourceLevel()
         clearWorkDir();
         wd = FileUtil.toFileObject(getWorkDir());
     }
@@ -123,7 +124,7 @@ public class MavenSourceLevelImplTest extends NbTestCase {
                 + "<configuration><source>${level}</source></configuration></plugin></plugins></build>"
                 + "</project>");
         FileObject source = TestFileUtils.writeFile(wd, "src/main/java/p/C.java", "package p; class C {}");
-        System.setProperty("level", "1.4");
+        System.setProperty("level", "1.4"); //to late, also set in setup();
         assertEquals("1.4", SourceLevelQuery.getSourceLevel(source));
     }
 

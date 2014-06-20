@@ -322,6 +322,18 @@ public final class Signals extends ProfileCategory {
 	else
 	    return null;
     }
+    
+    public InitialSignalInfo getSignalByName(String name) {
+	if (count() > 0) {
+            for (InitialSignalInfo signal : signals) {
+                if (signal.name().equals(name)) {
+                    return signal;
+                }
+            }
+        }
+        
+        return null;
+    }
 
     public int count() {
 	if (signals == null)

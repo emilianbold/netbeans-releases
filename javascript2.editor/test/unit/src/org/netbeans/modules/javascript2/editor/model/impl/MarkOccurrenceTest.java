@@ -1035,6 +1035,62 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/model/issue242454.js", "this.publicInnerFunc = PublicAndPriv^ateUsageFunc;", true);
     }
     
+    public void testIssue242421_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue242421.js", "var myF = function MyLib_Function (pa^th, ref, pfx, options) {", true); 
+    }
+
+    public void testIssue242421_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue242421.js", "var myF = function MyLib_Function (path, r^ef, pfx, options) {", true); 
+    }
+
+    public void testIssue242421_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue242421.js", "var myF = function MyLib_Function (path, ref, pf^x, options) {", true); 
+    }
+
+    public void testIssue242421_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue242421.js", "var myF = function MyLib_Function (path, ref, pfx, opt^ions) {", true); 
+    }
+
+    public void testIssue242421_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue242421.js", "var v^ = expand(path, ref, pfx, options);", true); 
+    }
+    
+    public void testIssue243449_01() throws Exception {
+        checkOccurrences("testfiles/model/issue243449.js", "p.x = f^3;", true);
+    }
+
+    public void testIssue243449_02() throws Exception {
+        checkOccurrences("testfiles/model/issue243449.js", "p.x = f^2;", true);
+    }
+    
+    public void testIssue243449_03() throws Exception {
+        checkOccurrences("testfiles/model/issue243449.js", "p.x = f^1;", true);
+    }
+    
+    public void testIssue244964_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244964.js", "b^ar = {};", true); 
+    }
+    
+    public void testIssue244964_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244964.js", "f^oo = {", true); 
+    }
+    
+    public void testIssue244973A_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244973A.js", "this._implement^ation = null;", true); 
+    }
+    
+    public void testIssue244973A_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244973A.js", "throw Pages^Manager.NO_IMPLEMENTATION_ERROR;", true); 
+    }
+    
+    public void testIssue244973B_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244973B.js", "PagesManager.prototype._implem^entation = null;", true); 
+    }
+    
+    public void testIssue244973B_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244973B.js", "throw Pages^Manager.NO_IMPLEMENTATION_ERROR;", true); 
+    }
+    
    private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

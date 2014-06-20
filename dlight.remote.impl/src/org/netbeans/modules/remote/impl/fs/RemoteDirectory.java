@@ -1381,6 +1381,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 path = path.substring(1); // remove starting '/'
                 ZipEntry zipEntry = zipFile.getEntry(path);
                 if (zipEntry != null) {
+                    if (zipEntry.getSize() != child.getSize()) {
+                        return false;
+                    }
                     long zipTime = zipEntry.getTime();
                     long childTime = child.lastModified().getTime() - TimeZone.getDefault().getRawOffset();
                     zipTime /= 1000;

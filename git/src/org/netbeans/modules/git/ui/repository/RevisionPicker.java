@@ -43,10 +43,15 @@
 package org.netbeans.modules.git.ui.repository;
 
 import java.awt.Dialog;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.prefs.Preferences;
 import javax.swing.JButton;
+import org.netbeans.modules.git.GitModuleConfig;
+import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -64,6 +69,8 @@ public class RevisionPicker implements PropertyChangeListener {
     private Revision revision;
     private DialogDescriptor dd;
     private final RepositoryBrowserPanel browserPanel;
+    private static final String PROP_PANEL_SLIDER_POSITION = "RevisionPicker.slider.pos"; //NOI18N
+    private static final String PROP_BROWSER_SLIDER_POSITION = "RevisionPicker.browser.slider.pos"; //NOI18N
 
     public RevisionPicker (File repository, File[] roots) {
         infoPanelController = new RevisionInfoPanelController(repository);
@@ -75,11 +82,18 @@ public class RevisionPicker implements PropertyChangeListener {
 
     public boolean open () {
         dd = new DialogDescriptor(panel, NbBundle.getMessage(RevisionPicker.class, "LBL_RevisionPickerDialog.title"), //NOI18N
-                true, new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(RevisionPickerDialog.class), null);
+                true, new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx("org.netbeans.modules.git.ui.repository.RevisionPickerDialog"), null); //NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         updateDialogState();
         browserPanel.addPropertyChangeListener(this);
+        Preferences prefs = GitModuleConfig.getDefault().getPreferences();
+        WindowListener windowListener = new DialogBoundsPreserver(prefs, this.getClass().getName());
+        dialog.addWindowListener(windowListener);
+        windowListener.windowOpened(new WindowEvent(dialog, WindowEvent.WINDOW_OPENED));
+        dialog.pack();
+        updateSliders(prefs);
         dialog.setVisible(true);
+        persistSliders(prefs);
         browserPanel.removePropertyChangeListener(this);
         return dd.getValue() == okButton;
     }
@@ -98,6 +112,22 @@ public class RevisionPicker implements PropertyChangeListener {
                 okButton.doClick();
             }
         }
+    }
+
+    private void updateSliders (Preferences prefs) {
+        int pos = prefs.getInt(PROP_PANEL_SLIDER_POSITION, 0);
+        if (pos > 0) {
+            panel.setSliderPosition(pos);
+        }
+        pos = prefs.getInt(PROP_BROWSER_SLIDER_POSITION, 0);
+        if (pos > 0) {
+            browserPanel.setSliderPosition(pos);
+        }
+    }
+
+    private void persistSliders (Preferences prefs) {
+        prefs.putInt(PROP_PANEL_SLIDER_POSITION, panel.getSliderPosition());
+        prefs.putInt(PROP_BROWSER_SLIDER_POSITION, browserPanel.getSliderPosition());
     }
 
     void displayMergedStatus (String revision) {

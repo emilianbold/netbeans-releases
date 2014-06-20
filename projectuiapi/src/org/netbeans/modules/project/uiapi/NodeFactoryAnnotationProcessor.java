@@ -60,7 +60,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author mkleint
  */
 @ServiceProvider(service=Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class NodeFactoryAnnotationProcessor extends LayerGeneratingProcessor {
 
     public @Override Set<String> getSupportedAnnotationTypes() {

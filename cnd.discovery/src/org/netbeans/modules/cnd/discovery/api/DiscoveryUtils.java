@@ -45,6 +45,12 @@
 package org.netbeans.modules.cnd.discovery.api;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.AccessController;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,6 +63,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
@@ -81,6 +88,36 @@ public class DiscoveryUtils {
             }
         }
         return null;
+    }
+    
+    public static String resolveSymbolicLink(final String aPath) {
+        try {
+            return AccessController.doPrivileged(new PrivilegedExceptionAction<String>() {
+                @Override
+                public String run() throws IOException {
+                    String path = aPath;
+                    for (int i = 0; i < 5; i++) {
+                        final Path file = Paths.get(Utilities.toURI(new File(path)));
+                        if (Files.isSymbolicLink(file)) {
+                            Path to = Files.readSymbolicLink(file);
+                            if (!to.isAbsolute()) {
+                                to = file.getParent().resolve(Files.readSymbolicLink(file)).normalize();
+                            }
+                            if (Files.isRegularFile(to)) {
+                                return to.toString();
+                            }
+                            path = to.toString();
+                        } else {
+                            return null;
+                        }
+                    }
+                    return null;
+                }
+            });
+        } catch (Exception ex) {
+            CndUtils.printStackTraceOnce(ex);
+            return null;
+        }
     }
     
     public static Set<String> getCompilerNames(ProjectProxy project, PredefinedToolKind kind) {
@@ -652,8 +689,8 @@ public class DiscoveryUtils {
         for (int i = 0; i < n; i++) {
             char c = s.charAt(i);
             if ((c == ' ') || (c == '\t') || // NOI18N
-                    (c == ':') || //(c == '\'') || // NOI18N
-                    (c == '*') || //(c == '\"') || // NOI18N
+                    (c == ':') || (c == '\'') || // NOI18N
+                    (c == '*') || (c == '\"') || // NOI18N
                     (c == '[') || (c == ']') || // NOI18N
                     (c == '(') || (c == ')') || // NOI18N
                     (c == ';')) { // NOI18N

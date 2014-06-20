@@ -305,6 +305,9 @@ public class JUnitExecutionManager implements RerunHandler{
             return true;
         }
         Project project = testSession.getProject();
+        if(project == null) { // could not locate the project for which the testSession was invoked for
+            return false;
+        }
         ActionProvider actionProvider = project.getLookup().lookup(ActionProvider.class);
         if (actionProvider != null){
             boolean runSupported = false;

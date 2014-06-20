@@ -119,6 +119,28 @@ public abstract class DiffNode<T extends GitFileNode> extends GitStatusNode<T> i
             return new DiffHistoryNode(getFileNode(), getSetup());
         }
     }
+    
+    public static class DiffImmutableNode extends DiffNode<GitFileNode> {
+    
+        DiffImmutableNode (GitFileNode node, Setup setup, EditorCookie eCookie) {
+            super(node, setup, eCookie);
+        }
+
+        @Override
+        public Action getPreferredAction () {
+            return null;
+        }
+
+        @Override
+        public String getStatusText () {
+            return node.getStatusText();
+        }
+
+        @Override
+        public DiffNode clone () {
+            return new DiffImmutableNode(getFileNode(), getSetup(), getLookup().lookup(EditorCookie.class));
+        }
+    }
 
     private static org.openide.util.Lookup getLookupFor (EditorCookie eCookie, Object[] lookupObjects) {
         Object[] allLookupObjects;

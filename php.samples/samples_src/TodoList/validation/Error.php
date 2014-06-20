@@ -77,5 +77,3 @@ final class Error {
     }
 
 }
-
-?>

@@ -246,27 +246,28 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 Project project = FileOwnerQuery.getOwner(panel.getWebModule().getDocumentBase());
                 ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
                 ClassPath compileClassPath = cpp.findClassPath(panel.getWebModule().getDocumentBase(), ClassPath.COMPILE);
-                compileClassPath.entries();
-                for (ClassPath.Entry entry : compileClassPath.entries()) {
-                    for (final LibraryItem jsfLibrary : jsfLibraries) {
-                        try {
-                            List<URI> cps = jsfLibrary.getLibrary().getURIContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH);
-                            for (URI uri : cps) {
-                                if (entry.getRoot() != null
-                                        && entry.getRoot().equals(URLMapper.findFileObject(uri.toURL()))) {
-                                    Mutex.EVENT.readAccess(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            rbRegisteredLibrary.setSelected(true);
-                                            enableComponents(false);
-                                            cbLibraries.setSelectedItem(jsfLibrary.getLibrary().getDisplayName());
-                                        }
-                                    });
-                                    return;
+                if (compileClassPath != null) {
+                    for (ClassPath.Entry entry : compileClassPath.entries()) {
+                        for (final LibraryItem jsfLibrary : jsfLibraries) {
+                            try {
+                                List<URI> cps = jsfLibrary.getLibrary().getURIContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH);
+                                for (URI uri : cps) {
+                                    if (entry.getRoot() != null
+                                            && entry.getRoot().equals(URLMapper.findFileObject(uri.toURL()))) {
+                                        Mutex.EVENT.readAccess(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                rbRegisteredLibrary.setSelected(true);
+                                                enableComponents(false);
+                                                cbLibraries.setSelectedItem(jsfLibrary.getLibrary().getDisplayName());
+                                            }
+                                        });
+                                        return;
+                                    }
                                 }
+                            } catch (MalformedURLException ex) {
+                                Exceptions.printStackTrace(ex);
                             }
-                        } catch (MalformedURLException ex) {
-                            Exceptions.printStackTrace(ex);
                         }
                     }
                 }

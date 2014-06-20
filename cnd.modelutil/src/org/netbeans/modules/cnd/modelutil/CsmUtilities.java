@@ -80,7 +80,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
-import org.netbeans.modules.cnd.modelutil.spi.FileObjectRedirector;
+import org.netbeans.modules.cnd.spi.utils.FileObjectRedirector;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -245,6 +245,14 @@ public class CsmUtilities {
 
     public static CsmFile getCsmFile(Node node, boolean waitParsing) {
         return getCsmFile(node.getLookup().lookup(DataObject.class), waitParsing, false);
+    }
+    
+    public static CsmFile getCsmFile(NativeFileItem item, boolean waitParsing, boolean snapShot) {
+        CsmProject csmProject = CsmModelAccessor.getModel().getProject(item.getNativeProject());
+        if (csmProject != null) {
+            return csmProject.findFile(item, waitParsing, snapShot);
+        }
+        return null;
     }
 
     public static DataObject getDataObject(JTextComponent component) {
@@ -1143,9 +1151,12 @@ public class CsmUtilities {
         }
         Collection<? extends FileObjectRedirector> redirectors = Lookup.getDefault().lookupAll(FileObjectRedirector.class);
         for (FileObjectRedirector redirector : redirectors) {
-            DataObject newDO = redirector.redirect(dob);
-            if(newDO != null) {
-                dob = newDO;
+            FileObject fo = redirector.redirect(dob.getPrimaryFile());
+            if (fo != null) {
+                DataObject newDO = getDataObject(fo);
+                if(newDO != null) {
+                    dob = newDO;
+                }
             }
         }
         return dob;
@@ -1208,7 +1219,7 @@ public class CsmUtilities {
 
     private static final class FileTarget implements CsmOffsetable {
 
-        private CsmFile file;
+        private final CsmFile file;
 
         public FileTarget(CsmFile file) {
             this.file = file;

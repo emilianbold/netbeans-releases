@@ -902,7 +902,7 @@ public class ModelUtils {
                                 lastResolvedTypes.addAll(((JsArray) lObject).getTypesInArray());
                             } else {
                                 // just property
-                                Collection<? extends Type> lastTypeAssignment = lObject.getAssignmentForOffset(offset);
+                                 Collection<? extends Type> lastTypeAssignment = lObject.getAssignmentForOffset(offset);
                                 // we need to process the object later anyway. To get learning cc, see issue #224453
                                 lastResolvedObjects.add(lObject);
                                 if (!lastTypeAssignment.isEmpty()) {
@@ -1181,9 +1181,6 @@ public class ModelUtils {
                     boolean isType = false;
                     for (IndexResult indexResult: indexResults) {
                         Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
-                        if (assignments.size() > 10) {
-                            System.out.println("@@@@Assignments for " + fqn + " " + assignments.size());
-                        }
                         if (!assignments.isEmpty()) {
                             hasAssignments = true;
                             for (TypeUsage type : assignments) {
@@ -1383,9 +1380,11 @@ public class ModelUtils {
         for (int i = 0; i < parts.length; i++) {
             part = parts[i];
             boolean add = true;
-            if (part.startsWith(generated)) {
+            if (part.startsWith(generated) || (i == 0 && part.contains(generated))) {
+//            if (part.startsWith(generated)) {
                 try {
-                    Integer.parseInt(part.substring(generated.length()));
+                    Integer.parseInt(part.substring(part.indexOf(generated) + generated.length()));
+//                    Integer.parseInt(part.substring(generated.length()));
                     add = false;
                 } catch (NumberFormatException nfe) {
                     // do nothing

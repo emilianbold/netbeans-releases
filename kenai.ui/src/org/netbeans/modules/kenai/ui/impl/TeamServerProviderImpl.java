@@ -267,8 +267,12 @@ public class TeamServerProviderImpl implements TeamServerProvider {
             if (!cancelled) {
                 Set<NewKenaiProjectWizardIterator.CreatedProjectInfo> createdProjects = wizardDescriptor.getInstantiatedObjects();
                 TeamUIUtils.activateTeamDashboard();
-                ProjectHandleImpl project = new ProjectHandleImpl(createdProjects.iterator().next().project);
-                KenaiServer.getDashboard(project).selectAndExpand(project);
+                // createdProjects.isEmpty() - something wen't wrong and would expect the problem was at least logged ...
+                // lets avoid java.util.NoSuchElementException at this place
+                if (!createdProjects.isEmpty()) {
+                    ProjectHandleImpl project = new ProjectHandleImpl(createdProjects.iterator().next().project);
+                    KenaiServer.getDashboard(project).selectAndExpand(project);
+                }
             }
         }
     }

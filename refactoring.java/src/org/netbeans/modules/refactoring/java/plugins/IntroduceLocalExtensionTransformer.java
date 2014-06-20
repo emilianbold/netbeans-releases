@@ -167,6 +167,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         for (VariableElement field : ElementFilter.fieldsIn(workingCopy.getElements().getAllMembers(source))) {
             if (!field.getModifiers().contains(Modifier.NATIVE)
                     && field.getModifiers().contains(Modifier.PUBLIC)
+                    && field.getEnclosingElement().getKind() != ElementKind.INTERFACE
                     && !field.getEnclosingElement().equals(workingCopy.getElements().getTypeElement("java.lang.Object"))) { //NOI18N
                 if (field.getModifiers().contains(Modifier.FINAL) && field.getModifiers().contains(Modifier.STATIC)) { // Encapsulate?
                     VariableTree variable = make.Variable(field, make.QualIdent(field));
@@ -401,6 +402,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         MemberSelectTree memberSelect;
         final Set<Modifier> mods = EnumSet.copyOf(member.getModifiers());
         mods.remove(Modifier.ABSTRACT);
+        mods.remove(Modifier.DEFAULT);
         if (mods.contains(Modifier.STATIC)) {
             memberSelect = make.MemberSelect(make.QualIdent(source), member);
         } else {
@@ -440,8 +442,12 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         } else {
             statement = make.ExpressionStatement(methodInvocation);
         }
-
-        ModifiersTree modifiers = make.Modifiers(mods);
+        
+        List<AnnotationTree> annotations = member.getEnclosingElement().getKind() == ElementKind.INTERFACE?
+                    Collections.singletonList(make.Annotation(make.Type("Override"),
+                                          Collections.EMPTY_LIST)):
+                    Collections.<AnnotationTree>emptyList();
+        ModifiersTree modifiers = make.Modifiers(mods, annotations);
 
         List<TypeParameterTree> newTypeParams = new ArrayList<>(member.getTypeParameters().size());
         transformTypeParameters(member, member.getTypeParameters(), make, genUtils, newTypeParams);

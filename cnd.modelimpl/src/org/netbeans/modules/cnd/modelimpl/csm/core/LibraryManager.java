@@ -52,6 +52,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -60,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
+import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -164,11 +166,11 @@ public final class LibraryManager {
     /**
      * Returns collection uids of artificial libraries used in project
      */
-    public Collection<CsmUID<CsmProject>> getLirariesKeys(CsmUID<CsmProject> projectUid) {
+    public Collection<CsmUID<CsmProject>> getLirariesKeys(CsmUID<CsmProject> projectUid, int unitId) {
         List<CsmUID<CsmProject>> res = new ArrayList<>();
         for (LibraryEntry entry : librariesEntries.values()) {
             if (entry.containsProject(projectUid)) {
-                res.add(entry.getLibrary(getUnitId(projectUid)));
+                res.add(entry.getLibrary(unitId));
             }
         }
         return res;
@@ -450,7 +452,7 @@ public final class LibraryManager {
     /**
      * Close unused artificial libraries.
      */
-    public void onProjectClose(CsmUID<CsmProject> project) {
+    public void onProjectClose(CsmUID<CsmProject> project, int unitId) {
         List<LibraryEntry> toClose = new ArrayList<>();
         for (LibraryEntry entry : librariesEntries.values()) {
             entry.removeProject(project);
@@ -463,7 +465,7 @@ public final class LibraryManager {
                 librariesEntries.remove(entry.getKey());
             }
         }
-        closeLibraries(toClose, getUnitId(project));
+        closeLibraries(toClose, unitId);
     }
 
     /*package*/
@@ -504,7 +506,7 @@ public final class LibraryManager {
     /**
      * Write artificial libraries for project
      */
-    /*package-local*/ void writeProjectLibraries(CsmUID<CsmProject> project, RepositoryDataOutput aStream) throws IOException {
+    /*package-local*/ void writeProjectLibraries(CsmUID<CsmProject> project, RepositoryDataOutput aStream, int unutId) throws IOException {
         assert aStream != null;
         Set<LibraryKey> keys = new HashSet<>();
         for (Map.Entry<LibraryKey, LibraryEntry> entry : librariesEntries.entrySet()) {
@@ -514,28 +516,23 @@ public final class LibraryManager {
         }        
         aStream.writeInt(keys.size());
         for (LibraryKey libraryKey : keys) {
-            libraryKey.write(aStream);
+            libraryKey.write(aStream, unutId);
         }
     }
 
     /**
      * Read artificial libraries for project
      */
-    /*package-local*/ void readProjectLibraries(CsmUID<CsmProject> project, RepositoryDataInput input) throws IOException {
+    /*package-local*/ void readProjectLibraries(CsmUID<CsmProject> project, RepositoryDataInput input, int unitId) throws IOException {
         assert input != null;
         int len = input.readInt();
         if (len != AbstractObjectFactory.NULL_POINTER) {
             for (int i = 0; i < len; i++) {
-                LibraryKey key =  new LibraryKey(input);
-                LibraryEntry entry =  getOrCreateLibrary(key, getUnitId(project));
+                LibraryKey key =  new LibraryKey(input, unitId);
+                LibraryEntry entry =  getOrCreateLibrary(key, unitId);
                 entry.addProject(project); // no need to notiy here, we are called from project constructor here
             }
         }
-    }
-
-    private static int getUnitId(CsmUID<CsmProject> projectUid) {
-        ProjectBase prj = (ProjectBase) projectUid.getObject();
-        return prj.getUnitId();
     }
 
     private static final class LibraryKey {
@@ -548,14 +545,27 @@ public final class LibraryManager {
             this.folder = folder;
         }
 
-        private LibraryKey(RepositoryDataInput input) throws IOException {
+        private LibraryKey(RepositoryDataInput input, int contextProjectID) throws IOException {
             this.fileSystem = PersistentUtils.readFileSystem(input);
-            this.folder = CharSequences.create(input.readUTF());
+            int storedContextProjectID = input.readUnitId();
+            assert contextProjectID == storedContextProjectID;
+            int fileIndex = input.readInt();
+            this.folder = APTSerializeUtils.getFileNameById(contextProjectID, fileIndex);
         }
         
-        private void write(RepositoryDataOutput out) throws IOException {
+        private void write(RepositoryDataOutput out, int contextProjectID) throws IOException {            
             PersistentUtils.writeFileSystem(fileSystem, out);
-            out.writeUTF(folder.toString());
+            out.writeUnitId(contextProjectID);
+            int fileIndex = APTSerializeUtils.getFileIdByName(contextProjectID, folder);
+            out.writeInt(fileIndex);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 17 * hash + Objects.hashCode(this.fileSystem);
+            hash = 17 * hash + Objects.hashCode(this.folder);
+            return hash;
         }
 
         @Override
@@ -567,22 +577,15 @@ public final class LibraryManager {
                 return false;
             }
             final LibraryKey other = (LibraryKey) obj;
-            if ((this.folder == null) ? (other.folder != null) : !this.folder.equals(other.folder)) {
+            if (!Objects.equals(this.fileSystem, other.fileSystem)) {
                 return false;
             }
-            if (this.fileSystem != other.fileSystem && (this.fileSystem == null || !this.fileSystem.equals(other.fileSystem))) {
+            if (!Objects.equals(this.folder, other.folder)) {
                 return false;
             }
             return true;
         }
-
-        @Override
-        public int hashCode() {
-            int hash = 5;
-            hash = 83 * hash + (this.folder != null ? this.folder.hashCode() : 0);
-            hash = 83 * hash + (this.fileSystem != null ? this.fileSystem.hashCode() : 0);
-            return hash;
-        }
+        
     }
 
     private final class LibraryEntry {

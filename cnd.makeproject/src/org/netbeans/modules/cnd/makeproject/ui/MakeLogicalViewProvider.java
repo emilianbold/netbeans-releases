@@ -53,7 +53,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
@@ -430,12 +429,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     }
 
     private static void refreshProjectNodes(final Project project) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                ProjectNodesRefreshSupport.refreshProjectNodes(project);
-            }
-        });
+        ProjectNodesRefreshSupport.refreshProjectNodes(project);
     }
 
     /**

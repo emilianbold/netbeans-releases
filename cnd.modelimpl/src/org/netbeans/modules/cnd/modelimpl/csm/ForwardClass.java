@@ -85,8 +85,8 @@ public final class ForwardClass extends ClassImpl {
     public static ForwardClass createIfNeeded(CharSequence name, CsmFile file, AST ast, int start, int end, CsmScope scope, boolean registerInProject) {
         ForwardClass fwd = new ForwardClass(NameHolder.createName(name), ast, file, start, end);
         fwd.initQualifiedName(scope);
-        fwd.setTemplateDescriptor(TemplateDescriptor.createIfNeeded(ast, file, scope, registerInProject));
         if (fwd.getProject().findClassifier(fwd.getQualifiedName()) == null) {
+            fwd.setTemplateDescriptor(TemplateDescriptor.createIfNeeded(ast, file, scope, registerInProject));
             fwd.initScope(scope);
             if(registerInProject) {
                 fwd.register(scope, false);

@@ -52,6 +52,8 @@ PACKAGE    Test_03                         [PUBLIC]   null
 PACKAGE    Testing                         [PUBLIC]   null
 PACKAGE    Trest                           [PUBLIC]   null
 PACKAGE    XUser                           [PUBLIC]   null
+PACKAGE    Yaaaaaa                         [PUBLIC]   null
+PACKAGE    Ywwwwww                         [PUBLIC]   null
 PACKAGE    a                               [PUBLIC]   null
 PACKAGE    b                               [PUBLIC]   null
 PACKAGE    bar                             [PUBLIC]   null
@@ -139,6 +141,7 @@ CLASS      BadRequestException             [PUBLIC]   Nette\Application
 CLASS      Bar                             [PUBLIC]   Froo
 CLASS      Bar                             [PUBLIC]   issue191666.php
 CLASS      Bar                             [PUBLIC]   issue233756.php
+CLASS      Bar                             [PUBLIC]   issue243684.php
 CLASS      Barrr                           [PUBLIC]   test204104.php
 CLASS      Barrr                           [PUBLIC]   test204104_02.php
 CLASS      Base                            [PUBLIC]   issue208193.php
@@ -210,6 +213,8 @@ CLASS      ExMyException                   [PUBLIC]   issue201310.php
 CLASS      ExMyException1                  [PUBLIC]   issue204958.php
 CLASS      ExMyExceptionFromNs             [PUBLIC]   Extra
 CLASS      ExMyExceptionFromNs             [PUBLIC]   ExtraThrow
+CLASS      ExcText                         [PUBLIC]   Yaaaaaa
+CLASS      ExcText                         [PUBLIC]   Ywwwwww
 CLASS      Exception                       [PUBLIC]   Exception.php
 CLASS      Exception                       [PUBLIC]   MySpace
 CLASS      Exception                       [PUBLIC]   MySpaceThrow
@@ -217,6 +222,7 @@ CLASS      Exception                       [PUBLIC]   Nette\Application
 CLASS      Exception                       [PUBLIC]   exceptions.php
 CLASS      Exception                       [PUBLIC]   issue194875.php
 CLASS      Exception                       [PUBLIC]   issue201310.php
+CLASS      Exception                       [PUBLIC]   issue243458.php
 CLASS      Exception1                      [PUBLIC]   issue204958.php
 CLASS      ExceptionClassName              [PUBLIC]   issue207594.php
 CLASS      Foo                             [PUBLIC]   issue159970.php

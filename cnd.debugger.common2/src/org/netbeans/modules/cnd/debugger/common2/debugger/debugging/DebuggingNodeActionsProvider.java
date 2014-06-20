@@ -69,14 +69,21 @@ public abstract class DebuggingNodeActionsProvider implements NodeActionsProvide
         if (node instanceof Thread || node instanceof Frame) {
             if (node instanceof Thread) {
                 Thread t = (Thread) node;
-                debugger.makeThreadCurrent(t);
+                if (t.isSuspended()) {// not sure about it as Threads allows a user to select any thread
+                    debugger.makeThreadCurrent(t);
+                    if (t.getStack() != null && t.getStack().length > 0) {
+                        debugger.makeFrameCurrent(t.getStack()[0]);
+                    }
+                }
             } else if (node instanceof Frame) {
                 Frame f = (Frame) node;
                 Thread t = f.getThread();
-                if (!t.isCurrent()) {
-                    debugger.makeThreadCurrent(t);
+                if (t.isSuspended()) {// not sure about it as Threads allows a user to select any thread
+                    if (!t.isCurrent()) {
+                        debugger.makeThreadCurrent(t);
+                    }
+                    debugger.makeFrameCurrent(f);
                 }
-                debugger.makeFrameCurrent(f);
             }
 
             return;

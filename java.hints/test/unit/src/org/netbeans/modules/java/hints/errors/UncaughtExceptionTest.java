@@ -169,6 +169,36 @@ public class UncaughtExceptionTest extends ErrorHintsTestBase {
                             "Surround Statement with try-catch");
     }
 
+    public void test243098() throws Exception {
+        performFixTest("test/Test.java",
+                "package test;\n" +
+                "class SurroundLambdaExpressionWithTryCatch {\n" +
+                "    void bug() {\n" +
+                "        Runnable r = () -> throwing(); // \"unreported exception Exception; must be caught or declared to be thrown\"\n" +
+                "    }\n" +
+                "    void throwing() throws Exception {}\n" +
+                "}",
+                -1,
+                "Surround Statement with try-catch",
+                ("package test;\n" +
+                 "import java.util.logging.Level;\n" +
+                 "import java.util.logging.Logger;\n" +
+                 "\n" +
+                 "class SurroundLambdaExpressionWithTryCatch {\n" +
+                 "    void bug() {\n" +
+                 "        Runnable r = () -> {\n" +
+                 "            try {\n" +
+                 "                throwing();\n" +
+                 "            } catch (Exception ex) {\n" +
+                 "                Logger.getLogger(SurroundLambdaExpressionWithTryCatch.class.getName()).log(Level.SEVERE, null, ex);\n" +
+                 "            }\n" +
+                 "        }; // \"unreported exception Exception; must be caught or declared to be thrown\"\n" +
+                 "    }\n" +
+                 "    void throwing() throws Exception {}\n" +
+                 "}").replaceAll("\\s+", " "));
+    }
+    
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return f.getText();

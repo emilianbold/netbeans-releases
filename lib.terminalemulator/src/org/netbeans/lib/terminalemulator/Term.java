@@ -1617,14 +1617,24 @@ public class Term extends JComponent implements Accessible {
         st.firstx = 0;
         st.firsty = 0;
 
-        standard_color[0] = Color.black;
-        standard_color[1] = Color.red;
-        standard_color[2] = Color.green;
-        standard_color[3] = Color.yellow;
-        standard_color[4] = Color.blue;
-        standard_color[5] = Color.magenta;
-        standard_color[6] = Color.cyan;
-        standard_color[7] = Color.white;
+//        standard_color[0] = Color.black;
+//        standard_color[1] = Color.red;
+//        standard_color[2] = Color.green;
+//        standard_color[3] = Color.yellow;
+//        standard_color[4] = Color.blue;
+//        standard_color[5] = Color.magenta;
+//        standard_color[6] = Color.cyan;
+//        standard_color[7] = Color.white;
+        
+        standard_color[0] = new Color(0x00000);
+        standard_color[1] = new Color(0xCD0000);
+        standard_color[2] = new Color(0x00CD00);
+        standard_color[3] = new Color(0xCDCD00);
+        standard_color[4] = new Color(0x1E90FF);
+        standard_color[5] = new Color(0xCD00CD);
+        standard_color[6] = new Color(0x00CDCD);
+        standard_color[7] = new Color(0xE5E5E5);
+
 
         custom_color[0] = Color.black;
         custom_color[1] = Color.black;

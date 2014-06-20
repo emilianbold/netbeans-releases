@@ -54,6 +54,7 @@
  */
 package org.netbeans.modules.cnd.api.model.services;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionDocProvider;
@@ -129,8 +130,8 @@ public final class CsmMacroExpansion {
      * @param outDoc - result
      * @return - number of expansions
      */
-    public static int expand(Document inDoc, int startOffset, int endOffset, Document outDoc) {
-        return getMacroExpansionDocProvider().expand(inDoc, startOffset, endOffset, outDoc);
+    public static int expand(Document inDoc, int startOffset, int endOffset, Document outDoc, AtomicBoolean canceled) {
+        return getMacroExpansionDocProvider().expand(inDoc, startOffset, endOffset, outDoc, canceled);
     }
 
     /**
@@ -259,7 +260,7 @@ public final class CsmMacroExpansion {
         }
 
         @Override
-        public int expand(Document inDoc, int startOffset, int endOffset, Document outDoc) {
+        public int expand(Document inDoc, int startOffset, int endOffset, Document outDoc, AtomicBoolean canceled) {
             return 0;
         }
 

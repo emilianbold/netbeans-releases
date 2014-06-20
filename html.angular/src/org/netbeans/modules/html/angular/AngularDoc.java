@@ -79,7 +79,7 @@ public class AngularDoc {
     private boolean loadingStarted;
     
     private static final String CACHE_FOLDER_NAME = "ajs-doc"; //NOI18N
-    public static final String DOC_VERSION = "1.2.12";
+    public static final String DOC_VERSION = System.getProperty("nb.angular.doc.version", "1.2.16"); //NOI18N;
     
     public static synchronized AngularDoc getDefault() {
         if (INSTANCE == null) {

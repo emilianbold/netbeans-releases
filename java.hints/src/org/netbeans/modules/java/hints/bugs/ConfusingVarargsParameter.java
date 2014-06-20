@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.java.hints.bugs;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +52,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.ConstraintVariableType;
@@ -148,12 +154,23 @@ public class ConfusingVarargsParameter {
             return null;
         }
         MethodInvocationTree mit = (MethodInvocationTree)invPath.getLeaf();
-        if (mit.getArguments().get(mit.getArguments().size() - 1).getKind() == Tree.Kind.NULL_LITERAL) {
+        ExpressionTree arg = mit.getArguments().get(mit.getArguments().size() - 1);
+        if (arg.getKind() == Tree.Kind.NULL_LITERAL) {
             return null;
         }
         // suppress on classes covered by ArrayStringConversions
         Element e = ci.getTrees().getElement(invPath);
         if (e != null) {
+            if (e.getKind() == ElementKind.CONSTRUCTOR || e.getKind() == ElementKind.METHOD) {
+                VariableElement var = ((ExecutableElement)e).getParameters().get(mit.getArguments().size() - 1);
+                TypeKind tk = var.asType().getKind();
+                if (tk == TypeKind.ARRAY) {
+                    TypeMirror tm = ((ArrayType)var.asType()).getComponentType();
+                    if (tm.getKind().isPrimitive()) {
+                        return null;
+                    }
+                }
+            }
             Element ecl = e.getEnclosingElement();
             if (ecl != null && (ecl.getKind().isClass() || ecl.getKind().isInterface())) {
                 TypeElement te = (TypeElement)ecl;

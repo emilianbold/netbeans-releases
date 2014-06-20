@@ -44,6 +44,7 @@ package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CaseTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
@@ -55,6 +56,8 @@ import com.sun.source.util.TreePathScanner;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
@@ -77,7 +80,8 @@ import org.openide.util.NbBundle;
  * @author Jan Lahoda
  */
 class OrigSurroundWithTryCatchFix implements Fix {
-
+    private static final Logger LOG = Logger.getLogger(OrigSurroundWithTryCatchFix.class.getName());
+    
     private JavaSource javaSource;
     private List<TypeMirrorHandle> thandles;
     private TreePathHandle path;
@@ -110,8 +114,7 @@ class OrigSurroundWithTryCatchFix implements Fix {
                 if (p == null) {
                     return ; //XXX: log
                 }
-
-                StatementTree leaf = (StatementTree) p.getLeaf();
+                Tree leaf = p.getLeaf();
                 if (leaf.getKind() == Kind.VARIABLE && p.getParentPath().getLeaf().getKind() == Kind.FOR_LOOP) {
                     p = p.getParentPath();
                     leaf = (StatementTree)p.getLeaf();
@@ -171,9 +174,26 @@ class OrigSurroundWithTryCatchFix implements Fix {
                         }
                     }
                 }
+                StatementTree stat;
                 
-                Tree tryTree = make.Try(make.Block(Collections.singletonList(leaf), false), MagicSurroundWithTryCatchFix.createCatches(parameter, make, thandles, p), null);
-                
+                if (StatementTree.class.isAssignableFrom(leaf.getKind().asInterface())) {
+                    stat = (StatementTree)leaf;
+                } else if (ExpressionTree.class.isAssignableFrom(leaf.getKind().asInterface())) {
+                    stat = make.ExpressionStatement((ExpressionTree)leaf);
+                } else {
+                    LOG.log(Level.WARNING, "Unexpected statement to surround: {0}, {1}", new Object[] {
+                        leaf.getKind(), leaf
+                    });
+                    return;
+                }
+                StatementTree tryTree = make.Try(make.Block(Collections.singletonList(stat), false), MagicSurroundWithTryCatchFix.createCatches(parameter, make, thandles, p), null);
+                // if the parent of leaf is not a Block or Statement (= it's a lambda), surround it in a Block
+                if (p.getParentPath()!= null) {
+                    Tree pl = p.getParentPath().getLeaf();
+                    if (!StatementTree.class.isAssignableFrom(pl.getKind().asInterface())) {
+                        tryTree = make.Block(Collections.singletonList(tryTree), false);
+                    }
+                }
                 parameter.rewrite(leaf, tryTree);
             }
         });
@@ -182,7 +202,9 @@ class OrigSurroundWithTryCatchFix implements Fix {
     }
     
     private TreePath findStatement(TreePath path) {
-        while (path != null && !StatementTree.class.isAssignableFrom(path.getLeaf().getKind().asInterface())) {
+        while (path != null && 
+            !StatementTree.class.isAssignableFrom(path.getLeaf().getKind().asInterface()) &&
+            (path.getParentPath() == null || path.getParentPath().getLeaf().getKind() != Kind.LAMBDA_EXPRESSION)) {
             path = path.getParentPath();
         }
         

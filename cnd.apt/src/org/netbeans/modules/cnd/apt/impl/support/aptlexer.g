@@ -582,6 +582,7 @@ tokens {
         UNKNOWN,
         FORTRAN_FIXED,
         FORTRAN_FREE,
+        CPP11
     };
 
     public interface APTLexerCallback {
@@ -609,6 +610,8 @@ tokens {
             this.flavor = Flavor.FORTRAN_FIXED;
         } else if(flavor.equalsIgnoreCase(APTLanguageSupport.FLAVOR_FORTRAN_FREE)) {
             this.flavor = Flavor.FORTRAN_FREE;
+        } else if(flavor.equalsIgnoreCase(APTLanguageSupport.FLAVOR_CPP11)) {
+            this.flavor = Flavor.CPP11;
         } else {
             this.flavor = Flavor.UNKNOWN;
         }
@@ -671,6 +674,15 @@ tokens {
         }
         errorCount++;
     }
+
+    private boolean isCPlusPlus() {
+        return lang == Language.CPP;
+    }
+
+    private boolean isCPlusPlus11() {
+        return isCPlusPlus() && flavor == Flavor.CPP11;
+    }
+
 /*
     protected void printf(String pattern, int i) {
         Printf.printf(pattern, new Object[] { new Integer(i) });
@@ -1012,14 +1024,18 @@ FIRST_COLON options { constText=true; } :
 
 FIRST_LESS :
     ( 
-    '<' (options{generateAmbigWarnings = false;}:
-        {isAfterInclude()}? H_char_sequence ('>')? {$setType(SYS_INCLUDE_STRING);setAfterInclude(false);}
-        | '=' {$setType(LESSTHANOREQUALTO);}            //LESSTHANOREQUALTO     : "<=" ;
-        | '%' {$setType(LCURLY);}                       //LCURLY                : "<%" ;
-        | ':' {$setType(LSQUARE);}                      //LSQUARE               : "<:" ;
-        | {$setType(LESSTHAN);}                         //LESSTHAN              : "<" ;
-        | '<' ({$setType(SHIFTLEFT);}                   //SHIFTLEFT             : "<<" ;
-               | '=' {$setType(SHIFTLEFTEQUAL);}))      //SHIFTLEFTEQUAL        : "<<=" ;
+        // C++11 standard - 2.5 p3, bullet 2
+        ({isCPlusPlus11()}? "<::" ~(':'|'>')) => '<' {$setType(LESSTHAN);}
+    | 
+        ('<' (options{generateAmbigWarnings = false;}:
+            {isAfterInclude()}? H_char_sequence ('>')? {$setType(SYS_INCLUDE_STRING);setAfterInclude(false);}
+            | '=' {$setType(LESSTHANOREQUALTO);}            //LESSTHANOREQUALTO     : "<=" ;
+            | '%' {$setType(LCURLY);}                       //LCURLY                : "<%" ;
+            | ':' {$setType(LSQUARE);}                      //LSQUARE               : "<:" ;
+            | {$setType(LESSTHAN);}                         //LESSTHAN              : "<" ;
+            | '<' ({$setType(SHIFTLEFT);}                   //SHIFTLEFT             : "<<" ;
+                   | '=' {$setType(SHIFTLEFTEQUAL);}))      //SHIFTLEFTEQUAL        : "<<=" ;
+        )
     );
 
 /*

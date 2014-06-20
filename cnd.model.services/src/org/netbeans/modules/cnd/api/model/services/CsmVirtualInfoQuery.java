@@ -344,13 +344,13 @@ public abstract class CsmVirtualInfoQuery {
                 CsmMethod firstFound, CsmMethod lastFound,
                 Map<CsmMethod, CsmOverrideInfo> result, Overridden overridden) {
             
+            boolean virtual = false;
             boolean theLastInHierarchy;
             if (cls == null || antilLoop.contains(cls.getQualifiedName())) {
                 theLastInHierarchy = true;
             } else {
                 antilLoop.addLast(cls.getQualifiedName());
                 try {
-                    boolean virtual = false;
                     Iterator<CsmMember> classMembers = CsmSelect.getClassMembers(cls, filter);
                     while(classMembers.hasNext()) {
                         CsmMember member = classMembers.next();
@@ -407,7 +407,7 @@ public abstract class CsmVirtualInfoQuery {
                     return true;
                 }
             }
-            return false;
+            return virtual;
         }
         
         @Override

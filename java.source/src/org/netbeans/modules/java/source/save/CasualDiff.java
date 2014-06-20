@@ -45,55 +45,143 @@ package org.netbeans.modules.java.source.save;
 
 import com.sun.source.doctree.DocCommentTree;
 import com.sun.source.doctree.DocTree;
-import static com.sun.source.doctree.DocTree.Kind.RETURN;
-import org.netbeans.api.java.source.WorkingCopy;
-import com.sun.tools.javac.util.Names;
-import java.util.*;
 import com.sun.source.tree.*;
-import com.sun.source.util.TreePath;
-import java.util.logging.Logger;
-import org.netbeans.api.java.source.Comment.Style;
-import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.modules.java.source.transform.FieldGroupTree;
-import static com.sun.source.tree.Tree.*;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.DocSourcePositions;
+import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.api.JavacTrees;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.java.source.builder.CommentHandlerService;
-import org.netbeans.api.java.source.Comment;
-import org.netbeans.modules.java.source.query.CommentHandler;
-import org.netbeans.modules.java.source.query.CommentSet;
 import com.sun.tools.javac.code.*;
 import com.sun.tools.javac.tree.DCTree;
-import com.sun.tools.javac.tree.DCTree.*;
+import com.sun.tools.javac.tree.DCTree.DCAttribute;
+import com.sun.tools.javac.tree.DCTree.DCAuthor;
+import com.sun.tools.javac.tree.DCTree.DCComment;
+import com.sun.tools.javac.tree.DCTree.DCDeprecated;
+import com.sun.tools.javac.tree.DCTree.DCDocComment;
+import com.sun.tools.javac.tree.DCTree.DCDocRoot;
+import com.sun.tools.javac.tree.DCTree.DCEndElement;
+import com.sun.tools.javac.tree.DCTree.DCEntity;
+import com.sun.tools.javac.tree.DCTree.DCErroneous;
+import com.sun.tools.javac.tree.DCTree.DCIdentifier;
+import com.sun.tools.javac.tree.DCTree.DCInheritDoc;
+import com.sun.tools.javac.tree.DCTree.DCLink;
+import com.sun.tools.javac.tree.DCTree.DCLiteral;
+import com.sun.tools.javac.tree.DCTree.DCParam;
+import com.sun.tools.javac.tree.DCTree.DCReference;
+import com.sun.tools.javac.tree.DCTree.DCReturn;
+import com.sun.tools.javac.tree.DCTree.DCSee;
+import com.sun.tools.javac.tree.DCTree.DCSerial;
+import com.sun.tools.javac.tree.DCTree.DCSerialData;
+import com.sun.tools.javac.tree.DCTree.DCSerialField;
+import com.sun.tools.javac.tree.DCTree.DCSince;
+import com.sun.tools.javac.tree.DCTree.DCStartElement;
+import com.sun.tools.javac.tree.DCTree.DCText;
+import com.sun.tools.javac.tree.DCTree.DCThrows;
+import com.sun.tools.javac.tree.DCTree.DCUnknownBlockTag;
+import com.sun.tools.javac.tree.DCTree.DCUnknownInlineTag;
+import com.sun.tools.javac.tree.DCTree.DCValue;
+import com.sun.tools.javac.tree.DCTree.DCVersion;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.*;
+import com.sun.tools.javac.tree.JCTree.JCAnnotatedType;
+import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
+import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
+import com.sun.tools.javac.tree.JCTree.JCAssert;
+import com.sun.tools.javac.tree.JCTree.JCAssign;
+import com.sun.tools.javac.tree.JCTree.JCAssignOp;
+import com.sun.tools.javac.tree.JCTree.JCBinary;
+import com.sun.tools.javac.tree.JCTree.JCBlock;
+import com.sun.tools.javac.tree.JCTree.JCBreak;
+import com.sun.tools.javac.tree.JCTree.JCCase;
+import com.sun.tools.javac.tree.JCTree.JCCatch;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.JCTree.JCConditional;
+import com.sun.tools.javac.tree.JCTree.JCContinue;
+import com.sun.tools.javac.tree.JCTree.JCDoWhileLoop;
+import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
+import com.sun.tools.javac.tree.JCTree.JCErroneous;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCForLoop;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
+import com.sun.tools.javac.tree.JCTree.JCIf;
+import com.sun.tools.javac.tree.JCTree.JCImport;
+import com.sun.tools.javac.tree.JCTree.JCInstanceOf;
+import com.sun.tools.javac.tree.JCTree.JCLabeledStatement;
+import com.sun.tools.javac.tree.JCTree.JCLambda;
+import com.sun.tools.javac.tree.JCTree.JCLiteral;
+import com.sun.tools.javac.tree.JCTree.JCMemberReference;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
+import com.sun.tools.javac.tree.JCTree.JCModifiers;
+import com.sun.tools.javac.tree.JCTree.JCNewArray;
+import com.sun.tools.javac.tree.JCTree.JCNewClass;
+import com.sun.tools.javac.tree.JCTree.JCParens;
+import com.sun.tools.javac.tree.JCTree.JCPrimitiveTypeTree;
+import com.sun.tools.javac.tree.JCTree.JCReturn;
+import com.sun.tools.javac.tree.JCTree.JCStatement;
+import com.sun.tools.javac.tree.JCTree.JCSwitch;
+import com.sun.tools.javac.tree.JCTree.JCSynchronized;
+import com.sun.tools.javac.tree.JCTree.JCThrow;
+import com.sun.tools.javac.tree.JCTree.JCTry;
+import com.sun.tools.javac.tree.JCTree.JCTypeApply;
+import com.sun.tools.javac.tree.JCTree.JCTypeCast;
+import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
+import com.sun.tools.javac.tree.JCTree.JCTypeUnion;
+import com.sun.tools.javac.tree.JCTree.JCUnary;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.JCTree.JCWhileLoop;
+import com.sun.tools.javac.tree.JCTree.JCWildcard;
+import com.sun.tools.javac.tree.JCTree.LetExpr;
+import com.sun.tools.javac.tree.JCTree.Tag;
+import com.sun.tools.javac.tree.JCTree.TypeBoundKind;
 import com.sun.tools.javac.tree.Pretty;
 import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
+import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.util.Position;
 import java.lang.reflect.Method;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CodeStyle;
+import org.netbeans.api.java.source.Comment;
+import org.netbeans.api.java.source.Comment.Style;
+import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
+import org.netbeans.modules.java.source.query.CommentHandler;
+import org.netbeans.modules.java.source.query.CommentSet;
+import org.netbeans.modules.java.source.save.ListMatcher.Operation;
+import org.netbeans.modules.java.source.save.ListMatcher.ResultItem;
+import org.netbeans.modules.java.source.save.ListMatcher.Separator;
+import org.netbeans.modules.java.source.save.PositionEstimator.Direction;
+import org.netbeans.modules.java.source.transform.FieldGroupTree;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
+
+import static com.sun.source.doctree.DocTree.Kind.RETURN;
+import static com.sun.source.tree.Tree.*;
+import static com.sun.tools.javac.code.Flags.*;
 import static java.util.logging.Level.*;
 
 import static org.netbeans.modules.java.source.save.ListMatcher.*;
-import static com.sun.tools.javac.code.Flags.*;
-import java.util.Map.Entry;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.editor.indent.api.Indent;
 
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
-import org.openide.util.Exceptions;
 
 public class CasualDiff {
 
@@ -261,7 +349,7 @@ public class CasualDiff {
             }
         }
 
-        td.printer.print(origText.substring(lineStart, start));
+        td.copyTo(lineStart, start, td.printer);
         td.diffTree(oldTree, newTree, (JCTree) (oldTreePath.getParentPath() != null ? oldTreePath.getParentPath().getLeaf() : null), new int[] {start, bounds[1]});
         String resultSrc = td.printer.toString().substring(start - lineStart);
         if (!td.printer.reindentRegions.isEmpty()) {
@@ -325,7 +413,8 @@ public class CasualDiff {
         String originalText = isCUT ? origText : origText.substring(start, end);
         userInfo.putAll(td.diffInfo);
 
-        return td.checkDiffs(DiffUtilities.diff(originalText, resultSrc, start, td.readSections(diffContext.origText.length(), resultSrc.length())));
+        return td.checkDiffs(DiffUtilities.diff(originalText, resultSrc, start, 
+                td.readSections(originalText.length(), resultSrc.length(), lineStart, start), lineStart));
     }
     
     private static class SectKey {
@@ -333,14 +422,33 @@ public class CasualDiff {
         SectKey(int off) { this.off = off; }
     }
     
-    private int[] readSections(int l1, int l2) {
+    /**
+     * Reads the section map. While the printer produced the text matching the region
+     * starting at 'start', the diff will only cover text starting and textStart, which may
+     * be in the middle of the line. the blockSequenceMap was filled by the printer,
+     * so offsets may need to be moved backwards.
+     * 
+     * @param l1 length of the original text
+     * @param l2 length of the new text
+     * @param printerStart printer start
+     * @param diffStart
+     * @return 
+     */
+    private int[] readSections(int l1, int l2, int printerStart, int diffStart) {
         Map<Integer, Integer> seqMap = blockSequenceMap;
         if (seqMap.isEmpty()) {
-            return new int[] { l1, l2 };
+            // must offset the lengths, they come from the origtext/resultsrc, which may be already 
+            // only substrings of the printed area.
+            int delta = diffStart - printerStart;
+            return new int[] { l1 + delta, l2 + delta };
         }
         int[] res = new int[seqMap.size() * 2];
         int p = 0;
         for (Map.Entry<Integer, Integer> en : seqMap.entrySet()) {
+            int point = en.getKey();
+            if (point < printerStart || point > diffStart + l2) {
+                continue;
+            }
             res[p++] = en.getKey();
             res[p++] = en.getValue();
         }
@@ -1900,6 +2008,10 @@ public class CasualDiff {
         int localPointer = bounds[0];
         // lhs
         int[] lhsBounds = getBounds(oldT.lhs);
+        if (lhsBounds[0] < 0) {
+            lhsBounds[0] = getOldPos(oldT.rhs);
+            lhsBounds[1] = -1;
+        }
         copyTo(localPointer, lhsBounds[0]);
         localPointer = diffTree(oldT.lhs, newT.lhs, lhsBounds);
         int[] rhsBounds = getBounds(oldT.rhs);
@@ -2453,7 +2565,15 @@ public class CasualDiff {
             Name oldEnclClassName = printer.enclClassName;
             printer.enclClassName = null;
             suppressParameterTypes = newT.paramKind == JCLambda.ParameterKind.IMPLICIT;
-            localPointer = diffParameterList(oldT.params, newT.params, null, posHint, Measure.MEMBER);
+            // check, if there are already written parenthesis
+            JavaTokenId[] parens = null;
+            if(newT.params.size() > 1) {
+                JavaTokenId id = moveFwdToOneOfTokens(tokenSequence, oldT.params.isEmpty() ? posHint : endPos(oldT.params.last()), LAMBDA_PARAM_END_TOKENS);
+                if (id != JavaTokenId.RPAREN) {
+                    parens = new JavaTokenId[] { JavaTokenId.LPAREN, JavaTokenId.RPAREN };
+                }
+            }
+            localPointer = diffParameterList(oldT.params, newT.params, parens, posHint, Measure.MEMBER);
             suppressParameterTypes = false;
             printer.enclClassName = oldEnclClassName;
             parameterPrint = false;
@@ -2668,6 +2788,30 @@ public class CasualDiff {
               return matchAnnotatedType((JCAnnotatedType) t1, (JCAnnotatedType) t2);
           case LAMBDA:
               return matchLambda((JCLambda)t1, (JCLambda)t2);
+          case ERRONEOUS: {
+              // errors match, iff their source texts match
+              SourcePositions sps = this.diffContext.trees.getSourcePositions();
+              int a1 = (int)sps.getStartPosition(diffContext.origUnit, t1);
+              int a2 = (int)sps.getEndPosition(diffContext.origUnit, t1);
+              
+              int b1 = (int)sps.getStartPosition(diffContext.origUnit, t2);
+              int b2 = (int)sps.getEndPosition(diffContext.origUnit, t2);
+              
+              if (a1 == b1 && a2 == b2) {
+                  return true;
+              }
+              
+              if (a1 == NOPOS || a2 == NOPOS || b1 == NOPOS || b2 == NOPOS) {
+                  return false;
+              }
+              if (a1 == -1 || a2 == -1 || b1 == -1 || b2 == -1) {
+                  return false;
+              }
+              String sa = diffContext.origText.substring(a1, a2);
+              String sb = diffContext.origText.substring(b1, b2);
+              
+              return sa.equals(sb);
+          }
           default:
               String msg = ((com.sun.source.tree.Tree)t1).getKind().toString() +
                       " " + t1.getClass().getName();
@@ -2937,7 +3081,7 @@ public class CasualDiff {
             return pos;
         }
         ResultItem<JCTree>[] result = matcher.getResult();
-        if (printParens && oldList.isEmpty()) {
+        if (printParens/* && oldList.isEmpty()*/) {
             printer.print(makeAround[0].fixedText());
         }
         int oldIndex = 0;
@@ -3045,7 +3189,7 @@ public class CasualDiff {
 //                printer.print(";");
             }
         }
-        if (printParens && oldList.isEmpty()) {
+        if (printParens/* && oldList.isEmpty()*/) {
             printer.print(makeAround[1].fixedText());
         }
         if (oldList.isEmpty()) {
@@ -4506,6 +4650,21 @@ public class CasualDiff {
         }
         return Math.max(minPos, pos);
     }
+    
+    private int getPosAfterCommentStart(Tree t, int minPos) {
+        CommentSet cs = getCommentsForTree(t, true);
+        List<Comment> cmm = cs.getComments(CommentSet.RelativePosition.PRECEDING);
+        if (cmm.isEmpty()) {
+            cmm = cs.getComments(CommentSet.RelativePosition.INNER);
+        }
+        if (cmm.isEmpty()) {
+            return minPos;
+        }
+        Comment c = cmm.get(cmm.size() - 1);
+        int pos = c.endPos();
+        assert pos >= 0;
+        return Math.max(minPos, pos);
+    }
 
     protected int diffTreeImpl(JCTree oldT, JCTree newT, JCTree parent /*used only for modifiers*/, int[] elementBounds) {
         if (oldT == null && newT != null)
@@ -4527,13 +4686,18 @@ public class CasualDiff {
         if (printer.handlePossibleOldTrees(Collections.singletonList(newT), true)) {
             return getCommentCorrectedEndPos(oldT);
         }
-
-        // if comments are the same, diffPredComments will skip them so that printer.print(newT) will
-        // not emit them from the new element. But if printer.print() won't be used (the newT will be merged in rather
-        // than printed anew), then surviving comments have to be printed.
-        int predComments = diffPrecedingComments(oldT, newT, getOldPos(oldT), elementBounds[0], 
-                oldT.getTag() == Tag.TOPLEVEL && diffContext.forceInitialComment);
-        int retVal = -1;
+        
+        boolean handleImplicitLambda = parent != null && parent.hasTag(Tag.LAMBDA) && ((JCLambda)parent).params.size() == 1
+                && ((JCLambda)parent).params.get(0) == oldT &&((JCLambda)parent).paramKind == JCLambda.ParameterKind.IMPLICIT
+                && newT.hasTag(Tag.VARDEF) && ((JCVariableDecl)newT).getType() != null;
+        if (handleImplicitLambda) {
+            tokenSequence.move(getOldPos(parent));
+            if (tokenSequence.moveNext() && tokenSequence.token().id() == JavaTokenId.LPAREN) {
+                handleImplicitLambda = false;
+            } else {
+                printer.print("(");
+            }
+        }
 
         if (oldT.getTag() != newT.getTag()) {
             if (((compAssign.contains(oldT.getKind()) && compAssign.contains(newT.getKind())) == false) &&
@@ -4541,7 +4705,7 @@ public class CasualDiff {
                 ((unaries.contains(oldT.getKind()) && unaries.contains(newT.getKind())) == false)) {
                 // different kind of trees found, print the whole new one.
                 int[] oldBounds = getBounds(oldT);
-                elementBounds[0] = Math.abs(predComments);
+                elementBounds[0] = getPosAfterCommentStart(oldT, elementBounds[0]);
                 if (oldBounds[0] > elementBounds[0]) {
                     copyTo(elementBounds[0], oldBounds[0]);
                 }
@@ -4550,6 +4714,13 @@ public class CasualDiff {
                 return getPosAfterCommentEnd(oldT, oldBounds[1]);
             }
         }
+        
+        // if comments are the same, diffPredComments will skip them so that printer.print(newT) will
+        // not emit them from the new element. But if printer.print() won't be used (the newT will be merged in rather
+        // than printed anew), then surviving comments have to be printed.
+        int predComments = diffPrecedingComments(oldT, newT, getOldPos(oldT), elementBounds[0], 
+                oldT.getTag() == Tag.TOPLEVEL && diffContext.forceInitialComment);
+        int retVal = -1;
         if (predComments < 0 && elementBounds[0] < -predComments) {
             copyTo(elementBounds[0], -predComments);
         }
@@ -4775,6 +4946,9 @@ public class CasualDiff {
                   ((com.sun.source.tree.Tree)oldT).getKind().toString() +
                   " " + oldT.getClass().getName();
               throw new AssertionError(msg);
+        }
+        if (handleImplicitLambda) {
+            printer.print(")");
         }
         return diffTrailingComments(oldT, newT, retVal);
     }
@@ -5108,14 +5282,13 @@ public class CasualDiff {
         }
         if (nextBlockBoundary == -1 && boundaries.hasNext()) {
             nextBlockBoundary = boundaries.next();
-        } else {
-            while (nextBlockBoundary != -1 && nextBlockBoundary < from) {
-                if (boundaries.hasNext()) {
-                    nextBlockBoundary = boundaries.next();
-                } else {
-                    nextBlockBoundary = -1;
-                    break;
-                }
+        } 
+        while (nextBlockBoundary != -1 && nextBlockBoundary < from) {
+            if (boundaries.hasNext()) {
+                nextBlockBoundary = boundaries.next();
+            } else {
+                nextBlockBoundary = -1;
+                break;
             }
         }
         // map the boundary if the copied text starts at OR ends at the boundary. E.g. the after-boundary text might be

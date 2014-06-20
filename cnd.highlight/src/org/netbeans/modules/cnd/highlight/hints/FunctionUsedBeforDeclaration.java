@@ -44,43 +44,48 @@ package org.netbeans.modules.cnd.highlight.hints;
 
 import java.util.EnumSet;
 import org.netbeans.modules.cnd.analysis.api.AnalyzerResponse;
-import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
+import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
+import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.EditorEvent;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Alexander Simon
  */
-public class FunctionUsedBeforDeclaration extends CodeAuditInfo {
+public class FunctionUsedBeforDeclaration extends AbstractCodeAudit {
+    
     private FunctionUsedBeforDeclaration(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
         super(id, name, description, defaultSeverity, defaultEnabled, myPreferences);
     }
-    static FunctionUsedBeforDeclaration create(AuditPreferences myPreferences) {
-        String id = NbBundle.getMessage(FunctionUsedBeforDeclaration.class, "FunctionUsedBeforDeclaration.name"); // NOI18N
-        String description = NbBundle.getMessage(FunctionUsedBeforDeclaration.class, "FunctionUsedBeforDeclaration.description"); // NOI18N
-        return new FunctionUsedBeforDeclaration(id, id, description, "warning", false, myPreferences); // NOI18N
-    }
     
     @Override
-    void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+    public boolean isSupportedEvent(EditorEvent kind) {
+        return kind == EditorEvent.FileBased;
+    }
+
+    @Override
+    public void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         CsmFile file = request.getFile();
         if (file != null) {
             if (request.isCancelled()) {
                 return;
             }
             CsmFileReferences.getDefault().accept(
-                    request.getFile(), new ReferenceVisitor(request, response),
+                    request.getFile(), request.getDocument(), new ReferenceVisitor(request, response),
                     CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
         }
     }
@@ -123,23 +128,33 @@ public class FunctionUsedBeforDeclaration extends CodeAuditInfo {
                         if (funDecl.getStartOffset() <= ref.getStartOffset()) {
                             return;
                         }
-                        CsmErrorInfo.Severity severity;
-                        if ("error".equals(minimalSeverity())) { // NOI18N
-                            severity = CsmErrorInfo.Severity.ERROR;
-                        } else {
-                            severity = CsmErrorInfo.Severity.WARNING;
-                        }
+                        CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
                         String message = NbBundle.getMessage(FunctionUsedBeforDeclaration.class, "FunctionUsedBeforDeclaration.message", fun.getName()); // NOI18N
                         if (response instanceof AnalyzerResponse) {
                             ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, ref.getContainingFile().getFileObject(),
-                                    new ErrorInfoImpl(getID()+"\n"+message, severity, ref.getStartOffset(), ref.getEndOffset())); // NOI18N
+                                    new ErrorInfoImpl(CsmHintProvider.NAME, getID(), getName()+"\n"+message, severity, ref.getStartOffset(), ref.getEndOffset())); // NOI18N
                         } else {
-                            response.addError(new ErrorInfoImpl(message, severity, ref.getStartOffset(), ref.getEndOffset()));
+                            response.addError(new ErrorInfoImpl(CsmHintProvider.NAME, getID(), message, severity, ref.getStartOffset(), ref.getEndOffset()));
                         }
                         
                     }
                 }
             }
+        }
+
+        @Override
+        public boolean cancelled() {
+            return request.isCancelled();
+        }
+    }
+    
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CsmHintProvider.NAME, service = CodeAuditFactory.class, position = 3000)
+    public static final class Factory implements CodeAuditFactory {
+        @Override
+        public AbstractCodeAudit create(AuditPreferences preferences) {
+            String id = NbBundle.getMessage(FunctionUsedBeforDeclaration.class, "FunctionUsedBeforDeclaration.name"); // NOI18N
+            String description = NbBundle.getMessage(FunctionUsedBeforDeclaration.class, "FunctionUsedBeforDeclaration.description"); // NOI18N
+            return new FunctionUsedBeforDeclaration(id, id, description, "warning", false, preferences); // NOI18N
         }
     }
 }

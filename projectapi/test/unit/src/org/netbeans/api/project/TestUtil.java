@@ -44,6 +44,8 @@
 
 package org.netbeans.api.project;
 
+import java.awt.Component;
+import java.awt.Graphics;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,9 +56,11 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import java.util.logging.Logger;
+import javax.swing.Icon;
 import junit.framework.Assert;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.ProjectFactory;
+import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectState;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -187,7 +191,22 @@ public final class TestUtil {
      */
     public static Lookup LOOKUP = null;
 
-    private static final class TestProjectFactory implements ProjectFactory {
+    public static final String TEST_PROJECT_TYPE = "test.project.type";
+    public static final Icon TEST_PROJECT_ICON = new Icon() {
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public int getIconWidth() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public int getIconHeight() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+    };
+    private static final class TestProjectFactory implements ProjectFactory, ProjectFactory2 {
         
         TestProjectFactory() {}
         
@@ -232,6 +251,21 @@ public final class TestUtil {
             return testproject != null && testproject.isFolder();
         }
         
+        @Override
+        public ProjectManager.Result isProject2(FileObject dir) {
+            FileObject testproject = dir.getFileObject("testproject");
+            if(testproject != null && testproject.isFolder() && testproject.getFileObject("broken") != null) {
+                return new ProjectManager.Result(TEST_PROJECT_ICON);
+    }
+            if(testproject != null && testproject.isFolder()) {
+                return new ProjectManager.Result(
+                            dir.getName(), 
+                            TEST_PROJECT_TYPE, 
+                            TEST_PROJECT_ICON);
+            }
+            return null;
+        }
+    
     }
     
     private static final class TestProject implements Project {

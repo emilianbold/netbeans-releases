@@ -213,6 +213,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.77</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.web.common</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -401,10 +410,14 @@
             <friend-packages>
                 <friend>org.netbeans.modules.html.angular</friend>
                 <friend>org.netbeans.modules.html.knockout</friend>
+                <friend>org.netbeans.modules.html.ojet</friend>
                 <friend>org.netbeans.modules.javascript2.extjs</friend>
                 <friend>org.netbeans.modules.javascript2.jquery</friend>
                 <friend>org.netbeans.modules.javascript2.knockout</friend>
+                <friend>org.netbeans.modules.javascript2.prototypejs</friend>
+                <friend>org.netbeans.modules.javascript2.requirejs</friend>
                 <friend>org.netbeans.modules.nodejscodecompletion</friend>
+                <package>org.netbeans.modules.javascript2.editor.api</package>
                 <package>org.netbeans.modules.javascript2.editor.api.lexer</package>
                 <package>org.netbeans.modules.javascript2.editor.index</package>
                 <package>org.netbeans.modules.javascript2.editor.model</package>

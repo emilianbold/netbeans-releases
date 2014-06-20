@@ -77,7 +77,7 @@ public class Utilities {
     }
     
     public static String getPrefName (ODCSServer server, String name)  {
-        return server.getUrl().getHost() + name;
+        return server.getUrl().toString() + name;
     }
     
     /**
@@ -98,7 +98,7 @@ public class Utilities {
         if (password != null) {
             preferences.put(Utilities.getPrefName(server, ODCS_USERNAME_PREF), username); //NOI18N
             Keyring.save(passwordPref, password,
-                    Utilities_password_keyring_description(server.getUrl().getHost()));
+                    Utilities_password_keyring_description(server.getUrl().toString()));
         } else {
             preferences.remove(Utilities.getPrefName(server, ODCS_USERNAME_PREF)); //NOI18N
             Keyring.delete(passwordPref);

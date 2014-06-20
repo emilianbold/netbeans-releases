@@ -52,6 +52,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation;
 import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
@@ -242,9 +243,25 @@ public final class QuerySupport {
      * @return a {@link SourceLevelQueryImplementation2} to find out source level of Java source files.
      * @since 1.22
      */
-    public static SourceLevelQueryImplementation2 createSourceLevelQuery2(@NonNull PropertyEvaluator evaluator) {
+    public static SourceLevelQueryImplementation2 createSourceLevelQuery2(@NonNull PropertyEvaluator evaluator) {        
+        return createSourceLevelQuery2(
+            evaluator,
+            CommonProjectUtils.J2SE_PLATFORM_TYPE);
+    }
+
+    /**
+     * Create a new query to find out source level of Java source files (SourceLevelQueryImplementation2).
+     * @param evaluator {@link PropertyEvaluator} used for obtaining needed properties.
+     * @param platformType the type of platform, for example "j2se"
+     * @return a {@link SourceLevelQueryImplementation2} to find out source level of Java source files.
+     * @since 1.72
+     */
+    public static SourceLevelQueryImplementation2 createSourceLevelQuery2(
+        @NonNull PropertyEvaluator evaluator,
+        @NonNull String platformType) {
         Parameters.notNull("evaluator", evaluator); // NOI18N
-        return new SourceLevelQueryImpl2(evaluator);
+        Parameters.notNull("platformType", platformType);   //NOI18N
+        return new SourceLevelQueryImpl2(evaluator, platformType);
     }
 
     /**

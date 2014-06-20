@@ -45,6 +45,7 @@ package org.netbeans.modules.php.nette.tester.preferences;
 import java.io.File;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.nette.tester.TesterTestingProvider;
@@ -60,6 +61,8 @@ public final class TesterPreferences {
     private static final String PHP_INI_PATH = "php.ini.path"; // NOI18N
     private static final String TESTER_ENABLED = "tester.enabled"; // NOI18N
     private static final String TESTER_PATH = "tester.path"; // NOI18N
+    private static final String BINARY_ENABLED = "binary.enabled"; // NOI18N
+    private static final String BINARY_EXECUTABLE = "binary.executable"; // NOI18N
 
 
     private TesterPreferences() {
@@ -97,6 +100,27 @@ public final class TesterPreferences {
 
     public static void setTesterPath(PhpModule phpModule, String testerPath) {
         getPreferences(phpModule).put(TESTER_PATH, relativizePath(phpModule, testerPath));
+    }
+
+    public static boolean isBinaryEnabled(PhpModule phpModule) {
+        return getPreferences(phpModule).getBoolean(BINARY_ENABLED, false);
+    }
+
+    public static void setBinaryEnabled(PhpModule phpModule, boolean binaryEnabled) {
+        getPreferences(phpModule).putBoolean(BINARY_ENABLED, binaryEnabled);
+    }
+
+    @CheckForNull
+    public static String getBinaryExecutable(PhpModule phpModule) {
+        return getPreferences(phpModule).get(BINARY_EXECUTABLE, null);
+    }
+
+    public static void setBinaryExecutable(PhpModule phpModule, @NullAllowed String binaryExecutable) {
+        if (binaryExecutable == null) {
+            getPreferences(phpModule).remove(BINARY_EXECUTABLE);
+        } else {
+            getPreferences(phpModule).put(BINARY_EXECUTABLE, binaryExecutable);
+        }
     }
 
     private static Preferences getPreferences(PhpModule module) {

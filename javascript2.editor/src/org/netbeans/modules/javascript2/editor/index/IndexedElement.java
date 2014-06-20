@@ -55,6 +55,7 @@ import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.model.impl.JsElementImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
@@ -175,6 +176,51 @@ public class IndexedElement implements JsElement {
         }
 
         
+        return elementDocument;
+    }
+    
+    protected static IndexDocument createDocumentForReference(JsObjectReference object, String fqn, IndexingSupport support, Indexable indexable) {
+        IndexDocument elementDocument = support.createDocument(indexable);
+        elementDocument.addPair(JsIndex.FIELD_BASE_NAME, object.getName(), true, true);
+        elementDocument.addPair(JsIndex.FIELD_FQ_NAME,  fqn + (object.isAnonymous() ? ANONYMOUS_POSFIX 
+                : object.getJSKind() == Kind.PARAMETER ? PARAMETER_POSTFIX : OBJECT_POSFIX), true, true);
+        elementDocument.addPair(JsIndex.FIELD_OFFSET, Integer.toString(object.getOffset()), true, true);            
+        elementDocument.addPair(JsIndex.FIELD_FLAG, Integer.toString(Flag.getFlag(object)), false, true);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(object.getOriginal().getFullyQualifiedName());
+        sb.append(":"); //NOI18N
+        sb.append(object.getOffset());
+        sb.append(":"); //NOI18N
+        sb.append("1");  //NOI18N
+        elementDocument.addPair(JsIndex.FIELD_ASSIGNMENTS, sb.toString(), false, true);
+        
+        if (object.getJSKind().isFunction()) {
+            sb = new StringBuilder();
+            for(TypeUsage type : ((JsFunction)object).getReturnTypes()) {
+                sb.append(type.getType());
+                sb.append(","); //NOI18N
+                sb.append(type.getOffset());
+                sb.append(","); //NOI18N
+                sb.append(type.isResolved() ? "1" : "0");  //NOI18N
+                sb.append("|");
+            }
+            elementDocument.addPair(JsIndex.FIELD_RETURN_TYPES, sb.toString(), false, true);
+            elementDocument.addPair(JsIndex.FIELD_PARAMETERS, codeParameters(((JsFunction)object).getParameters()), false, true);
+        }
+        
+        if (object instanceof JsArray) {
+            sb = new StringBuilder();
+            for(TypeUsage type : ((JsArray)object).getTypesInArray()) {
+                sb.append(type.getType());
+                sb.append(","); //NOI18N
+                sb.append(type.getOffset());
+                sb.append(","); //NOI18N
+                sb.append(type.isResolved() ? "1" : "0");  //NOI18N
+                sb.append("|");
+            }
+            elementDocument.addPair(JsIndex.FIELD_ARRAY_TYPES, sb.toString(), false, true);
+        }
         return elementDocument;
     }
     

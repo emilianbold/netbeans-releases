@@ -83,10 +83,20 @@ public final class NamespaceUtils {
      */
     @CheckForNull
     public static <T> T getForNs(Map<String, T> map, String ns) {
-        if (ns.endsWith("/")) { //NOI18N
-            ns = ns.substring(0, ns.length() - 1);
+        T result = checkMapForNs(map, ns);
+
+        // try out shortened URL without ending slash if available - issue #226002
+        if (result == null) {
+            if (ns.endsWith("/")) { //NOI18N
+                ns = ns.substring(0, ns.length() - 1);
+                return checkMapForNs(map, ns);
+            }
         }
 
+        return result;
+    }
+
+    private static <T> T checkMapForNs(Map<String, T> map, String ns) {
         T result = map.get(ns);
         if (result == null) {
             if (NS_MAPPING.containsKey(ns)) {

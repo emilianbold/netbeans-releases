@@ -204,6 +204,14 @@ public class Util {
                         event.getNewValue() != null &&
                         event.getNewValue() != JOptionPane.UNINITIALIZED_VALUE) {
 		    if (new Integer(JOptionPane.YES_OPTION).equals(pane.getValue())) {
+                        // IOException from CopyFiles constructor created this error dialog
+                        // most probably because netbeans.import could not be located,
+                        // so discard the error dialog, stop the importing task and return
+                        if(pane.getMessageType() == JOptionPane.ERROR_MESSAGE) {
+                            dialog.setVisible(false);
+                            task.done();
+                            return;
+                        }
 			((JButton) pane.getOptions()[0]).setEnabled(false);
 			((JButton) pane.getOptions()[1]).setEnabled(false);
 			progressBar.setVisible(true);
@@ -250,7 +258,7 @@ public class Util {
 	@Override
 	public Void doInBackground() throws Exception {
 	    progressBar.setString(NbBundle.getMessage (AutoUpgrade.class, "MSG_ImportingSettings"));
-	    AutoUpgrade.doCopyToUserDir(sourceFolder);
+            AutoUpgrade.doCopyToUserDir(sourceFolder);
             //migrates SystemOptions, converts them as a Preferences
 	    progressBar.setString(NbBundle.getMessage (AutoUpgrade.class, "MSG_MigratingSystemOptions"));
             Importer.doImport();

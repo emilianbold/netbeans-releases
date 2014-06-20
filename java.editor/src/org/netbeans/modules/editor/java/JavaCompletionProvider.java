@@ -3113,8 +3113,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     e.getEnclosingElement().getKind() == METHOD && e.getEnclosingElement().getEnclosingElement().getKind() == FIELD))) &&
                                     !illegalForwardRefs.contains(e);
                         case FIELD:
-                            if (e.getSimpleName().contentEquals(THIS_KEYWORD) || e.getSimpleName().contentEquals(SUPER_KEYWORD))
+                            if (e.getSimpleName().contentEquals(THIS_KEYWORD)) {
+                                if (e.asType().getKind() == TypeKind.DECLARED && ((DeclaredType)e.asType()).asElement() == enclClass)
+                                    return Utilities.startsWith(e.getSimpleName().toString(), prefix) && !isStatic;
+                            } else if (e.getSimpleName().contentEquals(SUPER_KEYWORD)) {
                                 return Utilities.startsWith(e.getSimpleName().toString(), prefix) && !isStatic;
+                            }
                         case ENUM_CONSTANT:
                             return startsWith(env, e.getSimpleName().toString()) &&
                                     !illegalForwardRefs.contains(e) &&
@@ -3503,7 +3507,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (!ctorSeen[0] && kinds.contains(CONSTRUCTOR) && elem.getKind().isInterface()) {
                 results.add(javaCompletionItemFactory.createDefaultConstructorItem((TypeElement)elem, anchorOffset, isOfSmartType(env, type, smartTypes)));
             }
-            if (isStatic && elem.getKind().isInterface() && env.getController().getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0) {
+            if (isStatic && enclClass != null && elem.getKind().isInterface() && env.getController().getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0) {
                 for (TypeMirror iface : enclClass.getInterfaces()) {
                     if (((DeclaredType)iface).asElement() == elem) {
                         results.add(javaCompletionItemFactory.createKeywordItem(SUPER_KEYWORD, null, anchorOffset, isOfSmartType(env, type, smartTypes)));
@@ -4401,12 +4405,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (dctor2generate == null || ((ExecutableElement)dctor2generate).getParameters().size() > ctor.getParameters().size()) {
                                 dctor2generate = ctor;
                             }
-                            ctors2generate.put(ctor, new boolean[] {uffSize > 0 && uffSize < ufSize, ufSize > 0});
+                            ctors2generate.put(ctor, new boolean[] {true, ufSize > 0 && uffSize < ufSize});
                         }
                     }
                 } else {
                     dctor2generate = te;
-                    ctors2generate.put(null, new boolean[] {uffSize > 0 && uffSize < ufSize, ufSize > 0});
+                    ctors2generate.put(null, new boolean[] {true, ufSize > 0 && uffSize < ufSize});
                 }
                 for (ExecutableElement ee : constructors) {
                     if (!controller.getElementUtilities().isSynthetic(ee)) {
@@ -4417,7 +4421,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         for (Map.Entry<ExecutableElement, boolean[]> entry : ctors2generate.entrySet()) {
                             List<? extends VariableElement> params = entry.getKey() != null ? entry.getKey().getParameters() : Collections.<VariableElement>emptyList();
                             int paramSize = params.size();
-                            if (uffSize > 0 && uffSize < ufSize && parameters.size() == paramSize + uffSize) {
+                            if (parameters.size() == paramSize + uffSize) {
                                 Iterator<? extends VariableElement> proposed = uninitializedFinalFields.iterator();
                                 Iterator<? extends VariableElement> original = parameters.iterator();
                                 boolean same = true;
@@ -4431,7 +4435,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                         entry.getValue()[0] = false;
                                 }
                             }
-                            if (parameters.size() == paramSize + ufSize) {
+                            if (ufSize > 0 && uffSize < ufSize && parameters.size() == paramSize + ufSize) {
                                 Iterator<? extends VariableElement> proposed = uninitializedFields.iterator();
                                 Iterator<? extends VariableElement> original = parameters.iterator();
                                 boolean same = true;
@@ -4452,8 +4456,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                     results.add(javaCompletionItemFactory.createInitializeAllConstructorItem(env.getController(), true, uninitializedFinalFields, dctor2generate.getKind() == CONSTRUCTOR ? (ExecutableElement)dctor2generate : null, te, anchorOffset));
                 }
                 for (Map.Entry<ExecutableElement, boolean[]> entry : ctors2generate.entrySet()) {
-                    if (entry.getValue()[0]) {
-                        results.add(javaCompletionItemFactory.createInitializeAllConstructorItem(env.getController(), false, uninitializedFinalFields, entry.getKey(), te, anchorOffset));
+                    if (!(entry.getKey() == dctor2generate && ((ExecutableType)dctor2generate.asType()).getParameterTypes().isEmpty())) {
+                        if (entry.getValue()[0]) {
+                            results.add(javaCompletionItemFactory.createInitializeAllConstructorItem(env.getController(), false, uninitializedFinalFields, entry.getKey(), te, anchorOffset));
+                        }
                     }
                     if (entry.getValue()[1]) {
                         results.add(javaCompletionItemFactory.createInitializeAllConstructorItem(env.getController(), false, uninitializedFields, entry.getKey(), te, anchorOffset));

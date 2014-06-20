@@ -120,13 +120,13 @@ public class CommitExecutor extends ExecutorSupport {
             committedFiles.remove(file);
             cache.refreshCached(file, repositoryStatus);
         }
+
+        if (cmd.hasFailed()) return;
         
         // no the rest oof the files not actually modified on server - meaning they must be up to date ?
         for (File file : committedFiles) {
             cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UPTODATE);
         }
-
-        if (cmd.hasFailed()) return;
 
     }
 

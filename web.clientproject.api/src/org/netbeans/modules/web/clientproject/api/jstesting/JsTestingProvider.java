@@ -71,53 +71,13 @@ public final class JsTestingProvider {
             }
 
             @Override
-            public String getIdentifier(JsTestingProvider jsTestingProvider) {
-                return jsTestingProvider.getIdentifier();
-            }
-
-            @Override
-            public String getDisplayName(JsTestingProvider jsTestingProvider) {
-                return jsTestingProvider.getDisplayName();
-            }
-
-            @Override
             public boolean isEnabled(JsTestingProvider jsTestingProvider, Project project) {
                 return jsTestingProvider.isEnabled(project);
             }
 
             @Override
-            public void runTests(JsTestingProvider jsTestingProvider, Project project, TestRunInfo runInfo) {
-                jsTestingProvider.runTests(project, runInfo);
-            }
-
-            @Override
-            public FileObject fromServer(JsTestingProvider jsTestingProvider, Project project, URL serverUrl) {
-                return jsTestingProvider.fromServer(project, serverUrl);
-            }
-
-            @Override
-            public URL toServer(JsTestingProvider jsTestingProvider, Project project, FileObject projectFile) {
-                return jsTestingProvider.toServer(project, projectFile);
-            }
-
-            @Override
-            public ProjectCustomizer.CompositeCategoryProvider createCustomizer(JsTestingProvider jsTestingProvider, Project project) {
-                return jsTestingProvider.createCustomizer(project);
-            }
-
-            @Override
             public void notifyEnabled(JsTestingProvider jsTestingProvider, Project project, boolean enabled) {
                 jsTestingProvider.notifyEnabled(project, enabled);
-            }
-
-            @Override
-            public void projectOpened(JsTestingProvider jsTestingProvider, Project project) {
-                jsTestingProvider.projectOpened(project);
-            }
-
-            @Override
-            public void projectClosed(JsTestingProvider jsTestingProvider, Project project) {
-                jsTestingProvider.projectClosed(project);
             }
 
             @Override
@@ -151,6 +111,17 @@ public final class JsTestingProvider {
     @NonNull
     public String getDisplayName() {
         return delegate.getDisplayName();
+    }
+
+    /**
+     * Checks whether this JS testing provider supports code coverage.
+     * @param project target project
+     * @return {@code true} if this provider supports code coverage, {@code false} otherwise
+     * @since 1.58
+     */
+    public boolean isCoverageSupported(@NonNull Project project) {
+        Parameters.notNull("project", project); // NOI18N
+        return delegate.isCoverageSupported(project);
     }
 
     /**

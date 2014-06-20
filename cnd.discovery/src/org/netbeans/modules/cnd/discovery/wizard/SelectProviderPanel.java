@@ -334,6 +334,11 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
             public boolean mergeProjectProperties() {
                 return false;
             }
+
+            @Override
+            public boolean resolveSymbolicLinks() {
+                return wizardDescriptor.isResolveSymbolicLinks();
+            }
         };
         DiscoveryProvider defProvider = (DiscoveryProvider) ((WizardDescriptor)wizardDescriptor).getProperty("PreferedProvider"); // NOI18N
         ProviderItem def = null;

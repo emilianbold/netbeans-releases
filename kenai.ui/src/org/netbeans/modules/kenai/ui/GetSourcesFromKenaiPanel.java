@@ -66,7 +66,13 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.StringTokenizer;
+import java.util.prefs.Preferences;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -77,26 +83,30 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.KenaiSearchPanel.KenaiProjectSearchInfo;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
-import org.netbeans.modules.team.server.api.TeamUIUtils;
+import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.subversion.api.Subversion;
+import org.netbeans.modules.team.ide.spi.IDEServices;
+import org.netbeans.modules.team.ide.spi.SettingsServices;
+import org.netbeans.modules.team.server.api.TeamUIUtils;
+import org.netbeans.modules.team.server.ui.common.DashboardSupport;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
-import org.netbeans.modules.team.ide.spi.IDEServices;
-import org.netbeans.modules.team.ide.spi.SettingsServices;
-import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -528,30 +538,76 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                 @Override
                 public void run() {
                     try {
-                        KenaiFeature features[] = prjAndFeature.kenaiProject.getFeatures(Type.SOURCE);
-                        for (final KenaiFeature feature : features) {
-                            EventQueue.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (KenaiService.Names.MERCURIAL.equals(feature.getService()) ||
-                                        KenaiService.Names.SUBVERSION.equals(feature.getService())) {
-                                        KenaiFeatureListItem item = new KenaiFeatureListItem(prjAndFeature.kenaiProject, feature);
-                                        addElement(item);
-                                        if (prjAndFeature != null &&
-                                            prjAndFeature.kenaiProject.getName().equals(prjAndFeature.kenaiProject.getName()) &&
-                                            prjAndFeature.feature.equals(feature)) {
-                                            setSelectedItem(item);
-                                        }
-                                    }
+                        if(prjAndFeature != null) {
+                            addItem(prjAndFeature.kenaiProject);
+                        } else {
+                            ProjectHandle[] openedProjects = getOpenProjects();
+                            for (ProjectHandle<KenaiProject> prjHandle : openedProjects) {
+                                if (prjHandle != null) {
+                                    addItem(prjHandle.getTeamProject());
                                 }
-                            });
+                            }    
                         }
                     } catch (KenaiException kenaiException) {
                         Exceptions.printStackTrace(kenaiException);
                     }
                 }
+
+                public void addItem(final KenaiProject project) throws KenaiException {
+                    KenaiFeature[] features = project.getFeatures(Type.SOURCE);
+                    for (final KenaiFeature feature : features) {
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (KenaiService.Names.MERCURIAL.equals(feature.getService()) ||
+                                        KenaiService.Names.SUBVERSION.equals(feature.getService())) {
+                                    KenaiFeatureListItem item = new KenaiFeatureListItem(project, feature);
+                                    addElement(item);
+                                    if (prjAndFeature != null &&
+                                            prjAndFeature.kenaiProject.getName().equals(project.getName()) &&
+                                            prjAndFeature.feature.equals(feature)) {
+                                        setSelectedItem(item);
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
             });
         }
+        
+        private ProjectHandle<KenaiProject>[] getOpenProjects() {
+            if (kenai==null) {
+                return new ProjectHandle[0];
+            }
+            String kenaiName = kenai.getUrl().getHost();
+            Preferences prefs = NbPreferences.forModule(DashboardSupport.class).node(DashboardSupport.PREF_ALL_PROJECTS + ("kenai.com".equals(kenaiName) ? "" : "-" + kenaiName)); //NOI18N
+            int count = prefs.getInt(DashboardSupport.PREF_COUNT, 0); //NOI18N
+            ProjectHandle[] handles = new ProjectHandle[count];
+            ArrayList<String> ids = new ArrayList<String>(count);
+            for (int i = 0; i < count; i++) {
+                String id = prefs.get(DashboardSupport.PREF_ID + i, null); //NOI18N
+                if (null != id && id.trim().length() > 0) {
+                    ids.add(id.trim());
+                }
+            }
+
+            HashSet<ProjectHandle> projects = new HashSet<ProjectHandle>(ids.size());
+            ProjectAccessorImpl accessor = ProjectAccessorImpl.getDefault();
+            for (String id : ids) {
+                ProjectHandle handle = accessor.getNonMemberProject(KenaiServer.forKenai(kenai), id, false);
+                if (handle != null) {
+                    projects.add(handle);
+                } else {
+                    //projects=null;
+                }
+            }
+            PasswordAuthentication pa = kenai.getPasswordAuthentication();
+            if (pa!=null) {
+                projects.addAll(accessor.getMemberProjects(KenaiServer.forKenai(kenai), new LoginHandleImpl(pa.getUserName()), false));
+            }
+            return projects.toArray(handles);
+        }        
     }
 
     public static class KenaiFeatureListItem {

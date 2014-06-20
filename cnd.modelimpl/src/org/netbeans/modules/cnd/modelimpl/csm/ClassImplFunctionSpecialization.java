@@ -61,12 +61,14 @@ import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl.InheritanceBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.parser.OffsetableAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
@@ -87,14 +89,16 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
     Collection<CsmMember> members = null;
     
     private ClassImplFunctionSpecialization(AST ast, NameHolder name, CsmFile file) {
-        super(ast, name, file, getStartOffset(ast), getEndOffset(ast));
+        super(ast, name, file, getStartOffset(ast), getStartOffset(ast));
+        // This instantiation is placed before method decl or def, so 
+        // getStartOffset is called two times.
     }
 
     private ClassImplFunctionSpecialization(NameHolder name, CsmDeclaration.Kind kind, CsmFile file, int start, int end) {
         super(name, kind, file, start, end);
     }
     
-    public static ClassImplFunctionSpecialization create(AST ast, CsmScope scope, CsmFile file, String language, FileContent fileContent, boolean register, DeclarationsContainer container) throws AstRendererException {
+    public static ClassImplFunctionSpecialization create(AST ast, CsmScope scope, CsmFile file, String language, FileContent fileContent, boolean register, MutableDeclarationsContainer container) throws AstRendererException {
         assert !APTLanguageSupport.getInstance().isLanguageC(language) : "Function specialization is not allowed in C"; // NOI18N
         
         NameHolder nameHolder = NameHolder.createName(getClassName(ast));
@@ -105,6 +109,7 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
             impl = clsImpl;
         } else {
             impl.init(scope, ast, file, fileContent, language, register);
+            container.addDeclaration(impl);
         }
         nameHolder.addReference(fileContent, impl);
         return impl;
@@ -218,7 +223,12 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
     }
 
     private static CharSequence getClassName(AST ast) {
-        CharSequence funName = CharSequences.create(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true));
+        CharSequence funName;
+        if (CastUtils.isCast(ast)) {
+            funName = CharSequences.create(CastUtils.getFunctionRawName(ast, APTUtils.SCOPE));
+        } else {
+            funName = CharSequences.create(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true));
+        }
         return getClassNameFromFunctionSpecialicationName(funName);
     }
 
@@ -226,41 +236,48 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
         CharSequence[] nameParts = Utils.splitQualifiedName(functionName.toString());
         StringBuilder className = new StringBuilder("");
         for(int i = 0; i < nameParts.length - 1; i++) {
+            if (FunctionImpl.OPERATOR.equals(nameParts[i].toString())) {
+                break;
+            }
             className.append(nameParts[i]);
         }
         return className;
     }
 
-    public static int getStartOffset(AST node) {
-        AST id = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_QUALIFIED_ID);
-        node = (id != null) ? id : node;
-        if( node != null ) {
-            OffsetableAST csmAst = AstUtil.getFirstOffsetableAST(node);
-            if( csmAst != null ) {
-                return csmAst.getOffset();
-            }
-        }
-        return 0;
-    }
-
-    public static int getEndOffset(AST node) {
-        AST id = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_QUALIFIED_ID);
-        node = (id != null) ? id : node;
-        if( node != null ) {
-            AST child = node.getFirstChild();
-            if(child != null) {
-                AST gt = AstUtil.findLastSiblingOfType(child, CPPTokenTypes.GREATERTHAN);
-                if( gt instanceof CsmAST ) {
-                    return ((CsmAST) gt).getEndOffset();
-                }
-            }
-            AST lastChild = AstUtil.getLastChildRecursively(node);
-            if( lastChild instanceof CsmAST ) {
-                return ((CsmAST) lastChild).getEndOffset();
-            }
-        }
-        return 0;
-    }
+// #############################################################################
+// # Commented because these specializations should not be inside declarations
+// # and definitions of methods. 
+// #############################################################################
+//    public static int getStartOffset(AST node) {
+//        AST id = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_QUALIFIED_ID);
+//        node = (id != null) ? id : node;
+//        if( node != null ) {
+//            OffsetableAST csmAst = AstUtil.getFirstOffsetableAST(node);
+//            if( csmAst != null ) {
+//                return csmAst.getOffset();
+//            }
+//        }
+//        return 0;
+//    }
+//
+//    public static int getEndOffset(AST node) {
+//        AST id = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_QUALIFIED_ID);
+//        node = (id != null) ? id : node;
+//        if( node != null ) {
+//            AST child = node.getFirstChild();
+//            if(child != null) {
+//                AST gt = AstUtil.findLastSiblingOfType(child, CPPTokenTypes.GREATERTHAN);
+//                if( gt instanceof CsmAST ) {
+//                    return ((CsmAST) gt).getEndOffset();
+//                }
+//            }
+//            AST lastChild = AstUtil.getLastChildRecursively(node);
+//            if( lastChild instanceof CsmAST ) {
+//                return ((CsmAST) lastChild).getEndOffset();
+//            }
+//        }
+//        return 0;
+//    }
 
     
     public static class ClassFunctionSpecializationBuilder extends ClassSpecializationBuilder {

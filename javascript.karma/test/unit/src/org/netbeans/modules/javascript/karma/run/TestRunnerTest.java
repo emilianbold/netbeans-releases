@@ -57,9 +57,9 @@ public class TestRunnerTest {
         String[] expected = new String[] {
             "Expected 3 to equal 1.",
             "Error: Expected 3 to equal 1.",
-            "at null.<anonymous> (test/ngCookies/cookiesSpec.js:33:15)",
-            "at Object.invoke (src/auto/injector.js:748:28)",
-            "at workFn (src/ngMock/angular-mocks.js:2082:20)",
+            "at null.<anonymous> (/test/ngCookies/cookiesSpec.js:33:15)",
+            "at Object.invoke (/src/auto/injector.js:748:28)",
+            "at workFn (/src/ngMock/angular-mocks.js:2082:20)",
         };
         Assert.assertArrayEquals(expected, TestRunner.processDetails(details));
     }
@@ -72,9 +72,9 @@ public class TestRunnerTest {
                 + "workFn@http://localhost:9876/base/src/ngMock/angular-mocks.js?1381907169000:2082\\n";
         String[] expected = new String[] {
             "Expected 3 to equal 1.",
-            "@test/ngCookies/cookiesSpec.js:33",
-            "invoke@src/auto/injector.js:748",
-            "workFn@src/ngMock/angular-mocks.js:2082",
+            "@/test/ngCookies/cookiesSpec.js:33",
+            "invoke@/src/auto/injector.js:748",
+            "workFn@/src/ngMock/angular-mocks.js:2082",
         };
         Assert.assertArrayEquals(expected, TestRunner.processDetails(details));
     }

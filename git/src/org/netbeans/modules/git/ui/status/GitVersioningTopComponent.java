@@ -151,6 +151,10 @@ public class GitVersioningTopComponent extends TopComponent implements Externali
         VCSContext ctx = VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]));
         setContext(ctx);
     }
+    
+    public boolean hasContext () {
+        return context != null;
+    }
 
     private void refreshContent () {
         if (controller == null) return;  // the component is not showing => nothing to refresh

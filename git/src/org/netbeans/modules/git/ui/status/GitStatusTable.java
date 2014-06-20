@@ -200,7 +200,6 @@ class GitStatusTable extends VCSStatusTable<GitStatusNodeImpl> {
                         @Override
                         public void run () {
                             if (popupIndex == popupViewIndex && menu.isShowing()) {
-                                menu.setVisible(false);
                                 menu.remove(dummyItem);
                                 for (Action a : actions) {
                                     if (a == null) {
@@ -212,7 +211,6 @@ class GitStatusTable extends VCSStatusTable<GitStatusNodeImpl> {
                                 }
                                 menu.pack();
                                 menu.repaint();
-                                menu.setVisible(true);
                             }
                         }
                     });

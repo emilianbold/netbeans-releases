@@ -51,13 +51,14 @@ import javax.swing.JToolBar;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author  mkleint
  */
-public class MVDesc implements MultiViewDescription {
+public class MVDesc implements ContextAwareDescription {
 
         protected String name;
         protected Image img;
@@ -102,6 +103,16 @@ public class MVDesc implements MultiViewDescription {
         
         public String preferredID() {
             return name;
+        }
+
+        @Override
+        public ContextAwareDescription createContextAwareDescription(Lookup context, boolean isSplitDescription) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public boolean isSplitDescription() {
+            return false;
         }
         
     }

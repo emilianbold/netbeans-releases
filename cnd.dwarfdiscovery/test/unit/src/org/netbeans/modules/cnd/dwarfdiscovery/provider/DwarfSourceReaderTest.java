@@ -1077,6 +1077,8 @@ public class DwarfSourceReaderTest extends NbTestCase {
                         public String getWorkingFolder() { return null; }
                         @Override
                         public boolean mergeProjectProperties() { return false;}
+                        @Override
+                        public boolean resolveSymbolicLinks() { return false; }
                     }){
                         @Override
                         public Map<String, String> getSystemMacroDefinitions(ItemProperties.LanguageKind lang) {

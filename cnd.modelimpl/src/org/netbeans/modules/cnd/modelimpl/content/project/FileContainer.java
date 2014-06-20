@@ -57,6 +57,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.debug.DebugUtils;
@@ -100,6 +101,7 @@ import org.openide.filesystems.FileSystem;
  */
 public class FileContainer extends ProjectComponent implements Persistent, SelfPersistent {
     private static final boolean TRACE_PP_STATE_OUT = DebugUtils.getBoolean("cnd.dump.preproc.state", false);
+    private static final Logger LOG = Logger.getLogger("repository.support.filecreate.logger"); //NOI18N
 
     private static final class Lock {}
     private final Object lock = new Lock();
@@ -118,6 +120,17 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
         @Override
         public void putFile(FileImpl impl, State state) {
             // do nothing
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Put in the empty FileContainer the file {0}", impl); //NOI18N
+            }
+        }
+
+        @Override
+        public void removeFile(CharSequence file) {
+            // do nothing
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Remove from the empty FileContainer the file {0}", file); //NOI18N
+            }
         }
     };
 
@@ -176,6 +189,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
         if (CndUtils.isDebugMode()) {
             checkConsistency();
         }
+	put();
     }
 
     public void removeFile(CharSequence file) {
@@ -198,6 +212,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
         if (CndUtils.isDebugMode()) {
             checkConsistency();
         }
+	put();
     }
 
     public FileImpl getFile(CharSequence absPath, boolean treatSymlinkAsSeparateFile) {

@@ -174,7 +174,7 @@ public class MoveClassTest extends MoveBaseTest {
                 + "    public int i = 42;\n"
                 + "}\n"));
     }
-
+    
     public void test127535a() throws Exception { // #127535 - [Move] Cannot move second class in the file
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"

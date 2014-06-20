@@ -54,8 +54,10 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 /**
  * Misc utility functions used when creating new project
@@ -65,6 +67,17 @@ public class NewProjectWizardUtils {
 
     public static boolean isFullRemote(WizardDescriptor wizardDescriptor) {
         return wizardDescriptor.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV) != null;
+    }
+
+    public static FileSystem getFileSystem(WizardDescriptor wizardDescriptor) {
+        if (isFullRemote(wizardDescriptor)) {
+            String hostUID = (String) wizardDescriptor.getProperty(WizardConstants.PROPERTY_HOST_UID);
+            CndUtils.assertNotNull(hostUID, "Null host UID"); //NOI18N
+            ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
+            return FileSystemProvider.getFileSystem(env);
+        } else {
+            return FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal());
+        }
     }
 
     public static FileObject getFileObject(String path, WizardDescriptor wizardDescriptor) {

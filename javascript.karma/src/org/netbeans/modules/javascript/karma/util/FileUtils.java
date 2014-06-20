@@ -201,10 +201,11 @@ public final class FileUtils {
     /**
      * Get the OS-dependent script extension.
      * <ul>Currently it returns (for dotted version):
-     *   <li><tt>.bat</tt> on Windows
+     *   <li><tt>.bat/.cmd</tt> on Windows
      *   <li><tt>.sh</tt> anywhere else
      * </ul>
      * @param withDot return "." as well, e.g. <tt>.sh</tt>
+     * @param cmdInsteadBatOnWin if {@code true}, return "cmd" instead of "bat" on Windows
      * @return the OS-dependent script extension
      */
     public static String getScriptExtension(boolean withDot, boolean cmdInsteadBatOnWin) {

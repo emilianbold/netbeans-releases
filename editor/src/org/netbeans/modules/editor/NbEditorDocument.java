@@ -98,7 +98,7 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
     private static final RequestProcessor RP = new RequestProcessor("NbEditorDocument", 1, false, false); //NOI18N
 
     /** Map of [Annotation, AnnotationDesc] */
-    private HashMap annoMap;
+    private final HashMap annoMap = new HashMap(20);
 
     /**
      * Creates a new document.
@@ -126,7 +126,6 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
     private void init() {
         setNormalStyleName(NbDocument.NORMAL_STYLE_NAME);
         
-        annoMap = new HashMap(20);
 
         // Fill in the indentEngine property
         putProperty(INDENT_ENGINE, new BaseDocument.PropertyEvaluator() {
@@ -214,6 +213,7 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
      * @param length length of the annotated text. If -1 is specified 
      * the whole line will be annotated
      * @param annotation annotation which is attached to this text */
+    @Override
     public void addAnnotation(Position startPos, int length, Annotation annotation) {
         readLock(); // Ensure read-locking (if not aqcquired by caller)
         try {
@@ -230,14 +230,17 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
                 }
             }
             
-            AnnotationDescDelegate a = (AnnotationDescDelegate)annoMap.get(annotation);
-            if (a != null) { // already added before
-                throw new IllegalStateException("Annotation already added: " + a); // NOI18N
-            }
-            if (annotation.getAnnotationType() != null) {
-                a = new AnnotationDescDelegate(this, startPos, length, annotation);
-                annoMap.put(annotation, a);
-                getAnnotations().addAnnotation(a);
+            AnnotationDescDelegate a;
+            synchronized(annoMap) {
+                a = (AnnotationDescDelegate)annoMap.get(annotation);
+                if (a != null) { // already added before
+                    throw new IllegalStateException("Annotation already added: " + a); // NOI18N
+                }
+                if (annotation.getAnnotationType() != null) {
+                    a = new AnnotationDescDelegate(this, startPos, length, annotation);
+                    annoMap.put(annotation, a);
+                    getAnnotations().addAnnotation(a);
+                }
             }
         } finally {
             readUnlock();
@@ -254,13 +257,15 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
         readLock();
         try {
             if (annotation.getAnnotationType() != null) {
-                AnnotationDescDelegate a = (AnnotationDescDelegate)annoMap.get(annotation);
-                if (a == null) { // not added yet
-                    throw new IllegalStateException("Annotation not added: " + annotation.getAnnotationType() + annotation.getShortDescription());
+                final AnnotationDescDelegate a;
+                synchronized (annoMap) {
+                    a = (AnnotationDescDelegate)annoMap.remove(annotation);
+                    if (a == null) { // not added yet
+                        throw new IllegalStateException("Annotation not added: " + annotation.getAnnotationType() + annotation.getShortDescription());
+                    }
                 }
                 a.detachListeners();
                 getAnnotations().removeAnnotation(a);
-                annoMap.remove(annotation);
             }
         } finally {
             readUnlock();

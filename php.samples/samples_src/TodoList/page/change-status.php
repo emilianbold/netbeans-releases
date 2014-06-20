@@ -52,5 +52,3 @@ $dao->save($todo);
 Flash::addFlash('TODO status changed successfully.');
 
 Utils::redirect('detail', array('id' => $todo->getId()));
-
-?>

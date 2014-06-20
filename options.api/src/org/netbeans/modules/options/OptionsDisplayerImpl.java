@@ -99,6 +99,7 @@ import org.openide.util.TaskListener;
 import org.openide.util.Utilities;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.SystemAction;
+import org.openide.windows.WindowManager;
 
 
 public class OptionsDisplayerImpl {
@@ -228,7 +229,7 @@ public class OptionsDisplayerImpl {
         
         // #213022 - Trying to diagnose why the NPE occurs. For some reason
         // after the dialog is created, with DD.getDefault.createDialog(), it is nulled.
-        Dialog tmpDialog = DialogDisplayer.getDefault ().createDialog (descriptor);
+        Dialog tmpDialog = DialogDisplayer.getDefault ().createDialog (descriptor, WindowManager.getDefault().getMainWindow());
         log.fine("Options Dialog created; descriptor.title = " + descriptor.getTitle() +
                 "; descriptor.message = " + descriptor.getMessage());
         optionsPanel.initCurrentCategory(categoryID, subpath);        

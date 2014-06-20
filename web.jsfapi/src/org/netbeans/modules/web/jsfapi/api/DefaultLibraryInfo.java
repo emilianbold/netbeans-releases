@@ -43,13 +43,19 @@ package org.netbeans.modules.web.jsfapi.api;
 
 public enum DefaultLibraryInfo implements LibraryInfo {
 
+    // JSF 2.0, JSF 2.1
     HTML("http://xmlns.jcp.org/jsf/html", "Html Basic", "h"), //NOI18N
     JSF_CORE("http://xmlns.jcp.org/jsf/core", "Jsf Core", "f"), //NOI18N
     JSTL_CORE("http://xmlns.jcp.org/jsp/jstl/core", "Jstl Core", "c"), //NOI18N
     JSTL_CORE_FUNCTIONS("http://xmlns.jcp.org/jsp/jstl/functions", "Jstl Core Functions", "fn"), //NOI18N
     FACELETS("http://xmlns.jcp.org/jsf/facelets", "Facelets", "ui"), //NOI18N
     COMPOSITE("http://xmlns.jcp.org/jsf/composite", "Composite Components", "cc"), //NOI18N
+
+    // PrimeFaces
     PRIMEFACES("http://primefaces.org/ui", "PrimeFaces", "p"), //NOI18N
+    PRIMEFACES_MOBILE("http://primefaces.org/mobile", "PrimeFaces Mobile", "pm"), //NOI18N
+
+    // JSF 2.2+
     JSF("http://xmlns.jcp.org/jsf", "Jsf", "jsf"), //NOI18N
     PASSTHROUGH("http://xmlns.jcp.org/jsf/passthrough", "Passthrough", "p"); //NOI18N
 

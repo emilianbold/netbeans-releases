@@ -1,3 +1,4 @@
+globalProperty:VARIABLE:[PUBLIC]:ESCAPED{globalProperty}<font color="#999999">ESCAPED{ : }String</font>:
 functionVar:VARIABLE:[PRIVATE]:ESCAPED{functionVar}<font color="#999999">ESCAPED{ : }String</font>:
 jQuery:CLASS:[PRIVATE]:ESCAPED{jQuery}:
   event:CLASS:[PUBLIC]:ESCAPED{event}:
@@ -12,4 +13,3 @@ jQuery:CLASS:[PRIVATE]:ESCAPED{jQuery}:
       setData:FIELD:[PUBLIC]:ESCAPED{setData}<font color="#999999">ESCAPED{ : }Boolean</font>:
       test:METHOD:[PUBLIC]:ESCAPED{test}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
     name:FIELD:[PUBLIC]:ESCAPED{name}<font color="#999999">ESCAPED{ : }String</font>:
-globalProperty:VARIABLE:[PUBLIC]:ESCAPED{globalProperty}<font color="#999999">ESCAPED{ : }String</font>:

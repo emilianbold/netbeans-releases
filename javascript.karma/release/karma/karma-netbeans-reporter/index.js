@@ -53,17 +53,29 @@ var NetBeansReporter = function(baseReporterDecorator) {
     this.TEST_IGNORE = '$NB$netbeans testIgnore browser=$NB$%s$NB$ name=$NB$%s$NB$';
     this.TEST_FAILURE = '$NB$netbeans testFailure browser=$NB$%s$NB$ name=$NB$%s$NB$ details=$NB$%s$NB$ duration=$NB$%s$NB$';
 
+    this.browserResults = {};
+
 
     this.onRunStart = function(browsers) {
         var self = this;
-        this.browserResults = {};
         browsers.forEach(function(browser) {
-            self.browserResults[browser.id] = {
-                name: browser.name,
-                started: false,
-                lastSuite: null
-            };
+            self.initializeBrowserResult(self, browser);
         });
+    };
+
+    this.onBrowserStart = function(browser) {
+        this.initializeBrowserResult(this, browser);
+    };
+
+    this.initializeBrowserResult = function(self, browser) {
+        if (self.browserResults[browser.id]) {
+            return;
+        }
+        self.browserResults[browser.id] = {
+            name: browser.name,
+            started: false,
+            lastSuite: null
+        };
     };
 
     this.specSuccess = function(browser, result) {
@@ -94,6 +106,7 @@ var NetBeansReporter = function(baseReporterDecorator) {
             }
             self.printMessage(self.BROWSER_END, browserResult.name);
         });
+        self.browserResults = {};
     };
 
     this.checkBrowser = function(browserId) {

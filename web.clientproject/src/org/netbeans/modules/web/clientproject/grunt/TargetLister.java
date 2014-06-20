@@ -106,6 +106,15 @@ public class TargetLister {
         });
     }
     
+    static void invalidateCache(final FileObject gruntFile) {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                cache.remove(gruntFile.getPath());
+            }
+        });
+    }
+    
     private static void parse(String output, FileObject gruntFile) throws IOException {
         BufferedReader r = new BufferedReader(new StringReader(output));
 
@@ -122,6 +131,8 @@ public class TargetLister {
         }
         
         String line = r.readLine();
+        int white_space_column=-1;
+        
         while (line != null) {
             if (line.trim().isEmpty()) {
                 break;
@@ -134,8 +145,11 @@ public class TargetLister {
             String l = line.trim();
             int right = l.indexOf(" ");
             int left = line.indexOf(l);
+            if (white_space_column == -1) {
+                white_space_column = left + right + 2;
+            }
             
-            if (right > 0 && left < 16) {
+            if (right > 0 && left < white_space_column) {
                 l = l.substring(0, right);
                 col.add(new Target(l, gruntFile));
             }

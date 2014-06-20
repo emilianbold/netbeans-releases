@@ -984,6 +984,8 @@ public class SvnClientExceptionHandler {
                 || msg.contains("working copy format of ") && msg.contains("is too old") //NOI18N
                 || msg.contains("needs to be upgraded"))) { //NOI18N
             msg = Bundle.MSG_Error_TooOldWC() + "\n\n" + exMsg + "\n"; //NOI18N
+        } else {
+            msg = null;
         }
         return msg;
     }

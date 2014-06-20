@@ -254,9 +254,11 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
             bisp.add("org.netbeans.beaninfo"); // NOI18N
             Introspector.setBeanInfoSearchPath(bisp.toArray(new String[bisp.size()]));
             CoreBridge.getDefault().registerPropertyEditors();
-            for (RunLevel rl : Lookup.getDefault().lookupAll(RunLevel.class)) {
-                rl.run();
-            }
+        }
+        for (RunLevel rl : Lookup.getDefault().lookupAll(RunLevel.class)) {
+            rl.run();
+        }
+        if (showWindowSystem) {
             Splash.getInstance().setRunning(false);
         }
     }

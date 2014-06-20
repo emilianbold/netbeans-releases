@@ -73,6 +73,8 @@ import java.util.regex.Pattern;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
@@ -112,7 +114,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.Line;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -1095,15 +1096,16 @@ public final class GitUtils {
         
     }
     
-    private static class QuickSearchCallback<T> implements QuickSearch.Callback {
+    private static class QuickSearchCallback<T> implements QuickSearch.Callback, ListSelectionListener {
             
         private boolean quickSearchActive;
-        private int currentPosition = 0;
+        private int currentPosition;
         private final List<T> results;
         private final List<T> items;
         private final JList component;
         private final DefaultListModel model;
         private final SearchCallback<T> callback;
+        private boolean internal;
 
         public QuickSearchCallback (List<T> items, JList component, DefaultListModel model, SearchCallback<T> callback) {
             this.items = new ArrayList<T>(items);
@@ -1111,6 +1113,8 @@ public final class GitUtils {
             this.component = component;
             this.model = model;
             this.callback = callback;
+            this.currentPosition = component.getSelectedIndex();
+            component.addListSelectionListener(this);
         }
         
         @Override
@@ -1178,17 +1182,35 @@ public final class GitUtils {
         }
 
         private void updateView () {
-            model.removeAllElements();
-            for (T r : results) {
-                model.addElement(r);
+            internal = true;
+            try {
+                model.removeAllElements();
+                for (T r : results) {
+                    model.addElement(r);
+                }
+                updateSelection();
+            } finally {
+                internal = false;
             }
-            updateSelection();
         }
 
         private void updateSelection () {
             if (currentPosition > -1 && currentPosition < results.size()) {
                 T rev = results.get(currentPosition);
-                component.setSelectedValue(rev, true);
+                boolean oldInternal = internal;
+                internal = true;
+                try {
+                    component.setSelectedValue(rev, true);
+                } finally {
+                    internal = oldInternal;
+                }
+            }
+        }
+
+        @Override
+        public void valueChanged (ListSelectionEvent e) {
+            if (!internal && !e.getValueIsAdjusting()) {
+                currentPosition = component.getSelectedIndex();
             }
         }
     }

@@ -150,7 +150,7 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
     private final Set<JEditorPane> openedComponents;
     private FileObject file;
     private DataObject od;
-    private BaseDocument doc;
+    private final BaseDocument doc;
 
     private static Map<DataObject, AnnotationHolder> file2Holder = new HashMap<DataObject, AnnotationHolder>();
 
@@ -244,6 +244,8 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
     private AnnotationHolder(FileObject file, DataObject od, BaseDocument doc) {
         openedComponents = new HashSet<>();
         
+        this.doc = doc;
+
         if (file == null)
             return ;
 
@@ -251,7 +253,6 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
 
         this.file = file;
         this.od = od;
-        this.doc = doc;
 
         getBag(doc);
 

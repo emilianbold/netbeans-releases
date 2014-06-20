@@ -97,6 +97,7 @@ import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type.CapturedType;
 import java.util.ArrayList;
@@ -114,6 +115,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
@@ -144,7 +146,8 @@ import org.netbeans.modules.java.hints.errors.Utilities;
 public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirror>, Object> {
     /**
      * The expression, whose type should be guessed. Possibly null if the expression is not known.
-     * This field may change on parenthesis and type casts, which are ignored.
+     * This field may change on parenthesis and type casts, which are ignored. Used for tracking 
+     * which child node the traversal came to the parent.
      */
     private TreePath theExpression;
     
@@ -215,7 +218,13 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
     private boolean notRedundant;
     
     public ExpectedTypeResolver(TreePath theExpression, CompilationInfo info) {
-        this.originalExpression = this.theExpression = theExpression;
+        this.originalExpression = theExpression;
+        this.info = info;
+    }
+    
+    public ExpectedTypeResolver(TreePath theExpression, TreePath prevExpression, CompilationInfo info) {
+        this.originalExpression = theExpression;
+        this.theExpression = prevExpression;
         this.info = info;
     }
     
@@ -400,7 +409,7 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
             return null;
         }
 
-        ExpectedTypeResolver subResolver = new ExpectedTypeResolver(getCurrentPath(), info);
+        ExpectedTypeResolver subResolver = new ExpectedTypeResolver(getCurrentPath(), getCurrentPath(), info);
         subResolver.typeCastDepth++;
         List<? extends TypeMirror> pp = subResolver.scan(getCurrentPath().getParentPath(), null);
         
@@ -411,12 +420,40 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
 
         for (Iterator<? extends TypeMirror> it = parentTypes.iterator(); it.hasNext(); ) {
             TypeMirror m = it.next();
-            if (!info.getTypeUtilities().isCastable(thisType, m) || 
-                !info.getTypes().isAssignable(otherType, m)) {
-                it.remove();
+            if (!info.getTypeUtilities().isCastable(thisType, m)) {
+                Scope s = info.getTrees().getScope(getCurrentPath());
+                SourcePositions pos = info.getTrees().getSourcePositions();
+                StringBuilder sb = new StringBuilder();
+                int posFirst = (int)pos.getStartPosition(info.getCompilationUnit(), theExpression.getLeaf());
+                int posSecond = (int)pos.getStartPosition(info.getCompilationUnit(), otherExpression);
+                
+                if (posFirst < 0 || posSecond < 0) {
+                    // LOMBOK
+                    return null;
+                }
+                String first = info.getText().substring(posFirst, 
+                        (int)pos.getEndPosition(info.getCompilationUnit(), theExpression.getLeaf()));
+                String second = info.getText().substring(posSecond, 
+                        (int)pos.getEndPosition(info.getCompilationUnit(), otherExpression));
+                sb.append(first).append("+").append(second);
+                ExpressionTree expr = info.getTreeUtilities().parseExpression(sb.toString(), new SourcePositions[1]);
+                TypeMirror targetType = purify(info, info.getTreeUtilities().attributeTree(expr, s));
+                if (targetType == null || !info.getTypes().isAssignable(targetType, m)) {
+                    it.remove();
+                }
             }
         }
         return parentTypes.isEmpty() ? Collections.singletonList(otherType) : parentTypes;
+    }
+
+    private TypeMirror purify(CompilationInfo info, TypeMirror targetType) {
+        if (targetType != null && targetType.getKind() == TypeKind.ERROR) {
+            targetType = info.getTrees().getOriginalType((ErrorType) targetType);
+        }
+
+        if (targetType == null || targetType.getKind() == /*XXX:*/TypeKind.ERROR || targetType.getKind() == TypeKind.NONE || targetType.getKind() == TypeKind.NULL) return null;
+
+        return Utilities.resolveCapturedType(info, targetType);
     }
 
     /**
@@ -928,6 +965,14 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
      */
     @Override
     public List<? extends TypeMirror> visitMemberSelect(MemberSelectTree tree, Object v) {
+        if (casted != null) {
+            // if the casted type is a primitive, the cast is NOT redundant as member select is applied to
+            // the originally primitive value.
+            TypeMirror castedType = info.getTrees().getTypeMirror(casted);
+            if (castedType.getKind().isPrimitive()) {
+                notRedundant = true;
+            }
+        }
         // must compute expected type of the method:
         TreePath[] p = new TreePath[1];
         ExpressionTree[] e = new ExpressionTree[1];
@@ -936,9 +981,15 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
         Element el = info.getTrees().getElement(getCurrentPath());
         
         if (el.getKind() == ElementKind.METHOD) {
+            // special hack: if the casted value is a lambda, we NEED to assign it a type prior to method invocation:
+            TreePath exp = getExpressionWithoutCasts();
+            if (exp != null && exp.getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+                return null;
+            }
             TreePath methodInvocation = getCurrentPath().getParentPath();
             TreePath invocationParent = methodInvocation.getParentPath();
             ExpectedTypeResolver subResolver = new ExpectedTypeResolver(methodInvocation, info);
+            subResolver.theExpression = methodInvocation;
             subResolver.typeCastDepth++;
             List<? extends TypeMirror> parentTypes = subResolver.scan(invocationParent, v);
             TypeMirror castable = null;
@@ -1001,8 +1052,17 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
         if (typeCastDepth == 1) {
             if (casted == null) {
                 casted = new TreePath(getCurrentPath(), node.getExpression());
-                dontResetCast = true;
+                while (casted.getLeaf().getKind() == Tree.Kind.PARENTHESIZED) {
+                    casted = new TreePath(casted, ((ParenthesizedTree)casted.getLeaf()).getExpression());
+                }
+            } else {
+                if (!info.getTypeUtilities().isCastable(
+                    info.getTrees().getTypeMirror(casted),
+                    info.getTrees().getTypeMirror(getCurrentPath()))) {
+                    notRedundant = true;
+                }
             }
+            dontResetCast = true;
             return scanParent();
         } else {
             // this is a typecast after some other expression. It's not possible to determine a type which the

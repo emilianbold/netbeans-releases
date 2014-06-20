@@ -81,6 +81,7 @@ public class JiraExecutor {
     private static final String REPOSITORY                              = "repository";                    // NOI18N
     private static final String MIDAIR_COLLISION                        = "mid-air collision occurred while submitting to"; // NOI18N
     private static final String HOST_NOT_FOUND_ERROR                    = "host not found"; //NOI18N
+    private static final String REFRESH_REPO_CONF                    = "refresh repository configuration"; //NOI18N
 
     private final JiraRepository repository;
 
@@ -312,6 +313,7 @@ public class JiraExecutor {
             return erroMsg;
         }
 
+        @NbBundle.Messages("MSG_RefreshConf=Refreshing the repository configuration is possible\nvia the 'Reload Attributes' action in the 'Find Tasks' dialog")
         private static void notifyError(WrapperException ex, JiraRepository repository) {
             IStatus status = ex.getStatus();
             if (status != null && status instanceof RepositoryStatus) {
@@ -346,6 +348,9 @@ public class JiraExecutor {
                 }
             }
             String msg = getMessage(ex);
+            if(msg.contains(REFRESH_REPO_CONF)) {
+                msg += "\n\n" + Bundle.MSG_RefreshConf();
+            }
             JiraUtils.notifyErrorMessage(msg);
         }
 

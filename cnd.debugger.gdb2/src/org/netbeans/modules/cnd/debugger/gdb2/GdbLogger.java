@@ -86,6 +86,7 @@ public class GdbLogger {
         }
         this.logFile = logFileValue;
         this.filename = logFilename;
+        System.setProperty("LAST_DEBUGGER_LOGFILE_PATH", filename); // NOI18N
     }
     
     /**

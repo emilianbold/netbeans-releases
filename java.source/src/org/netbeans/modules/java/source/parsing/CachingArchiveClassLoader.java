@@ -59,7 +59,6 @@ import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
@@ -113,7 +112,7 @@ public final class CachingArchiveClassLoader extends ClassLoader {
             try {
                 return file.toUri().toURL();
             } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
+                LOG.log(Level.INFO, ex.getMessage(), ex);
             }
         }
         return super.findResource(name);
@@ -159,15 +158,18 @@ public final class CachingArchiveClassLoader extends ClassLoader {
     }
 
     private FileObject findFileObject(final String resName) {
-        try {
-            for (Archive archive : archives) {
+        for (Archive archive : archives) {
+            try {
                 final FileObject file = archive.getFile(resName);
                 if (file != null) {
                     return file;
                 }
+            } catch (IOException ex) {
+                LOG.log(
+                    Level.INFO,
+                    "Cannot read: " + archive,  //NOI18N
+                    ex);
             }
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
         }
         return null;
     }

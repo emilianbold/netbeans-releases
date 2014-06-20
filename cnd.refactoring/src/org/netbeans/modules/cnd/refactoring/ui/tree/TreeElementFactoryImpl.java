@@ -65,7 +65,7 @@ import org.openide.util.Lookup;
  * 
  * @author Vladimir Voskresensky
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation.class, position=150)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation.class, position=50)
 public class TreeElementFactoryImpl implements TreeElementFactoryImplementation {
 
     public Map<Object, TreeElement> map = new WeakHashMap<Object, TreeElement>();

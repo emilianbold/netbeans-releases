@@ -105,7 +105,7 @@ public class LayerGeneratingProcessorTest extends NbTestCase {
         assertGC("can collect ProcessingEnvironment", r);
     }
     public @interface A {}
-    @SupportedSourceVersion(SourceVersion.RELEASE_6)
+    @SupportedSourceVersion(SourceVersion.RELEASE_7)
     static class P extends LayerGeneratingProcessor {
         ProcessingEnvironment env;
         public @Override Set<String> getSupportedAnnotationTypes() {

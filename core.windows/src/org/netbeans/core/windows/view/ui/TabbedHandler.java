@@ -333,7 +333,7 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
             tae.consume();
             if (TabbedContainer.COMMAND_CLOSE == cmd) { //== test is safe here
                 TopComponent tc = tabbed.getTopComponentAt(tae.getTabIndex());
-                if (tc != null) {
+                if (tc != null && modeView != null) {
                     modeView.getController().userClosedTopComponent(modeView, tc);
                 } else {
                     Logger.getLogger(TabbedHandler.class.getName()).warning(

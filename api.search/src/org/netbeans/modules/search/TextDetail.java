@@ -642,7 +642,7 @@ public final class TextDetail implements Selectable {
             }
         }
 
-        private String cutLongLine(String s) {
+        private static String cutLongLine(String s) {
             if (s == null) {
                 return "";                                              //NOI18N
             } else if (s.length() < DETAIL_DISPLAY_LENGTH) {
@@ -983,7 +983,7 @@ public final class TextDetail implements Selectable {
 
         public SurroundingLine(int number, String text) {
             this.number = number;
-            this.text = text;
+            this.text = DetailNode.cutLongLine(text);
         }
 
         public int getNumber() {

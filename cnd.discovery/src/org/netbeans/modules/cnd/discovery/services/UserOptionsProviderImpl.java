@@ -56,8 +56,6 @@ import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.PredefinedMacro;
 import org.netbeans.modules.cnd.discovery.api.QtInfoProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
@@ -66,12 +64,15 @@ import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.ResolvedPath;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
 
 /**
@@ -87,18 +88,22 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     }
 
     @Override
-    public List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
-        List<String> res =new ArrayList<>();
+    public List<FSPath> getItemUserIncludePaths(List<FSPath> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
+        List<FSPath> res =new ArrayList<>();
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
+            ExecutionEnvironment env = getExecutionEnvironment(makeConfiguration);
+            FileSystem fs = FileSystemProvider.getFileSystem(env);
             for(PackageConfiguration pc : getPackages(compilerOptions.getAllOptions(compiler), makeConfiguration)) {
                 for (String path : pc.getIncludePaths()) {
-                    res.add(path);
-                    
+                    res.add(new FSPath(fs, path));
                 }
             }
         }
         if (makeConfiguration.isQmakeConfiguration()) {
-            res.addAll(QtInfoProvider.getDefault().getQtIncludeDirectories(makeConfiguration));
+            ExecutionEnvironment env = getExecutionEnvironment(makeConfiguration);
+            FileSystem fs = FileSystemProvider.getFileSystem(env);
+            List<FSPath> qtIncludeDirs = QtInfoProvider.getDefault().getQtIncludeDirectories(makeConfiguration);
+            res.addAll(qtIncludeDirs);
         }
         return res;
     }

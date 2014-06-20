@@ -1,6 +1,5 @@
-app:CLASS:[PUBLIC]:ESCAPED{app}:
-  graph:CLASS:[PUBLIC]:ESCAPED{graph}:
-    hint:FIELD:[PUBLIC]:ESCAPED{hint}<font color="#999999">ESCAPED{ : }String</font>:
+GRAPH_HEIGHT:VARIABLE:[PRIVATE]:ESCAPED{GRAPH_HEIGHT}:
+trimester_array:VARIABLE:[PRIVATE]:ESCAPED{trimester_array}:
 margin:CLASS:[PRIVATE]:ESCAPED{margin}:
   bottom:FIELD:[PUBLIC]:ESCAPED{bottom}<font color="#999999">ESCAPED{ : }Number</font>:
   innerBottom:FIELD:[PUBLIC]:ESCAPED{innerBottom}<font color="#999999">ESCAPED{ : }Number</font>:
@@ -10,8 +9,9 @@ margin:CLASS:[PRIVATE]:ESCAPED{margin}:
   left:FIELD:[PUBLIC]:ESCAPED{left}<font color="#999999">ESCAPED{ : }Number</font>:
   right:FIELD:[PUBLIC]:ESCAPED{right}<font color="#999999">ESCAPED{ : }Number</font>:
   top:FIELD:[PUBLIC]:ESCAPED{top}<font color="#999999">ESCAPED{ : }Number</font>:
-trimester_array:VARIABLE:[PRIVATE]:ESCAPED{trimester_array}:
-GRAPH_HEIGHT:VARIABLE:[PRIVATE]:ESCAPED{GRAPH_HEIGHT}:
+app:CLASS:[PUBLIC]:ESCAPED{app}:
+  graph:CLASS:[PUBLIC]:ESCAPED{graph}:
+    hint:FIELD:[PUBLIC]:ESCAPED{hint}<font color="#999999">ESCAPED{ : }String</font>:
 ovu:CLASS:[PUBLIC]:ESCAPED{ovu}:
   weightGraph:CLASS:[PRIVATE]:ESCAPED{weightGraph}:
     _change:METHOD:[PUBLIC]:ESCAPED{_change}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:

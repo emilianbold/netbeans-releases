@@ -74,6 +74,10 @@ public final class BuildTraceSupport {
     public static boolean useBuildTrace(MakeConfiguration conf) {
         return conf.getCodeAssistanceConfiguration().getBuildAnalyzer().getValue();
     }
+
+    public static boolean resolveSymbolicLinks(MakeConfiguration conf) {
+        return conf.getCodeAssistanceConfiguration().getResolveSymbolicLinks().getValue();
+    }
     
     public static String getTools(MakeConfiguration conf, ExecutionEnvironment execEnv) {
         String res = conf.getCodeAssistanceConfiguration().getTools().getValue();

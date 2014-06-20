@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
 import org.netbeans.modules.cnd.analysis.api.CodeAuditProviderImpl;
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JCheckBox;
@@ -114,6 +115,43 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
             errorTree.setModel(model);
         }
         update();
+    }
+    
+    void selectPath(String path) {
+        TreePath treePath = null;
+        for(DefaultMutableTreeNode node : model.audits) {
+            Object provider = node.getUserObject();
+            if (provider instanceof CodeAuditProvider) {
+                String providerID = ((CodeAuditProvider)provider).getName();
+                if (path.startsWith(providerID)) {
+                    treePath = new TreePath(new Object[]{model.getRoot(),node});
+                    path = path.substring(providerID.length());
+                    if (path.length() > 1) {
+                        path = path.substring(1);
+                        Enumeration children = node.children();
+                        while(children.hasMoreElements()) {
+                            Object sub = children.nextElement();
+                            if (sub instanceof DefaultMutableTreeNode) {
+                                Object audit = ((DefaultMutableTreeNode)sub).getUserObject();
+                                if (audit instanceof CodeAudit) {
+                                    String name = ((CodeAudit)audit).getID();
+                                    if (path.startsWith(name)) {
+                                        treePath = new TreePath(new Object[]{model.getRoot(),node, sub});
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        if (treePath != null) {
+            errorTree.setSelectionPath(treePath);
+            errorTree.scrollPathToVisible(treePath);
+            errorTree.requestFocusInWindow();
+        }
     }
     
     @Override
@@ -289,12 +327,8 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
             Object data = ((DefaultMutableTreeNode)value).getUserObject();
             if ( data instanceof CodeAudit ) {
                 CodeAudit audit = (CodeAudit)data;
-                if (audit.getID().equals(audit.getName())) {
-                    renderer.setText(audit.getName());
-                } else {
-                    renderer.setText( audit.getID()+ ": " + audit.getName()); // NOI18N
-                }
-                 renderer.setSelected(audit.isEnabled());
+                renderer.setText(audit.getName());
+                renderer.setSelected(audit.isEnabled());
             } else if (data instanceof CodeAuditProvider) {
                 CodeAuditProvider provider = (CodeAuditProvider)data;
                 renderer.setText( provider.getDisplayName());

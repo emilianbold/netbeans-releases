@@ -87,6 +87,9 @@ public class ArrayAccess implements ErrorRule<Void> {
     
     @Override
     public List<Fix> run(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
+        if (treePath.getLeaf().getKind() != Kind.ARRAY_ACCESS) {
+            return Collections.emptyList();
+        }
         ArrayAccessTree aa = (ArrayAccessTree) treePath.getLeaf();
         TypeMirror onType = info.getTrees().getTypeMirror(new TreePath(treePath, aa.getExpression()));
         boolean list = isSubType(info, onType, "java.util.List");

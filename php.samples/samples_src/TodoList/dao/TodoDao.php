@@ -257,5 +257,3 @@ final class TodoDao {
     }
 
 }
-
-?>

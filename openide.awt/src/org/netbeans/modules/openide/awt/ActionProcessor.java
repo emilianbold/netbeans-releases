@@ -89,7 +89,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @ServiceProvider(service=Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 public final class ActionProcessor extends LayerGeneratingProcessor {
     private static final String IDENTIFIER = "(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)"; // NOI18N
     private static final Pattern FQN = Pattern.compile(IDENTIFIER + "(?:[.]" + IDENTIFIER + ")*"); // NOI18N

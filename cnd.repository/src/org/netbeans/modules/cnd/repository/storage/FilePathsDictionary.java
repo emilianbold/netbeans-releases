@@ -47,11 +47,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.repository.util.IntToValueList;
-import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * A list of all client FilePaths per Unit.
@@ -61,9 +62,9 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * @author akrasny
  */
 /* package */ final class FilePathsDictionary implements Persistent, SelfPersistent{
-    private static final boolean PRINT_STACK = CndUtils.getBoolean("cnd.repository.print.stack.wrong.file", true);// NOI18N
+    private static final Logger LOG = Logger.getLogger("repository.support.filecreate.logger"); //NOI18N
 
-    private static final String WRONG_PATH = "<WRONG FILE>"; // NOI18N
+    static final String WRONG_PATH = "<WRONG FILE>"; // NOI18N
     private final List<CharSequence> paths;
     private final Map<CharSequence, Integer> map = new HashMap<CharSequence, Integer>();
     private final Object lock = new Object();
@@ -83,9 +84,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
     CharSequence getFilePath(final int fileIdx) {
         synchronized (lock) {
             if (fileIdx >= paths.size()) {
-                if (PRINT_STACK){   
-                    CndUtils.threadsDump();
-                }
                 return WRONG_PATH;
             } else {
                 return paths.get(fileIdx);
@@ -99,13 +97,16 @@ import org.netbeans.modules.cnd.utils.CndUtils;
         }
     }
 
-    int getFileID(final CharSequence filePath) {
+    int getFileID(final CharSequence filePath, int clientShortUnitID) {
         synchronized (lock) {
             Integer idx = map.get(filePath);
             if (idx == null) {
                 int new_idx = paths.size();
                 paths.add(filePath);
                 map.put(filePath, new_idx);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Create index {0}/{1}={2}", new Object[]{new_idx, clientShortUnitID, filePath}); //NOI18N
+                }
                 return new_idx;
             } else {
                 return idx.intValue();

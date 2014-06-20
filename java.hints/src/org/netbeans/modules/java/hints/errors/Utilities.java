@@ -1741,6 +1741,9 @@ public class Utilities {
         int origExpEnd = (int)sp.getEndPosition(ci.getCompilationUnit(), 
                 origPath.getLeaf());
         
+        if (invOffset < 0 || origExpStart < 0 || origExpEnd < 0) {
+            return false;
+        }
         TreePath exp = invPath;
         boolean statement = false;
         
@@ -1837,23 +1840,24 @@ public class Utilities {
         }
         
         int baseIndex = (int)sp.getStartPosition(ci.getCompilationUnit(), exp.getLeaf());
+        if (baseIndex < 0) {
+            return false;
+        }
         StringBuilder sb = new StringBuilder();
-        sb.append(source.subSequence(
-                baseIndex,
-                origExpStart));
+        sb.append(source.subSequence(baseIndex, origExpStart));
         // instead of the boxing expression, append only the value expression, in parenthesis
         sb.append("("); // NOI18N
         if (customPrefix != null) {
             sb.append(customPrefix);
         }
-        sb.append(source.subSequence(
-                (int)sp.getStartPosition(ci.getCompilationUnit(), valPath.getLeaf()),
-                (int)sp.getEndPosition(ci.getCompilationUnit(), valPath.getLeaf()))).
-            append(")"); // NOI18N
-        
-        sb.append(source.subSequence(
-                origExpEnd,
-                (int)sp.getEndPosition(ci.getCompilationUnit(), exp.getLeaf())));
+        int valStart = (int)sp.getStartPosition(ci.getCompilationUnit(), valPath.getLeaf());
+        int valEnd = (int)sp.getEndPosition(ci.getCompilationUnit(), valPath.getLeaf());
+        int expEndPos = (int)sp.getEndPosition(ci.getCompilationUnit(), exp.getLeaf());
+        if (valStart < 0 || valEnd < 0 || expEndPos < 0) {
+            return false;
+        }
+        sb.append(source.subSequence(valStart, valEnd)).append(")"); // NOI18N
+        sb.append(source.subSequence(origExpEnd, expEndPos));
         
         SourcePositions[] nsp = new SourcePositions[1];
         Tree t;
@@ -1864,7 +1868,7 @@ public class Utilities {
             t = ci.getTreeUtilities().parseExpression(sb.toString(), nsp);
         }
         
-        Scope s = ci.getTreeUtilities().scopeFor((int)sp.getStartPosition(ci.getCompilationUnit(), exp.getLeaf()) - 1);
+        Scope s = ci.getTreeUtilities().scopeFor(Math.max(0, expEndPos - 1));
         ci.getTreeUtilities().attributeTree(t, s);
         
         TreePath newPath = new TreePath(exp.getParentPath(), t);
@@ -1967,5 +1971,24 @@ public class Utilities {
         }
         return ll;
     }
-    
+
+    /**
+     * Determines if assignment looses precision.
+     * Works only for primitive types, false for references.
+     * 
+     * @param from the assigned value type
+     * @param to the target type
+     * @return true, if precision is lost
+     */
+    public static boolean loosesPrecision(TypeMirror from, TypeMirror to) {
+        if (!from.getKind().isPrimitive() || !to.getKind().isPrimitive()) {
+            return false;
+        }
+        if (to.getKind() == TypeKind.CHAR) {
+            return true;
+        } else if (from.getKind() == TypeKind.CHAR) {
+            return to.getKind() == TypeKind.BYTE || to.getKind() == TypeKind.SHORT;
+        }
+        return to.getKind().ordinal() < from.getKind().ordinal();
+    }
 }

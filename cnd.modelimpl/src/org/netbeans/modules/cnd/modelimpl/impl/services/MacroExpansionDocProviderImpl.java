@@ -54,8 +54,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
-import org.netbeans.modules.cnd.antlr.TokenStream;
-import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,6 +61,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
@@ -71,11 +70,15 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
@@ -84,6 +87,7 @@ import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
+import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -91,9 +95,10 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionDocProvider;
-import org.openide.util.CharSequences;
 import org.openide.text.NbDocument;
+import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 
 /**
  * Service that provides macro expansions implementation.
@@ -109,7 +114,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
     public final static String MACRO_EXPANSION_STOP_ON_OFFSET_PARSE_FILE_WALKER_CACHE = "macro-expansion-stop-on-offset-parse-file-walker-cache"; // NOI18N
 
     @Override
-    public synchronized int expand(final Document inDoc, final int startOffset, final int endOffset, final Document outDoc) {
+    public synchronized int expand(final Document inDoc, final int startOffset, final int endOffset, final Document outDoc, final AtomicBoolean canceled) {
         if (inDoc == null || outDoc == null) {
             return 0;
         }
@@ -154,7 +159,9 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                     if (isWhitespace(docToken)) {
                         continue;
                     }
-
+                    if (canceled.get()) {
+                        break;
+                    }
                     APTToken fileToken = findToken(fileTS, docTokenStartOffset);
                     if (fileToken == null) {
                         // expanded stream ended
@@ -191,7 +198,11 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                     }
                     // process macro
                     copyInterval(inDoc, docTokenStartOffset - tt.currentIn.start, tt, expandedData);
-                    expandMacroToken(docTS, fileTS, tt, expandedData);
+                    Formatter formatter = null;
+                    if (outDoc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) != null) {
+                        formatter = new Formatter((BaseDocument) outDoc);
+                    }
+                    expandMacroToken(docTS, fileTS, tt, expandedData, formatter);
                     inMacroParams = true;
                 }
                 // copy the tail of the code
@@ -259,7 +270,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         APTToken to = APTUtils.getExpandedToken(fileToken);
         if (to != null) {
             Interval paramInterval = createInterval(to.getOffset(), to.getEndOffset());
-            Interval paramExpansionInterval = createInterval(tt.currentOut.start + expandedOffsetShift, tt.currentOut.start + expandedOffsetShift + fileToken.getText().length());
+            Interval paramExpansionInterval = createInterval(tt.currentOut.start + expandedOffsetShift, tt.currentOut.start + expandedOffsetShift + fileToken.getTextID().length());
             List<Interval> paramExpansions = paramsToExpansion.get(paramInterval);
             if (paramExpansions != null) {
                 paramExpansions.add(paramExpansionInterval);
@@ -456,7 +467,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             try {
                 APTToken t = (APTToken) ts.nextToken();
                 while (t != null && !APTUtils.isEOF(t)) {
-                    sb.append(t.getText());
+                    sb.append(t.getTextID());
                     t = (APTToken) ts.nextToken();
                 }
             } catch (TokenStreamException ex) {
@@ -514,7 +525,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         return sb.toString();
     }
 
-    private void expand(final Document doc, final CsmFile file, final TransformationTable tt) {
+    private void expand(final Document doc, final CsmFile file, final TransformationTable tt, final Formatter formatter) {
         if (doc == null) {
             return;
         }
@@ -595,7 +606,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                     }
                     // process macro
                     copyInterval(doc, docTokenStartOffset - tt.currentIn.start, tt, null);
-                    expandMacroToken(docTS, fileTS, tt, null);
+                    expandMacroToken(docTS, fileTS, tt, null, formatter);
                     inMacroParams = true;
                 }
                 // copy the tail of the code
@@ -608,57 +619,115 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
 //        System.out.println(tt);
     }
 
-    private CharSequence expandMacroToken(MyTokenSequence fileTS, int docTokenStartOffset, int docTokenEndOffset, TransformationTable tt) {
+    private CharSequence expandMacroToken(MyTokenSequence fileTS, int docTokenStartOffset, int docTokenEndOffset, TransformationTable tt, Formatter formatter) {
         APTToken fileToken = fileTS.token();
-        StringBuilder expandedToken = new StringBuilder(""); // NOI18N
+        StringBuilder expandedToken = new StringBuilder();
         int expandedOffsetShift = 0;
 
         Map<Interval, List<Interval>> paramsToExpansion = new HashMap<>();
                 
         boolean skipIndent = true;
         if (fileToken.getOffset() < docTokenEndOffset) {
+            Pair<? extends CharSequence, ? extends CharSequence> format = null;
+            if (formatter != null) {
+                formatter.init(fileToken);
+                format = formatter.process(fileToken);
+            }
             // empty comment - expansion of empty macro
             if (!APTUtils.isCommentToken(fileToken)) {
-                expandedToken.append(fileToken.getText());
+                expandedToken.append(fileToken.getTextID());
                 if (APTUtils.isMacroParamExpandedToken(fileToken)) {
                     fillParamsToExpansionMap(fileToken, tt, expandedOffsetShift, paramsToExpansion);
                 }
-                expandedOffsetShift += fileToken.getText().length();
+                expandedOffsetShift += fileToken.getTextID().length();
                 skipIndent = false;
             }
             APTToken prevFileToken = fileToken;
             fileTS.moveNext();
             fileToken = fileTS.token();
             while (fileToken != null && !APTUtils.isEOF(fileToken) && fileToken.getOffset() < docTokenEndOffset) {
+                if (formatter != null) {
+                    format = formatter.process(fileToken);
+                }
                 if (!APTUtils.isCommentToken(fileToken)) {
+                    if (format != null) {
+                        CharSequence prefix = format.first();
+                        if (prefix != null) {
+                            if (prefix instanceof UndoIndent) {
+                                for(int i = 0; i < prefix.length(); i++) {
+                                    char c = prefix.charAt(i);
+                                    if (expandedToken.length() > 0) {
+                                        char done = expandedToken.charAt(expandedToken.length()-1);
+                                        if (c == done) {
+                                            expandedToken.setLength(expandedToken.length()-1);
+                                            expandedOffsetShift--;
+                                        } else {
+                                            break;
+                                        }
+                                    } else {
+                                        break;
+                                    }
+                                }
+                            } else {
+                                expandedToken.append(prefix);
+                                expandedOffsetShift += prefix.length();
+                            }
+                            skipIndent = true;
+                        }
+                    }
                     if (!skipIndent) {
                         if (!APTUtils.areAdjacent(prevFileToken, fileToken)) {
-                            expandedToken.append(" "); // NOI18N
+                            expandedToken.append(' '); // NOI18N
                             expandedOffsetShift++;
                         }
                     }
                     skipIndent = false;
-                    expandedToken.append(fileToken.getText());
+                    expandedToken.append(fileToken.getTextID());
                     if (APTUtils.isMacroParamExpandedToken(fileToken)) {
                         fillParamsToExpansionMap(fileToken, tt, expandedOffsetShift, paramsToExpansion);
                     }
-                    expandedOffsetShift += fileToken.getText().length();
+                    expandedOffsetShift += fileToken.getTextID().length();
+                    if (format != null) {
+                        CharSequence suffix = format.second();
+                        if (suffix != null) {
+                            expandedToken.append(suffix);
+                            expandedOffsetShift += suffix.length();
+                            skipIndent = true;
+                        }
+                    }
                 }
                 prevFileToken = fileToken;
                 fileTS.moveNext();
                 fileToken = fileTS.token();
             }
         }
+        if (formatter != null) {
+            // remove last indent
+            for(int i = expandedToken.length()-1; i >= 0; i--) {
+                char c = expandedToken.charAt(i);
+                if (c == ' ') { // NOI18N
+                    expandedToken.setLength(expandedToken.length()-1);
+                    expandedOffsetShift--;
+                } else if (c == '\n') { // NOI18N
+                    expandedToken.setLength(expandedToken.length()-1);
+                    expandedOffsetShift--;
+                    break;
+                } else {
+                    break;
+                }
+            }
+        }
+
         tt.appendInterval(docTokenEndOffset - docTokenStartOffset, expandedToken.length(), true, expandedToken, paramsToExpansion);
         return expandedToken;
     }
 
-    private void expandMacroToken(TokenSequence docTS, MyTokenSequence fileTS, TransformationTable tt, StringBuilder expandedData) {
-        expandMacroToken(docTS.token(), docTS.offset(), fileTS, tt, expandedData);
+    private void expandMacroToken(TokenSequence docTS, MyTokenSequence fileTS, TransformationTable tt, StringBuilder expandedData, Formatter formatter) {
+        expandMacroToken(docTS.token(), docTS.offset(), fileTS, tt, expandedData, formatter);
     }
 
-    private void expandMacroToken(Token docToken, int docTokenStartOffset, MyTokenSequence fileTS, TransformationTable tt, StringBuilder expandedData) {
-        CharSequence expandedToken = expandMacroToken(fileTS, docTokenStartOffset, docTokenStartOffset + docToken.length(), tt);
+    private void expandMacroToken(Token docToken, int docTokenStartOffset, MyTokenSequence fileTS, TransformationTable tt, StringBuilder expandedData, Formatter formatter) {
+        CharSequence expandedToken = expandMacroToken(fileTS, docTokenStartOffset, docTokenStartOffset + docToken.length(), tt, formatter);
         addString(expandedToken, expandedData);
     }
 
@@ -1214,7 +1283,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         } else {
             if (inEnd - inStart == outEnd - outStart) {
                 final int length = inEnd - inStart;
-                if (length < Short.MAX_VALUE) {
+                if (Short.MIN_VALUE < length && length < Short.MAX_VALUE) {
                     final int shift = outEnd - inEnd;
                     if (Short.MIN_VALUE < shift && shift < Short.MAX_VALUE) {
                         return new IntervalCorrespondenceSimpleCompact(inStart, (short)length, (short)shift);
@@ -1429,6 +1498,10 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         if (file == null || doc == null) {
             return null;
         }
+        Formatter formatter = null;
+        if (doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) != null) {
+            formatter = new Formatter((BaseDocument) doc);
+        }
         TransformationTable tt;
         synchronized (doc) {
             tt = getCachedMacroTable(doc);
@@ -1454,7 +1527,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                 }
             }
             if (updateIfNeeded && !tt.isInited()) {
-                expand(doc, file, tt);
+                expand(doc, file, tt, formatter);
                 tt.cleanUp();
                 synchronized (doc) {
                     doc.putProperty(MACRO_EXPANSION_MACRO_TABLE, tt);
@@ -1481,4 +1554,140 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             return super.onAPT(node, wasInBranch);
         }
     }
+    
+    private static final class UndoIndent implements CharSequence {
+        private final int length;
+        private UndoIndent(int length) {
+            this.length = length;
+        }
+
+        @Override
+        public int length() {
+            return length;
+        }
+
+        @Override
+        public char charAt(int index) {
+            return ' ';
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end) {
+            throw new UnsupportedOperationException();
+        }
+    }
+        
+    private static final class Formatter {
+        private static final boolean MACRO_BASED_INDENTER = false;
+        private final int tab;
+        private final Engine engine;
+        private int shift;
+        private int line;
+        private int indent;
+
+        Formatter(BaseDocument document) {
+            // It is not valid mrthod.
+            // Right method requres editor dependency (NbEditorDocument.getShiftWidth() or IndentUtils.indentLevelSize(document))
+            tab = document.getShiftWidth();
+            if (MACRO_BASED_INDENTER) {
+                engine = new MacroBasedFormatter();
+            } else {
+                engine = new TokenBasedFormatter();
+            }
+        }
+
+        private void init(APTToken fileToken) {
+            shift = fileToken.getColumn();
+            indent = 0;
+        }
+
+        private Pair<? extends CharSequence, ? extends CharSequence> process(APTToken fileToken) {
+            return engine.process(fileToken);
+        }
+
+        private interface Engine {
+            Pair<? extends CharSequence, ? extends CharSequence> process(APTToken fileToken);
+        }
+
+        private final class MacroBasedFormatter implements Engine {
+
+            public Pair<? extends CharSequence, ? extends CharSequence> process(APTToken fileToken) {
+                // Keep formatting in macros if it is possible
+                int aLine = 0;
+                int column = 0;
+                if (APTUtils.isMacroExpandedToken(fileToken) && !APTUtils.isMacroParamExpandedToken(fileToken)) {
+                    aLine = APTUtils.getExpandedToken(fileToken).getLine();
+                    column = APTUtils.getExpandedToken(fileToken).getColumn();
+                }
+                StringBuilder prefix = null;
+                StringBuilder suffix = null;
+                if (aLine > 0) {
+                    if (line > 0 && aLine != line) {
+                        prefix = new StringBuilder();
+                        prefix.append('\n'); // NOI18N
+                        if (column > 1) {
+                            for (int i = 1; i < column; i++) {
+                                prefix.append(' '); // NOI18N
+                            }
+                        }
+                    }
+                    line = aLine;
+                }
+                if (prefix == null && suffix == null) {
+                    return null;
+                }
+                return Pair.of(prefix, suffix);
+            }
+        }
+
+        private final class TokenBasedFormatter implements Engine {
+
+            public Pair<? extends CharSequence, ? extends CharSequence> process(APTToken fileToken) {
+                // Do simplified reformatting
+                switch (fileToken.getType()) {
+                    case APTTokenTypes.LCURLY: // {
+                    {
+                        indent++;
+                        StringBuilder suffix = new StringBuilder();
+                        suffix.append('\n'); // NOI18N
+                        for (int i = 1; i < shift + indent * tab; i++) {
+                            suffix.append(' '); // NOI18N
+                        }
+                        return Pair.of(null, suffix);
+                    }
+                    case APTTokenTypes.RCURLY: // }
+                    {
+                        UndoIndent undo = null;
+                        if (indent > 0) {
+                            //need to remove prev spaces if indent have been added before
+                            undo = new UndoIndent(tab);
+                            indent--;
+                        }
+                        StringBuilder suffix = new StringBuilder();
+                        suffix.append('\n'); // NOI18N
+                        for (int i = 1; i < shift + indent * tab; i++) {
+                            suffix.append(' '); // NOI18N
+                        }
+                        return Pair.of(undo, suffix);
+                    }
+                    case APTTokenTypes.SEMICOLON: // ;
+                    {
+                        StringBuilder suffix = new StringBuilder();
+                        suffix.append('\n'); // NOI18N
+                        for (int i = 1; i < shift + indent * tab; i++) {
+                            suffix.append(' '); // NOI18N
+                        }
+                        return Pair.of(null, suffix);
+                    }
+                    case APTTokenTypes.LITERAL_for: // ;
+                        // TODO: Nice to detect "for" scope and do not insert new line on semicolumn
+                        break;
+                    default:
+                        break;
+                }
+                return null;
+            }
+        }
+    }
+    
 }

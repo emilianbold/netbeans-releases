@@ -2474,7 +2474,9 @@ public class Reformatter implements ReformatTask {
         public Boolean visitArrayAccess(ArrayAccessTree node, Void p) {
             scan(node.getExpression(), p);
             accept(LBRACKET);
+            spaces(cs.spaceWithinArrayIndexBrackets() ? 1 : 0);
             scan(node.getIndex(), p);
+            spaces(cs.spaceWithinArrayIndexBrackets() ? 1 : 0);
             accept(RBRACKET);
             return true;
         }
@@ -2663,20 +2665,30 @@ public class Reformatter implements ReformatTask {
         public Boolean visitConditionalExpression(ConditionalExpressionTree node, Void p) {
             int alignIndent = cs.alignMultilineTernaryOp() ? col : -1;
             scan(node.getCondition(), p);
-            if (cs.wrapAfterTernaryOps()) {
-                boolean containedNewLine = spaces(cs.spaceAroundTernaryOps() ? 1 : 0, false);
-                accept(QUESTION);
-                if (containedNewLine)
-                    newline();
-                wrapTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getTrueExpression());
-                containedNewLine = spaces(cs.spaceAroundTernaryOps() ? 1 : 0, false);
-                accept(COLON);
-                if (containedNewLine)
-                    newline();
-                wrapTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getFalseExpression());
-            } else {
-                wrapOperatorAndTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getTrueExpression());
-                wrapOperatorAndTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getFalseExpression());
+            boolean old = continuationIndent;
+            int oldIndent = indent;
+            try {
+                if (isLastIndentContinuation) {
+                    indent = indent();
+                }
+                if (cs.wrapAfterTernaryOps()) {
+                    boolean containedNewLine = spaces(cs.spaceAroundTernaryOps() ? 1 : 0, false);
+                    accept(QUESTION);
+                    if (containedNewLine)
+                        newline();
+                    wrapTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getTrueExpression());
+                    containedNewLine = spaces(cs.spaceAroundTernaryOps() ? 1 : 0, false);
+                    accept(COLON);
+                    if (containedNewLine)
+                        newline();
+                    wrapTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getFalseExpression());
+                } else {
+                    wrapOperatorAndTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getTrueExpression());
+                    wrapOperatorAndTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getFalseExpression());
+                }
+            } finally {
+                indent = oldIndent;
+                continuationIndent = old;
             }
             return true;
         }
@@ -3191,11 +3203,11 @@ public class Reformatter implements ReformatTask {
             if (checkWrap != null && col > rightMargin && checkWrap.pos >= lastNewLineOffset) {
                 throw checkWrap;
             }
-            int maxCount = maxPreservedBlankLines;
+            int maxCount = bof ? 0 : maxPreservedBlankLines;
             if (maxCount < count) {
                 count = maxCount;
             }
-            if (templateEdit && maxCount < 1) {
+            if (!bof && templateEdit && maxCount < 1) {
                 maxCount = 1;
             }
             if (lastBlankLinesTokenIndex < 0) {
@@ -3286,10 +3298,12 @@ public class Reformatter implements ReformatTask {
                             }
                             if (pendingDiff != null) {
                                 pendingDiff.text = beforeCnt < 0 ? getIndent() : getNewlines(count) + getIndent();
-                                if (!pendingDiff.text.contentEquals(pendingText))
+                                if (!pendingDiff.text.contentEquals(pendingText)) {
                                     addDiff(pendingDiff);
+                                    pendingDiff = null;
+                                }
                             }
-                            String ind = after == 3 ? SPACE : pendingDiff == null || beforeCnt < 0 ? getNewlines(count) + getIndent() : getIndent();
+                            String ind = after == 3 ? SPACE : pendingDiff == null || beforeCnt < 0 ? getNewlines(count) + getIndent() : getIndent();                          
                             if (!ind.contentEquals(text.substring(lastIdx)))
                                 addDiff(new Diff(offset + lastIdx, tokens.offset(), ind));
                             lastToken = null;
@@ -3375,8 +3389,10 @@ public class Reformatter implements ReformatTask {
                             }
                             if (pendingDiff != null) {
                                 pendingDiff.text = beforeCnt < 0 ? getIndent() : getNewlines(count) + getIndent();
-                                if (!pendingDiff.text.contentEquals(pendingText))
+                                if (!pendingDiff.text.contentEquals(pendingText)) {
                                     addDiff(pendingDiff);
+                                    pendingDiff = null;
+                                }
                             }
                             String indent = after == 3 ? SPACE : pendingDiff == null || beforeCnt < 0 ? getNewlines(count) + getIndent() : getIndent();
                             if (!indent.contentEquals(text.substring(lastIdx)))
@@ -4016,6 +4032,8 @@ public class Reformatter implements ReformatTask {
                                             && lastAddedNLOffset < currWSOffset && (toAdd == null || toAdd.first() < currWSOffset)) {
                                         addMark(Pair.of(currWSOffset, 1), marks, state);
                                     }
+                                    addMark(Pair.of(javadocTokens.offset() - offset, 5), marks, state);
+                                    addMark(Pair.of(javadocTokens.offset() + javadocTokens.token().length() - offset - 1, 6), marks, state);
                                     nlAdd = Pair.of(javadocTokens.offset() + javadocTokens.token().length() - offset, 1);
                                 }
                             } else {

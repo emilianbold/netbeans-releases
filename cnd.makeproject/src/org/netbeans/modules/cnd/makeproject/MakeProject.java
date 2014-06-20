@@ -55,6 +55,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -1424,6 +1425,11 @@ public final class MakeProject implements Project, MakeProjectListener {
     }
     
     private void warmupNativeProject() {
+        FileSystemProvider.warmup(
+                FileSystemProvider.WarmupMode.RECURSIVE_LS,
+                FileSystemProvider.getExecutionEnvironment(helper.getProjectDirectory()),
+                nativeProject.getSourceRoots(),
+                null);
         Set<String> extensions = new HashSet<>();
         extensions.addAll(cExtensions);
         extensions.addAll(cppExtensions);
@@ -1452,11 +1458,14 @@ public final class MakeProject implements Project, MakeProjectListener {
     
     private void createLaunchersFileIfNeeded(final FileObject projectDir) {
         CndUtils.assertNonUiThread();
+        if (projectDir == null) {
+            return;
+        }
         try {
             FileObject projectPrivateFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER);
             if (projectPrivateFolder == null) {
                 FileObject projectFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
-                if (!projectFolder.canWrite()) {
+                if (projectFolder == null || !projectFolder.canWrite()) {
                     return;
                 }
                 projectPrivateFolder = projectFolder.createFolder(MakeConfiguration.PRIVATE_FOLDER);

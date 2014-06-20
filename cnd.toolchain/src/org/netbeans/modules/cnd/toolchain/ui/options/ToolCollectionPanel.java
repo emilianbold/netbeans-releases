@@ -86,10 +86,14 @@ import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.toolchain.compilerset.APIAccessor;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerFlavorImpl;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -545,14 +549,22 @@ import org.openide.util.Utilities;
 
     void updateToolsControls(boolean enableText, boolean enableVersions, boolean cleanText) {
         updateTextField(tfMakePath, enableText, cleanText);
+        btMakeBrowse.setEnabled(enableText);
         updateTextField(tfDebuggerPath, enableText, cleanText);
+        btDebuggerBrowse.setEnabled(enableText);
         updateTextField(tfBaseDirectory, false, cleanText);
         updateTextField(tfCPath, enableText, cleanText);
+        btCBrowse.setEnabled(enableText);
         updateTextField(tfCppPath, enableText, cleanText);
+        btCppBrowse.setEnabled(enableText);
         updateTextField(tfFortranPath, enableText, cleanText);
+        btFortranBrowse.setEnabled(enableText);
         updateTextField(tfAsPath, enableText, cleanText);
+        btAsBrowse.setEnabled(enableText);
         updateTextField(tfQMakePath, enableText, cleanText);
+        btQMakeBrowse.setEnabled(enableText);
         updateTextField(tfCMakePath, enableText, cleanText);
+        btCMakeBrowse.setEnabled(enableText);
     }
 
     private void updateTextField(JTextField tf, boolean editable, boolean cleanText) {
@@ -629,12 +641,14 @@ import org.openide.util.Utilities;
     }
 
     private boolean selectTool(JTextField tf, boolean checkBaseFolder) {
-        String seed = tf.getText();
+        String seed = tf.getText().trim();
         if (seed.length() > 0 && ! seed.endsWith("/")) { //NOI18N
             int pos = seed.lastIndexOf('/'); //NOI18N
             if (pos > 0) {
                 seed = seed.substring(0, pos);
             }
+        } else {
+            seed = ToolsUtils.getDefaultDirectory(manager.getExecutionEnvironment());
         }
         JFileChooser fileChooser = new FileChooserBuilder(manager.getExecutionEnvironment()).createFileChooser(seed);
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);

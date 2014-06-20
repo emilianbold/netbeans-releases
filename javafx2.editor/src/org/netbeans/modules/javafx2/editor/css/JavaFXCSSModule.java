@@ -145,7 +145,7 @@ public class JavaFXCSSModule extends CssEditorModule implements CssModule {
                 } else {
                     Project p = FileOwnerQuery.getOwner(file);
                     if(p != null) {
-                        boolean isFX = JavaFXProjectUtils.isJavaFxEnabled(p);
+                        boolean isFX = JavaFXProjectUtils.isJavaFxEnabled(p) || JavaFXProjectUtils.isMavenFxProject(p);
                         m.put(file.getPath(), isFX);
                         return isFX;
                     }

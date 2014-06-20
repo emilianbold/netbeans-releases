@@ -1,10 +1,10 @@
-Ext.define('My.app.Panel', {
+Ext.define('My237938.app.Panel', {
     constructor: function(config) {
     }
 });
 
-Ext.define('My.app.PanelPart2', {
-    override: 'My.app.Panel',
+Ext.define('My237938.app.PanelPart2', {
+    override: 'My237938.app.Panel',
     constructor: function(config) {
     }
 });

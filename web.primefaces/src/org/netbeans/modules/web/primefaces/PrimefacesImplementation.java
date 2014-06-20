@@ -82,9 +82,9 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
     /** Framework name used also for statistics. */
     public static final String PRIMEFACES_NAME = "PrimeFaces"; //NOI18N
 
-    // ICEfaces Maven resources
+    // PrimeFaces Maven resources
     private static final String MAVEN_PF_REPO ="default:http://repository.primefaces.org/"; //NOI18N
-    private static final String MAVEN_PF_DEP = "org.primefaces:primefaces:4.0:jar"; //NOI18N
+    private static final String MAVEN_PF_DEP = "org.primefaces:primefaces:5.0:jar"; //NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(PrimefacesImplementation.class.getName());
     private static final String PRIMEFACES_SPECIFIC_PRIME_RESOURCE = "org.primefaces.application.PrimeResource"; //NOI18N

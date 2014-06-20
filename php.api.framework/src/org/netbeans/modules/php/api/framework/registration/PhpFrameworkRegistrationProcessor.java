@@ -57,7 +57,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 @SupportedAnnotationTypes("org.netbeans.modules.php.spi.framework.PhpFrameworkProvider.Registration")
 @ServiceProvider(service = Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class PhpFrameworkRegistrationProcessor extends LayerGeneratingProcessor {
 
     @Override

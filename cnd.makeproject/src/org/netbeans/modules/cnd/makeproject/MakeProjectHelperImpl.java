@@ -174,8 +174,7 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
     // XXX lock any loaded XML files while the project is modified, to prevent manual editing,
     // and reload any modified files if the project is unmodified
     private MakeProjectHelperImpl(FileObject dir, Document projectXml, ProjectState state, MakeProjectTypeImpl type) {
-        this.dir = dir;
-        FileSystemProvider.warmup(FileSystemProvider.WarmupMode.RECURSIVE_LS, Collections.singleton(dir), null);
+        this.dir = dir;        
         try {
             this.fileSystem = dir.getFileSystem();
         } catch (FileStateInvalidException ex) {

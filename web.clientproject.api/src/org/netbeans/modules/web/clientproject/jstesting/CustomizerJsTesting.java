@@ -77,6 +77,7 @@ class CustomizerJsTesting extends JPanel {
         this.category = category;
         this.project = project;
         originalProvider = JsTestingProviders.getDefault().getJsTestingProvider(project, false);
+        selectedProvider = originalProvider;
 
         initComponents();
         init();
