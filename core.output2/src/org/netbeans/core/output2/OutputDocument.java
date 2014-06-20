@@ -469,25 +469,29 @@ public class OutputDocument implements Document, Element, ChangeListener {
                 if (Controller.VERBOSE) Controller.log("Last event not consumed, not firing");
                 return;
             }
-
-            int lineCount = lines.getLineCount();
-            int visibleLineCount = lines.getVisibleLineCount();
-            int size = lines.getCharCount() + inBuffer.length();
-
-            if (size == lastFiredLength && visibleLineCount == lastVisibleLineCount) {
-                // nothing changed
-                if (Controller.VERBOSE) Controller.log("Size is same " + size + " - not firing");
-                return;
-            }
-
-            boolean lastLineChanged = lastFiredLineCount == lineCount;
-            if (lastFiredLineCount > 0 && lineCount > lastFiredLineCount) {
-                int lastFiredLineEnd = lines.getLineStart(lastFiredLineCount);
-                if (lastFiredLineEnd > lastFiredLength) {
-                    lastLineChanged = true;
+            boolean lastLineChanged;
+            int lineCount;
+            int visibleLineCount;
+            int size;
+            synchronized (lines.readLock()) {
+                lineCount = lines.getLineCount();
+                visibleLineCount = lines.getVisibleLineCount();
+                size = lines.getCharCount() + inBuffer.length();
+                if (size == lastFiredLength && visibleLineCount == lastVisibleLineCount) {
+                    // nothing changed
+                    if (Controller.VERBOSE) {
+                        Controller.log("Size is same " + size + " - not firing");
+                    }
+                    return;
+                }
+                lastLineChanged = lastFiredLineCount == lineCount;
+                if (lastFiredLineCount > 0 && lineCount > lastFiredLineCount) {
+                    int lastFiredLineEnd = lines.getLineStart(lastFiredLineCount);
+                    if (lastFiredLineEnd > lastFiredLength) {
+                        lastLineChanged = true;
+                    }
                 }
             }
-
             if (lastFiredLineCount == lineCount
                     && lastVisibleLineCount != visibleLineCount) {
                 lastEvent = new DO(0);
