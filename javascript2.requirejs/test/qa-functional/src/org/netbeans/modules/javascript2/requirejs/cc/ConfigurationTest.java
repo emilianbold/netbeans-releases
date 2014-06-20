@@ -56,10 +56,10 @@ import org.netbeans.modules.javascript2.requirejs.GeneralRequire;
  */
 public class ConfigurationTest extends GeneralRequire {
 
-    public static String originalContent;
-    public static String uncommentedContent;
-    public static boolean setup = false;
-    public static int numberOfTests = 17;
+    private static String originalContent;
+    private static String uncommentedContent;
+    private static boolean setup = false;
+    private static int numberOfTests = 17;
 
     public ConfigurationTest(String arg0) {
         super(arg0);
