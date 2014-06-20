@@ -100,6 +100,7 @@ public class DwarfMacroInfoSection extends ElfSection {
         
         reader.seek(header.getSectionOffset() + offset);
         offstSize = 4;
+        long labelSectionAdress = -1;
         if (isMacro) {
             int dwarfVersion = reader.readShort();
             byte bitness = reader.readByte(); // 2 - 32, 3 - 64
@@ -108,7 +109,6 @@ public class DwarfMacroInfoSection extends ElfSection {
             }
             headerSize = reader.getFilePointer() - (header.getSectionOffset() + offset);
             if ((bitness & 2)==2) {
-                long labelSectionAdress;
                 if (offstSize == 4) {
                     labelSectionAdress = reader.readInt();
                 } else {
@@ -189,7 +189,9 @@ public class DwarfMacroInfoSection extends ElfSection {
                     reader.readString();
                     break;
                 }
+                case DW_MACRO_define_indirect_alt:
                 case DW_MACRO_define_indirect:
+                case DW_MACRO_undef_indirect_alt:
                 case DW_MACRO_undef_indirect:
                 {
                     DwarfMacinfoEntry entry = new DwarfMacinfoEntry(type);
@@ -200,9 +202,24 @@ public class DwarfMacroInfoSection extends ElfSection {
                     } else {
                         adress = reader.readLong();
                     }
-                    entry.definition = ((StringTableSection)reader.getSection(SECTIONS.DEBUG_STR)).getString(adress);
+                    if (type == MACINFO.DW_MACRO_define_indirect || type == MACINFO.DW_MACRO_undef_indirect) {
+                        entry.definition = ((StringTableSection)reader.getSection(SECTIONS.DEBUG_STR)).getString(adress);
+                    } else {
+                        //TODO: read from alt strings
+                    }
                     entry.fileIdx = fileIdx;
                     table.addEntry(entry);
+                    break;
+                }
+                case DW_MACRO_transparent_include_alt:
+                {
+                    long index;
+                    if (offstSize == 4) {
+                        index = reader.readInt();
+                    } else {
+                        index = reader.readLong();
+                    }
+                    //TODO: read from alt strings?
                     break;
                 }
                 case DW_MACRO_transparent_include:
@@ -218,7 +235,7 @@ public class DwarfMacroInfoSection extends ElfSection {
                         System.err.println("infinite indirection in macro section of "+reader.getFileName()); // NOI18N
                     } else {
                         indirect.push(savePosition);
-                        reader.seek(header.getSectionOffset() + offset + index + headerSize);
+                        reader.seek(header.getSectionOffset() + index + headerSize);
                     }
                     break;
                 }
