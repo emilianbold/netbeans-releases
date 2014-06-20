@@ -44,11 +44,13 @@ package org.netbeans.modules.web.jsf.navigation;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
@@ -97,10 +99,12 @@ public class PageFlowElement extends CloneableEditor implements MultiViewElement
         getTopComponent().setName(context.getFacesConfigFile().getName());
     }
 
+    @Override
     public JComponent getVisualRepresentation() {
         return getTopComponent();
     }
 
+    @Override
     public JComponent getToolbarRepresentation() {
         if (toolbar == null) {
             toolbar = getTopComponent().getToolbarRepresentation();
@@ -115,6 +119,7 @@ public class PageFlowElement extends CloneableEditor implements MultiViewElement
         return tc;
     }
 
+    @Override
     public Action[] getActions() {
         Action[] a = getTopComponent().getActions();
 
@@ -143,18 +148,28 @@ public class PageFlowElement extends CloneableEditor implements MultiViewElement
         return getTopComponent().getLookup();
     }
 
+    @Override
     public void componentOpened() {
         getTopComponent().registerListeners();
 //            tc.startBackgroundPinAddingProcess();
         LOG.finest("PageFlowEditor componentOpened");
     }
 
+    @NbBundle.Messages("PageFlowElement.lbl.saving.file=Saving file...")
+    @Override
     public void componentClosed() {
-        long time = System.currentTimeMillis();
         final FileObject storageFile = PageFlowView.getStorageFile(context.getFacesConfigFile());
 
         if (storageFile != null && storageFile.isValid()) {
-            getTopComponent().serializeNodeLocations(storageFile);
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                @Override
+                public void run() {
+                    long time = System.currentTimeMillis();
+                    getTopComponent().serializeNodeLocations(storageFile);
+                    cleanUpScene();
+                    LOG.log(Level.FINEST, "PageFlowEditor componentClosed save took: {0} ms", (System.currentTimeMillis() - time));
+                }
+            }, Bundle.PageFlowElement_lbl_saving_file(), new AtomicBoolean(false), true, 500, 2000);
         } else {
             DialogDescriptor dialog;
             if (storageFile != null) {
@@ -169,16 +184,17 @@ public class PageFlowElement extends CloneableEditor implements MultiViewElement
             dialog.setOptions(new Object[]{DialogDescriptor.OK_OPTION});
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
             d.setVisible(true);
+            cleanUpScene();
         }
+    }
 
+    private void cleanUpScene() {
         getTopComponent().unregstierListeners();
         PageFlowToolbarUtilities.removePageFlowView(getTopComponent());
         // tc.clearGraph();
         getTopComponent().destroyScene();
         toolbar = null;
         tc = null;
-
-        LOG.finest("PageFlowEditor componentClosed took: " + (System.currentTimeMillis() - time) + " ms");
     }
 
     @Override
@@ -190,16 +206,19 @@ public class PageFlowElement extends CloneableEditor implements MultiViewElement
         getTopComponent().getPageFlowController().flushGraphIfDirty();
     }
 
+    @Override
     public void componentHidden() {
         LOG.finest("PageFlowEditor componentHidden");
     }
 
+    @Override
     public void componentActivated() {
         //tc.requestFocusInWindow();
         LOG.finest("PageFlowView componentActivated");
         getTopComponent().requestActive();
     }
 
+    @Override
     public void componentDeactivated() {
         LOG.finest("PageFlowView Deactivated");
     }
@@ -264,6 +283,7 @@ public class PageFlowElement extends CloneableEditor implements MultiViewElement
         return (DataEditorSupport) cloneableEditorSupport();
     }
 
+    @Override
     public UndoRedo getUndoRedo() {
         return context.getUndoRedo();
     }
