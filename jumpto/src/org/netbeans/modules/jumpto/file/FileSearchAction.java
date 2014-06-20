@@ -498,6 +498,9 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             Parameters.notNull("refreshCallback", refreshCallback); //NOI18N
             this.delegate = delegate;
             this.refreshCallback = refreshCallback;
+            FileProviderAccessor.getInstance().setFromCurrentProject(
+                this,
+                FileProviderAccessor.getInstance().isFromCurrentProject(delegate));
         }
 
         @Override
@@ -705,10 +708,13 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 jlPath.setText(fd.getOwnerPath().length() > 0 ? " (" + fd.getOwnerPath() + ")" : " ()"); //NOI18N
                 setProjectName(jlPrj, fd.getProjectName());
                 jlPrj.setIcon(fd.getProjectIcon());
-                if ( !isSelected ) {
-                    rendererComponent.setBackground( index % 2 == 0 ?
-                        ( FileProviderAccessor.getInstance().isFromCurrentProject(fd) && colorPrefered ? bgColorGreener : bgColor ) :
-                        ( FileProviderAccessor.getInstance().isFromCurrentProject(fd) && colorPrefered ? bgColorDarkerGreener : bgColorDarker ) );
+                if (!isSelected) {
+                    final boolean cprj = FileProviderAccessor.getInstance().isFromCurrentProject(fd) && colorPrefered;
+                    final Color bgc =  index % 2 == 0 ?
+                        (cprj ? bgColorGreener : bgColor ) :
+                        (cprj ? bgColorDarkerGreener : bgColorDarker );
+                    jlName.setBackground(bgc);  //Html does not support transparent bg
+                    rendererComponent.setBackground(bgc);
                 }
                 rendererComponent.setDescription(fd);
             }
