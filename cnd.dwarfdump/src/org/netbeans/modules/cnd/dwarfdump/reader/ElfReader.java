@@ -491,19 +491,23 @@ public class ElfReader extends ByteStreamReader {
                 long start = sectionHeadersTable[dynamic].sh_offset;
                 long size = sectionHeadersTable[dynamic].sh_size;
                 seek(start);
-                List<Integer> libs = new ArrayList<Integer>();
-                List<Integer> paths = new ArrayList<Integer>();
+                List<Long> libs = new ArrayList<Long>();
+                List<Long> paths = new ArrayList<Long>();
                 while( getFilePointer() < start+size) {
-                    int tag = readInt();
+                    long tag;
                     if (elfHeader.is64Bit()) {
-                        readInt();
+                        tag = readLong();
+                    } else {
+                        tag = readInt();
                     }
                     if (tag == 0) {
                         //break;
                     }
-                    int ptr = readInt();
+                    long ptr;
                     if (elfHeader.is64Bit()) {
-                        readInt();
+                        ptr = readLong();
+                    } else {
+                        ptr = readInt();
                     }
                     //System.err.println("tag "+tag+" "+ptr);
                     if (tag == 1) { //DT_NEEDED /* a needed object */
@@ -521,11 +525,11 @@ public class ElfReader extends ByteStreamReader {
                 Integer idx = sectionsMap.get(SECTIONS.DYN_STR);
                 if (idx != null) {
                     long s = sectionHeadersTable[idx].sh_offset;
-                    for(int l : libs){
+                    for(long l : libs){
                         seek(s+l);
                         sharedLibraries.addDll(readString());
                     }
-                    for(int l : paths){
+                    for(long l : paths){
                         seek(s+l);
                         sharedLibraries.addPath(readString());
                     }
