@@ -220,8 +220,8 @@ platform/docs/swing-layout-1.0.4-doc.zip                              LGPL-2.1
 platform/docs/swing-layout-1.0.4-src.zip                              LGPL-2.1
 platform/docs/testng-6.8.1-javadoc.zip                                Apache-2.0
 platform/modules/ext/felix-4.2.1.jar                                  Apache-2.0
-platform/modules/ext/jna-4.0.0.jar                                    Apache-2.0
-platform/modules/ext/jna-platform-4.0.0.jar                           Apache-2.0
+platform/modules/ext/jna-4.1.0.jar                                    Apache-2.0
+platform/modules/ext/jna-platform-4.1.0.jar                           Apache-2.0
 platform/modules/ext/nsProxyAutoConfig.js                             LGPL-2.1
 platform/modules/ext/org.eclipse.osgi_3.9.1.v20140110-1610.jar        OSGi-LICENSE
 platform/modules/ext/osgi.cmpn-4.2.jar                                Apache-2.0
