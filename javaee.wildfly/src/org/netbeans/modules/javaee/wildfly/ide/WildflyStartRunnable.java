@@ -205,14 +205,15 @@ class WildflyStartRunnable implements Runnable {
 
         }
         javaOptsBuilder.append(" -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true");
-        File configFile = new File(ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE));
-        if(configFile.exists() && configFile.getParentFile().exists() && configFile.getParentFile().getParentFile().exists()) {
-            String baseDir = configFile.getParentFile().getParentFile().getAbsolutePath();
-            if(!baseDir.equals(ip.getProperty(WildflyPluginProperties.PROPERTY_SERVER_DIR))) {
-                javaOptsBuilder.append(" -Djboss.server.base.dir=").append(baseDir);
+        if(ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE) != null ) {
+            File configFile = new File(ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE));
+            if(configFile.exists() && configFile.getParentFile().exists() && configFile.getParentFile().getParentFile().exists()) {
+                String baseDir = configFile.getParentFile().getParentFile().getAbsolutePath();
+                if(!baseDir.equals(ip.getProperty(WildflyPluginProperties.PROPERTY_SERVER_DIR))) {
+                    javaOptsBuilder.append(" -Djboss.server.base.dir=").append(baseDir);
+                }
             }
         }
-
         for (StartupExtender args : StartupExtender.getExtenders(
                 Lookups.singleton(CommonServerBridge.getCommonInstance(ip.getProperty("url"))), getMode(startServer.getMode()))) {
             for (String singleArg : args.getArguments()) {
