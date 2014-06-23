@@ -54,7 +54,6 @@ import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
-import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.GitStatusNode.GitStatusProperty;
 import org.netbeans.modules.versioning.util.status.VCSStatusTableModel;
 import org.netbeans.modules.versioning.util.status.VCSStatusTable;
@@ -300,7 +299,7 @@ class DiffFileTable extends VCSStatusTable<DiffNode> implements FileViewComponen
             if (modelColumnIndex == 0) {
                 node = tableModel.getNode(table.convertRowIndexToModel(row));
                 String htmlDisplayName = DiffUtils.getHtmlDisplayName(node, isModified(node.getFile()), isSelected);
-                if (GitModuleConfig.getDefault().isExcludedFromCommit(node.getFile().getAbsolutePath())) {
+                if (node.isExcluded()) {
                     htmlDisplayName = "<s>" + (htmlDisplayName == null ? node.getFileNode().getName() : htmlDisplayName) + "</s>"; //NOI18N
                 }
                 if (htmlDisplayName != null) {

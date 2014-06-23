@@ -49,8 +49,10 @@ import org.netbeans.modules.git.FileInformation.Mode;
 import org.netbeans.modules.git.GitFileNode;
 import org.netbeans.modules.git.GitFileNode.GitHistoryFileNode;
 import org.netbeans.modules.git.GitFileNode.GitLocalFileNode;
+import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.versioning.diff.DiffLookup;
 import org.netbeans.modules.versioning.util.OpenInEditorAction;
+import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.openide.cookies.EditorCookie;
 
 /**
@@ -72,6 +74,10 @@ public abstract class DiffNode<T extends GitFileNode> extends GitStatusNode<T> i
     
     @Override
     public abstract DiffNode clone ();
+
+    public boolean isExcluded () {
+        return GitModuleConfig.getDefault().isExcludedFromCommit(getFile().getAbsolutePath());
+    }
     
     public static class DiffLocalNode extends DiffNode<GitLocalFileNode> {
     
@@ -118,6 +124,12 @@ public abstract class DiffNode<T extends GitFileNode> extends GitStatusNode<T> i
         public DiffNode clone () {
             return new DiffHistoryNode(getFileNode(), getSetup());
         }
+
+        @Override
+        public boolean isExcluded () {
+            return false;
+        }
+        
     }
     
     public static class DiffImmutableNode extends DiffNode<GitFileNode> {
@@ -140,6 +152,12 @@ public abstract class DiffNode<T extends GitFileNode> extends GitStatusNode<T> i
         public DiffNode clone () {
             return new DiffImmutableNode(getFileNode(), getSetup(), getLookup().lookup(EditorCookie.class));
         }
+
+        @Override
+        public boolean isExcluded () {
+            return node.getCommitOptions() == VCSCommitOptions.EXCLUDE;
+        }
+        
     }
 
     private static org.openide.util.Lookup getLookupFor (EditorCookie eCookie, Object[] lookupObjects) {
