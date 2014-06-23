@@ -414,7 +414,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
                 i++;
             }
         }
-        assertEquals(2, i);
+        assertEquals(14, i);
     }
 
     public void testLeopard(){
