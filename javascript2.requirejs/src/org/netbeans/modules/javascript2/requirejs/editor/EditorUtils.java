@@ -116,7 +116,7 @@ public class EditorUtils {
             if (token.id() == JsTokenId.STRING || token.id() == JsTokenId.STRING_END) {
                 token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT,
                         JsTokenId.STRING_BEGIN, JsTokenId.STRING, JsTokenId.STRING_END, JsTokenId.OPERATOR_COMMA));
-                if (token.id() == JsTokenId.BRACKET_LEFT_BRACKET || token.id() == JsTokenId.OPERATOR_COLON) {
+                if (token.id() == JsTokenId.BRACKET_LEFT_BRACKET || token.id() == JsTokenId.OPERATOR_COLON || token.id() == JsTokenId.BRACKET_LEFT_PAREN) {
                     token = LexUtilities.findPreviousToken(ts, Arrays.asList(JsTokenId.IDENTIFIER));
                     if (token.id() == JsTokenId.IDENTIFIER) {
                         if (DEFINE.equals(token.text().toString()) || REQUIRE.equals(token.text().toString()) || REQUIREJS.equals(token.text().toString())) {
