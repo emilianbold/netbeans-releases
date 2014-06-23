@@ -80,6 +80,7 @@ import org.netbeans.libs.git.jgit.commands.StatusTest;
 import org.netbeans.libs.git.jgit.commands.SubmoduleTest;
 import org.netbeans.libs.git.jgit.commands.TagTest;
 import org.netbeans.libs.git.jgit.commands.UnignoreTest;
+import org.netbeans.libs.git.jgit.commands.UpdateRefTest;
 
 /**
  *
@@ -128,6 +129,7 @@ public class CommandsTestSuite extends NbTestSuite {
         suite.addTestSuite(SubmoduleTest.class);
         suite.addTestSuite(TagTest.class);
         suite.addTestSuite(UnignoreTest.class);
+        suite.addTestSuite(UpdateRefTest.class);
         return suite;
     }
 

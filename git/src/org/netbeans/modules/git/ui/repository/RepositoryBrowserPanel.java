@@ -90,9 +90,11 @@ import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.GitRepositories;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.branch.BranchSynchronizer;
 import org.netbeans.modules.git.ui.branch.CreateBranchAction;
 import org.netbeans.modules.git.ui.branch.DeleteBranchAction;
 import org.netbeans.modules.git.ui.branch.SetTrackingAction;
@@ -1110,6 +1112,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         @Override
         @NbBundle.Messages({
             "# {0} - branch name", "LBL_DiffToTrackedBranchAction_PopupName=Diff to \"{0}\"",
+            "# {0} - branch name", "LBL_SyncBranchAction_PopupName=Sync with \"{0}\"",
             "LBL_SetTrackedBranchAction_PopupName=Setup Tracked Branch"
         })
         protected Action[] getPopupActions (boolean context) {
@@ -1225,6 +1228,22 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                                 SystemAction.get(DiffAction.class).diff(VCSContext.forNodes(new Node[] { rootNode }),
                                         new Revision.BranchReference(branchName, branchId),
                                         new Revision.BranchReference(trackedBranch));
+                            }
+                        });
+                        actions.add(new AbstractAction(Bundle.LBL_SyncBranchAction_PopupName(trackedBranch.getName())) {
+                            @Override
+                            public void actionPerformed (ActionEvent e) {
+                                EventQueue.invokeLater(new Runnable() {
+                                    @Override
+                                    public void run () {
+                                        new BranchSynchronizer().syncBranches(repo, new String[] { branch }, true);
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public boolean isEnabled () {
+                                return !active;
                             }
                         });
                     }
