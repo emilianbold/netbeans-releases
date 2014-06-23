@@ -88,6 +88,7 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.status.VCSStatusTable;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -146,6 +147,7 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
     }
 
     void focus () {
+        noContentComponent.requestFocusInWindow();
         syncTable.focus();
     }
 
@@ -368,8 +370,10 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
                     syncTable.setNodes(nodes.toArray(new GitStatusNodeImpl[nodes.size()]));
                     if (nodes.isEmpty()) {
                         setVersioningComponent(noContentComponent);
+                        noContentComponent.requestFocusInWindow();
                     } else {
                         setVersioningComponent(syncTable.getComponent());
+                        syncTable.focus();
                     }
                 }
             });
