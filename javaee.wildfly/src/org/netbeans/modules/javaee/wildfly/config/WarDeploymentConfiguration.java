@@ -138,20 +138,27 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
         if (jbossWeb.getContextRoot() == null || jbossWeb.getContextRoot().isEmpty()) {
             try {
                 if (j2eeModule.getArchive() != null) {
-                    return j2eeModule.getArchive().getName();
+                    return formatContextPath(j2eeModule.getArchive().getName());
                 }
                 if (j2eeModule.getUrl() != null) {
                     if (j2eeModule.getUrl().endsWith(".war")) {
-                        return j2eeModule.getUrl().substring(0, j2eeModule.getUrl().length() - 4);
+                        return formatContextPath(j2eeModule.getUrl().substring(0, j2eeModule.getUrl().length() - 4));
                     } else {
-                        return j2eeModule.getUrl();
+                        return formatContextPath(j2eeModule.getUrl());
                     }
                 }
             } catch (IOException ex) {
-                return jbossWeb.getContextRoot();
+                return formatContextPath(jbossWeb.getContextRoot());
             }
         }
-        return jbossWeb.getContextRoot();
+        return formatContextPath(jbossWeb.getContextRoot());
+    }
+
+    private String formatContextPath(final String contextRoot) {
+        if (!contextRoot.startsWith("/")) {
+            return '/' + contextRoot;
+        }
+        return contextRoot;
     }
 
     /**
