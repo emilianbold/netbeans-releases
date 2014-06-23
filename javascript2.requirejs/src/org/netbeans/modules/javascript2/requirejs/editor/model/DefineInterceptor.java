@@ -81,7 +81,7 @@ public class DefineInterceptor implements FunctionInterceptor {
 
     private static final Pattern PATTERN = Pattern.compile("define|requirejs|require");  //NOI18N
     private static final String CODE_COMPLETION_THREAD_NAME = "Code Completion";
-    
+
     @Override
     public Pattern getNamePattern() {
         return PATTERN;
@@ -102,25 +102,31 @@ public class DefineInterceptor implements FunctionInterceptor {
                 case ARRAY:
                     modules = arg;
                     break;
+                case STRING:
+                    if (args.size() == 1) {
+                        modules = arg;
+                    }
+                    break;
                 default:
             }
         }
 
+        FileObject fo = globalObject.getFileObject();
+        if (fo == null) {
+            // no action
+            return;
+        }
+
         if (fArg != null) {
-            FileObject fo = globalObject.getFileObject();
-            if (fo == null) {
-                // no action
-                return;
-            }
             if (fArg.getKind() == FunctionArgument.Kind.ANONYMOUS_OBJECT) {
                 if (RequireJsIndexer.Factory.isScannerThread() && EditorUtils.DEFINE.equals(name)) {
-                    JsObject anonym = (JsObject)fArg.getValue();
+                    JsObject anonym = (JsObject) fArg.getValue();
                     RequireJsIndexer.addTypes(fo.toURI(), Collections.singletonList(factory.newType(anonym.getFullyQualifiedName(), anonym.getOffset(), true)));
                 }
             } else {
                 List<String> fqn = (List<String>) fArg.getValue();
                 JsObject posibleFunc = findJsObjectByName(globalObject, fqn);
-                
+
                 if (posibleFunc != null && posibleFunc instanceof JsFunction) {
                     JsFunction defFunc = (JsFunction) posibleFunc;
                     if (saveToIndex()) {
@@ -171,7 +177,7 @@ public class DefineInterceptor implements FunctionInterceptor {
                                         FileObject fileObject = FSCompletionUtils.findMappedFileObject(module, fo);
                                         if (fileObject != null) {
                                             module = fileObject.getName();
-                                        } 
+                                        }
                                         Collection<? extends TypeUsage> exposedTypes = rIndex.getExposedTypes(module, factory);
                                         if (paramIterator.hasNext()) {
                                             JsObject param = paramIterator.next();
@@ -186,13 +192,63 @@ public class DefineInterceptor implements FunctionInterceptor {
                     }
                 }
             }
+        } else if (modules != null && modules.getValue() instanceof String) {
+            Source source = Source.create(fo);
+            Project project = FileOwnerQuery.getOwner(fo);
+            if (project == null || !RequireJsPreferences.getBoolean(project, RequireJsPreferences.ENABLED)) {
+                return;
+            }
+            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(source.createSnapshot().getTokenHierarchy(), modules.getOffset());
+            if (ts == null) {
+                return;
+            }
+            ts.move(modules.getOffset());
+            if (ts.movePrevious()) {
+                Token<? extends JsTokenId> token = ts.token();
+                token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT,
+                        JsTokenId.STRING_BEGIN, JsTokenId.BRACKET_LEFT_PAREN));
+                if (token.id() == JsTokenId.IDENTIFIER && EditorUtils.REQUIRE.equals(token.text().toString()) && ts.movePrevious()) {
+                    token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
+                    if (token.id() == JsTokenId.OPERATOR_ASSIGNMENT && ts.movePrevious()) {
+                        token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
+                        if (token.id() == JsTokenId.IDENTIFIER) {
+                            // now we have the name of the object, that contains the expoert from module
+                            RequireJsIndex rIndex = null;
+                            try {
+                                rIndex = RequireJsIndex.get(project);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                            if (rIndex != null) {
+                                FileObject fileObject = FSCompletionUtils.findMappedFileObject(modules.getValue().toString(), fo);
+                                if (fileObject != null) {
+                                    Collection<? extends TypeUsage> exposedTypes = rIndex.getExposedTypes(fileObject.getName(), factory);
+                                    DeclarationScope declarationScope = getDeclarationScope(globalObject, modules.getOffset());
+                                    JsObject object = null;
+                                    String objectName = token.text().toString();
+                                    while (declarationScope != null && object == null) {
+                                        object = ((JsObject) declarationScope).getProperty(objectName);
+                                        declarationScope = declarationScope.getParentScope();
+                                    }
+                                    if (object != null) {
+                                        for (TypeUsage typeUsage : exposedTypes) {
+                                            object.addAssignment(typeUsage, modules.getOffset());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
         }
     }
 
     private boolean saveToIndex() {
         return RequireJsIndexer.Factory.isScannerThread() && !CODE_COMPLETION_THREAD_NAME.equals(Thread.currentThread().getName());
     }
-    
+
     public static JsObject findJsObjectByName(JsObject global, List<String> fqn) {
         JsObject result = global;
         JsObject property = result;
@@ -208,6 +264,29 @@ public class DefineInterceptor implements FunctionInterceptor {
                 }
             } else {
                 result = property;
+            }
+        }
+        return result;
+    }
+    
+    public static DeclarationScope getDeclarationScope(JsObject global, int offset) {
+        DeclarationScope dScope = (DeclarationScope)global;
+        DeclarationScope result = null; 
+        if (result == null) {
+            if (((JsObject)dScope).getOffsetRange().containsInclusive(offset)) {
+                result = dScope;
+                boolean deep = true;
+                while (deep) {
+                    deep = false;
+                    for (DeclarationScope innerScope : result.getChildrenScopes()) {
+                        if (((JsObject)innerScope).getOffsetRange().containsInclusive(offset)) {
+                            result = innerScope;
+                            deep = true;
+                            break;
+                        }
+                        
+                    }
+                }
             }
         }
         return result;
