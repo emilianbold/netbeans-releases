@@ -72,6 +72,8 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
@@ -114,6 +116,7 @@ import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.awt.Actions;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerManager.Provider;
 import org.openide.nodes.AbstractNode;
@@ -125,6 +128,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
+import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -773,10 +777,12 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     private static class GitBranchInfo {
         private final GitBranch branch;
         private final Boolean mergedStatus;
+        private final Boolean autoSyncState;
 
-        public GitBranchInfo (GitBranch branch, Boolean mergedStatus) {
+        public GitBranchInfo (GitBranch branch, Boolean mergedStatus, Boolean autoSyncState) {
             this.branch = branch;
             this.mergedStatus = mergedStatus;
+            this.autoSyncState = autoSyncState;
         }
     }
     
@@ -880,7 +886,8 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                             GitRevisionInfo commonAncestor = client.getCommonAncestor(new String[] { branchMergeWith, e.getValue().getId()}, GitUtils.NULL_PROGRESS_MONITOR);
                             mergedStatus = commonAncestor != null && commonAncestor.getRevision().equals(e.getValue().getId());
                         }
-                        BranchesTopChildren.this.branches.put(e.getKey(), new GitBranchInfo(e.getValue(), mergedStatus));
+                        boolean autoSyncState = GitModuleConfig.getDefault().getAutoSyncBranch(repository, e.getKey());
+                        BranchesTopChildren.this.branches.put(e.getKey(), new GitBranchInfo(e.getValue(), mergedStatus, autoSyncState));
                     }
                 } catch (GitException ex) {
                     LOG.log(Level.INFO, null, ex);
@@ -1026,12 +1033,14 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         private final Boolean mergeStatus;
         private final boolean remote;
         private String trackingStatus;
+        private Boolean autoSyncState;
 
         public BranchNode (File repository, GitBranchInfo branchInfo) {
             super(Children.LEAF, repository, Lookups.singleton(new Revision.BranchReference(branchInfo.branch)));
             GitBranch branch = branchInfo.branch;
             branchName = branch.getName();
             mergeStatus = branchInfo.mergedStatus;
+            autoSyncState = branchInfo.autoSyncState;
             branchId = branch.getId();
             trackedBranch = branch.getTrackedBranch();
             remote = branch.isRemote();
@@ -1113,6 +1122,8 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         @NbBundle.Messages({
             "# {0} - branch name", "LBL_DiffToTrackedBranchAction_PopupName=Diff to \"{0}\"",
             "# {0} - branch name", "LBL_SyncBranchAction_PopupName=Sync with \"{0}\"",
+            "# {0} - branch name", "LBL_AutosyncBranchAction_PopupName=Automatically sync with \"{0}\"",
+            "# {0} - branch name", "# {1} - remote branch name", "MSG_AutosyncBranchAction_progress=Synchronizing \"{0}\" with \"{1}\"",
             "LBL_SetTrackedBranchAction_PopupName=Setup Tracked Branch"
         })
         protected Action[] getPopupActions (boolean context) {
@@ -1246,6 +1257,47 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                                 return !active;
                             }
                         });
+                        
+                        class AutoSyncAction extends AbstractAction implements Presenter.Popup {
+
+                            @Override
+                            public void actionPerformed (ActionEvent e) {
+                            }
+
+                            @Override
+                            public JMenuItem getPopupPresenter () {
+                                final JCheckBoxMenuItem item = new JCheckBoxMenuItem();
+                                item.setState(autoSyncState);
+                                Action a = new AbstractAction(Bundle.LBL_AutosyncBranchAction_PopupName(trackedBranch.getName())) {
+
+                                    @Override
+                                    public void actionPerformed (ActionEvent e) {
+                                        final boolean autoSync = item.getState();
+                                        autoSyncState = autoSync;
+                                        new GitProgressSupport() {
+
+                                            @Override
+                                            protected void perform () {
+                                                GitModuleConfig.getDefault().setAutoSyncBranch(repo, branch, autoSync);
+                                                if (autoSync) {
+                                                    try {
+                                                        new BranchSynchronizer().syncBranches(repo, new String[] { branch }, this);
+                                                    } catch (GitException ex) {
+                                                        GitClientExceptionHandler.notifyException(ex, true);
+                                                    }
+                                                }
+                                            }
+                                        }.start(Git.getInstance().getRequestProcessor(repo), repo,
+                                                Bundle.MSG_AutosyncBranchAction_progress(branch, trackedBranch.getName()));
+                                    }
+                                    
+                                };
+                                Actions.connect(item, a, true);
+                                return item;
+                            }
+                            
+                        }
+                        actions.add(new AutoSyncAction());
                     }
                     actions.add(new AbstractAction(Bundle.LBL_SetTrackedBranchAction_PopupName()) {
                         @Override

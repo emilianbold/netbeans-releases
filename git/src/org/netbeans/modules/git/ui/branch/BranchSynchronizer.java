@@ -69,17 +69,17 @@ import org.openide.util.NbBundle;
  *
  * @author ondra
  */
+@NbBundle.Messages({
+    "LBL_SyncBranchAction.progressName=Synchronizing with tracked branch",
+    "# {0} - branch name", "# {1} - tracked branch name", "MSG_SyncBranchAction.result=Synchronizing branch {0} with {1}\n",
+    "# {0} - tracked branch name", "MSG_SyncBranchAction.result.upToDate=Already in sync with {0}",
+    "# {0} - branch name", "MSG_SyncBranchAction.result.notAttempted=Sync interrupted, likely because \"{0}\" is an unsupported reference.",
+    "# {0} - branch name", "MSG_SyncBranchAction.result.notAttempted.pushNeeded=Sync not started, branch \"{0}\" requires a push.",
+    "MSG_SyncBranchAction.result.rejected=Rejected - requires full merge.",
+    "# {0} - branch name", "MSG_SyncBranchAction.result.ff=Branch \"{0}\" fast-forwarded to:\n"
+})
 public final class BranchSynchronizer {
 
-    @NbBundle.Messages({
-        "LBL_SyncBranchAction.progressName=Synchronizing with tracked branch",
-        "# {0} - branch name", "# {1} - tracked branch name", "MSG_SyncBranchAction.result=Synchronizing branch {0} with {1}\n",
-        "# {0} - tracked branch name", "MSG_SyncBranchAction.result.upToDate=Already in sync with {0}",
-        "# {0} - branch name", "MSG_SyncBranchAction.result.notAttempted=Sync interrupted, likely because \"{0}\" is an unsupported reference.",
-        "# {0} - branch name", "MSG_SyncBranchAction.result.notAttempted.pushNeeded=Sync not started, branch \"{0}\" requires a push.",
-        "MSG_SyncBranchAction.result.rejected=Rejected - requires full merge.",
-        "# {0} - branch name", "MSG_SyncBranchAction.result.ff=Branch \"{0}\" fast-forwarded to:\n"
-    })
     public void syncBranches (final File repository, final String[] branchNames, final boolean interactive) {
         GitProgressSupport supp = new GitProgressSupport() {
             @Override
@@ -93,6 +93,18 @@ public final class BranchSynchronizer {
             }
         };
         supp.start(Git.getInstance().getRequestProcessor(repository), repository, Bundle.LBL_SyncBranchAction_progressName());
+    }
+
+    public void syncBranches (File repository, String[] branchNames, GitProgressSupport supp) throws GitException {
+        GitClient client = null;
+        try {
+            client = Git.getInstance().getClient(repository);
+            new Executor(client, supp.getLogger(), repository, branchNames, supp.getProgressMonitor(), false).execute();
+        } finally {
+            if (client != null) {
+                client.release();
+            }
+        }
     }
 
     private static Map<String, GitBranch> getBranches (File repository) {
