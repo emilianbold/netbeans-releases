@@ -175,6 +175,9 @@ public final class MacroExpansionCaretAwareFactory extends IndexingAwareParserRe
     }
 
     private void syncRelatedDocumentCaretPosition(final CursorMovedSchedulerEvent event, final Document doc) {
+        if (!MacroExpansionTopComponent.isSyncCaretAndContext()) {
+            return;
+        }
         if (doc != null) {
             Document doc2 = (Document) doc.getProperty(Document.class);
             if (doc2 != null) {

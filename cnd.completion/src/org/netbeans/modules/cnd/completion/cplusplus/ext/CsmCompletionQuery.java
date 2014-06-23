@@ -337,6 +337,9 @@ abstract public class CsmCompletionQuery {
                 baseDocument = (BaseDocument) CsmUtilities.getDocument(expression.getContainingFile());                
                 if (baseDocument == null) {
                     CloneableEditorSupport support = CsmUtilities.findCloneableEditorSupport(expression.getContainingFile());
+                    if (support == null) {
+                        return false;
+                    }
                     baseDocument = (BaseDocument) support.openDocument();
                 }
 
