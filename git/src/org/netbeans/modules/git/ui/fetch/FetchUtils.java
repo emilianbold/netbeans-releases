@@ -42,15 +42,22 @@
 package org.netbeans.modules.git.ui.fetch;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.libs.git.GitBranch;
+import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRefUpdateResult;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate.Type;
+import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.branch.BranchSynchronizer;
 import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -136,5 +143,33 @@ final class FetchUtils {
     
     private FetchUtils() {
         
+    }
+
+    static void syncTrackingBranches (File repository, Map<String, GitTransportUpdate> updates, GitProgressSupport supp) {
+        List<String> branchNames = new ArrayList<>();
+        RepositoryInfo info = RepositoryInfo.getInstance(repository);
+        Map<String, GitBranch> branches = info.getBranches();
+        RepositoryInfo.NBGitConfig cfg = info.getNetbeansConfig();
+        for (Map.Entry<String, GitTransportUpdate> e : updates.entrySet()) {
+            GitTransportUpdate update = e.getValue();
+            if (UPDATED_STATUSES.contains(update.getResult())) {
+                if (update.getType() == Type.BRANCH) {
+                    String remoteBranchName = e.getValue().getLocalName();
+                    for (GitBranch b : branches.values())  {
+                        if (!b.isRemote() && !b.isActive() && b.getTrackedBranch() != null
+                                && b.getTrackedBranch().getName().equals(remoteBranchName)
+                                && cfg.getAutoSyncBranch(b.getName())) {
+                            // this branch is not active, is local and tracks the remote branch
+                            branchNames.add(b.getName());
+                        }
+                    }
+                }
+            }
+        }
+        try {
+            new BranchSynchronizer().syncBranches(repository, branchNames.toArray(new String[branchNames.size()]), supp);
+        } catch (GitException ex) {
+            Logger.getLogger(FetchUtils.class.getName()).log(Level.INFO, null, ex);
+        }
     }
 }

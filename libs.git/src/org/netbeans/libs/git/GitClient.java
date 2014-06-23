@@ -101,6 +101,7 @@ import org.netbeans.libs.git.jgit.commands.SetUpstreamBranchCommand;
 import org.netbeans.libs.git.jgit.commands.SubmoduleInitializeCommand;
 import org.netbeans.libs.git.jgit.commands.SubmoduleStatusCommand;
 import org.netbeans.libs.git.jgit.commands.SubmoduleUpdateCommand;
+import org.netbeans.libs.git.jgit.commands.UpdateRefCommand;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.NotificationListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -1098,6 +1099,26 @@ public final class GitClient {
         UnignoreCommand cmd = new UnignoreCommand(repository, getClassFactory(), files, monitor, delegateListener);
         cmd.execute();
         return cmd.getModifiedIgnoreFiles();
+    }
+    
+    /**
+     * Updates a given reference to a new id. If the new id is also a ref then
+     * the ref will be updated to the same commit id referenced by the new id.
+     * The update will not be permitted if the reference is not merged into the
+     * new commit (i.e. contains its private commits).
+     *
+     * @param referenceName name of the ref to update
+     * @param newId the new reference id
+     * @param monitor progress monitor
+     * @return result result of the update
+     * @throws GitException an unexpected error happens
+     * @since 1.24
+     */
+    public GitRefUpdateResult updateReference (String referenceName, String newId, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        UpdateRefCommand cmd = new UpdateRefCommand(repository, getClassFactory(), referenceName, newId, monitor);
+        cmd.execute();
+        return cmd.getResult();
     }
 
     /**
