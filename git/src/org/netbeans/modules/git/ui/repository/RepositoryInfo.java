@@ -42,21 +42,29 @@
 
 package org.netbeans.modules.git.ui.repository;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.eclipse.jgit.errors.ConfigInvalidException;
+import org.eclipse.jgit.lib.ConfigConstants;
+import org.eclipse.jgit.storage.file.FileBasedConfig;
+import org.eclipse.jgit.util.FS;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
@@ -113,6 +121,8 @@ public class RepositoryInfo {
     private GitRepositoryState repositoryState;
     private final String name;
     private static final Set<String> logged = Collections.synchronizedSet(new HashSet<String>());
+    private NBGitConfig nbConfig;
+    private static final String NETBEANS_CONFIG_FILE = "nbconfig"; //NOI18N
     
     private RepositoryInfo (File root) {
         this.rootRef = new WeakReference<File>(root);
@@ -169,10 +179,12 @@ public class RepositoryInfo {
                 LOG.log(Level.WARNING, "refresh (): root is null, it has been collected in the meantime"); //NOI18N
             } else {
                 LOG.log(Level.FINE, "refresh (): starting for {0}", root); //NOI18N
+                NBGitConfig cfg = getNetbeansConfig(root);
                 client = Git.getInstance().getClient(root);
                 // get all needed information at once before firing events. Thus we supress repeated annotations' refreshing
                 Map<String, GitBranch> newBranches = client.getBranches(true, GitUtils.NULL_PROGRESS_MONITOR);
                 setBranches(newBranches);
+                cfg.removeDeletedBranches(newBranches);
                 Map<String, GitTag> newTags = client.getTags(GitUtils.NULL_PROGRESS_MONITOR, false);
                 setTags(newTags);
                 try {
@@ -216,6 +228,23 @@ public class RepositoryInfo {
                 client.release();
             }
         }
+    }
+
+    public NBGitConfig getNetbeansConfig () {
+        return getNetbeansConfig(rootRef.get());
+    }
+
+    private NBGitConfig getNetbeansConfig (File root) {
+        if (root == null) {
+            return null;
+        }
+        if (nbConfig == null) {
+            nbConfig = new NBGitConfig(root);
+        }
+        if (!EventQueue.isDispatchThread()) {
+            nbConfig.refresh();
+        }
+        return nbConfig;
     }
     
     private void setActiveBranch (Map<String, GitBranch> branches) throws GitException {
@@ -458,6 +487,88 @@ public class RepositoryInfo {
                 }
             }
             return info;
+        }
+    }
+
+    private static final String CONFIG_AUTO_SYNC = "autoSync"; //NOI18N
+    
+    public static class NBGitConfig {
+        private final FileBasedConfig config;
+        private final RequestProcessor.Task saveTask;
+        private Set<String> cachedBranches = Collections.<String>emptySet();
+
+        public NBGitConfig (File root) {
+            this.config = new FileBasedConfig(new File(GitUtils.getGitFolderForRoot(root), NETBEANS_CONFIG_FILE), FS.DETECTED);
+            saveTask = rp.create(new SaveTask());
+        }
+
+        public boolean getAutoSyncBranch (String branch) {
+            return config.getBoolean(ConfigConstants.CONFIG_BRANCH_SECTION, branch, CONFIG_AUTO_SYNC, false);
+        }
+
+        public void setAutoSyncBranch (String branch, boolean autoSync) {
+            boolean oldVal = getAutoSyncBranch(branch);
+            if (oldVal != autoSync) {
+                if (autoSync) {
+                    config.setBoolean(ConfigConstants.CONFIG_BRANCH_SECTION, branch, CONFIG_AUTO_SYNC, autoSync);
+                } else {
+                    config.unset(ConfigConstants.CONFIG_BRANCH_SECTION, branch, CONFIG_AUTO_SYNC);
+                    if (config.getNames(ConfigConstants.CONFIG_BRANCH_SECTION, branch).isEmpty()) {
+                        config.unsetSection(ConfigConstants.CONFIG_BRANCH_SECTION, branch);
+                    }
+                }
+                save();
+            }
+        }
+
+        private void refresh () {
+            try {
+                if (config.isOutdated()) {
+                    config.load();
+                }
+            } catch (IOException | ConfigInvalidException ex) {
+                LOG.log(Level.INFO, null, ex);
+            }
+        }
+
+        private void save () {
+            saveTask.schedule(1000);
+        }
+
+        private void removeDeletedBranches (Map<String, GitBranch> branches) {
+            Set<String> localBranches = new HashSet<>();
+            for (Map.Entry<String, GitBranch> b : branches.entrySet()) {
+                if (!b.getValue().isRemote() && !b.getKey().equals(GitBranch.NO_BRANCH)) {
+                    localBranches.add(b.getKey());
+                }
+            }
+            if (!localBranches.equals(cachedBranches)) {
+                cachedBranches = localBranches;
+                List<String> toRemove = new ArrayList<>(config.getSubsections(ConfigConstants.CONFIG_BRANCH_SECTION));
+                boolean save = false;
+                for (String branchName : toRemove) {
+                    if (!localBranches.contains(branchName)) {
+                        config.unsetSection(ConfigConstants.CONFIG_BRANCH_SECTION, branchName);
+                        save = true;
+                    }
+                }
+                if (save) {
+                    save();
+                }
+            }
+        }
+        
+        private class SaveTask implements Runnable {
+
+            @Override
+            public void run () {
+                try {
+                    config.save();
+                } catch (IOException ex) {
+                    LOG.log(Level.INFO, null, ex);
+                }
+            }
+            
         }
     }
 }

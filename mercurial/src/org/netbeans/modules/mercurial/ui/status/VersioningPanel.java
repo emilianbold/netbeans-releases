@@ -295,10 +295,12 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
                     if (nodes.length > 0) {
                         syncTable.setColumns(tableColumns);
                         setVersioningComponent(syncTable.getComponent());
+                        syncTable.focus();
                     } else {
                         /* #126311: Optimize UI for Large repos
                         parentTopComponent.setBranchTitle(branchTitle); */
                         setVersioningComponent(noContentComponent);
+                        noContentComponent.requestFocusInWindow();
                     }
                     syncTable.setTableModel(nodes);
                     btnCommit.setEnabled(nodes.length > 0);
@@ -472,6 +474,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     }
     
     void focus() {
+        requestFocusInWindow();
         syncTable.focus();
     }
     
