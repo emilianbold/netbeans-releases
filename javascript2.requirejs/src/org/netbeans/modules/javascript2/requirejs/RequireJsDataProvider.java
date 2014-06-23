@@ -103,6 +103,8 @@ public class RequireJsDataProvider {
 
     static {
         TRANSLATE_NAME.put("moduleconfig", "config");//NOI18N
+        // remove this option
+        TRANSLATE_NAME.put("map-notes", ""); //NOI18N
     }
 
     public static synchronized RequireJsDataProvider getDefault() {
@@ -168,7 +170,9 @@ public class RequireJsDataProvider {
                 if (TRANSLATE_NAME.containsKey(option)) {
                     option = TRANSLATE_NAME.get(option);
                 }
-                result.add(option);
+                if (!(option == null || option.isEmpty())) { 
+                    result.add(option);
+                }
                 index = api.indexOf(SEARCH_TEXT, index);
             }
         }

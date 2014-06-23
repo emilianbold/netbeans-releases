@@ -52,7 +52,6 @@ public enum ConfigOption {
     BUNDLES("bundles", OptionType.OBJECT), 
     SHIM("shim", OptionType.OBJECT), 
     MAP("map", OptionType.OBJECT), 
-    MAP_NOTES("map-notes", OptionType.OBJECT), 
     CONFIG("config", OptionType.OBJECT), 
     PACKAGES("packages", OptionType.ARRAY), 
     NODEIDCOMPAT("nodeIdCompat", OptionType.BOOLEAN), 
