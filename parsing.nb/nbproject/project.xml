@@ -202,6 +202,9 @@
                         <test/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.projectapi.nb</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.openide.util.base</code-name-base>
                         <recursive/>
                         <compile-dependency/>
