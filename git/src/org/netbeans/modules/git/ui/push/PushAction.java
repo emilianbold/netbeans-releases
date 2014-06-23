@@ -279,7 +279,7 @@ public class PushAction extends SingleRepositoryAction {
                     // push
                     boolean cont = true;
                     while (cont && !isCanceled()) {
-                        setProgress(Bundle.MSG_PushAction_pushing());
+                        setDisplayName(Bundle.MSG_PushAction_pushing());
                         GitPushResult result = client.push(target, pushRefSpecs, fetchRefSpecs, getProgressMonitor());
                         logUpdates(getRepositoryRoot(), result.getRemoteRepositoryUpdates(),
                                 "MSG_PushAction.updates.remoteUpdates", true); //NOI18N
@@ -310,7 +310,7 @@ public class PushAction extends SingleRepositoryAction {
                                 return;
                             }
                             // after-push hooks
-                            setProgress(NbBundle.getMessage(PushAction.class, "MSG_PushAction.finalizing")); //NOI18N
+                            setDisplayName(NbBundle.getMessage(PushAction.class, "MSG_PushAction.finalizing")); //NOI18N
                             afterPush(hooks, result.getRemoteRepositoryUpdates());
                         }
                     }
@@ -554,7 +554,7 @@ public class PushAction extends SingleRepositoryAction {
                     if (o == outputBtn) {
                         getLogger().getOpenOutputAction().actionPerformed(new ActionEvent(PushAction.this, ActionEvent.ACTION_PERFORMED, null));
                     } else if (o == pullBtn) {
-                        setProgress(Bundle.MSG_PushAction_pullingChanges());
+                        setDisplayName(Bundle.MSG_PushAction_pullingChanges());
                         ActionProgress result = SystemAction.get(PullFromUpstreamAction.class).pull(repository);
                         if (result != null) {
                             result.getActionTask().waitFinished();

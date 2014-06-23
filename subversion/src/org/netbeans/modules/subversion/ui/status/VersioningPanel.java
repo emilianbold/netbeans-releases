@@ -328,8 +328,10 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
                                 syncTable.setColumns(tableColumns);
                                 parentTopComponent.setBranchTitle(branchTitle);
                                 setVersioningComponent(syncTable.getComponent());
+                                syncTable.focus();
                             } else {
                                 setVersioningComponent(noContentComponent);
+                                noContentComponent.requestFocusInWindow();
                             }
                             syncTable.setTableModel(nodes);
                             // finally section, it's enqueued after this request
@@ -557,6 +559,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     }
 
     void focus() {
+        requestFocusInWindow();
         syncTable.focus();
     }
 

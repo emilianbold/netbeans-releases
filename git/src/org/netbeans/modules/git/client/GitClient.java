@@ -65,6 +65,7 @@ import org.netbeans.libs.git.GitMergeResult;
 import org.netbeans.libs.git.GitPullResult;
 import org.netbeans.libs.git.GitPushResult;
 import org.netbeans.libs.git.GitRebaseResult;
+import org.netbeans.libs.git.GitRefUpdateResult;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.GitRevertResult;
@@ -158,6 +159,7 @@ public final class GitClient {
             "listRemoteTags", //NOI18N
             "log", //NOI18N
             "unignore", //NOI18N
+            "updateReference", //NOI18N
             "push", //NOI18N - does not manipulate with index
             "removeNotificationListener", //NOI18N
             "removeRemote", //NOI18N - does not update index or files in WT
@@ -184,6 +186,7 @@ public final class GitClient {
             "revert", //NOI18N - creates a new head
             "setRemote", //NOI18N - updates remotes
             "setUpstreamBranch", //NOI18N - updates remotes
+            "updateReference", //NOI18N - updates branches
             "updateSubmodules" //NOI18N - current head changes
     ));
     /**
@@ -751,6 +754,17 @@ public final class GitClient {
         }, "unignore"); //NOI18N
     }
 
+    public GitRefUpdateResult updateReference (final String referenceName, final String newId,
+            final ProgressMonitor monitor) throws GitException {
+        return new CommandInvoker().runMethod(new Callable<GitRefUpdateResult>() {
+
+            @Override
+            public GitRefUpdateResult call () throws Exception {
+                return delegate.updateReference(referenceName, newId, monitor);
+            }
+        }, "updateReference"); //NOI18N
+    }
+
     public Map<File, GitSubmoduleStatus> updateSubmodules (final File[] roots, final ProgressMonitor monitor) throws GitException {
         return new CommandInvoker().runMethod(new Callable<Map<File, GitSubmoduleStatus>>() {
 
@@ -769,7 +783,7 @@ public final class GitClient {
             public GitBranch call () throws Exception {
                 return delegate.setUpstreamBranch(localBranchName, remoteBranchName, monitor);
             }
-        }, "updateTracking"); //NOI18N
+        }, "setUpstreamBranch"); //NOI18N
     }
 
     private static class CleanTask implements Runnable {
