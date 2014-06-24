@@ -74,17 +74,28 @@ public abstract class GitFileNode<T extends FileNodeInformation> extends VCSFile
     }
     
     @Override
-    public abstract FileNodeInformation getInformation ();
+    public abstract T getInformation ();
 
     public static class GitLocalFileNode extends GitFileNode<FileInformation> {
+        private FileInformation.Mode mode;
         
         public GitLocalFileNode(File root, File file) {
             super(root, file);
         }
         
+        public GitLocalFileNode(File root, File file, FileInformation.Mode mode) {
+            super(root, file);
+            this.mode = mode;
+        }
+        
         @Override
         public FileInformation getInformation() {
             return Git.getInstance().getFileStatusCache().getStatus(getFile());
+        }
+
+        @Override
+        public String getStatusText () {
+            return mode == null ? getInformation().getStatusText() : getInformation().getStatusText(mode);
         }
 
         @Override

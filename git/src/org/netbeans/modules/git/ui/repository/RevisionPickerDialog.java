@@ -40,13 +40,11 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-/*
- * RevisionPickerDialog.java
- *
- * Created on Dec 7, 2010, 7:24:51 PM
- */
-
 package org.netbeans.modules.git.ui.repository;
+
+import java.awt.EventQueue;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 
 /**
  *
@@ -55,12 +53,48 @@ package org.netbeans.modules.git.ui.repository;
 public class RevisionPickerDialog extends javax.swing.JPanel {
     private final RevisionInfoPanel infoPanel;
     private final RepositoryBrowserPanel browserPanel;
+    private int sliderPos;
 
     /** Creates new form RevisionPickerDialog */
     public RevisionPickerDialog (RevisionInfoPanel infoPanel, RepositoryBrowserPanel browserPanel) {
         this.infoPanel = infoPanel;
         this.browserPanel = browserPanel;
         initComponents();
+        browserPanel.addAncestorListener(new AncestorListener() {
+
+            @Override
+            public void ancestorAdded (AncestorEvent event) {
+                RevisionPickerDialog.this.browserPanel.removeAncestorListener(this);
+                if (sliderPos > 0) {
+                    EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run () {
+                            jSplitPane1.setDividerLocation(sliderPos);
+                        }
+
+                    });
+                }
+            }
+
+            @Override
+            public void ancestorRemoved (AncestorEvent event) {
+            }
+
+            @Override
+            public void ancestorMoved (AncestorEvent event) {
+            }
+
+        });
+    }
+    
+    void setSliderPosition (int pos) {
+        this.sliderPos = pos;
+        jSplitPane1.setDividerLocation(pos);
+    }
+    
+    int getSliderPosition () {
+        return jSplitPane1.getDividerLocation();
     }
 
     /** This method is called from within the constructor to

@@ -227,6 +227,10 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
             return;
         }
 
+        // if the file is closing
+        if (context == null) {
+            return;
+        }
         FileObject facesConfigFO = context.getFacesConfigFile();
         if (!facesConfigFO.isValid()) {
             // XXX #148551 File is invalid, probably deleted already.

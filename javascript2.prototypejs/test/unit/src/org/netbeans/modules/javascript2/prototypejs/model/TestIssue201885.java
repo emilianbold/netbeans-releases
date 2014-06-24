@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,19 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelutil.spi;
 
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
+package org.netbeans.modules.javascript2.prototypejs.model;
 
 /**
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
+ *
+ * @author Petr Pisl
  */
-public interface FileObjectRedirector {
+public class TestIssue201885 extends PrototypeJsTestBase {
+
+    private static final String filePath = "basic/issue201885.js";
     
-    FileObject redirect(FileObject file);
+    public TestIssue201885(String testName) {
+        super(testName);
+    }
     
-    DataObject redirect(DataObject file);
+    public void testStructure() throws Exception {
+        checkStructure(filePath);
+    }
+
+    public void testSemantic() throws Exception {
+        checkSemantic(filePath);
+    }
+    
+    public void testCC_01() throws Exception {
+        checkCompletion(filePath, "var person = new Pe^rson();", false);
+    }
+    
+    public void testCC_02() throws Exception {
+        checkCompletion(filePath, "person.^", false);
+    }
+    
+    public void testOccurreces_01() throws Exception {
+        checkOccurrences(filePath, "var Per^son = Class.create({", true);
+    }
+    
+    public void testOccurreces_02() throws Exception {
+        checkOccurrences(filePath, "initialize: function(nam^e){", true);
+    }
+   
 }

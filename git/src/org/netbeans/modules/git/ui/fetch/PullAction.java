@@ -173,7 +173,8 @@ public class PullAction extends SingleRepositoryAction {
 
         @Override
         @NbBundle.Messages({
-            "# {0} - branch name", "MSG_PullAction.branchDeleted=Branch {0} deleted."
+            "# {0} - branch name", "MSG_PullAction.branchDeleted=Branch {0} deleted.",
+            "MSG_PullAction.progress.syncBranches=Synchronizing tracking branches"
         })
         protected void perform () {
             final File repository = getRepositoryRoot();
@@ -207,13 +208,17 @@ public class PullAction extends SingleRepositoryAction {
                             client.deleteBranch(branch, true, getProgressMonitor());
                             getLogger().outputLine(Bundle.MSG_PullAction_branchDeleted(branch));
                         }
-                        setProgress(Bundle.MSG_PullAction_fetching());
+                        setDisplayName(Bundle.MSG_PullAction_fetching());
                         Map<String, GitTransportUpdate> fetchResult = FetchAction.fetchRepeatedly(
                                 client, getProgressMonitor(), target, fetchRefSpecs);
                         if (isCanceled()) {
                             return null;
                         }
                         FetchUtils.log(repository, fetchResult, getLogger());
+                        if (!isCanceled()) {
+                            setDisplayName(Bundle.MSG_PullAction_progress_syncBranches());
+                            FetchUtils.syncTrackingBranches(repository, fetchResult, GitProgressSupportImpl.this);
+                        }
                         if (isCanceled() || branchToMerge == null) {
                             return null;
                         }
@@ -313,12 +318,13 @@ public class PullAction extends SingleRepositoryAction {
                 boolean cont;
                 GitClient client = getClient();
                 File repository = getRepositoryRoot();
-                setProgress(Bundle.MSG_PullAction_merging());
+                setDisplayName(Bundle.MSG_PullAction_merging());
                 do {
                     MergeRevisionAction.MergeResultProcessor mrp = new MergeRevisionAction.MergeResultProcessor(client, repository, branchToMerge, getLogger(), getProgressMonitor());
                     cont = false;
                     try {
                         GitMergeResult result = client.merge(branchToMerge, getProgressMonitor());
+                        mrp.processResult(result);
                         if (result.getMergeStatus() == GitMergeResult.MergeStatus.ALREADY_UP_TO_DATE
                                 || result.getMergeStatus() == GitMergeResult.MergeStatus.FAST_FORWARD
                                 || result.getMergeStatus() == GitMergeResult.MergeStatus.MERGED) {
@@ -340,7 +346,7 @@ public class PullAction extends SingleRepositoryAction {
 
             @Override
             public ActionProgress call () throws GitException  {
-                setProgress(Bundle.MSG_PullAction_rebasing());
+                setDisplayName(Bundle.MSG_PullAction_rebasing());
                 RebaseOperationType op = RebaseOperationType.BEGIN;
                 GitClient client = getClient();
                 File repository = getRepositoryRoot();

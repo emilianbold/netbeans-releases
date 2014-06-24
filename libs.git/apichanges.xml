@@ -111,6 +111,23 @@ is the proper place.
         
         <change>
             <api name="gitlibrary_api"/>
+            <summary>New method for updating a reference (branch) to a new commit id.</summary>
+            <version major="1" minor="24"/>
+            <date day="23" month="6" year="2014"/>
+            <author login="ovrabec"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>In order to simplify a trivial use-case of merging a remote branch into a local branch
+                    not currently checked-out we're adding a new method able to update the local branch to
+                    the new id. It is possible only if the branch requires a fast-forward merge (does not
+                    contain any unpushed commits).
+                </p>
+            </description>
+            <class package="org.netbeans.libs.git" name="GitClient"/>
+            <issue number="245078"/>
+        </change>
+        <change>
+            <api name="gitlibrary_api"/>
             <summary>New methods in ProgressMonitor informing about the progress of command's subtasks.</summary>
             <version major="1" minor="21"/>
             <date day="4" month="3" year="2014"/>

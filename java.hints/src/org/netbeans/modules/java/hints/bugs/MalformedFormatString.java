@@ -61,6 +61,8 @@ import java.util.UnknownFormatConversionException;
 import java.util.UnknownFormatFlagsException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
@@ -132,6 +134,15 @@ public class MalformedFormatString {
         = "%(\\d+\\$)?([-#+ 0,(\\<]*)?(\\d+)?(\\.\\d+)?([tT])?([a-zA-Z%])"; // NOI18N
     
     private static final Pattern formatPattern = Pattern.compile(formatSpecifier);
+    
+    /**
+     * Subclasses of these types are allowed as parameters to 'date/time' formatter.
+     */
+    private static final String[] CALENDAR_ALLOWED_TYPES = {
+        "java.lang.Long", // NOI18N
+        "java.util.Calendar", // NOI18N
+        "java.util.Date" // NOI18N
+    };
 
     @TriggerPatterns({
         @TriggerPattern(value="$s.format($f, $vars1$)", constraints = {
@@ -215,7 +226,7 @@ public class MalformedFormatString {
         int lastArg = -1;
         int requiredArgs = -1;
         List<ErrorDescription> descs = new ArrayList<ErrorDescription>();
-        for (int i = 0, len = fmtString.length(); i < len; i = matcher.end()) {
+        params: for (int i = 0, len = fmtString.length(); i < len; i = matcher.end()) {
             int argIndex = -1;
             if (matcher.find(i)) {
                 String idx = matcher.group(1); // index
@@ -261,13 +272,14 @@ public class MalformedFormatString {
                         // OK
                         continue;
                     } else if (tk == TypeKind.DECLARED) {
-                        TypeElement tel = (TypeElement)((DeclaredType)tm).asElement();
-                        if (tel != null) {
-                            switch (tel.getQualifiedName().toString()) {
-                                case "java.lang.Long": // NOI18N
-                                case "java.util.Calendar": // NOI18N
-                                case "java.util.Date": // NOI18N
-                                    continue;
+                        for (int j = CALENDAR_ALLOWED_TYPES.length - 1; j >= 0; j--) {
+                            String fqn = CALENDAR_ALLOWED_TYPES[j];
+                            Element el = ctx.getInfo().getElements().getTypeElement(fqn);
+                            if (el == null || el.getKind() != ElementKind.CLASS) {
+                                continue;
+                            }
+                            if (ctx.getInfo().getTypes().isAssignable(tm, el.asType())) {
+                                continue params;
                             }
                         }
                     }

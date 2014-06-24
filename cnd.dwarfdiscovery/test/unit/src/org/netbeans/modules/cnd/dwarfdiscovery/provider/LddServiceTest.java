@@ -86,6 +86,52 @@ public class LddServiceTest extends NativeExecutionBaseTestCase {
     public void testSubprojectUbuntu() throws IOException {
         String executable = getResource("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_Ubuntu1010_x64_gcc/main/dist/Debug/GNU-Linux-x86/main");
         SharedLibraries res1 = LddService.getPubNames(executable);
+        assertEquals(6, res1.getDlls().size());
+        assertEquals(1, res1.getPaths().size());
+        for(String java : javaPaths()) {
+            ProcessUtils.ExitStatus status = getJavaProcess(java, LddService.class, ExecutionEnvironmentFactory.getLocal(), new String[]{executable});
+            assertNotNull(status);
+            assertTrue("Cannot execute "+java, status.isOK());
+            BufferedReader br = new BufferedReader(new StringReader(status.output));
+            SharedLibraries res2 = LddService.getPubNames(br);
+            assertEquals(res1.getDlls().size(), res2.getDlls().size());
+            assertEquals(res1.getPaths().size(), res2.getPaths().size());
+            for(int i = 0; i < res1.getDlls().size(); i++) {
+                assert  res1.getDlls().get(i).equals(res2.getDlls().get(i));
+            }
+            for(int i = 0; i < res1.getPaths().size(); i++) {
+                assert  res1.getPaths().get(i).equals(res2.getPaths().get(i));
+            }
+        }
+    }
+
+    public void testSubprojectRedHat() throws IOException {
+        String executable = getResource("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_RHEL55_x64_gcc/main/dist/Debug/GNU-Linux-x86/main");
+        SharedLibraries res1 = LddService.getPubNames(executable);
+        assertEquals(6, res1.getDlls().size());
+        assertEquals(1, res1.getPaths().size());
+        for(String java : javaPaths()) {
+            ProcessUtils.ExitStatus status = getJavaProcess(java, LddService.class, ExecutionEnvironmentFactory.getLocal(), new String[]{executable});
+            assertNotNull(status);
+            assertTrue("Cannot execute "+java, status.isOK());
+            BufferedReader br = new BufferedReader(new StringReader(status.output));
+            SharedLibraries res2 = LddService.getPubNames(br);
+            assertEquals(res1.getDlls().size(), res2.getDlls().size());
+            assertEquals(res1.getPaths().size(), res2.getPaths().size());
+            for(int i = 0; i < res1.getDlls().size(); i++) {
+                assert  res1.getDlls().get(i).equals(res2.getDlls().get(i));
+            }
+            for(int i = 0; i < res1.getPaths().size(); i++) {
+                assert  res1.getPaths().get(i).equals(res2.getPaths().get(i));
+            }
+        }
+    }
+
+    public void testSubprojectSparc64() throws IOException {
+        String executable = getResource("/org/netbeans/modules/cnd/dwarfdiscovery/projects/Subproject_sparc64/main/dist/Debug/OracleSolarisStudio-Solaris-Sparc/main");
+        SharedLibraries res1 = LddService.getPubNames(executable);
+        assertEquals(6, res1.getDlls().size());
+        assertEquals(1, res1.getPaths().size());
         for(String java : javaPaths()) {
             ProcessUtils.ExitStatus status = getJavaProcess(java, LddService.class, ExecutionEnvironmentFactory.getLocal(), new String[]{executable});
             assertNotNull(status);
@@ -106,6 +152,8 @@ public class LddServiceTest extends NativeExecutionBaseTestCase {
     public void testSubprojectWindows() throws IOException {
         String executable = getResource("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windows7_cygwin/main/dist/Debug/Cygwin-Windows/main.exe");
         SharedLibraries res1 = LddService.getPubNames(executable);
+        assertEquals(3, res1.getDlls().size());
+        assertEquals(0, res1.getPaths().size());
         for(String java : javaPaths()) {
             ProcessUtils.ExitStatus status = getJavaProcess(java, LddService.class, ExecutionEnvironmentFactory.getLocal(), new String[]{executable});
             assertNotNull(status);

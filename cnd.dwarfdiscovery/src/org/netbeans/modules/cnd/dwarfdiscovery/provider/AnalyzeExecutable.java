@@ -56,6 +56,7 @@ import java.util.Set;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
@@ -279,7 +280,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
         Set<String> dlls = new HashSet<String>();
         FileSystem fs = (FileSystem) getProperty(FILE_SYSTEM).getValue();
         if (fs == null) {
-            ApplicableImpl applicable = sizeComilationUnit(set, dlls, findMain);
+            ApplicableImpl applicable = sizeComilationUnit(project, set, dlls, findMain);
             if (applicable.isApplicable()) {
                 return new ApplicableImpl(true, applicable.getErrors(), applicable.getCompilerName(), 70, applicable.isSunStudio(),
                         applicable.getDependencies(), applicable.getSearchPaths(), applicable.getSourceRoot(), applicable.getMainFunction());
@@ -373,7 +374,11 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                             }
                             File file = new File(path);
                             if (CndFileUtils.exists(file)) {
-                                unique.add(CndFileUtils.normalizeFile(file).getAbsolutePath());
+                                final String absolutePath = CndFileUtils.normalizeFile(file).getAbsolutePath();
+                                if (project.resolveSymbolicLinks()) {
+                                    DiscoveryUtils.resolveSymbolicLink(absolutePath);
+                                }
+                                unique.add(absolutePath);
                             }
                         }
                         myIncludedFiles = new ArrayList<String>(unique);

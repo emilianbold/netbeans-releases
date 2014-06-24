@@ -154,6 +154,7 @@ public class GitClientTest extends AbstractGitTestCase {
                 "setRemote",
                 "setUpstreamBranch",
                 "unignore",
+                "updateReference",
                 "updateSubmodules"
         ));
         Set<String> readOnlyMethods = new HashSet<String>(Arrays.asList(
@@ -269,6 +270,7 @@ public class GitClientTest extends AbstractGitTestCase {
                 "setRemote",
                 "setUpstreamBranch",
                 "unignore",
+                "updateReference",
                 "updateSubmodules"
         ));
         Set<String> expectedMethods = new HashSet<String>(Arrays.asList(
@@ -288,6 +290,7 @@ public class GitClientTest extends AbstractGitTestCase {
                 "revert",
                 "setRemote",
                 "setUpstreamBranch",
+                "updateReference",
                 "updateSubmodules"
         ));
         Field f = GitClient.class.getDeclaredField("NEED_REPOSITORY_REFRESH_COMMANDS");
@@ -370,6 +373,7 @@ public class GitClientTest extends AbstractGitTestCase {
                 "setRemote",
                 "setUpstreamBranch",
                 "unignore",
+                "updateReference",
                 "updateSubmodules"
         ));
         Set<String> networkMethods = new HashSet<String>(Arrays.asList(
@@ -544,6 +548,7 @@ public class GitClientTest extends AbstractGitTestCase {
                 "setRemote",
                 "setUpstreamBranch",
                 "unignore",
+                "updateReference",
                 "updateSubmodules"
         ));
         Set<String> parallelizableMethods = new HashSet<String>(Arrays.asList(

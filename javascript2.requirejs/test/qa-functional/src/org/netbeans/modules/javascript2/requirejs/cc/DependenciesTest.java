@@ -94,7 +94,7 @@ public class DependenciesTest extends GeneralRequire {
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         CompletionInfo completion = getCompletion();
         CompletionJListOperator cjo = completion.listItself;
-        checkCompletionItems(cjo, new String[]{"app", "bbb", "bbb2", "libs", "jquery", "piwik"});
+        checkCompletionItems(cjo, new String[]{"app", "bbb", "bbb2", "libs", "jquery", "piwik", "external"});
         checkCompletionDoesntContainItems(cjo, new String[]{"mymodule", "objectLiteral", "mymodule.js"});
         completion.listItself.hideAll();
         eo.pressKey(KeyEvent.VK_ESCAPE);

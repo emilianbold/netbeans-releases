@@ -50,14 +50,13 @@ import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.ui.options.DependencyChecking;
 import org.netbeans.modules.cnd.makeproject.ui.options.FixUnresolvedInclude;
-import org.netbeans.modules.cnd.makeproject.ui.options.FullFileIndexer;
 import org.netbeans.modules.cnd.makeproject.ui.options.RebuildPropsChanged;
+import org.netbeans.modules.cnd.makeproject.ui.options.ResolveSymbolicLinks;
 import org.netbeans.modules.cnd.makeproject.ui.options.ReuseOutputTab;
 import org.netbeans.modules.cnd.makeproject.ui.options.SaveModifiedBeforBuild;
 import org.netbeans.modules.cnd.makeproject.ui.options.ShowConfigurationWarning;
 import org.netbeans.modules.cnd.makeproject.ui.options.ViewBinaryFiles;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
-import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.SharedClassObject;
 
@@ -157,6 +156,11 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     // Dependency Checking
     public boolean getRebuildPropChanged() {
         return NamedOption.getAccessor().getBoolean(RebuildPropsChanged.REBUILD_PROP_CHANGED);
+    }
+
+    // Resolve symbolic links
+    public boolean getResolveSymbolicLinks() {
+        return NamedOption.getAccessor().getBoolean(ResolveSymbolicLinks.RESOLVE_SYMBOLIC_LINKS);
     }
 
     // Display binary files

@@ -138,20 +138,27 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
         if (jbossWeb.getContextRoot() == null || jbossWeb.getContextRoot().isEmpty()) {
             try {
                 if (j2eeModule.getArchive() != null) {
-                    return j2eeModule.getArchive().getName();
+                    return formatContextPath(j2eeModule.getArchive().getName());
                 }
                 if (j2eeModule.getUrl() != null) {
                     if (j2eeModule.getUrl().endsWith(".war")) {
-                        return j2eeModule.getUrl().substring(0, j2eeModule.getUrl().length() - 4);
+                        return formatContextPath(j2eeModule.getUrl().substring(0, j2eeModule.getUrl().length() - 4));
                     } else {
-                        return j2eeModule.getUrl();
+                        return formatContextPath(j2eeModule.getUrl());
                     }
                 }
             } catch (IOException ex) {
-                return jbossWeb.getContextRoot();
+                return formatContextPath(jbossWeb.getContextRoot());
             }
         }
-        return jbossWeb.getContextRoot();
+        return formatContextPath(jbossWeb.getContextRoot());
+    }
+
+    private String formatContextPath(final String contextRoot) {
+        if (!contextRoot.startsWith("/")) {
+            return '/' + contextRoot;
+        }
+        return contextRoot;
     }
 
     /**
@@ -586,11 +593,11 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
 
     private String getJbossWebSchemaLocation() {
         if (version == null || WildflyPluginUtils.WILDFLY_8_0_0.compareTo(version) <= 0) {
-            return "http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-web_8_0.xsd";
+            return "http://www.jboss.com/xml/ns/javaee http://www.jboss.org/schema/jbossas/jboss-web_8_0.xsd";
         } else if (WildflyPluginUtils.EAP_6_3_0.compareTo(version) <= 0) {
-            return "http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-web_7_2.xsd";
+            return "http://www.jboss.com/xml/ns/javaee http://www.jboss.org/schema/jbossas/jboss-web_7_2.xsd";
         } else {
-            return "http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-web_7_1.xsd";
+            return "http://www.jboss.com/xml/ns/javaee http://www.jboss.org/schema/jbossas/jboss-web_7_1.xsd";
         }
     }
 

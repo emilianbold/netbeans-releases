@@ -98,6 +98,9 @@ public interface DiscoveryDescriptor {
     boolean isIncrementalMode();
     void setIncrementalMode(boolean incremental);
 
+    boolean isResolveSymbolicLinks();
+    void setResolveSymbolicLinks(boolean resolveSymbolicLinks);
+
     String getCompilerName();
     void setCompilerName(String compiler);
 

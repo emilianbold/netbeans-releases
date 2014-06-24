@@ -58,6 +58,11 @@ public enum MACINFO {
     DW_MACRO_define_indirect(0x05), // Extension for .debug_macro section
     DW_MACRO_undef_indirect(0x06), // Extension for .debug_macro section
     DW_MACRO_transparent_include(0x07), // Extension for .debug_macro section
+    // dwarf4
+    DW_MACRO_define_indirect_alt(0x08),
+    DW_MACRO_undef_indirect_alt(0x09),
+    DW_MACRO_transparent_include_alt(0x0a),
+    
     DW_MACINFO_vendor_ext(0xff);
 
     private static final HashMap<Integer, MACINFO> hashmap = new HashMap<Integer, MACINFO>();

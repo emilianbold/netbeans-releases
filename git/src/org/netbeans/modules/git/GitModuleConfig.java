@@ -44,6 +44,7 @@ package org.netbeans.modules.git;
 
 import java.awt.Color;
 import java.awt.EventQueue;
+import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,6 +57,7 @@ import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import org.netbeans.libs.git.GitURI;
 import org.netbeans.modules.git.FileInformation.Mode;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.repository.remote.ConnectionSettings;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.netbeans.modules.versioning.util.Utils;
@@ -166,6 +168,16 @@ public final class GitModuleConfig {
 
     public void setProjectAnnotationFormat (String text) {
         getPreferences().put(PROP_ANNOTATIONFORMAT_PROJECT, text);
+    }
+
+    public boolean getAutoSyncBranch (File repository, String branch) {
+        RepositoryInfo.NBGitConfig cfg = RepositoryInfo.getInstance(repository).getNetbeansConfig();
+        return cfg.getAutoSyncBranch(branch);
+    }
+
+    public void setAutoSyncBranch (File repository, String branch, boolean autoSync) {
+        RepositoryInfo.NBGitConfig cfg = RepositoryInfo.getInstance(repository).getNetbeansConfig();
+        cfg.setAutoSyncBranch(branch, autoSync);
     }
     
     synchronized Set<String> getCommitExclusions() {

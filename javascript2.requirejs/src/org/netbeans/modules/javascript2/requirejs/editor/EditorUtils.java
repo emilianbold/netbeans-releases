@@ -116,13 +116,16 @@ public class EditorUtils {
             if (token.id() == JsTokenId.STRING || token.id() == JsTokenId.STRING_END) {
                 token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT,
                         JsTokenId.STRING_BEGIN, JsTokenId.STRING, JsTokenId.STRING_END, JsTokenId.OPERATOR_COMMA));
-                if (token.id() == JsTokenId.BRACKET_LEFT_BRACKET || token.id() == JsTokenId.OPERATOR_COLON) {
+                if (token.id() == JsTokenId.BRACKET_LEFT_BRACKET || token.id() == JsTokenId.OPERATOR_COLON || token.id() == JsTokenId.BRACKET_LEFT_PAREN) {
                     token = LexUtilities.findPreviousToken(ts, Arrays.asList(JsTokenId.IDENTIFIER));
                     if (token.id() == JsTokenId.IDENTIFIER) {
                         if (DEFINE.equals(token.text().toString()) || REQUIRE.equals(token.text().toString()) || REQUIREJS.equals(token.text().toString())) {
                             return CodeCompletionContext.REQUIRE_MODULE;
                         } else if (BASE_URL.equals(token.text().toString())) {
                             return CodeCompletionContext.CONFIG_BASE_URL_VALUE;
+                        } else if (PATHS.equals(token.text().toString())) {
+                            // in the case, when the property of path are written as string
+                            return CodeCompletionContext.CONFIG_PATHS_VALUE;
                         }
                         token = LexUtilities.findPreviousToken(ts, Arrays.asList(JsTokenId.BRACKET_LEFT_CURLY));
                         if (token.id() == JsTokenId.BRACKET_LEFT_CURLY) {

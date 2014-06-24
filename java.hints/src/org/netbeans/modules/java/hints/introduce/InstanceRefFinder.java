@@ -211,10 +211,10 @@ public class InstanceRefFinder extends TreePathScanner {
             }
         }
         ElementKind k = t.getKind();
-        TypeMirror declType = t.asType();
+        TypeMirror declType = ci.getTypes().erasure(t.asType());
         
         for (TypeElement enclType = enclosingType; enclType != null; enclType = ci.getElementUtilities().enclosingTypeElement(enclType)) {
-            if (ci.getTypes().isSubtype(enclType.asType(), declType)) {
+            if (ci.getTypes().isSubtype(ci.getTypes().erasure(enclType.asType()), declType)) {
                 if (k.isClass()) {
                     return enclType;
                 } else if (k == ElementKind.INTERFACE) {

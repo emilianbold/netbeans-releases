@@ -131,7 +131,8 @@ public class FetchAction extends SingleRepositoryAction {
     
     @NbBundle.Messages({
         "# {0} - repository name", "LBL_FetchAction.progressName=Fetching - {0}",
-        "# {0} - branch name", "MSG_FetchAction.branchDeleted=Branch {0} deleted."
+        "# {0} - branch name", "MSG_FetchAction.branchDeleted=Branch {0} deleted.",
+        "MSG_FetchAction.progress.syncBranches=Synchronizing tracking branches"
     })
     public Task fetch (final File repository, final String target, final List<String> fetchRefSpecs, final String remoteNameToUpdate) {
         final List<String> fetchRefSpecsList = new ArrayList<>(fetchRefSpecs);
@@ -169,6 +170,10 @@ public class FetchAction extends SingleRepositoryAction {
                                 getProgressMonitor(), target, fetchRefSpecs);
                         if (!isCanceled()) {
                             FetchUtils.log(repository, updates, getLogger());
+                        }
+                        if (!isCanceled()) {
+                            setDisplayName(Bundle.MSG_FetchAction_progress_syncBranches());
+                            FetchUtils.syncTrackingBranches(repository, updates, this);
                         }
                     }
                 } catch (GitException ex) {

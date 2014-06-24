@@ -43,7 +43,6 @@ package org.netbeans.modules.javascript2.requirejs.editor;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -51,7 +50,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -69,7 +67,6 @@ import org.netbeans.modules.javascript2.requirejs.RequireJsPreferences;
 import org.netbeans.modules.javascript2.requirejs.editor.index.RequireJsIndex;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -119,10 +116,8 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                 }
                 if (ts.token().id() == JsTokenId.STRING) {
                     String text = ts.token().text().toString();
-                    if (!text.startsWith(prefix)) {
-                        // this is needed, because from JS the prefix is split with '.'
-                        writtenPath = text.substring(0, offset - ts.offset());
-                    }
+                    // this is needed, because from JS the prefix is split with '.' and '/'
+                    writtenPath = text.substring(0, offset - ts.offset());
                 }
 
             }

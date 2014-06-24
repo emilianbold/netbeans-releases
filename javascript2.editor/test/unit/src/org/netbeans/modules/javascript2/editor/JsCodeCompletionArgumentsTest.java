@@ -71,7 +71,7 @@ public class JsCodeCompletionArgumentsTest extends JsCodeCompletionBase {
     }
 
     public void testFunctionObjectProperties03() throws Exception {
-        checkCompletion("testfiles/completion/arguments/arguments.js", "+ ArgumentsContext.testFunction(1, 2).^toString());", false);
+        checkCompletion("testfiles/completion/arguments/arguments.js", "+ ArgumentsContext.testFunction(1, 2).to^String());", false);
     }
     
     public void testIssue215763() throws Exception {

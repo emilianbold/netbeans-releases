@@ -107,9 +107,9 @@ public class WildflyIncrementalDeployment extends IncrementalDeployment implemen
                 if(baseName.isEmpty()) {
                     baseName = app.getArchive().getNameExt();
                 }
-                String extension = app.getArchive().getExt();
+                String extension = '.' + app.getArchive().getExt();
                 if(!baseName.endsWith(extension)) {
-                    baseName = baseName + '.' + extension;
+                    baseName = baseName + extension;
                 }
             }
         } catch (IOException ex) {

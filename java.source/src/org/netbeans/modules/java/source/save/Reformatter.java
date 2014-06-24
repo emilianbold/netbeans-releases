@@ -4032,6 +4032,8 @@ public class Reformatter implements ReformatTask {
                                             && lastAddedNLOffset < currWSOffset && (toAdd == null || toAdd.first() < currWSOffset)) {
                                         addMark(Pair.of(currWSOffset, 1), marks, state);
                                     }
+                                    addMark(Pair.of(javadocTokens.offset() - offset, 5), marks, state);
+                                    addMark(Pair.of(javadocTokens.offset() + javadocTokens.token().length() - offset - 1, 6), marks, state);
                                     nlAdd = Pair.of(javadocTokens.offset() + javadocTokens.token().length() - offset, 1);
                                 }
                             } else {
