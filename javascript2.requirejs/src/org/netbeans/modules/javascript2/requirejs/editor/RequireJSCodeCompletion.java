@@ -121,7 +121,8 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                 }
 
             }
-
+            writtenPath = FSCompletionUtils.removePlugin(writtenPath);
+            
             FileObject fo = snapshot.getSource().getFileObject();
             Project project = FileOwnerQuery.getOwner(fo);
             RequireJsIndex rIndex = null;

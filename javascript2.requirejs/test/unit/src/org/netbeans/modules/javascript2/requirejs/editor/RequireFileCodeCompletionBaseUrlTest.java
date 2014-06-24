@@ -141,6 +141,18 @@ public class RequireFileCodeCompletionBaseUrlTest extends JsCodeCompletionBase {
         checkCompletion("TestProject2/public_html/js/app/issue245156.js", "var module2 = require(\"lib/mod^uleLib1\");", false);
     }
     
+    public void testPathWithPlugin_01() throws Exception {
+        checkCompletion("TestProject2/public_html/js/app/issue245184.js", "'text!^app/issue245156',", false);
+    }
+    
+    public void testPathWithPlugin_02() throws Exception {
+        checkCompletion("TestProject2/public_html/js/app/issue245184.js", "'text!app/i^ssue245156',", false);
+    }
+    
+    public void testPathWithPlugin_03() throws Exception {
+        checkCompletion("TestProject2/public_html/js/app/issue245184.js", "'order!lib/^proto/localization'", false);
+    }
+    
     public void checkAppliedCompletion(final String file, final String caretLine, final String expectedLine, final String itemToComplete, final boolean includeModifiers) throws Exception {
         final CodeCompletionHandler.QueryType type = CodeCompletionHandler.QueryType.COMPLETION;
         final boolean caseSensitive = true;
