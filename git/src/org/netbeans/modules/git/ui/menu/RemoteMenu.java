@@ -55,6 +55,8 @@ import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.fetch.FetchFromUpstreamAction;
 import org.netbeans.modules.git.ui.fetch.PullAction;
 import org.netbeans.modules.git.ui.fetch.PullFromUpstreamAction;
+import org.netbeans.modules.git.ui.history.SearchIncomingAction;
+import org.netbeans.modules.git.ui.history.SearchOutgoingAction;
 import org.netbeans.modules.git.ui.push.PushAction;
 import org.netbeans.modules.git.ui.push.PushToUpstreamAction;
 import org.netbeans.modules.versioning.spi.VCSAnnotator.ActionDestination;
@@ -145,6 +147,20 @@ public final class RemoteMenu extends DynamicMenu {
             Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
             Actions.connect(item, action, false);
             menu.add(item);
+            
+            menu.addSeparator();
+            
+            item = new JMenuItem();
+            action = (Action) SystemAction.get(SearchIncomingAction.class);
+            Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
+            
+            item = new JMenuItem();
+            action = (Action) SystemAction.get(SearchOutgoingAction.class);
+            Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
         } else {
             // or use Actions.forID
             Action action = (Action) FileUtil.getConfigObject(ACTIONS_PATH_PREFIX + CLONE_ACTION, Action.class);
@@ -167,6 +183,12 @@ public final class RemoteMenu extends DynamicMenu {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(PushToUpstreamAction.class), NbBundle.getMessage(PushToUpstreamAction.class, "LBL_PushToUpstreamAction_PopupName"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(PushAction.class), NbBundle.getMessage(PushAction.class, "LBL_PushAction_PopupName"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            
+            menu.addSeparator();
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(SearchIncomingAction.class), NbBundle.getMessage(SearchIncomingAction.class, "LBL_SearchIncomingAction_PopupName"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(SearchOutgoingAction.class), NbBundle.getMessage(SearchOutgoingAction.class, "LBL_SearchOutgoingAction_PopupName"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         }        
         return menu;
