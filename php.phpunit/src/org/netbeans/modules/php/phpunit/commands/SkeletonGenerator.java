@@ -93,8 +93,8 @@ public final class SkeletonGenerator {
     private static final String SEPARATOR_PARAM = "--"; // NOI18N
     // v2
     private static final String ANSI_PARAM = "--ansi"; // NOI18N
-    private static final String BOOTSTRAP_PARAM_V2 = "--bootstrap=%s"; // NOI18N
     private static final String GENERATE_TEST_PARAM = "generate-test"; // NOI18N
+    private static final String BOOTSTRAP_PARAM_V2 = "--bootstrap=%s"; // NOI18N
 
     private final String skelGenPath;
 
@@ -218,25 +218,28 @@ public final class SkeletonGenerator {
 
     private List<String> getParams(PhpModule phpModule, String sourceClassName, FileObject sourceClassFile, String testClassName, File testFile) {
         List<String> params = new ArrayList<>();
-        boolean useBootstrap = PhpUnitPreferences.isBootstrapEnabled(phpModule)
-                && PhpUnitPreferences.isBootstrapForCreateTests(phpModule);
+        String bootstrap = null;
+        if (PhpUnitPreferences.isBootstrapEnabled(phpModule)
+                && PhpUnitPreferences.isBootstrapForCreateTests(phpModule)) {
+            bootstrap = PhpUnitPreferences.getBootstrapPath(phpModule);
+        }
         String ver = getVersion();
         if (ver != null
                 && ver.startsWith("1.")) { // NOI18N
             // version 1
-            if (useBootstrap) {
+            if (bootstrap != null) {
                 params.add(BOOTSTRAP_PARAM_V1);
-                params.add(PhpUnitPreferences.getBootstrapPath(phpModule));
+                params.add(bootstrap);
             }
             params.add(TEST_PARAM);
             params.add(SEPARATOR_PARAM);
         } else {
             // version 2+ (and possible fallback)
-            if (useBootstrap) {
-                params.add(String.format(BOOTSTRAP_PARAM_V2, PhpUnitPreferences.getBootstrapPath(phpModule)));
-            }
             params.add(ANSI_PARAM);
             params.add(GENERATE_TEST_PARAM);
+            if (bootstrap != null) {
+                params.add(String.format(BOOTSTRAP_PARAM_V2, bootstrap));
+            }
         }
         params.add(sanitizeClassName(sourceClassName));
         params.add(FileUtil.toFile(sourceClassFile).getAbsolutePath());

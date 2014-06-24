@@ -52,10 +52,15 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.web.clientproject.api.jstesting.Coverage;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 public final class CoverageProcessor {
 
     private static final Logger LOGGER = Logger.getLogger(CoverageProcessor.class.getName());
+
+    private static volatile boolean debugCoverageWarningShown = false;
 
     private final Coverage coverage;
     private final File sourceDir;
@@ -69,6 +74,16 @@ public final class CoverageProcessor {
         this.coverage = coverage;
         this.sourceDir = sourceDir;
         this.logFile = logFile;
+    }
+
+    @NbBundle.Messages("CoverageProcessor.warn.debugCoverage=Coverage is automatically disabled in Karma Debug mode.")
+    public static void warnDebugCoverage() {
+        if (debugCoverageWarningShown) {
+            // already warned
+            return;
+        }
+        debugCoverageWarningShown = true;
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(Bundle.CoverageProcessor_warn_debugCoverage()));
     }
 
     public void process() {

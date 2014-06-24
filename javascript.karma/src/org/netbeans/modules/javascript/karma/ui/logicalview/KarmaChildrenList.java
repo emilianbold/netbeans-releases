@@ -142,13 +142,9 @@ public class KarmaChildrenList implements NodeList<Node>, PreferenceChangeListen
 
     @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
-        if (KarmaPreferences.DEBUG.equals(evt.getKey())) {
-            // change in debug state can be completely ignored
-            if (!KarmaPreferences.isDebug(project)) {
-                // just possibly close browser tab
-                KarmaServers.getInstance().closeDebugUrl(project);
-            }
-            return;
+        if (!KarmaPreferences.isDebug(project)) {
+            // possibly close browser tab
+            KarmaServers.getInstance().closeDebugUrl(project);
         }
         // possibly restart server
         if (KarmaServers.getInstance().isServerRunning(project)) {

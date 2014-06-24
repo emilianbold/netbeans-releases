@@ -47,6 +47,7 @@ var AUTOWATCH = Boolean(process.env.AUTOWATCH);
 var KARMA_NETBEANS_REPORTER = process.env.KARMA_NETBEANS_REPORTER;
 var COVERAGE = Boolean(process.env.COVERAGE);
 var COVERAGE_DIR = process.env.COVERAGE_DIR;
+var DEBUG = Boolean(process.env.DEBUG);
 
 var BROWSERS_MESSAGE = '$NB$netbeans browsers %s';
 
@@ -62,9 +63,19 @@ var arrayUnique = function(input) {
         return arr.lastIndexOf(e) === i;
     });
 };
+var arrayRemove = function(input, value) {
+    var index = input.indexOf(value);
+    if (index > -1) {
+        input.splice(index, 1);
+    }
+};
 
 module.exports = function(config) {
     projectConf(config);
+
+    if (DEBUG) {
+        printMessage('NetBeans: Coverage is automatically disabled in Karma Debug mode.');
+    }
 
     // base path
     if (config.basePath) {
@@ -82,6 +93,8 @@ module.exports = function(config) {
     config.reporters.push('netbeans');
     if (COVERAGE) {
         config.reporters.push('coverage');
+    } else if (DEBUG) {
+        arrayRemove(config.reporters, 'coverage');
     }
     config.reporters = arrayUnique(config.reporters);
 
@@ -120,6 +133,14 @@ module.exports = function(config) {
         } else {
             config.coverageReporter = nbCoverageReporter;
         }
+    } else if (DEBUG
+            && config.preprocessors) {
+        for (var property in config.preprocessors) {
+            var prep = config.preprocessors[property];
+            if (typeof prep === 'object'
+                    && prep.constructor === Array) {
+                arrayRemove(prep, 'coverage');
+            }
+        }
     }
-
 };
