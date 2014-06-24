@@ -178,10 +178,6 @@ final class EventSupport extends SourceEnvironment {
         return doc;
     }
 
-    public FileObject getFileObject(Document d) {
-        return DataObjectEnvFactory.getFileObject(d);
-    }
-
     @Override
     public void activate() {
         final Source source = getSourceControl().getSource();
@@ -208,7 +204,7 @@ final class EventSupport extends SourceEnvironment {
         return EditorRegistryListener.k24.get();
     }
 
-    public void resetState (
+    private void resetState (
         final boolean           invalidate,
         final boolean           mimeChanged,
         final int               startOffset,
