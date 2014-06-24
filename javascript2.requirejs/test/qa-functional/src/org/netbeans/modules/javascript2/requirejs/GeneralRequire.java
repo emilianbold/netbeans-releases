@@ -131,9 +131,6 @@ public class GeneralRequire extends JellyTestCase {
             throw new IllegalStateException("YOU MUST OPEN PROJECT FIRST");
         }
         String requestedFileName = filePath.contains("|") ? filePath.substring(filePath.lastIndexOf("|") + 1) : filePath;
-        if (GeneralRequire.currentFile != null && GeneralRequire.currentFile.equals(requestedFileName)) {
-            return new EditorOperator(GeneralRequire.currentFile);
-        }
 
         Logger.getLogger(GeneralRequire.class.getName()).log(Level.INFO, "Opening file {0}", filePath);
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -409,7 +406,7 @@ public class GeneralRequire extends JellyTestCase {
         //[5] type and check cc to contain matching items and press Enter to select it from cc
         //[6] check line contains [6]
         //[7] check cc does not contain [7] in step 4
-        waitScanFinished(); 
+        waitScanFinished();    
         String rawLine = eo.getText(lineNumber);
         int start = rawLine.indexOf("//cc;");
         String rawConfig = rawLine.substring(start + 2);

@@ -133,6 +133,13 @@ public class RequireFileCodeCompletionBaseUrlTest extends JsCodeCompletionBase {
         checkCompletion("TestProject2/public_html/js/main.js", "baseUrl: 'js/^lib',", false);
     }
     
+    public void testIssue245156_01() throws Exception {
+        checkCompletion("TestProject2/public_html/js/app/issue245156.js", "var module1 = require(\"app/mo^duleApp1\");", false);
+    }
+    
+    public void testIssue245156_02() throws Exception {
+        checkCompletion("TestProject2/public_html/js/app/issue245156.js", "var module2 = require(\"lib/mod^uleLib1\");", false);
+    }
     
     public void checkAppliedCompletion(final String file, final String caretLine, final String expectedLine, final String itemToComplete, final boolean includeModifiers) throws Exception {
         final CodeCompletionHandler.QueryType type = CodeCompletionHandler.QueryType.COMPLETION;
