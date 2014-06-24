@@ -120,6 +120,18 @@ public class RequireJsDeclarationFinderBaseUrlTest extends JsCodeCompletionBase 
         checkDeclaration("TestProject2/public_html/js/main.js", "function(lib1, lib2, test, loc, p^ik)", "picnic.js", 0);
     }
     
+    public void testNavigationWithPlugin01() throws Exception {
+        checkDeclaration("TestProject2/public_html/js/app/issue245184.js", "'te^xt!app/issue245156'", "issue245156.js", 0);
+    }
+    
+    public void testNavigationWithPlugin02() throws Exception {
+        checkDeclaration("TestProject2/public_html/js/app/issue245184.js", "'order!lib/proto/locali^zation'", "localization.js", 0);
+    }
+
+    public void testNavigationWithPlugin03() throws Exception {
+        checkDeclaration("TestProject2/public_html/js/app/issue245184.js", "'text!pik^nic'", "picnic.js", 0);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>();

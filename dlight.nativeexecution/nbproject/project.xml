@@ -168,6 +168,7 @@
                 <friend>com.microchip.mplab.nbide.embedded</friend>
                 <friend>com.microchip.mplab.nbide.embedded.makeproject</friend>
                 <friend>com.microchip.mplab.nbide.programmer</friend>
+                <friend>com.oracle.tools.ide.binary.dependencies</friend>
                 <friend>com.oracle.tools.ide.projectless.debug.impl</friend>
                 <friend>com.oracle.tools.ide.projectless.debug.impl.dbx</friend>
                 <friend>com.oracle.tools.ide.projectless.debug.impl.gdb</friend>
