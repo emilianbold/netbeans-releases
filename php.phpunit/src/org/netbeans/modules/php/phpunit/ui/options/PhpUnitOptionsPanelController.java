@@ -51,6 +51,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
+import org.netbeans.modules.php.phpunit.commands.SkeletonGenerator;
 import org.netbeans.modules.php.phpunit.options.PhpUnitOptions;
 import org.netbeans.modules.php.phpunit.options.PhpUnitOptionsValidator;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -94,6 +95,8 @@ public class PhpUnitOptionsPanelController extends OptionsPanelController implem
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                SkeletonGenerator.resetVersion();
+
                 getPhpUnitOptions().setPhpUnitPath(getPhpUnitOptionsPanel().getPhpUnit());
                 getPhpUnitOptions().setSkeletonGeneratorPath(getPhpUnitOptionsPanel().getPhpUnitSkelGen());
 
