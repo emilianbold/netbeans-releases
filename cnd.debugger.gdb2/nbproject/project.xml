@@ -46,7 +46,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>3</release-version>
-                        <specification-version>3.24.2</specification-version>
+                        <specification-version>3.25.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

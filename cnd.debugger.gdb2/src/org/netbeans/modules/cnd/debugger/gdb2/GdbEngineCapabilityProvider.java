@@ -58,7 +58,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=EngineCapabilityProvider.class, position=100)
 public final class GdbEngineCapabilityProvider implements EngineCapabilityProvider {
-    private final static String ID = "gdb"; // NOI18N
+    /*package*/ final static String ID = "gdb"; // NOI18N
     private final static EngineType GDB_ENGINE_TYPE = EngineTypeManager.create(ID, Catalog.get("GdbEngineDisplayName")); // NOI18N
 
     public boolean hasCapability(EngineType et, EngineCapability capability) {
@@ -83,16 +83,17 @@ public final class GdbEngineCapabilityProvider implements EngineCapabilityProvid
     public static EngineType getGdbEngineType() {
         return GDB_ENGINE_TYPE;
     }
-
-    public boolean isSupported(DebuggerDescriptor descriptor) {
+    
+    /*package*/ static boolean isSupportedImpl(DebuggerDescriptor descriptor) {
         if (descriptor == null) {
             return false;
         }
         final String id = descriptor.getID();
-        if ("GNU".equalsIgnoreCase(id)) { // NOI18N
-            return true;
-        }
-        return false;
+        return "GNU".equalsIgnoreCase(id);//NOI18N
+    }    
+
+    public boolean isSupported(DebuggerDescriptor descriptor) {
+        return isSupportedImpl(descriptor);
     }
 
     public String debuggerProfileID() {
