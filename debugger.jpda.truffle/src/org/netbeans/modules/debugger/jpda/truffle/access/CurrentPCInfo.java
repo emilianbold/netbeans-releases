@@ -42,8 +42,11 @@
 
 package org.netbeans.modules.debugger.jpda.truffle.access;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.Map;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackInfo;
@@ -57,11 +60,16 @@ import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleSlotVariable;
  */
 public class CurrentPCInfo {
     
+    public static final String PROP_SELECTED_FRAME = "selectedFrame";           // NOI18N
+    
     private final Reference<JPDAThread> threadRef;
     private final SourcePosition sp;
     private final TruffleSlotVariable[] vars;
     private final TruffleStackFrame topFrame;
     private final TruffleStackInfo stack;
+    private volatile TruffleStackFrame selectedStackFrame; // the top frame initially
+    
+    private PropertyChangeSupport pchs = new PropertyChangeSupport(this);
     
     public CurrentPCInfo(JPDAThread thread, SourcePosition sp,
                          TruffleSlotVariable[] vars, TruffleStackFrame topFrame,
@@ -71,6 +79,7 @@ public class CurrentPCInfo {
         this.vars = vars;
         this.topFrame = topFrame;
         this.stack = stack;
+        selectedStackFrame = topFrame;
     }
     
     public JPDAThread getThread() {
@@ -92,4 +101,25 @@ public class CurrentPCInfo {
     public TruffleStackInfo getStack() {
         return stack;
     }
+
+    public TruffleStackFrame getSelectedStackFrame() {
+        return selectedStackFrame;
+    }
+
+    public void setSelectedStackFrame(TruffleStackFrame selectedStackFrame) {
+        TruffleStackFrame old = this.selectedStackFrame;
+        this.selectedStackFrame = selectedStackFrame;
+        if (old != selectedStackFrame) {
+            pchs.firePropertyChange(PROP_SELECTED_FRAME, old, selectedStackFrame);
+        }
+    }
+    
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        pchs.addPropertyChangeListener(listener);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        pchs.removePropertyChangeListener(listener);
+    }
+
 }

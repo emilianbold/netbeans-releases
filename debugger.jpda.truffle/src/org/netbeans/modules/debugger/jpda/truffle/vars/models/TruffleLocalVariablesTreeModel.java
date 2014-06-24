@@ -42,15 +42,22 @@
 
 package org.netbeans.modules.debugger.jpda.truffle.vars.models;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
+import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
 import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.viewmodel.ModelEvent;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.WeakListeners;
+import org.openide.util.WeakSet;
 
 /**
  *
@@ -59,6 +66,9 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 @DebuggerServiceRegistration(path="netbeans-JPDASession/"+TruffleStrataProvider.TRUFFLE_STRATUM+"/LocalsView",  types = TreeModelFilter.class)
 public class TruffleLocalVariablesTreeModel extends TruffleVariablesTreeModel {
 
+    private final WeakSet<CurrentPCInfo> cpisListening = new WeakSet<CurrentPCInfo>();
+    private final CurrentInfoPropertyChangeListener cpiChL = new CurrentInfoPropertyChangeListener();
+    
     public TruffleLocalVariablesTreeModel(ContextProvider lookupProvider) {
         super(lookupProvider);
     }
@@ -68,12 +78,37 @@ public class TruffleLocalVariablesTreeModel extends TruffleVariablesTreeModel {
         if (parent == original.getRoot()) {
             CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(getDebugger());
             if (currentPCInfo != null) {
-                return currentPCInfo.getVars();
+                synchronized (cpisListening) {
+                    if (!cpisListening.contains(currentPCInfo)) {
+                        currentPCInfo.addPropertyChangeListener(
+                                WeakListeners.propertyChange(cpiChL, currentPCInfo));
+                        cpisListening.add(currentPCInfo);
+                    }
+                }
+                TruffleStackFrame selectedStackFrame = currentPCInfo.getSelectedStackFrame();
+                //return currentPCInfo.getVars();
+                return selectedStackFrame.getVars();
             }
         } else if (parent instanceof TruffleVariable) {
             return ((TruffleVariable) parent).getChildren();
         }
         return original.getChildren(parent, from, to);
+    }
+    
+    private void fireVarsChanged() {
+        ModelEvent evt = new ModelEvent.TreeChanged(this);
+        for (ModelListener l : listeners) {
+            l.modelChanged(evt);
+        }
+    }
+
+    private class CurrentInfoPropertyChangeListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            fireVarsChanged();
+        }
+
     }
 
 }

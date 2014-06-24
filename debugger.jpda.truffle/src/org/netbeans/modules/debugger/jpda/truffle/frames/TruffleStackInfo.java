@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.debugger.jpda.truffle.frames;
 
+import com.sun.jdi.StringReference;
+import com.sun.jdi.Value;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.debugger.jpda.Field;
@@ -50,6 +52,7 @@ import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.truffle.TruffleDebugManager;
 import org.openide.util.Exceptions;
 
@@ -61,13 +64,13 @@ public class TruffleStackInfo {
     
     private static final String METHOD_GET_FRAMES_INFO = "getFramesInfo";       // NOI18N
     //private static final String METHOD_GET_FRAMES_INFO_SIG = "([Lcom/oracle/truffle/api/frame/FrameInstance;)[Lorg/netbeans/modules/debugger/jpda/backend/truffle/TruffleFrame;";   // NOI18N
-    private static final String METHOD_GET_FRAMES_INFO_SIG = "([Lcom/oracle/truffle/api/frame/FrameInstance;)Ljava/lang/String;";   // NOI18N
+    private static final String METHOD_GET_FRAMES_INFO_SIG = "([Lcom/oracle/truffle/api/frame/FrameInstance;)[Ljava/lang/Object;";   // NOI18N
     
     private final JPDADebugger debugger;
-    private final Variable stackTrace;
+    private final ObjectVariable stackTrace;
     private TruffleStackFrame[] stackFrames;
 
-    public TruffleStackInfo(JPDADebugger debugger, Variable[] frameSlots, Variable stackTrace) {
+    public TruffleStackInfo(JPDADebugger debugger, Variable[] frameSlots, ObjectVariable stackTrace) {
         this.debugger = debugger;
         this.stackTrace = stackTrace;
         /*
@@ -96,18 +99,22 @@ public class TruffleStackInfo {
             int n = frames.length;
             TruffleStackFrame[] truffleFrames = new TruffleStackFrame[n];
             for (int i = 0; i < n; i++) {
-                String callTargetName = ((ObjectVariable) frames[i]).getField("callTargetName").getValue();
-                String methodName = ((ObjectVariable) frames[i]).getField("methodName").getValue();
-                String sourceLocation = ((ObjectVariable) frames[i]).getField("sourceLocation").getValue();
-                truffleFrames[i] = new TruffleStackFrame(callTargetName, methodName, sourceLocation);
+            String callTargetName = ((ObjectVariable) frames[i]).getField("callTargetName").getValue();
+            String methodName = ((ObjectVariable) frames[i]).getField("methodName").getValue();
+            String sourceLocation = ((ObjectVariable) frames[i]).getField("sourceLocation").getValue();
+            truffleFrames[i] = new TruffleStackFrame(callTargetName, methodName, sourceLocation);
             }
              */
-            String framesDesc = (String) framesVar.createMirrorObject();
+            Field[] framesInfos = ((ObjectVariable) framesVar).getFields(0, Integer.MAX_VALUE);
+            String framesDesc = (String) framesInfos[0].createMirrorObject();
+            Field[] codes = ((ObjectVariable) framesInfos[1]).getFields(0, Integer.MAX_VALUE);
             int i1 = 0;
             int i2;
+            int depth = 1;
             List<TruffleStackFrame> truffleFrames = new ArrayList<>();
             while ((i2 = framesDesc.indexOf("\n\n", i1)) > 0) {
-                TruffleStackFrame tsf = new TruffleStackFrame(framesDesc.substring(i1, i2));
+                StringReference codeRef = (StringReference) ((JDIVariable) codes[depth-1]).getJDIValue();
+                TruffleStackFrame tsf = new TruffleStackFrame(debugger, depth++, stackTrace, framesDesc.substring(i1, i2), codeRef, null);
                 truffleFrames.add(tsf);
                 i1 = i2 + 2;
             }

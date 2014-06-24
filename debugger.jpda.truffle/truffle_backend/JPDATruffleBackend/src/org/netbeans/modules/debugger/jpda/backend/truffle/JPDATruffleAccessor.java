@@ -44,8 +44,10 @@ package org.netbeans.modules.debugger.jpda.backend.truffle;
 
 import com.oracle.truffle.api.ExecutionContext;
 import com.oracle.truffle.api.frame.Frame;
+import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameInstance;
 import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.instrument.Visualizer;
@@ -55,7 +57,9 @@ import com.oracle.truffle.debug.Breakpoint;
 import com.oracle.truffle.debug.LineBreakpoint;
 import com.oracle.truffle.js.engine.TruffleJSEngine;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import javax.script.ScriptEngine;
 
 /**
@@ -191,11 +195,17 @@ public class JPDATruffleAccessor extends Object {
         return frameInfos;
     }
     */
-    static String getFramesInfo(FrameInstance[] frames) {
+    /**
+     * @param frames The array of stack frame infos
+     * @return An array of two elements: a String of frame information and
+     * an array of code contents.
+     */
+    static Object[] getFramesInfo(FrameInstance[] frames) {
         Visualizer visualizer = debugManager.getContext().getVisualizer();
         int n = frames.length;
         //TruffleFrame[] frameInfos = new TruffleFrame[n];
         StringBuilder frameInfos = new StringBuilder();
+        String[] codes = new String[n];
         for (int i = 0; i < n; i++) {
             FrameInstance fi = frames[i];
             //TruffleFrame tf = new TruffleFrame();
@@ -204,9 +214,21 @@ public class JPDATruffleAccessor extends Object {
             frameInfos.append(visualizer.displayMethodName(fi.getCallNode()));
             frameInfos.append('\n');
             frameInfos.append(visualizer.displaySourceLocation(fi.getCallNode()));
+            frameInfos.append('\n');
+            JPDATruffleDebugManager.SourcePosition position = JPDATruffleDebugManager.getPosition(fi.getCallNode());
+            frameInfos.append(position.id);
+            frameInfos.append('\n');
+            frameInfos.append(position.name);
+            frameInfos.append('\n');
+            frameInfos.append(position.path);
+            frameInfos.append('\n');
+            frameInfos.append(position.line);
+            
             frameInfos.append("\n\n");
+            
+            codes[i] = position.code;
         }
-        return frameInfos.toString();
+        return new Object[] { frameInfos.toString(), codes };
     }
     
     static void debuggerAccess() {
@@ -255,6 +277,51 @@ public class JPDATruffleAccessor extends Object {
         String strValue = visualizer.displayValue(debugManager.getContext(), value);
         System.err.println("evaluate("+expression+") = "+strValue);
         return strValue;
+    }
+    
+    static Object evaluate(String expression, Object frameInstance) {
+        FrameInstance fi = (FrameInstance) frameInstance;
+        MaterializedFrame frame = (MaterializedFrame) fi.getFrame(FrameInstance.FrameAccess.MATERIALIZE, true);
+        final Source source = Source.fromText(expression, "EVAL");
+        Object value = debugManager.eval(source, fi.getCallNode(), frame);
+        if (value == null) {
+            return null;
+        }
+        ExecutionContext context = debugManager.getContext();
+        Visualizer visualizer = context.getVisualizer();
+        String strValue = visualizer.displayValue(context, value);
+        TruffleObject to = new TruffleObject(context, strValue, value);
+        return to;
+    }
+    
+    static Object[] getFrameSlots(FrameInstance frameInstance) {
+        FrameInstance fi = (FrameInstance) frameInstance;
+        // returns { Frame frame, FrameSlot[] frameSlots, String[] slotNames, String[] slotTypes }
+        Object[] slots = new Object[4];
+        MaterializedFrame frame = (MaterializedFrame) fi.getFrame(FrameInstance.FrameAccess.MATERIALIZE, true);
+        FrameDescriptor frameDescriptor = frame.getFrameDescriptor();
+        List<? extends FrameSlot> slotsList = frameDescriptor.getSlots();
+        ArrayList<FrameSlot> slotsArr = new ArrayList<>();
+        for (FrameSlot fs : slotsList) {
+            FrameSlotKind kind = fs.getKind();
+            if (FrameSlotKind.Illegal.equals(kind)) {
+                continue;
+            }
+            slotsArr.add(fs);
+        }
+        FrameSlot[] frameSlots = slotsArr.toArray(new FrameSlot[]{});
+        String[] slotNames = new String[slots.length];
+        String[] slotTypes = new String[slots.length];
+        Visualizer visualizer = debugManager.getContext().getVisualizer();
+        for (int i = 0; i < frameSlots.length; i++) {
+            slotNames[i] = visualizer.displayIdentifier(frameSlots[i]);// slots[i].getIdentifier().toString();
+            slotTypes[i] = frameSlots[i].getKind().toString();
+        }
+        slots[0] = frame;
+        slots[1] = frameSlots;
+        slots[2] = slotNames;
+        slots[3] = slotTypes;
+        return slots;
     }
     
     private static class AccessLoop implements Runnable {

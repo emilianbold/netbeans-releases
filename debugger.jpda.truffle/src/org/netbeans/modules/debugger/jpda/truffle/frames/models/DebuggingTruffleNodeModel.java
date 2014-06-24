@@ -43,23 +43,36 @@
 package org.netbeans.modules.debugger.jpda.truffle.frames.models;
 
 import com.sun.jdi.AbsentInformationException;
+import java.awt.Color;
 import java.awt.datatransfer.Transferable;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.MonitorInfo;
 import org.netbeans.api.debugger.jpda.This;
+import org.netbeans.modules.debugger.jpda.truffle.Utils;
+import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
+import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.WeakListeners;
+import org.openide.util.WeakSet;
 import org.openide.util.datatransfer.PasteType;
 
 /**
@@ -70,6 +83,15 @@ import org.openide.util.datatransfer.PasteType;
                              types=ExtendedNodeModelFilter.class,
                              position=23000)
 public class DebuggingTruffleNodeModel implements ExtendedNodeModelFilter {
+    
+    private final JPDADebugger debugger;
+    private final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
+    private final WeakSet<CurrentPCInfo> cpisListening = new WeakSet<CurrentPCInfo>();
+    private final CurrentInfoPropertyChangeListener cpiChL = new CurrentInfoPropertyChangeListener();
+    
+    public DebuggingTruffleNodeModel(ContextProvider lookupProvider) {
+        debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+    }
 
     @Override
     public boolean canRename(ExtendedNodeModel original, Object node) throws UnknownTypeException {
@@ -117,7 +139,23 @@ public class DebuggingTruffleNodeModel implements ExtendedNodeModelFilter {
     @Override
     public String getDisplayName(NodeModel original, Object node) throws UnknownTypeException {
         if (node instanceof TruffleStackFrame) {
-            return ((TruffleStackFrame) node).getDisplayName();
+            TruffleStackFrame tf = (TruffleStackFrame) node;
+            String displayName = tf.getDisplayName();
+            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
+            if (currentPCInfo != null) {
+                synchronized (cpisListening) {
+                    if (!cpisListening.contains(currentPCInfo)) {
+                        currentPCInfo.addPropertyChangeListener(
+                                WeakListeners.propertyChange(cpiChL, currentPCInfo));
+                        cpisListening.add(currentPCInfo);
+                    }
+                }
+                TruffleStackFrame selectedStackFrame = currentPCInfo.getSelectedStackFrame();
+                if (selectedStackFrame == tf) {
+                    displayName = Utils.toHTML(displayName, true, false, null);
+                }
+            }
+            return displayName;
         } else {
             return original.getDisplayName(node);
         }
@@ -136,14 +174,30 @@ public class DebuggingTruffleNodeModel implements ExtendedNodeModelFilter {
             return original.getShortDescription(node);
         }
     }
+    
+    private void fireDisplayNamesChanged() {
+        ModelEvent evt = new ModelEvent.NodeChanged(this, null);
+        for (ModelListener l : listeners) {
+            l.modelChanged(evt);
+        }
+    }
 
     @Override
     public void addModelListener(ModelListener l) {
-        
+        listeners.add(l);
     }
 
     @Override
     public void removeModelListener(ModelListener l) {
+        listeners.remove(l);
+    }
+    
+    private class CurrentInfoPropertyChangeListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            fireDisplayNamesChanged();
+        }
         
     }
     

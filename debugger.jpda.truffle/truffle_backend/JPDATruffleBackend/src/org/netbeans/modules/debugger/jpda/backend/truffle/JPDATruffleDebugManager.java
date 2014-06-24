@@ -143,8 +143,11 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
         }
     }
     
-    private static SourcePosition getPosition(Node node) {
+    static SourcePosition getPosition(Node node) {
         SourceSection sourceSection = node.getSourceSection();
+        if (sourceSection == null) {
+            sourceSection = node.getEncapsulatingSourceSection();
+        }
         int line = sourceSection.getStartLine();
         Source source = sourceSection.getSource();
         System.err.println("source of "+node+" = "+source);
@@ -222,7 +225,11 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
             //System.err.println("  stack names = "+Arrays.toString(stackNames));
             String topFrame = visualizer.displayCallTargetName(astNode.getRootNode().getCallTarget())+"\n"+
                               visualizer.displayMethodName(astNode)+"\n"+
-                              visualizer.displaySourceLocation(astNode);
+                              visualizer.displaySourceLocation(astNode)+"\n"+
+                              position.id+"\n"+
+                              position.name+"\n"+
+                              position.path+"\n"+
+                              position.line;
             //System.err.println("  top frame = \n'"+topFrame+"'");
             
             JPDATruffleAccessor.executionHalted(astNode, frame,
@@ -286,7 +293,7 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
         
     }
     
-    private static final class SourcePosition {
+    static final class SourcePosition {
         
         private static final Map<Source, Long> sourceId = new WeakHashMap<Source, Long>();
         private static long nextId = 0;

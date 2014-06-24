@@ -42,7 +42,14 @@
 
 package org.netbeans.modules.debugger.jpda.truffle.frames;
 
+import com.sun.jdi.StringReference;
+import org.netbeans.api.debugger.jpda.Field;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
+import org.netbeans.modules.debugger.jpda.truffle.source.Source;
+import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
+import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleSlotVariable;
 
 /**
  *
@@ -50,17 +57,35 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
  */
 public class TruffleStackFrame {
 
+    private final JPDADebugger debugger;
+    private final int depth;
+    private final ObjectVariable stackTrace;
     private final String callTargetName;
     private final String methodName;
     private final String sourceLocation;
     
-    TruffleStackFrame(String callTargetName, String methodName, String sourceLocation) {
+    private final int    sourceId;
+    private final String sourceName;
+    private final String sourcePath;
+    private final int    sourceLine;
+    private final StringReference codeRef;
+    private TruffleSlotVariable[] vars;
+    
+    /*
+    TruffleStackFrame(int depth, String callTargetName, String methodName, String sourceLocation) {
+        this.depth = depth;
         this.callTargetName = callTargetName;
         this.methodName = methodName;
         this.sourceLocation = sourceLocation;
     }
+    */
 
-    public TruffleStackFrame(String frameDefinition) {
+    public TruffleStackFrame(JPDADebugger debugger, int depth, ObjectVariable stackTrace,
+                             String frameDefinition, StringReference codeRef,
+                             TruffleSlotVariable[] vars) {
+        this.debugger = debugger;
+        this.depth = depth;
+        this.stackTrace = stackTrace;
         int i1 = 0;
         int i2 = frameDefinition.indexOf('\n');
         callTargetName = frameDefinition.substring(i1, i2);
@@ -68,7 +93,29 @@ public class TruffleStackFrame {
         i2 = frameDefinition.indexOf('\n', i1);
         methodName = frameDefinition.substring(i1, i2);
         i1 = i2 + 1;
-        sourceLocation = frameDefinition.substring(i1);
+        i2 = frameDefinition.indexOf('\n', i1);
+        sourceLocation = frameDefinition.substring(i1, i2);
+        i1 = i2 + 1;
+        i2 = frameDefinition.indexOf('\n', i1);
+        sourceId = Integer.parseInt(frameDefinition.substring(i1, i2));
+        i1 = i2 + 1;
+        i2 = frameDefinition.indexOf('\n', i1);
+        sourceName = frameDefinition.substring(i1, i2);
+        i1 = i2 + 1;
+        i2 = frameDefinition.indexOf('\n', i1);
+        sourcePath = frameDefinition.substring(i1, i2);
+        i1 = i2 + 1;
+        sourceLine = Integer.parseInt(frameDefinition.substring(i1));
+        this.codeRef = codeRef;
+        this.vars = vars;
+    }
+    
+    public final JPDADebugger getDebugger() {
+        return debugger;
+    }
+    
+    public final int getDepth() {
+        return depth;
     }
     
     public String getCallTargetName() {
@@ -85,6 +132,23 @@ public class TruffleStackFrame {
 
     public String getDisplayName() {
         return methodName + " ("+sourceLocation+")";
+    }
+    
+    public SourcePosition getSourcePosition() {
+        Source src = Source.getExistingSource(debugger, sourceId);
+        if (src == null) {
+            src = Source.getSource(debugger, sourceId, sourceName, sourcePath, codeRef);
+        }
+        SourcePosition sp = new SourcePosition(debugger, sourceId, src, sourceLine);
+        return sp;
+    }
+    
+    public TruffleSlotVariable[] getVars() {
+        if (vars == null) {
+            Field stackFrameInstance = stackTrace.getFields(0, Integer.MAX_VALUE)[depth - 1];
+            vars = TruffleAccess.createVars(debugger, stackFrameInstance);
+        }
+        return vars;
     }
     
 }

@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.debugger.jpda.truffle.vars.models;
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
@@ -67,6 +69,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 public class TruffleVariablesTreeModel implements TreeModelFilter {
     
     private final JPDADebugger debugger;
+    protected final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
     
     public TruffleVariablesTreeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
@@ -105,11 +108,11 @@ public class TruffleVariablesTreeModel implements TreeModelFilter {
 
     @Override
     public void addModelListener(ModelListener l) {
-        
+        listeners.add(l);
     }
 
     @Override
     public void removeModelListener(ModelListener l) {
-        
+        listeners.remove(l);
     }
 }

@@ -157,6 +157,30 @@ public final class Source {
                  VMDisconnectedExceptionWrapper ex) {
             return null;
         }
+        return getTheSource(debugger, id, name, path, codeRef);
+    }
+    
+    public static Source getSource(JPDADebugger debugger, long id,
+                                   String name,
+                                   String path,
+                                   StringReference codeRef) {
+        synchronized (knownSources) {
+            Map<Long, Source> dbgSources = knownSources.get(debugger);
+            if (dbgSources != null) {
+                Source src = dbgSources.get(id);
+                if (src != null) {
+                    return src;
+                }
+            }
+        }
+        return getTheSource(debugger, id, name, path, codeRef);
+    }
+    
+    private static Source getTheSource(JPDADebugger debugger, long id,
+                                       String name,
+                                       String path,
+                                       StringReference codeRef) {
+        
         URL url = null;
         File file = new File(path);
         if (file.isAbsolute() && file.canRead()) {
