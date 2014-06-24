@@ -59,6 +59,7 @@ import org.netbeans.modules.j2ee.weblogic9.ProgressObjectSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.CommandBasedDeployer;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -118,7 +119,10 @@ public class WLServerLibraryManager implements ServerLibraryManager {
         try {
             deployFiles(toDeploy);
         } finally {
-            WLPluginProperties.getDomainConfigFileObject(manager).refresh();
+            FileObject fo = WLPluginProperties.getDomainConfigFileObject(manager);
+            if (fo != null) {
+                fo.refresh();
+            }
         }
     }
 
