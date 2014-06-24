@@ -234,6 +234,15 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                     }
                 }
 
+                if (rIndex != null && (prefix.isEmpty() || !prefix.contains("!") || !prefix.contains("/"))) {
+                    Collection<String> usedPlugins = rIndex.getUsedPlugins();
+                    for (String plugin : usedPlugins) {
+                        if (plugin.startsWith(prefix)) {
+                            result.add(new RequireJsCompletionItem.PluginNameCompletionItem(plugin, ccContext.getCaretOffset() - prefix.length()));
+                        }
+                    }
+                }
+                // add the plugin name
                 return result;
             }
         }
