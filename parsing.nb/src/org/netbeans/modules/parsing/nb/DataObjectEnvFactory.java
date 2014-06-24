@@ -84,7 +84,7 @@ import org.openide.util.lookup.ServiceProvider;
 // Note: 40k is a random position, but less than 50k used in parsing.api tests. Anyone who depends
 // on parsing.api tests will receive the testing environment.
 @ServiceProvider(service = EnvironmentFactory.class, position = 40000) 
-public final class DataObjectEnvFactory extends SourceEnvironment implements EnvironmentFactory {
+public final class DataObjectEnvFactory implements EnvironmentFactory {
     private static Map<String,Reference<Parser>> cachedParsers = new HashMap<String,Reference<Parser>>();    
     
     static {
@@ -165,11 +165,7 @@ public final class DataObjectEnvFactory extends SourceEnvironment implements Env
 
     @Override
     public SourceEnvironment createEnvironment(Source src, SourceControl control) {
-        if (control != null) {
-            return new EventSupport(control);
-        } else {
-            return this;
-        }
+        return new EventSupport(control);
     }
 
     @Override
@@ -177,41 +173,41 @@ public final class DataObjectEnvFactory extends SourceEnvironment implements Env
         return EditorSettings.getDefault().getAllMimeTypes();
     }
 
-    @Override
-    public Document readDocument(FileObject fileObject, boolean forceOpen) throws IOException {
-        EditorCookie ec = null;
-
-        try {
-            DataObject dataObject = DataObject.find (fileObject);
-            ec = dataObject.getLookup ().lookup (EditorCookie.class);
-        } catch (DataObjectNotFoundException ex) {
-            //DataobjectNotFoundException may happen in case of deleting opened file
-            //handled by returning null
-        }
-
-        if (ec == null) return null;
-        Document doc = ec.getDocument ();
-        if (doc == null && forceOpen) {
-            try {
-                doc = ec.openDocument ();
-            } catch (UserQuestionException uqe) {
-                uqe.confirmed ();
-                doc = ec.openDocument ();
-            }
-        }
-        return doc;
-    }
-    
-    public void attachScheduler(SchedulerControl s, boolean attach) {
-    }
-
-    @Override
-    public void activate() {
-    }
-
-    @Override
-    public boolean isReparseBlocked() {
-        return false;
-    }
+//    @Override
+//    public Document readDocument(FileObject fileObject, boolean forceOpen) throws IOException {
+//        EditorCookie ec = null;
+//
+//        try {
+//            DataObject dataObject = DataObject.find (fileObject);
+//            ec = dataObject.getLookup ().lookup (EditorCookie.class);
+//        } catch (DataObjectNotFoundException ex) {
+//            //DataobjectNotFoundException may happen in case of deleting opened file
+//            //handled by returning null
+//        }
+//
+//        if (ec == null) return null;
+//        Document doc = ec.getDocument ();
+//        if (doc == null && forceOpen) {
+//            try {
+//                doc = ec.openDocument ();
+//            } catch (UserQuestionException uqe) {
+//                uqe.confirmed ();
+//                doc = ec.openDocument ();
+//            }
+//        }
+//        return doc;
+//    }
+//
+//    public void attachScheduler(SchedulerControl s, boolean attach) {
+//    }
+//
+//    @Override
+//    public void activate() {
+//    }
+//
+//    @Override
+//    public boolean isReparseBlocked() {
+//        return false;
+//    }
 
 }

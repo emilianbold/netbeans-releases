@@ -95,7 +95,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -142,26 +141,13 @@ final class EventSupport extends SourceEnvironment {
     private static int reparseDelay = DEFAULT_REPARSE_DELAY;
     private static int immediateReparseDelay = IMMEDIATE_REPARSE_DELAY;
 
-    private volatile boolean initialized;
-
     private DocListener docListener;
     private DataObjectListener dobjListener;
-    private ChangeListener parserListener;
-    
-    private final SourceControl envControl;
-    
-//    private final RequestProcessor.Task resetTask = RP.create(new Runnable() {
-//        @Override
-//        public void run() {
-//            resetStateImpl();
-//        }
-//    });
 
     private static final EditorRegistryListener editorRegistryListener  = new EditorRegistryListener();
     
     public EventSupport (final SourceControl sourceControl) {
-        assert sourceControl != null;
-        this.envControl = sourceControl;
+        super(sourceControl);
         source2Event.put(sourceControl.getSource(), this);
     }
 
@@ -195,46 +181,35 @@ final class EventSupport extends SourceEnvironment {
     }
 
     public FileObject getFileObject(Document d) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return DataObjectEnvFactory.getFileObject(d);
     }
 
     @Override
     public void activate() {
-        init();
+        final Source source = getSourceControl().getSource();
+        final FileObject fo = source.getFileObject();
+        Document doc;
+        if (fo != null) {
+            try {
+                listenOnFileChanges();
+                listenOnParser();
+                DataObject dObj = DataObject.find(fo);
+                assignDocumentListener (dObj);
+                dobjListener = new DataObjectListener(dObj);
+            } catch (DataObjectNotFoundException e) {
+                LOGGER.log(Level.WARNING, "Ignoring events non existent file: {0}", FileUtil.getFileDisplayName(fo));     //NOI18N
+            }
+        } else if ((doc=source.getDocument(false)) != null) {
+            listenOnParser();
+            docListener = new DocListener (doc);
+        }
     }
 
     @Override
     public boolean isReparseBlocked() {
         return EditorRegistryListener.k24.get();
     }
-    
-    public void init () {
-        if (initialized) {
-            return;
-        }
-        // WARNING: this was synchronized by TaskProcessor.INTERNAL_LOCK.
-        synchronized (this) {
-            if (initialized) {
-                return;
-            }
-            final Source source = envControl.getSource();
-            Document doc;
-            final FileObject fo = source.getFileObject();                
-            if (fo != null) {
-                try {
-                    DataObject dObj = DataObject.find(fo);
-                    assignDocumentListener (dObj);
-                    dobjListener = new DataObjectListener(dObj);
-                } catch (DataObjectNotFoundException e) {
-                    LOGGER.log(Level.WARNING, "Ignoring events non existent file: {0}", FileUtil.getFileDisplayName(fo));     //NOI18N
-                }
-            } else if ((doc=source.getDocument(false)) != null) {
-                docListener = new DocListener (doc);
-            }
-            initialized = true;
-        }
-    }
-    
+
     public void resetState (
         final boolean           invalidate,
         final boolean           mimeChanged,
@@ -243,14 +218,14 @@ final class EventSupport extends SourceEnvironment {
         final boolean           fast) {
         if (invalidate) {
             if (startOffset == -1 || endOffset == -1) {
-                envControl.sourceChanged(mimeChanged);
+                getSourceControl().sourceChanged(mimeChanged);
             } else {
-                envControl.regionChanged(startOffset, endOffset);
+                getSourceControl().regionChanged(startOffset, endOffset);
             }
         } else {
-            envControl.stateChanged();
+            getSourceControl().stateChanged();
         }
-        envControl.revalidate(getReparseDelay(fast));
+        getSourceControl().revalidate(getReparseDelay(fast));
     }
 
     /**
@@ -291,20 +266,6 @@ final class EventSupport extends SourceEnvironment {
     }
     // <editor-fold defaultstate="collapsed" desc="Private implementation">
 
-    /**
-     * Not synchronized, only sets the atomic state and clears the listeners
-     *
-    private void resetStateImpl() {
-        if (!EditorRegistryListener.k24.get()) {
-            Source source = envControl.getSource();
-            if (source == null) {
-                return;
-            }
-            envControl.reset();
-        }
-    }
-     */
-    
     private void assignDocumentListener(final DataObject od) {
         EditorCookie.Observable ec = od.getCookie(EditorCookie.Observable.class);
         if (ec != null) {
@@ -323,7 +284,7 @@ final class EventSupport extends SourceEnvironment {
             assert ec != null;
             this.ec = ec;
             this.ec.addPropertyChangeListener(WeakListeners.propertyChange(this, this.ec));
-            final Source source = envControl.getSource();
+            final Source source = getSourceControl().getSource();
             assert source != null;
             final Document doc = source.getDocument(false);
             if (doc != null) {
@@ -349,7 +310,7 @@ final class EventSupport extends SourceEnvironment {
                     thListener = null;
                     docListener = null;
                 }                
-                Source source = envControl.getSource();
+                Source source = getSourceControl().getSource();
                 if (source == null) {
                     return;
                 }
@@ -547,10 +508,10 @@ final class EventSupport extends SourceEnvironment {
             final EventSupport support = getEventSupport(source);
             if (rawValue instanceof Boolean && ((Boolean) rawValue).booleanValue()) {
                 k24.set(true);
-                support.envControl.cancelParsing();
+                support.getSourceControl().cancelParsing();
             } else {
                 k24.set(false);
-                support.envControl.revalidate(0);
+                support.getSourceControl().revalidate(0);
             }
         }
     }
@@ -634,7 +595,7 @@ final class EventSupport extends SourceEnvironment {
     @Override
     public void attachScheduler(SchedulerControl s, boolean attach) {
         SchedL l;
-        Source now = envControl.getSource();
+        Source now = getSourceControl().getSource();
         
         synchronized (scheduledSources) {
             Scheduler sched = s.getScheduler();

@@ -38,34 +38,46 @@
  * Contributor(s):
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
-  */
+ */
 
-package org.netbeans.modules.parsing.implspi;
+package org.netbeans.modules.parsing.impl.event;
 
+import java.util.Objects;
+import javax.swing.event.ChangeEvent;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.parsing.impl.SourceAccessor;
-import org.netbeans.modules.parsing.impl.TaskProcessor;
+import org.netbeans.modules.parsing.impl.Utilities;
+import org.netbeans.modules.parsing.implspi.SourceControl;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.util.Parameters;
 
 /**
- * Allows to control the parsing susbsytem operation.
- * @author sdedic
+ *
+ * @author Tomas Zezula
  */
-public class TaskProcessorControl {
-    /**
-     * Initialize the parsing and scheduling system. The method should be called 
-     * at "appropriate time", for example when the UI starts and is ready to accept
-     * user input.
-     */
-    public static void initialize() {
-        SourceAccessor.getINSTANCE().init();
-    }
-    
-    public static void resetState() {
-        TaskProcessor.resetStateImpl(null);
+public final class FileChangeSupport extends FileChangeAdapter {
+
+    private final SourceControl sourceControl;
+
+    public FileChangeSupport(@NonNull final SourceControl sourceControl) {
+        Parameters.notNull("sourceControl", sourceControl); //NOI18N
+        this.sourceControl = sourceControl;
     }
 
-    @NonNull
-    public static Object getLock() {
-        return TaskProcessor.INTERNAL_LOCK;
+    @Override
+    public void fileChanged(final FileEvent fe) {
+        // FIXME -- MIME type may changed even though the file only changed content.
+        // For example XML files' MIME type depends on their XMLNS declaration
+        sourceControl.sourceChanged(false);
+        Utilities.revalidate(sourceControl.getSource());
+    }
+
+    @Override
+    public void fileRenamed(final FileRenameEvent fe) {
+        final String oldExt = fe.getExt();
+        final String newExt = fe.getFile().getExt();
+        sourceControl.sourceChanged(!Objects.equals(oldExt, newExt));
+        Utilities.revalidate(sourceControl.getSource());
     }
 }

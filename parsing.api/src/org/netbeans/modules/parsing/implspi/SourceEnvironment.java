@@ -42,13 +42,21 @@
 package org.netbeans.modules.parsing.implspi;
 
 import java.io.IOException;
-
+import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
-
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.impl.ParserEventForward;
+import org.netbeans.modules.parsing.impl.SourceAccessor;
+import org.netbeans.modules.parsing.impl.event.FileChangeSupport;
+import org.netbeans.modules.parsing.impl.event.ParserChangeSupport;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 
 /**
  * Connects the Source instance to its environment.It is not implemented by
@@ -64,6 +72,15 @@ import org.openide.filesystems.FileObject;
  * @author sdedic
  */
 public abstract class SourceEnvironment {
+
+    private final SourceControl sourceControl;
+    private FileChangeListener fileChangeListener;
+    private ChangeListener parserListener;
+
+    protected SourceEnvironment(@NonNull final SourceControl sourceControl) {
+        Parameters.notNull("sourceControl", sourceControl); //NOI18N
+        this.sourceControl = sourceControl;
+    }
     /**
      * Reads the Document based on the Source's properties
      *
@@ -102,4 +119,23 @@ public abstract class SourceEnvironment {
      * @return true, if a reparse should not be scheduled.
      */
     public abstract boolean isReparseBlocked();
+
+    protected final SourceControl getSourceControl() {
+        return this.sourceControl;
+    }
+
+    protected final void listenOnFileChanges() {
+        final FileObject fo = sourceControl.getSource().getFileObject();
+        if (fo != null) {
+            fileChangeListener = new FileChangeSupport(sourceControl);
+            fo.addFileChangeListener(FileUtil.weakFileChangeListener(this.fileChangeListener,fo));
+        }
+    }
+
+    protected final void listenOnParser() {
+        final ParserEventForward peFwd = SourceAccessor.getINSTANCE().getParserEventForward(
+            sourceControl.getSource());
+        parserListener = new ParserChangeSupport(sourceControl);
+        peFwd.addChangeListener(parserListener);
+    }
 }

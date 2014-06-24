@@ -225,6 +225,9 @@ public abstract class SourceAccessor {
     );
     
     public abstract void attachScheduler(Source src, SchedulerControl sched, boolean attach);
+
+    @NonNull
+    public abstract ParserEventForward getParserEventForward(@NonNull Source source);
     
     public final void init() {
         Utilities.getEnvFactory().getSchedulers(Lookup.getDefault());

@@ -73,10 +73,10 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.parsing.impl.ParserEventForward;
 import org.netbeans.modules.parsing.impl.SchedulerAccessor;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceCache;
-import org.netbeans.modules.parsing.impl.SourceChangeSupport;
 import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.netbeans.modules.parsing.impl.Utilities;
@@ -527,17 +527,16 @@ public final class Source implements Lookup.Provider {
     private SourceCache     cache;
     //GuardedBy(flags)
     private volatile long eventId;
-    //Changes handling
+    private volatile boolean listeningOnChanges;
 
     /**
      * Binding of source to its environment
      */
-    private SourceEnvironment sourceEnv;
-    
+    private final SourceEnvironment sourceEnv;
     /**
-     * Transforms FileObject and Parser changes to Source invalidations
+     * Demultiplexes events from all parsers to SourceEnvironment.
      */
-    private SourceChangeSupport changeSupport;
+    private final ParserEventForward peFwd;
 
     @SuppressWarnings("LeakingThisInConstructor")
     private Source (
@@ -550,8 +549,8 @@ public final class Source implements Lookup.Provider {
         this.document =     document;
         this.fileObject =   fileObject;
         this.context =      context;
-        
-        sourceEnv = Utilities.createEnvironment(this, ctrl);
+        this.peFwd = new ParserEventForward();
+        this.sourceEnv = Utilities.createEnvironment(this, ctrl);
     }
 
     private static Source _get(String mimeType, FileObject fileObject, Lookup context) {
@@ -574,34 +573,26 @@ public final class Source implements Lookup.Provider {
             return source;
         }
     }
-    
-    /**
-     * True if the source has been initialized nad listeners attached
-     */
-    // @GuardedBy(TaskProcessor.INTERNAL_LOCK)
-    private volatile boolean initialized;
-    
+
     private void assignListeners () {
-        boolean listen = !suppressListening.get();
+        final boolean listen = !suppressListening.get();
         if (listen) {
-            if (initialized) {
+            if (listeningOnChanges) {
                 return;
             }
             synchronized (TaskProcessor.INTERNAL_LOCK) {
-                if (initialized) {
+                if (listeningOnChanges) {
                     return;
                 }
-                final FileObject fo = getFileObject();
-                final Parser parser = getCache().getParser ();
-                changeSupport = new SourceChangeSupport(ctrl, fo);
-                changeSupport.activate(parser);
-                initialized = true;
+                try {
+                    sourceEnv.activate();
+                } finally {
+                    listeningOnChanges = true;
+                }
             }
-            // CHECK: moved outside of the synchronized section
-            sourceEnv.activate();
         }
     }
-    
+
     private void setFlags(final Set<SourceFlags> flags) {
         // synchronized because of eventId
         synchronized (flags) {
@@ -931,6 +922,11 @@ public final class Source implements Lookup.Provider {
             return origCache;
         }
 
+        @Override
+        @NonNull
+        public ParserEventForward getParserEventForward(@NonNull final Source source) {
+            return source.peFwd;
+        }
     } // End of MySourceAccessor class
         
     private static class ASourceModificationEvent extends SourceModificationEvent {

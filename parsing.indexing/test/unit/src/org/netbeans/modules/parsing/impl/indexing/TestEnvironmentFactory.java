@@ -170,10 +170,9 @@ public class TestEnvironmentFactory implements EnvironmentFactory {
     }
 
     static class Env extends SourceEnvironment {
-        private SourceControl ctrl;
 
         public Env(SourceControl ctrl) {
-            this.ctrl = ctrl;
+            super(ctrl);
         }
 
         @Override

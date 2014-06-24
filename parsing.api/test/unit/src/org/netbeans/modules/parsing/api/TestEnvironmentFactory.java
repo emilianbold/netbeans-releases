@@ -49,18 +49,23 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-
+import org.netbeans.modules.parsing.impl.event.FileChangeSupport;
+import org.netbeans.modules.parsing.impl.event.ParserChangeSupport;
 import org.netbeans.modules.parsing.implspi.EnvironmentFactory;
 import org.netbeans.modules.parsing.implspi.SchedulerControl;
 import org.netbeans.modules.parsing.implspi.SourceControl;
 import org.netbeans.modules.parsing.implspi.SourceEnvironment;
+import org.netbeans.modules.parsing.implspi.TaskProcessorControl;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
@@ -128,10 +133,9 @@ public class TestEnvironmentFactory implements EnvironmentFactory {
     }
     
     static class Env extends SourceEnvironment {
-        private SourceControl ctrl;
 
         public Env(SourceControl ctrl) {
-            this.ctrl = ctrl;
+            super(ctrl);
         }
 
         @Override
@@ -158,6 +162,8 @@ public class TestEnvironmentFactory implements EnvironmentFactory {
 
         @Override
         public void activate() {
+            listenOnFileChanges();
+            listenOnParser();
         }
     }
 }

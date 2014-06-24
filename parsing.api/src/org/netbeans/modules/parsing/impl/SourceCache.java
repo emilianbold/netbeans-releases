@@ -76,6 +76,7 @@ import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.Pair;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -213,6 +214,11 @@ public final class SourceCache {
         synchronized (TaskProcessor.INTERNAL_LOCK) {
             if (!parserInitialized) {                                                                                
                 parser = _parser;
+                if (parser != null) {
+                    parser.addChangeListener(WeakListeners.change(
+                        SourceAccessor.getINSTANCE().getParserEventForward(source),
+                        parser));
+                }
                 parserInitialized = true;
             }
             return parser;

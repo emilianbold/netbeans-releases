@@ -40,65 +40,31 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl;
+package org.netbeans.modules.parsing.impl.event;
 
-import java.util.Objects;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.implspi.SourceControl;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 
 /**
- * Support to watch file changes, extracted from original org.netbeans.modules.parsing.impl.events.EventSupport.
- * The rest of event support was moved to parsing.nb module as it relies on DataSystems and Editors.
- * 
- * @author sdedic
+ *
+ * @author Tomas Zezula
  */
-public final class SourceChangeSupport extends FileChangeAdapter implements ChangeListener {
-    private final SourceControl control;
-    private final FileObject file;
+public final class ParserChangeSupport implements ChangeListener {
 
-    public SourceChangeSupport(SourceControl control, FileObject file) {
-        this.control = control;
-        this.file = file;
-    }
-    
-    public void activate(Parser parser) {
-        if (file == null) {
-            return;
-        }
-        if (parser != null) {
-            if (file != null || (control.getSource().getDocument(false)) != null) {
-                parser.addChangeListener(this);
-            }
-        }
-        file.addFileChangeListener(FileUtil.weakFileChangeListener(this, file));
-    }
-    
-    @Override
-    public void fileChanged(final FileEvent fe) {
-        // FIXME -- MIME type may changed even though the file only changed content.
-        // For example XML files' MIME type depends on their XMLNS declaration 
-        control.sourceChanged(false);
-        Utilities.revalidate(control.getSource());
-    }        
+    private final SourceControl sourceControl;
 
-    @Override
-    public void fileRenamed(final FileRenameEvent fe) {
-        final String oldExt = fe.getExt();
-        final String newExt = fe.getFile().getExt();
-        control.sourceChanged(!Objects.equals(oldExt, newExt));
-        Utilities.revalidate(control.getSource());
+    public ParserChangeSupport(@NonNull final SourceControl sourceControl) {
+        Parameters.notNull("sourceControl", sourceControl); //NOI18N
+        this.sourceControl = sourceControl;
     }
-    
+
     @Override
     public void stateChanged(final ChangeEvent e) {
-        control.sourceChanged(false);
-        Utilities.revalidate(control.getSource());
+        sourceControl.sourceChanged(false);
+        Utilities.revalidate(sourceControl.getSource());
     }
 }

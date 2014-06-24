@@ -38,34 +38,39 @@
  * Contributor(s):
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
-  */
+ */
 
-package org.netbeans.modules.parsing.implspi;
+package org.netbeans.modules.parsing.impl;
 
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.parsing.impl.SourceAccessor;
-import org.netbeans.modules.parsing.impl.TaskProcessor;
+import org.openide.util.ChangeSupport;
+import org.openide.util.Parameters;
 
 /**
- * Allows to control the parsing susbsytem operation.
- * @author sdedic
+ *
+ * @author Tomas Zezula
  */
-public class TaskProcessorControl {
-    /**
-     * Initialize the parsing and scheduling system. The method should be called 
-     * at "appropriate time", for example when the UI starts and is ready to accept
-     * user input.
-     */
-    public static void initialize() {
-        SourceAccessor.getINSTANCE().init();
-    }
-    
-    public static void resetState() {
-        TaskProcessor.resetStateImpl(null);
+public final class ParserEventForward implements ChangeListener {
+
+    private final ChangeSupport changeSupport;
+
+    public ParserEventForward() {
+        this.changeSupport = new ChangeSupport(this);
     }
 
-    @NonNull
-    public static Object getLock() {
-        return TaskProcessor.INTERNAL_LOCK;
+    public void addChangeListener(@NonNull final ChangeListener listener) {
+        this.changeSupport.addChangeListener(listener);
     }
+
+    public void removeChangeListener(@NonNull final ChangeListener listener) {
+        this.changeSupport.addChangeListener(listener);
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        this.changeSupport.fireChange();
+    }
+
 }
