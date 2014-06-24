@@ -69,7 +69,7 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
             if (ts.moveNext() && ts.token().id() == JsTokenId.STRING && EditorUtils.isFileReference(info.getSnapshot(), ts.offset())) {
                 ts.move(caretOffset);
                 ts.moveNext();
-                String path = ts.token().text().toString();
+                String path = FSCompletionUtils.removePlugin(ts.token().text().toString());
                 FileObject targetFO = FSCompletionUtils.findMappedFileObject(path, fo);
                 if (targetFO != null) {
                     return new DeclarationLocation(targetFO, 0);
@@ -102,6 +102,7 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
                                }
                             } while (path == null && ts.moveNext() && token.id() != JsTokenId.BRACKET_RIGHT_PAREN);
                             if (path != null) {
+                                path = FSCompletionUtils.removePlugin(path);
                                 FileObject targetFO = FSCompletionUtils.findMappedFileObject(path, fo);
                                 if (targetFO != null) {
                                     return new DeclarationLocation(targetFO, 0);
@@ -133,7 +134,14 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
                     if (ts.moveNext() && ts.token().id() == JsTokenId.STRING && EditorUtils.isFileReference(Source.create(doc).createSnapshot(), ts.offset())) {
                         ts.move(caretOffset);
                         ts.moveNext();
-                        value[0] = new OffsetRange(ts.offset(), ts.offset() + ts.token().length());
+                        String path = ts.token().text().toString();
+                        int start = ts.offset();
+                        int end = ts.offset() + path.length();
+                        if (FSCompletionUtils.containsPlugin(path)) {
+                            String withoutPlugin = FSCompletionUtils.removePlugin(path);
+                            start = start + path.length() - withoutPlugin.length();
+                        }
+                        value[0] = new OffsetRange(start, end);
                     }
                 }
             }
