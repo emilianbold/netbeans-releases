@@ -44,6 +44,7 @@ package org.netbeans.modules.jumpto.file;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -79,6 +80,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
 /**
@@ -147,21 +149,16 @@ final class Worker implements Runnable {
                         System.currentTimeMillis() - createTime
                     });
             }
-            final List<? extends FileDescriptor> files = this.strategy.execute(this.request);
-            if (this.cancelled) {
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(
-                        Level.FINE,
-                        "Worker: {0} exited after cancel {1} ms.",  //NOI18N
-                        new Object[]{
-                            System.identityHashCode(this),
-                            System.currentTimeMillis() - createTime
-                        });
-                }
-                return;
+            this.strategy.execute(this.request, this);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(
+                    Level.FINE,
+                    "Worker: {0} finished after cancel {1} ms.",  //NOI18N
+                    new Object[]{
+                        System.identityHashCode(this),
+                        System.currentTimeMillis() - createTime
+                    });
             }
-            assert files != null: "No files for non cancelled trategy: " + this.strategy;   //NOI18N
-            this.collector.emit(this, files);
         } finally {
             this.collector.done(this);
         }
@@ -175,6 +172,12 @@ final class Worker implements Runnable {
             System.identityHashCode(this),
             this.request,
             this.strategy);
+    }
+
+    private void emit(@NonNull final List<? extends FileDescriptor> files) {
+        if (!this.cancelled) {
+            this.collector.emit(this, files);
+        }
     }
 
     @NonNull
@@ -289,8 +292,21 @@ final class Worker implements Runnable {
 
         private synchronized Collection<? extends FileObject> getSourceRoots() {
             if (sgRoots == null) {
-                final Project[] projects = OpenProjects.getDefault().getOpenProjects();
-                final List<FileObject> newSgRoots = new ArrayList<FileObject>();
+                final Project[] openedProjects = OpenProjects.getDefault().getOpenProjects();
+                final List<Project> projects;
+                if (currentProject == null) {
+                    projects = Arrays.asList(openedProjects);
+                } else {
+                    projects = new ArrayList<>();
+                    projects.add(currentProject);
+                    for (Project openedProject : openedProjects) {
+                        if (currentProject.equals(openedProject)){
+                            continue;
+                        }
+                        projects.add(openedProject);
+                    }
+                }
+                final List<FileObject> newSgRoots = new ArrayList<>();
                 for (Project p : projects) {
                     for (SourceGroup group : ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
                         newSgRoots.add(group.getRootFolder());
@@ -395,7 +411,7 @@ final class Worker implements Runnable {
         private volatile boolean cancelled;
 
         @CheckForNull
-        abstract  List<? extends FileDescriptor> execute(@NonNull Request request);
+        abstract  void execute(@NonNull Request request, @NonNull final Worker worker);
 
         void cancel() {
             cancelled = true;
@@ -433,11 +449,11 @@ final class Worker implements Runnable {
         private volatile FileProvider currentProvider;
 
         @Override
-        List<? extends FileDescriptor> execute(Request request) {
+        void execute(@NonNull final Request request, @NonNull final Worker worker) {
             if (isCancelled()) {
-                return null;
+                return;
             }
-            final List<FileDescriptor> files = new ArrayList<FileDescriptor>();
+            final List<FileDescriptor> files = new ArrayList<>();
             final SearchType jumpToSearchType = toJumpToSearchType(request.getSearchKind());
             final FileProvider.Context ctx = FileProviderAccessor.getInstance().createContext(
                 request.getText(),
@@ -448,29 +464,34 @@ final class Worker implements Runnable {
                 files,
                 new String[1],
                 ctx);
-            for (FileProvider provider : getProviders()) {
-                currentProvider = provider;
-                if (isCancelled()) {
-                    return null;
+            for (FileObject root : request.getSourceRoots()) {
+                if (request.isExcluded(root)) {
+                    continue;
                 }
-                try {
-                    for (FileObject root : request.getSourceRoots()) {
-                        if (request.isExcluded(root)) {
-                            continue;
-                        }
-                        FileProviderAccessor.getInstance().setRoot(ctx, root);
-                        boolean recognized = provider.computeFiles(ctx, fpR);
-                        if (recognized) {
-                            request.exclude(root);
-                        }
+                FileProviderAccessor.getInstance().setRoot(ctx, root);
+                boolean recognized = false;
+                for (FileProvider provider : getProviders()) {
+                    if (isCancelled()) {
+                        return;
                     }
-                } finally {
-                    currentProvider = null;
+                    currentProvider = provider;
+                    try {
+                        recognized = provider.computeFiles(ctx, fpR);
+                        if (recognized) {
+                            break;
+                        }
+                    } finally {
+                        currentProvider = null;
+                    }
+                }
+                if (recognized) {
+                    request.exclude(root);
+                }
+                if (!files.isEmpty()) {
+                    worker.emit(files);
+                    files.clear();
                 }
             }
-            return isCancelled() ?
-                null :
-                files;
         }
 
         @Override
@@ -504,10 +525,103 @@ final class Worker implements Runnable {
     private static final class IndexStrategy extends Strategy {
 
         @Override
-        List<? extends FileDescriptor> execute(Request request) {
+        void execute(@NonNull final Request request, @NonNull final Worker worker) {
             if (isCancelled()) {
-                return null;
+                return;
             }
+            final Pair<String,String> query = createQuery(request);
+            try {
+                final Project currentProject = request.getCurrentProject();
+                if (currentProject != null) {
+                    doQuery(
+                        query,
+                        request,
+                        worker,
+                        collectRoots(request, currentProject));
+                }
+                doQuery(
+                    query,
+                    request,
+                    worker,
+                    collectRoots(request, null));
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
+
+        @NonNull
+        private Collection<? extends FileObject> collectRoots(
+            @NonNull final Request request,
+            @NullAllowed final Project project) {
+            final Set<FileObject> roots = new LinkedHashSet<>();
+            for (FileObject fo : QuerySupport.findRoots(
+                project,
+                null,
+                Collections.<String>emptyList(),
+                Collections.<String>emptyList())) {
+                if (!request.isExcluded(fo)) {
+                    roots.add(fo);
+                }
+            }
+            return roots;
+        }
+
+        private boolean doQuery(
+            @NonNull final Pair<String,String> query,
+            @NonNull final Request request,
+            @NonNull final Worker worker,
+            @NonNull final Collection<? extends FileObject> roots) throws IOException {
+            if (isCancelled()) {
+                return false;
+            }
+            final QuerySupport q = QuerySupport.forRoots(
+                FileIndexer.ID,
+                FileIndexer.VERSION,
+                roots.toArray(new FileObject[roots.size()]));
+            if (isCancelled()) {
+                return false;
+            }
+            final List<FileDescriptor> files = new ArrayList<>();
+            final Collection<? extends IndexResult> results = q.query(
+                query.first(),
+                query.second(),
+                request.getSearchKind());
+            for (IndexResult r : results) {
+                FileObject file = r.getFile();
+                if (file == null || !file.isValid()) {
+                    // the file has been deleted in the meantime
+                    continue;
+                }
+                final Project project = FileOwnerQuery.getOwner(file);
+                FileDescriptor fd = new FileDescription(
+                        file,
+                        r.getRelativePath().substring(0, Math.max(r.getRelativePath().length() - file.getNameExt().length() - 1, 0)),
+                        project,
+                        request.getLine());
+                boolean preferred = project != null && request.getCurrentProject() != null ?
+                        project.getProjectDirectory() == request.getCurrentProject().getProjectDirectory() :
+                        false;
+                FileProviderAccessor.getInstance().setFromCurrentProject(fd, preferred);
+                files.add(fd);
+                LOG.log(
+                    Level.FINER,
+                    "Found: {0}, project={1}, currentProject={2}, preferred={3}",   //NOI18N
+                    new Object[]{
+                        file.getPath(),
+                        project,
+                        request.getCurrentProject(),
+                        preferred
+                    });
+            }
+            for (FileObject root : roots) {
+                request.exclude(root);
+            }
+            worker.emit(files);
+            return true;
+        }
+
+        @NonNull
+        private Pair<String,String> createQuery(@NonNull final Request request) {
             String searchField;
             String indexQueryText;
             switch (request.getSearchKind()) {
@@ -530,64 +644,7 @@ final class Worker implements Runnable {
                     indexQueryText = request.getText();
                     break;
             }
-            try {
-                final List<FileDescriptor> files = new ArrayList<FileDescriptor>();
-                final Set<FileObject> roots = new LinkedHashSet<FileObject>();
-                for (FileObject fo : QuerySupport.findRoots(
-                    (Project) null,
-                    null,
-                    Collections.<String>emptyList(),
-                    Collections.<String>emptyList())) {
-                    if (!request.isExcluded(fo)) {
-                        roots.add(fo);
-                    }
-                }
-                if (isCancelled()) {
-                    return null;
-                }
-                final QuerySupport q = QuerySupport.forRoots(
-                    FileIndexer.ID,
-                    FileIndexer.VERSION,
-                    roots.toArray(new FileObject[roots.size()]));
-                if (isCancelled()) {
-                    return null;
-                }
-                final Collection<? extends IndexResult> results = q.query(searchField, indexQueryText, request.getSearchKind());
-                for (IndexResult r : results) {
-                    FileObject file = r.getFile();
-                    if (file == null || !file.isValid()) {
-                        // the file has been deleted in the meantime
-                        continue;
-                    }
-                    final Project project = FileOwnerQuery.getOwner(file);
-                    FileDescriptor fd = new FileDescription(
-                            file,
-                            r.getRelativePath().substring(0, Math.max(r.getRelativePath().length() - file.getNameExt().length() - 1, 0)),
-                            project,
-                            request.getLine());
-                    boolean preferred = project != null && request.getCurrentProject() != null ?
-                            project.getProjectDirectory() == request.getCurrentProject().getProjectDirectory() :
-                            false;
-                    FileProviderAccessor.getInstance().setFromCurrentProject(fd, preferred);
-                    files.add(fd);
-                    LOG.log(
-                        Level.FINER,
-                        "Found: {0}, project={1}, currentProject={2}, preferred={3}",   //NOI18N
-                        new Object[]{
-                            file.getPath(),
-                            project,
-                            request.getCurrentProject(),
-                            preferred
-                        });
-                }
-                for (FileObject root : roots) {
-                    request.exclude(root);
-                }
-                return files;
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-                return Collections.<FileDescriptor>emptyList();
-            }
+            return Pair.<String,String>of(searchField, indexQueryText);
         }
     }
 
@@ -595,9 +652,9 @@ final class Worker implements Runnable {
 
         @CheckForNull
         @Override
-        List<? extends FileDescriptor> execute(@NonNull final Request request) {
+        void execute(@NonNull final Request request, @NonNull final Worker worker) {
             if (isCancelled()) {
-                return null;
+                return;
             }
             final SearchType jumpToSearchType = toJumpToSearchType(request.getSearchKind());
             //Looking for matching files in all found folders
@@ -605,45 +662,53 @@ final class Worker implements Runnable {
                     request.getText(),
                     jumpToSearchType);
             final List<FileDescriptor> files = new ArrayList<FileDescriptor>();
-            Collection <FileObject> allFolders = new HashSet<FileObject>();
+            final Collection <FileObject> allFolders = new HashSet<FileObject>();
             List<SearchFilter> filters = SearchInfoUtils.DEFAULT_FILTERS;
             for (FileObject root : request.getSourceRoots()) {
-                allFolders = searchSources(root, allFolders, request, filters);
-            }
-            for (FileObject folder: allFolders) {
-                if (isCancelled()) {
-                    return null;
-                }
-                assert folder.isFolder();
-                Enumeration<? extends FileObject> filesInFolder = folder.getData(false);
-                while (filesInFolder.hasMoreElements()) {
-                    FileObject file = filesInFolder.nextElement();
-                    if (file.isFolder()) continue;
-
-                    if (matcher.accept(file.getNameExt())) {
-                        Project project = FileOwnerQuery.getOwner(file);
-                        boolean preferred = false;
-                        String relativePath = null;
-                        if(project != null) { // #176495
-                           FileObject pd = project.getProjectDirectory();
-                           preferred = request.getCurrentProject() != null ?
-                             pd == request.getCurrentProject().getProjectDirectory() :
-                             false;
-                            relativePath = FileUtil.getRelativePath(pd, file);
-                        }
-                        if (relativePath == null)
-                            relativePath ="";
-                        FileDescriptor fd = new FileDescription(
-                            file,
-                            relativePath,
-                            project,
-                            request.getLine());
-                        FileProviderAccessor.getInstance().setFromCurrentProject(fd, preferred);
-                        files.add(fd);
+                allFolders.clear();
+                for (FileObject folder : searchSources(
+                        root,
+                        allFolders,
+                        request,
+                        filters)) {
+                    if (isCancelled()) {
+                        return;
                     }
+                    assert folder.isFolder();
+                    Enumeration<? extends FileObject> filesInFolder = folder.getData(false);
+                    while (filesInFolder.hasMoreElements()) {
+                        FileObject file = filesInFolder.nextElement();
+                        if (file.isFolder()) continue;
+
+                        if (matcher.accept(file.getNameExt())) {
+                            Project project = FileOwnerQuery.getOwner(file);
+                            boolean preferred = false;
+                            String relativePath = null;
+                            if(project != null) { // #176495
+                               FileObject pd = project.getProjectDirectory();
+                               preferred = request.getCurrentProject() != null ?
+                                 pd == request.getCurrentProject().getProjectDirectory() :
+                                 false;
+                                relativePath = FileUtil.getRelativePath(pd, file);
+                            }
+                            if (relativePath == null)
+                                relativePath ="";   //NOI18N
+                            FileDescriptor fd = new FileDescription(
+                                file,
+                                relativePath,
+                                project,
+                                request.getLine());
+                            FileProviderAccessor.getInstance().setFromCurrentProject(fd, preferred);
+                            files.add(fd);
+                        }
+                    }
+                    request.exclude(folder);
+                }
+                if (!files.isEmpty()) {
+                    worker.emit(files);
+                    files.clear();
                 }
             }
-            return files;
         }
 
         @NonNull
