@@ -123,6 +123,9 @@ public class EditorUtils {
                             return CodeCompletionContext.REQUIRE_MODULE;
                         } else if (BASE_URL.equals(token.text().toString())) {
                             return CodeCompletionContext.CONFIG_BASE_URL_VALUE;
+                        } else if (PATHS.equals(token.text().toString())) {
+                            // in the case, when the property of path are written as string
+                            return CodeCompletionContext.CONFIG_PATHS_VALUE;
                         }
                         token = LexUtilities.findPreviousToken(ts, Arrays.asList(JsTokenId.BRACKET_LEFT_CURLY));
                         if (token.id() == JsTokenId.BRACKET_LEFT_CURLY) {
