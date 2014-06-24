@@ -178,10 +178,6 @@ final class EventSupport extends SourceEnvironment {
         return doc;
     }
 
-    public FileObject getFileObject(Document d) {
-        return DataObjectEnvFactory.getFileObject(d);
-    }
-
     @Override
     public void activate() {
         final Source source = getSourceControl().getSource();
@@ -208,7 +204,7 @@ final class EventSupport extends SourceEnvironment {
         return EditorRegistryListener.k24.get();
     }
 
-    public void resetState (
+    private void resetState (
         final boolean           invalidate,
         final boolean           mimeChanged,
         final int               startOffset,
@@ -237,7 +233,7 @@ final class EventSupport extends SourceEnvironment {
         }
         final boolean wask24 = EditorRegistryListener.k24.getAndSet(false);
         if (wask24) {
-            TaskProcessorControl.resetState();
+            TaskProcessorControl.resumeSchedulerTasks();
         }
     }
 
@@ -495,12 +491,12 @@ final class EventSupport extends SourceEnvironment {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, "completion-active={0} for {1}", new Object [] { rawValue, source }); //NOI18N
             }
-            final EventSupport support = (EventSupport) SourceEnvironment.forSource(source);
             if (rawValue instanceof Boolean && ((Boolean) rawValue).booleanValue()) {
                 k24.set(true);
-                support.getSourceControl().cancelParsing();
+                TaskProcessorControl.suspendSchedulerTasks(source);
             } else {
                 k24.set(false);
+                final EventSupport support = (EventSupport) SourceEnvironment.forSource(source);
                 support.getSourceControl().revalidate(0);
             }
         }
