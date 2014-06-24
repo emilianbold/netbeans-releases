@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.php.phpunit.commands;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -59,10 +61,12 @@ import org.netbeans.modules.php.phpunit.options.PhpUnitOptions;
 import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferences;
 import org.netbeans.modules.php.phpunit.ui.UiUtils;
 import org.netbeans.modules.php.phpunit.ui.options.PhpUnitOptionsPanelController;
+import org.netbeans.modules.php.phpunit.util.VersionOutputProcessorFactory;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.windows.InputOutput;
 
 /**
  * Represents <tt>phpunit-skelgen</tt> command line tool.
@@ -73,11 +77,24 @@ public final class SkeletonGenerator {
 
     public static final String SCRIPT_NAME = "phpunit-skelgen"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
+    public static final String SCRIPT_NAME_PHAR = SCRIPT_NAME + ".phar"; // NOI18N
+
+    private static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir")); // NOI18N
+
+    // version
+    static final String VERSION_PATTERN = "(?:phpunit\\-skelgen|PHPUnit\\s+Skeleton\\s+Generator)\\s+(\\d+(?:\\.\\d+)*)"; // NOI18N
+    private static volatile String version;
 
     // params
-    private static final String BOOTSTRAP_PARAM = "--bootstrap"; // NOI18N
+    private static final String VERSION_PARAM = "--version"; // NOI18N
+    // v1
+    private static final String BOOTSTRAP_PARAM_V1 = "--bootstrap"; // NOI18N
     private static final String TEST_PARAM = "--test"; // NOI18N
     private static final String SEPARATOR_PARAM = "--"; // NOI18N
+    // v2
+    private static final String ANSI_PARAM = "--ansi"; // NOI18N
+    private static final String BOOTSTRAP_PARAM_V2 = "--bootstrap=%s"; // NOI18N
+    private static final String GENERATE_TEST_PARAM = "generate-test"; // NOI18N
 
     private final String skelGenPath;
 
@@ -104,6 +121,40 @@ public final class SkeletonGenerator {
     @NbBundle.Messages("SkeletonGenerator.script.label=Skeleton generator script")
     public static String validate(String command) {
         return PhpExecutableValidator.validateCommand(command, Bundle.SkeletonGenerator_script_label());
+    }
+
+    public static void resetVersion() {
+        version = null;
+    }
+
+    @CheckForNull
+    private static String getVersion() {
+        assert !EventQueue.isDispatchThread();
+        if (version != null) {
+            return version;
+        }
+        VersionOutputProcessorFactory versionOutputProcessorFactory = new VersionOutputProcessorFactory(VERSION_PATTERN);
+        try {
+            SkeletonGenerator skeletonGenerator = getDefault();
+            skeletonGenerator.getExecutable("Skeleton Generator version", TMP_DIR) // NOI18N
+                    .additionalParameters(Collections.singletonList(VERSION_PARAM))
+                    .runAndWait(getSilentDescriptor(), versionOutputProcessorFactory, "Detecting Skeleton Generator version..."); // NOI18N
+            String detectedVersion = versionOutputProcessorFactory.getVersion();
+            if (detectedVersion != null) {
+                version = detectedVersion;
+                return version;
+            }
+        } catch (CancellationException ex) {
+            // cancelled, cannot happen
+            assert false;
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        } catch (InvalidPhpExecutableException ex) {
+            // cannot happen
+            LOGGER.log(Level.WARNING, null, ex);
+            assert false;
+        }
+        return null;
     }
 
     @NbBundle.Messages({
@@ -137,19 +188,7 @@ public final class SkeletonGenerator {
             return null;
         }
         String testClassName = PhpUnit.makeTestClass(sourceClassName);
-        List<String> params = new ArrayList<>();
-        if (PhpUnitPreferences.isBootstrapEnabled(phpModule)
-                && PhpUnitPreferences.isBootstrapForCreateTests(phpModule)) {
-            params.add(BOOTSTRAP_PARAM);
-            params.add(PhpUnitPreferences.getBootstrapPath(phpModule));
-        }
-        params.add(TEST_PARAM);
-        params.add(SEPARATOR_PARAM);
-        params.add(sanitizeClassName(sourceClassName));
-        params.add(FileUtil.toFile(sourceClassFile).getAbsolutePath());
-        params.add(sanitizeClassName(testClassName));
-        params.add(testFile.getAbsolutePath());
-
+        List<String> params = getParams(phpModule, sourceClassName, sourceClassFile, testClassName, testFile);
         PhpExecutable skelGen = getExecutable(phpModule, Bundle.SkeletonGenerator_test_generating(sourceClassFile.getNameExt()), params);
         if (skelGen == null) {
             return null;
@@ -177,6 +216,35 @@ public final class SkeletonGenerator {
         return null;
     }
 
+    private List<String> getParams(PhpModule phpModule, String sourceClassName, FileObject sourceClassFile, String testClassName, File testFile) {
+        List<String> params = new ArrayList<>();
+        boolean useBootstrap = PhpUnitPreferences.isBootstrapEnabled(phpModule)
+                && PhpUnitPreferences.isBootstrapForCreateTests(phpModule);
+        String ver = getVersion();
+        if (ver != null
+                && ver.startsWith("1.")) { // NOI18N
+            // version 1
+            if (useBootstrap) {
+                params.add(BOOTSTRAP_PARAM_V1);
+                params.add(PhpUnitPreferences.getBootstrapPath(phpModule));
+            }
+            params.add(TEST_PARAM);
+            params.add(SEPARATOR_PARAM);
+        } else {
+            // version 2+ (and possible fallback)
+            if (useBootstrap) {
+                params.add(String.format(BOOTSTRAP_PARAM_V2, PhpUnitPreferences.getBootstrapPath(phpModule)));
+            }
+            params.add(ANSI_PARAM);
+            params.add(GENERATE_TEST_PARAM);
+        }
+        params.add(sanitizeClassName(sourceClassName));
+        params.add(FileUtil.toFile(sourceClassFile).getAbsolutePath());
+        params.add(sanitizeClassName(testClassName));
+        params.add(testFile.getAbsolutePath());
+        return params;
+    }
+
     @CheckForNull
     private PhpExecutable getExecutable(PhpModule phpModule, String title, List<String> params) {
         FileObject sourceDirectory = phpModule.getSourceDirectory();
@@ -185,17 +253,29 @@ public final class SkeletonGenerator {
             return null;
         }
 
-        return new PhpExecutable(skelGenPath)
+        return getExecutable(title, FileUtil.toFile(sourceDirectory))
                 .optionsSubcategory(PhpUnitOptionsPanelController.OPTIONS_SUB_PATH)
-                .workDir(FileUtil.toFile(sourceDirectory))
-                .displayName(title)
                 .additionalParameters(params);
+    }
+
+    private PhpExecutable getExecutable(String title, File workDir) {
+        return new PhpExecutable(skelGenPath)
+                .workDir(workDir)
+                .displayName(title);
     }
 
     private ExecutionDescriptor getDescriptor() {
         return PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .optionsPath(PhpUnitOptionsPanelController.OPTIONS_PATH)
                 .inputVisible(false);
+    }
+
+    private static ExecutionDescriptor getSilentDescriptor() {
+        return new ExecutionDescriptor()
+                .inputOutput(InputOutput.NULL)
+                .inputVisible(false)
+                .frontWindow(false)
+                .showProgress(false);
     }
 
     // https://github.com/sebastianbergmann/phpunit-skeleton-generator/issues/1

@@ -76,7 +76,7 @@ public class PhpUnitOptions {
         String phpUnitPath = getPreferences().get(PHP_UNIT_PATH, null);
         if (phpUnitPath == null && !phpUnitSearched) {
             phpUnitSearched = true;
-            List<String> scripts = FileUtils.findFileOnUsersPath(PhpUnit.SCRIPT_NAME, PhpUnit.SCRIPT_NAME_LONG);
+            List<String> scripts = FileUtils.findFileOnUsersPath(PhpUnit.SCRIPT_NAME, PhpUnit.SCRIPT_NAME_LONG, PhpUnit.SCRIPT_NAME_PHAR);
             if (!scripts.isEmpty()) {
                 phpUnitPath = scripts.get(0);
                 setPhpUnitPath(phpUnitPath);
@@ -93,7 +93,8 @@ public class PhpUnitOptions {
         String skeletonGeneratorPath = getPreferences().get(SKELETON_GENERATOR_PATH, null);
         if (skeletonGeneratorPath == null && !skeletonGeneratorSearched) {
             skeletonGeneratorSearched = true;
-            List<String> scripts = FileUtils.findFileOnUsersPath(SkeletonGenerator.SCRIPT_NAME, SkeletonGenerator.SCRIPT_NAME_LONG);
+            List<String> scripts = FileUtils.findFileOnUsersPath(
+                    SkeletonGenerator.SCRIPT_NAME, SkeletonGenerator.SCRIPT_NAME_LONG, SkeletonGenerator.SCRIPT_NAME_PHAR);
             if (!scripts.isEmpty()) {
                 skeletonGeneratorPath = scripts.get(0);
                 setSkeletonGeneratorPath(skeletonGeneratorPath);
