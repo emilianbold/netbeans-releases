@@ -73,6 +73,7 @@ public final class SkeletonGenerator {
 
     public static final String SCRIPT_NAME = "phpunit-skelgen"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
+    public static final String SCRIPT_NAME_PHAR = SCRIPT_NAME + ".phar"; // NOI18N
 
     // params
     private static final String BOOTSTRAP_PARAM = "--bootstrap"; // NOI18N
