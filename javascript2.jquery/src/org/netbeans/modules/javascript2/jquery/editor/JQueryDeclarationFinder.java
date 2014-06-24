@@ -160,6 +160,10 @@ public class JQueryDeclarationFinder implements DeclarationFinder {
         Token<? extends JsTokenId> token = ts.token();
         if (token.id() == JsTokenId.STRING) {
             String text = token.text().toString();
+            if (text.indexOf(' ') == -1 && text.indexOf('/') > -1) {
+                // probably the string is not a rule, but path to a file
+                return null;
+            }
             boolean isRule = false;
             int offset = caretOffset - ts.offset();
             int startRule = -1;
