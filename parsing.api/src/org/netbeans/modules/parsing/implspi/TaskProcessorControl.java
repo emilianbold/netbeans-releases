@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.parsing.implspi;
 
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
 
@@ -62,10 +61,5 @@ public class TaskProcessorControl {
     
     public static void resetState() {
         TaskProcessor.resetStateImpl(null);
-    }
-
-    @NonNull
-    public static Object getLock() {
-        return TaskProcessor.INTERNAL_LOCK;
     }
 }

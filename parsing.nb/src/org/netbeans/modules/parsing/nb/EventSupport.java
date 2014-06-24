@@ -89,7 +89,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -148,7 +147,6 @@ final class EventSupport extends SourceEnvironment {
     
     public EventSupport (final SourceControl sourceControl) {
         super(sourceControl);
-        source2Event.put(sourceControl.getSource(), this);
     }
 
     @Override
@@ -411,15 +409,6 @@ final class EventSupport extends SourceEnvironment {
             }
         }        
     }
-    
-    // EventSupport contains only WeakReference to the source, through the Control object.
-    private static final Map<Source, EventSupport>    source2Event = new WeakHashMap<>();
-    
-    private static EventSupport getEventSupport(Source s) {
-        synchronized (source2Event) {
-            return source2Event.get(s);
-        }
-    }
 
     //Public because of test
     public static class EditorRegistryListener implements CaretListener, PropertyChangeListener {
@@ -458,8 +447,9 @@ final class EventSupport extends SourceEnvironment {
                     final String mimeType = DocumentUtilities.getMimeType (doc);
                     if (doc != null && mimeType != null) {
                         final Source source = Source.create (doc);
-                        if (source != null)
-                            getEventSupport(source).resetState(true, false, -1, -1, true);
+                        if (source != null) {
+                            ((EventSupport)SourceEnvironment.forSource(source)).resetState(true, false, -1, -1, true);
+                        }
                     }
                 }
             }
@@ -474,7 +464,7 @@ final class EventSupport extends SourceEnvironment {
                 if (doc != null && mimeType != null) {
                     Source source = Source.create(doc);
                     if (source != null) {
-                        getEventSupport(source).resetState(false, false, -1, -1, false);
+                        ((EventSupport)SourceEnvironment.forSource(source)).resetState(false, false, -1, -1, false);
                     }
                 }
             }
@@ -505,7 +495,7 @@ final class EventSupport extends SourceEnvironment {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, "completion-active={0} for {1}", new Object [] { rawValue, source }); //NOI18N
             }
-            final EventSupport support = getEventSupport(source);
+            final EventSupport support = (EventSupport) SourceEnvironment.forSource(source);
             if (rawValue instanceof Boolean && ((Boolean) rawValue).booleanValue()) {
                 k24.set(true);
                 support.getSourceControl().cancelParsing();

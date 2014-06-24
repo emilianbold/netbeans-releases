@@ -46,13 +46,11 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.ParserEventForward;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.event.FileChangeSupport;
 import org.netbeans.modules.parsing.impl.event.ParserChangeSupport;
-import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -120,10 +118,18 @@ public abstract class SourceEnvironment {
      */
     public abstract boolean isReparseBlocked();
 
+    /**
+     * Returns the {@link SourceControl}.
+     * @return the {@link SourceControl}
+     */
     protected final SourceControl getSourceControl() {
         return this.sourceControl;
     }
 
+    /**
+     * Starts listening on file changes.
+     * Should be called from {@link SourceEnvironment#activate}
+     */
     protected final void listenOnFileChanges() {
         final FileObject fo = sourceControl.getSource().getFileObject();
         if (fo != null) {
@@ -132,10 +138,24 @@ public abstract class SourceEnvironment {
         }
     }
 
+    /**
+     * Starts listening on {@link Source} parsers.
+     * Should be called from {@link SourceEnvironment#activate}
+     */
     protected final void listenOnParser() {
         final ParserEventForward peFwd = SourceAccessor.getINSTANCE().getParserEventForward(
             sourceControl.getSource());
         parserListener = new ParserChangeSupport(sourceControl);
         peFwd.addChangeListener(parserListener);
+    }
+
+    /**
+     * Returns a {@link SourceEnvironment} for given {@link Source}.
+     * @param source the {@link Source} to return {@link SourceEnvironment} for
+     * @return the {@link SourceEnvironment}
+     */
+    @NonNull
+    protected static SourceEnvironment forSource(@NonNull final Source source) {
+        return SourceAccessor.getINSTANCE().getEnv(source);
     }
 }
