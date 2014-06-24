@@ -102,8 +102,11 @@ public class RepositoryRevision {
     private final File repositoryRoot;
     private final File[] selectionRoots;
     private String preferredRevision;
+    private final SearchExecutor.Mode mode;
 
-    RepositoryRevision (GitRevisionInfo message, File repositoryRoot, File[] selectionRoots, Set<GitTag> tags, Set<GitBranch> branches, File dummyFile, String dummyFileRelativePath) {
+    RepositoryRevision (GitRevisionInfo message, File repositoryRoot, File[] selectionRoots,
+            Set<GitTag> tags, Set<GitBranch> branches, File dummyFile, String dummyFileRelativePath,
+            SearchExecutor.Mode mode) {
         this.message = message;
         this.repositoryRoot = repositoryRoot;
         this.selectionRoots = selectionRoots;
@@ -114,6 +117,7 @@ public class RepositoryRevision {
         if (dummyFile != null && dummyFileRelativePath != null) {
             dummyEvents.add(new Event(dummyFile, dummyFileRelativePath));
         }
+        this.mode = mode;
     }
 
     public Event[] getEvents() {
@@ -235,13 +239,15 @@ public class RepositoryRevision {
                     action.exportCommit(repositoryRoot, getLog().getRevision());
                 }
             });
-            actions.add(new AbstractAction(NbBundle.getMessage(RevertCommitAction.class, "LBL_RevertCommitAction_PopupName")) { //NOI18N
-                @Override
-                public void actionPerformed (ActionEvent e) {
-                    RevertCommitAction action = SystemAction.get(RevertCommitAction.class);
-                    action.revert(repositoryRoot, selectionRoots, getLog().getRevision());
-                }
-            });
+            if (mode != SearchExecutor.Mode.REMOTE_IN) {
+                actions.add(new AbstractAction(NbBundle.getMessage(RevertCommitAction.class, "LBL_RevertCommitAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        RevertCommitAction action = SystemAction.get(RevertCommitAction.class);
+                        action.revert(repositoryRoot, selectionRoots, getLog().getRevision());
+                    }
+                });
+            }
         }
         return actions.toArray(new Action[actions.size()]);
     }

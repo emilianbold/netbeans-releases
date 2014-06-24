@@ -44,8 +44,13 @@
 
 package org.netbeans.modules.git.ui.history;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.git.GitModuleConfig;
+import org.netbeans.modules.git.ui.history.SearchExecutor.Mode;
 
 /**
  * Packages search criteria in Search History panel.
@@ -54,6 +59,14 @@ import org.netbeans.modules.git.GitModuleConfig;
  */
 class SearchCriteriaPanel extends javax.swing.JPanel {
     
+    private static final DateFormat [] dateFormats = new DateFormat[] {
+        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z"),  // NOI18N
+        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),  // NOI18N
+        new SimpleDateFormat("yyyy-MM-dd HH:mm"),  // NOI18N
+        new SimpleDateFormat("yyyy-MM-dd") // NOI18N
+    };
+    private Mode mode = Mode.LOCAL;
+    
     /** Creates new form SearchCriteriaPanel */
     public SearchCriteriaPanel() {
         initComponents();
@@ -61,23 +74,29 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         tfLimit.setText(Integer.toString(SearchExecutor.DEFAULT_LIMIT));
     }
 
-    public String getFrom() {
-        String s = tfFrom.getText().trim();
-        if(s.isEmpty()) {
+    public Date getFrom() {
+        if (mode != Mode.LOCAL) {
             return null;
         }
-        return s;
+        String s = tfFrom.getText().trim();
+        if (s.isEmpty()) {
+            return null;
+        }
+        return parseDate(s);
     }
 
-    public String getTo() {
+    public Date getTo() {
+        if (mode != Mode.LOCAL) {
+            return null;
+        }
         String s = tfTo.getText().trim();
         if(s.isEmpty()) {
             return null;
         }
-        return s;
+        return parseDate(s);
     }
 
-    public String getBranch () {
+    String getBranch () {
         String s = tfBranch.getText().trim();
         if (s.isEmpty()) {
             return null;
@@ -138,6 +157,73 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
                 tfCommitMessage.requestFocusInWindow();
             }
         });
+    }
+    
+    void setupRemoteSearch (Mode mode) {
+        this.mode = mode;
+        branchLabel.setEnabled(false);
+        tfBranch.setEnabled(false);
+        btnSelectBranch.setEnabled(false);
+        fromLabel.setVisible(false);
+        tfFrom.setVisible(false);
+        fromInfoLabel.setVisible(false);
+        toLabel.setVisible(false);
+        tfTo.setVisible(false);
+        toInfoLabel.setVisible(false);
+    }
+    
+    String getToRevision () {
+        String branch = getBranch();
+        switch (mode) {
+            case REMOTE_IN:
+                return null;
+            case REMOTE_OUT:
+                return branch;
+            default:
+                String toRevision;
+                if (branch == null) {
+                    toRevision = getTo() == null ? tfTo.getText().trim() : null;
+                } else {
+                    toRevision = branch;
+                    if (getTo() == null && !tfTo.getText().trim().isEmpty()) {
+                        throw new IllegalArgumentException(Bundle.MSG_IllegalSearchArgument_bothBranchAndTo());
+                    }
+                }
+                return toRevision != null && toRevision.isEmpty() ? null : toRevision;
+        }
+    }
+    
+    String getFromRevision () {
+        String branch = getBranch();
+        switch (mode) {
+            case REMOTE_IN:
+                return branch;
+            case REMOTE_OUT:
+                return null;
+            default:
+                String fromRevision = getFrom() == null ? tfFrom.getText().trim() : null;
+                return fromRevision != null && fromRevision.isEmpty() ? null : fromRevision;
+        }
+    }
+    
+    Mode getMode () {
+        return mode;
+    }
+
+    private static Date parseDate (String strDate) {
+        Date date = null;
+        if (strDate != null) {
+            for (DateFormat fd : dateFormats) {
+                try {
+                    date = fd.parse(strDate);
+                } catch (ParseException ex) { }
+            }
+        }
+        return date;
+    }
+    
+    boolean validateUserInput () {
+        return true;
     }
 
     /** This method is called from within the constructor to

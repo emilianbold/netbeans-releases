@@ -49,12 +49,15 @@ import org.openide.util.HelpCtx;
 
 import java.io.File;
 import java.awt.BorderLayout;
-import java.util.List;
-import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.openide.util.Parameters;
 
-@TopComponent.Description(persistenceType=TopComponent.PERSISTENCE_NEVER, preferredID="Git.SearchHistoryTopComponent")
-public class SearchHistoryTopComponent extends TopComponent {
+@TopComponent.Description(persistenceType=TopComponent.PERSISTENCE_NEVER, preferredID="Git.SearchOutgoingTopComponent")
+@NbBundle.Messages({
+    "ACSN_SearchOutgoingT_Top_Component=Search Incoming",
+    "ACSD_SearchOutgoingT_Top_Component=Search Incoming"
+})
+public class SearchOutgoingTopComponent extends TopComponent {
 
     private SearchHistoryPanel shp;
     private SearchCriteriaPanel scp;
@@ -62,48 +65,25 @@ public class SearchHistoryTopComponent extends TopComponent {
     private final File repository;
     private final RepositoryInfo info;
     
-    public SearchHistoryTopComponent (File repository, RepositoryInfo info, File[] files) {
+    public SearchOutgoingTopComponent (File repository, RepositoryInfo info, File[] files) {
         this.repository = repository;
         this.info = info;
         this.files = files;
-        getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchHistoryTopComponent.class, "ACSN_SearchHistoryT_Top_Component")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchHistoryTopComponent.class, "ACSD_SearchHistoryT_Top_Component")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchOutgoingTopComponent.class, "ACSN_SearchOutgoingT_Top_Component")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchOutgoingTopComponent.class, "ACSD_SearchOutgoingT_Top_Component")); // NOI18N
         initComponents();
-    }
-    
-    SearchHistoryTopComponent (File repository, RepositoryInfo info, File file, DiffResultsViewFactory fac) {
-        this(repository, info, new File[] { file });
-        shp.setDiffResultsViewFactory(fac);
+        scp.setupRemoteSearch(SearchExecutor.Mode.REMOTE_OUT);
     }
 
     public void search (boolean showCriteria) {
         shp.executeSearch();
         shp.setSearchCriteria(showCriteria);
     }
-
-    void setSearchCommitFrom (String commitId) {
-        if (commitId != null) {
-            scp.tfFrom.setText(commitId);
-        }
-    }
-    
-    void setSearchCommitTo (String commitId) {
-        if (commitId != null) {
-            scp.tfTo.setText(commitId);
-        }
-    }
     
     void setBranch (String branch) {
-        if (branch != null) {
-            shp.setBranch(branch);
-            if (GitModuleConfig.getDefault().isSearchOnlyCurrentBranchEnabled()) {
-                scp.setBranch(branch);
-            }
-        }
-    }
-
-    void activateDiffView (boolean selectFirstRevision) {
-        shp.activateDiffView(selectFirstRevision);
+        Parameters.notNull("branch", branch);
+        shp.setBranch(branch);
+        scp.setBranch(branch);
     }
 
     private void initComponents () {
@@ -121,14 +101,5 @@ public class SearchHistoryTopComponent extends TopComponent {
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(getClass());
-    }
-
-    /**
-     * Provides an initial diff view. To display a specific one, override createDiffResultsView.
-     */
-    static class DiffResultsViewFactory {
-        DiffResultsView createDiffResultsView(SearchHistoryPanel panel, List<RepositoryRevision> results) {
-            return new DiffResultsView(panel, results);
-        }
     }
 }
