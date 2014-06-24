@@ -42,29 +42,60 @@
 
 package org.netbeans.modules.parsing.implspi;
 
-import org.netbeans.api.annotations.common.CheckForNull;
+import java.util.EnumSet;
+import java.util.Set;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.impl.SourceAccessor;
+import org.netbeans.modules.parsing.impl.SourceFlags;
+import org.netbeans.modules.parsing.impl.TaskProcessor;
+import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 
 /**
  * Allows to control Source state within the Parsing subsystem based on
  * external events.
  * The {@link SourceEnvironment} gets this instance to forward interesting
- * events to the parser. It is possible to invalidate the source, region of source,
- * 
- * <p/>
- * <b>DO NOT</b> implement this interface; if it is ever promoted to an API,
- * it will become a final class.
- * <p/>
+ * events to the parser. It is possible to invalidate the source, region of source.
  * @author sdedic
  */
-public interface SourceControl {
+public final class SourceControl {
+
+    private static final RequestProcessor RP = new RequestProcessor (
+        "parsing-event-collector",         //NOI18N
+        1,
+        false,
+        false);
+
+    private final RequestProcessor.Task resetTask;
+
+    private final Source source;
+
+    public SourceControl(@NonNull final Source source) {
+        Parameters.notNull("source", source);   //NOI18N
+        this.source = source;
+        this.resetTask = RP.create(new Runnable() {
+            @Override
+            public void run() {
+                if (SourceAccessor.getINSTANCE().getEnv(source).isReparseBlocked()) {
+                    return;
+                }
+                TaskProcessor.resetStateImpl(source);
+            }
+        });
+    }
+
+
     /**
      * Provides reference to the Source. The reference is provided for convenience
      * to help proper garbage collection of the Source object. If the client keeps
      * a Source instance, it should use WeakReference to store it.
      * @return Source instance or {@code null}
      */
-    public @CheckForNull Source getSource();
+    @NonNull
+    public Source getSource() {
+        return source;
+    }
 
     /**
      * Informs that the source was changed in an unspecified way, and possibly
@@ -77,9 +108,20 @@ public interface SourceControl {
      * 
      * @param mimeChanged true, if mime type might have changed.
      */
-    public void sourceChanged(boolean mimeChanged);
+    public void sourceChanged(final boolean mimeChanged) {
+        final SourceAccessor sa = SourceAccessor.getINSTANCE();
+        final Set<SourceFlags> flags = EnumSet.of(
+            SourceFlags.CHANGE_EXPECTED,
+            SourceFlags.INVALID,
+            SourceFlags.RESCHEDULE_FINISHED_TASKS);
+        if (mimeChanged) {
+            sa.mimeTypeMayChanged(source);
+        }
+        sa.setSourceModification(source, true, -1, -1);
+        sa.setFlags(source, flags);
+        TaskProcessor.resetState(source, true, true);
+    }
 
-    
     /**
      * Informs that part of the source was edited. The parser implementation
      * may reparse just a portion of the text or a whole (depends on the 
@@ -89,24 +131,36 @@ public interface SourceControl {
      * @param startOffset start of the change
      * @param endOffset end of the change
      */
-    public void regionChanged(int startOffset, int endOffset);
-
-    /**
-     * Resets the parsing state and interrupts the parser.
-     */
-    public void cancelParsing();
+    public void regionChanged(int startOffset, int endOffset) {
+        final SourceAccessor sa = SourceAccessor.getINSTANCE();
+        final Set<SourceFlags> flags = EnumSet.of(
+            SourceFlags.CHANGE_EXPECTED,
+            SourceFlags.INVALID,
+            SourceFlags.RESCHEDULE_FINISHED_TASKS);
+        sa.setSourceModification(source, true, startOffset, endOffset);
+        sa.setFlags(source, flags);
+        TaskProcessor.resetState(source, true, true);
+    }
 
     /**
      * Informs about a non-text change in the Source, such as caret movement
      * or focus. Does not invalidate the parsing result, but may re-execute certain
      * tasks.
      */
-    public void stateChanged();
-    
+    public void stateChanged() {
+        final SourceAccessor sa = SourceAccessor.getINSTANCE();
+        final Set<SourceFlags> flags = EnumSet.of(SourceFlags.CHANGE_EXPECTED);
+        sa.setSourceModification(source, false, -1, -1);
+        sa.setFlags(source, flags);
+        TaskProcessor.resetState(source, false, true);
+    }
+
     /**
      * Marks the source for reparsing after the specified delay.
-     * 
+     *
      * @param delay time in milliseconds.
      */
-    public void revalidate(int delay);
+    public void revalidate(int delay) {
+        resetTask.schedule(delay);
+    }
 }

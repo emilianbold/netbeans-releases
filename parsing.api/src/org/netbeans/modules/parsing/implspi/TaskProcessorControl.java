@@ -42,8 +42,11 @@
 
 package org.netbeans.modules.parsing.implspi;
 
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
+import org.openide.util.Parameters;
 
 /**
  * Allows to control the parsing susbsytem operation.
@@ -58,8 +61,22 @@ public class TaskProcessorControl {
     public static void initialize() {
         SourceAccessor.getINSTANCE().init();
     }
-    
-    public static void resetState() {
+
+    /**
+     * Suspends {@link SchedulerTask}s execution.
+     * Cancels currently running {@link SchedulerTask} and do
+     * not schedule any ready {@link SchedulerTask}.
+     */
+    public static void suspendSchedulerTasks(@NonNull final Source source) {
+        Parameters.notNull("source", source);   //NOI18N
+        TaskProcessor.resetState(source, true, true);
+    }
+
+    /**
+     * Resumes {@link SchedulerTask}s execution.
+     * Schedules ready {@link SchedulerTask}s.
+     */
+    public static void resumeSchedulerTasks() {
         TaskProcessor.resetStateImpl(null);
     }
 }

@@ -91,7 +91,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
-import org.openide.util.RequestProcessor;
 
 
 /**
@@ -530,6 +529,10 @@ public final class Source implements Lookup.Provider {
     private volatile boolean listeningOnChanges;
 
     /**
+     * SourceEnvironment callback
+     */
+    private final SourceControl ctrl = new SourceControl(this);
+    /**
      * Binding of source to its environment
      */
     private final SourceEnvironment sourceEnv;
@@ -627,30 +630,6 @@ public final class Source implements Lookup.Provider {
             return cache;
         }
     }
-    
-    private static final RequestProcessor RP = new RequestProcessor ("parsing-event-collector",1, false, false);       //NOI18N
-    
-    private final RequestProcessor.Task resetTask = RP.create(new Runnable() {
-        @Override
-        public void run() {
-            revalidateImpl();
-        }
-    });
-
-    /**
-     * Schedules taskprocessor reset after the specified delay.
-     * @param delay 
-     */
-    private void revalidate(int delay) {
-        resetTask.schedule(delay);
-    }
-    
-    private void revalidateImpl() {
-        if (sourceEnv.isReparseBlocked()) {
-            return;
-        }
-        TaskProcessor.resetStateImpl(this);
-    }
 
     @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject") // accessing internals is accessor's job
     private static class MySourceAccessor extends SourceAccessor {
@@ -703,7 +682,7 @@ public final class Source implements Lookup.Provider {
 
         @Override
         public void revalidate(Source source, int delay) {
-            source.revalidate(delay);
+            source.ctrl.revalidate(delay);
         }
 
         @Override
@@ -970,83 +949,6 @@ public final class Source implements Lookup.Provider {
         }
     }
 
-    /**
-     * Provides SPI to invalidate source
-     */
-    private final SourceControl ctrl = new ControlImpl(this);
-
-    private static final class ControlImpl implements SourceControl {
-
-        private final Reference<Source> ref;
-
-        ControlImpl(Source s) {
-            ref = new WeakReference(s);
-        }
-
-        @Override
-        public Source getSource() {
-            return ref.get();
-        }
-
-        @Override
-        public void sourceChanged(boolean mimeChanged) {
-            Source s = getSource();
-            if (s == null) {
-                return;
-            }
-            final Set<SourceFlags> flags = EnumSet.of(SourceFlags.CHANGE_EXPECTED, SourceFlags.INVALID, SourceFlags.RESCHEDULE_FINISHED_TASKS);
-            if (mimeChanged) {
-                s.mimeTypeMayChanged();
-            }
-            s.setSourceModification(true, -1, -1);
-            s.setFlags(flags);
-            TaskProcessor.resetState(s, true, true);
-        }
-
-        @Override
-        public void regionChanged(int startOffset, int endOffset) {
-            Source s = getSource();
-            if (s == null) {
-                return;
-            }
-            final Set<SourceFlags> flags = EnumSet.of(SourceFlags.CHANGE_EXPECTED, SourceFlags.INVALID, SourceFlags.RESCHEDULE_FINISHED_TASKS);
-            s.setSourceModification(true, startOffset, endOffset);
-            s.setFlags(flags);
-            TaskProcessor.resetState(s, true, true);
-        }
-
-        @Override
-        public void cancelParsing() {
-            Source s = getSource();
-            if (s == null) {
-                return;
-            }
-            TaskProcessor.resetState(s, true, true);
-        }
-
-        @Override
-        public void stateChanged() {
-            Source s = getSource();
-            if (s == null) {
-                return;
-            }
-            final Set<SourceFlags> flags = EnumSet.of(SourceFlags.CHANGE_EXPECTED);
-            s.setSourceModification(false, -1, -1);
-            s.setFlags(flags);
-            TaskProcessor.resetState(s, false, true);
-        }
-
-        @Override
-        public void revalidate(int delay) {
-            Source s = getSource();
-            if (s == null) {
-                return;
-            }
-            s.revalidate(delay);
-        }
-
-    }
-    
     /**
      * Returns a Lookup providing a context for the source.
      * In the presence of multiple scopes or users in the system, this Lookup may
