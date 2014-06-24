@@ -59,9 +59,12 @@ import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.navigation.classhierarchy.ClassHierarchyPanel;
 import org.netbeans.modules.cnd.navigation.includeview.IncludeHierarchyPanel;
+import org.netbeans.modules.cnd.navigation.includeview.IncludeNode;
 import org.openide.awt.StatusDisplayer;
+import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
@@ -176,6 +179,22 @@ final class HierarchyTopComponent extends TopComponent implements CsmModelListen
             }
         };
         RP.post(worker);
+    }
+
+    @Override
+    public Lookup getLookup() {
+        if (last instanceof IncludeHierarchyPanel) {
+            IncludeHierarchyPanel p = (IncludeHierarchyPanel) last;
+            ExplorerManager explorerManager = p.getExplorerManager();
+            Node[] selectedNodes = explorerManager.getSelectedNodes();
+            if (selectedNodes.length == 1) {
+                if (selectedNodes[0] instanceof IncludeNode) {
+                    IncludeNode node = (IncludeNode) selectedNodes[0];
+                    return node.getNodeLookup();
+                }
+            }
+        }
+        return super.getLookup(); //To change body of generated methods, choose Tools | Templates.
     }
     
     void setFile(CsmFile file, boolean setClose) {
