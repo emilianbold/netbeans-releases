@@ -54,6 +54,10 @@ import org.openide.util.lookup.ServiceProvider;
  */
 
 public final class GdbDebuggerInfo extends NativeDebuggerInfo {
+    
+    static{
+        GdbDebuggerInfoAccessor.setDefault(new GdbDebuggerInfoAccessorImpl());
+    }
     private String targetCommand = null;
 
     private GdbDebuggerInfo() {
@@ -72,7 +76,7 @@ public final class GdbDebuggerInfo extends NativeDebuggerInfo {
         return GdbProfile.PROFILE_ID;
     }
 
-    public static GdbDebuggerInfo create() {
+    private static GdbDebuggerInfo create() {
 	return new GdbDebuggerInfo();
     }
     
@@ -98,5 +102,14 @@ public final class GdbDebuggerInfo extends NativeDebuggerInfo {
             }
             return null;
         }
+    }
+    
+    private static class GdbDebuggerInfoAccessorImpl extends GdbDebuggerInfoAccessor {
+
+        @Override
+        public GdbDebuggerInfo create() {
+            return GdbDebuggerInfo.create();
+        }
+    
     }
 }
