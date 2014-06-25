@@ -278,6 +278,8 @@ terminal T_QUATE,T_BACKQUATE;
 terminal T_START_NOWDOC, T_END_NOWDOC;
 terminal T_TRAIT;
 terminal T_INSTEADOF;
+terminal T_POW;
+terminal T_POW_EQUAL;
 
 /* Non terminals */
 
@@ -434,7 +436,8 @@ precedence left T_LOGICAL_XOR;
 precedence left T_LOGICAL_AND;
 precedence right T_PRINT;
 precedence right T_YIELD;
-precedence left T_EQUAL, T_PLUS_EQUAL,T_MINUS_EQUAL,T_MUL_EQUAL,T_DIV_EQUAL,T_CONCAT_EQUAL,T_MOD_EQUAL,T_AND_EQUAL,T_OR_EQUAL,T_XOR_EQUAL,T_SL_EQUAL,T_SR_EQUAL;
+precedence left T_EQUAL, T_PLUS_EQUAL,T_MINUS_EQUAL,T_MUL_EQUAL,T_DIV_EQUAL,T_CONCAT_EQUAL,T_MOD_EQUAL,T_AND_EQUAL,T_OR_EQUAL,T_XOR_EQUAL,T_SL_EQUAL,T_SR_EQUAL,T_POW_EQUAL;
+precedence right T_POW;
 precedence left T_QUESTION_MARK,T_SEMICOLON;
 precedence left T_BOOLEAN_OR;
 precedence left T_BOOLEAN_AND;
@@ -2195,6 +2198,11 @@ T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close 
 	RESULT = clone;
 :}
 
+| variable:var T_POW_EQUAL expr:expr
+{:
+	RESULT = new Assignment(varleft, exprright, var , Assignment.Type.POW_EQUAL, expr);
+:}
+
 | variable:var T_PLUS_EQUAL expr:expr
 {:
 	RESULT = new Assignment(varleft, exprright, var , Assignment.Type.PLUS_EQUAL, expr);
@@ -2313,6 +2321,11 @@ T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close 
 | expr:expr1 T_NEKUDA expr:expr2
 {:
 	RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.CONCAT, expr2);
+:}
+
+| expr:expr1 T_POW expr:expr2
+{:
+	RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.POW, expr2);
 :}
 
 | expr:expr1 T_PLUS expr:expr2
