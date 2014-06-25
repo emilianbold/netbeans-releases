@@ -43,6 +43,7 @@
 package org.netbeans.modules.git.ui.repository;
 
 import java.awt.EventQueue;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -166,6 +167,8 @@ public class RepositoryInfo {
         return info;
     }
 
+    private final ThreadLocal<List<PropertyChangeEvent>> eventsToFire = new ThreadLocal<>();
+    
     /**
      * Do NOT call from EDT
      * @return
@@ -179,23 +182,32 @@ public class RepositoryInfo {
                 LOG.log(Level.WARNING, "refresh (): root is null, it has been collected in the meantime"); //NOI18N
             } else {
                 LOG.log(Level.FINE, "refresh (): starting for {0}", root); //NOI18N
-                NBGitConfig cfg = getNetbeansConfig(root);
-                client = Git.getInstance().getClient(root);
-                // get all needed information at once before firing events. Thus we supress repeated annotations' refreshing
-                Map<String, GitBranch> newBranches = client.getBranches(true, GitUtils.NULL_PROGRESS_MONITOR);
-                setBranches(newBranches);
-                cfg.removeDeletedBranches(newBranches);
-                Map<String, GitTag> newTags = client.getTags(GitUtils.NULL_PROGRESS_MONITOR, false);
-                setTags(newTags);
                 try {
-                    refreshRemotes(client);
-                } catch (GitException ex) {
-                    LOG.log(logged.add(root.getAbsolutePath() + ex.getMessage()) ? Level.INFO : Level.FINE, null, ex);
+                    eventsToFire.set(new ArrayList<PropertyChangeEvent>());
+                    NBGitConfig cfg = getNetbeansConfig(root);
+                    client = Git.getInstance().getClient(root);
+                    // get all needed information at once before firing events. Thus we supress repeated annotations' refreshing
+                    Map<String, GitBranch> newBranches = client.getBranches(true, GitUtils.NULL_PROGRESS_MONITOR);
+                    setBranches(newBranches);
+                    cfg.removeDeletedBranches(newBranches);
+                    Map<String, GitTag> newTags = client.getTags(GitUtils.NULL_PROGRESS_MONITOR, false);
+                    setTags(newTags);
+                    try {
+                        refreshRemotes(client);
+                    } catch (GitException ex) {
+                        LOG.log(logged.add(root.getAbsolutePath() + ex.getMessage()) ? Level.INFO : Level.FINE, null, ex);
+                    }
+                    GitRepositoryState newState = client.getRepositoryState(GitUtils.NULL_PROGRESS_MONITOR);
+                    // now set new values and fire events when needed
+                    setActiveBranch(newBranches);
+                    setRepositoryState(newState);
+                } finally {
+                    List<PropertyChangeEvent> events = eventsToFire.get();
+                    for (PropertyChangeEvent e : events) {
+                        propertyChangeSupport.firePropertyChange(e);
+                    }
+                    eventsToFire.remove();
                 }
-                GitRepositoryState newState = client.getRepositoryState(GitUtils.NULL_PROGRESS_MONITOR);
-                // now set new values and fire events when needed
-                setActiveBranch(newBranches);
-                setRepositoryState(newState);
             }
         } catch (GitException ex) {
             Level level = root.exists() ? Level.INFO : Level.FINE; // do not polute the message log with messages concerning temporary or deleted repositories
@@ -254,11 +266,11 @@ public class RepositoryInfo {
                 activeBranch = e.getValue();
                 if (oldActiveBranch == null || !oldActiveBranch.getName().equals(activeBranch.getName())) {
                     LOG.log(Level.FINE, "active branch changed: {0} --- {1}", new Object[] { rootRef, activeBranch.getName() }); //NOI18N
-                    propertyChangeSupport.firePropertyChange(PROPERTY_ACTIVE_BRANCH, oldActiveBranch, activeBranch);
+                    firePropertyChange(new PropertyChangeEvent(this, PROPERTY_ACTIVE_BRANCH, oldActiveBranch, activeBranch));
                 }
                 if (oldActiveBranch == null || !oldActiveBranch.getId().equals(activeBranch.getId())) {
                     LOG.log(Level.FINE, "current HEAD changed: {0} --- {1}", new Object[] { rootRef, activeBranch.getId() }); //NOI18N
-                    propertyChangeSupport.firePropertyChange(PROPERTY_HEAD, oldActiveBranch, activeBranch);
+                    firePropertyChange(new PropertyChangeEvent(this, PROPERTY_HEAD, oldActiveBranch, activeBranch));
                 }
             }
         }
@@ -269,7 +281,7 @@ public class RepositoryInfo {
         this.repositoryState = repositoryState;
         if (!repositoryState.equals(oldState)) {
             LOG.log(Level.FINE, "repository state changed: {0} --- {1}", new Object[] { oldState, repositoryState }); //NOI18N
-            propertyChangeSupport.firePropertyChange(PROPERTY_STATE, oldState, repositoryState);
+            firePropertyChange(new PropertyChangeEvent(this, PROPERTY_STATE, oldState, repositoryState));
         }
     }
 
@@ -283,7 +295,7 @@ public class RepositoryInfo {
             changed = !equalsBranches(oldBranches, newBranches);
         }
         if (changed) {
-            propertyChangeSupport.firePropertyChange(PROPERTY_BRANCHES, Collections.unmodifiableMap(oldBranches), Collections.unmodifiableMap(new HashMap<String, GitBranch>(newBranches)));
+            firePropertyChange(new PropertyChangeEvent(this, PROPERTY_BRANCHES, Collections.unmodifiableMap(oldBranches), Collections.unmodifiableMap(new HashMap<String, GitBranch>(newBranches))));
         }
     }
 
@@ -299,7 +311,7 @@ public class RepositoryInfo {
             }
         }
         if (changed) {
-            propertyChangeSupport.firePropertyChange(PROPERTY_TAGS, Collections.unmodifiableMap(oldTags), Collections.unmodifiableMap(new HashMap<String, GitTag>(newTags)));
+            firePropertyChange(new PropertyChangeEvent(this, PROPERTY_TAGS, Collections.unmodifiableMap(oldTags), Collections.unmodifiableMap(new HashMap<String, GitTag>(newTags))));
         }
     }
 
@@ -315,7 +327,7 @@ public class RepositoryInfo {
             }
         }
         if (changed) {
-            propertyChangeSupport.firePropertyChange(PROPERTY_REMOTES, Collections.unmodifiableMap(oldRemotes), Collections.unmodifiableMap(new HashMap<String, GitRemoteConfig>(newRemotes)));
+            firePropertyChange(new PropertyChangeEvent(this, PROPERTY_REMOTES, Collections.unmodifiableMap(oldRemotes), Collections.unmodifiableMap(new HashMap<String, GitRemoteConfig>(newRemotes))));
         }
     }
 
@@ -458,6 +470,15 @@ public class RepositoryInfo {
         } else {
             refresh();
             return true;
+        }
+    }
+
+    private void firePropertyChange (PropertyChangeEvent event) {
+        List<PropertyChangeEvent> events = eventsToFire.get();
+        if (events != null) {
+            events.add(event);
+        } else {
+            propertyChangeSupport.firePropertyChange(event);
         }
     }
 
