@@ -581,7 +581,12 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             if (ldPath.indexOf(';')>0) {
                 pathSepararor = ";"; // NOI18N
             }
-            for(String search :  ldPath.split(pathSepararor)) {  // NOI18N
+            Set<String> visited = new HashSet<String>();
+            for(String search :  ldPath.split(pathSepararor)) {
+                if (visited.contains(search)) {
+                    continue;
+                }
+                visited.add(search);
                 FileObject file = fileSystem.findResource(search+"/"+dll);
                 if (file != null && file.isValid() && file.isData()) {
                     String path = file.getPath();

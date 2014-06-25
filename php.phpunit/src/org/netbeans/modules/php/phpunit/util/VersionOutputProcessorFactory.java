@@ -40,68 +40,58 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript.karma.coverage;
+package org.netbeans.modules.php.phpunit.util;
 
-import java.awt.EventQueue;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.Reader;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.web.clientproject.api.jstesting.Coverage;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.LineProcessor;
 
-public final class CoverageProcessor {
+public class VersionOutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
 
-    private static final Logger LOGGER = Logger.getLogger(CoverageProcessor.class.getName());
+    private final Pattern versionPattern;
 
-    private static volatile boolean debugCoverageWarningShown = false;
-
-    private final Coverage coverage;
-    private final File sourceDir;
-    private final File logFile;
+    volatile String version;
 
 
-    public CoverageProcessor(Coverage coverage, File sourceDir, File logFile) {
-        assert coverage != null;
-        assert sourceDir.isDirectory() : sourceDir;
-        assert logFile.isFile() : logFile;
-        this.coverage = coverage;
-        this.sourceDir = sourceDir;
-        this.logFile = logFile;
+    public VersionOutputProcessorFactory(String versionPattern) {
+        assert versionPattern != null;
+        this.versionPattern = Pattern.compile(versionPattern, Pattern.CASE_INSENSITIVE);
     }
 
-    @NbBundle.Messages("CoverageProcessor.warn.debugCoverage=Coverage is automatically disabled in Karma Debug mode.")
-    public static void warnDebugCoverage() {
-        if (debugCoverageWarningShown) {
-            // already warned
-            return;
-        }
-        debugCoverageWarningShown = true;
-        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(Bundle.CoverageProcessor_warn_debugCoverage()));
+    @Override
+    public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+        return InputProcessors.bridge(new LineProcessor() {
+
+            @Override
+            public void processLine(String line) {
+                assert version == null : version + " :: " + line;
+                version = parseVersion(line);
+            }
+
+            @Override
+            public void reset() {
+            }
+
+            @Override
+            public void close() {
+            }
+
+        });
     }
 
-    public void process() {
-        assert coverage.isEnabled();
-        assert !EventQueue.isDispatchThread();
-        Reader reader;
-        try {
-            reader = new BufferedReader(new FileReader(logFile));
-        } catch (FileNotFoundException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-            return;
+    public String getVersion() {
+        return version;
+    }
+
+    public String parseVersion(String line) {
+        Matcher matcher = versionPattern.matcher(line);
+        if (matcher.find()) {
+            return matcher.group(1);
         }
-        List<Coverage.File> files = CloverLogParser.parse(reader, sourceDir);
-        if (files == null) {
-            LOGGER.info("Parsed coverage data expected but some error occured");
-            return;
-        }
-        coverage.setFiles(files);
+        return null;
     }
 
 }

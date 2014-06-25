@@ -70,6 +70,7 @@ import org.netbeans.modules.php.phpunit.commands.PhpUnit;
 import org.netbeans.modules.php.phpunit.commands.SkeletonGenerator;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -98,15 +99,19 @@ public class PhpUnitOptionsPanel extends JPanel {
     @NbBundle.Messages({
         "# {0} - short script name",
         "# {1} - long script name",
-        "PhpUnitOptionsPanel.phpUnit.hint=Full path of PHPUnit script (typically {0} or {1}).",
+        "# {2} - PHAR script name",
+        "PhpUnitOptionsPanel.phpUnit.hint=<html>Full path of PHPUnit script (typically {0}, {1} or {2}).",
         "# {0} - short script name",
         "# {1} - long script name",
-        "PhpUnitOptionsPanel.skelGen.hint=Full path of Skeleton Generator script (typically {0} or {1})."
+        "# {2} - PHAR script name",
+        "PhpUnitOptionsPanel.skelGen.hint=<html>Full path of Skeleton Generator script (typically {0}, {1} or {2})."
     })
     private void init() {
         errorLabel.setText(" "); // NOI18N
-        phpUnitHintLabel.setText(Bundle.PhpUnitOptionsPanel_phpUnit_hint(PhpUnit.SCRIPT_NAME, PhpUnit.SCRIPT_NAME_LONG));
-        skelGenHintLabel.setText(Bundle.PhpUnitOptionsPanel_skelGen_hint(SkeletonGenerator.SCRIPT_NAME, SkeletonGenerator.SCRIPT_NAME_LONG));
+        phpUnitHintLabel.setText(Bundle.PhpUnitOptionsPanel_phpUnit_hint(
+                PhpUnit.SCRIPT_NAME, PhpUnit.SCRIPT_NAME_LONG, PhpUnit.SCRIPT_NAME_PHAR));
+        skelGenHintLabel.setText(Bundle.PhpUnitOptionsPanel_skelGen_hint(
+                SkeletonGenerator.SCRIPT_NAME, SkeletonGenerator.SCRIPT_NAME_LONG, SkeletonGenerator.SCRIPT_NAME_PHAR));
 
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         phpUnitTextField.getDocument().addDocumentListener(defaultDocumentListener);
@@ -182,54 +187,54 @@ public class PhpUnitOptionsPanel extends JPanel {
         errorLabel = new JLabel();
 
         phpUnitLabel.setLabelFor(phpUnitBrowseButton);
-        org.openide.awt.Mnemonics.setLocalizedText(phpUnitLabel, org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(phpUnitLabel, NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(phpUnitBrowseButton, org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitBrowseButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(phpUnitBrowseButton, NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitBrowseButton.text")); // NOI18N
         phpUnitBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 phpUnitBrowseButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(phpUnitSearchButton, org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitSearchButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(phpUnitSearchButton, NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitSearchButton.text")); // NOI18N
         phpUnitSearchButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 phpUnitSearchButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(phpUnitHintLabel, "HINT"); // NOI18N
+        Mnemonics.setLocalizedText(phpUnitHintLabel, "HINT"); // NOI18N
 
         skelGenLabel.setLabelFor(skelGenTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(skelGenLabel, org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.skelGenLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(skelGenLabel, NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.skelGenLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(skelGenBrowseButton, org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.skelGenBrowseButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(skelGenBrowseButton, NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.skelGenBrowseButton.text")); // NOI18N
         skelGenBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 skelGenBrowseButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(skelGenSearchButton, org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.skelGenSearchButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(skelGenSearchButton, NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.skelGenSearchButton.text")); // NOI18N
         skelGenSearchButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 skelGenSearchButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(skelGenHintLabel, "HINT"); // NOI18N
+        Mnemonics.setLocalizedText(skelGenHintLabel, "HINT"); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(noteLabel, org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.noteLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.noteLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(phpUnitInfoLabel, org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitInfoLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(phpUnitInfoLabel, NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitInfoLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(phpUnitPhp53InfoLabel, org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitPhp53InfoLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(phpUnitPhp53InfoLabel, NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitPhp53InfoLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(phpUnit370InfoLabel, org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnit370InfoLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(phpUnit370InfoLabel, NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnit370InfoLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(installationInfoLabel, org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.installationInfoLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(installationInfoLabel, NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.installationInfoLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(phpUnitLearnMoreLabel, org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitLearnMoreLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(phpUnitLearnMoreLabel, NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitLearnMoreLabel.text")); // NOI18N
         phpUnitLearnMoreLabel.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
                 phpUnitLearnMoreLabelMouseEntered(evt);
@@ -239,7 +244,7 @@ public class PhpUnitOptionsPanel extends JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(skelGenLearnMoreLabel, org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.skelGenLearnMoreLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(skelGenLearnMoreLabel, NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.skelGenLearnMoreLabel.text")); // NOI18N
         skelGenLearnMoreLabel.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
                 skelGenLearnMoreLabelMouseEntered(evt);
@@ -249,7 +254,7 @@ public class PhpUnitOptionsPanel extends JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
+        Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -266,14 +271,9 @@ public class PhpUnitOptionsPanel extends JPanel {
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(phpUnitHintLabel)
-                                .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                                    .addComponent(skelGenTextField, Alignment.TRAILING)
-                                    .addComponent(phpUnitTextField, Alignment.TRAILING))
-                                .addPreferredGap(ComponentPlacement.RELATED)))
+                            .addComponent(skelGenTextField, Alignment.TRAILING)
+                            .addComponent(phpUnitTextField, Alignment.TRAILING))
+                        .addPreferredGap(ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(Alignment.TRAILING)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(phpUnitBrowseButton)
@@ -282,7 +282,8 @@ public class PhpUnitOptionsPanel extends JPanel {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(skelGenBrowseButton)
                                 .addPreferredGap(ComponentPlacement.RELATED)
-                                .addComponent(skelGenSearchButton))))))
+                                .addComponent(skelGenSearchButton))))
+                    .addComponent(phpUnitHintLabel)))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(errorLabel)
@@ -338,31 +339,31 @@ public class PhpUnitOptionsPanel extends JPanel {
                 .addGap(0, 0, 0))
         );
 
-        phpUnitLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitLabel.AccessibleContext.accessibleName_1")); // NOI18N
-        phpUnitLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitLabel.AccessibleContext.accessibleDescription_1")); // NOI18N
-        phpUnitTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitTextField.AccessibleContext.accessibleName_1")); // NOI18N
-        phpUnitTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitTextField.AccessibleContext.accessibleDescription_1")); // NOI18N
-        phpUnitBrowseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitBrowseButton.AccessibleContext.accessibleName_1")); // NOI18N
-        phpUnitBrowseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitBrowseButton.AccessibleContext.accessibleDescription_1")); // NOI18N
-        phpUnitSearchButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitSearchButton.AccessibleContext.accessibleName_1")); // NOI18N
-        phpUnitSearchButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitSearchButton.AccessibleContext.accessibleDescription_1")); // NOI18N
-        phpUnitHintLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.scriptInfoLabel.AccessibleContext.accessibleName")); // NOI18N
-        phpUnitHintLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.scriptInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        noteLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.noteLabel.AccessibleContext.accessibleName")); // NOI18N
-        noteLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.noteLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        phpUnitInfoLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitInfoLabel.AccessibleContext.accessibleName")); // NOI18N
-        phpUnitInfoLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        phpUnitPhp53InfoLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitPhp53InfoLabel.AccessibleContext.accessibleName")); // NOI18N
-        phpUnitPhp53InfoLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitPhp53InfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        installationInfoLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.installationInfoLabel.AccessibleContext.accessibleName")); // NOI18N
-        installationInfoLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.installationInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        phpUnitLearnMoreLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.learnMoreLabel.AccessibleContext.accessibleName")); // NOI18N
-        phpUnitLearnMoreLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.learnMoreLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        errorLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.errorLabel.AccessibleContext.accessibleName")); // NOI18N
-        errorLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.errorLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        phpUnitLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitLabel.AccessibleContext.accessibleName_1")); // NOI18N
+        phpUnitLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitLabel.AccessibleContext.accessibleDescription_1")); // NOI18N
+        phpUnitTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitTextField.AccessibleContext.accessibleName_1")); // NOI18N
+        phpUnitTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitTextField.AccessibleContext.accessibleDescription_1")); // NOI18N
+        phpUnitBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitBrowseButton.AccessibleContext.accessibleName_1")); // NOI18N
+        phpUnitBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitBrowseButton.AccessibleContext.accessibleDescription_1")); // NOI18N
+        phpUnitSearchButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitSearchButton.AccessibleContext.accessibleName_1")); // NOI18N
+        phpUnitSearchButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitSearchButton.AccessibleContext.accessibleDescription_1")); // NOI18N
+        phpUnitHintLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.scriptInfoLabel.AccessibleContext.accessibleName")); // NOI18N
+        phpUnitHintLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.scriptInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        noteLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.noteLabel.AccessibleContext.accessibleName")); // NOI18N
+        noteLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.noteLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        phpUnitInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitInfoLabel.AccessibleContext.accessibleName")); // NOI18N
+        phpUnitInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        phpUnitPhp53InfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitPhp53InfoLabel.AccessibleContext.accessibleName")); // NOI18N
+        phpUnitPhp53InfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitPhp53InfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        installationInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.installationInfoLabel.AccessibleContext.accessibleName")); // NOI18N
+        installationInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.installationInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        phpUnitLearnMoreLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.learnMoreLabel.AccessibleContext.accessibleName")); // NOI18N
+        phpUnitLearnMoreLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.learnMoreLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        errorLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.errorLabel.AccessibleContext.accessibleName")); // NOI18N
+        errorLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.errorLabel.AccessibleContext.accessibleDescription")); // NOI18N
 
-        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.AccessibleContext.accessibleName")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     @NbBundle.Messages("PhpUnitOptionsPanel.phpunit.browse.title=Select PHPUnit")
@@ -387,7 +388,7 @@ public class PhpUnitOptionsPanel extends JPanel {
 
             @Override
             public List<String> detect() {
-                return FileUtils.findFileOnUsersPath(PhpUnit.SCRIPT_NAME, PhpUnit.SCRIPT_NAME_LONG);
+                return FileUtils.findFileOnUsersPath(PhpUnit.SCRIPT_NAME, PhpUnit.SCRIPT_NAME_LONG, PhpUnit.SCRIPT_NAME_PHAR);
             }
 
             @Override
@@ -421,7 +422,7 @@ public class PhpUnitOptionsPanel extends JPanel {
 
     private void phpUnitLearnMoreLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_phpUnitLearnMoreLabelMousePressed
         try {
-            URL url = new URL("http://www.phpunit.de/manual/current/en/installation.html"); // NOI18N
+            URL url = new URL("http://phpunit.de/"); // NOI18N
             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
@@ -434,7 +435,7 @@ public class PhpUnitOptionsPanel extends JPanel {
 
     private void skelGenLearnMoreLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_skelGenLearnMoreLabelMousePressed
         try {
-            URL url = new URL("http://www.phpunit.de/manual/current/en/skeleton-generator.html"); // NOI18N
+            URL url = new URL("https://github.com/sebastianbergmann/phpunit-skeleton-generator"); // NOI18N
             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
@@ -463,7 +464,7 @@ public class PhpUnitOptionsPanel extends JPanel {
         String skelGen = UiUtils.SearchWindow.search(new UiUtils.SearchWindow.SearchWindowSupport() {
             @Override
             public List<String> detect() {
-                return FileUtils.findFileOnUsersPath(SkeletonGenerator.SCRIPT_NAME, SkeletonGenerator.SCRIPT_NAME_LONG);
+                return FileUtils.findFileOnUsersPath(SkeletonGenerator.SCRIPT_NAME, SkeletonGenerator.SCRIPT_NAME_LONG, SkeletonGenerator.SCRIPT_NAME_PHAR);
             }
             @Override
             public String getWindowTitle() {
