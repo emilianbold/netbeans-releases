@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,62 +41,65 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.git.ui.history;
 
-package org.netbeans.modules.cnd.debugger.gdb2;
+import org.openide.windows.TopComponent;
+import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineCapability;
-import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineTypeManager;
-import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
-import org.netbeans.modules.cnd.debugger.common2.debugger.spi.EngineCapabilityProvider;
-import org.netbeans.modules.cnd.debugger.gdb2.options.GdbProfile;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.DebuggerDescriptor;
-import org.openide.util.lookup.ServiceProvider;
+import java.io.File;
+import java.awt.BorderLayout;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.openide.util.Parameters;
 
-/**
- *
- * @author Vladimir Voskresensky
- */
-@ServiceProvider(service=EngineCapabilityProvider.class, position=100)
-public final class GdbEngineCapabilityProvider implements EngineCapabilityProvider {
-    /*package*/ final static String ID = "gdb"; // NOI18N
-    private final static EngineType GDB_ENGINE_TYPE = EngineTypeManager.create(ID, Catalog.get("GdbEngineDisplayName")); // NOI18N
+@TopComponent.Description(persistenceType=TopComponent.PERSISTENCE_NEVER, preferredID="Git.SearchIncomingTopComponent")
+@NbBundle.Messages({
+    "ACSN_SearchIncomingT_Top_Component=Search Incoming",
+    "ACSD_SearchIncomingT_Top_Component=Search Incoming"
+})
+public class SearchIncomingTopComponent extends TopComponent {
 
-    public boolean hasCapability(EngineType et, EngineCapability capability) {
-        if (ID.equals(et.getDebuggerID())) {
-            switch (capability) {
-                case DERIVE_EXECUTABLE:
-                case RTC_SUPPORT:
-                    return false;
-                case RUN_AUTOSTART:
-                    return true;
-                default:
-                    return false;
-            }
-        }
-        return false;
+    private SearchHistoryPanel shp;
+    private SearchCriteriaPanel scp;
+    private final File[] files;
+    private final File repository;
+    private final RepositoryInfo info;
+    
+    public SearchIncomingTopComponent (File repository, RepositoryInfo info, File[] files) {
+        this.repository = repository;
+        this.info = info;
+        this.files = files;
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchIncomingTopComponent.class, "ACSN_SearchIncomingT_Top_Component")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchIncomingTopComponent.class, "ACSD_SearchIncomingT_Top_Component")); // NOI18N
+        initComponents();
+        scp.setupRemoteSearch(SearchExecutor.Mode.REMOTE_IN);
     }
 
-    public EngineType engineType() {
-        return GDB_ENGINE_TYPE;
-    }
-
-    public static EngineType getGdbEngineType() {
-        return GDB_ENGINE_TYPE;
+    public void search (boolean showCriteria) {
+        shp.executeSearch();
+        shp.setSearchCriteria(showCriteria);
     }
     
-    /*package*/ static boolean isSupportedImpl(DebuggerDescriptor descriptor) {
-        if (descriptor == null) {
-            return false;
-        }
-        final String id = descriptor.getID();
-        return "GNU".equalsIgnoreCase(id);//NOI18N
-    }    
-
-    public boolean isSupported(DebuggerDescriptor descriptor) {
-        return isSupportedImpl(descriptor);
+    void setBranch (String branch) {
+        Parameters.notNull("branch", branch);
+        shp.setBranch(branch);
+        scp.setBranch(branch);
     }
 
-    public String debuggerProfileID() {
-        return GdbProfile.PROFILE_ID;
+    private void initComponents () {
+        setLayout(new BorderLayout());
+        scp = new SearchCriteriaPanel();
+        shp = new SearchHistoryPanel(repository, info, files, scp);
+        add(shp);
+    }
+
+    @Override
+    protected void componentClosed () {
+        shp.release();
+    }
+    
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(getClass());
     }
 }

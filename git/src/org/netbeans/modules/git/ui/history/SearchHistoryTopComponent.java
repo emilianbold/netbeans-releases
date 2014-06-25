@@ -115,7 +115,7 @@ public class SearchHistoryTopComponent extends TopComponent {
 
     @Override
     protected void componentClosed () {
-        shp.releaseDiff();
+        shp.release();
     }
     
     @Override

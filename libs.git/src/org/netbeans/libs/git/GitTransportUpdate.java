@@ -78,7 +78,11 @@ public final class GitTransportUpdate {
         /**
          * a tag
          */
-        TAG
+        TAG,
+        /**
+         * a general reference
+         */
+        REFERENCE
     }
 
     GitTransportUpdate (URIish uri, TrackingRefUpdate update) {
@@ -182,6 +186,8 @@ public final class GitTransportUpdate {
             retval = Type.BRANCH;
         } else if (refName.startsWith(Constants.R_HEADS)) {
             retval = Type.BRANCH;
+        } else if (refName.startsWith(Constants.R_REFS)) {
+            retval = Type.REFERENCE;
         } else {
             throw new IllegalArgumentException("Unknown type for: " + refName);
         }
