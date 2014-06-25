@@ -14,17 +14,13 @@ import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.instrument.PhylumTag;
-import com.oracle.truffle.api.instrument.Probe;
-import com.oracle.truffle.api.instrument.ProbeListener;
 import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.debug.DebugClient;
-import com.oracle.truffle.debug.DebugManager;
 import com.oracle.truffle.debug.impl.AbstractDebugManager;
 import com.oracle.truffle.debug.instrument.DebugInstrumentCallback;
-import com.oracle.truffle.debug.instrument.DebugLineInstrument;
 import com.oracle.truffle.js.engine.TruffleJSEngine;
 import com.oracle.truffle.js.engine.TruffleJSEngineFactory;
 import com.oracle.truffle.js.nodes.JavaScriptNode;
@@ -39,9 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
-import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import org.netbeans.modules.debugger.jpda.backend.truffle.js.JPDAJSNodeProber;
 
@@ -65,32 +59,13 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
         ((JPDADebugClient) dbgClient).setTopFrameHolder(topFrameHolder);
         nodeProberDelegate.addNodeProber(
                 new JPDAJSNodeProber((JSContext) context, this, new JPDAInstrumentProxy(instrumentCallback)));
-        System.err.println("new JPDATruffleDebugManager("+engine+")");
+        //System.err.println("new JPDATruffleDebugManager("+engine+")");
     }
     
     static JPDATruffleDebugManager setUp() {
-        System.err.println("JPDATruffleDebugManager.setUp()");
+        //System.err.println("JPDATruffleDebugManager.setUp()");
         TruffleJSEngineFactory.addNodeProber(nodeProberDelegate);
-        //TruffleJSEngine engine = (TruffleJSEngine) new ScriptEngineManager().getEngineByName(TruffleJSEngineFactory.ENGINE_NAME);
-        //JSContext jsContext = engine.getJSContext();
         return null; // Initialize TruffleJSEngine class only.
-        /*
-        JPDATruffleDebugManager debugManager = new JPDATruffleDebugManager(engine, jsContext, new JPDADebugClient());
-        //jsContext.setDebugContext(new JPDADebugContext(jsContext, debugManager));
-        jsContext.addProbeListener(new ProbeListener() {
-            @Override
-            public void newProbeInserted(SourceSection ss, Probe probe) {
-                System.err.println("ProbeListener.newProbeInserted("+ss+", "+probe+")");
-            }
-            @Override
-            public void probeTaggedAs(Probe probe, PhylumTag pt) {
-                System.err.println("ProbeListener.probeTaggedAs("+probe+", "+pt+")");
-            }
-        });
-        //jsContext.addNodeProber(new JPDAJSNodeProber(jsContext, debugManager, ));
-        System.err.println("SET UP of JPDATruffleDebugManager = "+debugManager+" and prober to "+jsContext);
-        return debugManager;
-        */
     }
 
     static JPDATruffleDebugManager setUp(ScriptEngine engine) {
@@ -100,7 +75,7 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
         JPDATruffleDebugManager debugManager = new JPDATruffleDebugManager(engine, jsContext, new JPDADebugClient(jsContext));
         //jsContext.setDebugContext(new JPDADebugContext(jsContext, debugManager));
         //jsContext.addNodeProber(new JPDAJSNodeProber(jsContext, debugManager, ));
-        System.err.println("SET UP of JPDATruffleDebugManager = "+debugManager+" for "+engine+" and prober to "+jsContext);
+        //System.err.println("SET UP of JPDATruffleDebugManager = "+debugManager+" for "+engine+" and prober to "+jsContext);
         return debugManager;
     }
     
@@ -110,7 +85,7 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
     
     @Override
     public void run(Source source) {
-        System.err.println("JPDATruffleDebugManager.run("+source+")");
+        //System.err.println("JPDATruffleDebugManager.run("+source+")");
         startExecution(source);
         try {
             final ScriptNode scriptNode = JSEngine.getInstance().getParser().parseScriptNode((JSContext) context, source);
@@ -126,7 +101,7 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
 
     @Override
     public Object eval(Source source, Node node, MaterializedFrame frame) {
-        System.err.println("JPDATruffleDebugManager.eval("+source+", "+node+", "+frame+")");
+        //System.err.println("JPDATruffleDebugManager.eval("+source+", "+node+", "+frame+")");
         startExecution(source);
         try {
             if (frame == null) {
@@ -150,11 +125,11 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
         }
         int line = sourceSection.getStartLine();
         Source source = sourceSection.getSource();
-        System.err.println("source of "+node+" = "+source);
-        System.err.println("  name = "+source.getName());
-        System.err.println("  short name = "+source.getShortName());
-        System.err.println("  path = "+source.getPath());
-        System.err.println("  code at line = "+source.getCode(line));
+        //System.err.println("source of "+node+" = "+source);
+        //System.err.println("  name = "+source.getName());
+        //System.err.println("  short name = "+source.getShortName());
+        //System.err.println("  path = "+source.getPath());
+        //System.err.println("  code at line = "+source.getCode(line));
         String name = source.getShortName();
         String path = source.getPath();
         String code = source.getCode();
@@ -197,7 +172,7 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
                 slotNames[i] = visualizer.displayIdentifier(slots[i]);// slots[i].getIdentifier().toString();
                 slotTypes[i] = slots[i].getKind().toString();
             }
-            
+            /*
             System.err.println("JPDADebugClient: HALTED AT "+astNode+", "+frame+
                                "\n                 src. pos. = "+
                                position.path+":"+position.line);
@@ -208,7 +183,7 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
             for (int i = 0; i < slots.length; i++) {
                 System.err.println("    "+slotNames[i]+" = "+JPDATruffleAccessor.getSlotValue(frame, slots[i]));
             }
-            
+            */
             Iterable<FrameInstance> stackTraceIt = Truffle.getRuntime().getStackTrace();
             ArrayList<FrameInstance> stackTraceArr = new ArrayList<>();
             for (FrameInstance fi : stackTraceIt) {
@@ -221,7 +196,7 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
                 //stackNames[i] = stackTrace[i].getCallNode().getDescription();
                 stackNames[i] = visualizer.displaySourceLocation(stackTrace[i].getCallNode());
             }*/
-            System.err.println("  stack trace = "+Arrays.toString(stackTrace));
+            //System.err.println("  stack trace = "+Arrays.toString(stackTrace));
             //System.err.println("  stack names = "+Arrays.toString(stackNames));
             String topFrame = visualizer.displayCallTargetName(astNode.getRootNode().getCallTarget())+"\n"+
                               visualizer.displayMethodName(astNode)+"\n"+
@@ -268,13 +243,13 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
 
         @Override
         public void haltedAt(Node astNode, MaterializedFrame frame) {
-            System.err.println("JPDAInstrumentProxy.haltedAt("+astNode+", "+frame+")");
+            //System.err.println("JPDAInstrumentProxy.haltedAt("+astNode+", "+frame+")");
             delegateCallback.haltedAt(astNode, frame);
         }
 
         @Override
         public void callEntering(Node astNode, String name) {
-            System.err.println("JPDAInstrumentProxy.callEntering("+astNode+", "+name+")");
+            //System.err.println("JPDAInstrumentProxy.callEntering("+astNode+", "+name+")");
             astNode.getSourceSection();
             if (JPDATruffleAccessor.isSteppingInto) {
                 SourcePosition position = getPosition(astNode);
@@ -287,7 +262,7 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
 
         @Override
         public void callReturned(Node astNode, String name) {
-            System.err.println("JPDAInstrumentProxy.callReturned("+astNode+", "+name+")");
+            //System.err.println("JPDAInstrumentProxy.callReturned("+astNode+", "+name+")");
             delegateCallback.callReturned(astNode, name);
         }
         

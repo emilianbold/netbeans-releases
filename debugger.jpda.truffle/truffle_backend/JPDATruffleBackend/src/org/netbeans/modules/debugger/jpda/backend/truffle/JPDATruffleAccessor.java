@@ -55,7 +55,6 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.debug.Breakpoint;
 import com.oracle.truffle.debug.LineBreakpoint;
-import com.oracle.truffle.js.engine.TruffleJSEngine;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -151,13 +150,15 @@ public class JPDATruffleAccessor extends Object {
             case 2: debugManager.prepareNext(1);
                     break;
             case 3: boolean success = debugManager.prepareStepOut();
-                    System.err.println("Successful step out = "+success);
+                    //System.err.println("Successful step out = "+success);
                     break;
         }
         stepCmd = 0;
     }
     
-    static Object getSlotValue(Frame frame, FrameSlot slot) {
+    static Object getSlotValue(Object frameObj, Object slotObj) {
+        Frame frame = (Frame) frameObj;
+        FrameSlot slot = (FrameSlot) slotObj;
         switch(slot.getKind()) {
             case Boolean:   return FrameUtil.getBooleanSafe(frame, slot);
             case Byte:      return FrameUtil.getByteSafe(frame, slot);
@@ -170,9 +171,9 @@ public class JPDATruffleAccessor extends Object {
                             //return context.getVisualizer().displayValue(context, obj);
                             String name = context.getVisualizer().displayIdentifier(slot);
                             TruffleObject to = new TruffleObject(context, name, obj);
-                            System.err.println("TruffleObject: "+to);
-                            System.err.println("  children Generic = "+Arrays.toString(to.getChildrenGeneric()));
-                            System.err.println("  children JS = "+Arrays.toString(to.getChildrenJS()));
+                            //System.err.println("TruffleObject: "+to);
+                            //System.err.println("  children Generic = "+Arrays.toString(to.getChildrenGeneric()));
+                            //System.err.println("  children JS = "+Arrays.toString(to.getChildrenJS()));
                             return to;
             case Illegal:   
             default:        return null;
@@ -253,11 +254,11 @@ public class JPDATruffleAccessor extends Object {
         try {
             source = Source.fromFileName(path);
         } catch (IOException ioex) {
-            System.err.println("setLineBreakpoint("+path+", "+line+"): "+ioex.getLocalizedMessage());
+            //System.err.println("setLineBreakpoint("+path+", "+line+"): "+ioex.getLocalizedMessage());
             return null;
         }
         LineBreakpoint lb = debugManager.setLineBreakpoint(source.createLineLocation(line));
-        System.err.println("setLineBreakpoint("+path+", "+line+"): source = "+source+", lb = "+lb);
+        //System.err.println("setLineBreakpoint("+path+", "+line+"): source = "+source+", lb = "+lb);
         return lb;
     }
     
@@ -266,16 +267,16 @@ public class JPDATruffleAccessor extends Object {
     }
     
     static String evaluate(String expression) {
-        System.err.println("evaluate("+expression+")");
+        //System.err.println("evaluate("+expression+")");
         final Source source = Source.fromText(expression, "EVAL");
         Object value = debugManager.eval(source);
-        System.err.println("  value = "+value);
+        //System.err.println("  value = "+value);
         if (value == null) {
             return null;
         }
         Visualizer visualizer = debugManager.getContext().getVisualizer();
         String strValue = visualizer.displayValue(debugManager.getContext(), value);
-        System.err.println("evaluate("+expression+") = "+strValue);
+        //System.err.println("evaluate("+expression+") = "+strValue);
         return strValue;
     }
     

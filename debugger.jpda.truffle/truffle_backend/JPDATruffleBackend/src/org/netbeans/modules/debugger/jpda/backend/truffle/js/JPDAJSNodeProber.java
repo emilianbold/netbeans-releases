@@ -38,7 +38,7 @@ public class JPDAJSNodeProber implements JSNodeProber {
 
     @Override
     public JavaScriptNode probeAsStatement(JavaScriptNode jsn) {
-        System.err.println("probeAsStatement("+jsn+")");
+        //System.err.println("probeAsStatement("+jsn+")");
         assert jsn != null;
         if (jsn instanceof EmptyNode) {
             return jsn;
@@ -50,7 +50,7 @@ public class JPDAJSNodeProber implements JSNodeProber {
 
     @Override
     public JavaScriptNode probeAsCall(JavaScriptNode jsn, String callName) {
-        System.err.println("probeAsCall("+jsn+", "+callName+")");
+        //System.err.println("probeAsCall("+jsn+", "+callName+")");
         assert jsn != null;
 
         JSWrapper wrapper = null;
@@ -70,7 +70,7 @@ public class JPDAJSNodeProber implements JSNodeProber {
 
     @Override
     public JavaScriptNode probeAsLocalAssignment(JavaScriptNode jsn, String string) {
-        System.err.println("JPDAJSNodeProber.probeAsLocalAssignment("+jsn+", "+string+")");
+        //System.err.println("JPDAJSNodeProber.probeAsLocalAssignment("+jsn+", "+string+")");
         // TODO
         return null;
     }
@@ -83,7 +83,7 @@ public class JPDAJSNodeProber implements JSNodeProber {
 
     @Override
     public Node probeAs(Node node, PhylumTag pt, Object... os) {
-        System.err.println("JPDAJSNodeProber.probeAs("+node+", "+pt+")");
+        //System.err.println("JPDAJSNodeProber.probeAs("+node+", "+pt+")");
         // TODO
         return null;
     }
