@@ -74,7 +74,8 @@ public class InfixExpression extends Expression {
         DIV("/"), //NOI18N
         MOD("%"), //NOI18N
         SL("<<"), //NOI18N
-    	SR(">>"); //NOI18N
+    	SR(">>"), //NOI18N
+    	POW("**"); //NOI18N
 
         private final String operatorSign;
 
