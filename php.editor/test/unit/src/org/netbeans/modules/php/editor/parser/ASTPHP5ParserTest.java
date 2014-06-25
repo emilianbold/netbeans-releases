@@ -499,6 +499,10 @@ public class ASTPHP5ParserTest extends ParserTestBase {
     public void testYield_07() throws Exception {
         performTest("parser/yield_07");
     }
+    
+    public void testExponentiation_01() throws Exception {
+        performTest("parser/exponentiation_01");
+    }
 
     @Override
     protected String getTestResult(String filename) throws Exception {

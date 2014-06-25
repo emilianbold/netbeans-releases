@@ -375,4 +375,8 @@ public class PhpParserErrorTest extends PHPTestBase {
     public void testIssue237220() throws Exception {
         checkErrors("testfiles/parser/issue237220.php");
     }
+    
+    public void testExponentiation_01() throws Exception {
+        checkErrors("testfiles/parser/exponentiation_01.php");
+    }
 }
