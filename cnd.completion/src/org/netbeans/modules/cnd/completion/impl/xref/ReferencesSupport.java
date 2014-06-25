@@ -43,10 +43,7 @@
  */
 package org.netbeans.modules.cnd.completion.impl.xref;
 
-import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,7 +53,6 @@ import java.util.List;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
@@ -89,10 +85,6 @@ import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
 import org.netbeans.modules.cnd.completion.csm.CsmOffsetUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
@@ -159,23 +151,6 @@ public final class ReferencesSupport {
      */
     public static int getDocumentOffset(BaseDocument doc, int lineIndex, int colIndex) {
         return Utilities.getRowStartFromLineOffset(doc, lineIndex - 1) + (colIndex - 1);
-    }
-
-    private static BaseDocument getBaseDocument(FileObject fileObject) throws DataObjectNotFoundException, IOException {
-        if (fileObject == null || !fileObject.isValid()) {
-            return null;
-        }
-        DataObject dataObject = DataObject.find(fileObject);
-        EditorCookie cookie = dataObject.getLookup().lookup(EditorCookie.class);
-        if (cookie == null) {
-            throw new IllegalStateException("Given file (\"" + dataObject.getName() + // NOI18N
-                                            "\", data object is instance of class " + dataObject.getClass().getName() + // NOI18N
-                                            ") does not have EditorCookie."); // NOI18N
-        }
-
-        StyledDocument doc = CsmUtilities.openDocument(cookie);
-
-        return doc instanceof BaseDocument ? (BaseDocument) doc : null;
     }
 
     public CsmObject findReferencedObject(CsmFile csmFile, BaseDocument doc, int offset) {
@@ -348,7 +323,7 @@ public final class ReferencesSupport {
                         repeat = true;
                     }
                 } 
-                if (!type.getInstantiationParams().isEmpty()) {
+                if (type != null && !type.getInstantiationParams().isEmpty()) {
                     CsmSpecializationParameter param = CsmOffsetUtilities.findObject(type.getInstantiationParams(), null, offset);
                     if (param != null && !CsmOffsetUtilities.sameOffsets(type, param)) {
                         if (CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
@@ -638,39 +613,6 @@ public final class ReferencesSupport {
         return false;
     }
 
-    private static class FileToDoc {
-        BaseDocument doc;
-        CsmFile file;
-        FileToDoc(BaseDocument doc, CsmFile file){
-            this.doc = doc;
-            this.file = file;
-        }
-    }
-    private static Reference<FileToDoc> lastCsmFile = null;
-
-    static BaseDocument getDocument(CsmFile file) {
-        BaseDocument doc = null;
-        try {
-            Reference<FileToDoc> lcf = lastCsmFile;
-            if (lcf != null) {
-                FileToDoc pair = lcf.get();
-                if (pair != null && pair.file == file) {
-                    return pair.doc;
-                }
-            }
-            doc = ReferencesSupport.getBaseDocument(file.getFileObject());
-        } catch (DataObjectNotFoundException ex) {
-            ex.printStackTrace(System.err);
-        } catch (IOException ex) {
-            ex.printStackTrace(System.err);
-        }
-        if (doc != null) {
-            lastCsmFile = new WeakReference<FileToDoc>(new FileToDoc(doc,file));
-        }
-        return doc;
-    }
-
-   
     static CsmReferenceKind getReferenceUsageKind(final CsmReference ref) {
         CsmReferenceKind kind = CsmReferenceKind.DIRECT_USAGE;
         if (ref instanceof ReferenceImpl) {

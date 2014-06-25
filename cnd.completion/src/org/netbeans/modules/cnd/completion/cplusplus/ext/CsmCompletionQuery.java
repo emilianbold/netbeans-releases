@@ -63,6 +63,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -725,7 +726,13 @@ abstract public class CsmCompletionQuery {
         int exprEndOffset = exprStartOffset + expressionText.length();
         
         final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(exprEndOffset, exprStartOffset);
-        TokenHierarchy<String> hi = TokenHierarchy.create(expressionText, CndLexerUtilities.getLanguage(getBaseDocument()));
+        TokenHierarchy<String> hi = TokenHierarchy.create(
+            expressionText, 
+            false, 
+            CndLexerUtilities.getLanguage(getBaseDocument()), 
+            null, 
+            (InputAttributes) getBaseDocument().getProperty(InputAttributes.class)
+        );
         List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(exprEndOffset - exprStartOffset, true);
         // Go from inner to outer TSes
         TokenSequence<TokenId> cppts = null;

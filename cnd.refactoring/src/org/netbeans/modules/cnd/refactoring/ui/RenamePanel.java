@@ -44,7 +44,6 @@
 package org.netbeans.modules.cnd.refactoring.ui;
 import java.awt.Component;
 import java.awt.event.ItemEvent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
@@ -100,6 +99,12 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
                 RenamePanel.this.parent.stateChanged(null);
             }
         });
+    }
+    
+    @Override
+    public boolean requestFocusInWindow() {
+        nameField.requestFocusInWindow();
+        return true;
     }
     
     private boolean initialized = false;

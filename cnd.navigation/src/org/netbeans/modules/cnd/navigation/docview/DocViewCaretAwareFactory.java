@@ -68,6 +68,7 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.parsing.spi.TaskIndexingMode;
+import org.netbeans.modules.parsing.spi.support.CancelSupport;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -79,6 +80,7 @@ public class DocViewCaretAwareFactory extends IndexingAwareParserResultTask<Pars
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
     private static final RequestProcessor RP = new RequestProcessor("DocViewCaretAwareFactory runner", 1); //NOI18N"
     private static final int TASK_DELAY = getInt("cnd.docview.delay", 500); // NOI18N
+    private final CancelSupport cancel = CancelSupport.create(this);
     private AtomicBoolean canceled = new AtomicBoolean(false);
     
     public DocViewCaretAwareFactory(String mimeType) {
@@ -90,6 +92,9 @@ public class DocViewCaretAwareFactory extends IndexingAwareParserResultTask<Pars
         synchronized (this) {
             canceled.set(true);
             canceled = new AtomicBoolean(false);
+        }
+        if (cancel.isCancelled()) {
+            return;
         }
         if (!(event instanceof CursorMovedSchedulerEvent)) {
             return;

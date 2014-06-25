@@ -87,6 +87,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmEntityResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
@@ -106,6 +107,7 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.parsing.spi.TaskIndexingMode;
+import org.netbeans.modules.parsing.spi.support.CancelSupport;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -124,6 +126,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result> {
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
+    private final CancelSupport cancel = CancelSupport.create(this);
     private AtomicBoolean canceled = new AtomicBoolean(false);
     
     public LineFactoryTask() {
@@ -135,6 +138,9 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
         synchronized (this) {
             canceled.set(true);
             canceled = new AtomicBoolean(false);
+        }
+        if (cancel.isCancelled()) {
+            return;
         }
         Collection<CodeAudit> audits = SuggestionProvider.getInstance().getAudits();
         boolean enabled = false;
@@ -155,7 +161,7 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
         final Document doc = result.getSnapshot().getSource().getDocument(false);
         final FileObject fileObject = result.getSnapshot().getSource().getFileObject();
         final CsmFile file = CsmFileInfoQuery.getDefault().getCsmFile(result);
-        if (file != null && doc != null) {
+        if (file != null && doc != null && doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) == null) {
             if (event instanceof CursorMovedSchedulerEvent) {
                 process(audits, doc, fileObject, (CursorMovedSchedulerEvent)event, file, canceled);
             }

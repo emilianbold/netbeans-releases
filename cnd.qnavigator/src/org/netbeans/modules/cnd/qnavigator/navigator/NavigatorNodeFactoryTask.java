@@ -62,6 +62,7 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.parsing.spi.TaskIndexingMode;
+import org.netbeans.modules.parsing.spi.support.CancelSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -72,6 +73,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  */
 public class NavigatorNodeFactoryTask extends IndexingAwareParserResultTask<Parser.Result> {
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
+    private final CancelSupport cancel = CancelSupport.create(this);
     private AtomicBoolean canceled = new AtomicBoolean(false);
     
     public NavigatorNodeFactoryTask() {
@@ -83,6 +85,9 @@ public class NavigatorNodeFactoryTask extends IndexingAwareParserResultTask<Pars
         synchronized (this) {
             canceled.set(true);
             canceled = new AtomicBoolean(false);
+        }
+        if (cancel.isCancelled()) {
+            return;
         }
         boolean navigatorEnabled = NavigatorComponent.getInstance().isNavigatorEnabled();
         Source source = result.getSnapshot().getSource();

@@ -78,6 +78,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
@@ -113,7 +114,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
     public final static String MACRO_EXPANSION_STOP_ON_OFFSET_PARSE_FILE_WALKER_CACHE = "macro-expansion-stop-on-offset-parse-file-walker-cache"; // NOI18N
 
     @Override
-    public synchronized int expand(final Document inDoc, final int startOffset, final int endOffset, final Document outDoc, final AtomicBoolean canceled, final boolean formatExpansion) {
+    public synchronized int expand(final Document inDoc, final int startOffset, final int endOffset, final Document outDoc, final AtomicBoolean canceled) {
         if (inDoc == null || outDoc == null) {
             return 0;
         }
@@ -198,8 +199,8 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                     // process macro
                     copyInterval(inDoc, docTokenStartOffset - tt.currentIn.start, tt, expandedData);
                     Formatter formatter = null;
-                    if (formatExpansion && (inDoc instanceof BaseDocument)) {
-                        formatter = new Formatter((BaseDocument)inDoc);
+                    if (outDoc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) != null) {
+                        formatter = new Formatter((BaseDocument) outDoc);
                     }
                     expandMacroToken(docTS, fileTS, tt, expandedData, formatter);
                     inMacroParams = true;
@@ -324,7 +325,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
 
     @Override
     public String expand(Document doc, CsmFile file, int startOffset, int endOffset, boolean updateIfNeeded) {
-        TransformationTable tt = getMacroTable(doc, file, updateIfNeeded, null);
+        TransformationTable tt = getMacroTable(doc, file, updateIfNeeded);
         return tt == null ? null : expandInterval(doc, tt, startOffset, endOffset);
     }
 
@@ -334,7 +335,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         TransformationTable tt;
         if (wait) {
             CsmFile file = CsmUtilities.getCsmFile(doc, false, false);
-            tt = getMacroTable(doc, file, true, null);
+            tt = getMacroTable(doc, file, true);
         } else {
             synchronized (doc) {
                 tt = getCachedMacroTable(doc);
@@ -1282,7 +1283,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         } else {
             if (inEnd - inStart == outEnd - outStart) {
                 final int length = inEnd - inStart;
-                if (length < Short.MAX_VALUE) {
+                if (Short.MIN_VALUE < length && length < Short.MAX_VALUE) {
                     final int shift = outEnd - inEnd;
                     if (Short.MIN_VALUE < shift && shift < Short.MAX_VALUE) {
                         return new IntervalCorrespondenceSimpleCompact(inStart, (short)length, (short)shift);
@@ -1493,9 +1494,13 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         }
     }
 
-    private TransformationTable getMacroTable(Document doc, CsmFile file, boolean updateIfNeeded, Formatter formatter) {
+    private TransformationTable getMacroTable(Document doc, CsmFile file, boolean updateIfNeeded) {
         if (file == null || doc == null) {
             return null;
+        }
+        Formatter formatter = null;
+        if (doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) != null) {
+            formatter = new Formatter((BaseDocument) doc);
         }
         TransformationTable tt;
         synchronized (doc) {

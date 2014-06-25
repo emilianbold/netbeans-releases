@@ -97,6 +97,8 @@
             </module-dependencies>
             <friend-packages>
                 <friend>com.oracle.tools.ide.projectless.debug.impl</friend>
+                <friend>com.oracle.tools.ide.projectless.debug.impl.dbx</friend>
+                <friend>com.oracle.tools.ide.projectless.debug.impl.gdb</friend>
                 <friend>com.oracle.tools.ide.projectless.impl</friend>
                 <friend>com.sun.cloud.cnd</friend>
                 <friend>com.sun.cloud.cnd.remote.ext</friend>

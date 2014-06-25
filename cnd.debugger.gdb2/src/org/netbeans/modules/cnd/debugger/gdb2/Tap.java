@@ -106,6 +106,7 @@ import org.openide.util.RequestProcessor;
      */
     @Override
     public void putChars(char[] buf, int offset, int count) {
+        CndUtils.assertUiThread();
         for (int bx = 0; bx < count; bx++) {
             processCharFromGdb(buf[offset + bx]);
         }

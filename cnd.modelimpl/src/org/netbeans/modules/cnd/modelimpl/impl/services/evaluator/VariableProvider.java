@@ -190,12 +190,12 @@ public class VariableProvider {
                     }
                 }
                 if(CsmKindUtilities.isClass(decl)) {
+                    String varName = variableName.replaceAll(".*::(.*)", "$1"); // NOI18N
                     final CsmClass clazz = (CsmClass) decl;
                     MemberResolverImpl r = new MemberResolverImpl();
-                    final Iterator<CsmMember> classMembers = r.getDeclarations(clazz, variableName);
-                    if (classMembers.hasNext()) {
-                        CsmMember member = classMembers.next();
-                        if(member.isStatic() && CsmKindUtilities.isField(member) && member.getName().toString().equals(variableName)) {
+                    final CsmMember member = r.getDeclaration(clazz, varName);
+                    if (member != null) {
+                        if(member.isStatic() && CsmKindUtilities.isField(member) && member.getName().toString().equals(varName)) {
                             CsmExpression expr = ((CsmField)member).getInitialValue();
                             if(CsmKindUtilities.isInstantiation(member)) {
                                 Object eval = new ExpressionEvaluator(level+1).eval(

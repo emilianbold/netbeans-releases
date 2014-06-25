@@ -512,4 +512,9 @@ public class FileModel2Test extends TraceModelTestBase {
     public void testFunctionReturningEnum() throws Exception {
         performTest("function_returning_enum.cpp");
     }
+    
+    public void testBug243262() throws Exception {
+        // Bug 243262 - regression: template specializations parsed incorrectly 
+        performTest("bug243262.cpp");
+    }    
 }

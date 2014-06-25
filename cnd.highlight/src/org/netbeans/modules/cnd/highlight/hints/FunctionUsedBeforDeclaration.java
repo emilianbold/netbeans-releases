@@ -85,7 +85,7 @@ public class FunctionUsedBeforDeclaration extends AbstractCodeAudit {
                 return;
             }
             CsmFileReferences.getDefault().accept(
-                    request.getFile(), new ReferenceVisitor(request, response),
+                    request.getFile(), request.getDocument(), new ReferenceVisitor(request, response),
                     CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
         }
     }

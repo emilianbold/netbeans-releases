@@ -158,7 +158,7 @@ public class CallModelImpl implements CallModel {
             HashMap<CsmMacro,CsmReference> macros = new HashMap<CsmMacro,CsmReference>();
             for(CsmFunction function : functions) {
                 if (CsmKindUtilities.isFunction(function) && function.getContainingFile().isValid()) {
-                    for(CsmReference r : repository.getReferences(function, project, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE, null)){
+                    for(CsmReference r : repository.getReferences(function, project, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE, Interrupter.DUMMY)){
                         if (r == null) {
                             continue;
                         }
@@ -179,7 +179,7 @@ public class CallModelImpl implements CallModel {
                 }
             }
             for(Map.Entry<CsmMacro,CsmReference> entry : macros.entrySet()) {
-                for(CsmReference r : repository.getReferences(entry.getKey(), project, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE, null)){
+                for(CsmReference r : repository.getReferences(entry.getKey(), project, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE, Interrupter.DUMMY)){
                     if (r == null) {
                         continue;
                     }
@@ -229,7 +229,7 @@ public class CallModelImpl implements CallModel {
             for(CsmFunction function : functions) {
                 if (CsmKindUtilities.isFunctionDefinition(function) && function.getContainingFile().isValid()) {
                     final List<CsmOffsetable> list = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks((function).getContainingFile(), Interrupter.DUMMY);
-                    references.accept((CsmScope)function, new CsmFileReferences.Visitor() {
+                    references.accept((CsmScope)function, null, new CsmFileReferences.Visitor() {
                         @Override
                         public void visit(CsmReferenceContext context) {
                             CsmReference r = context.getReference();

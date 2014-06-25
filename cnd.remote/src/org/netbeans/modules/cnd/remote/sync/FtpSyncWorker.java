@@ -419,7 +419,7 @@ import org.openide.util.RequestProcessor;
             return;
         }
         
-        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_Zipping"));  
+        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_Zipping", toCopy.size()));  
         progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_Zipping"));            
         File zipFile = null;
         try  {

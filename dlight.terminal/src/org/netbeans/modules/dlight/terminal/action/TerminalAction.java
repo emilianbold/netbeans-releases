@@ -62,8 +62,8 @@ public abstract class TerminalAction extends AbstractAction implements Presenter
 
     public TerminalAction(String name, String descr, ImageIcon icon) {
         putValue(Action.NAME, name);
-        putValue(Action.SMALL_ICON, icon);
         putValue(Action.SHORT_DESCRIPTION, descr);
+        putValue(Action.SMALL_ICON, icon);
     }
 
     @Override

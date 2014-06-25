@@ -549,14 +549,22 @@ import org.openide.util.Utilities;
 
     void updateToolsControls(boolean enableText, boolean enableVersions, boolean cleanText) {
         updateTextField(tfMakePath, enableText, cleanText);
+        btMakeBrowse.setEnabled(enableText);
         updateTextField(tfDebuggerPath, enableText, cleanText);
+        btDebuggerBrowse.setEnabled(enableText);
         updateTextField(tfBaseDirectory, false, cleanText);
         updateTextField(tfCPath, enableText, cleanText);
+        btCBrowse.setEnabled(enableText);
         updateTextField(tfCppPath, enableText, cleanText);
+        btCppBrowse.setEnabled(enableText);
         updateTextField(tfFortranPath, enableText, cleanText);
+        btFortranBrowse.setEnabled(enableText);
         updateTextField(tfAsPath, enableText, cleanText);
+        btAsBrowse.setEnabled(enableText);
         updateTextField(tfQMakePath, enableText, cleanText);
+        btQMakeBrowse.setEnabled(enableText);
         updateTextField(tfCMakePath, enableText, cleanText);
+        btCMakeBrowse.setEnabled(enableText);
     }
 
     private void updateTextField(JTextField tf, boolean editable, boolean cleanText) {

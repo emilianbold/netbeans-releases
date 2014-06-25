@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
  * @author vk155633
  */
 public class SmartChangeEvent {
-    protected Map<CsmProject,Storage> changedProjects = new HashMap<CsmProject,Storage>();
+    private Map<CsmProject,Storage> changedProjects = new HashMap<CsmProject,Storage>();
     
     // to trace only
     private int count = 1;
@@ -188,12 +188,12 @@ public class SmartChangeEvent {
     }
     
     public static class Storage {
-        private CsmProject changedProject;
-        private Set<CsmNamespace>  newNamespaces = new HashSet<CsmNamespace>();
-        private Set<CsmNamespace>  removedNamespaces = new HashSet<CsmNamespace>();
-        private Set<CsmOffsetableDeclaration> newDeclarations = new HashSet<CsmOffsetableDeclaration>();
-        private Set<CsmOffsetableDeclaration> removedDeclarations = new HashSet<CsmOffsetableDeclaration>();
-        private Map<CsmOffsetableDeclaration,CsmOffsetableDeclaration> changedDeclarations = new HashMap<CsmOffsetableDeclaration,CsmOffsetableDeclaration>();
+        private final CsmProject changedProject;
+        private final Set<CsmNamespace>  newNamespaces = new HashSet<CsmNamespace>();
+        private final Set<CsmNamespace>  removedNamespaces = new HashSet<CsmNamespace>();
+        private final Set<CsmOffsetableDeclaration> newDeclarations = new HashSet<CsmOffsetableDeclaration>();
+        private final Set<CsmOffsetableDeclaration> removedDeclarations = new HashSet<CsmOffsetableDeclaration>();
+        private final Map<CsmOffsetableDeclaration,CsmOffsetableDeclaration> changedDeclarations = new LinkedHashMap<CsmOffsetableDeclaration,CsmOffsetableDeclaration>();
         private boolean changedLibs = false;
         
         public Storage(CsmProject project){

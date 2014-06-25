@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.refactoring.spi.CsmRenameExtraObjectsProvider;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult.Difference;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -263,7 +264,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
                     }
                 }
             } else {
-                Collection<CsmReference> curRefs = CsmReferenceRepository.getDefault().getReferences(obj, csmFile, CsmReferenceKind.ALL, null);
+                Collection<CsmReference> curRefs = CsmReferenceRepository.getDefault().getReferences(obj, csmFile, CsmReferenceKind.ALL, Interrupter.DUMMY);
                 refs.addAll(curRefs);
             }
         }

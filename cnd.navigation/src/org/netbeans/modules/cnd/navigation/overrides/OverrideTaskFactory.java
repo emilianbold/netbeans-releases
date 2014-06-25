@@ -56,6 +56,7 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -66,6 +67,7 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.parsing.spi.TaskIndexingMode;
+import org.netbeans.modules.parsing.spi.support.CancelSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -81,6 +83,7 @@ public class OverrideTaskFactory extends IndexingAwareParserResultTask<Parser.Re
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
     private static final RequestProcessor RP = new RequestProcessor("OverrideTaskFactory runner", 1); //NOI18N"
     private static final int TASK_DELAY = getInt("cnd.overrides.delay", 500); // NOI18N
+    private final CancelSupport cancel = CancelSupport.create(this);
     private AtomicBoolean canceled = new AtomicBoolean(false);
     private Parser.Result lastParserResult;
 
@@ -98,12 +101,18 @@ public class OverrideTaskFactory extends IndexingAwareParserResultTask<Parser.Re
             lastParserResult = result;
             canceled = new AtomicBoolean(false);
         }
+        if (cancel.isCancelled()) {
+            return;
+        }
         FileObject fo = result.getSnapshot().getSource().getFileObject();
         if (fo == null) {
             return;
         }
         Document doc = result.getSnapshot().getSource().getDocument(false);
         if (!(doc instanceof StyledDocument)) {
+            return;
+        }
+        if (doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) != null) {
             return;
         }
         CsmFile csmFile = CsmFileInfoQuery.getDefault().getCsmFile(result);

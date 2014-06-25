@@ -57,6 +57,8 @@ import java.util.Arrays;
 import java.util.Formatter;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.repository.disk.index.ChunkInfo;
 import org.netbeans.modules.cnd.repository.disk.index.CompactFileIndex;
 import org.netbeans.modules.cnd.repository.disk.index.FileIndex;
@@ -79,6 +81,7 @@ import org.openide.filesystems.FileSystem;
 /* package */ final class IndexedStorageFile {
 
     private static final boolean TRACE = false;
+    private static final Logger LOG = Logger.getLogger("repository.support.filecreate.logger"); //NOI18N
     private final boolean writable;
     private final File dataFile;
     private final File indexFile;
@@ -106,6 +109,9 @@ import org.openide.filesystems.FileSystem;
 
         if (filesExists) {
             loadedIndex = loadIndex(indexFile);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Load index size={0} from {1}", new Object[]{loadedIndex.size(), indexFile}); //NOI18N
+            }
         }
 
         if (loadedIndex == null) {

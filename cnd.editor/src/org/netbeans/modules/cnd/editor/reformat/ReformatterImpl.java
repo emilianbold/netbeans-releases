@@ -222,7 +222,11 @@ public class ReformatterImpl {
                     }
                     braces.parenDepth++;
                     if (doFormat()) {
-                        formatLeftParen(previous, current);
+                        if (isOperator()) {
+                            spaceBefore(previous, codeStyle.spaceAfterOperatorKeyword(), codeStyle.spaceKeepExtra());
+                        } else {
+                            formatLeftParen(previous, current);
+                        }
                     }
                     break;
                 }
@@ -252,7 +256,11 @@ public class ReformatterImpl {
                         }
                     }
                     if (doFormat()) {
-                        formatRightParen(previous, current);
+                        if (isOperator2()) {
+                            spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen(), codeStyle.spaceKeepExtra());
+                        } else {
+                            formatRightParen(previous, current);
+                        }
                     }
                     break;
                 }
@@ -335,8 +343,13 @@ public class ReformatterImpl {
                 case COMMA: //(",", "separator"),
                 {
                     if (doFormat()) {
-                        spaceBefore(previous, codeStyle.spaceBeforeComma(), codeStyle.spaceKeepExtra());
-                        spaceAfter(current, codeStyle.spaceAfterComma(), codeStyle.spaceKeepExtra());
+                        if (isOperator()) {
+                            spaceBefore(previous, codeStyle.spaceAfterOperatorKeyword(), codeStyle.spaceKeepExtra());
+                            spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen(), codeStyle.spaceKeepExtra());
+                        } else {
+                            spaceBefore(previous, codeStyle.spaceBeforeComma(), codeStyle.spaceKeepExtra());
+                            spaceAfter(current, codeStyle.spaceAfterComma(), codeStyle.spaceKeepExtra());
+                        }
                     }
                     break;
                 }
@@ -411,7 +424,7 @@ public class ReformatterImpl {
                 {
                     if (doFormat()) {
                         if (isOperator()) {
-                            spaceBefore(previous, false, false);
+                            spaceBefore(previous, codeStyle.spaceAfterOperatorKeyword(), codeStyle.spaceKeepExtra());
                             spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen(), codeStyle.spaceKeepExtra());
                         } else {
                             spaceAfter(current, codeStyle.spaceAroundUnaryOps(), codeStyle.spaceKeepExtra());
@@ -424,7 +437,7 @@ public class ReformatterImpl {
                 {
                     if (doFormat()) {
                         if (isOperator()) {
-                            spaceBefore(previous, false, false);
+                            spaceBefore(previous, codeStyle.spaceAfterOperatorKeyword(), codeStyle.spaceKeepExtra());
                             spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen(), codeStyle.spaceKeepExtra());
                         } else {
                             if (ts.isPrefixOperator(current)){
@@ -441,7 +454,7 @@ public class ReformatterImpl {
                 {
                     if (doFormat()) {
                         if (isOperator()) {
-                            spaceBefore(previous, false, false);
+                            spaceBefore(previous, codeStyle.spaceAfterOperatorKeyword(), codeStyle.spaceKeepExtra());
                             spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen(), codeStyle.spaceKeepExtra());
                         } else {
                             OperatorKind kind = ts.getOperatorKind(current);
@@ -461,7 +474,7 @@ public class ReformatterImpl {
                 {
                     if (doFormat()) {
                         if (isOperator()) {
-                            spaceBefore(previous, false, false);
+                            spaceBefore(previous, codeStyle.spaceAfterOperatorKeyword(), codeStyle.spaceKeepExtra());
                             spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen(), codeStyle.spaceKeepExtra());
                         } else {
                             OperatorKind kind = ts.getOperatorKind(current);
@@ -482,7 +495,7 @@ public class ReformatterImpl {
                 {
                     if (doFormat()) {
                         if (isOperator()) {
-                            spaceBefore(previous, false, codeStyle.spaceKeepExtra());
+                            spaceBefore(previous, codeStyle.spaceAfterOperatorKeyword(), codeStyle.spaceKeepExtra());
                             spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen(), codeStyle.spaceKeepExtra());
                         } else if (isNewStyleCast(current)){
                             if (current.id()==LT) {
@@ -520,7 +533,7 @@ public class ReformatterImpl {
                 {
                     if (doFormat()) {
                         if (isOperator()) {
-                            spaceBefore(previous, false, false);
+                            spaceBefore(previous, codeStyle.spaceAfterOperatorKeyword(), codeStyle.spaceKeepExtra());
                             spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen(), codeStyle.spaceKeepExtra());
                         } else {
                             spaceBefore(previous, codeStyle.spaceAroundBinaryOps(), codeStyle.spaceKeepExtra());
@@ -533,7 +546,7 @@ public class ReformatterImpl {
                 {
                     if (doFormat()) {
                         if (isOperator()) {
-                            spaceBefore(previous, false, false);
+                            spaceBefore(previous, codeStyle.spaceAfterOperatorKeyword(), codeStyle.spaceKeepExtra());
                             spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen(), codeStyle.spaceKeepExtra());
                         } else {
                             OperatorKind kind = ts.getOperatorKind(current);
@@ -563,12 +576,12 @@ public class ReformatterImpl {
                         braces.setStatementContinuation(BracesStack.StatementContinuation.START);
                     }
                     if (doFormat()) {
-                        if (!isOperator()) {
+                        if (isOperator()) {
+                            spaceBefore(previous, codeStyle.spaceAfterOperatorKeyword(), codeStyle.spaceKeepExtra());
+                            spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen(), codeStyle.spaceKeepExtra());
+                        } else {
                             spaceBefore(previous, codeStyle.spaceAroundAssignOps(), codeStyle.spaceKeepExtra());
                             spaceAfter(current, codeStyle.spaceAroundAssignOps(), codeStyle.spaceKeepExtra());
-                        } else {
-                            spaceBefore(previous, false, false);
-                            spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen(), codeStyle.spaceKeepExtra());
                         }
                     }
                     if (braces.getStatementContinuation() == BracesStack.StatementContinuation.START){
@@ -730,6 +743,37 @@ public class ReformatterImpl {
                 {
                     if (doFormat()) {
                         spaceAfter(current, codeStyle.spaceWithinTypeCastParens(), codeStyle.spaceKeepExtra());
+                    }
+                    break;
+                }
+                case LBRACKET://("[", "separator"), // NOI18N
+                {
+                    if (doFormat()) {
+                        if (isOperator()) {
+                            spaceBefore(previous, codeStyle.spaceAfterOperatorKeyword(), codeStyle.spaceKeepExtra());
+                        }
+                    }
+                    break;
+                }
+                case RBRACKET://("]", "separator"), // NOI18N
+                {
+                    if (doFormat()) {
+                        if (isOperator2()) {
+                            spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen(), codeStyle.spaceKeepExtra());
+                        }
+                    }
+                    break;
+                }
+                case DOT://(".", "separator"), // NOI18N
+                case DOTMBR://(".*", "separator"), // NOI18N
+                case ARROW://("->", "separator"), // NOI18N
+                case ARROWMBR://("->*", "separator"), // NOI18N
+                {
+                    if (doFormat()) {
+                        if (isOperator()) {
+                            spaceBefore(previous, codeStyle.spaceAfterOperatorKeyword(), codeStyle.spaceKeepExtra());
+                            spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen(), codeStyle.spaceKeepExtra());
+                        }
                     }
                     break;
                 }
@@ -2025,11 +2069,9 @@ public class ReformatterImpl {
             KEYWORD_DIRECTIVE_CATEGORY.equals(prevCategory)) {
             if (SEPARATOR_CATEGORY.equals(currCategory)) {
                 return true;
+            } else if (OPERATOR_CATEGORY.equals(currCategory)) {
+                return true;
             } else if (curr == COLON) {
-                return true;
-            } else if (curr == LT) {
-                return true;
-            } else if (curr == GT) {
                 return true;
             }
             return false;
@@ -2316,6 +2358,10 @@ public class ReformatterImpl {
     
     private boolean isOperator(){
         Token<CppTokenId> p = ts.lookPreviousImportant(1);
+        return p != null && p.id() == OPERATOR;
+    }
+    private boolean isOperator2(){
+        Token<CppTokenId> p = ts.lookPreviousImportant(2);
         return p != null && p.id() == OPERATOR;
     }
 

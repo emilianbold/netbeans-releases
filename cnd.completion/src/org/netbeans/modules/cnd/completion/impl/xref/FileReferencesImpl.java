@@ -48,10 +48,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CndAbstractTokenProcessor;
+import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
@@ -65,6 +66,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmExpandedTokenProcessor;
 import org.netbeans.modules.cnd.support.Interrupter;
 
@@ -95,27 +97,27 @@ public final class FileReferencesImpl extends CsmFileReferences  {
 //    private final Map<CsmFile, List<CsmReference>> cache = new HashMap<CsmFile, List<CsmReference>>();
 
     @Override
-    public void accept(CsmScope csmScope, Visitor visitor) {
-        accept(csmScope, visitor, CsmReferenceKind.ALL);
+    public void accept(CsmScope csmScope, Document doc, Visitor visitor) {
+        accept(csmScope, doc, visitor, CsmReferenceKind.ALL);
     }
 
     @Override
-    public void accept(CsmScope csmScope, Visitor visitor, Set<CsmReferenceKind> kinds) {
+    public void accept(CsmScope csmScope, Document doc, Visitor visitor, Set<CsmReferenceKind> preferedKinds) {
         FileReferencesContext fileReferencesContext = new FileReferencesContext(csmScope);
         try {
             CsmCacheManager.enter();
-            _accept(csmScope, visitor, kinds, fileReferencesContext);
+            _accept(csmScope, doc, visitor, preferedKinds, fileReferencesContext);
         } finally {
             fileReferencesContext.clean();
             CsmCacheManager.leave();
         }
     }
 
-    private void _accept(CsmScope csmScope, Visitor visitor, Set<CsmReferenceKind> kinds, FileReferencesContext fileReferncesContext) {
+    private void _accept(CsmScope csmScope, Document doc, Visitor visitor, Set<CsmReferenceKind> kinds, FileReferencesContext fileReferncesContext) {
         if (!CsmKindUtilities.isOffsetable(csmScope) && !CsmKindUtilities.isFile(csmScope)){
             return;
         }
-        CsmFile csmFile = null;
+        CsmFile csmFile;
 
         int start, end;
 
@@ -124,9 +126,10 @@ public final class FileReferencesImpl extends CsmFileReferences  {
         } else {
             csmFile = ((CsmOffsetable)csmScope).getContainingFile();
         }
-
-        BaseDocument doc = ReferencesSupport.getDocument(csmFile);
-        if (doc == null || !csmFile.isValid()) {
+        if (doc == null) {
+            doc = CsmReferenceRepository.getDocument(csmFile);
+        }
+        if (!(doc instanceof BaseDocument) || !csmFile.isValid()) {
             // This rarely can happen:
             // 1. if file was put on reparse and scope we have here is already obsolete
             // TODO: find new scope if API would allow that one day
@@ -143,7 +146,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
             end = ((CsmOffsetable)csmScope).getEndOffset();
         }
 
-        List<CsmReferenceContext> refs = getIdentifierReferences(csmFile, doc, start,end, kinds, fileReferncesContext, visitor);
+        List<CsmReferenceContext> refs = getIdentifierReferences(csmFile, (BaseDocument) doc, start,end, kinds, fileReferncesContext, visitor);
 
         for (CsmReferenceContext context : refs) {
             if (visitor.cancelled()) {

@@ -47,10 +47,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
@@ -61,6 +63,7 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.parsing.spi.TaskIndexingMode;
+import org.netbeans.modules.parsing.spi.support.CancelSupport;
 
 /**
  *
@@ -68,6 +71,7 @@ import org.netbeans.modules.parsing.spi.TaskIndexingMode;
  */
 public class NavigatorSourceFactoryTask extends IndexingAwareParserResultTask<Parser.Result> {
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
+    private final CancelSupport cancel = CancelSupport.create(this);
     private AtomicBoolean canceled = new AtomicBoolean(false);
     
     public NavigatorSourceFactoryTask() {
@@ -80,7 +84,14 @@ public class NavigatorSourceFactoryTask extends IndexingAwareParserResultTask<Pa
             canceled.set(true);
             canceled = new AtomicBoolean(false);
         }
+        if (cancel.isCancelled()) {
+            return;
+        }
         if (!(event instanceof CursorMovedSchedulerEvent)) {
+            return;
+        }
+        final Document doc = result.getSnapshot().getSource().getDocument(false);
+        if (doc != null && doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) != null) {
             return;
         }
         long time = 0;

@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.refactoring.api.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -83,8 +84,8 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
 
     private final CsmObject selectedElement;
     private CsmFunction functionObj;
-    private ParamTableModel model;
-    private ChangeListener parent;
+    private final ParamTableModel model;
+    private final ChangeListener parent;
 
     private static final String DEFAULT_VALUES_ONLY_IN_DECLARATION = "UseDefaultValueOnlyInFunctionDefinition"; // NOI18N
 
@@ -552,7 +553,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                 }
                 Collection<CsmReference> references = Collections.emptySet();
                 if (CsmKindUtilities.isFunctionDefinition(currentMethod)) {
-                    references = CsmReferenceRepository.getDefault().getReferences(par, containingFile, CsmReferenceKind.ALL, null);
+                    references = CsmReferenceRepository.getDefault().getReferences(par, containingFile, CsmReferenceKind.ALL, Interrupter.DUMMY);
                 }
                 Boolean removable = references.size() <= 1;
                 if (model.getRowCount()<=originalIndex) {

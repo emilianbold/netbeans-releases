@@ -173,10 +173,10 @@ public class TwigParser extends Parser {
 
                                 boolean standalone = false;
                                 int names = 0;
-
+                                boolean moved;
                                 do {
 
-                                    sequence.moveNext();
+                                    moved = sequence.moveNext();
                                     token = (Token<TwigBlockTokenId>) sequence.token();
 
                                     if (token.id() == TwigBlockTokenId.T_TWIG_NAME || token.id() == TwigBlockTokenId.T_TWIG_STRING) {
@@ -188,7 +188,7 @@ public class TwigParser extends Parser {
                                         break;
                                     }
 
-                                } while (sequence.offset() < block.endTokenOffset);
+                                } while (moved && sequence.offset() < block.endTokenOffset);
 
                                 if (!standalone) {
                                     blockList.add(block);
@@ -199,10 +199,10 @@ public class TwigParser extends Parser {
                             } else if (CharSequenceUtilities.equals(block.function, "set")) { //NOI18N
 
                                 boolean standalone = false;
-
+                                boolean moved;
                                 do {
 
-                                    sequence.moveNext();
+                                    moved = sequence.moveNext();
                                     token = (Token<TwigBlockTokenId>) sequence.token();
 
                                     if (token.id() == TwigBlockTokenId.T_TWIG_OPERATOR) {
@@ -210,7 +210,7 @@ public class TwigParser extends Parser {
                                         break;
                                     }
 
-                                } while (sequence.offset() < block.endTokenOffset);
+                                } while (moved && sequence.offset() < block.endTokenOffset);
 
                                 if (!standalone) {
                                     blockList.add(block);
