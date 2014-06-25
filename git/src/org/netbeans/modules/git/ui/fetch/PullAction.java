@@ -282,7 +282,7 @@ public class PullAction extends SingleRepositoryAction {
         @NbBundle.Messages({
             "# {0} - branch to merge",
             "MSG_PullAction_mergeNeeded_text=A merge commit is needed to synchronize current branch with {0}.\n\n"
-                + "Do you want to Merge the current branch with {0} or Rebase it onto {0}?",
+                + "Do you want to Rebase the current branch onto {0} or Merge it with {0}?",
             "LBL_PullAction_mergeNeeded_title=Merge Commit Needed",
             "CTL_PullAction_mergeButton_text=&Merge",
             "CTL_PullAction_mergeButton_TTtext=Merge the two created heads",
@@ -301,8 +301,8 @@ public class PullAction extends SingleRepositoryAction {
                     Bundle.LBL_PullAction_mergeNeeded_title(),
                     NotifyDescriptor.DEFAULT_OPTION,
                     NotifyDescriptor.QUESTION_MESSAGE,
-                    new Object[] { btnMerge, btnRebase, NotifyDescriptor.CANCEL_OPTION },
-                    btnMerge));
+                    new Object[] { btnRebase, btnMerge, NotifyDescriptor.CANCEL_OPTION },
+                    btnRebase));
             if (value == btnMerge) {
                 return new Merge();
             } else if (value == btnRebase) {
