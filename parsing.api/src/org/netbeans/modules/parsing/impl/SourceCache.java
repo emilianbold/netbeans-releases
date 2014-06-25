@@ -541,6 +541,7 @@ retry:  while (true) {
             }
         }        
         if (!add.isEmpty ()) {
+            LOG.fine("Change tasks for source " + source + " - add: " + add + ", remove " + remove);
             TaskProcessor.updatePhaseCompletionTask(add, remove, source, this);
         }
     }

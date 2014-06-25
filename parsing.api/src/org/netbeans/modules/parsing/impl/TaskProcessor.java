@@ -542,6 +542,7 @@ public class TaskProcessor {
         assert !Thread.holdsLock(INTERNAL_LOCK);
         Utilities.setTaskCancelReason(reason);
         try {
+            LOGGER.fine("Cancelling task: " + task);
             task.cancel();
         } finally {
             Utilities.setTaskCancelReason(null);
