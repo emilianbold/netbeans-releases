@@ -153,6 +153,14 @@ public class RequireFileCodeCompletionBaseUrlTest extends JsCodeCompletionBase {
         checkCompletion("TestProject2/public_html/js/app/issue245184.js", "'order!lib/^proto/localization'", false);
     }
     
+    public void testLoaderPluginName_01() throws Exception {
+        checkCompletion("TestProject2/public_html/js/app/issue245184.js", "'^order!lib/proto/localization'", false);
+    }
+    
+    public void testLoaderPluginName_02() throws Exception {
+        checkCompletion("TestProject2/public_html/js/main.js", "'^proto/localization',", false);
+    }
+    
     public void checkAppliedCompletion(final String file, final String caretLine, final String expectedLine, final String itemToComplete, final boolean includeModifiers) throws Exception {
         final CodeCompletionHandler.QueryType type = CodeCompletionHandler.QueryType.COMPLETION;
         final boolean caseSensitive = true;
