@@ -143,10 +143,13 @@ public class TruffleStackFrame {
         return sp;
     }
     
+    public ObjectVariable getStackFrameInstance() {
+        return (ObjectVariable) stackTrace.getFields(0, Integer.MAX_VALUE)[depth - 1];
+    }
+    
     public TruffleSlotVariable[] getVars() {
         if (vars == null) {
-            Field stackFrameInstance = stackTrace.getFields(0, Integer.MAX_VALUE)[depth - 1];
-            vars = TruffleAccess.createVars(debugger, stackFrameInstance);
+            vars = TruffleAccess.createVars(debugger, getStackFrameInstance());
         }
         return vars;
     }

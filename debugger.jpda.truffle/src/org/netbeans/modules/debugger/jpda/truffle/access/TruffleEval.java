@@ -46,8 +46,10 @@ import java.io.InvalidObjectException;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.truffle.TruffleDebugManager;
+import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
 import org.openide.util.Exceptions;
 
 /**
@@ -58,16 +60,32 @@ public class TruffleEval {
     
     private static final String METHOD_EVALUATE = "evaluate";                   // NOI18N
     private static final String METHOD_EVALUATE_SIG = "(Ljava/lang/String;)Ljava/lang/String;"; // NOI18N
+    private static final String METHOD_EVALUATE_ON_FRAME_SIG = "(Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/Object;"; // NOI18N
     
     private TruffleEval() {}
 
     public static Variable evaluate(JPDADebugger debugger, String expression) throws InvalidExpressionException {
+        CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
+        ObjectVariable stackFrameInstance = null;
+        if (currentPCInfo != null) {
+            TruffleStackFrame selectedStackFrame = currentPCInfo.getSelectedStackFrame();
+            if (selectedStackFrame != currentPCInfo.getTopFrame()) {
+                stackFrameInstance = selectedStackFrame.getStackFrameInstance();
+            }
+        }
         JPDAClassType debugAccessor = TruffleDebugManager.getDebugAccessorJPDAClass(debugger);
         try {
             Variable mirrorExpression = debugger.createMirrorVar(expression);
-            Variable valueVar = debugAccessor.invokeMethod(METHOD_EVALUATE,
-                                                           METHOD_EVALUATE_SIG,
-                                                           new Variable[] { mirrorExpression });
+            Variable valueVar;
+            if (stackFrameInstance == null) {
+                valueVar = debugAccessor.invokeMethod(METHOD_EVALUATE,
+                                                      METHOD_EVALUATE_SIG,
+                                                      new Variable[] { mirrorExpression });
+            } else {
+                valueVar = debugAccessor.invokeMethod(METHOD_EVALUATE,
+                                                      METHOD_EVALUATE_ON_FRAME_SIG,
+                                                      new Variable[] { mirrorExpression, stackFrameInstance });
+            }
             return valueVar;
         } catch (InvalidObjectException | NoSuchMethodException ex) {
             try {

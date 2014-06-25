@@ -58,7 +58,7 @@ import org.openide.util.Exceptions;
 public class TruffleSlotVariable implements TruffleVariable {
     
     private static final String METHOD_GET_SLOT_VALUE = "getSlotValue";         // NOI18N
-    private static final String METHOD_GET_SLOT_VALUE_SIG = "(Lcom/oracle/truffle/api/frame/Frame;Lcom/oracle/truffle/api/frame/FrameSlot;)Ljava/lang/Object;"; // NOI18N
+    private static final String METHOD_GET_SLOT_VALUE_SIG = "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"; // NOI18N
     
     private final JPDADebugger debugger;
     private final ObjectVariable frame;
