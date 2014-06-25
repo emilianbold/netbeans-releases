@@ -58,7 +58,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=EngineCapabilityProvider.class, position=50)
 public final class DbxEngineCapabilityProvider implements EngineCapabilityProvider {
-    private final static String ID = "dbx"; // NOI18N
+    /*package*/ final static String ID = "dbx"; // NOI18N
     private final static EngineType DBX_ENGINE_TYPE = EngineTypeManager.create(ID, Catalog.get("DbxEngineDisplayName")); // NOI18N
     public boolean hasCapability(EngineType et, EngineCapability capability) {
         if (ID.equals(et.getDebuggerID())) {
@@ -87,16 +87,17 @@ public final class DbxEngineCapabilityProvider implements EngineCapabilityProvid
     public static EngineType getDbxEngineType() {
         return DBX_ENGINE_TYPE;
     }
-
-    public boolean isSupported(DebuggerDescriptor descriptor) {
+    
+    /*package*/ static boolean isSupportedImpl(DebuggerDescriptor descriptor) {
         if (descriptor == null) {
             return false;
         }
         final String id = descriptor.getID();
-        if ("SunStudio".equalsIgnoreCase(id) || "OracleSolarisStudio".equalsIgnoreCase(id)) { // NOI18N
-            return true;
-        }
-        return false;
+        return "SunStudio".equalsIgnoreCase(id) || "OracleSolarisStudio".equalsIgnoreCase(id);//NOI18N
+    }
+
+    public boolean isSupported(DebuggerDescriptor descriptor) {
+        return isSupportedImpl(descriptor);
     }
 
     public String debuggerProfileID() {
