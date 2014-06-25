@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -122,6 +123,7 @@ public class DefineInterceptor implements FunctionInterceptor {
                 if (RequireJsIndexer.Factory.isScannerThread() && EditorUtils.DEFINE.equals(name)) {
                     JsObject anonym = (JsObject) fArg.getValue();
                     RequireJsIndexer.addTypes(fo.toURI(), Collections.singletonList(factory.newType(anonym.getFullyQualifiedName(), anonym.getOffset(), true)));
+
                 }
             } else {
                 List<String> fqn = (List<String>) fArg.getValue();
@@ -129,26 +131,14 @@ public class DefineInterceptor implements FunctionInterceptor {
 
                 if (posibleFunc != null && posibleFunc instanceof JsFunction) {
                     JsFunction defFunc = (JsFunction) posibleFunc;
-                    if (saveToIndex()) {
-                        if (EditorUtils.DEFINE.equals(name)) {
-                            // save to the index the return types
-                            Collection<? extends TypeUsage> returnTypes = defFunc.getReturnTypes();
-                            RequireJsIndexer.addTypes(fo.toURI(), returnTypes);
-                        }
-                    } else if (modules != null && modules.getValue() instanceof JsArray) {
-                        Project project = FileOwnerQuery.getOwner(fo);
-                        if (project == null || !RequireJsPreferences.getBoolean(project, RequireJsPreferences.ENABLED)) {
-                            return;
-                        }
-                        // add assignments for the parameters
-                        JsArray array = (JsArray) modules.getValue();
-                        Source source = Source.create(fo);
-                        List<String> paths = new ArrayList<String>();
-                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(source.createSnapshot().getTokenHierarchy(), array.getOffset());
+                    Source source = Source.create(fo);
+                    List<String> paths = new ArrayList<String>();
+                    if (modules != null) {
+                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(source.createSnapshot().getTokenHierarchy(), modules.getOffset());
                         if (ts == null) {
                             return;
                         }
-                        ts.move(array.getOffset());
+                        ts.move(modules.getOffset());
                         if (ts.moveNext()) {
                             Token<? extends JsTokenId> token = ts.token();
                             int index = 0;
@@ -164,26 +154,54 @@ public class DefineInterceptor implements FunctionInterceptor {
                                     index++;
                                 }
                             }
+                        }
+                    }
+                    if (saveToIndex()) {
+                        if (EditorUtils.DEFINE.equals(name)) {
+                            // save to the index the return types
+                            Collection<? extends TypeUsage> returnTypes = defFunc.getReturnTypes();
+                            RequireJsIndexer.addTypes(fo.toURI(), returnTypes);
                             if (!paths.isEmpty()) {
-                                RequireJsIndex rIndex = null;
-                                try {
-                                    rIndex = RequireJsIndex.get(project);
-                                } catch (IOException ex) {
-                                    Exceptions.printStackTrace(ex);
+                                HashSet<String> plugins = new HashSet<>();
+                                for (String path : paths) {
+                                    String plugin = FSCompletionUtils.containsPlugin(path)
+                                            ? path.substring(0, path.length() - FSCompletionUtils.removePlugin(path).length() - 1) : ""; //NOI18N
+                                    if (!plugin.isEmpty() && !plugins.contains(plugin)) {
+                                        plugins.add(plugin);
+                                    }
                                 }
-                                if (rIndex != null) {
-                                    Iterator<? extends JsObject> paramIterator = defFunc.getParameters().iterator();
-                                    for (String module : paths) {
-                                        FileObject fileObject = FSCompletionUtils.findMappedFileObject(module, fo);
-                                        if (fileObject != null) {
-                                            module = fileObject.getName();
-                                        }
-                                        Collection<? extends TypeUsage> exposedTypes = rIndex.getExposedTypes(module, factory);
-                                        if (paramIterator.hasNext()) {
-                                            JsObject param = paramIterator.next();
-                                            for (TypeUsage typeUsage : exposedTypes) {
-                                                param.addAssignment(typeUsage, -1);
-                                            }
+                                if (!plugins.isEmpty()) {
+                                    // save plugins to the index
+                                    RequireJsIndexer.addUsedPlugings(fo.toURI(), plugins);
+                                }
+                            }
+                        }
+                    } else if (modules != null && modules.getValue() instanceof JsArray) {
+                        Project project = FileOwnerQuery.getOwner(fo);
+                        if (project == null || !RequireJsPreferences.getBoolean(project, RequireJsPreferences.ENABLED)) {
+                            return;
+                        }
+                        // add assignments for the parameters
+                        if (!paths.isEmpty()) {
+                            RequireJsIndex rIndex = null;
+                            try {
+                                rIndex = RequireJsIndex.get(project);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                            if (rIndex != null) {
+                                Iterator<? extends JsObject> paramIterator = defFunc.getParameters().iterator();
+                                for (String module : paths) {
+                                    module = FSCompletionUtils.removePlugin(module);
+                                    FileObject fileObject = FSCompletionUtils.findMappedFileObject(module, fo);
+                                    if (fileObject != null) {
+                                        module = fileObject.getName();
+                                    }
+                                    Collection<? extends TypeUsage> exposedTypes = rIndex.getExposedTypes(module, factory);
+                                    if (paramIterator.hasNext()) {
+                                        JsObject param = paramIterator.next();
+                                        for (TypeUsage typeUsage : exposedTypes) {
+                                            param.addAssignment(typeUsage, -1);
                                         }
                                     }
                                 }
@@ -268,23 +286,23 @@ public class DefineInterceptor implements FunctionInterceptor {
         }
         return result;
     }
-    
+
     public static DeclarationScope getDeclarationScope(JsObject global, int offset) {
-        DeclarationScope dScope = (DeclarationScope)global;
-        DeclarationScope result = null; 
+        DeclarationScope dScope = (DeclarationScope) global;
+        DeclarationScope result = null;
         if (result == null) {
-            if (((JsObject)dScope).getOffsetRange().containsInclusive(offset)) {
+            if (((JsObject) dScope).getOffsetRange().containsInclusive(offset)) {
                 result = dScope;
                 boolean deep = true;
                 while (deep) {
                     deep = false;
                     for (DeclarationScope innerScope : result.getChildrenScopes()) {
-                        if (((JsObject)innerScope).getOffsetRange().containsInclusive(offset)) {
+                        if (((JsObject) innerScope).getOffsetRange().containsInclusive(offset)) {
                             result = innerScope;
                             deep = true;
                             break;
                         }
-                        
+
                     }
                 }
             }

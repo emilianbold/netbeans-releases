@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -180,6 +181,34 @@ public class RequireJsIndex {
                 paths.addAll(Arrays.asList(indexResult.getValues(RequireJsIndexer.FIELD_BASE_PATH)));
             }
             return paths;
+        }
+        return Collections.emptyList();
+    }
+    
+    public Collection<String> getUsedPlugins() {
+        Collection<? extends IndexResult> result = null;
+        
+        try {
+            result = querySupport.query(RequireJsIndexer.FIELD_USED_PLUGINS, "", QuerySupport.Kind.PREFIX, RequireJsIndexer.FIELD_USED_PLUGINS);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (result != null && !result.isEmpty()) {
+            HashSet<String> plugins = new HashSet<>();
+            for (IndexResult indexResult : result) {
+                String[] values = indexResult.getValues(RequireJsIndexer.FIELD_USED_PLUGINS);
+                for (int i = 0; i < values.length; i++) {
+                    String pluginNames = values[i];
+                    String[] names = pluginNames.split(";");
+                    for (int j = 0; j < names.length; j++) {
+                        String name = names[j];
+                        if (!plugins.contains(name)) {
+                            plugins.add(name);
+                        }
+                    }
+                }
+            }
+            return plugins;
         }
         return Collections.emptyList();
     }

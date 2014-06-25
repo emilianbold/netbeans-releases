@@ -46,9 +46,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.ImageIcon;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -58,7 +55,6 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 
 /**
  *
