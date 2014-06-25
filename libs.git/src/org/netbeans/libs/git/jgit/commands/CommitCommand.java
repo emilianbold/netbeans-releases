@@ -149,6 +149,10 @@ public class CommitCommand extends GitCommand {
                 if(commiter != null) {                    
                     commit.setCommitter(commiter.getName(), commiter.getEmailAddress());
                 }
+                if (amend) {
+                    RevCommit lastCommit = Utils.findCommit(repository, "HEAD^{commit}");
+                    transferTimestamps(commit, lastCommit);
+                }
                 
                 commit.setMessage(message);
                 commit.setAmend(amend);
@@ -179,6 +183,23 @@ public class CommitCommand extends GitCommand {
         } catch (IOException ex) {
             throw new GitException(ex);
         }
+    }
+
+    private void transferTimestamps (org.eclipse.jgit.api.CommitCommand commit, RevCommit lastCommit) {
+        PersonIdent committer = commit.getCommitter();
+        PersonIdent lastCommitter = lastCommit.getCommitterIdent();
+        if (committer == null) {
+            commit.setCommitter(lastCommitter);
+        } else {
+            commit.setCommitter(lastCommitter.getTimeZone() == null
+                    ? new PersonIdent(committer, lastCommitter.getWhen())
+                    : new PersonIdent(committer, lastCommitter.getWhen(), lastCommitter.getTimeZone()));
+        }
+        PersonIdent lastAuthor = lastCommit.getAuthorIdent();
+        PersonIdent author = commit.getAuthor();
+        commit.setAuthor(lastAuthor.getTimeZone() == null
+                ? new PersonIdent(author, lastAuthor.getWhen())
+                : new PersonIdent(author, lastAuthor.getWhen(), lastAuthor.getTimeZone()));
     }
 
     private void prepareIndex () throws NoWorkTreeException, CorruptObjectException, IOException {
