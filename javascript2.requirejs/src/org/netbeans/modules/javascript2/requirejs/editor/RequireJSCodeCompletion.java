@@ -121,7 +121,8 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                 }
 
             }
-
+            writtenPath = FSCompletionUtils.removePlugin(writtenPath);
+            
             FileObject fo = snapshot.getSource().getFileObject();
             Project project = FileOwnerQuery.getOwner(fo);
             RequireJsIndex rIndex = null;
@@ -233,6 +234,15 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                     }
                 }
 
+                if (rIndex != null && (writtenPath.isEmpty() || !(writtenPath.contains("!") || writtenPath.contains("/")))) {
+                    Collection<String> usedPlugins = rIndex.getUsedPlugins();
+                    for (String plugin : usedPlugins) {
+                        if (plugin.startsWith(prefix)) {
+                            result.add(new RequireJsCompletionItem.PluginNameCompletionItem(plugin, ccContext.getCaretOffset() - prefix.length()));
+                        }
+                    }
+                }
+                // add the plugin name
                 return result;
             }
         }
@@ -244,22 +254,7 @@ public class RequireJSCodeCompletion implements CompletionProvider {
         if (element != null && element instanceof FSCompletionItem.FSElementHandle) {
             FileObject fo = element.getFileObject();
             if (fo != null) {
-                String path = fo.getPath();
-                String[] parts = path.split("/");
-                StringBuilder sb = new StringBuilder();
-                sb.append("<pre>"); // NOI18N
-                int length = 0;
-                for (String part : parts) {
-                    if ((length + part.length()) > 50) {
-                        sb.append("\n    "); // NOI18N
-                        length = 4;
-                    }
-                    sb.append(part).append('/');
-                    length += part.length() + 1;
-                }
-                sb.deleteCharAt(sb.length() - 1);
-                sb.append("</pre>"); // NOI18N
-                return sb.toString();
+                return FSCompletionUtils.writeFilePathForDocWindow(fo);
             }
         }
         if (element != null && element instanceof SimpleHandle.DocumentationHandle) {
