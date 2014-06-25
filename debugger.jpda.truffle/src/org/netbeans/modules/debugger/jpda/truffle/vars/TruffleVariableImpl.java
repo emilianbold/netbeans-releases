@@ -56,26 +56,36 @@ public class TruffleVariableImpl implements TruffleVariable {
     
     private static final String TRUFFLE_OBJECT_TYPE = "org.netbeans.modules.debugger.jpda.backend.truffle.TruffleObject";   // NOI18N
     private static final String FIELD_NAME = "name";                            // NOI18N
+    private static final String FIELD_TYPE = "type";                            // NOI18N
+    private static final String FIELD_LEAF = "leaf";                            // NOI18N
     private static final String FIELD_DISPLAY_VALUE = "displayValue";           // NOI18N
     private static final String METHOD_GET_CHILDREN = "getChildren";            // NOI18N
     private static final String METHOD_GET_CHILDREN_SIG = "()[Ljava/lang/Object;";  // NOI18N
     
     private final ObjectVariable truffleObject;
     private final String name;
+    private final String type;
     private final String displayValue;
+    private final boolean leaf;
     
-    public TruffleVariableImpl(ObjectVariable truffleObject, String name, String displayValue) {
+    private TruffleVariableImpl(ObjectVariable truffleObject, String name,
+                                String type, String displayValue,
+                                boolean leaf) {
         this.truffleObject = truffleObject;
         this.name = name;
+        this.type = type;
         this.displayValue = displayValue;
+        this.leaf = leaf;
     }
     
     public static TruffleVariableImpl get(Variable var) {
         if (TRUFFLE_OBJECT_TYPE.equals(var.getType())) {
             ObjectVariable truffleObj = (ObjectVariable) var;
             String name = (String) truffleObj.getField(FIELD_NAME).createMirrorObject();
+            String type = (String) truffleObj.getField(FIELD_TYPE).createMirrorObject();
             String dispVal = (String) truffleObj.getField(FIELD_DISPLAY_VALUE).createMirrorObject();
-            return new TruffleVariableImpl(truffleObj, name, dispVal);
+            boolean leaf = (Boolean) truffleObj.getField(FIELD_LEAF).createMirrorObject();
+            return new TruffleVariableImpl(truffleObj, name, type, dispVal, leaf);
         } else {
             return null;
         }
@@ -88,7 +98,7 @@ public class TruffleVariableImpl implements TruffleVariable {
 
     @Override
     public String getType() {
-        return "Object";    // TODO
+        return type;
     }
     
     public String getDisplayValue() {
@@ -102,7 +112,7 @@ public class TruffleVariableImpl implements TruffleVariable {
 
     @Override
     public boolean isLeaf() {
-        return false;   // TODO
+        return leaf;
     }
     
     @Override

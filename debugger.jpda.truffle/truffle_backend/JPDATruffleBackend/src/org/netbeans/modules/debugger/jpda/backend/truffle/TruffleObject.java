@@ -7,6 +7,7 @@
 package org.netbeans.modules.debugger.jpda.backend.truffle;
 
 import com.oracle.truffle.api.ExecutionContext;
+import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.js.runtime.JSContext;
 import com.oracle.truffle.js.runtime.objects.JSObject;
 import com.oracle.truffle.om.DynamicObject;
@@ -22,6 +23,7 @@ public class TruffleObject {
     
     final ExecutionContext context;
     final String name;
+    final String type;
     final Object object;
     final String displayValue;
     final boolean leaf;
@@ -31,6 +33,11 @@ public class TruffleObject {
         this.name = name;
         this.object = object;
         this.displayValue = context.getVisualizer().displayValue(context, object);
+        if (object instanceof String) {
+            this.type = String.class.getSimpleName();
+        } else {
+            this.type = FrameSlotKind.Object.name();
+        }
         this.leaf = isLeaf(object);
     }
     
