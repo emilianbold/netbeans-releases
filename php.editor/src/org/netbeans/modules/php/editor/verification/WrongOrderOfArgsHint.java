@@ -107,7 +107,7 @@ public class WrongOrderOfArgsHint extends HintRule {
             for (FunctionDeclaration wrongFunction : wrongFunctions) {
                 processWrongFunction(wrongFunction);
             }
-            return hints;
+            return new ArrayList<>(hints);
         }
 
         @Messages("WrongOrderOfArgsDesc=Wrong order of arguments")
