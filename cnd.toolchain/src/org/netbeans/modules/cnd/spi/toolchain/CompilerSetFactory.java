@@ -49,6 +49,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerAccessorImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
@@ -128,7 +129,7 @@ public final class CompilerSetFactory {
             if (d.isAbstract()) {
                 continue;
             }
-            if (ToolUtils.isMyFolder(directory, d, platform, false)){
+            if (ToolUtils.isMyFolder(directory, d, platform, false, PredefinedToolKind.CCompiler)){
                 CompilerFlavor f = CompilerFlavorImpl.toFlavor(d.getName(), platform);
                 if (f != null) {
                     list.add(f);
