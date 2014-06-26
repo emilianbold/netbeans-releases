@@ -499,13 +499,17 @@ public class ASTPHP5ParserTest extends ParserTestBase {
     public void testYield_07() throws Exception {
         performTest("parser/yield_07");
     }
-    
+
     public void testExponentiation_01() throws Exception {
         performTest("parser/exponentiation_01");
     }
-    
+
     public void testConstantScalarExpressions_01() throws Exception {
         performTest("parser/constantScalarExpressions_01");
+    }
+
+    public void testVariadicFunctions_01() throws Exception {
+        performTest("parser/testVariadicFunctions_01");
     }
 
     @Override

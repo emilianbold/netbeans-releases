@@ -280,6 +280,7 @@ terminal T_TRAIT;
 terminal T_INSTEADOF;
 terminal T_POW;
 terminal T_POW_EQUAL;
+terminal T_ELLIPSIS;
 
 /* Non terminals */
 
@@ -324,6 +325,7 @@ non terminal List static_var_list;
 non terminal List class_statement_list;
 non terminal Statement class_statement;
 non terminal Boolean is_reference;
+non terminal Boolean is_variadic;
 non terminal List echo_expr_list;
 non terminal List for_expr;
 non terminal List non_empty_for_expr;
@@ -444,6 +446,7 @@ precedence left T_BOOLEAN_AND;
 precedence left T_OR;
 precedence left T_KOVA;
 precedence left T_REFERENCE;
+precedence left T_ELLIPSIS;
 
 precedence nonassoc T_IS_EQUAL,T_IS_NOT_EQUAL,T_IS_IDENTICAL,T_IS_NOT_IDENTICAL;
 precedence nonassoc T_RGREATER,T_IS_SMALLER_OR_EQUAL,T_LGREATER,T_IS_GREATER_OR_EQUAL;
@@ -1011,6 +1014,18 @@ is_reference ::=
 :}
 ;
 
+is_variadic ::=
+/* empty */
+{:
+	RESULT = Boolean.FALSE;
+:}
+
+| T_ELLIPSIS
+{:
+	RESULT = Boolean.TRUE;
+:}
+;
+
 unticked_function_declaration_statement ::=
 T_FUNCTION:start is_reference:isReference string_st:functionName
 T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE
@@ -1486,11 +1501,11 @@ parameter:parameter
 ;
 
 parameter ::=
-optional_class_type:classType T_VARIABLE:var
+optional_class_type:classType is_variadic:isVariadic T_VARIABLE:var
 {:
-	int start = classType == null ? varleft : classTypeleft;
+	int start = classType == null ? (isVariadic ? isVariadicleft : varleft) : classTypeleft;
 	Variable v = new Variable(varleft, varright, var);
-	FormalParameter parameter = new FormalParameter(start, varright, classType, v);
+	FormalParameter parameter = new FormalParameter(start, varright, classType, v, false, isVariadic);
 	RESULT = parameter;
 :}
 
@@ -1503,11 +1518,11 @@ optional_class_type:classType T_VARIABLE:var
 	RESULT = parameter;
 :}
 
-| optional_class_type:classType T_VARIABLE:var T_EQUAL static_scalar:scalar
+| optional_class_type:classType is_variadic:isVariadic T_VARIABLE:var T_EQUAL static_scalar:scalar
 {:
-	int start = classType == null ? varleft : classTypeleft;
+	int start = classType == null ? (isVariadic ? isVariadicleft : varleft) : classTypeleft;
 	Variable v = new Variable(varleft, varright, var);
-	FormalParameter parameter = new FormalParameter(start, scalarright, classType, v, scalar);
+	FormalParameter parameter = new FormalParameter(start, scalarright, classType, v, scalar, isVariadic);
 	RESULT = parameter;
 :}
 

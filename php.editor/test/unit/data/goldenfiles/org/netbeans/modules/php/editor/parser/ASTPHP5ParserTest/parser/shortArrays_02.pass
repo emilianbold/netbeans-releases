@@ -86,7 +86,7 @@
             <FunctionDeclaration start='25' end='54' isReference='false'>
                 <Identifier start='34' end='37' name='fnc'/>
                 <FormalParameters>
-                    <FormalParameter start='38' end='48' isMandatory='false'>
+                    <FormalParameter start='38' end='48' isMandatory='false' isVariadic='false'>
                         <ParametrType>
                             <Identifier start='38' end='43' name='array'/>
                         </ParametrType>

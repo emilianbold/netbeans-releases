@@ -53,7 +53,7 @@
             <FunctionDeclaration start='6' end='46' isReference='false'>
                 <Identifier start='15' end='18' name='foo'/>
                 <FormalParameters>
-                    <FormalParameter start='19' end='40' isMandatory='false'>
+                    <FormalParameter start='19' end='40' isMandatory='false' isVariadic='false'>
                         <ParametrType>
                         </ParametrType>
                         <ParametrName>

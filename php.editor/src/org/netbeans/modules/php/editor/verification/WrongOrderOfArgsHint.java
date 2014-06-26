@@ -125,7 +125,7 @@ public class WrongOrderOfArgsHint extends HintRule {
             for (FormalParameter formalParameter : node.getFormalParameters()) {
                 if (formalParameter.getDefaultValue() != null) {
                     defaultValue = true;
-                } else if (defaultValue) {
+                } else if (defaultValue && !formalParameter.isVariadic()) {
                     wrongFunctions.add(node);
                     break;
                 }

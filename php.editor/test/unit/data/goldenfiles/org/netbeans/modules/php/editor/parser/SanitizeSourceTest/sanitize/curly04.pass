@@ -12,7 +12,7 @@
         <FunctionDeclaration start='46' end='122' isReference='false'>
             <Identifier start='55' end='58' name='fn1'/>
             <FormalParameters>
-                <FormalParameter start='59' end='66' isMandatory='false'>
+                <FormalParameter start='59' end='66' isMandatory='false' isVariadic='false'>
                     <ParametrType>
                     </ParametrType>
                     <ParametrName>
@@ -28,7 +28,7 @@
                 <FunctionDeclaration start='74' end='121' isReference='false'>
                     <Identifier start='83' end='86' name='fn2'/>
                     <FormalParameters>
-                        <FormalParameter start='87' end='93' isMandatory='false'>
+                        <FormalParameter start='87' end='93' isMandatory='false' isVariadic='false'>
                             <ParametrType>
                             </ParametrType>
                             <ParametrName>
