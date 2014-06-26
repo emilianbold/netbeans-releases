@@ -91,13 +91,11 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.impl.indexing.IndexingManagerAccessor;
 import org.netbeans.modules.parsing.impl.indexing.LogContext;
 import org.netbeans.modules.parsing.impl.indexing.IndexingUtils;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Parameters;
 
 /**
  *
@@ -283,29 +281,17 @@ public final class IndexingManager {
      *  documents rather than saved files. For scans the indexers should prefer
      *  content of files. the document content may be useful for example for error badge
      *  recovery.
-     * @exception IllegalStateException when caller holds the parser lock
+     * @throws  IllegalStateException when caller holds the parser lock or when called from indexer
      * @since 1.40
      */
     public void refreshIndexAndWait(URL root, Collection<? extends URL> files, boolean fullRescan, boolean checkEditor) throws IllegalStateException {
         if (ParserManager.isParsing()) {
             throw new IllegalStateException("The caller holds TaskProcessor.parserLock");   //NOI18N
         }
-        inRefreshIndexAndWait.set(Boolean.TRUE);
-        try {
-            if (IndexingManagerAccessor.getInstance().requiresReleaseOfCompletionLock()) {
-                //Prevent AWT deadlock refreshIndexAndWait posted by SwingUtilities.invokeLater
-                //in between completion-active = true and completion-active = false.
-                if (!IndexingManagerAccessor.getInstance().isCalledFromRefreshIndexAndWait()) {
-                    throw new IllegalStateException();
-                }
-                IndexingManagerAccessor.getInstance().releaseCompletionCondition();
-            }
-            if (!RepositoryUpdater.getDefault().isIndexer()) {
-                addIndexingJob(root, files, false, checkEditor, true, fullRescan, false);
-            }
-        } finally {
-            inRefreshIndexAndWait.remove();
+        if (RepositoryUpdater.getDefault().isIndexer()) {
+            throw new IllegalStateException("The IndexingManager.refreshIndexAndWait called from an indexer");   //NOI18N
         }
+        addIndexingJob(root, files, false, checkEditor, true, fullRescan, false);
     }
 
     /**
@@ -448,7 +434,6 @@ public final class IndexingManager {
 
     private static IndexingManager instance;
 
-    private final ThreadLocal<Boolean> inRefreshIndexAndWait = new ThreadLocal<Boolean>();
 
     private IndexingManager() {
         // Start ReporistoryUpdater if it has not been already started
@@ -493,17 +478,4 @@ public final class IndexingManager {
             steady,
             LogContext.create(LogContext.EventType.MANAGER, null).withRoot(rootUrl));
     }
-
-    static {
-        IndexingManagerAccessor.setInstance(new MyAccessor());
-    }
-
-    private static class MyAccessor extends IndexingManagerAccessor {
-        @Override
-        public boolean isCalledFromRefreshIndexAndWait(final @NonNull IndexingManager manager) {
-            Parameters.notNull("manager", manager);
-            return manager.inRefreshIndexAndWait.get() == Boolean.TRUE;
-        }
-    }
-
 }

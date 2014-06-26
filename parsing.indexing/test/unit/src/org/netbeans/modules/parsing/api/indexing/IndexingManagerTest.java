@@ -40,41 +40,75 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.nb;
+package org.netbeans.modules.parsing.api.indexing;
 
-import org.netbeans.modules.parsing.nb.EventSupport;
-import java.io.File;
-import java.io.IOException;
+import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.parsing.api.indexing.IndexingManager;
-import org.netbeans.modules.parsing.impl.indexing.IndexingManagerAccessor;
-import org.openide.util.BaseUtilities;
+import org.netbeans.modules.parsing.impl.TaskProcessor;
+import org.netbeans.modules.parsing.impl.Utilities;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author sdedic
+ * @author Tomas Zezula
  */
 public class IndexingManagerTest extends NbTestCase {
 
-    public IndexingManagerTest(String name) {
+    private FileObject root;
+
+    public IndexingManagerTest(final String name) {
         super(name);
     }
-    
-    public void testReleaseCompletionCondition () throws IOException {
-        IndexingManagerAccessor.requiresReleaseOfCompletionLock = Boolean.TRUE;
-        try {
-            EventSupport.releaseCompletionCondition();
-            assertTrue("IllegalStateException expected when calling EventSupport.releaseCompletionCondition directly",false);  //NOI18N
-        } catch (IllegalStateException ae) {
-        }
-        final File wd = getWorkDir();
-        final File src = new File (wd,"src");
-        src.mkdirs();
-        try {
-            IndexingManager.getDefault().refreshIndexAndWait(BaseUtilities.toURI(src).toURL(), null);
-        } catch (IllegalStateException ae) {
-            assertTrue("IllegalStateException not expected when EventSupport.releaseCompletionCondition called by IndexingManager.refreshIndexAndWait", false);
-        }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
+        final FileObject workDir = FileUtil.toFileObject(getWorkDir());
+        root = FileUtil.createFolder(workDir, "root");  //NOI18N
     }
+
+    public void testRefreshIndexAndWaitCalledWithParserLock() {
+        boolean success = false;
+        Utilities.acquireParserLock();
+        try {
+                IndexingManager.getDefault().refreshIndexAndWait(root.toURL(), null);
+                success = true;
+        } catch (IllegalStateException ise) {
+            //pass
+        } finally {
+            Utilities.releaseParserLock();
+        }
+        assertFalse(success);
+    }
+
+    public void testRefreshIndexAndWaitCalledFromIndexer() {
+        final boolean[] success = {false};
+        RepositoryUpdater.getDefault().runIndexer(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    IndexingManager.getDefault().refreshIndexAndWait(root.toURL(), null);
+                    success[0] = true;
+                } catch (IllegalStateException ise) {
+                    //pass
+                }
+            }
+        });
+        assertFalse(success[0]);
+    }
+
+    public void testRefreshIndexAndWait() {
+        boolean success = false;
+        try {
+            IndexingManager.getDefault().refreshIndexAndWait(root.toURL(), null);
+            success = true;
+        } catch (IllegalStateException ise) {
+            //pass
+        }
+        assertTrue(success);
+    }
+
 }

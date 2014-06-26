@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.parsing.nb;
 
-import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.Collection;
@@ -52,27 +51,21 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import javax.swing.text.Document;
-import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.Schedulers;
-import org.netbeans.modules.parsing.impl.indexing.IndexingManagerAccessor;
 import org.netbeans.modules.parsing.implspi.EnvironmentFactory;
-import org.netbeans.modules.parsing.implspi.SchedulerControl;
 import org.netbeans.modules.parsing.implspi.SourceControl;
 import org.netbeans.modules.parsing.implspi.SourceEnvironment;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.Scheduler;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
-import org.openide.util.UserQuestionException;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -86,14 +79,6 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = EnvironmentFactory.class, position = 40000) 
 public final class DataObjectEnvFactory implements EnvironmentFactory {
     private static Map<String,Reference<Parser>> cachedParsers = new HashMap<String,Reference<Parser>>();    
-    
-    static {
-        IndexingManagerAccessor.setReleaseCompletion(new Runnable() {
-            public void run() {
-                EventSupport.releaseCompletionCondition();
-            }
-        });
-    }
 
     @Override
     public Lookup getContextLookup() {
@@ -172,42 +157,4 @@ public final class DataObjectEnvFactory implements EnvironmentFactory {
     public Set<String> findSupportedMIMETypes() {
         return EditorSettings.getDefault().getAllMimeTypes();
     }
-
-//    @Override
-//    public Document readDocument(FileObject fileObject, boolean forceOpen) throws IOException {
-//        EditorCookie ec = null;
-//
-//        try {
-//            DataObject dataObject = DataObject.find (fileObject);
-//            ec = dataObject.getLookup ().lookup (EditorCookie.class);
-//        } catch (DataObjectNotFoundException ex) {
-//            //DataobjectNotFoundException may happen in case of deleting opened file
-//            //handled by returning null
-//        }
-//
-//        if (ec == null) return null;
-//        Document doc = ec.getDocument ();
-//        if (doc == null && forceOpen) {
-//            try {
-//                doc = ec.openDocument ();
-//            } catch (UserQuestionException uqe) {
-//                uqe.confirmed ();
-//                doc = ec.openDocument ();
-//            }
-//        }
-//        return doc;
-//    }
-//
-//    public void attachScheduler(SchedulerControl s, boolean attach) {
-//    }
-//
-//    @Override
-//    public void activate() {
-//    }
-//
-//    @Override
-//    public boolean isReparseBlocked() {
-//        return false;
-//    }
-
 }

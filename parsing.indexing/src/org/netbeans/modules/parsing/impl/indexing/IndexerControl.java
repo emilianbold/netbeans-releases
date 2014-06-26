@@ -78,10 +78,4 @@ public class IndexerControl implements BackgroundTaskControl, IndexerBridge{
     public boolean ownsProtectedMode() {
         return RepositoryUpdater.getDefault().isProtectedModeOwner(Thread.currentThread()); 
     }
-
-    @Override
-    public boolean canReleaseCompletionLock() {
-        return IndexingManagerAccessor.getInstance().canReleaseCompletionLock();
-    }
-    
 }

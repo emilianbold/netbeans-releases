@@ -1328,12 +1328,6 @@ public class TaskProcessor {
                 public boolean ownsProtectedMode() {
                     return false;
                 }
-
-                @Override
-                public boolean canReleaseCompletionLock() {
-                    return false;
-                }
-                
             };
         }
         return indexingBridge = bridge;

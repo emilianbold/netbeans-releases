@@ -60,10 +60,4 @@ public class IndexerEmulator implements IndexerBridge {
     public boolean ownsProtectedMode() {
         return ownsProtectedMode;
     }
-
-    @Override
-    public boolean canReleaseCompletionLock() {
-        return canReleaseLock;
-    }
-    
 }

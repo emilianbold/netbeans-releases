@@ -63,10 +63,4 @@ public interface IndexerBridge {
      * @return true, if the calling thread executes in the indexer's protected mode.
      */
     public boolean ownsProtectedMode();
-    
-    /**
-     * Explicitly allows the completion lock to be released.
-     * @return true, if it permitted to release completion lock
-     */
-    public boolean canReleaseCompletionLock();
 }
