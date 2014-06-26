@@ -13746,7 +13746,7 @@
                         <FunctionDeclaration start='2865' end='4034' isReference='false'>
                             <Identifier start='2874' end='2889' name='TextSearchQuery'/>
                             <FormalParameters>
-                                <FormalParameter start='2890' end='2903' isMandatory='false'>
+                                <FormalParameter start='2890' end='2903' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -13757,7 +13757,7 @@
                                     <DefaultValue>
                                     </DefaultValue>
                                 </FormalParameter>
-                                <FormalParameter start='2905' end='2922' isMandatory='false'>
+                                <FormalParameter start='2905' end='2922' isMandatory='false' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -13769,7 +13769,7 @@
                                         <Scalar start='2917' end='2922' type='STRING' value='false'/>
                                     </DefaultValue>
                                 </FormalParameter>
-                                <FormalParameter start='2924' end='2937' isMandatory='false'>
+                                <FormalParameter start='2924' end='2937' isMandatory='false' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -14448,7 +14448,7 @@
                         <FunctionDeclaration start='4873' end='4959' isReference='false'>
                             <Identifier start='4882' end='4887' name='match'/>
                             <FormalParameters>
-                                <FormalParameter start='4888' end='4895' isMandatory='false'>
+                                <FormalParameter start='4888' end='4895' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -14650,7 +14650,7 @@
                         <FunctionDeclaration start='6895' end='7038' isReference='false'>
                             <Identifier start='6904' end='6917' name='makeSqlClause'/>
                             <FormalParameters>
-                                <FormalParameter start='6918' end='6932' isMandatory='false'>
+                                <FormalParameter start='6918' end='6932' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -14685,7 +14685,7 @@
                         <FunctionDeclaration start='7087' end='7688' isReference='false'>
                             <Identifier start='7096' end='7107' name='_sql_clause'/>
                             <FormalParameters>
-                                <FormalParameter start='7108' end='7113' isMandatory='false'>
+                                <FormalParameter start='7108' end='7113' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -14821,7 +14821,7 @@
                         <FunctionDeclaration start='7822' end='7973' isReference='false'>
                             <Identifier start='7831' end='7847' name='makeSqlClauseObj'/>
                             <FormalParameters>
-                                <FormalParameter start='7848' end='7863' isMandatory='false'>
+                                <FormalParameter start='7848' end='7863' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -14858,7 +14858,7 @@
                         <FunctionDeclaration start='7979' end='8571' isReference='false'>
                             <Identifier start='7988' end='8003' name='_sql_clause_obj'/>
                             <FormalParameters>
-                                <FormalParameter start='8004' end='8009' isMandatory='false'>
+                                <FormalParameter start='8004' end='8009' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -14975,7 +14975,7 @@
                         <FunctionDeclaration start='8677' end='8844' isReference='false'>
                             <Identifier start='8686' end='8710' name='makeTsearch2SqlClauseObj'/>
                             <FormalParameters>
-                                <FormalParameter start='8711' end='8726' isMandatory='false'>
+                                <FormalParameter start='8711' end='8726' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -15012,7 +15012,7 @@
                         <FunctionDeclaration start='8850' end='9619' isReference='false'>
                             <Identifier start='8859' end='8882' name='_Tsearch2Sql_clause_obj'/>
                             <FormalParameters>
-                                <FormalParameter start='8883' end='8888' isMandatory='false'>
+                                <FormalParameter start='8883' end='8888' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -15203,7 +15203,7 @@
                         <FunctionDeclaration start='9934' end='10453' isReference='false'>
                             <Identifier start='9943' end='9953' name='_as_string'/>
                             <FormalParameters>
-                                <FormalParameter start='9954' end='9959' isMandatory='false'>
+                                <FormalParameter start='9954' end='9959' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -15214,7 +15214,7 @@
                                     <DefaultValue>
                                     </DefaultValue>
                                 </FormalParameter>
-                                <FormalParameter start='9961' end='9973' isMandatory='false'>
+                                <FormalParameter start='9961' end='9973' isMandatory='false' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -15385,7 +15385,7 @@
                         <FunctionDeclaration start='10739' end='10780' isReference='false'>
                             <Identifier start='10748' end='10753' name='match'/>
                             <FormalParameters>
-                                <FormalParameter start='10754' end='10761' isMandatory='false'>
+                                <FormalParameter start='10754' end='10761' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -15414,7 +15414,7 @@
                         <FunctionDeclaration start='10834' end='10899' isReference='false'>
                             <Identifier start='10843' end='10856' name='makeSqlClause'/>
                             <FormalParameters>
-                                <FormalParameter start='10857' end='10876' isMandatory='false'>
+                                <FormalParameter start='10857' end='10876' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -15455,7 +15455,7 @@
                         <FunctionDeclaration start='12571' end='13963' isReference='false'>
                             <Identifier start='12580' end='12598' name='NumericSearchQuery'/>
                             <FormalParameters>
-                                <FormalParameter start='12599' end='12612' isMandatory='false'>
+                                <FormalParameter start='12599' end='12612' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -15466,7 +15466,7 @@
                                     <DefaultValue>
                                     </DefaultValue>
                                 </FormalParameter>
-                                <FormalParameter start='12614' end='12627' isMandatory='false'>
+                                <FormalParameter start='12614' end='12627' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -15824,7 +15824,7 @@
                         <FunctionDeclaration start='14338' end='16608' isReference='false'>
                             <Identifier start='14347' end='14358' name='check_query'/>
                             <FormalParameters>
-                                <FormalParameter start='14360' end='14366' isMandatory='false'>
+                                <FormalParameter start='14360' end='14366' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -16553,7 +16553,7 @@
                         <FunctionDeclaration start='17562' end='18042' isReference='false'>
                             <Identifier start='17571' end='17576' name='_bind'/>
                             <FormalParameters>
-                                <FormalParameter start='17577' end='17583' isMandatory='false'>
+                                <FormalParameter start='17577' end='17583' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -16564,7 +16564,7 @@
                                     <DefaultValue>
                                     </DefaultValue>
                                 </FormalParameter>
-                                <FormalParameter start='17585' end='17587' isMandatory='false'>
+                                <FormalParameter start='17585' end='17587' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -16707,7 +16707,7 @@
                         <FunctionDeclaration start='18667' end='19145' isReference='false'>
                             <Identifier start='18676' end='18685' name='can_match'/>
                             <FormalParameters>
-                                <FormalParameter start='18686' end='18697' isMandatory='false'>
+                                <FormalParameter start='18686' end='18697' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -16913,7 +16913,7 @@
                         <FunctionDeclaration start='19517' end='20646' isReference='false'>
                             <Identifier start='19526' end='19531' name='match'/>
                             <FormalParameters>
-                                <FormalParameter start='19532' end='19542' isMandatory='false'>
+                                <FormalParameter start='19532' end='19542' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -17363,7 +17363,7 @@
                         <FunctionDeclaration start='21419' end='21493' isReference='false'>
                             <Identifier start='21428' end='21443' name='highlight_words'/>
                             <FormalParameters>
-                                <FormalParameter start='21444' end='21460' isMandatory='false'>
+                                <FormalParameter start='21444' end='21460' isMandatory='false' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -17417,7 +17417,7 @@
                         <FunctionDeclaration start='21657' end='21735' isReference='false'>
                             <Identifier start='21666' end='21691' name='TextSearchQuery_node_word'/>
                             <FormalParameters>
-                                <FormalParameter start='21692' end='21697' isMandatory='false'>
+                                <FormalParameter start='21692' end='21697' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -17461,7 +17461,7 @@
                         <FunctionDeclaration start='21831' end='21938' isReference='false'>
                             <Identifier start='21840' end='21855' name='highlight_words'/>
                             <FormalParameters>
-                                <FormalParameter start='21857' end='21873' isMandatory='false'>
+                                <FormalParameter start='21857' end='21873' isMandatory='false' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -17868,7 +17868,7 @@
                         <FunctionDeclaration start='24134' end='24220' isReference='false'>
                             <Identifier start='24143' end='24167' name='TextSearchQuery_node_not'/>
                             <FormalParameters>
-                                <FormalParameter start='24168' end='24173' isMandatory='false'>
+                                <FormalParameter start='24168' end='24173' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -18021,7 +18021,7 @@
                         <FunctionDeclaration start='24562' end='24674' isReference='false'>
                             <Identifier start='24571' end='24586' name='highlight_words'/>
                             <FormalParameters>
-                                <FormalParameter start='24588' end='24604' isMandatory='false'>
+                                <FormalParameter start='24588' end='24604' isMandatory='false' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -18056,7 +18056,7 @@
                         <FunctionDeclaration start='24804' end='24889' isReference='false'>
                             <Identifier start='24813' end='24839' name='TextSearchQuery_node_binop'/>
                             <FormalParameters>
-                                <FormalParameter start='24840' end='24847' isMandatory='false'>
+                                <FormalParameter start='24840' end='24847' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -18320,7 +18320,7 @@
                         <FunctionDeclaration start='25537' end='25774' isReference='false'>
                             <Identifier start='25546' end='25561' name='highlight_words'/>
                             <FormalParameters>
-                                <FormalParameter start='25562' end='25578' isMandatory='false'>
+                                <FormalParameter start='25562' end='25578' isMandatory='false' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -18963,7 +18963,7 @@
                         <FunctionDeclaration start='27984' end='28186' isReference='false'>
                             <Identifier start='27993' end='27998' name='_join'/>
                             <FormalParameters>
-                                <FormalParameter start='27999' end='28007' isMandatory='false'>
+                                <FormalParameter start='27999' end='28007' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -19241,7 +19241,7 @@
                         <FunctionDeclaration start='29697' end='30026' isReference='false'>
                             <Identifier start='29706' end='29711' name='parse'/>
                             <FormalParameters>
-                                <FormalParameter start='29713' end='29725' isMandatory='false'>
+                                <FormalParameter start='29713' end='29725' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -19252,7 +19252,7 @@
                                     <DefaultValue>
                                     </DefaultValue>
                                 </FormalParameter>
-                                <FormalParameter start='29727' end='29744' isMandatory='false'>
+                                <FormalParameter start='29727' end='29744' isMandatory='false' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -19264,7 +19264,7 @@
                                         <Scalar start='29739' end='29744' type='STRING' value='false'/>
                                     </DefaultValue>
                                 </FormalParameter>
-                                <FormalParameter start='29746' end='29767' isMandatory='false'>
+                                <FormalParameter start='29746' end='29767' isMandatory='false' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -19399,7 +19399,7 @@
                         <FunctionDeclaration start='30036' end='30736' isReference='false'>
                             <Identifier start='30045' end='30053' name='get_list'/>
                             <FormalParameters>
-                                <FormalParameter start='30055' end='30075' isMandatory='false'>
+                                <FormalParameter start='30055' end='30075' isMandatory='false' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -20075,7 +20075,7 @@
                         <FunctionDeclaration start='31993' end='32471' isReference='false'>
                             <Identifier start='32002' end='32010' name='get_word'/>
                             <FormalParameters>
-                                <FormalParameter start='32011' end='32033' isMandatory='false'>
+                                <FormalParameter start='32011' end='32033' isMandatory='false' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -20273,7 +20273,7 @@
                         <FunctionDeclaration start='32509' end='32700' isReference='false'>
                             <Identifier start='32518' end='32539' name='TextSearchQuery_Lexer'/>
                             <FormalParameters>
-                                <FormalParameter start='32541' end='32551' isMandatory='false'>
+                                <FormalParameter start='32541' end='32551' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -20284,7 +20284,7 @@
                                     <DefaultValue>
                                     </DefaultValue>
                                 </FormalParameter>
-                                <FormalParameter start='32553' end='32570' isMandatory='false'>
+                                <FormalParameter start='32553' end='32570' isMandatory='false' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -20296,7 +20296,7 @@
                                         <Scalar start='32565' end='32570' type='STRING' value='false'/>
                                     </DefaultValue>
                                 </FormalParameter>
-                                <FormalParameter start='32572' end='32593' isMandatory='false'>
+                                <FormalParameter start='32572' end='32593' isMandatory='false' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -20374,7 +20374,7 @@
                         <FunctionDeclaration start='32762' end='32816' isReference='false'>
                             <Identifier start='32771' end='32775' name='seek'/>
                             <FormalParameters>
-                                <FormalParameter start='32776' end='32780' isMandatory='false'>
+                                <FormalParameter start='32776' end='32780' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -20418,7 +20418,7 @@
                         <FunctionDeclaration start='33023' end='36966' isReference='false'>
                             <Identifier start='33032' end='33040' name='tokenize'/>
                             <FormalParameters>
-                                <FormalParameter start='33041' end='33048' isMandatory='false'>
+                                <FormalParameter start='33041' end='33048' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -20429,7 +20429,7 @@
                                     <DefaultValue>
                                     </DefaultValue>
                                 </FormalParameter>
-                                <FormalParameter start='33050' end='33067' isMandatory='false'>
+                                <FormalParameter start='33050' end='33067' isMandatory='false' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -20441,7 +20441,7 @@
                                         <Scalar start='33062' end='33067' type='STRING' value='false'/>
                                     </DefaultValue>
                                 </FormalParameter>
-                                <FormalParameter start='33069' end='33090' isMandatory='false'>
+                                <FormalParameter start='33069' end='33090' isMandatory='false' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
@@ -21529,7 +21529,7 @@
                         <FunctionDeclaration start='36976' end='37258' isReference='false'>
                             <Identifier start='36985' end='36988' name='get'/>
                             <FormalParameters>
-                                <FormalParameter start='36989' end='36996' isMandatory='false'>
+                                <FormalParameter start='36989' end='36996' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>
