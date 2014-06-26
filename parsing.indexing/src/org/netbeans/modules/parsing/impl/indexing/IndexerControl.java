@@ -43,7 +43,7 @@
 package org.netbeans.modules.parsing.impl.indexing;
 
 import org.netbeans.modules.parsing.impl.IndexerBridge;
-import org.netbeans.modules.parsing.spi.BackgroundTaskControl;
+import org.netbeans.modules.parsing.lucene.spi.ScanSuspendImplementation;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -52,15 +52,14 @@ import org.openide.util.lookup.ServiceProviders;
  * @author sdedic
  */
 @ServiceProviders({
-    @ServiceProvider(service = BackgroundTaskControl.class),
+    @ServiceProvider(service = ScanSuspendImplementation.class),
     @ServiceProvider(service = IndexerBridge.class)
 })
-public class IndexerControl implements BackgroundTaskControl, IndexerBridge{
+public class IndexerControl implements ScanSuspendImplementation, IndexerBridge{
 
     @Override
-    public boolean suspend() {
+    public void suspend() {
         RepositoryUpdater.getDefault().suspend();
-        return true;
     }
 
     @Override

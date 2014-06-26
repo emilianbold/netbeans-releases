@@ -76,6 +76,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.lucene.spi.ScanSuspendImplementation;
 import org.netbeans.modules.parsing.spi.*;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.openide.util.Exceptions;
@@ -1274,43 +1275,40 @@ public class TaskProcessor {
             profiler = new SelfProfile(System.currentTimeMillis());
         }
     }
-    
-    private static volatile Lookup.Result<BackgroundTaskControl> controllers;
-    
+
     private static void suspendOrResumeBackgroundTasks(boolean stop) {
-        Collection<? extends BackgroundTaskControl> ctrls = getBackgroundControllers();
-        int success = 0;
-        try {
-            for (BackgroundTaskControl ctrl : ctrls) {
-                    if (stop) {
-                        ctrl.suspend();
-                    } else {
-                        ctrl.resume();
-                    }
-                    success++;
-            }
-        } finally {
-            if (success < ctrls.size()) {
-                for (BackgroundTaskControl ctrl : ctrls) {
-                    ctrl.resume();
-                    if (--success == 0) {
-                        break;
-                    }
-                }
-            }
+        final ScanSuspendImplementation suspend = getScanSuspend();
+        if (stop) {
+            suspend.suspend();
+        } else {
+            suspend.resume();
         }
     }
-    
-    static Collection<? extends BackgroundTaskControl> getBackgroundControllers() {
-        if (controllers == null) {
-            Lookup.Result<BackgroundTaskControl> ctrls = Lookup.getDefault().lookupResult(BackgroundTaskControl.class);
-            controllers = ctrls;
+
+    private static volatile ScanSuspendImplementation scanSuspend;
+
+    @NonNull
+    private static ScanSuspendImplementation getScanSuspend() {
+        ScanSuspendImplementation suspend = scanSuspend;
+        if (suspend == null) {
+            suspend  = Lookup.getDefault().lookup(ScanSuspendImplementation.class);
+            if (suspend == null) {
+                suspend = new ScanSuspendImplementation() {
+                    @Override
+                    public void suspend() {
+                    }
+                    @Override
+                    public void resume() {
+                    }
+                };
+            }
+            scanSuspend = suspend;
         }
-        return controllers.allInstances();
+        return suspend;
     }
-    
+
     private static volatile IndexerBridge indexingBridge;
-    
+
     public static IndexerBridge getIndexerBridge() {
         IndexerBridge bridge = indexingBridge;
         if (bridge != null) {
