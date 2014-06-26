@@ -113,7 +113,7 @@ public final class GdbDebuggerInfo extends NativeDebuggerInfo {
         public GdbDebuggerInfo create(DebugTarget dt, String hostName, Configuration conf, int action, String targetCommand) {
             GdbDebuggerInfo gdi = GdbDebuggerInfo.create();
             gdi.setDebugTarget(dt);
-            gdi.setHostName("localhost"); //NOI18N
+            gdi.setHostName(hostName); //NOI18N
             gdi.setConfiguration(conf);
             gdi.setAction(action);
             gdi.setTargetCommand(targetCommand);
