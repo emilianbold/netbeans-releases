@@ -58,6 +58,7 @@ import java.util.List;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.SwingUtilities;
@@ -112,11 +113,13 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblyUt
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryWindow;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.RegistersWindow;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpoint;
+import org.netbeans.modules.cnd.debugger.common2.debugger.spi.DebuggerToolRecognizer;
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.openide.cookies.EditorCookie;
+import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -1637,10 +1640,22 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
             cs = CompilerSetFactory.getCompilerSet(exEnv, flavor, csname);
         }
         Tool debuggerTool = cs.getTool(PredefinedToolKind.DebuggerTool);
-        if (debuggerTool != null && debuggerID.equals(debuggerTool.getName())) {
-            String path = debuggerTool.getPath();
-            if (path != null && !path.isEmpty()) {
-                return path;
+        if (debuggerTool != null) {
+            Collection<? extends DebuggerToolRecognizer> debuggerRecognizers = Lookup.getDefault().lookupAll(DebuggerToolRecognizer.class);
+            for (DebuggerToolRecognizer debuggerToolRecognizer : debuggerRecognizers) {
+                if (debuggerToolRecognizer.canHandle(debuggerID) && debuggerToolRecognizer.isTheSame(debuggerID, debuggerTool)) {
+                    String path = debuggerTool.getPath();
+                    if (path != null && !path.isEmpty()) {
+                        return path;
+                    }
+                }
+            }
+            //fallback
+            if (debuggerTool.getName().contains(debuggerID)) {
+                    String path = debuggerTool.getPath();
+                    if (path != null && !path.isEmpty()) {
+                        return path;
+                    }
             }
         }
         // ask for debugger, IZ 192540

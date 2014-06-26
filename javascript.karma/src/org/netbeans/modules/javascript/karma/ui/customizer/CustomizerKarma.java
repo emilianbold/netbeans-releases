@@ -194,6 +194,7 @@ public class CustomizerKarma extends JPanel {
         coverageLearnMoreLabel = new JLabel();
         coverageIstanbulInfoLabel = new JLabel();
         coverageConfigLabel = new JLabel();
+        coverageDebugLabel = new JLabel();
 
         karmaLabel.setLabelFor(karmaTextField);
         Mnemonics.setLocalizedText(karmaLabel, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.karmaLabel.text")); // NOI18N
@@ -258,6 +259,8 @@ public class CustomizerKarma extends JPanel {
 
         Mnemonics.setLocalizedText(coverageConfigLabel, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.coverageConfigLabel.text")); // NOI18N
 
+        Mnemonics.setLocalizedText(coverageDebugLabel, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.coverageDebugLabel.text")); // NOI18N
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -298,7 +301,8 @@ public class CustomizerKarma extends JPanel {
                         .addGap(18, 18, 18)
                         .addComponent(coverageLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     .addComponent(coverageIstanbulInfoLabel)
-                    .addComponent(coverageConfigLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .addComponent(coverageConfigLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(coverageDebugLabel))
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -337,7 +341,9 @@ public class CustomizerKarma extends JPanel {
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(coverageIstanbulInfoLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(coverageConfigLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addComponent(coverageConfigLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(coverageDebugLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -410,6 +416,7 @@ public class CustomizerKarma extends JPanel {
     private JButton configSearchButton;
     private JTextField configTextField;
     private JLabel coverageConfigLabel;
+    private JLabel coverageDebugLabel;
     private JLabel coverageInfoLabel;
     private JLabel coverageIstanbulInfoLabel;
     private JLabel coverageLabel;

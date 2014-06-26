@@ -40,68 +40,37 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript.karma.coverage;
+package org.netbeans.modules.cnd.debugger.gdb2;
 
-import java.awt.EventQueue;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.Reader;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.web.clientproject.api.jstesting.Coverage;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
+/**
+ *
+ * @author mtishkov
+ */
+abstract public class GdbDebuggerInfoAccessor {
+     private static volatile GdbDebuggerInfoAccessor DEFAULT;
 
-public final class CoverageProcessor {
-
-    private static final Logger LOGGER = Logger.getLogger(CoverageProcessor.class.getName());
-
-    private static volatile boolean debugCoverageWarningShown = false;
-
-    private final Coverage coverage;
-    private final File sourceDir;
-    private final File logFile;
-
-
-    public CoverageProcessor(Coverage coverage, File sourceDir, File logFile) {
-        assert coverage != null;
-        assert sourceDir.isDirectory() : sourceDir;
-        assert logFile.isFile() : logFile;
-        this.coverage = coverage;
-        this.sourceDir = sourceDir;
-        this.logFile = logFile;
-    }
-
-    @NbBundle.Messages("CoverageProcessor.warn.debugCoverage=Coverage is automatically disabled in Karma Debug mode.")
-    public static void warnDebugCoverage() {
-        if (debugCoverageWarningShown) {
-            // already warned
-            return;
+    public static GdbDebuggerInfoAccessor getDefault() {
+        GdbDebuggerInfoAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
         }
-        debugCoverageWarningShown = true;
-        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(Bundle.CoverageProcessor_warn_debugCoverage()));
-    }
 
-    public void process() {
-        assert coverage.isEnabled();
-        assert !EventQueue.isDispatchThread();
-        Reader reader;
         try {
-            reader = new BufferedReader(new FileReader(logFile));
-        } catch (FileNotFoundException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-            return;
+            Class.forName(GdbDebuggerInfo.class.getName(), true,
+                    GdbDebuggerInfo.class.getClassLoader());
+        } catch (Exception e) {
         }
-        List<Coverage.File> files = CloverLogParser.parse(reader, sourceDir);
-        if (files == null) {
-            LOGGER.info("Parsed coverage data expected but some error occured");
-            return;
-        }
-        coverage.setFiles(files);
+
+        return DEFAULT;
     }
 
+    public static void setDefault(GdbDebuggerInfoAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+
+        DEFAULT = accessor;
+    }
+
+    abstract public GdbDebuggerInfo create();
 }

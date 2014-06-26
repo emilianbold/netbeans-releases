@@ -149,8 +149,18 @@ public class JsIndexer extends EmbeddingIndexer {
     
     private boolean isInvisibleFunction(JsObject object) {
         if (object.getJSKind().isFunction() && (object.isAnonymous() || object.getModifiers().contains(Modifier.PRIVATE))) {
-            if (object.getParent() != null && object.getParent().getJSKind() == JsElement.Kind.FILE) {
+            JsObject parent = object.getParent();
+            if (parent != null && parent.getJSKind() == JsElement.Kind.FILE) {
                 return false;
+            }
+            if (parent != null && parent instanceof JsFunction) {
+                Collection<? extends TypeUsage> returnTypes = ((JsFunction) parent).getReturnTypes();
+                String fqn = object.getFullyQualifiedName();
+                for (TypeUsage returnType : returnTypes) {
+                    if (returnType.getType().equals(fqn)) {
+                        return false;
+                    }
+                }
             }
             Collection<? extends TypeUsage> returnTypes = ((JsFunction) object).getReturnTypes();
             if (returnTypes.size() == 1 && (returnTypes.iterator().next()).getType().equals("undefined")) {

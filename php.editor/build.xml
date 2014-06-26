@@ -5,19 +5,9 @@
 
     <!-- for generationg lexer and parser, uncomment the tasks and set up the right classpath -->
 
-    <!--<target name="-prepare-jflex" depends="build-init">
-        <mkdir dir="${build.dir}/tools"/>
-        <get src="http://repo1.maven.org/maven2/de/jflex/jflex/1.4.3/jflex-1.4.3.jar" dest="${build.dir}/tools/jflex.jar" verbose="true"/>
-        <taskdef name="jflex" classname="JFlex.anttask.JFlexTask" classpath="${build.dir}/tools/jflex.jar" />
-    </target>
-
-    <target name="-gen-lexer" depends="-prepare-jflex">
-        <jflex file="tools/Php5ColoringScanner.flex" destdir="src" skel="tools/skeleton.netbeans" />
-    </target>-->
-
 <!--    <taskdef name="jflex"
         classname="JFlex.anttask.JFlexTask"
-        classpath="/usr/share/ant/lib/jflex.jar" />-->
+        classpath="/opt/jflex-1.6.0/lib/jflex-1.6.0.jar" />-->
 
 <!--    <target name="gen-lexer" >
         <jflex file="tools/Php5ColoringScanner.flex"
@@ -48,6 +38,10 @@
         symbols="ASTPHP5Symbols"
         interface="on"
        />
+<!--        <taskdef name="parsercutter"
+classname="cz.brejla.cup.parser.cutter.ParserCutter"
+classpath="/home/ondrej/Dropbox/NetBeans/parser.cutter/dist/parser.cutter.jar" />
+<parsercutter parserpath="src/org/netbeans/modules/php/editor/parser/ASTPHP5Parser.java" />-->
     </target>
 
 </project>

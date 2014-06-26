@@ -46,7 +46,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>3</release-version>
-                        <specification-version>3.24.2</specification-version>
+                        <specification-version>3.25.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -215,7 +215,6 @@
                 <friend>com.oracle.tools.ide.projectless.debug.impl.gdb</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdbserver</friend>
-                <package>org.netbeans.modules.cnd.debugger.gdb2</package>
                 <package>org.netbeans.modules.cnd.debugger.gdb2.options</package>
             </friend-packages>
         </data>

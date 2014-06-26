@@ -1,0 +1,15 @@
+Code completion result for source line:
+'|order!lib/proto/localization',
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+CLASS      prototype                       [PUBLIC]   require.js
+OTHER      order!                                     
+OTHER      text!                                      
+FILE       app                                        
+FILE       issue245156.js                             
+FILE       moduleApp1.js                              
+FILE       moduleLib1.js                              
+FILE       moduleLib2.js                              
+FILE       piknic                                     
+FILE       proto                                      
+FILE       require.js                                 

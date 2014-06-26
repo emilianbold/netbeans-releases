@@ -61,7 +61,8 @@ public class Assignment extends Expression {
         OR_EQUAL("|="), //NOI18N
         XOR_EQUAL("^="), //NOI18N
         SL_EQUAL("<<="), //NOI18N
-        SR_EQUAL(">>="); //NOI18N
+        SR_EQUAL(">>="), //NOI18N
+        POW_EQUAL("**="); //NOI18N
 
         private String operator;
 

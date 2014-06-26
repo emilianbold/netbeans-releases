@@ -54,6 +54,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -68,7 +69,7 @@ public class MappingCompletionItem implements CompletionProposal {
     private final FileObject mapToFile;
     
     public MappingCompletionItem(final String mapping, FileObject toFile, final int anchor){
-        this.element = new MappingHandle(mapping);
+        this.element = new MappingHandle(mapping, toFile);
         this.anchor = anchor;
         this.mapToFile = toFile;
     }
@@ -163,54 +164,28 @@ public class MappingCompletionItem implements CompletionProposal {
     }
 
     
-    private static class MappingHandle implements ElementHandle {
+    private static class MappingHandle extends SimpleHandle.DocumentationHandle {
+        private final FileObject toFile;
 
-        private final String name;
-
-        public MappingHandle(String name) {
-            this.name = name;
+        public MappingHandle(String name, final FileObject toFile) {
+            super(name, ElementKind.FILE);
+            this.toFile = toFile;
         }
         
         
         @Override
-        public FileObject getFileObject() {
-            return null;
+        @NbBundle.Messages({"mappingTo=Mapped to", 
+            "mappedFile=file", "mappedFolder=folder"})
+        public String getDocumentation() {
+            StringBuilder sb = new StringBuilder();
+            sb.append(Bundle.mappingTo()).append(" "); //NOI18N
+            if (toFile.isFolder()) {
+                sb.append(Bundle.mappedFolder());
+            } else {
+                sb.append(Bundle.mappedFile());
+            }
+            sb.append(FSCompletionUtils.writeFilePathForDocWindow(toFile));
+            return sb.toString();
         }
-
-        @Override
-        public String getMimeType() {
-            return null;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public String getIn() {
-            return null;
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.FILE;
-        }
-
-        @Override
-        public Set<Modifier> getModifiers() {
-            return Collections.EMPTY_SET;
-        }
-
-        @Override
-        public boolean signatureEquals(ElementHandle handle) {
-            return name.equals(handle.getName());
-        }
-
-        @Override
-        public OffsetRange getOffsetRange(ParserResult result) {
-            return OffsetRange.NONE;
-        }
-        
     }
 }

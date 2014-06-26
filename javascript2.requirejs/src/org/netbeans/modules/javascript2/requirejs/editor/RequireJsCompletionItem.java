@@ -51,6 +51,7 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.requirejs.ConfigOption;
 import org.netbeans.modules.javascript2.requirejs.RequireJsDataProvider;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -157,6 +158,38 @@ public class RequireJsCompletionItem implements CompletionProposal {
         return null;
     }
 
+    public static class PluginNameCompletionItem extends RequireJsCompletionItem {
+
+        public PluginNameCompletionItem(final String name, final int anchor) {
+            super(new PluginNameHandle(name), name, anchor);
+        }
+
+        @Override
+        public String getInsertPrefix() {
+            return getName() + '!'; //NOI18N
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            return getName() + '!';
+        }
+
+        
+        private static class PluginNameHandle extends SimpleHandle.DocumentationHandle {
+
+            public PluginNameHandle(final String name) {
+                super(name, ElementKind.OTHER);
+            }
+
+            @Override
+            @NbBundle.Messages("pluginNameDoc=Loader Plugin")
+            public String getDocumentation() {
+                return Bundle.pluginNameDoc();
+            }
+        }
+
+    }
+
     public static class PropertyNameCompletionItem extends RequireJsCompletionItem {
 
         private final ConfigOption.OptionType type;
@@ -177,19 +210,19 @@ public class RequireJsCompletionItem implements CompletionProposal {
             sb.append(getName()).append(": "); // NOI18N
             switch (type) {
                 case STRING:
-                    sb.append("'${cursor}'");
+                    sb.append("'${cursor}'"); // NOI18N
                     break;
                 case OBJECT:
-                    sb.append("{\n${cursor}\n}");
+                    sb.append("{\n${cursor}\n}"); // NOI18N
                     break;
                 case ARRAY:
-                    sb.append("[\n${cursor}\n]");
+                    sb.append("[\n${cursor}\n]"); // NOI18N
                     break;
                 case BOOLEAN:
-                    sb.append("${false}${cursor}");
-                    break;
+                    sb.append("${false}${cursor}"); // NOI18N
+                    break; 
                 default:
-                    sb.append("${cursor}");
+                    sb.append("${cursor}"); // NOI18N
             }
             return sb.toString();
         }
