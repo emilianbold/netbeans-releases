@@ -325,7 +325,7 @@
                         <FunctionDeclaration start='192' end='253' isReference='false'>
                             <Identifier start='201' end='202' name='f'/>
                             <FormalParameters>
-                                <FormalParameter start='203' end='225' isMandatory='false'>
+                                <FormalParameter start='203' end='225' isMandatory='false' isVariadic='false'>
                                     <ParametrType>
                                     </ParametrType>
                                     <ParametrName>

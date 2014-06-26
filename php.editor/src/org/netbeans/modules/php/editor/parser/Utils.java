@@ -512,6 +512,9 @@ public final class Utils {
             case ASTPHP5Symbols.T_POW_EQUAL:
                 name = "T_POW_EQUAL"; //NOI18N
                 break;
+            case ASTPHP5Symbols.T_ELLIPSIS:
+                name = "T_ELLIPSIS"; //NOI18N
+                break;
             default:
                 name = "unknown"; //NOI18N
         }

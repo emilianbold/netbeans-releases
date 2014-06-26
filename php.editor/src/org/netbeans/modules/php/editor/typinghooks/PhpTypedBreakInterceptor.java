@@ -264,8 +264,9 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
                 StringBuilder sb = new StringBuilder("\n");
                 sb.append(IndentUtils.createIndentString(doc, indent));
                 String commentDelimiter = "//"; //NOI18N
-                while (ts.token() != null && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT && !isLineCommentDelimiter(ts.token())) {
-                    ts.movePrevious();
+                boolean moved = true;
+                while (moved && ts.token() != null && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT && !isLineCommentDelimiter(ts.token())) {
+                    moved = ts.movePrevious();
                 }
                 if (isLineCommentDelimiter(ts.token())) {
                     commentDelimiter = ts.token().text().toString();

@@ -499,19 +499,23 @@ public class ASTPHP5ParserTest extends ParserTestBase {
     public void testYield_07() throws Exception {
         performTest("parser/yield_07");
     }
-    
+
     public void testExponentiation_01() throws Exception {
         performTest("parser/exponentiation_01");
     }
-    
+
     public void testConstantScalarExpressions_01() throws Exception {
         performTest("parser/constantScalarExpressions_01");
+    }
+
+    public void testVariadicFunctions_01() throws Exception {
+        performTest("parser/testVariadicFunctions_01");
     }
 
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         String content = PHPLexerUtils.getFileContent(testFile);
         ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(content));
 
@@ -521,7 +525,7 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         do {
             symbol = scanner.next_token();
             result.append("        <token id='").append(Utils.getASTScannerTokenName(symbol.sym)).append("' start='");
-            result.append(symbol.left).append("' end='").append(symbol.right + "'>\n");
+            result.append(symbol.left).append("' end='").append(symbol.right).append("'>\n");
             result.append("            <text>");
             result.append(PHPLexerUtils.getXmlStringValue(content.substring(symbol.left, symbol.right)));
             result.append("</text>\n");
