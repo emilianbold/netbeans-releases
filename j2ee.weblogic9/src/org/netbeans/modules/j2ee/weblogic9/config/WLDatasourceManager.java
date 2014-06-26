@@ -135,6 +135,11 @@ public class WLDatasourceManager implements DatasourceManager {
 
     @Override
     public Set<Datasource> getDatasources() throws ConfigurationException {
+        if (manager.isRemote()) {
+            // TODO remote not supported yet
+            return Collections.emptySet();
+        }
+
         // FIXME use methods from WLPluginproperties
         String domainDir = manager.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
         File domainPath = FileUtil.normalizeFile(new File(domainDir));
