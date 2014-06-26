@@ -925,13 +925,13 @@ public final class CompilerSetImpl extends CompilerSet {
                     }
 
                     @Override
-                    public String getStackHeaderPattern() {
-                        return ""; // NOI18N
+                    public List<String> getStackHeaderPattern() {
+                        return Collections.emptyList();
                     }
 
                     @Override
-                    public String getStackNextPattern() {
-                        return ""; // NOI18N
+                    public List<String> getStackNextPattern() {
+                        return Collections.emptyList();
                     }
 
                     @Override

@@ -192,27 +192,58 @@ public class ScannerTestCase extends NbTestCase {
 	ScannerDescriptor scanner = toolchain.getScanner();
         ArrayList<String> testPatterns = new ArrayList<String>();
       	testPatterns.add("                 from ../ccutil/platform.h:9,");
-        String p = scanner.getStackNextPattern();
-        Pattern pattern = Pattern.compile(p);
         for (String s : testPatterns) {
-            Matcher m = pattern.matcher(s);
-            if (m.find()){
-                assertEquals(trimQuotes(m.group(1)), "../ccutil/platform.h");
-            } else {
-                assertTrue("String "+s+" does not match pattern "+p, false);
+            boolean found = false;
+            for (String p : scanner.getStackNextPattern()) {
+                Pattern pattern = Pattern.compile(p);
+                Matcher m = pattern.matcher(s);
+                if (m.find()) {
+                    assertEquals(trimQuotes(m.group(1)), "../ccutil/platform.h");
+                    found = true;
+                    break;
+                }
             }
+            assertTrue("String " + s + " does not match stack next patterns", found);
         }
     }
-
-    private String trimQuotes(String s){
-        if (s.length()>2) {
-            if (s.startsWith("\"") && s.endsWith("\"")) {
-                return s.substring(1, s.length()-1);
-            }else if (s.startsWith("'") && s.endsWith("'")) {
-                return s.substring(1, s.length()-1);
+    
+    public void testGNUpatterns_07() throws Exception {
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
+	ScannerDescriptor scanner = toolchain.getScanner();
+        ArrayList<String> testPatterns = new ArrayList<String>();
+      	//testPatterns.add("../sdl.h: In member function 'void std::vector<_Tp, _Alloc>::resize(size_t, _Tp) [with _Tp = sdl::SdlTlink, _Alloc = std::allocator<sdl::SdlTlink>]':");
+      	testPatterns.add("../sdl.h:94:   instantiated from 'Tid sdl::SdlTable<Telem, Tid>::AddElement() [with Telem = sdl::SdlTlink, Tid = sdl::Id<151>]'");
+      	testPatterns.add("../sdlAct.C:630:   instantiated from here");
+        testPatterns.add("main.cpp:15:89:   required from here");
+        testPatterns.add("/tools/GCC/4.7.2/include/c++/4.7.2/bits/stl_algobase.h:1035:37:   required from 'bool std::equal(_II1, _II1, _II2) [with _II1 = __gnu_cxx::__normal_iterator<const char*, std::basic_string<char> >; _II2 = std::basic_string<char>]'");
+        testPatterns.add("/tools/gcc/4.5.3/intel-S2/include/c++/4.5.3/bits/stl_algobase.h:832:58:   instantiated from 'bool std::__equal_aux(_II1, _II1, _II2) [with _II1 = const char*, _II2 = std::basic_string<char>]'");
+        testPatterns.add("main.cpp:5:   instantiated from here");
+        for (String s : testPatterns) {
+            //System.err.println("Line:    "+s);
+            boolean found = false;
+            String name = null;
+            for(String p : scanner.getStackHeaderPattern()) {
+                Pattern pattern = Pattern.compile(p);
+                Matcher m = pattern.matcher(s);
+                if (m.matches()) {
+                    name = m.group(1).trim();
+                    found = true;
+                    break;
+                }
             }
+            if (!found) {
+                for(String p : scanner.getStackNextPattern()) {
+                    Pattern pattern = Pattern.compile(p);
+                    Matcher m = pattern.matcher(s);
+                    if (m.matches()) {
+                        name = m.group(1).trim();
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            assertTrue("String " + s + " does not match stack patterns", found);
         }
-        return s;
     }
 
     public void testSUNpatternAten() throws Exception {
@@ -364,6 +395,17 @@ public class ScannerTestCase extends NbTestCase {
         doTest(getLogs(), toolchain.getScanner(), getRef());
     }
 
+    private String trimQuotes(String s){
+        if (s.length()>2) {
+            if (s.startsWith("\"") && s.endsWith("\"")) {
+                return s.substring(1, s.length()-1);
+            }else if (s.startsWith("'") && s.endsWith("'")) {
+                return s.substring(1, s.length()-1);
+            }
+        }
+        return s;
+    }
+
     private void doTest(File logFile, ScannerDescriptor scanner, PrintStream ref) throws Exception {
         BufferedReader reader = new BufferedReader(new FileReader(logFile));
         String line;
@@ -397,16 +439,20 @@ public class ScannerTestCase extends NbTestCase {
                 continue;
             }
 
-            pattern = Pattern.compile(scanner.getStackHeaderPattern());
-            if ((match = match(pattern, line)) != null) {
-                ref.println(lineCnt + " stackHeader { file: " + match.get(0) + " }");
-                continue;
+            for(String p: scanner.getStackHeaderPattern()) {
+                pattern = Pattern.compile(p);
+                if ((match = match(pattern, line)) != null) {
+                    ref.println(lineCnt + " stackHeader { file: " + match.get(0) + " }");
+                    continue;
+                }
             }
 
-            pattern = Pattern.compile(scanner.getStackNextPattern());
-            if ((match = match(pattern, line)) != null) {
-                ref.println(lineCnt + " stackNext { file: " + match.get(0) + " }");
-                continue;
+            for(String p: scanner.getStackNextPattern()) {
+                pattern = Pattern.compile(p);
+                if ((match = match(pattern, line)) != null) {
+                    ref.println(lineCnt + " stackNext { file: " + match.get(0) + " }");
+                    continue;
+                }
             }
 
             for (ScannerPattern scannerPattern : scanner.getPatterns()) {
