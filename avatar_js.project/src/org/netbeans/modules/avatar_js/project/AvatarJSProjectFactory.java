@@ -45,6 +45,8 @@ package org.netbeans.modules.avatar_js.project;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
@@ -65,6 +67,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectState;
+import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileAttributeEvent;
@@ -73,6 +76,12 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFilter;
+import org.openide.loaders.DataFolder;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeNotFoundException;
+import org.openide.nodes.NodeOp;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -129,7 +138,7 @@ public final class AvatarJSProjectFactory implements ProjectFactory2 {
     }
     
     private static final class PackageJSONPrj implements Project, 
-    ActionProvider, FileChangeListener {
+    ActionProvider, FileChangeListener, LogicalViewProvider {
         private final FileObject dir;
         private final Lookup lkp;
         private JSONObject pckg;
@@ -265,6 +274,35 @@ public final class AvatarJSProjectFactory implements ProjectFactory2 {
         
         private void reset() {
             pckg = null;
+        }
+
+        @Override
+        public Node createLogicalView() {
+            DataFolder df = DataFolder.findFolder(dir);
+            AbstractNode an = new AbstractNode(
+                df.createNodeChildren(DataFilter.ALL), getLookup()
+            );
+            an.setIconBaseWithExtension(ICON);
+            an.setName(df.getName());
+            return an;
+        }
+
+        @Override
+        public Node findPath(Node root, Object target) {
+            List<String> arr = new LinkedList<>();
+            while (target != dir) {
+                if (! (target instanceof FileObject)) {
+                    return root;
+                }
+                final FileObject fo = (FileObject)target;
+                arr.add(0, fo.getName());
+                target = fo.getParent();
+            }
+            try {
+                return NodeOp.findPath(root, arr.toArray(new String[0]));
+            } catch (NodeNotFoundException ex) {
+                return ex.getClosestNode();
+            }
         }
     }
     
