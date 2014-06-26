@@ -131,11 +131,13 @@ public final class GitRevisionInfo {
      * @return time this commit was created in milliseconds.
      */
     public long getCommitTime () {
-        PersonIdent committer = revCommit.getCommitterIdent();
-        if (committer == null) {
+        // must be indeed author, that complies with CLI
+        // committer time is different after rebase
+        PersonIdent author = revCommit.getAuthorIdent();
+        if (author == null) {
             return (long) revCommit.getCommitTime() * 1000;
         } else {
-            return committer.getWhen().getTime();
+            return author.getWhen().getTime();
         }
     }
 
