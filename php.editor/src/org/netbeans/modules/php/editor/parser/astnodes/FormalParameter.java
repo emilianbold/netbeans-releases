@@ -91,7 +91,7 @@ public class FormalParameter extends ASTNode {
     }
 
     public FormalParameter(int start, int end, Expression type, final Reference parameterName) {
-        this(start, end, type, (Expression) parameterName, null, false, false);
+        this(start, end, type, (Expression) parameterName, null, true, false);
     }
 
     /**
