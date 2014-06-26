@@ -173,6 +173,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         DISPLAY_TOOLBAR,
         EXPAND_BRANCHES,
         EXPAND_TAGS,
+        SELECT_ACTIVE_BRANCH,
         ENABLE_POPUP
     }
 
@@ -181,6 +182,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             Option.DISPLAY_REVISIONS,
             Option.EXPAND_BRANCHES,
             Option.EXPAND_TAGS,
+            Option.SELECT_ACTIVE_BRANCH,
             Option.DISPLAY_TAGS);
 
     public RepositoryBrowserPanel () {
@@ -993,7 +995,19 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 node = node.getParentNode();
             }
             File repository = ((RepositoryNode) node).getRepository();
-            return new Node[] { new BranchNode(repository, key) };
+            final BranchNode n = new BranchNode(repository, key);
+            if (options.containsAll(EnumSet.of(Option.EXPAND_BRANCHES, Option.SELECT_ACTIVE_BRANCH)) && n.active) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        try {
+                            getExplorerManager().setSelectedNodes(new Node[] { n });
+                        } catch (PropertyVetoException ex) {
+                        }
+                    }
+                });
+            }
+            return new Node[] { n };
         }
 
         private void refreshKeys () {

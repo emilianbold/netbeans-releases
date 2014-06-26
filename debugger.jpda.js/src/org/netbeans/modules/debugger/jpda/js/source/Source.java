@@ -100,7 +100,8 @@ public final class Source {
         }
         URL rURL = null;
         int lineShift = 0;
-        if (url == null || !"file".equalsIgnoreCase(url.getProtocol())) {
+        if (url == null || !("file".equalsIgnoreCase(url.getProtocol()) ||
+                             "jar".equalsIgnoreCase(url.getProtocol()))) {
             try {
                 url = SourceFilesCache.getDefault().getSourceFile(name, hash, content);
             } catch (IOException ex) {

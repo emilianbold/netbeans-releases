@@ -654,7 +654,11 @@ public class CommitTest extends AbstractGitTestCase {
         assertEquals(info.getRevision(), lastCommit.getParents()[0]);
         assertEquals(lastCommit.getRevision(), client.getBranches(false, NULL_PROGRESS_MONITOR).get("master").getId());
         
+        Thread.sleep(1100);
+        
+        long time = lastCommit.getCommitTime();
         lastCommit = client.commit(new File[] { newOne, another }, "second commit, modified message", null, null, true, NULL_PROGRESS_MONITOR);
+        assertEquals("Commit time should not change after amend", time, lastCommit.getCommitTime());
         statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, newOne, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, another, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);

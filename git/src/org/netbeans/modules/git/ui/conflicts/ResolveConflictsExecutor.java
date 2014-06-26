@@ -52,6 +52,7 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.*;
 import java.nio.charset.Charset;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.netbeans.spi.diff.*;
@@ -66,9 +67,11 @@ import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitConflictDescriptor;
 import org.netbeans.libs.git.GitConflictDescriptor.Type;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDescriptor;
@@ -163,11 +166,15 @@ public class ResolveConflictsExecutor extends GitProgressSupport {
         String originalRightFileRevision = rightFileRevision;
         if (leftFileRevision != null) leftFileRevision = leftFileRevision.trim();
         if (rightFileRevision != null) rightFileRevision = rightFileRevision.trim();
-        if (leftFileRevision == null){
+        if (leftFileRevision == null || leftFileRevision.isEmpty()) {
             leftFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleWorkingFile"); // NOI18N
+        } else {
+            leftFileRevision = formatRevision(leftFileRevision);
         }
-        if (rightFileRevision == null) {
+        if (rightFileRevision == null || rightFileRevision.isEmpty()) {
             rightFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleWorkingFile"); // NOI18N
+        } else {
+            rightFileRevision = formatRevision(rightFileRevision);
         }
         
         final StreamSource s1;
@@ -194,6 +201,31 @@ public class ResolveConflictsExecutor extends GitProgressSupport {
             }
         });
         return true;
+    }
+
+    private static final int MAX_LEN = 40;
+    private String formatRevision (String commit) {
+    try {
+            GitClient client = getClient();
+            GitRevisionInfo info = client.log(commit, GitUtils.NULL_PROGRESS_MONITOR);
+            StringBuilder sb = new StringBuilder(100);
+            sb.append(commit);
+            if (!info.getRevision().startsWith(commit)) {
+                String commitId = info.getRevision();
+                if (commitId.length() > 7) {
+                    commitId = commitId.substring(0, 7);
+                }
+                sb.append(" (").append(commitId).append(")");
+            }
+            sb.append(" - ").append(info.getShortMessage().replace('\n', ' '));
+            if (sb.length() > MAX_LEN) {
+                sb.delete(MAX_LEN, sb.length());
+            }
+            return sb.toString();
+        } catch (GitException ex) {
+            LOG.log(Level.INFO, null, ex);
+            return commit;
+        }
     }
 
     /**

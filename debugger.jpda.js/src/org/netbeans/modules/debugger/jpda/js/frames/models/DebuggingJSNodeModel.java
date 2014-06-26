@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda.js.frames.models;
 
 import org.netbeans.modules.debugger.jpda.js.frames.JSStackFrame;
 import java.awt.datatransfer.Transferable;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -148,10 +149,33 @@ public class DebuggingJSNodeModel implements ExtendedNodeModelFilter {
             }
             if (i >= 0) {
                 descr = descr.substring(0, i) + descr.substring(i2);
+            } else {
+                if (descr.startsWith("<html>")) {
+                    int end = descr.indexOf("</");
+                    int begin = descr.lastIndexOf('>', end);
+                    begin++;
+                    descr = descr.substring(0, begin)+
+                            stripParentPath(descr.substring(begin, end))+
+                            descr.substring(end);
+                } else {
+                    descr = stripParentPath(descr);
+                }
             }
             //System.out.println(" => descr = '"+descr+"'");
         } else {
             descr = original.getDisplayName(node);
+        }
+        return descr;
+    }
+    
+    private static String stripParentPath(String descr) {
+        int slash = descr.lastIndexOf(File.separatorChar);
+        if (File.separatorChar != '/') {
+            int slash2 = descr.lastIndexOf('/');
+            slash = Math.max(slash, slash2);
+        }
+        if (slash > 0) {
+            descr = descr.substring(slash+1);
         }
         return descr;
     }
