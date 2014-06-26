@@ -63,6 +63,7 @@ import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.*;
@@ -3695,6 +3696,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         };
         gdb.sendCommand(cmd);
          */
+        if (session.coreSession() != DebuggerManager.getDebuggerManager().getCurrentSession()) {
+            DebuggerManager.getDebuggerManager().setCurrentSession(session.coreSession());
+        }
         
         final MITList results = stopRecord.results();
         
