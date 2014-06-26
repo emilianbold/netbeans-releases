@@ -774,11 +774,39 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     @Override
-    public final void stepTo(String function) {     //FIXUP null function case!
-        if (function != null) {
-            send("-break-insert -t " + function);    //NOI18N
-            go();
-        }
+    public final void stepTo(final String selectedText) {     //FIXUP null function case!
+        String expandedExpr = MacroSupport.expandMacro(this, selectedText);
+        String cmdString = "-data-evaluate-expression " + "\"" + expandedExpr + "\""; // NOI18N
+        
+        MiCommandImpl cmd = new MiCommandImpl(cmdString) {    //NOI18N
+
+            @Override
+            protected void onDone(MIRecord record) {
+                MITList results = record.results();
+                String value = results.getConstValue("value"); // NOI18N
+                value = value.substring(value.indexOf("<") + 1); // NOI18N
+                value = value.substring(0, value.indexOf(">")).trim(); // NOI18N
+                
+                if (value == null || value.isEmpty()) {
+                    value = selectedText;       // fallback
+                }
+
+                if (selectedText != null) {
+                    MiCommandImpl cmd2 = new MiCommandImpl("-break-insert -t " + value) {    //NOI18N
+
+                        @Override
+                        protected void onDone(MIRecord record) {
+                            go();
+                            finish();
+                        }
+
+                    };
+                    gdb.sendCommand(cmd2);
+                }
+                finish();
+            }
+        };
+        gdb.sendCommand(cmd);
     }
 
     @Override
