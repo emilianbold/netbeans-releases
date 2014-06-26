@@ -48,15 +48,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
-import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
+import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor2;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Provides well-known schemas from W3C.org directly from NB installation,
@@ -64,7 +63,7 @@ import org.xml.sax.EntityResolver;
  *
  * @author sdedic
  */
-public class WellKnownSchemaCatalog implements CatalogReader, CatalogDescriptor, EntityResolver {
+public class WellKnownSchemaCatalog implements CatalogReader, CatalogDescriptor2, EntityResolver {
     
     /**
      * XML instance schema
@@ -144,8 +143,8 @@ public class WellKnownSchemaCatalog implements CatalogReader, CatalogDescriptor,
     }
 
     @Override
-    public Image getIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/xml/catalog/impl/sysCatalog.gif", true); //NOI18N
+    public String getIconResource(int type) {
+        return "org/netbeans/modules/xml/catalog/impl/sysCatalog.gif"; //NOI18N
     }
 
     @Override

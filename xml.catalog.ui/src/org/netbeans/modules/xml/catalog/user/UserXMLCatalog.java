@@ -44,20 +44,18 @@
 
 package org.netbeans.modules.xml.catalog.user;
 
-import java.awt.Image;
 import java.beans.PropertyChangeListener;
-import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
+import java.io.*;
+import java.util.*;
+import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor2;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.netbeans.modules.xml.catalog.spi.CatalogWriter;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
-import org.openide.filesystems.*;
-import org.xml.sax.*;
-import java.util.*;
-import java.io.*;
-import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.*;
+import org.openide.util.NbBundle;
+import org.xml.sax.*;
 import org.xml.sax.ext.LexicalHandler;
 
 /**
@@ -75,7 +73,7 @@ import org.xml.sax.ext.LexicalHandler;
  * 
  * @author Milan Kuchtiak
  */
-public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDescriptor, EntityResolver {
+public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDescriptor2, EntityResolver {
     private static final String PROPERTY_LEX_HANDLER = "http://xml.org/sax/properties/lexical-handler";
     private Map publicIds;
     private List catalogListeners;
@@ -173,8 +171,8 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
         }
     }
 
-    public Image getIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/xml/catalog/impl/xmlCatalog.gif", true); //NOI18N
+    public String getIconResource(int type) {
+        return "org/netbeans/modules/xml/catalog/impl/xmlCatalog.gif"; //NOI18N
     }
 
     public void refresh() {
@@ -218,7 +216,7 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
         return publicIds;
     }
     
-    private void addEntry (int entryType, String key, String value) throws IOException {
+    public void addEntry (int entryType, String key, String value) throws IOException {
         FileObject userCatalog = FileUtil.getConfigFile(catalogResource);
         String tempBuffer = createCatalogBuffer(userCatalog);
         BufferedReader reader = new BufferedReader(new StringReader(tempBuffer));
@@ -266,7 +264,7 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
         }
     }
     
-    private void removeEntry (int entryType, String key) throws IOException {
+    public void removeEntry (int entryType, String key) throws IOException {
         FileObject userCatalog = FileUtil.getConfigFile(catalogResource);
         String tempBuffer = createCatalogBuffer(userCatalog);
         BufferedReader reader = new BufferedReader(new StringReader(tempBuffer));
@@ -316,7 +314,7 @@ public class UserXMLCatalog implements CatalogReader, CatalogWriter, CatalogDesc
         }
     }
     
-    private void updateEntry (int entryType, String key, String value) throws IOException {
+    public void updateEntry (int entryType, String key, String value) throws IOException {
         FileObject userCatalog = FileUtil.getConfigFile(catalogResource);
         String tempBuffer = createCatalogBuffer(userCatalog);
         BufferedReader reader = new BufferedReader(new StringReader(tempBuffer));

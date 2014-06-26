@@ -56,10 +56,9 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
-import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
+import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor2;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 
 /** Catalog for webservice related schemas that enables completion support in
@@ -70,7 +69,7 @@ import org.netbeans.modules.xml.catalog.spi.CatalogListener;
  * @author Peter Williams
  *
  */
-public class JaxRpcSchemaCatalog implements CatalogReader, CatalogDescriptor, EntityResolver  {
+public class JaxRpcSchemaCatalog implements CatalogReader, CatalogDescriptor2, EntityResolver  {
 
     public static final String JAXRPC_CONFIG_1_1 = "http://java.sun.com/xml/ns/jax-rpc/ri/config"; // NOI18N
     private static final String URL_JAXRPC_CONFIG_1_1 = "nbres:/org/netbeans/modules/websvc/wsdl/config/resources/jax-rpc-ri-config_1_1.xsd"; // NOI18N
@@ -137,8 +136,8 @@ public class JaxRpcSchemaCatalog implements CatalogReader, CatalogDescriptor, En
      * @param type of icon defined by JavaBeans specs
      * @return icon representing current state or null
      */
-    public java.awt.Image getIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/websvc/wsdl/config/resources/JaxRpcSchemaCatalog.png"); // NOI18N
+    public String getIconResource(int type) {
+        return "org/netbeans/modules/websvc/wsdl/config/resources/JaxRpcSchemaCatalog.png"; // NOI18N
     }
 
     /**

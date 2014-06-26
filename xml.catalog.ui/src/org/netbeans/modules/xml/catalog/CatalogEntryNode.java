@@ -54,7 +54,6 @@ import javax.swing.Action;
 import org.netbeans.modules.xml.catalog.lib.URLEnvironment;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.netbeans.modules.xml.catalog.spi.CatalogWriter;
-import org.netbeans.modules.xml.catalog.user.UserXMLCatalog;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.DeleteAction;
@@ -109,7 +108,6 @@ final class CatalogEntryNode extends BeanNode implements EditCookie, Node.Cookie
     }
     
     public void edit() {
-        UserXMLCatalog catalog = (UserXMLCatalog)getCatalogReader();
         try {
             URI uri = new URI(getSystemID());
             File file = new File(uri);

@@ -231,3 +231,4 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-modules-java-source-base" value="${javadoc.web.root}/org-netbeans-modules-java-source-base"/>
 <property name="javadoc.docs.org-netbeans-modules-project-ant-ui" value="${javadoc.web.root}/org-netbeans-modules-project-ant-ui"/>
 <property name="javadoc.docs.org-netbeans-modules-java-project-ui" value="${javadoc.web.root}/org-netbeans-modules-java-project-ui"/>
+<property name="javadoc.docs.org-netbeans-modules-xml-catalog-ui" value="${javadoc.web.root}/org-netbeans-modules-xml-catalog-ui"/>

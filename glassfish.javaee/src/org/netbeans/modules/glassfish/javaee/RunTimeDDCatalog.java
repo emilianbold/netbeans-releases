@@ -59,14 +59,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.xml.api.model.GrammarEnvironment;
 import org.netbeans.modules.xml.api.model.GrammarQuery;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.netbeans.modules.xml.api.model.DTDUtil;
 import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.modules.xml.api.model.GrammarQueryManager;
-import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
+import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor2;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.netbeans.spi.server.ServerInstanceProvider;
@@ -83,7 +82,7 @@ import org.xml.sax.SAXException;
  * @author Ludo
  */
 
-public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogReader, CatalogDescriptor,org.xml.sax.EntityResolver  {
+public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogReader, CatalogDescriptor2,org.xml.sax.EntityResolver  {
     
     private static final String XML_XSD="http://www.w3.org/2001/xml.xsd"; // NOI18N
     private static final String XML_XSD_DEF="<?xml version='1.0'?><xs:schema targetNamespace=\"http://www.w3.org/XML/1998/namespace\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xml:lang=\"en\"><xs:attribute name=\"lang\" type=\"xs:language\"><xs:annotation><xs:documentation>In due course, we should install the relevant ISO 2- and 3-letter codes as the enumerated possible values . . .</xs:documentation></xs:annotation></xs:attribute></xs:schema>"; // NOI18N
@@ -422,8 +421,8 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      * @return icon representing current state or null
      */
     @Override
-    public java.awt.Image getIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/glassfish/javaee/resources/ServerInstanceIcon.png"); // NOI18N
+    public String getIconResource(int type) {
+        return "org/netbeans/modules/glassfish/javaee/resources/ServerInstanceIcon.png"; // NOI18N
     }
     
     /**

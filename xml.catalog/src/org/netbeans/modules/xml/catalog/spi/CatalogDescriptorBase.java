@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.xml.catalog.spi;
 
-import java.awt.Image;
 import java.beans.*;
 
 /**
@@ -53,7 +52,7 @@ import java.beans.*;
  * @author  Petr Kuzel
  * @version 1.0
  */
-public interface CatalogDescriptor {
+public interface CatalogDescriptorBase {
 
     /**
      * Name of icon property if fired.
@@ -69,13 +68,6 @@ public interface CatalogDescriptor {
      * Name of short description property
      */
     public static final String PROP_CATALOG_DESC = "ca-desc"; // NOI18N
-    
-    /**
-     * Return visuaized state of given catalog.
-     * @param type of icon defined by JavaBeans specs
-     * @return icon representing current state or null
-     */
-    public Image getIcon(int type);
     
     /**
      * @return I18N display name

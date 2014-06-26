@@ -182,6 +182,7 @@ public abstract class Scheduler {
                 SourceCache cache = SourceAccessor.getINSTANCE ().getCache (source);                
                 SourceAccessor.getINSTANCE ().setSchedulerEvent (source, Scheduler.this, event);
                 //S ystem.out.println ("\nSchedule tasks (" + Scheduler.this + "):");
+                LOG.fine("Scheduling tasks for :" + source + " and scheduler " + this);
                 cache.scheduleTasks (Scheduler.this.getClass ());
             }
         });

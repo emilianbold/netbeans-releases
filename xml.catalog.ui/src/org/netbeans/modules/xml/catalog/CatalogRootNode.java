@@ -270,15 +270,15 @@ public final class CatalogRootNode extends AbstractNode implements Node.Cookie {
             if (one == two) return 0;
             if (one instanceof SystemCatalogReader) return -1;
             if (two instanceof SystemCatalogReader) return 1;
-            if (one instanceof CatalogDescriptor && two instanceof CatalogDescriptor) {
-                int test = (((CatalogDescriptor)one).getDisplayName()).compareTo(
-                    ((CatalogDescriptor)two).getDisplayName()
+            if (one instanceof CatalogDescriptorBase && two instanceof CatalogDescriptorBase) {
+                int test = (((CatalogDescriptorBase)one).getDisplayName()).compareTo(
+                    ((CatalogDescriptorBase)two).getDisplayName()
                 );
                 if (test != 0) return test;
                 
             } else {
-                if (one instanceof CatalogDescriptor) return -1;
-                if (two instanceof CatalogDescriptor) return 1;
+                if (one instanceof CatalogDescriptorBase) return -1;
+                if (two instanceof CatalogDescriptorBase) return 1;
             }
             // show all catalogs never return 0
             return (long)one.hashCode() - (long)two.hashCode() > 0L ? 1 : -1;

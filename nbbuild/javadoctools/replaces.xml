@@ -231,3 +231,4 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-modules-java-source-base@" value="${javadoc.docs.org-netbeans-modules-java-source-base}"/>
 <replacefilter token="@org-netbeans-modules-project-ant-ui@" value="${javadoc.docs.org-netbeans-modules-project-ant-ui}"/>
 <replacefilter token="@org-netbeans-modules-java-project-ui@" value="${javadoc.docs.org-netbeans-modules-java-project-ui}"/>
+<replacefilter token="@org-netbeans-modules-xml-catalog-ui@" value="${javadoc.docs.org-netbeans-modules-xml-catalog-ui}"/>

@@ -233,3 +233,4 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-modules-java-source-base}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-java-source-base"/>
 <link href="${javadoc.docs.org-netbeans-modules-project-ant-ui}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-project-ant-ui"/>
 <link href="${javadoc.docs.org-netbeans-modules-java-project-ui}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-java-project-ui"/>
+<link href="${javadoc.docs.org-netbeans-modules-xml-catalog-ui}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-xml-catalog-ui"/>

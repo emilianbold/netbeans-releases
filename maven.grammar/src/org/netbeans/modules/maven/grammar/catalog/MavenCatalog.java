@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
  *
  * @author Milos Kleint
  */
-public class MavenCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax.EntityResolver {
+public class MavenCatalog implements CatalogReader, CatalogDescriptor2, org.xml.sax.EntityResolver {
     private static final String MAVEN2_ICON = "org/netbeans/modules/maven/resources/Maven2Icon.gif";
 
     private static final String POM_4_0_0 = "http://maven.apache.org/maven-v4_0_0.xsd"; // NOI18N
@@ -182,8 +182,8 @@ public class MavenCatalog implements CatalogReader, CatalogDescriptor, org.xml.s
      * @return icon representing current state or null
      */
     @Override
-    public java.awt.Image getIcon(int type) {
-        return ImageUtilities.loadImage(MAVEN2_ICON); // NOI18N
+    public String getIconResource(int type) {
+        return MAVEN2_ICON; // NOI18N
     }
     
     /**

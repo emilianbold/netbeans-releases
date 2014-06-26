@@ -51,7 +51,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
+import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor2;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.openide.util.ImageUtilities;
@@ -65,7 +65,7 @@ import org.openide.util.Utilities;
  *
  * @author Erno Mononen
  */
-public class PersistenceCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax.EntityResolver {
+public class PersistenceCatalog implements CatalogReader, CatalogDescriptor2, org.xml.sax.EntityResolver {
     
     private static final String PERSISTENCE_OLD_NS = "http://java.sun.com/xml/ns/persistence"; // NOI18N
     private static final String PERSISTENCE_NS = "http://xmlns.jcp.org/xml/ns/persistence"; // NOI18N
@@ -139,8 +139,8 @@ public class PersistenceCatalog implements CatalogReader, CatalogDescriptor, org
     public void removeCatalogListener(CatalogListener l) {
     }
     
-    public Image getIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/j2ee/persistence/dd/resources/persistenceCatalog.gif"); // NOI18N
+    public String getIconResource(int type) {
+        return "org/netbeans/modules/j2ee/persistence/dd/resources/persistenceCatalog.gif"; // NOI18N
     }
     
     public String getDisplayName() {

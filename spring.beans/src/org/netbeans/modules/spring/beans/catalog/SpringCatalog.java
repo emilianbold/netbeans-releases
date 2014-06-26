@@ -52,7 +52,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
+import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor2;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.openide.util.ImageUtilities;
@@ -67,7 +67,7 @@ import org.xml.sax.SAXException;
  *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class SpringCatalog implements CatalogReader, CatalogDescriptor, EntityResolver {
+public class SpringCatalog implements CatalogReader, CatalogDescriptor2, EntityResolver {
 
     private static final String SPRING_AOP_2_0_XSD = "spring-aop-2.0.xsd";                                                                                            // NOI18N
     private static final String SPRING_AOP_2_0_XSD_URI = "http://www.springframework.org/schema/aop/spring-aop-2.0.xsd";                                              // NOI18N
@@ -270,8 +270,8 @@ public class SpringCatalog implements CatalogReader, CatalogDescriptor, EntityRe
     public void removeCatalogListener(CatalogListener catalogListener) {
     }
 
-    public Image getIcon(int i) {
-        return ImageUtilities.loadImage("org/netbeans/modules/spring/beans/resources/spring.png"); // NOI18N
+    public String getIconResource(int i) {
+        return "org/netbeans/modules/spring/beans/resources/spring.png"; // NOI18N
     }
 
     public String getDisplayName() {

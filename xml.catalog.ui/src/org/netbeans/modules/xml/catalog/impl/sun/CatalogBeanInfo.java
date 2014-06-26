@@ -41,18 +41,21 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.catalog.impl;
+package org.netbeans.modules.xml.catalog.impl.sun;
 
 import java.beans.*;
 import java.awt.Image;
+import org.netbeans.modules.xml.catalog.impl.sun.Catalog;
 
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-public class SystemCatalogReaderBeanInfo extends SimpleBeanInfo {
+import org.netbeans.modules.xml.catalog.spi.*;
+import org.openide.util.NbBundle;
 
-    private static final String ICON_DIR_BASE = "org/netbeans/modules/xml/catalog/impl/"; // NOI18N
+public class CatalogBeanInfo extends SimpleBeanInfo {
+
+    private static final String ICON_DIR_BASE = "org/netbeans/modules/xml/catalog/impl/sun/"; // NOI18N
 
     /**
      * Gets the bean's <code>BeanDescriptor</code>s.
@@ -62,11 +65,13 @@ public class SystemCatalogReaderBeanInfo extends SimpleBeanInfo {
      * information should be obtained by automatic analysis.
      */
     public BeanDescriptor getBeanDescriptor() {
-        BeanDescriptor beanDescriptor = new BeanDescriptor  ( SystemCatalogReader.class , SystemCatalogCustomizer.class );
+	BeanDescriptor beanDescriptor = new BeanDescriptor  ( Catalog.class , CatalogCustomizer.class );
+        beanDescriptor.setDisplayName ( NbBundle.getMessage(CatalogBeanInfo.class, "PROP_Catalog") );
+        beanDescriptor.setShortDescription ( NbBundle.getMessage(CatalogBeanInfo.class, "PROP_Catalog_desc") );                              
 
-        beanDescriptor.setDisplayName ( NbBundle.getMessage(SystemCatalogReaderBeanInfo.class, "NAME_system_catalog") );
-        beanDescriptor.setShortDescription ( NbBundle.getMessage(SystemCatalogReaderBeanInfo.class, "TEXT_system_catalog_desc") );
-	return beanDescriptor;
+        // Here you can add code for customizing the BeanDescriptor.
+
+        return beanDescriptor;
     }
 
     /**
@@ -82,7 +87,27 @@ public class SystemCatalogReaderBeanInfo extends SimpleBeanInfo {
      * if a given PropertyDescriptor is an IndexedPropertyDescriptor.
      */
     public PropertyDescriptor[] getPropertyDescriptors() {
-	return new PropertyDescriptor[0];
+        int PROPERTY_displayName = 0;
+        int PROPERTY_shortDescription = 1;
+        int PROPERTY_icon = 2;
+        PropertyDescriptor[] properties = new PropertyDescriptor[3];
+
+        try {
+            properties[PROPERTY_displayName] = new PropertyDescriptor ( "displayName", Catalog.class, "getDisplayName", null );
+            properties[PROPERTY_displayName].setDisplayName ( NbBundle.getMessage(CatalogBeanInfo.class, "PROP_catalog_name") );
+            properties[PROPERTY_displayName].setShortDescription ( NbBundle.getMessage(CatalogBeanInfo.class, "PROP_catalog_name_desc") );
+            properties[PROPERTY_shortDescription] = new PropertyDescriptor ( "shortDescription", Catalog.class, "getShortDescription", null );
+            properties[PROPERTY_shortDescription].setDisplayName ( NbBundle.getMessage(CatalogBeanInfo.class, "PROP_catalog_info") );
+            properties[PROPERTY_shortDescription].setShortDescription ( NbBundle.getMessage(CatalogBeanInfo.class, "PROP_catalog_info_desc") );
+            properties[PROPERTY_icon] = new IndexedPropertyDescriptor ( "icon", Catalog.class, null, null, "getIcon", null );
+            properties[PROPERTY_icon].setHidden ( true );
+        }
+        catch( IntrospectionException e) {}                          
+        properties[PROPERTY_shortDescription].setName(CatalogDescriptorBase.PROP_CATALOG_DESC);
+        properties[PROPERTY_displayName].setName(CatalogDescriptorBase.PROP_CATALOG_NAME);
+        properties[PROPERTY_icon].setName(CatalogDescriptorBase.PROP_CATALOG_ICON);
+
+        return properties;
     }
 
     /**
@@ -107,11 +132,32 @@ public class SystemCatalogReaderBeanInfo extends SimpleBeanInfo {
 	return new MethodDescriptor[0];
     }
 
+    /**
+     * This method returns an image object that can be used to
+     * represent the bean in toolboxes, toolbars, etc.   Icon images
+     * will typically be GIFs, but may in future include other formats.
+     * <p>
+     * Beans aren't required to provide icons and may return null from
+     * this method.
+     * <p>
+     * There are four possible flavors of icons (16x16 color,
+     * 32x32 color, 16x16 mono, 32x32 mono).  If a bean choses to only
+     * support a single icon we recommend supporting 16x16 color.
+     * <p>
+     * We recommend that icons have a "transparent" background
+     * so they can be rendered onto an existing background.
+     *
+     * @param  iconKind  The kind of icon requested.  This should be
+     *    one of the constant values ICON_COLOR_16x16, ICON_COLOR_32x32, 
+     *    ICON_MONO_16x16, or ICON_MONO_32x32.
+     * @return  An image object representing the requested icon.  May
+     *    return null if no suitable icon is available.
+     */
     public Image getIcon (int type) {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
             (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
 
-            return ImageUtilities.loadImage (ICON_DIR_BASE + "sysCatalog.gif"); // NOI18N
+            return ImageUtilities.loadImage (ICON_DIR_BASE + "sunCatalog.gif"); // NOI18N
         } else {
             return null;
         }
