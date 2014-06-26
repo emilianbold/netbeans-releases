@@ -46,6 +46,7 @@ package org.netbeans.modules.xml.catalog.impl.sun;
 import java.beans.*;
 import java.io.File;
 import java.net.MalformedURLException;
+import org.netbeans.modules.xml.catalog.impl.sun.Catalog;
 import org.openide.util.NbBundle;
 
 /**

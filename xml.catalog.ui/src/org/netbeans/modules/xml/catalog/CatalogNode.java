@@ -45,7 +45,9 @@
 package org.netbeans.modules.xml.catalog;
 
 import java.awt.Image;
+import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
+import java.beans.Introspector;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -58,6 +60,8 @@ import java.util.TreeSet;
 import javax.swing.Action;
 import org.netbeans.modules.xml.catalog.settings.CatalogSettings;
 import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
+import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor2;
+import org.netbeans.modules.xml.catalog.spi.CatalogDescriptorBase;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.netbeans.modules.xml.catalog.spi.CatalogWriter;
@@ -65,7 +69,9 @@ import org.openide.actions.PropertiesAction;
 import org.openide.nodes.BeanNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.NodeAction;
@@ -74,7 +80,7 @@ import org.openide.util.actions.SystemAction;
 /**
  * Node representing a catalog.
  * Every catalog reader is considered to be a bean.
- * Information about catalog instance are obtained using CatalogDescriptor interface
+ * Information about catalog instance are obtained using CatalogDescriptorBase interface
  * if passed instance implements it.
  *
  * @author  Petr Kuzel
@@ -89,11 +95,11 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
         this.catalog=catalog;
         getCookieSet().add(this);
         
-        if (catalog instanceof CatalogDescriptor) {
+        if (catalog instanceof CatalogDescriptorBase) {
             
             // set node properties acording to descriptor
             
-            CatalogDescriptor desc = (CatalogDescriptor) catalog;            
+            CatalogDescriptorBase desc = (CatalogDescriptorBase) catalog;            
             setSynchronizeName(false);
             setName(desc.getDisplayName());
             String bundleString = catalog instanceof CatalogWriter ?"LBL_catalogReadWrite":"LBL_catalogReadOnly"; //NOI18N
@@ -140,12 +146,28 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
     }
 
     /**
-     * @return icon regurned by CatalogDescriptor if instance of it
+     * @return icon returned by CatalogDescriptorBase if instance of it
      */
     public Image getIcon(int type) {
+        if (catalog instanceof CatalogDescriptor2) {
+            String iconResource = ((CatalogDescriptor2)catalog).getIconResource(type);
+            if (iconResource != null) {
+                // will cache
+                return ImageUtilities.loadImage(iconResource, true);
+            }
+        }
         if (catalog instanceof CatalogDescriptor) {
             Image icon = ((CatalogDescriptor)catalog).getIcon(type);
             if (icon != null) return icon;
+        }
+        try {
+            BeanInfo catalogInfo = Introspector.getBeanInfo(catalog.getClass());
+            Image icon = catalogInfo.getIcon(type);
+            if (icon != null) {
+                return icon;
+            }
+        } catch (IntrospectionException ex) {
+            Exceptions.printStackTrace(ex);
         }
         
         return super.getIcon(type);        
@@ -189,16 +211,16 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
      */
     public void propertyChange(PropertyChangeEvent e) {
         //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(e.toString());
-        if (CatalogDescriptor.PROP_CATALOG_NAME.equals(e.getPropertyName())) {
+        if (CatalogDescriptorBase.PROP_CATALOG_NAME.equals(e.getPropertyName())) {
             //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(" Setting name: " + (String) e.getNewValue()); // NOI18N
 
             setName((String) e.getNewValue());
             setDisplayName((String) e.getNewValue());
-        } else if (CatalogDescriptor.PROP_CATALOG_DESC.equals(e.getPropertyName())) {
+        } else if (CatalogDescriptorBase.PROP_CATALOG_DESC.equals(e.getPropertyName())) {
             //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(" Setting desc: " + (String) e.getNewValue()); // NOI18N
 
             setShortDescription((String) e.getNewValue());
-        } else if (CatalogDescriptor.PROP_CATALOG_ICON.equals(e.getPropertyName())) { 
+        } else if (CatalogDescriptorBase.PROP_CATALOG_ICON.equals(e.getPropertyName())) { 
             //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(" Updating icon"); // NOI18N
 
             fireIconChange();

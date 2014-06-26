@@ -57,7 +57,7 @@ import org.w3c.dom.DocumentType;
  *
  * @author  Petr Pisl
  */
-public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax.EntityResolver {
+public class JSFCatalog implements CatalogReader, CatalogDescriptor2, org.xml.sax.EntityResolver {
 
     private static final String JSF_ID_1_0 = "-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.0//EN"; // NOI18N
     private static final String JSF_ID_1_1 = "-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.1//EN"; // NOI18N
@@ -191,8 +191,8 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
      * @param type of icon defined by JavaBeans specs
      * @return icon representing current state or null
      */
-    public java.awt.Image getIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/web/jsf/resources/JSFCatalog.png"); // NOI18N
+    public String getIconResource(int type) {
+        return "org/netbeans/modules/web/jsf/resources/JSFCatalog.png"; // NOI18N
     }
 
     /**

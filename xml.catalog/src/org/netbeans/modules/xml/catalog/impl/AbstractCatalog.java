@@ -425,22 +425,11 @@ public abstract class AbstractCatalog {
     }
     
     /** Get icon from bean info or null. */
-    protected Image getDefaultIcon(int type) {
-        try {
-            BeanInfo info = Utilities.getBeanInfo(getClass());
-            return info.getIcon(type);
-        } catch (IntrospectionException ex) {
-            return null;
-        }                
+    protected String getDefaultIcon(int type) {
+        return null;
     }
     
-    /** 
-     * Badge catalog icon with error sign. 
-     * @return null
-     */
-    protected Image getDefaultErrorIcon(int type) {
-        if (getDefaultIcon(type) == null) return null;
-        
+    protected String getDefaultErrorIcon(int type) {
         return null;
     }
     

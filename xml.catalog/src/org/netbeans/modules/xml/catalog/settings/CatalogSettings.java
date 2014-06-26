@@ -46,12 +46,14 @@ package org.netbeans.modules.xml.catalog.settings;
 import java.io.*;
 import java.util.*;
 import java.beans.*;
+import java.util.logging.Level;
 import org.netbeans.modules.xml.catalog.lib.IteratorIterator;
 
 import org.openide.*;
 import org.openide.util.io.NbMarshalledObject;
 
 import org.netbeans.modules.xml.catalog.spi.*;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -290,16 +292,28 @@ public final class CatalogSettings implements Externalizable {
                 }
             } catch (ClassNotFoundException ex) {
                 //ignore probably missing provider class
-                emgr().annotate(ex, NbBundle.getMessage(CatalogSettings.class, "EXC_deserialization_failed", catalogClass));
-                emgr().notify(ErrorManager.INFORMATIONAL, ex);                
+                Exceptions.printStackTrace(
+                    Exceptions.attachSeverity(
+                        Exceptions.attachMessage(ex, NbBundle.getMessage(CatalogSettings.class, "EXC_deserialization_failed", catalogClass)),
+                        Level.INFO
+                    )
+                );
             } catch (IOException ex) {
                 //ignore incompatible classes
-                emgr().annotate(ex, NbBundle.getMessage(CatalogSettings.class, "EXC_deserialization_failed", catalogClass));
-                emgr().notify(ErrorManager.INFORMATIONAL, ex);                                
+                Exceptions.printStackTrace(
+                    Exceptions.attachSeverity(
+                        Exceptions.attachMessage(ex, NbBundle.getMessage(CatalogSettings.class, "EXC_deserialization_failed", catalogClass)),
+                        Level.INFO
+                    )
+                );
             } catch (RuntimeException ex) {
                 //ignore catalog that can not deserialize itself without NPE etc.
-                emgr().annotate(ex, NbBundle.getMessage(CatalogSettings.class, "EXC_deserialization_failed", catalogClass));
-                emgr().notify(ErrorManager.INFORMATIONAL, ex);                                
+                Exceptions.printStackTrace(
+                    Exceptions.attachSeverity(
+                        Exceptions.attachMessage(ex, NbBundle.getMessage(CatalogSettings.class, "EXC_deserialization_failed", catalogClass)),
+                        Level.INFO
+                    )
+                );
             }
         }
     }
@@ -338,23 +352,25 @@ public final class CatalogSettings implements Externalizable {
                     out.writeObject(marshaled);  //OUT marshalled object
                 } catch (IOException ex) {
                     // catalog can not be serialized
-                    emgr().annotate(ex, NbBundle.getMessage(CatalogSettings.class, "EXC_serialization_failed", next.getClass()));
-                    emgr().notify(ErrorManager.INFORMATIONAL, ex);
+                    Exceptions.printStackTrace(
+                        Exceptions.attachSeverity(
+                            Exceptions.attachMessage(ex, NbBundle.getMessage(CatalogSettings.class, "EXC_serialization_failed", next.getClass())),
+                            Level.INFO
+                        )
+                    );
                 } catch (RuntimeException ex) {
                     //skip this odd catalog
-                    emgr().annotate(ex, NbBundle.getMessage(CatalogSettings.class, "EXC_serialization_failed", next.getClass()));
-                    emgr().notify(ErrorManager.INFORMATIONAL, ex);
+                    Exceptions.printStackTrace(
+                        Exceptions.attachSeverity(
+                            Exceptions.attachMessage(ex, NbBundle.getMessage(CatalogSettings.class, "EXC_serialization_failed", next.getClass())),
+                            Level.INFO
+                        )
+                    );
                 }
             }
         }        
     }    
         
-    /** Lazy initialized error manager. */
-    private ErrorManager emgr() {
-        return ErrorManager.getDefault();
-    }
-    
-
     /**
      * For debugging purposes only.
      */

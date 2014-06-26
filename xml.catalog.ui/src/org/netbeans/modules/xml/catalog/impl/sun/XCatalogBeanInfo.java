@@ -41,15 +41,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.catalog.impl;
+package org.netbeans.modules.xml.catalog.impl.sun;
 
 import java.beans.*;
 import java.awt.Image;
+import org.netbeans.modules.xml.catalog.impl.XCatalog;
 
 import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
-import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
+import org.netbeans.modules.xml.catalog.spi.CatalogDescriptorBase;
 import org.openide.util.NbBundle;
 
 public class XCatalogBeanInfo extends SimpleBeanInfo {
@@ -105,9 +106,9 @@ public class XCatalogBeanInfo extends SimpleBeanInfo {
         
         // Here you can add code for customizing the properties array.
         
-        properties[PROPERTY_shortDescription].setName(CatalogDescriptor.PROP_CATALOG_DESC);
-        properties[PROPERTY_displayName].setName(CatalogDescriptor.PROP_CATALOG_NAME);
-        properties[PROPERTY_icon].setName(CatalogDescriptor.PROP_CATALOG_ICON);
+        properties[PROPERTY_shortDescription].setName(CatalogDescriptorBase.PROP_CATALOG_DESC);
+        properties[PROPERTY_displayName].setName(CatalogDescriptorBase.PROP_CATALOG_NAME);
+        properties[PROPERTY_icon].setName(CatalogDescriptorBase.PROP_CATALOG_ICON);
 	return properties;
     }
 
