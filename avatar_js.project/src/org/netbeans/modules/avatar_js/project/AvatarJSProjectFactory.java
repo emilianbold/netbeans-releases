@@ -208,9 +208,11 @@ public final class AvatarJSProjectFactory implements ProjectFactory2 {
 
         private static boolean canExecute(String nodecmd) {
             try {
-                int exitValue = Runtime.getRuntime().exec(new String[] { nodecmd, "-v" }).exitValue();
+                int exitValue = Runtime.getRuntime().exec(new String[] { nodecmd, "-v" }).waitFor();
                 return exitValue == 0;
             } catch (IOException ex) {
+                return false;
+            } catch (InterruptedException ex) {
                 return false;
             }
         }
