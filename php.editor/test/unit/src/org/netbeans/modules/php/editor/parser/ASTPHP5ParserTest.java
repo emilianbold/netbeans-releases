@@ -503,6 +503,10 @@ public class ASTPHP5ParserTest extends ParserTestBase {
     public void testExponentiation_01() throws Exception {
         performTest("parser/exponentiation_01");
     }
+    
+    public void testConstantScalarExpressions_01() throws Exception {
+        performTest("parser/constantScalarExpressions_01");
+    }
 
     @Override
     protected String getTestResult(String filename) throws Exception {
