@@ -386,6 +386,11 @@ public final class ModelElementFactory {
         public OffsetRange getOffsetRange(ParserResult result) {
             return delegate.getOffsetRange(result);
         }
+
+        @Override
+        public boolean containsOffset(int offset) {
+            return delegate.containsOffset(offset);
+        }        
     }
 
     private static class GlobalFunction implements JsFunction {
@@ -586,6 +591,10 @@ public final class ModelElementFactory {
         public OffsetRange getOffsetRange(ParserResult result) {
             return delegate.getOffsetRange(result);
         }
-
+        
+        @Override
+        public boolean containsOffset(int offset) {
+            return delegate.containsOffset(offset);
+        }
     }
 }
