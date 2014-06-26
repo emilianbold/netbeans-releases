@@ -46,8 +46,8 @@ import java.net.URI;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Parameters;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -129,7 +129,7 @@ class IndexCacheFactory {
 
     private static final class NIOPolicy implements EvictionPolicy<URI,Evictable> {
         private static final int DEFAULT_SIZE = 400;
-        private static final boolean NEEDS_REMOVE =  Boolean.getBoolean("IndexCache.force") || (Utilities.isUnix() && !Utilities.isMac());  //NOI18N
+        private static final boolean NEEDS_REMOVE =  Boolean.getBoolean("IndexCache.force") || (BaseUtilities.isUnix() && !BaseUtilities.isMac());  //NOI18N
         private static final int MAX_SIZE;
         static {
             int value = DEFAULT_SIZE;
