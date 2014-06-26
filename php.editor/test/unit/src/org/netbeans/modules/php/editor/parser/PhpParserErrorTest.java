@@ -379,4 +379,8 @@ public class PhpParserErrorTest extends PHPTestBase {
     public void testExponentiation_01() throws Exception {
         checkErrors("testfiles/parser/exponentiation_01.php");
     }
+    
+    public void testConstantScalarExpressions_01() throws Exception {
+        checkErrors("testfiles/parser/constantScalarExpressions_01.php");
+    }
 }
