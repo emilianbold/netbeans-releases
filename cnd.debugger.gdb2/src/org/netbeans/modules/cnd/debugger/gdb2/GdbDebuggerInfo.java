@@ -44,9 +44,12 @@
 
 package org.netbeans.modules.cnd.debugger.gdb2;
 
+import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
 import org.netbeans.modules.cnd.debugger.gdb2.options.GdbProfile;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.openide.util.lookup.ServiceProvider;
 
 /*
@@ -107,8 +110,14 @@ public final class GdbDebuggerInfo extends NativeDebuggerInfo {
     private static class GdbDebuggerInfoAccessorImpl extends GdbDebuggerInfoAccessor {
 
         @Override
-        public GdbDebuggerInfo create() {
-            return GdbDebuggerInfo.create();
+        public GdbDebuggerInfo create(DebugTarget dt, String hostName, Configuration conf, int action, String targetCommand) {
+            GdbDebuggerInfo gdi = GdbDebuggerInfo.create();
+            gdi.setDebugTarget(dt);
+            gdi.setHostName(hostName); //NOI18N
+            gdi.setConfiguration(conf);
+            gdi.setAction(action);
+            gdi.setTargetCommand(targetCommand);
+            return gdi;
         }
     
     }

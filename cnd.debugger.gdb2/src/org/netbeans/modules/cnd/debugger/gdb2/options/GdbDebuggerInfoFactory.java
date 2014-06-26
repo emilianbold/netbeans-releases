@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
  */
 public final class GdbDebuggerInfoFactory {
       public static NativeDebuggerInfo create(DebugTarget dt, String hostName, Configuration conf, int action, String targetCommand) {
-	return GdbDebuggerInfoAccessor.getDefault().create();
+	return GdbDebuggerInfoAccessor.getDefault().create(dt, hostName, conf, action, targetCommand);
     }
     
 }

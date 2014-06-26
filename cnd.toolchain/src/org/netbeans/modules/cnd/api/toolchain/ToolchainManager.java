@@ -269,9 +269,9 @@ public final class ToolchainManager {
 
         String getMakeAllInDirectoryPattern();
 
-        String getStackHeaderPattern();
+        List<String> getStackHeaderPattern();
 
-        String getStackNextPattern();
+        List<String> getStackNextPattern();
 
 	List<String> getFilterOutPatterns();
     }

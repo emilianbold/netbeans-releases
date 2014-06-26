@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.cnd.debugger.gdb2;
 
+import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+
 /**
  *
  * @author mtishkov
@@ -72,5 +75,5 @@ abstract public class GdbDebuggerInfoAccessor {
         DEFAULT = accessor;
     }
 
-    abstract public GdbDebuggerInfo create();
+    abstract public GdbDebuggerInfo create(DebugTarget dt, String hostName, Configuration conf, int action, String targetCommand);
 }
