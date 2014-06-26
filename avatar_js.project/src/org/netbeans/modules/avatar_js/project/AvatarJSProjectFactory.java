@@ -54,6 +54,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Action;
 import javax.swing.ImageIcon;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -87,6 +88,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -281,7 +283,13 @@ public final class AvatarJSProjectFactory implements ProjectFactory2 {
             DataFolder df = DataFolder.findFolder(dir);
             AbstractNode an = new AbstractNode(
                 df.createNodeChildren(DataFilter.ALL), getLookup()
-            );
+            ) {
+
+                @Override
+                public Action[] getActions(boolean context) {
+                    return Utilities.actionsForPath("Projects/org-netbeans-modules-avatar_js-project/Actions/").toArray(new Action[0]);
+                }
+            };
             an.setIconBaseWithExtension(ICON);
             an.setName(df.getName());
             return an;
