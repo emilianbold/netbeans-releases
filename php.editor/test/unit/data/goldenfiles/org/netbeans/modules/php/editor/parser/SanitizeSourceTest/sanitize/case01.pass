@@ -43,7 +43,7 @@
                     <FunctionDeclaration start='143' end='284' isReference='false'>
                         <Identifier start='152' end='159' name='process'/>
                         <FormalParameters>
-                            <FormalParameter start='160' end='165' isMandatory='false' isVariadic='false'>
+                            <FormalParameter start='160' end='165' isMandatory='true' isVariadic='false'>
                                 <ParametrType>
                                 </ParametrType>
                                 <ParametrName>

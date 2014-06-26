@@ -4356,7 +4356,7 @@ switch (CUP$ASTPHP5Parser$act_num) {
 
 	int start = classType == null ? (isVariadic ? isVariadicleft : varleft) : classTypeleft;
 	Variable v = new Variable(varleft, varright, var);
-	FormalParameter parameter = new FormalParameter(start, varright, classType, v, false, isVariadic);
+	FormalParameter parameter = new FormalParameter(start, varright, classType, v, isVariadic);
 	RESULT = parameter;
 
               CUP$ASTPHP5Parser$result = parser.getSymbolFactory().newSymbol("parameter",32, ((java_cup.runtime.Symbol)CUP$ASTPHP5Parser$stack.elementAt(CUP$ASTPHP5Parser$top-2)), ((java_cup.runtime.Symbol)CUP$ASTPHP5Parser$stack.peek()), RESULT);

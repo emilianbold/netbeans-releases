@@ -154,7 +154,7 @@
             <FunctionDeclaration start='6' end='114' isReference='false'>
                 <Identifier start='15' end='16' name='f'/>
                 <FormalParameters>
-                    <FormalParameter start='17' end='21' isMandatory='false' isVariadic='false'>
+                    <FormalParameter start='17' end='21' isMandatory='true' isVariadic='false'>
                         <ParametrType>
                         </ParametrType>
                         <ParametrName>

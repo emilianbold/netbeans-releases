@@ -444,7 +444,7 @@
             <FunctionDeclaration start='55' end='132' isReference='false'>
                 <Identifier start='64' end='77' name='error_handler'/>
                 <FormalParameters>
-                    <FormalParameter start='78' end='82' isMandatory='false' isVariadic='false'>
+                    <FormalParameter start='78' end='82' isMandatory='true' isVariadic='false'>
                         <ParametrType>
                         </ParametrType>
                         <ParametrName>
@@ -455,7 +455,7 @@
                         <DefaultValue>
                         </DefaultValue>
                     </FormalParameter>
-                    <FormalParameter start='84' end='88' isMandatory='false' isVariadic='false'>
+                    <FormalParameter start='84' end='88' isMandatory='true' isVariadic='false'>
                         <ParametrType>
                         </ParametrType>
                         <ParametrName>
@@ -466,7 +466,7 @@
                         <DefaultValue>
                         </DefaultValue>
                     </FormalParameter>
-                    <FormalParameter start='90' end='95' isMandatory='false' isVariadic='false'>
+                    <FormalParameter start='90' end='95' isMandatory='true' isVariadic='false'>
                         <ParametrType>
                         </ParametrType>
                         <ParametrName>
@@ -477,7 +477,7 @@
                         <DefaultValue>
                         </DefaultValue>
                     </FormalParameter>
-                    <FormalParameter start='97' end='102' isMandatory='false' isVariadic='false'>
+                    <FormalParameter start='97' end='102' isMandatory='true' isVariadic='false'>
                         <ParametrType>
                         </ParametrType>
                         <ParametrName>
@@ -488,7 +488,7 @@
                         <DefaultValue>
                         </DefaultValue>
                     </FormalParameter>
-                    <FormalParameter start='104' end='109' isMandatory='false' isVariadic='false'>
+                    <FormalParameter start='104' end='109' isMandatory='true' isVariadic='false'>
                         <ParametrType>
                         </ParametrType>
                         <ParametrName>

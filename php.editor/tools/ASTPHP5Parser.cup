@@ -1505,7 +1505,7 @@ optional_class_type:classType is_variadic:isVariadic T_VARIABLE:var
 {:
 	int start = classType == null ? (isVariadic ? isVariadicleft : varleft) : classTypeleft;
 	Variable v = new Variable(varleft, varright, var);
-	FormalParameter parameter = new FormalParameter(start, varright, classType, v, false, isVariadic);
+	FormalParameter parameter = new FormalParameter(start, varright, classType, v, isVariadic);
 	RESULT = parameter;
 :}
 

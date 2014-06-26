@@ -53,75 +53,57 @@ public class FormalParameter extends ASTNode {
     private Expression parameterType;
     private Expression parameterName;
     private Expression defaultValue;
-    private boolean isMandatory; // php4 "const" keyword
     private final boolean isVariadic;
 
-    private FormalParameter(int start, int end, Expression type, final Expression parameterName, Expression defaultValue, boolean isMandatory, boolean isVariadic) {
+    private FormalParameter(int start, int end, Expression type, final Expression parameterName, Expression defaultValue, boolean isVariadic) {
         super(start, end);
 
         this.parameterName = parameterName;
         this.parameterType = type;
         this.defaultValue = defaultValue;
-        this.isMandatory = isMandatory;
         this.isVariadic = isVariadic;
     }
 
     public FormalParameter(int start, int end, Expression type, final Variable parameterName, Expression defaultValue, boolean isVariadic) {
-        this(start, end, type, (Expression) parameterName, defaultValue, false, isVariadic);
-    }
-
-    public FormalParameter(int start, int end, Expression type, final Variable parameterName, Expression defaultValue) {
-        this(start, end, type, (Expression) parameterName, defaultValue, false, false);
+        this(start, end, type, (Expression) parameterName, defaultValue, isVariadic);
     }
 
     public FormalParameter(int start, int end, Expression type, final Reference parameterName, Expression defaultValue) {
-        this(start, end, type, (Expression) parameterName, defaultValue, false, false);
+        this(start, end, type, (Expression) parameterName, defaultValue, false);
     }
 
-    public FormalParameter(int start, int end, Expression type, final Variable parameterName) {
-        this(start, end, type, (Expression) parameterName, null, true, false);
-    }
-
-    public FormalParameter(int start, int end, Expression type, final Variable parameterName, boolean isMandatory, boolean isVariadic) {
-        this(start, end, type, (Expression) parameterName, null, isMandatory, isVariadic);
-    }
-
-    public FormalParameter(int start, int end, Expression type, final Variable parameterName, boolean isMandatory) {
-        this(start, end, type, (Expression) parameterName, null, isMandatory, false);
+    public FormalParameter(int start, int end, Expression type, final Variable parameterName, boolean isVariadic) {
+        this(start, end, type, (Expression) parameterName, null, isVariadic);
     }
 
     public FormalParameter(int start, int end, Expression type, final Reference parameterName) {
-        this(start, end, type, (Expression) parameterName, null, true, false);
+        this(start, end, type, (Expression) parameterName, null, false);
     }
 
-    /**
-     * @return default value of this parameter
-     */
     public Expression getDefaultValue() {
         return defaultValue;
     }
 
-    /**
-     * indicates if this parameter is mandatory when invoking the function
-     */
     public boolean isMandatory() {
-        return isMandatory;
+        return getDefaultValue() == null && !isVariadic();
+    }
+
+    public boolean isOptional() {
+        return !isMandatory();
     }
 
     public boolean isVariadic() {
         return isVariadic;
     }
 
-    /**
-     * @return the name of this parameter
-     */
+    public boolean isReference() {
+        return getParameterName() instanceof Reference;
+    }
+
     public Expression getParameterName() {
         return parameterName;
     }
 
-    /**
-     * @return the type of this parameter
-     */
     public Expression getParameterType() {
         return parameterType;
     }
