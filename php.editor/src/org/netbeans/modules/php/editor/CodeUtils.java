@@ -148,6 +148,11 @@ public final class CodeUtils {
         return result;
     }
 
+    public static boolean isPhp56(FileObject file) {
+        Parameters.notNull("file", file);
+        return false;
+    }
+
     @CheckForNull
     public static Identifier extractUnqualifiedIdentifier(Expression typeName) {
         Parameters.notNull("typeName", typeName);
