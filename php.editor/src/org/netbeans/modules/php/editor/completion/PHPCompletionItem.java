@@ -546,7 +546,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                             param.getTypes(),
                             param.isMandatory(),
                             param.hasDeclaredType(),
-                            param.isReference());
+                            param.isReference(),
+                            param.isVariadic());
                 }
             }
             return param;

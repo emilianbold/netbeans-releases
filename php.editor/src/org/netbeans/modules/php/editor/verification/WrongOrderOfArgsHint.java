@@ -227,14 +227,20 @@ public class WrongOrderOfArgsHint extends HintRule {
         public List<FormalParameter> getFormalParameters() {
             List<FormalParameter> rearrangedList = new ArrayList<>();
             List<FormalParameter> parametersWithDefault = new ArrayList<>();
+            FormalParameter variadicParam = null;
             for (FormalParameter param : super.getFormalParameters()) {
                 if (param.isMandatory()) {
                     rearrangedList.add(param);
+                } else if (param.isVariadic()) {
+                    variadicParam = param;
                 } else {
                     parametersWithDefault.add(param);
                 }
             }
             rearrangedList.addAll(parametersWithDefault);
+            if (variadicParam != null) {
+                rearrangedList.add(variadicParam);
+            }
             return rearrangedList;
         }
 
