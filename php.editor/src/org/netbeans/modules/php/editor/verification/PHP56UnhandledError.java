@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,62 +37,58 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.AnonymousObjectVariable;
-import org.netbeans.modules.php.editor.parser.astnodes.DereferencedArrayAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment.Type;
+import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.ReflectionVariable;
-import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
+import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression.OperatorType;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle.Messages;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHP54UnhandledError extends UnhandledErrorRule {
+public class PHP56UnhandledError extends UnhandledErrorRule {
 
     @Override
-    public void invoke(PHPRuleContext context, List<org.netbeans.modules.csl.api.Error> errors) {
+    public void invoke(PHPRuleContext context, List<Error> errors) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
         if (fileObject != null && appliesTo(fileObject)) {
-            PHP54UnhandledError.CheckVisitor checkVisitor = new PHP54UnhandledError.CheckVisitor(fileObject);
+            PHP56UnhandledError.CheckVisitor checkVisitor = new CheckVisitor(fileObject);
             phpParseResult.getProgram().accept(checkVisitor);
             errors.addAll(checkVisitor.getErrors());
         }
     }
 
-    public static  boolean appliesTo(FileObject fobj) {
-        return !CodeUtils.isPhp54(fobj) && !CodeUtils.isPhp55(fobj) && !CodeUtils.isPhp56(fobj);
+    private static boolean appliesTo(FileObject fileObject) {
+        return !CodeUtils.isPhp56(fileObject);
     }
 
     private static class CheckVisitor extends DefaultVisitor {
-        private static final String BINARY_PREFIX = "0b"; //NOI18N
         private final List<VerificationError> errors = new ArrayList<>();
         private final FileObject fileObject;
-        private boolean checkAnonymousObjectVariable;
 
         public CheckVisitor(FileObject fileObject) {
             this.fileObject = fileObject;
@@ -102,71 +98,50 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
             return Collections.unmodifiableCollection(errors);
         }
 
+        private static boolean isStaticScalarExpression(ASTNode node) {
+            return node instanceof InfixExpression || node instanceof ConditionalExpression;
+        }
+
         @Override
-        public void visit(TraitDeclaration node) {
-            Identifier name = node.getName();
-            if (name != null) {
-                createError(name);
+        public void visit(FormalParameter node) {
+            if (node.isVariadic()) {
+                createError(node);
+            }
+            Expression defaultValue = node.getDefaultValue();
+            if (isStaticScalarExpression(defaultValue)) {
+                createError(defaultValue);
+            }
+        }
+
+        @Override
+        public void visit(InfixExpression node) {
+            if (OperatorType.POW.equals(node.getOperator())) {
+                createError(node);
             } else {
-                createError(node);
+                super.visit(node);
             }
         }
 
         @Override
-        public void visit(UseTraitStatement node) {
-            createError(node);
-        }
-
-        @Override
-        public void visit(MethodInvocation node) {
-            checkAnonymousObjectVariable = true;
-            super.visit(node);
-            checkAnonymousObjectVariable = false;
-        }
-
-        @Override
-        public void visit(FieldAccess node) {
-            checkAnonymousObjectVariable = true;
-            super.visit(node);
-            checkAnonymousObjectVariable = false;
-        }
-
-        @Override
-        public void visit(AnonymousObjectVariable node) {
-            if (checkAnonymousObjectVariable) {
+        public void visit(Assignment node) {
+            if (Type.POW_EQUAL.equals(node.getOperator())) {
                 createError(node);
+            } else {
+                super.visit(node);
             }
         }
 
         @Override
-        public void visit(DereferencedArrayAccess node) {
-            createError(node);
-        }
-
-        @Override
-        public void visit(Scalar node) {
-            if (node.getScalarType().equals(Scalar.Type.REAL) && node.getStringValue().startsWith(BINARY_PREFIX)) {
-                createError(node);
-            }
-        }
-
-        @Override
-        public void visit(StaticMethodInvocation node) {
-            Expression name = node.getMethod().getFunctionName().getName();
-            if (name instanceof ReflectionVariable) {
-                createError(name);
-            }
-        }
-
-        @Override
-        public void visit(LambdaFunctionDeclaration node) {
-            if (node.isStatic()) {
-                createError(node);
+        public void visit(ConstantDeclaration node) {
+            for (Expression expression : node.getInitializers()) {
+                if (isStaticScalarExpression(expression)) {
+                    createError(expression);
+                }
             }
         }
 
         private  void createError(int startOffset, int endOffset) {
-            VerificationError error = new PHP54VersionError(fileObject, startOffset, endOffset);
+            VerificationError error = new PHP56VersionError(fileObject, startOffset, endOffset);
             errors.add(error);
         }
 
@@ -177,24 +152,24 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
 
     }
 
-    private static final class PHP54VersionError extends VerificationError {
+    private static final class PHP56VersionError extends VerificationError {
 
-        private static final String KEY = "Php.Version.54"; //NOI18N
+        private static final String KEY = "Php.Version.56"; //NOI18N
 
-        private PHP54VersionError(FileObject fileObject, int startOffset, int endOffset) {
+        private PHP56VersionError(FileObject fileObject, int startOffset, int endOffset) {
             super(fileObject, startOffset, endOffset);
         }
 
         @Override
-        @Messages("CheckPHP54VerDisp=Language feature not compatible with PHP version indicated in project settings")
+        @NbBundle.Messages("CheckPHP56VerDisp=Language feature not compatible with PHP version indicated in project settings")
         public String getDisplayName() {
-            return Bundle.CheckPHP54VerDisp();
+            return Bundle.CheckPHP56VerDisp();
         }
 
         @Override
-        @Messages("CheckPHP54VerDesc=Detect language features not compatible with PHP version indicated in project settings")
+        @NbBundle.Messages("CheckPHP56VerDesc=Detect language features not compatible with PHP version indicated in project settings")
         public String getDescription() {
-            return Bundle.CheckPHP54VerDesc();
+            return Bundle.CheckPHP56VerDesc();
         }
 
         @Override
@@ -205,9 +180,9 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
     }
 
     @Override
-    @Messages("PHP54VersionErrorHintDispName=Language feature not compatible with PHP version indicated in project settings")
+    @NbBundle.Messages("PHP56VersionErrorHintDispName=Language feature not compatible with PHP version indicated in project settings")
     public String getDisplayName() {
-        return Bundle.PHP54VersionErrorHintDispName();
+        return Bundle.PHP56VersionErrorHintDispName();
     }
 
 }

@@ -43,6 +43,7 @@ package org.netbeans.modules.php.editor.elements;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -62,9 +63,9 @@ public final class ParameterElementImpl implements ParameterElement {
     private final String defaultValue;
     private final Set<TypeResolver> types;
     private final int offset;
-    private boolean isRawType;
-    private boolean isMandatory;
-    private boolean isReference;
+    private final boolean isRawType;
+    private final boolean isMandatory;
+    private final boolean isReference;
     private final boolean isVariadic;
 
     public ParameterElementImpl(
@@ -170,7 +171,7 @@ public final class ParameterElementImpl implements ParameterElement {
 
     @Override
     public Set<TypeResolver> getTypes() {
-        return types;
+        return new HashSet<>(types);
     }
 
     @Override

@@ -88,7 +88,7 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
         localServerComponent.addChangeListener(this);
 
         phpVersionComboBox.setModel(new PhpVersionComboBoxModel(
-                wizardType.equals(NewPhpProjectWizardIterator.WizardType.NEW) ? PhpOptions.getInstance().getDefaultPhpVersion() : PhpVersion.PHP_53));
+                wizardType.equals(NewPhpProjectWizardIterator.WizardType.NEW) ? PhpOptions.getInstance().getDefaultPhpVersion() : PhpVersion.getLegacy()));
 
         encodingComboBox.setModel(ProjectCustomizer.encodingModel(Charset.defaultCharset().name()));
         encodingComboBox.setRenderer(ProjectCustomizer.encodingRenderer());
