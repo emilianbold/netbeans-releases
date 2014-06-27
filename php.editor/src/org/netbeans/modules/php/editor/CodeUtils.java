@@ -150,7 +150,12 @@ public final class CodeUtils {
 
     public static boolean isPhp56(FileObject file) {
         Parameters.notNull("file", file);
-        return false;
+        boolean result = false;
+        PhpLanguageProperties forFileObject = PhpLanguageProperties.forFileObject(file);
+        if (forFileObject.getPhpVersion() == PhpVersion.PHP_56) {
+            result = true;
+        }
+        return result;
     }
 
     @CheckForNull
