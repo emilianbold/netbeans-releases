@@ -83,8 +83,15 @@ public final class FormalParameterInfo extends ASTNodeInfo<FormalParameter> {
         if (types == null) {
             types = Collections.emptyList();
         }
-        this.parameter = new ParameterElementImpl(name, defVal, getRange().getStart(),
-                TypeResolverImpl.forNames(types), formalParameter.isMandatory(), isRawType, formalParameter.isReference());
+        this.parameter = new ParameterElementImpl(
+                name,
+                defVal,
+                getRange().getStart(),
+                TypeResolverImpl.forNames(types), 
+                formalParameter.isMandatory(),
+                isRawType,
+                formalParameter.isReference(),
+                formalParameter.isVariadic());
     }
 
     public static FormalParameterInfo create(FormalParameter node, Map<String, List<QualifiedName>> paramDocTypes) {
