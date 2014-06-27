@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.editor.model.nodes;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -179,7 +180,7 @@ public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocMethodTag> {
     }
 
     public List<? extends ParameterElement> getParameters() {
-        return parameters;
+        return new ArrayList<>(parameters);
     }
 
     public PhpModifiers getAccessModifiers() {

@@ -56,11 +56,11 @@ import org.openide.util.Exceptions;
  * @author Radek Matous
  */
 public class ParameterImpl implements Parameter {
-    private String name;
-    private String defaultValue;
-    private List<QualifiedName> types;
-    private OffsetRange range;
-    private boolean isRawType;
+    private final String name;
+    private final String defaultValue;
+    private final List<QualifiedName> types;
+    private final OffsetRange range;
+    private final boolean isRawType;
     private final boolean isReference;
     private final boolean isVariadic;
 
@@ -114,7 +114,7 @@ public class ParameterImpl implements Parameter {
 
     @Override
     public List<QualifiedName> getTypes() {
-        return types;
+        return new ArrayList<>(types);
     }
 
     @Override
@@ -138,9 +138,7 @@ public class ParameterImpl implements Parameter {
         sb.append(isRawType ? 1 : 0);
         sb.append(":"); //NOI18N
         String defValue = getDefaultValue();
-        if (defValue != null) {
-            sb.append(encode(defValue));
-        }
+        sb.append(encode(defValue));
         sb.append(":"); //NOI18N
         sb.append(isReference ? 1 : 0);
         sb.append(":"); //NOI18N
@@ -164,7 +162,7 @@ public class ParameterImpl implements Parameter {
                             qualifiedNames.add(QualifiedName.create(type));
                         }
                     }
-                    boolean isRawType = Integer.parseInt(parts[2]) > 0 ? true : false;
+                    boolean isRawType = Integer.parseInt(parts[2]) > 0;
                     String defValue = (parts.length > 3) ? parts[3] : "";
                     boolean isReference = Integer.parseInt(parts[4]) > 0;
                     boolean isVariadic = Integer.parseInt(parts[5]) > 0;
