@@ -59,6 +59,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
+import org.netbeans.modules.javascript.karma.coverage.CoverageProcessor;
 import org.netbeans.modules.javascript.karma.coverage.CoverageWatcher;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.run.KarmaRunInfo;
@@ -318,6 +319,7 @@ public final class KarmaServer implements PropertyChangeListener {
         envVars.put("KARMA_NETBEANS_REPORTER", getNetBeansKarmaReporter().getAbsolutePath()); // NOI18N
         envVars.put("COVERAGE", isCoverageEnabled() ? "1" : ""); // NOI18N
         envVars.put("COVERAGE_DIR", getNetBeansKarmaCoverageDir().getAbsolutePath()); // NOI18N
+        envVars.put("DEBUG", isDebug() ? "1" : ""); // NOI18N
         return envVars;
     }
 
@@ -358,8 +360,15 @@ public final class KarmaServer implements PropertyChangeListener {
     }
 
     private boolean isCoverageEnabled() {
-        return coverage != null
+        boolean enabled = coverage != null
                 && coverage.isEnabled();
+        if (isDebug()) {
+            if (enabled) {
+                CoverageProcessor.warnDebugCoverage();
+            }
+            return false;
+        }
+        return enabled;
     }
 
     @Override

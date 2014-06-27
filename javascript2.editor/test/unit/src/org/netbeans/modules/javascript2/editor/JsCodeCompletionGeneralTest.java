@@ -351,6 +351,22 @@ public class JsCodeCompletionGeneralTest extends JsCodeCompletionBase {
         checkCompletion("testfiles/completion/general/issue238289.js", "beamer.s^", false);
     }
     
+    public void testFindObjectByOffset_01() throws Exception {
+        checkCompletion("testfiles/completion/general/findObjectByOffset.js", "    this._name.s^mall();", false);
+    }
+    
+    public void testFindObjectByOffset_02() throws Exception {
+        checkCompletion("testfiles/completion/general/findObjectByOffset.js", "    this._age.to^Fixed();", false);
+    }
+    
+    public void testFindObjectByOffset_03() throws Exception {
+        checkCompletion("testfiles/completion/general/findObjectByOffset.js", "    return this._name.s^mall();", false);
+    }
+    
+    public void testFindObjectByOffset_04() throws Exception {
+        checkCompletion("testfiles/completion/general/findObjectByOffset.js", "return this._age.to^Fixed(1);", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());

@@ -410,9 +410,9 @@ public final class SemanticHighlighter extends HighlighterBase {
     
     private static final class TaskContext implements Runnable {
         private final SemanticHighlighter provider;
-        private InterrupterImpl interrupter;
-        private Document doc;
-        private CountDownLatch latch;
+        private volatile InterrupterImpl interrupter;
+        private volatile Document doc;
+        private volatile CountDownLatch latch;
         private TaskContext(SemanticHighlighter provider) {
             this.provider = provider;
         }

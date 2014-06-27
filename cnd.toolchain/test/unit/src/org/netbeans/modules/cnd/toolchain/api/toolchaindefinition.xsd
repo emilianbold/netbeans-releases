@@ -673,8 +673,8 @@
                 <xs:element ref="tns:leave_directory" minOccurs="0" maxOccurs="1" />
                 <xs:element ref="tns:change_directory" minOccurs="0" maxOccurs="1" />
                 <xs:element ref="tns:making_all_in_directory" minOccurs="0" maxOccurs="1" />
-                <xs:element ref="tns:stack_header" minOccurs="0" maxOccurs="1" />
-                <xs:element ref="tns:stack_next" minOccurs="0" maxOccurs="1" />
+                <xs:element ref="tns:stack_header" minOccurs="0" maxOccurs="unbounded" />
+                <xs:element ref="tns:stack_next" minOccurs="0" maxOccurs="unbounded" />
                 <xs:element ref="tns:filter_out" minOccurs="0" maxOccurs="unbounded" />
             </xs:sequence>
             <xs:attribute name="id" type="xs:string" />

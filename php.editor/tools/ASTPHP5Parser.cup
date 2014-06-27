@@ -278,6 +278,9 @@ terminal T_QUATE,T_BACKQUATE;
 terminal T_START_NOWDOC, T_END_NOWDOC;
 terminal T_TRAIT;
 terminal T_INSTEADOF;
+terminal T_POW;
+terminal T_POW_EQUAL;
+terminal T_ELLIPSIS;
 
 /* Non terminals */
 
@@ -322,6 +325,7 @@ non terminal List static_var_list;
 non terminal List class_statement_list;
 non terminal Statement class_statement;
 non terminal Boolean is_reference;
+non terminal Boolean is_variadic;
 non terminal List echo_expr_list;
 non terminal List for_expr;
 non terminal List non_empty_for_expr;
@@ -332,7 +336,8 @@ non terminal Expression exit_expr;
 non terminal List ctor_arguments;
 non terminal Expression common_scalar;
 non terminal Expression static_scalar;
-non terminal Expression static_scalar_without_array;
+non terminal Expression static_scalar_value;
+non terminal Expression static_operation;
 non terminal Expression scalar;
 non terminal List static_array_pair_list;
 non terminal possible_comma;
@@ -377,7 +382,6 @@ non terminal Quote heredoc;
 non terminal VariableBase field_or_method_access;
 non terminal VariableBase function_call_with_array;
 non terminal Expression expression_array_access;
-non terminal Expression static_array_creation;
 non terminal Expression array_creation;
 non terminal Expression array_creation_with_access;
 
@@ -434,13 +438,15 @@ precedence left T_LOGICAL_XOR;
 precedence left T_LOGICAL_AND;
 precedence right T_PRINT;
 precedence right T_YIELD;
-precedence left T_EQUAL, T_PLUS_EQUAL,T_MINUS_EQUAL,T_MUL_EQUAL,T_DIV_EQUAL,T_CONCAT_EQUAL,T_MOD_EQUAL,T_AND_EQUAL,T_OR_EQUAL,T_XOR_EQUAL,T_SL_EQUAL,T_SR_EQUAL;
+precedence left T_EQUAL, T_PLUS_EQUAL,T_MINUS_EQUAL,T_MUL_EQUAL,T_DIV_EQUAL,T_CONCAT_EQUAL,T_MOD_EQUAL,T_AND_EQUAL,T_OR_EQUAL,T_XOR_EQUAL,T_SL_EQUAL,T_SR_EQUAL,T_POW_EQUAL;
+precedence right T_POW;
 precedence left T_QUESTION_MARK,T_SEMICOLON;
 precedence left T_BOOLEAN_OR;
 precedence left T_BOOLEAN_AND;
 precedence left T_OR;
 precedence left T_KOVA;
 precedence left T_REFERENCE;
+precedence left T_ELLIPSIS;
 
 precedence nonassoc T_IS_EQUAL,T_IS_NOT_EQUAL,T_IS_IDENTICAL,T_IS_NOT_IDENTICAL;
 precedence nonassoc T_RGREATER,T_IS_SMALLER_OR_EQUAL,T_LGREATER,T_IS_GREATER_OR_EQUAL;
@@ -1008,6 +1014,18 @@ is_reference ::=
 :}
 ;
 
+is_variadic ::=
+/* empty */
+{:
+	RESULT = Boolean.FALSE;
+:}
+
+| T_ELLIPSIS
+{:
+	RESULT = Boolean.TRUE;
+:}
+;
+
 unticked_function_declaration_statement ::=
 T_FUNCTION:start is_reference:isReference string_st:functionName
 T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE
@@ -1483,11 +1501,11 @@ parameter:parameter
 ;
 
 parameter ::=
-optional_class_type:classType T_VARIABLE:var
+optional_class_type:classType is_variadic:isVariadic T_VARIABLE:var
 {:
-	int start = classType == null ? varleft : classTypeleft;
+	int start = classType == null ? (isVariadic ? isVariadicleft : varleft) : classTypeleft;
 	Variable v = new Variable(varleft, varright, var);
-	FormalParameter parameter = new FormalParameter(start, varright, classType, v);
+	FormalParameter parameter = new FormalParameter(start, varright, classType, v, isVariadic);
 	RESULT = parameter;
 :}
 
@@ -1500,11 +1518,11 @@ optional_class_type:classType T_VARIABLE:var
 	RESULT = parameter;
 :}
 
-| optional_class_type:classType T_VARIABLE:var T_EQUAL static_scalar:scalar
+| optional_class_type:classType is_variadic:isVariadic T_VARIABLE:var T_EQUAL static_scalar:scalar
 {:
-	int start = classType == null ? varleft : classTypeleft;
+	int start = classType == null ? (isVariadic ? isVariadicleft : varleft) : classTypeleft;
 	Variable v = new Variable(varleft, varright, var);
-	FormalParameter parameter = new FormalParameter(start, scalarright, classType, v, scalar);
+	FormalParameter parameter = new FormalParameter(start, scalarright, classType, v, scalar, isVariadic);
 	RESULT = parameter;
 :}
 
@@ -2093,14 +2111,14 @@ class_variable_declaration:list T_COMMA T_VARIABLE:var
 ;
 
 constant_declaration ::=
-constant_declaration:list T_COMMA T_STRING:constName T_EQUAL static_scalar_without_array:expr
+constant_declaration:list T_COMMA T_STRING:constName T_EQUAL static_scalar_value:expr
 {:
 	Identifier constId = new Identifier(constNameleft, constNameright, constName);
 	list.add(new ASTNode[] {constId, expr});
 	RESULT = list;
 :}
 
-| T_CONST T_STRING:constName T_EQUAL static_scalar_without_array:expr
+| T_CONST T_STRING:constName T_EQUAL static_scalar_value:expr
 {:
 	List list = new LinkedList();
 	Identifier constId = new Identifier(constNameleft, constNameright, constName);
@@ -2193,6 +2211,11 @@ T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close 
 {:
 	CloneExpression clone = new CloneExpression(startleft, exprright, expr);
 	RESULT = clone;
+:}
+
+| variable:var T_POW_EQUAL expr:expr
+{:
+	RESULT = new Assignment(varleft, exprright, var , Assignment.Type.POW_EQUAL, expr);
 :}
 
 | variable:var T_PLUS_EQUAL expr:expr
@@ -2313,6 +2336,11 @@ T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close 
 | expr:expr1 T_NEKUDA expr:expr2
 {:
 	RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.CONCAT, expr2);
+:}
+
+| expr:expr1 T_POW expr:expr2
+{:
+	RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.POW, expr2);
 :}
 
 | expr:expr1 T_PLUS expr:expr2
@@ -2861,7 +2889,7 @@ T_LNUMBER:scalar
 :}
 ;
 
-static_scalar_without_array ::=
+static_scalar_value ::=
 common_scalar:scalar
 {:
 	RESULT = scalar;
@@ -2886,18 +2914,6 @@ common_scalar:scalar
 	RESULT = new NamespaceName(sleft, listright, list, true, false);
 :}
 
-| T_PLUS:start static_scalar:expr
-{:
-	UnaryOperation op = new UnaryOperation(startleft, exprright, expr, UnaryOperation.Operator.PLUS);
-	RESULT = op;
-:}
-
-| T_MINUS:start static_scalar:expr
-{:
-	UnaryOperation op = new UnaryOperation(startleft, exprright, expr, UnaryOperation.Operator.MINUS);
-	RESULT = op;
-:}
-
 | static_class_constant:classConstant
 {:
 	RESULT = classConstant;
@@ -2907,17 +2923,200 @@ common_scalar:scalar
 {:
 	RESULT = doc;
 :}
+
+| T_OPEN_RECT:start static_array_pair_list:list T_CLOSE_RECT:end
+{:
+	Expression array = new ArrayCreation(startleft, endright, list);
+	RESULT = array;
+:}
+
+| static_operation:operation
+{:
+        RESULT = operation;
+:}
+;
+
+static_operation ::=
+/*static_scalar_value T_OPEN_RECT static_scalar_value T_CLOSE_RECT
+{:
+        RESULT = ???;
+:}
+
+| */
+
+T_ARRAY:start T_OPEN_PARENTHESE static_array_pair_list:list T_CLOSE_PARENTHESE:end
+{:
+	Expression array = new ArrayCreation(startleft, endright, list);
+	RESULT = array;
+:}
+
+| static_scalar_value:expr1 T_PLUS static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1, InfixExpression.OperatorType.PLUS, expr2);
+:}
+
+| static_scalar_value:expr1 T_MINUS static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1, InfixExpression.OperatorType.MINUS, expr2);
+:}
+
+| static_scalar_value:expr1 T_TIMES static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1, InfixExpression.OperatorType.MUL, expr2);
+:}
+
+| static_scalar_value:expr1 T_POW static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1, InfixExpression.OperatorType.POW, expr2);
+:}
+
+| static_scalar_value:expr1 T_DIV static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1, InfixExpression.OperatorType.DIV, expr2);
+:}
+
+| static_scalar_value:expr1 T_PRECENT static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1, InfixExpression.OperatorType.MOD, expr2);
+:}
+
+| T_NOT:token static_scalar_value:expr
+{:
+        RESULT = new UnaryOperation(tokenleft, exprright, expr , UnaryOperation.Operator.NOT);
+:}
+
+| T_TILDA:token static_scalar_value:expr
+{:
+        RESULT = new UnaryOperation(tokenleft, exprright, expr , UnaryOperation.Operator.TILDA);
+:}
+
+| static_scalar_value:expr1 T_OR static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.OR, expr2);
+:}
+
+| static_scalar_value:expr1 T_REFERENCE static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.AND, expr2);
+:}
+
+| static_scalar_value:expr1 T_KOVA static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.XOR, expr2);
+:}
+
+| static_scalar_value:expr1 T_SL static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.SL, expr2);
+:}
+
+| static_scalar_value:expr1 T_SR static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.SR, expr2);
+:}
+
+| static_scalar_value:expr1 T_NEKUDA static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.CONCAT, expr2);
+:}
+
+| static_scalar_value:expr1 T_LOGICAL_XOR static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.STRING_XOR, expr2);
+:}
+
+| static_scalar_value:expr1 T_LOGICAL_AND static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.STRING_AND, expr2);
+:}
+
+| static_scalar_value:expr1 T_LOGICAL_OR static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.STRING_OR, expr2);
+:}
+
+| static_scalar_value:expr1 T_BOOLEAN_AND static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.BOOL_AND, expr2);
+:}
+
+| static_scalar_value:expr1 T_BOOLEAN_OR static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.BOOL_OR, expr2);
+:}
+
+| static_scalar_value:expr1 T_IS_IDENTICAL static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.IS_IDENTICAL, expr2);
+:}
+
+| static_scalar_value:expr1 T_IS_NOT_IDENTICAL static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.IS_NOT_IDENTICAL, expr2);
+:}
+
+| static_scalar_value:expr1 T_IS_EQUAL static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.IS_EQUAL, expr2);
+:}
+
+| static_scalar_value:expr1 T_IS_NOT_EQUAL static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.IS_NOT_EQUAL, expr2);
+:}
+
+| static_scalar_value:expr1 T_RGREATER static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.RGREATER, expr2);
+:}
+
+| static_scalar_value:expr1 T_LGREATER static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.LGREATER, expr2);
+:}
+
+| static_scalar_value:expr1 T_IS_SMALLER_OR_EQUAL static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.IS_SMALLER_OR_EQUAL, expr2);
+:}
+
+| static_scalar_value:expr1 T_IS_GREATER_OR_EQUAL static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.IS_GREATER_OR_EQUAL, expr2);
+:}
+
+| static_scalar_value:cond T_QUESTION_MARK T_NEKUDOTAIM static_scalar_value:ifFalse
+{:
+        RESULT = new ConditionalExpression(condleft, ifFalseright, cond , null, ifFalse);
+:}
+
+| static_scalar_value:condition T_QUESTION_MARK static_scalar_value:ifTrue T_NEKUDOTAIM static_scalar_value:ifFalse
+{:
+        RESULT = new ConditionalExpression(conditionleft, ifFalseright, condition , ifTrue, ifFalse);
+:}
+
+| T_PLUS:start static_scalar_value:expr
+{:
+	UnaryOperation op = new UnaryOperation(startleft, exprright, expr, UnaryOperation.Operator.PLUS);
+	RESULT = op;
+:}
+
+| T_MINUS:start static_scalar_value:expr
+{:
+	UnaryOperation op = new UnaryOperation(startleft, exprright, expr, UnaryOperation.Operator.MINUS);
+	RESULT = op;
+:}
+
+| T_OPEN_PARENTHESE static_scalar_value:expr T_CLOSE_PARENTHESE
+{:
+        RESULT = expr;
+:}
 ;
 
 static_scalar ::=  /* compile-time evaluated scalars */
-static_scalar_without_array:scalar
+static_scalar_value:scalar
 {:
 	RESULT = scalar;
-:}
-
-| static_array_creation:arr
-{:
-	RESULT = arr;
 :}
 ;
 
@@ -3316,20 +3515,6 @@ T_ARRAY:start T_OPEN_PARENTHESE array_pair_list:list T_CLOSE_PARENTHESE:end
 {:
     Expression expr = new ArrayCreation(startleft, endright, list);
 	RESULT = expr;
-:}
-;
-
-static_array_creation ::=
-T_ARRAY:start T_OPEN_PARENTHESE static_array_pair_list:list T_CLOSE_PARENTHESE:end
-{:
-	Expression array = new ArrayCreation(startleft, endright, list);
-	RESULT = array;
-:}
-
-| T_OPEN_RECT:start static_array_pair_list:list T_CLOSE_RECT:end
-{:
-	Expression array = new ArrayCreation(startleft, endright, list);
-	RESULT = array;
 :}
 ;
 

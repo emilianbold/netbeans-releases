@@ -178,7 +178,7 @@ public class ModelUtils {
         visited.add(jsObject.getFullyQualifiedName());
         JsObject result = null;
         JsObject tmpObject = null;
-        if (jsObject.getOffsetRange().containsInclusive(offset)) {
+        if (jsObject.containsOffset(offset)) {
             result = jsObject;
             for (JsObject property : jsObject.getProperties().values()) {
                 JsElement.Kind kind = property.getJSKind();

@@ -284,7 +284,7 @@ final class DocRenderer {
 
                 header.appendText(CodeUtils.getParamDisplayName(param));
 
-                if (param.getDefaultValue() != null) {
+                if (param.isOptional()) {
                     header.type(true);
                     header.appendText("=");
 

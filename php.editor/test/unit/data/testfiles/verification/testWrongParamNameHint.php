@@ -66,4 +66,9 @@ class ClassName {
 
 }
 
+// variadic PHP 5.6
+function f(&$req, $opt = null, ...$params) {
+    // $params is an array containing the remaining arguments.
+} 
+
 ?>
