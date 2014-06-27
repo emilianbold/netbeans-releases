@@ -46,6 +46,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.TypeNameResolver;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
@@ -64,6 +65,7 @@ public final class ParameterElementImpl implements ParameterElement {
     private boolean isRawType;
     private boolean isMandatory;
     private boolean isReference;
+    private final boolean isVariadic;
 
     public ParameterElementImpl(
             final String name,
@@ -72,7 +74,8 @@ public final class ParameterElementImpl implements ParameterElement {
             final Set<TypeResolver> types,
             final boolean isMandatory,
             final boolean isRawType,
-            final boolean isReference) {
+            final boolean isReference,
+            final boolean isVariadic) {
         this.name = name;
         this.isMandatory = isMandatory;
         this.defaultValue = (!isMandatory && defaultValue != null) ? decode(defaultValue) : ""; //NOI18N
@@ -80,6 +83,7 @@ public final class ParameterElementImpl implements ParameterElement {
         this.types = types;
         this.isRawType = isRawType;
         this.isReference = isReference;
+        this.isVariadic = isVariadic;
     }
 
     static List<ParameterElement> parseParameters(final String signature) {
@@ -113,9 +117,10 @@ public final class ParameterElementImpl implements ParameterElement {
             boolean isRawType = Integer.parseInt(parts[2]) > 0;
             boolean isMandatory = Integer.parseInt(parts[4]) > 0;
             boolean isReference = Integer.parseInt(parts[5]) > 0;
+            boolean isVariadic = Integer.parseInt(parts[6]) > 0;
             String defValue = parts.length > 3 ? parts[3] : null;
             retval = new ParameterElementImpl(
-                    paramName, defValue, -1, types, isMandatory, isRawType, isReference);
+                    paramName, defValue, -1, types, isMandatory, isRawType, isReference, isVariadic);
         }
         return retval;
     }
@@ -147,6 +152,8 @@ public final class ParameterElementImpl implements ParameterElement {
         sb.append(isMandatory ? 1 : 0);
         sb.append(Separator.COLON); //NOI18N
         sb.append(isReference ? 1 : 0);
+        sb.append(Separator.COLON); //NOI18N
+        sb.append(isVariadic ? 1 : 0);
         checkSignature(sb);
         return sb.toString();
     }
@@ -270,6 +277,7 @@ public final class ParameterElementImpl implements ParameterElement {
                 }
                 assert isMandatory() == parsedParameter.isMandatory() : signature;
                 assert isReference() == parsedParameter.isReference() : signature;
+                assert isVariadic() == parsedParameter.isVariadic() : signature;
             } catch (NumberFormatException originalException) {
                 final String message = String.format("%s [for signature: %s]", originalException.getMessage(), signature); //NOI18N
                 final NumberFormatException formatException = new NumberFormatException(message);
@@ -307,20 +315,22 @@ public final class ParameterElementImpl implements ParameterElement {
                 }
             }
         }
-        if (forDeclaration && isReference()) {
-            sb.append(VariableElementImpl.REFERENCE_PREFIX);
+        if (forDeclaration) {
+            if (isReference()) {
+                sb.append(VariableElementImpl.REFERENCE_PREFIX);
+            } else if (isVariadic()) {
+                sb.append(VariableElementImpl.VARIADIC_PREFIX);
+            }
         }
         sb.append(getName());
         if (forDeclaration) {
             String defVal = getDefaultValue();
-            if (!isMandatory()) {
+            if (!isMandatory() && StringUtils.hasText(defVal)) {
                 sb.append(" = "); //NOI18N
-                if (defVal != null) {
-                    if (outputType.equals(OutputType.COMPLETE_DECLARATION)) {
-                        sb.append(defVal);
-                    } else {
-                        sb.append(defVal.length() > 20 ? "..." : defVal); //NOI18N
-                    }
+                if (outputType.equals(OutputType.COMPLETE_DECLARATION)) {
+                    sb.append(defVal);
+                } else {
+                    sb.append(defVal.length() > 20 ? "..." : defVal); //NOI18N
                 }
             }
         }
@@ -330,5 +340,10 @@ public final class ParameterElementImpl implements ParameterElement {
     @Override
     public boolean isReference() {
         return isReference;
+    }
+
+    @Override
+    public boolean isVariadic() {
+        return isVariadic;
     }
 }

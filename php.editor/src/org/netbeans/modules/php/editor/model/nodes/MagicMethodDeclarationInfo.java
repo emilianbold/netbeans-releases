@@ -108,7 +108,8 @@ public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocMethodTag> {
             }
             boolean isMandatory = defaultValue == null;
             boolean isReference = name.startsWith("&"); // NOI18N
-            parameters.add(new ParameterElementImpl(name, defaultValue, 0, types, isMandatory, true, isReference));
+            boolean isVariadic = name.startsWith("..."); // NOI18N
+            parameters.add(new ParameterElementImpl(name, defaultValue, 0, types, isMandatory, true, isReference, isVariadic));
         }
     }
 

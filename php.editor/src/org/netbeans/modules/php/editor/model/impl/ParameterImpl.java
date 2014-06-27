@@ -61,8 +61,17 @@ public class ParameterImpl implements Parameter {
     private List<QualifiedName> types;
     private OffsetRange range;
     private boolean isRawType;
+    private final boolean isReference;
+    private final boolean isVariadic;
 
-    public ParameterImpl(String name, String defaultValue, List<QualifiedName> types, boolean isRawType, OffsetRange range) {
+    public ParameterImpl(
+            String name,
+            String defaultValue,
+            List<QualifiedName> types,
+            boolean isRawType,
+            OffsetRange range,
+            boolean isReference,
+            boolean isVariadic) {
         this.name = name;
         this.defaultValue = defaultValue;
         if (types == null) {
@@ -72,6 +81,8 @@ public class ParameterImpl implements Parameter {
         }
         this.range = range;
         this.isRawType = isRawType;
+        this.isReference = isReference;
+        this.isVariadic = isVariadic;
     }
 
     @NonNull
@@ -89,6 +100,16 @@ public class ParameterImpl implements Parameter {
     @Override
     public boolean isMandatory() {
         return defaultValue == null;
+    }
+
+    @Override
+    public boolean isReference() {
+        return isReference;
+    }
+
+    @Override
+    public boolean isVariadic() {
+        return isVariadic;
     }
 
     @Override
@@ -120,6 +141,10 @@ public class ParameterImpl implements Parameter {
         if (defValue != null) {
             sb.append(encode(defValue));
         }
+        sb.append(":"); //NOI18N
+        sb.append(isReference ? 1 : 0);
+        sb.append(":"); //NOI18N
+        sb.append(isVariadic ? 1 : 0);
         return sb.toString();
     }
 
@@ -141,7 +166,16 @@ public class ParameterImpl implements Parameter {
                     }
                     boolean isRawType = Integer.parseInt(parts[2]) > 0 ? true : false;
                     String defValue = (parts.length > 3) ? parts[3] : "";
-                    parameters.add(new ParameterImpl(paramName, (defValue.length() != 0) ? decode(defValue) : null, qualifiedNames, isRawType, OffsetRange.NONE));
+                    boolean isReference = Integer.parseInt(parts[4]) > 0;
+                    boolean isVariadic = Integer.parseInt(parts[5]) > 0;
+                    parameters.add(new ParameterImpl(
+                            paramName,
+                            (defValue.length() != 0) ? decode(defValue) : null,
+                            qualifiedNames,
+                            isRawType,
+                            OffsetRange.NONE,
+                            isReference,
+                            isVariadic));
                 }
             }
         }
