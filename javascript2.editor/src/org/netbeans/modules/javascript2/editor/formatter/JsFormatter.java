@@ -181,6 +181,22 @@ public class JsFormatter implements Formatter {
                         started = true;
                     }
 
+                    // only if not expanding tabs otherwise the real size is
+                    // already included in offset diff
+                    // count real tab length for potential if-long line wrapping
+                    if (!codeStyle.expandTabsToSpaces && !token.isVirtual()) {
+                        if (token.getId() == JsTokenId.WHITESPACE) {
+                            CharSequence text = token.getText();
+                            for (int j = 0; j < text.length(); j++) {
+                                if (text.charAt(j) == '\t') { // NOI18N
+                                    formatContext.incTabCount();
+                                }
+                            }
+                        } else if (token.getKind() == FormatToken.Kind.EOL) {
+                            formatContext.resetTabCount();
+                        }
+                    }
+
                     if (processed.remove(token)) {
                         continue;
                     }
@@ -377,6 +393,7 @@ public class JsFormatter implements Formatter {
         formatContext.indentLineWithOffsetDiff(
                 lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length() + 1,
                 indentationSize, Indentation.ALLOWED, lastWrap.getOffsetDiff(), codeStyle);
+        formatContext.resetTabCount();
     }
 
     private void formatLineWrap(List<FormatToken> tokens, int index, FormatContext formatContext, CodeStyle.Holder codeStyle,
@@ -414,10 +431,17 @@ public class JsFormatter implements Formatter {
         if (style == CodeStyle.WrapStyle.WRAP_IF_LONG) {
             int segmentLength = tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length()
                     - formatContext.getCurrentLineStart() + lastOffsetDiff;
+            // compute real tab size
+            int tabCount = formatContext.getTabCount();
+            // otherwise the real size is alredy included in offset diff
+            if (!codeStyle.expandTabsToSpaces) {
+                segmentLength += (tabCount * codeStyle.tabSize) - tabCount;
+            }
 
             if (segmentLength >= codeStyle.rightMargin) {
                 FormatContext.LineWrap lastWrap = formatContext.getLastLineWrap();
-                if (lastWrap != null && tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
+                if (lastWrap != null
+                        && (tokenAfterEol.getKind() != FormatToken.Kind.EOL || segmentLength > codeStyle.rightMargin)) {
                     // we dont have to remove trailing spaces as indentation will fix it
                     int offsetBeforeChanges = formatContext.getOffsetDiff();
                     // wrap it

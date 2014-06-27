@@ -1739,6 +1739,32 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/issue240402.js",new IndentPrefs(4, 4));
     }
 
+    public void testIssue244983NoExpand() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.tabSize, 2);
+        options.put(FmtOptions.indentSize, 2);
+        options.put(FmtOptions.expandTabToSpaces, false);
+        options.put(FmtOptions.continuationIndentSize, 0);
+        options.put(FmtOptions.wrapBinaryOps, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.wrapAfterBinaryOps, true);
+        options.put(FmtOptions.rightMargin, 100);
+        reformatFileContents("testfiles/formatter/issue244983.js",
+                options, ".noexpand.formatted");
+    }
+
+    public void testIssue244983Expand() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.tabSize, 2);
+        options.put(FmtOptions.indentSize, 2);
+        options.put(FmtOptions.expandTabToSpaces, true);
+        options.put(FmtOptions.continuationIndentSize, 0);
+        options.put(FmtOptions.wrapBinaryOps, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.wrapAfterBinaryOps, true);
+        options.put(FmtOptions.rightMargin, 100);
+        reformatFileContents("testfiles/formatter/issue244983.js",
+                options, ".expand.formatted");
+    }
+
     // test from original formatter
 
     public void testSemi01() throws Exception {
@@ -1913,7 +1939,11 @@ public class JsFormatterTest extends JsTestBase {
 
         prefs = CodeStylePreferences.get(doc).getPreferences();
         for (String option : options.keySet()) {
-            assertNull(prefs.get(option, null));
+            assertTrue(FmtOptions.tabSize.equals(option)
+                    || FmtOptions.expandTabToSpaces.equals(option)
+                    || FmtOptions.indentSize.equals(option)
+                    || FmtOptions.rightMargin.equals(option)
+                    || prefs.get(option, null) == null);
             Object value = options.get(option);
             if (value instanceof CodeStyle.BracePlacement) {
                 prefs.put(option, ((CodeStyle.BracePlacement) value).name());
@@ -1933,7 +1963,11 @@ public class JsFormatterTest extends JsTestBase {
         } finally {
             for (String option : options.keySet()) {
                 prefs.remove(option);
-                assertNull(prefs.get(option, null));
+                assertTrue(FmtOptions.tabSize.equals(option)
+                        || FmtOptions.expandTabToSpaces.equals(option)
+                        || FmtOptions.indentSize.equals(option)
+                        || FmtOptions.rightMargin.equals(option)
+                        || prefs.get(option, null) == null);
             }
         }
         String after = doc.getText(0, doc.getLength());
