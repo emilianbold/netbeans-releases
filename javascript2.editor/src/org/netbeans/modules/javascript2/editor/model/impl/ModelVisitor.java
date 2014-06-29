@@ -1515,9 +1515,16 @@ public class ModelVisitor extends PathNodeVisitor {
             if (modelBuilder.getCurrentWith() == null) {
                 Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationFunction());
                 for(JsObject variable : variables) {
-                    if (variable.getName().equals(name.getName()) && (variable.getModifiers().contains(Modifier.PRIVATE) || variable instanceof ParameterObject)) {
-                        object = (JsObjectImpl)variable;
-                        break;
+                    if (variable.getName().equals(name.getName()) ) {
+                        if (variable instanceof ParameterObject || variable.getModifiers().contains(Modifier.PRIVATE)) {
+                            object = (JsObjectImpl)variable;
+                            break;
+                        }
+                        DeclarationScope variableDS = ModelUtils.getDeclarationScope(variable);
+                        if (!variableDS.equals(modelBuilder.getCurrentDeclarationScope())) {
+                            object = (JsObjectImpl)variable;
+                            break;
+                        }
                     }
                 }
                 if (object == null) {
