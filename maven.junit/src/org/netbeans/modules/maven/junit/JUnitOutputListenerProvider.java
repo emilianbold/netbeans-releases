@@ -192,7 +192,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             return;
         }
         match = runningPattern.matcher(line);
-        if (match.matches()) {
+        if (match.matches() && !surefireRunningInParallel) {
             if (runningTestClass != null && outputDir != null) {
                 // match.group(1) should be the FQN of a running test class but let's check to be on the safe side
                 // If the matcher matches it means that we have a new test class running,
@@ -200,18 +200,40 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                 if (!isFullJavaId(match.group(1))) {
                     return;
                 }
-                if (!surefireRunningInParallel) {
-                    // tests are running sequentially, so update Test Results Window
-                    generateTest();
-                }
+                // tests are running sequentially, so update Test Results Window
+                generateTest();
             }
             runningTestClass = match.group(1);
-            if (surefireRunningInParallel) {
-                // tests are running in parallel, so keep track of the tests that are running
-                // and update Test Results Window when all are finished
+        }
+        match = testSuiteStatsPattern.matcher(line);
+        if (match.matches() && surefireRunningInParallel) {
+            runningTestClass = match.group(6);
+            if (runningTestClass != null && outputDir != null && !runningTestClasses.contains(runningTestClass)) {
+                // When using reuseForks=true and a forkCount value larger than one,
+                // the same output is produced many times, so show it only once in Test Results window
                 runningTestClasses.add(runningTestClass);
+                // runningTestClass should be the FQN of a running test class but let's check to be on the safe side
+                // If the matcher matches it means that we have a new test class running,
+                // if not it probably means that this is user's text, e.g. "Running my cool test", so we can safely ignore it
+                if (!isFullJavaId(runningTestClass)) {
+                    return;
+                }
+                generateTest();
             }
         }
+    }
+    
+    private static final String SECONDS_REGEX = "s(?:ec(?:ond)?(?:s|\\(s\\))?)?"; //NOI18N
+    private static final String TESTSUITE_STATS_REGEX = "Tests run: +([0-9]+), +Failures: +([0-9]+), +Errors: +([0-9]+), +Skipped: +([0-9]+), +Time elapsed: +(.+)" + SECONDS_REGEX + " - in (.*)";
+    private static final Pattern testSuiteStatsPattern = Pattern.compile(TESTSUITE_STATS_REGEX);
+    
+    static boolean isTestSuiteStats(String line) {
+        return testSuiteStatsPattern.matcher(line).matches();
+    }
+    
+    static String getTestSuiteFromStats(String line) {
+        Matcher matcher = testSuiteStatsPattern.matcher(line);
+        return matcher.matches() ? matcher.group(6) : null;
     }
     
     private static final String JAVA_ID_START_REGEX = "\\p{javaJavaIdentifierStart}"; //NOI18N
@@ -404,14 +426,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             return;
         }
         if (runningTestClass != null && outputDir != null) {
-            if(surefireRunningInParallel) {
-                // tests are running in parallel, so now that all are finished 
-                // and the result files are created update Test Results Window
-                for(String testClass : runningTestClasses) {
-                    runningTestClass = testClass;
-                    generateTest();
-                }
-            } else {
+            if(!surefireRunningInParallel) {
                 generateTest();
             }
         }

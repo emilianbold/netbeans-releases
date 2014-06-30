@@ -734,10 +734,13 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
 
                     TreePath path = treeUtils.pathFor(rowStartOffset);
                     Tree tree = path.getLeaf();
+                    Tree.Kind kind = tree.getKind();
+                    if (kind == Tree.Kind.ERRONEOUS) {
+                        return ;
+                    }
                     int startOffs = (int)positions.getStartPosition(compUnit, tree);
                     int outerLineNumber = Utilities.getLineOffset(doc, startOffs) + 1;
                     if (outerLineNumber == lineNumber) return;
-                    Tree.Kind kind = tree.getKind();
                     if (kind == Tree.Kind.COMPILATION_UNIT || TreeUtilities.CLASS_TREE_KINDS.contains(kind)) return;
                     if (kind == Tree.Kind.BLOCK) {
                         BlockTree blockTree = (BlockTree)tree;
