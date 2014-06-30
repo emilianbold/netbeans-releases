@@ -50,6 +50,9 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -437,5 +440,32 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     
     @Override
     public void warmup(WarmupMode mode, ExecutionEnvironment env, Collection<String> paths, Collection<String> extensions) {        
+    }    
+
+    @Override
+    public boolean isLink(FileSystem fileSystem, String path) {
+        return isLink(path);
+    }
+
+    @Override
+    public boolean isLink(ExecutionEnvironment env, String path) {
+        return isLink(path);
+    }
+
+    @Override
+    public boolean isLink(FileObject fo) {
+        return isLink(fo.getPath());
+    }
+
+    private static boolean isLink(String path) {
+        Path filePath = Paths.get(Utilities.toURI(new File(path)));
+        return Files.isSymbolicLink(filePath);
+    }
+
+    @Override
+    public String resolveLink(FileObject fo) throws IOException {
+        Path filePath = Paths.get(fo.toURI());
+        Path linkPath = Files.readSymbolicLink(filePath);
+        return linkPath.toFile().getAbsolutePath();
     }    
 }
