@@ -1567,17 +1567,25 @@ non_empty_function_call_parameter_list:paramsList
 ;
 
 non_empty_function_call_parameter_list ::=
-expr_without_variable:var
+is_variadic:isVariadic expr_without_variable:var
 {:
 	List paramsList = new LinkedList();
-	paramsList.add(var);
+	Expression param = var;
+        if (isVariadic) {
+            param = new Variadic(isVariadicleft, varright, var);
+        }
+	paramsList.add(param);
 	RESULT = paramsList;
 :}
 
-| variable:var
+| is_variadic:isVariadic variable:var
 {:
 	List paramsList = new LinkedList();
-	paramsList.add(var);
+	Expression param = var;
+        if (isVariadic) {
+            param = new Variadic(isVariadicleft, varright, var);
+        }
+	paramsList.add(param);
 	RESULT = paramsList;
 :}
 
@@ -1589,15 +1597,23 @@ expr_without_variable:var
 	RESULT = paramsList;
 :}
 
-| non_empty_function_call_parameter_list:paramsList T_COMMA expr_without_variable:var
+| non_empty_function_call_parameter_list:paramsList T_COMMA is_variadic:isVariadic expr_without_variable:var
 {:
-	paramsList.add(var);
+        Expression param = var;
+        if (isVariadic) {
+            param = new Variadic(isVariadicleft, varright, var);
+        }
+	paramsList.add(param);
 	RESULT = paramsList;
 :}
 
-| non_empty_function_call_parameter_list:paramsList T_COMMA variable:var
+| non_empty_function_call_parameter_list:paramsList T_COMMA is_variadic:isVariadic variable:var
 {:
-	paramsList.add(var);
+	Expression param = var;
+        if (isVariadic) {
+            param = new Variadic(isVariadicleft, varright, var);
+        }
+	paramsList.add(param);
 	RESULT = paramsList;
 :}
 
