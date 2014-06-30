@@ -1091,6 +1091,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue244973B.js", "throw Pages^Manager.NO_IMPLEMENTATION_ERROR;", true); 
     }
     
+    public void testIssue244989_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue244989.js", "return fo^o().length;", true); 
+    }
+    
    private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
