@@ -387,4 +387,8 @@ public class PhpParserErrorTest extends PHPTestBase {
     public void testVariadicFunctions_01() throws Exception {
         checkErrors("testfiles/parser/testVariadicFunctions_01.php");
     }
+
+    public void testArgumentUnpacking_01() throws Exception {
+        checkErrors("testfiles/parser/argumentUnpacking_01.php");
+    }
 }

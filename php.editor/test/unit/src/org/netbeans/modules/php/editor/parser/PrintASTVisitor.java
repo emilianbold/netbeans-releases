@@ -774,6 +774,13 @@ public class PrintASTVisitor implements Visitor {
     }
 
     @Override
+    public void visit(Variadic variadic) {
+        XMLPrintNode printNode = new XMLPrintNode(variadic, "Variadic");
+        printNode.addChild(variadic.getExpression());
+        printNode.print(this);
+    }
+
+    @Override
     public void visit(WhileStatement node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "WhileStatement");
         printNode.addChild("Condition", node.getCondition());
