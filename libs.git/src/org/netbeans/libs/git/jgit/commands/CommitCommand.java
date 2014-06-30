@@ -151,7 +151,7 @@ public class CommitCommand extends GitCommand {
                 }
                 if (amend) {
                     RevCommit lastCommit = Utils.findCommit(repository, "HEAD^{commit}");
-                    transferTimestamps(commit, lastCommit);
+                    transferTimestamp(commit, lastCommit);
                 }
                 
                 commit.setMessage(message);
@@ -185,21 +185,14 @@ public class CommitCommand extends GitCommand {
         }
     }
 
-    private void transferTimestamps (org.eclipse.jgit.api.CommitCommand commit, RevCommit lastCommit) {
-        PersonIdent committer = commit.getCommitter();
-        PersonIdent lastCommitter = lastCommit.getCommitterIdent();
-        if (committer == null) {
-            commit.setCommitter(lastCommitter);
-        } else {
-            commit.setCommitter(lastCommitter.getTimeZone() == null
-                    ? new PersonIdent(committer, lastCommitter.getWhen())
-                    : new PersonIdent(committer, lastCommitter.getWhen(), lastCommitter.getTimeZone()));
-        }
+    private void transferTimestamp (org.eclipse.jgit.api.CommitCommand commit, RevCommit lastCommit) {
         PersonIdent lastAuthor = lastCommit.getAuthorIdent();
-        PersonIdent author = commit.getAuthor();
-        commit.setAuthor(lastAuthor.getTimeZone() == null
-                ? new PersonIdent(author, lastAuthor.getWhen())
-                : new PersonIdent(author, lastAuthor.getWhen(), lastAuthor.getTimeZone()));
+        if (lastAuthor != null) {
+            PersonIdent author = commit.getAuthor();
+            commit.setAuthor(lastAuthor.getTimeZone() == null
+                    ? new PersonIdent(author, lastAuthor.getWhen())
+                    : new PersonIdent(author, lastAuthor.getWhen(), lastAuthor.getTimeZone()));
+        }
     }
 
     private void prepareIndex () throws NoWorkTreeException, CorruptObjectException, IOException {

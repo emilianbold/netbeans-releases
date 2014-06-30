@@ -55,6 +55,7 @@ import org.eclipse.jgit.dircache.DirCacheEditor;
 import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.netbeans.libs.git.GitClient;
@@ -63,6 +64,7 @@ import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitRevisionInfo.GitFileInfo;
 import org.netbeans.libs.git.GitRevisionInfo.GitFileInfo.Status;
+import org.netbeans.libs.git.GitUser;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.jgit.Utils;
 
@@ -657,8 +659,15 @@ public class CommitTest extends AbstractGitTestCase {
         Thread.sleep(1100);
         
         long time = lastCommit.getCommitTime();
-        lastCommit = client.commit(new File[] { newOne, another }, "second commit, modified message", null, null, true, NULL_PROGRESS_MONITOR);
+        RevWalk walk = new RevWalk(repository);
+        RevCommit originalCommit = walk.parseCommit(repository.resolve(lastCommit.getRevision()));
+        lastCommit = client.commit(new File[] { newOne, another }, "second commit, modified message",
+                new GitUser("user2", "user2.email"), new GitUser("committer2", "committer2.email"), true, NULL_PROGRESS_MONITOR);
+        RevCommit amendedCommit = walk.parseCommit(repository.resolve(lastCommit.getRevision()));
         assertEquals("Commit time should not change after amend", time, lastCommit.getCommitTime());
+        assertEquals(originalCommit.getAuthorIdent().getWhen(), amendedCommit.getAuthorIdent().getWhen());
+        // commit time should not equal.
+        assertFalse(originalCommit.getCommitterIdent().getWhen().equals(amendedCommit.getCommitterIdent().getWhen()));
         statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, newOne, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, another, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
