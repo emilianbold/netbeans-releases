@@ -74,6 +74,7 @@ import com.sun.tools.swdev.glue.dbx.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.LinkedList;
+import org.netbeans.api.debugger.DebuggerManager;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 
@@ -2900,6 +2901,9 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     }
 
     public void explainStop(GPDbxEventRecord[] events) {
+        if (session.coreSession() != DebuggerManager.getDebuggerManager().getCurrentSession()) {
+            DebuggerManager.getDebuggerManager().setCurrentSession(session.coreSession());
+        }
 
         if (events.length == 0) {
             return;
