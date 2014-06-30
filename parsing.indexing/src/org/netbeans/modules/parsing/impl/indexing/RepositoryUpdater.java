@@ -77,6 +77,11 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.editor.document.AtomicLockDocument;
+import org.netbeans.api.editor.document.AtomicLockEvent;
+import org.netbeans.api.editor.document.AtomicLockListener;
+import org.netbeans.api.editor.document.LineDocument;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -86,9 +91,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.editor.AtomicLockEvent;
-import org.netbeans.editor.AtomicLockListener;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -103,7 +105,6 @@ import org.netbeans.modules.parsing.impl.indexing.friendapi.DownloadedIndexPatch
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexDownloader;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingActivityInterceptor;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
-import org.netbeans.modules.parsing.implspi.SourceControl;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.support.Index;
@@ -1205,7 +1206,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     @Override
     public void removeUpdate(DocumentEvent e) {
         Document d = e.getDocument();
-        if (d instanceof BaseDocument) {
+        LineDocument ld = LineDocumentUtils.as(d, LineDocument.class);
+        if (ld != null) {
             d.putProperty(PROP_MODIFIED_UNDER_WRITE_LOCK, true);
         } else {
             handleDocumentModification(d);
@@ -1314,8 +1316,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         Document activeDocument = activeDocumentRef == null ? null : activeDocumentRef.get();
 
         if (deactivated != null && deactivated == activeDocument) {
-            if (activeDocument instanceof BaseDocument) {
-                ((BaseDocument) activeDocument).removeAtomicLockListener(this);
+            AtomicLockDocument ald = LineDocumentUtils.as(activeDocument, AtomicLockDocument.class);
+            if (ald != null) {
+                ald.removeAtomicLockListener(this);
             }
             activeDocument.removeDocumentListener(this);
             activeDocumentRef = null;
@@ -1324,8 +1327,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         if (activated != null && activated != activeDocument) {
             if (activeDocument != null) {
-                if (activeDocument instanceof BaseDocument) {
-                    ((BaseDocument) activeDocument).removeAtomicLockListener(this);
+                AtomicLockDocument ald = LineDocumentUtils.as(activeDocument, AtomicLockDocument.class);
+                if (ald != null) {
+                    ald.removeAtomicLockListener(this);
                 }
                 activeDocument.removeDocumentListener(this);
                 LOGGER.log(Level.FINE, "Unregistering active document listener: activeDocument={0}", activeDocument); //NOI18N
@@ -1334,8 +1338,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             activeDocument = activated;
             activeDocumentRef = new WeakReference<Document>(activeDocument);
             
-            if (activeDocument instanceof BaseDocument) {
-                ((BaseDocument) activeDocument).addAtomicLockListener(this);
+            AtomicLockDocument ald = LineDocumentUtils.as(activeDocument, AtomicLockDocument.class);
+            if (ald != null) {
+                ald.addAtomicLockListener(this);
             }
             activeDocument.addDocumentListener(this);
             LOGGER.log(Level.FINE, "Registering active document listener: activeDocument={0}", activeDocument); //NOI18N
