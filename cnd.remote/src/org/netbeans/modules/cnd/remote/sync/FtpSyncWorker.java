@@ -193,7 +193,12 @@ import org.openide.util.RequestProcessor;
         time2 = System.currentTimeMillis();
         
         if (CndUtils.getBoolean("cnd.remote.zip", true)) {
-            uploadPlainFilesInZip(remoteRoot);
+            try {
+                uploadPlainFilesInZip(remoteRoot);
+            } catch (ZipIOException ex) {
+                err.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Msg_TryingToRecoverViaPlainFiles"));
+                uploadPlainFiles();
+            }
         } else {
             uploadPlainFiles();
         }
@@ -417,6 +422,12 @@ import org.openide.util.RequestProcessor;
         }
     }
 
+    private static final class ZipIOException extends IOException {
+        private ZipIOException(String message) {
+            super(message);
+        }
+    }
+
     private void uploadPlainFilesInZip(String remoteRoot) throws InterruptedException, ExecutionException, IOException {
     
         out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_UploadFilesInZip"));
@@ -541,7 +552,7 @@ import org.openide.util.RequestProcessor;
                         executionEnvironment , remoteFile, System.currentTimeMillis()-unzipTime, rc); 
             
                 if (rc != 0) {
-                    throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Err_Unzip", 
+                    throw new ZipIOException(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Err_Unzip",
                             remoteFile, executionEnvironment, rc)); // NOI18N
                 }
                 for (FileCollector.FileInfo fileInfo : toCopy) {
