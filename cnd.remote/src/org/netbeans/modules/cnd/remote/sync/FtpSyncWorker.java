@@ -366,8 +366,28 @@ import org.openide.util.RequestProcessor;
     }
 
     private void uploadPlainFiles() throws InterruptedException, ExecutionException, IOException {
-        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_UploadFilesPlain"));        
+
+        List<FileCollector.FileInfo> toCopy = new ArrayList<>();
+
         for (FileCollector.FileInfo fileInfo : fileCollector.getFiles()) {
+            if (cancelled) {
+                throw new InterruptedException();
+            }
+            if (!fileInfo.isLink() && !fileInfo.file.isDirectory()) {
+                File srcFile = fileInfo.file;
+                if (srcFile.exists() && needsCopying(srcFile)) {
+                    toCopy.add(fileInfo);
+                }
+            }
+        }
+
+        if (toCopy.isEmpty()) {
+            out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_NoFilesToUpload"));
+            return;
+        }
+
+        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_UploadFilesPlain", toCopy.size()));
+        for (FileCollector.FileInfo fileInfo : toCopy) {
             if (cancelled) {
                 return;
             }
