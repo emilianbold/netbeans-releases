@@ -339,7 +339,7 @@ public class ModelUtils {
                     result.put(object.getName(), object);
                 }
             }
-            if (!result.containsKey(((JsObject)inScope).getName())) {
+            if (inScope.getParentScope() != null && !result.containsKey(((JsObject)inScope).getName())) {
                 result.put(((JsObject)inScope).getName(), (JsObject)inScope);
             }
             inScope = inScope.getParentScope();
