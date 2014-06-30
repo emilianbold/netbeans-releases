@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -391,20 +392,32 @@ public class JsIndex {
             }
             // find properties of the fqn
 //            String pattern = escapeRegExp(fqn) + PROPERTIES_PATTERN; //NOI18N
-            results = query(
-                    JsIndex.FIELD_FQ_NAME, fqn + "." , QuerySupport.Kind.PREFIX, TERMS_BASIC_INFO); //NOI18N
-            for (IndexResult indexResult : results) {
-                String value = indexResult.getValue(JsIndex.FIELD_FQ_NAME);
-                if (!value.isEmpty() && value.charAt(value.length() - 1) != IndexedElement.PARAMETER_POSTFIX) {
-                    value = value.substring(fqn.length());
-                    if (value.lastIndexOf('.') == 0) {
-                        IndexedElement property = IndexedElement.create(indexResult);
-                        if (!property.getModifiers().contains(Modifier.PRIVATE)) {
-                            result.add(property);
+            Hashtable<String, Collection<? extends IndexResult>> fqnToResults = new Hashtable<String, Collection<? extends IndexResult>>();
+            fqnToResults.put(fqn, query(JsIndex.FIELD_FQ_NAME, fqn + ".", QuerySupport.Kind.PREFIX, TERMS_BASIC_INFO)); //NOI18N
+            if (fqn.indexOf('.') == -1) {
+                Collection<? extends IndexResult> tmpResults = query(JsIndex.FIELD_BASE_NAME, fqn, QuerySupport.Kind.EXACT, JsIndex.FIELD_FQ_NAME);
+                for (IndexResult indexResult : tmpResults) {
+                    String value = IndexedElement.getFQN(indexResult);
+                    fqnToResults.put(value, query(JsIndex.FIELD_FQ_NAME, value + ".", QuerySupport.Kind.PREFIX, TERMS_BASIC_INFO)); //NOI18N 
+                }
+            }
+            for (Map.Entry<String, Collection<? extends IndexResult>> entry : fqnToResults.entrySet()) {
+                String fqnKey = entry.getKey();
+                Collection<? extends IndexResult> properties = entry.getValue();
+                for (IndexResult indexResult : properties) {
+                    String value = indexResult.getValue(JsIndex.FIELD_FQ_NAME);
+                    if (!value.isEmpty() && value.charAt(value.length() - 1) != IndexedElement.PARAMETER_POSTFIX) {
+                        value = value.substring(fqnKey.length());
+                        if (value.lastIndexOf('.') == 0) {
+                            IndexedElement property = IndexedElement.create(indexResult);
+                            if (!property.getModifiers().contains(Modifier.PRIVATE)) {
+                                result.add(property);
+                            }
                         }
                     }
                 }
             }
+
         }
         return result;
     }
