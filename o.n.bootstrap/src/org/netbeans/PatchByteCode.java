@@ -75,6 +75,8 @@ import org.openide.modules.PatchedPublic;
  * @see #patch
  */
 public final class PatchByteCode {
+    private static final String DISABLE_PATCHING = PatchByteCode.class.getName() + ".disable"; // NOI18N
+    
     private static final Logger LOG = Logger.getLogger(PatchByteCode.class.getName());
     
     private static final byte[] RUNTIME_INVISIBLE_ANNOTATIONS, PATCHED_PUBLIC;
@@ -149,6 +151,9 @@ public final class PatchByteCode {
     }
     
     static PatchByteCode fromStream(Enumeration<URL> streams, ClassLoader ldr) {
+        if (System.getProperty(DISABLE_PATCHING) != null) {
+            return NOP;
+        }
         PatchByteCode pb = new PatchByteCode(false, new HashMap<String, String>(3), ldr);
         boolean found = false;
         while (streams.hasMoreElements()) {
