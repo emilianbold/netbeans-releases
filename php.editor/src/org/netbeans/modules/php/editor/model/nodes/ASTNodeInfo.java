@@ -67,6 +67,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.Variadic;
 
 /**
  *
@@ -338,6 +339,8 @@ public class ASTNodeInfo<T extends ASTNode> {
             return toName(((Reference) node).getExpression());
         } else if (node instanceof UseStatementPart) {
             return toQualifiedName(node, false).toString();
+        } else if (node instanceof Variadic) {
+            return toName(((Variadic) node).getExpression());
         }
         throw new IllegalStateException(node.getClass().toString());
     }
@@ -398,6 +401,8 @@ public class ASTNodeInfo<T extends ASTNode> {
             return toOffsetRange(((Reference) node).getExpression());
         } else if (node instanceof UseStatementPart) {
             return new OffsetRange(node.getStartOffset(), node.getEndOffset());
+        } else if (node instanceof Variadic) {
+            return toOffsetRange(((Variadic) node).getExpression());
         }
         throw new IllegalStateException();
     }

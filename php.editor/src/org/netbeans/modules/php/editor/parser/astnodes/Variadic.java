@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,35 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.test;
-
-import junit.framework.Test;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import org.netbeans.modules.remote.impl.fs.*;
+package org.netbeans.modules.php.editor.parser.astnodes;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class RemoteApi2Test extends RemoteTestSuiteBase {
+public class Variadic extends Expression {
+    private final Expression expression;
 
-    @SuppressWarnings("unchecked")
-    public RemoteApi2Test() {
-        this("Remote API", getTestClasses());
-    }
-
-    @SuppressWarnings("unchecked")
-    /*package*/ static Class<? extends NativeExecutionBaseTestCase>[] getTestClasses() {
-        return new Class[] {
-           RemoteLinksTestCase.class,
-           RemoteLinksChangeLinkTestCase.class,
-           RemoteLinksChangeLinkTestCase2.class,
-           ListenersTestCase.class,
-           ListenersParityTestCase.class,
-           PlainFileWriteEventsTestCase.class,
-           FssDispatchedHangupTestCase.class,
-           FileSystemProviderTestCase.class
-        };
-    }
-    
-    public RemoteApi2Test(String name, Class<? extends NativeExecutionBaseTestCase>... testClasses) {
-        super(name, "remote.platforms", testClasses);
+    public Variadic(int start, int end, Expression expression) {
+        super(start, end);
+        this.expression = expression;
     }
 
-    public static Test suite() {
-        return new RemoteApi2Test();
+    public Expression getExpression() {
+        return expression;
     }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    public String toString() {
+        return "..." + getExpression(); //NOI18N
+    }
+
 }
