@@ -302,12 +302,24 @@ public final class LibrariesSupport {
         }
     }
 
+    /**
+     * Returns a {@link LibraryStorageArea} for given {@link LibraryManager}.
+     * @param manager the {@link LibraryManager} to get a {@link LibraryStorageArea} for
+     * @return the {@link LibraryStorageArea}
+     * @since 1.48
+     */
     @NonNull
     public static LibraryStorageArea getLibraryStorageArea(@NonNull final LibraryManager manager) {
         Parameters.notNull("manager", manager); //NOI18N
         return LibraryAccessor.getInstance().getArea(manager);
     }
 
+    /**
+     * Returns a localized (user friendly) name of the {@link LibraryImplementation}.
+     * @param impl the library to get the localized name for
+     * @return the localized name
+     * @since 1.48
+     */
     @NonNull
     public static String getLocalizedName(@NonNull final LibraryImplementation impl) {
         Parameters.notNull("impl", impl);   //NOI18N
@@ -331,6 +343,12 @@ public final class LibrariesSupport {
         return getLocalizedString(impl.getLocalizingBundle(), impl.getName());
     }
 
+    /**
+     * Tests if given {@link LibraryImplementation} supports display name.
+     * @param impl the {@link LibraryImplementation} to be checked
+     * @return true when given {@link LibraryImplementation} supports display name
+     * @since 1.48
+     */
     public static boolean supportsDisplayName(final @NonNull LibraryImplementation impl) {
         assert impl != null;
         if (impl instanceof ForwardingLibraryImplementation) {
@@ -339,12 +357,25 @@ public final class LibrariesSupport {
         return impl instanceof NamedLibraryImplementation;
     }
 
+    /**
+     * Returns {@link LibraryImplementation} display name.
+     * @param impl the {@link LibraryImplementation} to return display name for
+     * @return the display name if supported or null
+     * @since 1.48
+     */
     public static @CheckForNull String getDisplayName (final @NonNull LibraryImplementation impl) {
         return supportsDisplayName(impl) ?
                 ((NamedLibraryImplementation)impl).getDisplayName() :
                 null;
     }
 
+    /**
+     * Sets {@link LibraryImplementation} display name.
+     * @param impl the {@link LibraryImplementation} to set the display name to
+     * @param name the display name
+     * @return true if given {@link LibraryImplementation} support display name
+     * @since 1.48
+     */
     public static boolean setDisplayName(
             final @NonNull LibraryImplementation impl,
             final @NullAllowed String name) {
@@ -358,6 +389,12 @@ public final class LibrariesSupport {
         return false;
     }
 
+    /**
+     * Tests if given {@link LibraryImplementation} supports properties.
+     * @param impl the {@link LibraryImplementation} to be checked
+     * @return true when given {@link LibraryImplementation} supports properties
+     * @since 1.48
+     */
     public static boolean supportsProperties(final @NonNull LibraryImplementation impl) {
         assert impl != null;
         if (impl instanceof ForwardingLibraryImplementation) {
@@ -366,6 +403,12 @@ public final class LibrariesSupport {
         return impl instanceof LibraryImplementation3;
     }
 
+    /**
+     * Returns {@link LibraryImplementation} properties.
+     * @param impl the {@link LibraryImplementation} to return properties for
+     * @return the library properties if supported or null
+     * @since 1.48
+     */
     @NonNull
     public static Map<String,String> getProperties (final @NonNull LibraryImplementation impl) {
         return supportsProperties(impl) ?
@@ -373,6 +416,13 @@ public final class LibrariesSupport {
                 Collections.<String,String>emptyMap();
     }
 
+    /**
+     * Sets {@link LibraryImplementation} properties.
+     * @param impl the {@link LibraryImplementation} to set properties to
+     * @param props the properties
+     * @return true if given {@link LibraryImplementation} support properties
+     * @since 1.48
+     */
     public static boolean setProperties(
         final @NonNull LibraryImplementation impl,
         final @NonNull Map<String,String>  props) {
@@ -386,6 +436,12 @@ public final class LibrariesSupport {
         return false;
     }
 
+    /**
+     * Tests if given {@link LibraryImplementation} supports {@link URI} content.
+     * @param impl the {@link LibraryImplementation} to be checked
+     * @return true when given {@link LibraryImplementation} supports {@link URI} content
+     * @since 1.48
+     */
     public static boolean supportsURIContent(@NonNull final LibraryImplementation impl) {
         if (impl instanceof ForwardingLibraryImplementation) {
             return supportsURIContent(((ForwardingLibraryImplementation)impl).getDelegate());
@@ -393,6 +449,13 @@ public final class LibrariesSupport {
         return impl instanceof LibraryImplementation2;
     }
 
+    /**
+     * Returns {@link LibraryImplementation} {@link URI} content.
+     * @param impl the {@link LibraryImplementation} to return {@link URI} content for
+     * @param volumeType the volumeType
+     * @return the library {@link URI} content
+     * @since 1.48
+     */
     @NonNull
     public static List<URI> getURIContent(
         @NonNull final LibraryImplementation impl,
@@ -402,6 +465,14 @@ public final class LibrariesSupport {
             convertURLsToURIs(impl.getContent(volumeType));
     }
 
+    /**
+     * Sets {@link LibraryImplementation} {@link URI} content.
+     * @param impl the {@link LibraryImplementation} to set the {@link URI} content to
+     * @param volumeType the volumeType
+     * @param path the {@link URI} content
+     * @return true if given {@link LibraryImplementation} support {@link URI} content
+     * @since 1.48
+     */
     public static boolean setURIContent(
         @NonNull final LibraryImplementation impl,
         @NonNull final String volumeType,

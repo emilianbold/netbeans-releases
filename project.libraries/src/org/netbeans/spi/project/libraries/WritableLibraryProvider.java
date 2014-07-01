@@ -47,11 +47,38 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryProvider;
 import java.io.IOException;
 
+/**
+ * LibraryProvider supporting modifications.
+ * @param L the {@link LibraryImplementation} type
+ * @author Tomas Zezula
+ * @since 1.48
+ */
 public interface WritableLibraryProvider<L extends LibraryImplementation> extends LibraryProvider<L> {
 
+    /**
+     * Adds a new library.
+     * @param library the library to be added
+     * @return true when the {@link WritableLibraryProvider} supports given library
+     * @throws IOException in case of IO error
+     */
     boolean addLibrary(L library) throws IOException;
 
+    /**
+     * Removes a library.
+     * @param library the library to be removed
+     * @return true when the {@link WritableLibraryProvider} owned the library and
+     * the library was successfully removed
+     * @throws IOException in case of IO error
+     */
     boolean removeLibrary(L library) throws IOException;
 
+    /**
+     * Updates a library.
+     * @param oldLibrary  the library to be updated
+     * @param newLibrary the updated library prototype
+     * @return true when the {@link WritableLibraryProvider} owned the library and
+     * the library was successfully updated
+     * @throws IOException in case of IO error
+     */
     boolean updateLibrary(L oldLibrary, L newLibrary) throws IOException;
 }
