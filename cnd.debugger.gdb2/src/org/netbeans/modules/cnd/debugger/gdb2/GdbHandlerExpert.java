@@ -239,8 +239,6 @@ public class GdbHandlerExpert implements HandlerExpert {
 
 	    String fileLine;
 	    if (file != null && file.length() > 0) {
-                // IZs 169200 & 174479 (send internal path for cygwin)
-                file = debugger.fmap().worldToEngine(file);
 		fileLine = file + ":" + line;	// NOI18N
 	    } else {
 		fileLine = "" + line;		// NOI18N
