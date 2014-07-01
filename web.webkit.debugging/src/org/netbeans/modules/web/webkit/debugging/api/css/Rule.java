@@ -93,6 +93,8 @@ public class Rule {
         }
         if (rule.containsKey("ruleId")) { // NOI18N
             id = new RuleId((JSONObject)rule.get("ruleId")); // NOI18N
+        } else if (rule.containsKey("styleSheetId")) { // NOI18N
+            id = new RuleId((String)rule.get("styleSheetId")); // NOI18N
         }
         sourceURL = (String)rule.get("sourceURL"); // NOI18N
         if (rule.containsKey("sourceLine")) { // NOI18N
