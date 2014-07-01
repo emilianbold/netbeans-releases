@@ -57,11 +57,10 @@ import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.project.libraries.LibraryAccessor;
-import org.netbeans.modules.project.libraries.Util;
-import org.netbeans.modules.project.libraries.ui.LibrariesModel;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation2;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -160,7 +159,7 @@ public final class Library {
         if (impl instanceof LibraryImplementation2) {
             return ((LibraryImplementation2)impl).getURIContent(volumeType);
         } else {
-            return LibrariesModel.convertURLsToURIs(impl.getContent(volumeType));
+            return LibrariesSupport.convertURLsToURIs(impl.getContent(volumeType));
         }
     } // end getContent
 
@@ -210,7 +209,7 @@ public final class Library {
      * @return String the display name, never returns null.
      */
     public String getDisplayName () {
-        return Util.getLocalizedName(this.impl);
+        return LibrariesSupport.getLocalizedName(this.impl);
     }
 
 

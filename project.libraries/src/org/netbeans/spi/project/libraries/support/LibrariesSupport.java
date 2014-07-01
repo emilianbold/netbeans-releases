@@ -48,23 +48,41 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.project.libraries.DefaultLibraryImplementation;
+import org.netbeans.modules.project.libraries.LibrariesModule;
 import org.netbeans.modules.project.libraries.LibraryTypeRegistry;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.netbeans.modules.project.libraries.DefaultLibraryImplementation;
+import org.netbeans.spi.project.libraries.LibraryImplementation2;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
+import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
-import org.openide.util.Utilities;
 
 /**
  * SPI Support class.
  * Provides factory method for creating instance of the default LibraryImplementation.
+ * @author David Konecny
+ * @author Tomas Zezula
  */
 public final class LibrariesSupport {
+
+    private static final Logger LOG = Logger.getLogger(LibrariesSupport.class.getName());
 
     private LibrariesSupport () {
     }
@@ -125,7 +143,7 @@ public final class LibrariesSupport {
         try {
             File f = new File(path);
             if (f.isAbsolute()) {
-                return Utilities.toURI(f);
+                return BaseUtilities.toURI(f);
             } else {
                 // create hierarchical relative URI (that is no schema)
                 return new URI(null, null, path.replace('\\', '/'), null);
@@ -146,12 +164,49 @@ public final class LibrariesSupport {
      */
     public static String convertURIToFilePath(URI uri) {
         if (uri.isAbsolute()) {
-            return Utilities.toFile(uri).getPath();
+            return BaseUtilities.toFile(uri).getPath();
         } else {
             return uri.getPath().replace('/', File.separatorChar);
         }
     }
-    
+
+    /**
+     * Converts a list of {@link URI}s into a list of {@link URL}s.
+     * The unmappable URIs are omitted from result.
+     * @param uris the list of {@link URI}s to be converted
+     * @return the list of {@link URL}s
+     * @since 1.48
+     */
+    public static List<URL> convertURIsToURLs(List<? extends URI> uris) {
+        List<URL> content = new ArrayList<>();
+        for (URI uri : uris) {
+            try {
+                content.add(uri.toURL());
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return content;
+    }
+
+    /**
+     * Converts a list of {@link URL}s into a list of {@link URI}s.
+     * The unmappable URLs are omitted from result.
+     * @param urls the list of {@link URL}s to be converted
+     * @return the list of {@link URI}s
+     * @since 1.48
+     */
+    public static List<URI> convertURLsToURIs(List<URL> urls) {
+        List<URI> content = new ArrayList<>();
+        for (URL url : urls) {
+            final URI uri = URI.create(url.toExternalForm());
+            if (uri != null) {
+                content.add(uri);
+            }
+        }
+        return content;
+    }
+
     /**
      * Helper method to resolve (possibly relative) library content URI to FileObject.
      * 
@@ -243,5 +298,140 @@ public final class LibrariesSupport {
                 throw new AssertionError(ex);
         }
     }
-    
+
+    @NonNull
+    public static String getLocalizedName(@NonNull final LibraryImplementation impl) {
+        Parameters.notNull("impl", impl);   //NOI18N
+        if (supportsDisplayName(impl) && ((NamedLibraryImplementation)impl).getDisplayName() != null) {
+            return ((NamedLibraryImplementation)impl).getDisplayName();
+        }
+        final FileObject src = LibrariesModule.getFile(impl);
+        if (src != null) {
+            Object obj = src.getAttribute("displayName"); // NOI18N
+            if (obj instanceof String) {
+                return (String)obj;
+            }
+        }
+        if (impl instanceof ForwardingLibraryImplementation) {
+            String proxiedName = getLocalizedName(((ForwardingLibraryImplementation)impl).getDelegate());
+            if (proxiedName != null) {
+                return proxiedName;
+            }
+        }
+
+        return getLocalizedString(impl.getLocalizingBundle(), impl.getName());
+    }
+
+    public static boolean supportsDisplayName(final @NonNull LibraryImplementation impl) {
+        assert impl != null;
+        if (impl instanceof ForwardingLibraryImplementation) {
+            return supportsDisplayName(((ForwardingLibraryImplementation)impl).getDelegate());
+        }
+        return impl instanceof NamedLibraryImplementation;
+    }
+
+    public static @CheckForNull String getDisplayName (final @NonNull LibraryImplementation impl) {
+        return supportsDisplayName(impl) ?
+                ((NamedLibraryImplementation)impl).getDisplayName() :
+                null;
+    }
+
+    public static boolean setDisplayName(
+            final @NonNull LibraryImplementation impl,
+            final @NullAllowed String name) {
+        if (supportsDisplayName(impl)) {
+            final NamedLibraryImplementation nimpl = (NamedLibraryImplementation) impl;
+            if (!BaseUtilities.compareObjects(nimpl.getDisplayName(), name)) {
+                nimpl.setDisplayName(name);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean supportsProperties(final @NonNull LibraryImplementation impl) {
+        assert impl != null;
+        if (impl instanceof ForwardingLibraryImplementation) {
+            return supportsProperties(((ForwardingLibraryImplementation)impl).getDelegate());
+        }
+        return impl instanceof LibraryImplementation3;
+    }
+
+    @NonNull
+    public static Map<String,String> getProperties (final @NonNull LibraryImplementation impl) {
+        return supportsProperties(impl) ?
+                ((LibraryImplementation3)impl).getProperties() :
+                Collections.<String,String>emptyMap();
+    }
+
+    public static boolean setProperties(
+        final @NonNull LibraryImplementation impl,
+        final @NonNull Map<String,String>  props) {
+        if (supportsProperties(impl)) {
+            final LibraryImplementation3 impl3 = (LibraryImplementation3)impl;
+            if (!BaseUtilities.compareObjects(impl3.getProperties(), props)) {
+                impl3.setProperties(props);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean supportsURIContent(@NonNull final LibraryImplementation impl) {
+        if (impl instanceof ForwardingLibraryImplementation) {
+            return supportsURIContent(((ForwardingLibraryImplementation)impl).getDelegate());
+        }
+        return impl instanceof LibraryImplementation2;
+    }
+
+    @NonNull
+    public static List<URI> getURIContent(
+        @NonNull final LibraryImplementation impl,
+        @NonNull final String volumeType) throws IllegalArgumentException {
+        return supportsURIContent(impl) ?
+            ((LibraryImplementation2)impl).getURIContent(volumeType) :
+            convertURLsToURIs(impl.getContent(volumeType));
+    }
+
+    public static boolean setURIContent(
+        @NonNull final LibraryImplementation impl,
+        @NonNull final String volumeType,
+        @NonNull final List<URI> path) {
+        if (supportsURIContent(impl)) {
+            final LibraryImplementation2 impl2 = (LibraryImplementation2)impl;
+            if (!BaseUtilities.compareObjects(impl2.getURIContent(volumeType), path)) {
+                impl2.setURIContent(volumeType, path);
+                return true;
+            }
+        } else {
+            impl.setContent(volumeType, convertURIsToURLs(path));
+            return true;
+        }
+        return false;
+    }
+
+    private static String getLocalizedString (
+            final @NullAllowed String bundleResourceName,
+            final @NullAllowed String key) {
+        if (key == null) {
+            return null;
+        }
+        if (bundleResourceName == null) {
+            return key;
+        }
+        final ResourceBundle bundle;
+        try {
+            bundle = NbBundle.getBundle(bundleResourceName);
+        } catch (MissingResourceException mre) {
+            // Bundle should have existed.
+            LOG.log(Level.INFO, "Wrong resource bundle", mre);      //NOI18N
+            return key;
+        }
+        try {
+            return bundle.getString (key);
+        } catch (MissingResourceException mre) {
+            // No problem, not specified.
+            return key;
+        }
+    }
 }

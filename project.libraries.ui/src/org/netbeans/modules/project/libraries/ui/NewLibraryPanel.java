@@ -49,9 +49,9 @@ import java.util.HashMap;
 import java.util.Map;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.project.libraries.LibraryTypeRegistry;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 
 public class NewLibraryPanel extends javax.swing.JPanel {
 
@@ -112,8 +112,7 @@ public class NewLibraryPanel extends javax.swing.JPanel {
     private void initModel(String preselectedLibraryType) {
         this.typeMap = new HashMap<Integer,String>();
         this.name.setText (NbBundle.getMessage (NewLibraryPanel.class,"TXT_NewLibrary"));
-        LibraryTypeRegistry regs = LibraryTypeRegistry.getDefault();
-        LibraryTypeProvider[] providers = regs.getLibraryTypeProviders();
+        LibraryTypeProvider[] providers = LibrariesSupport.getLibraryTypeProviders();
         int index = 0;
         for (int i=0; i< providers.length; i++) {
             String type = providers[i].getLibraryType();

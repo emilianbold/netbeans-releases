@@ -49,7 +49,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -66,31 +65,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.project.libraries.LibraryAccessor;
-import org.netbeans.modules.project.libraries.Util;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryProvider;
-import org.netbeans.modules.project.libraries.WritableLibraryProvider;
+import org.netbeans.spi.project.libraries.WritableLibraryProvider;
 import org.netbeans.spi.project.libraries.ArealLibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation2;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
 import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
-import org.openide.util.Exceptions;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.util.Lookup;
 import org.openide.util.ChangeSupport;
-import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 public class LibrariesModel implements PropertyChangeListener {
-
-    public static final LibraryStorageArea GLOBAL_AREA = new LibraryStorageArea() {
-        public String getDisplayName() {
-            return NbBundle.getMessage(LibrariesModel.class, "LBL_global");
-        }
-        public URL getLocation() {
-            throw new AssertionError();
-        }
-    };
 
     private static final Logger LOG = Logger.getLogger(LibrariesModel.class.getName());
 
@@ -162,8 +149,8 @@ public class LibrariesModel implements PropertyChangeListener {
 
     public Collection<? extends LibraryStorageArea> getAreas() {
         Set<LibraryStorageArea> areas = new HashSet<LibraryStorageArea>();
-        for (ArealLibraryProvider alp : Lookup.getDefault().lookupAll(ArealLibraryProvider.class)) {
-            for (LibraryStorageArea area : LibraryAccessor.getOpenAreas(alp)) {
+        for (ArealLibraryProvider<?,?> alp : Lookup.getDefault().lookupAll(ArealLibraryProvider.class)) {
+            for (LibraryStorageArea area : alp.getOpenAreas()) {
                 area2Storage.put(area, alp);
                 areas.add(area);
             }
@@ -183,11 +170,11 @@ public class LibrariesModel implements PropertyChangeListener {
 
     public LibraryStorageArea getArea(LibraryImplementation library) {
         LibraryStorageArea area = getAreaOrNull(library);
-        return area != null ? area : GLOBAL_AREA;
+        return area != null ? area : LibraryStorageArea.GLOBAL;
     }
     private LibraryStorageArea getAreaOrNull(LibraryImplementation library) {
         if (library instanceof ProxyLibraryImplementation) {
-            library = ((ProxyLibraryImplementation) library).getOriginal();
+            library = ((ProxyLibraryImplementation) library).getDelegate();
         }
         return library2Area.get(library);
     }
@@ -205,7 +192,7 @@ public class LibrariesModel implements PropertyChangeListener {
             if (addedLibraries.contains(impl)) {
                 addedLibraries.remove(impl);
             } else {
-                removedLibraries.add(((ProxyLibraryImplementation) impl).getOriginal());
+                removedLibraries.add(((ProxyLibraryImplementation) impl).getDelegate());
             }
             actualLibraries.remove(impl);
         }
@@ -225,7 +212,7 @@ public class LibrariesModel implements PropertyChangeListener {
         if (this.addedLibraries.contains(impl))
             return true;
         LibraryProvider provider = storageByLib.get
-                (((ProxyLibraryImplementation)impl).getOriginal());
+                (((ProxyLibraryImplementation)impl).getDelegate());
         return provider == writableProvider || getAreaOrNull(impl) != null;
     }
 
@@ -238,7 +225,7 @@ public class LibrariesModel implements PropertyChangeListener {
                 assert impl instanceof LibraryImplementation2;
                 LibraryStorageArea area = getAreaOrNull(impl);
                 if (area != null) {
-                    LibraryAccessor.remove(area2Storage.get(area), (LibraryImplementation2)impl);
+                    ALPUtils.remove(area2Storage.get(area), (LibraryImplementation2)impl);
                 } else {
                     throw new IOException("Cannot find storage for library: " + impl.getName()); // NOI18N
                 }
@@ -249,8 +236,8 @@ public class LibrariesModel implements PropertyChangeListener {
             if (area != null) {
                 ArealLibraryProvider alp = area2Storage.get(area);
                 assert alp != null : "Unknown area: " + area + " known areas: " + area2Storage.keySet();
-                final LibraryImplementation2 createdLib = LibraryAccessor.createLibrary(alp, impl.getType(), impl.getName(), area, ((DummyArealLibrary) impl).contents);
-                Util.setDisplayName(createdLib, Util.getDisplayName(impl));
+                final LibraryImplementation2 createdLib = ALPUtils.createLibrary(alp, impl.getType(), impl.getName(), area, ((DummyArealLibrary) impl).contents);
+                LibrariesSupport.setDisplayName(createdLib, LibrariesSupport.getDisplayName(impl));
             } else if (writableProvider != null) {
                 writableProvider.addLibrary(impl);
             } else {
@@ -258,31 +245,29 @@ public class LibrariesModel implements PropertyChangeListener {
             }
         }
         for (ProxyLibraryImplementation proxy : changedLibraries) {
-            LibraryImplementation orig = proxy.getOriginal();
+            LibraryImplementation orig = proxy.getDelegate();
             LibraryProvider storage = storageByLib.get(orig);
             if (storage == this.writableProvider) {
                 this.writableProvider.updateLibrary(orig, proxy);
             } else {
                 LibraryStorageArea area = library2Area.get(orig);
                 if (area != null) {
-                    if (proxy instanceof ProxyLibraryImplementation.ProxyLibraryImplementation2) {
-                        ProxyLibraryImplementation.ProxyLibraryImplementation2 proxy2 = 
-                                (ProxyLibraryImplementation.ProxyLibraryImplementation2)proxy;
-                        LibraryImplementation2 orig2 = proxy2.getOriginal2();
-                        if (proxy2.newURIContents != null) {
-                            for (Map.Entry<String,List<URI>> entry : proxy2.newURIContents.entrySet()) {
+                    if (LibrariesSupport.supportsURIContent(proxy)) {
+                        final LibraryImplementation2 orig2 = (LibraryImplementation2) proxy.getDelegate();
+                        if (proxy.getNewURIContents() != null) {
+                            for (Map.Entry<String,List<URI>> entry : proxy.getNewURIContents().entrySet()) {
                                 orig2.setURIContent(entry.getKey(), entry.getValue());
                             }
                         }
-                    } else if (proxy.newContents != null) {
-                        for (Map.Entry<String,List<URL>> entry : proxy.newContents.entrySet()) {
+                    } else if (proxy.getNewContents() != null) {
+                        for (Map.Entry<String,List<URL>> entry : proxy.getNewContents().entrySet()) {
                             orig.setContent(entry.getKey(), entry.getValue());
                         }
                     }
-                    final String origDisplayName = Util.getDisplayName(orig);
-                    final String newDisplayName = Util.getDisplayName(proxy);
+                    final String origDisplayName = LibrariesSupport.getDisplayName(orig);
+                    final String newDisplayName = LibrariesSupport.getDisplayName(proxy);
                     if (!(origDisplayName == null ? newDisplayName == null : origDisplayName.equals(newDisplayName))) {
-                        Util.setDisplayName(orig, newDisplayName);
+                        LibrariesSupport.setDisplayName(orig, newDisplayName);
                     }
                 } else {
                     throw new IOException("Cannot find storage for library: " + orig.getName()); // NOI18N
@@ -304,7 +289,7 @@ public class LibrariesModel implements PropertyChangeListener {
 
     private ProxyLibraryImplementation findModified (LibraryImplementation impl) {
         for (ProxyLibraryImplementation proxy : changedLibraries) {
-            if (proxy.getOriginal().equals (impl)) {
+            if (proxy.getDelegate().equals (impl)) {
                 return proxy;
             }
         }
@@ -330,7 +315,7 @@ public class LibrariesModel implements PropertyChangeListener {
             assert alp != null : area;
             LibraryProvider prov = area2Provider.get(area);
             if (prov == null) {
-                prov = LibraryAccessor.getLibraries(alp, area);
+                prov = ALPUtils.getLibraries(alp, area);
                 prov.addPropertyChangeListener(this); // need not be weak, we just created the source
                 area2Provider.put(area, prov);
             }
@@ -367,8 +352,8 @@ public class LibrariesModel implements PropertyChangeListener {
 
     private static class LibrariesComparator implements Comparator<LibraryImplementation> {
         public int compare(LibraryImplementation lib1, LibraryImplementation lib2) {
-            String name1 = Util.getLocalizedName(lib1);
-            String name2 = Util.getLocalizedName(lib2);
+            String name1 = LibrariesSupport.getLocalizedName(lib1);
+            String name2 = LibrariesSupport.getLocalizedName(lib2);
             int r = name1.compareToIgnoreCase(name2);
             return r != 0 ? r : System.identityHashCode(lib1) - System.identityHashCode(lib2);
         }
@@ -413,7 +398,7 @@ public class LibrariesModel implements PropertyChangeListener {
 
         @Override
         public List<URL> getContent(String volumeType) throws IllegalArgumentException {
-            return convertURIsToURLs(getURIContent(volumeType));
+            return LibrariesSupport.convertURIsToURLs(getURIContent(volumeType));
         }
         
         @Override
@@ -458,7 +443,7 @@ public class LibrariesModel implements PropertyChangeListener {
 
         @Override
         public void setContent(String volumeType, List<URL> path) throws IllegalArgumentException {
-            setURIContent(volumeType, convertURLsToURIs(path));
+            setURIContent(volumeType, LibrariesSupport.convertURLsToURIs(path));
         }
 
         @Override
@@ -473,26 +458,5 @@ public class LibrariesModel implements PropertyChangeListener {
         }
 
     }
-
-    public static List<URL> convertURIsToURLs(List<URI> uris) {
-        List<URL> content = new ArrayList<URL>();
-        for (URI uri : uris) {
-            try {
-                content.add(uri.toURL());
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return content;
-    }
-
-    public static List<URI> convertURLsToURIs(List<URL> entry) {
-        List<URI> content = new ArrayList<URI>();
-        for (URL url : entry) {
-            content.add(URI.create(url.toExternalForm()));
-        }
-        return content;
-    }
-
 
 }

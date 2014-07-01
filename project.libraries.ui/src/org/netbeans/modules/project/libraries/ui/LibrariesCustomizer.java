@@ -72,13 +72,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.project.libraries.LibraryTypeRegistry;
-import org.netbeans.modules.project.libraries.Util;
 import static org.netbeans.modules.project.libraries.ui.Bundle.*;
 import org.netbeans.spi.project.libraries.LibraryCustomizerContext;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -94,6 +93,7 @@ import org.openide.nodes.NodeOp;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
@@ -105,9 +105,10 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
     private BeanTreeView libraries;
     private LibraryStorageArea libraryStorageArea;
 
-    public LibrariesCustomizer (LibraryStorageArea libraryStorageArea) {
+    public LibrariesCustomizer (@NonNull final LibraryStorageArea libraryStorageArea) {
+        Parameters.notNull("libraryStorageArea", libraryStorageArea);   //NOI18N
         this.model = new LibrariesModel ();
-        this.libraryStorageArea = (libraryStorageArea != null ? libraryStorageArea : LibrariesModel.GLOBAL_AREA);
+        this.libraryStorageArea = libraryStorageArea;
         initComponents();
         postInitComponents ();
     }
@@ -144,8 +145,9 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         return null;
     }
     
-    public void setLibraryStorageArea(LibraryStorageArea libraryStorageArea) {
-        this.libraryStorageArea = (libraryStorageArea != null ? libraryStorageArea : LibrariesModel.GLOBAL_AREA);
+    public void setLibraryStorageArea(@NonNull final LibraryStorageArea libraryStorageArea) {
+        Parameters.notNull("libraryStorageArea", libraryStorageArea);   //NOI18N
+        this.libraryStorageArea = libraryStorageArea;
         forceTreeRecreation();
         expandTree();
     }
@@ -266,7 +268,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         });
         jLabel3.setVisible(false);
         libraryLocation.setVisible(false);
-        createButton.setEnabled(LibraryTypeRegistry.getDefault().getLibraryTypeProviders().length>0);
+        createButton.setEnabled(LibrariesSupport.getLibraryTypeProviders().length>0);
     }
 
     @Messages({
@@ -281,7 +283,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
                 return;
             }
             final String newName = this.libraryName.getText();
-            if (newName.equals(Util.getLocalizedName(lib))) {
+            if (newName.equals(LibrariesSupport.getLocalizedName(lib))) {
                 return;
             }
             if (newName.length () == 0) {
@@ -289,7 +291,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
             } else if (isExistingDisplayName(model, newName, model.getArea(lib))) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ERR_ExistingName(newName), NotifyDescriptor.ERROR_MESSAGE));
             } else {
-                Util.setDisplayName(lib, newName);
+                LibrariesSupport.setDisplayName(lib, newName);
             }
         }
     }
@@ -316,16 +318,16 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         this.libraryName.setVisible(true);
         this.properties.setVisible(true);
         boolean editable = model.isLibraryEditable (impl);
-        this.libraryName.setEnabled(editable && Util.supportsDisplayName(impl));
+        this.libraryName.setEnabled(editable && LibrariesSupport.supportsDisplayName(impl));
         this.deleteButton.setEnabled(editable);
-        this.libraryName.setText (Util.getLocalizedName(impl));
+        this.libraryName.setText (LibrariesSupport.getLocalizedName(impl));
         LibraryTypeProvider provider = nodes[0].getLookup().lookup(LibraryTypeProvider.class);
         if (provider == null) {
             return;
         }
         LibraryCustomizerContextWrapper customizerContext;
         LibraryStorageArea area = nodes[0].getLookup().lookup(LibraryStorageArea.class);
-        if (area != null && area != LibrariesModel.GLOBAL_AREA) {
+        if (area != LibraryStorageArea.GLOBAL) {
             customizerContext = new LibraryCustomizerContextWrapper(impl, area);
             File f = Utilities.toFile(URI.create(area.getLocation().toExternalForm()));
             this.libraryLocation.setText(f.getPath());
@@ -517,9 +519,6 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
                 }
                 area = preselectedNodes[0].getLookup().lookup(LibraryStorageArea.class);
             }
-            if (area == null) {
-                area = LibrariesModel.GLOBAL_AREA;
-            }
             NewLibraryPanel p = new NewLibraryPanel(model, preselectedLibraryType, area);
             DialogDescriptor dd = new DialogDescriptor(p, CTL_CreateLibrary(), true, DialogDescriptor.OK_CANCEL_OPTION, null, null);
             p.setDialogDescriptor(dd);
@@ -530,17 +529,17 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
                 final String currentLibraryName = p.getLibraryName();
                 final String antLibraryName = createFreeAntLibraryName(currentLibraryName, model, area);
                 LibraryImplementation impl;
-                if (area != LibrariesModel.GLOBAL_AREA) {
+                if (area != LibraryStorageArea.GLOBAL) {
                     impl = model.createArealLibrary(libraryType, currentLibraryName, area);
                 } else {
-                    LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider(libraryType);
+                    LibraryTypeProvider provider = LibrariesSupport.getLibraryTypeProvider(libraryType);
                     if (provider == null) {
                         return;
                     }
                     impl = provider.createLibrary();
                     impl.setName(antLibraryName);
                 }
-                Util.setDisplayName(impl, currentLibraryName);
+                LibrariesSupport.setDisplayName(impl, currentLibraryName);
                 model.addLibrary (impl);                
                 forceTreeRecreation();
                 String[] path = {impl.getType(), impl.getName()};
@@ -575,7 +574,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
             final @NonNull String name,
             final @NullAllowed LibraryStorageArea area) {
         for (LibraryImplementation lib : model.getLibraries()) {
-            if (Util.getLocalizedName(lib).equals(name) && Utilities.compareObjects(model.getArea(lib), area)) {
+            if (LibrariesSupport.getLocalizedName(lib).equals(name) && Utilities.compareObjects(model.getArea(lib), area)) {
                 return true;
             }
         }
@@ -669,7 +668,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         @Override
         public void addNotify () {
             // Could also filter by area (would then need to listen to model too)
-            this.setKeys(LibraryTypeRegistry.getDefault().getLibraryTypeProviders());
+            this.setKeys(LibrariesSupport.getLibraryTypeProviders());
         }
         
         @Override
@@ -773,7 +772,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
 
         @Override
         public String getDisplayName () {
-            return Util.getLocalizedName(this.lib);
+            return LibrariesSupport.getLocalizedName(this.lib);
         }
 
         @Override

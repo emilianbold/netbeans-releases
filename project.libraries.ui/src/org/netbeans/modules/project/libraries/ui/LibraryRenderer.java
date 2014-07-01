@@ -41,17 +41,22 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.project.libraries;
+package org.netbeans.modules.project.libraries.ui;
 
 import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.netbeans.spi.project.libraries.LibraryProvider;
-import java.io.IOException;
 
-public interface WritableLibraryProvider<L extends LibraryImplementation> extends LibraryProvider<L> {
+import java.awt.Component;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 
-    void addLibrary(LibraryImplementation library) throws IOException;
+class LibraryRenderer extends DefaultListCellRenderer {
 
-    void removeLibrary(LibraryImplementation library) throws IOException;
+    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        LibraryImplementation impl = (LibraryImplementation) value;
+        return super.getListCellRendererComponent(list,
+                LibrariesSupport.getLocalizedName(impl),
+                index, isSelected, cellHasFocus);
+    }
 
-    void updateLibrary(LibraryImplementation oldLibrary, LibraryImplementation newLibrary) throws IOException;
 }

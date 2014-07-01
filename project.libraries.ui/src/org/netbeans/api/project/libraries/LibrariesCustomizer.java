@@ -47,13 +47,11 @@ package org.netbeans.api.project.libraries;
 import java.awt.Dialog;
 import javax.swing.border.EmptyBorder;
 import static org.netbeans.api.project.libraries.Bundle.*;
-import org.netbeans.modules.project.libraries.LibraryTypeRegistry;
-import org.netbeans.modules.project.libraries.Util;
-import org.netbeans.modules.project.libraries.ui.LibrariesModel;
 import org.netbeans.modules.project.libraries.ui.NewLibraryPanel;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle.Messages;
@@ -115,9 +113,6 @@ public final class LibrariesCustomizer {
             manager = LibraryManager.getDefault();
         }
         LibraryStorageArea area = manager.getArea();
-        if (area == null) {
-            area = LibrariesModel.GLOBAL_AREA;
-        }
         org.netbeans.modules.project.libraries.ui.LibrariesCustomizer  customizer =
                 new org.netbeans.modules.project.libraries.ui.LibrariesCustomizer (area);
         NewLibraryPanel p = new NewLibraryPanel(customizer.getModel(), null, area);
@@ -135,17 +130,17 @@ public final class LibrariesCustomizer {
                     customizer.getModel(),
                     area);
             LibraryImplementation impl;
-            if (area != LibrariesModel.GLOBAL_AREA) {
+            if (area != LibraryStorageArea.GLOBAL) {
                 impl = customizer.getModel().createArealLibrary(p.getLibraryType(), antLibraryName, manager.getArea());
             } else {
-                LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider(p.getLibraryType());
+                LibraryTypeProvider provider = LibrariesSupport.getLibraryTypeProvider(p.getLibraryType());
                 if (provider == null) {
                     return null;
                 }
                 impl = provider.createLibrary();
                 impl.setName(p.getLibraryName());
             }
-            Util.setDisplayName(impl, currentLibraryName);
+            LibrariesSupport.setDisplayName(impl, currentLibraryName);
             customizer.getModel().addLibrary(impl);
             customizer.forceTreeRecreation();
             if (customizeLibrary(customizer, impl)) {

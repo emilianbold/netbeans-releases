@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,57 +34,71 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.project.libraries;
+package org.netbeans.modules.project.libraries.ui;
 
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.project.libraries.LibrariesStorage;
+import org.netbeans.modules.project.libraries.LibrariesStorageAccessor;
+import org.netbeans.modules.project.libraries.LibrariesTestUtil;
+import org.netbeans.modules.project.libraries.LibrariesTestUtil.TestLibraryTypeProvider;
+import org.netbeans.modules.project.libraries.TestEntityCatalog;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.test.MockLookup;
 
 
-/** Checks that libraries are updated as sson as correct library type
- * provider is registered.
+/**
  *
- * @author Jaroslav Tulach
+ * @author Tomas Zezula
  */
-public class LibrariesStorageRefreshTest extends NbTestCase {
-    
+public class ProxyLibraryImplementationTest extends NbTestCase {
+
     private FileObject storageFolder;
     LibrariesStorage storage;
-    
-    public LibrariesStorageRefreshTest(String testName) {
-        super(testName);
+
+    public ProxyLibraryImplementationTest(@NonNull final String name) {
+        super(name);
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        clearWorkDir();
         MockLookup.setInstances(
             new TestEntityCatalog(),
-            new LibrariesTestUtil.MockLibraryTypeRegistry(),
-            new LibrariesTestUtil.MockProjectManager());
+            new LibrariesTestUtil.MockProjectManager(),
+            new LibrariesTestUtil.MockLibraryTypeRegistry());
+        LibrariesTestUtil.registerLibraryTypeProvider(TestLibraryTypeProvider.class);
         this.storageFolder = TestUtil.makeScratchDir(this);
-        org.netbeans.modules.project.libraries.LibrariesTestUtil.createLibraryDefinition(this.storageFolder,"Library1", null);
-        this.storage = new LibrariesStorage (this.storageFolder);
+        LibrariesTestUtil.createLibraryDefinition(this.storageFolder,"Library1", null);
+        this.storage = LibrariesStorageAccessor.createLibrariesStorage(this.storageFolder);
     }
 
-    @RandomlyFails // NB-Core-Build #8253: Libraries count expected:<1> but was:<0>
-    public void testGetLibrariesAfterEnablingProvider() throws Exception {
+    public void testGetDisplayNameLibraries() throws Exception {
         this.storage.getLibraries();
         LibraryImplementation[] libs = this.storage.getLibraries();
-        LibrariesStorageTest.TestListener l = new LibrariesStorageTest.TestListener ();
-        this.storage.addPropertyChangeListener(l);
-        assertEquals("No libraries found", 0, libs.length);
-        LibrariesTestUtil.registerLibraryTypeProvider(LibrariesTestUtil.TestLibraryTypeProvider.class);
-        Thread.sleep(1000); //The lookup for path fires with delay, wait for the event
-        libs = this.storage.getLibraries();        
-        assertEquals("Libraries count",1,libs.length);        
-        assertEquals("One change", 1, l.getEventNames().size());
+        assertEquals("Libraries count",1,libs.length);
+        LibrariesTestUtil.assertLibEquals(libs, new String[] {"Library1"});
+        LibrariesTestUtil.createLibraryDefinition(this.storageFolder,"Library2", "MyName");
+        libs = this.storage.getLibraries();
+        assertEquals("Libraries count",2,libs.length);
+        LibraryImplementation impl = libs[0].getName().equals("Library2") ? libs[0] : libs[1];
+
+        assertEquals("MyName", LibrariesSupport.getLocalizedName(impl));
+
+        LibrariesModel model = new LibrariesModel();
+        ProxyLibraryImplementation proxy = ProxyLibraryImplementation.createProxy(impl, model);
+
+        assertEquals("MyName", LibrariesSupport.getLocalizedName(proxy));
     }
-    
-    
+
 }

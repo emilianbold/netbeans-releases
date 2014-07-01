@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,46 +34,51 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.project.libraries;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.WeakHashMap;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.spi.project.libraries.LibraryImplementation;
+import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.openide.util.Lookup;
-import org.netbeans.spi.project.libraries.LibraryProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.modules.OnStart;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Ensures that all {@link LibraryProvider}s are actually loaded.
- * Some of them may perform initialization actions, such as updating
- * $userdir/build.properties with concrete values of some library paths.
- * This needs to happen before any Ant build is run.
+ *
  * @author Tomas Zezula
  */
-@OnStart
-public class LibrariesModule implements Runnable {
+@ServiceProvider(service = LibraryTypeRegistry.class)
+public final class LibraryTypeRegistryImpl extends LibraryTypeRegistry {
+    private static final String REGISTRY = "org-netbeans-api-project-libraries/LibraryTypeProviders";              //NOI18N
+    private static final Logger LOG = Logger.getLogger(LibraryTypeRegistryImpl.class.getName());
 
-    private static final Map<LibraryImplementation,FileObject> sources = Collections.synchronizedMap(
-            new WeakHashMap<LibraryImplementation,FileObject>());
+    private final Lookup.Result<LibraryTypeProvider> result;
 
-    @Override
-    public void run() {
-        for (LibraryProvider lp : Lookup.getDefault().lookupAll(LibraryProvider.class)) {            
-            lp.getLibraries();
-        }
+    public LibraryTypeRegistryImpl() {
+        final Lookup lookup = Lookups.forPath(REGISTRY);
+        assert lookup != null;
+        result = lookup.lookupResult(LibraryTypeProvider.class);
+        result.addLookupListener(new LookupListener() {
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                fireChange();
+            }
+        });
     }
 
-    public static void registerSource(
-        final @NonNull LibraryImplementation impl,
-        final @NonNull FileObject descriptorFile) {
-        sources.put(impl, descriptorFile);
-    }
-
-    public static FileObject getFile(@NonNull final LibraryImplementation impl) {
-        return sources.get(impl);
+    public LibraryTypeProvider[] getLibraryTypeProviders () {
+        assert result != null;
+        final Collection<? extends LibraryTypeProvider> instances = result.allInstances();
+        LOG.log(Level.FINE, "found providers: {0}", instances);
+        return instances.toArray(new LibraryTypeProvider[instances.size()]);
     }
 }

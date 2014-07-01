@@ -44,7 +44,7 @@
 
 package org.netbeans.api.project.libraries;
 
-import static org.netbeans.modules.project.libraries.TestUtil.*;
+import static org.netbeans.modules.project.libraries.LibrariesTestUtil.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;

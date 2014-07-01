@@ -42,16 +42,14 @@
 
 package org.netbeans.modules.project.libraries;
 
-import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.project.libraries.LibrariesStorageTest.TestEntityCatalog;
+import org.netbeans.modules.project.libraries.TestEntityCatalog;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
@@ -76,11 +74,14 @@ public class LibrariesStorageDeadlock172779Test extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        MockLookup.setInstances(new TestEntityCatalog());
+        MockLookup.setInstances(
+            new TestEntityCatalog(),
+            new LibraryTypeRegistryImpl(),
+            new LibrariesTestUtil.MockProjectManager());
         storageFolder = FileUtil.getConfigFile("org-netbeans-api-project-libraries/Libraries");
         assertNotNull("storageFolder found", storageFolder);
-        LibrariesStorageTest.registerLibraryTypeProvider(TestMutexLibraryTypeProvider.class);
-        LibrariesStorageTest.createLibraryDefinition(storageFolder, "Library1", null);
+        LibrariesTestUtil.registerLibraryTypeProvider(TestMutexLibraryTypeProvider.class);
+        org.netbeans.modules.project.libraries.LibrariesTestUtil.createLibraryDefinition(storageFolder, "Library1", null);
     }
 
     public void testDeadlock() throws Exception {        
