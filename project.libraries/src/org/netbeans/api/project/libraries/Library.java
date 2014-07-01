@@ -60,6 +60,7 @@ import org.netbeans.modules.project.libraries.LibraryAccessor;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation2;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
+import org.netbeans.spi.project.libraries.LibraryStorageArea;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -309,8 +310,13 @@ public final class Library {
     
     static {
         LibraryAccessor.setInstance( new LibraryAccessor () {
-            public Library createLibrary (LibraryImplementation impl) {
+            @NonNull
+            public Library createLibrary (@NonNull final LibraryImplementation impl) {
                 return new Library(impl, LibraryManager.getDefault());
+            }
+            @NonNull
+            public LibraryStorageArea getArea(@NonNull final LibraryManager manager) {
+                return manager.getArea();
             }
         });
     }

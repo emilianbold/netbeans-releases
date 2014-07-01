@@ -72,7 +72,8 @@ public final class LibrariesCustomizer {
     @Messages("TXT_LibrariesManager=Ant Library Manager")
     public static boolean showCustomizer (Library activeLibrary, LibraryManager libraryManager) {
         org.netbeans.modules.project.libraries.ui.LibrariesCustomizer  customizer =
-                new org.netbeans.modules.project.libraries.ui.LibrariesCustomizer (libraryManager.getArea());
+                new org.netbeans.modules.project.libraries.ui.LibrariesCustomizer (
+                        LibrariesSupport.getLibraryStorageArea(libraryManager));
         customizer.setBorder(new EmptyBorder(12, 12, 0, 12));
         if (activeLibrary != null) {
             customizer.setSelectedLibrary (activeLibrary.getLibraryImplementation ());
@@ -112,7 +113,7 @@ public final class LibrariesCustomizer {
         if (manager == null) {
             manager = LibraryManager.getDefault();
         }
-        LibraryStorageArea area = manager.getArea();
+        LibraryStorageArea area = LibrariesSupport.getLibraryStorageArea(manager);
         org.netbeans.modules.project.libraries.ui.LibrariesCustomizer  customizer =
                 new org.netbeans.modules.project.libraries.ui.LibrariesCustomizer (area);
         NewLibraryPanel p = new NewLibraryPanel(customizer.getModel(), null, area);
@@ -131,7 +132,10 @@ public final class LibrariesCustomizer {
                     area);
             LibraryImplementation impl;
             if (area != LibraryStorageArea.GLOBAL) {
-                impl = customizer.getModel().createArealLibrary(p.getLibraryType(), antLibraryName, manager.getArea());
+                impl = customizer.getModel().createArealLibrary(
+                        p.getLibraryType(),
+                        antLibraryName,
+                        LibrariesSupport.getLibraryStorageArea(manager));
             } else {
                 LibraryTypeProvider provider = LibrariesSupport.getLibraryTypeProvider(p.getLibraryType());
                 if (provider == null) {
@@ -158,7 +162,8 @@ public final class LibrariesCustomizer {
      */
     public static boolean showSingleLibraryCustomizer(Library library) {                                             
         org.netbeans.modules.project.libraries.ui.LibrariesCustomizer  customizer =
-                new org.netbeans.modules.project.libraries.ui.LibrariesCustomizer (library.getManager().getArea());
+                new org.netbeans.modules.project.libraries.ui.LibrariesCustomizer (
+                        LibrariesSupport.getLibraryStorageArea(library.getManager()));
         return customizeLibrary(customizer, library.getLibraryImplementation());
     }
     

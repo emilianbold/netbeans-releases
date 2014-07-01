@@ -59,12 +59,15 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.project.libraries.DefaultLibraryImplementation;
 import org.netbeans.modules.project.libraries.LibrariesModule;
+import org.netbeans.modules.project.libraries.LibraryAccessor;
 import org.netbeans.modules.project.libraries.LibraryTypeRegistry;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation2;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
+import org.netbeans.spi.project.libraries.LibraryStorageArea;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 import org.openide.filesystems.FileObject;
@@ -297,6 +300,12 @@ public final class LibrariesSupport {
         } catch (URISyntaxException ex) {
                 throw new AssertionError(ex);
         }
+    }
+
+    @NonNull
+    public static LibraryStorageArea getLibraryStorageArea(@NonNull final LibraryManager manager) {
+        Parameters.notNull("manager", manager); //NOI18N
+        return LibraryAccessor.getInstance().getArea(manager);
     }
 
     @NonNull
