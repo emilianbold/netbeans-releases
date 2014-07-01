@@ -153,10 +153,8 @@ public class CSS {
                 JSONObject sheetInfo = (JSONObject)result.get("styleSheet"); // NOI18N
                 body = new StyleSheetBody(header, sheetInfo);
             }
-            if (body != null) {
-                synchronized (this) {
-                    styleSheets.put(styleSheetId, body);
-                }
+            synchronized (this) {
+                styleSheets.put(styleSheetId, body);
             }
         }
         return body;
