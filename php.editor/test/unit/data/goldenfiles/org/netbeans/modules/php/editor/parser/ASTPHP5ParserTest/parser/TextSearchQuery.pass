@@ -14047,7 +14047,9 @@
                                                                     <Identifier start='3612' end='3621' name='_stoplist'/>
                                                                 </Variable>
                                                             </FieldAccess>
-                                                            <Scalar start='3624' end='3647' type='STRING' value='FULLTEXTSEARCH_STOPLIST'/>
+                                                            <NamespaceName start='3624' end='3647' isCurrent='false' isGlobal='false'>
+                                                                <Identifier start='3624' end='3647' name='FULLTEXTSEARCH_STOPLIST'/>
+                                                            </NamespaceName>
                                                         </Assignment>
                                                     </ExpressionStatement>
                                                 </Then>
@@ -15959,7 +15961,9 @@
                                                                         </Name>
                                                                     </ArrayAccess>
                                                                 </InfixExpression>
-                                                                <Scalar start='14692' end='14706' type='STRING' value='E_USER_WARNING'/>
+                                                                <NamespaceName start='14692' end='14706' isCurrent='false' isGlobal='false'>
+                                                                    <Identifier start='14692' end='14706' name='E_USER_WARNING'/>
+                                                                </NamespaceName>
                                                             </Parameters>
                                                         </FunctionInvocation>
                                                     </ExpressionStatement>
@@ -16103,7 +16107,9 @@
                                                                                         <Scalar start='15135' end='15137' type='STRING' value='\"'/>
                                                                                     </Expressions>
                                                                                 </Quote>
-                                                                                <Scalar start='15140' end='15154' type='STRING' value='E_USER_WARNING'/>
+                                                                                <NamespaceName start='15140' end='15154' isCurrent='false' isGlobal='false'>
+                                                                                    <Identifier start='15140' end='15154' name='E_USER_WARNING'/>
+                                                                                </NamespaceName>
                                                                             </Parameters>
                                                                         </FunctionInvocation>
                                                                     </ExpressionStatement>
@@ -16256,7 +16262,9 @@
                                                                                                             <Scalar start='15523' end='15525' type='STRING' value='\"'/>
                                                                                                         </Expressions>
                                                                                                     </Quote>
-                                                                                                    <Scalar start='15528' end='15542' type='STRING' value='E_USER_WARNING'/>
+                                                                                                    <NamespaceName start='15528' end='15542' isCurrent='false' isGlobal='false'>
+                                                                                                        <Identifier start='15528' end='15542' name='E_USER_WARNING'/>
+                                                                                                    </NamespaceName>
                                                                                                 </Parameters>
                                                                                             </FunctionInvocation>
                                                                                         </ExpressionStatement>
@@ -16368,7 +16376,9 @@
                                                                                                             <Scalar start='15722' end='15724' type='STRING' value='\"'/>
                                                                                                         </Expressions>
                                                                                                     </Quote>
-                                                                                                    <Scalar start='15727' end='15741' type='STRING' value='E_USER_WARNING'/>
+                                                                                                    <NamespaceName start='15727' end='15741' isCurrent='false' isGlobal='false'>
+                                                                                                        <Identifier start='15727' end='15741' name='E_USER_WARNING'/>
+                                                                                                    </NamespaceName>
                                                                                                 </Parameters>
                                                                                             </FunctionInvocation>
                                                                                         </ExpressionStatement>
@@ -16491,7 +16501,9 @@
                                                                             </Name>
                                                                         </ArrayAccess>
                                                                     </InfixExpression>
-                                                                    <Scalar start='16547' end='16561' type='STRING' value='E_USER_WARNING'/>
+                                                                    <NamespaceName start='16547' end='16561' isCurrent='false' isGlobal='false'>
+                                                                        <Identifier start='16547' end='16561' name='E_USER_WARNING'/>
+                                                                    </NamespaceName>
                                                                 </Parameters>
                                                             </FunctionInvocation>
                                                         </ExpressionStatement>
@@ -17045,7 +17057,9 @@
                                                                                     <Scalar start='19811' end='19824' type='STRING' value=' not defined.'/>
                                                                                 </Expressions>
                                                                             </Quote>
-                                                                            <Scalar start='19827' end='19839' type='STRING' value='E_USER_ERROR'/>
+                                                                            <NamespaceName start='19827' end='19839' isCurrent='false' isGlobal='false'>
+                                                                                <Identifier start='19827' end='19839' name='E_USER_ERROR'/>
+                                                                            </NamespaceName>
                                                                         </Parameters>
                                                                     </FunctionInvocation>
                                                                 </ExpressionStatement>
@@ -17173,7 +17187,9 @@
                                                                                     <Scalar start='20061' end='20074' type='STRING' value=' not defined.'/>
                                                                                 </Expressions>
                                                                             </Quote>
-                                                                            <Scalar start='20077' end='20089' type='STRING' value='E_USER_ERROR'/>
+                                                                            <NamespaceName start='20077' end='20089' isCurrent='false' isGlobal='false'>
+                                                                                <Identifier start='20077' end='20089' name='E_USER_ERROR'/>
+                                                                            </NamespaceName>
                                                                         </Parameters>
                                                                     </FunctionInvocation>
                                                                 </ExpressionStatement>
@@ -19273,7 +19289,9 @@
                                         </Variable>
                                     </ParametrName>
                                     <DefaultValue>
-                                        <Scalar start='29753' end='29767' type='STRING' value='TSQ_REGEX_AUTO'/>
+                                        <NamespaceName start='29753' end='29767' isCurrent='false' isGlobal='false'>
+                                            <Identifier start='29753' end='29767' name='TSQ_REGEX_AUTO'/>
+                                        </NamespaceName>
                                     </DefaultValue>
                                 </FormalParameter>
                             </FormalParameters>
@@ -19428,8 +19446,12 @@
                                             <Identifier start='30223' end='30238' name='accept_as_words'/>
                                         </Variable>
                                         <InfixExpression start='30241' end='30268' operator='OR'>
-                                            <Scalar start='30241' end='30252' type='STRING' value='TSQ_TOK_NOT'/>
-                                            <Scalar start='30255' end='30268' type='STRING' value='TSQ_TOK_BINOP'/>
+                                            <NamespaceName start='30241' end='30252' isCurrent='false' isGlobal='false'>
+                                                <Identifier start='30241' end='30252' name='TSQ_TOK_NOT'/>
+                                            </NamespaceName>
+                                            <NamespaceName start='30255' end='30268' isCurrent='false' isGlobal='false'>
+                                                <Identifier start='30255' end='30268' name='TSQ_TOK_BINOP'/>
+                                            </NamespaceName>
                                         </InfixExpression>
                                     </Assignment>
                                 </ExpressionStatement>
@@ -19446,8 +19468,12 @@
                                                     <Identifier start='30309' end='30324' name='accept_as_words'/>
                                                 </Variable>
                                                 <InfixExpression start='30328' end='30359' operator='OR'>
-                                                    <Scalar start='30328' end='30342' type='STRING' value='TSQ_TOK_LPAREN'/>
-                                                    <Scalar start='30345' end='30359' type='STRING' value='TSQ_TOK_RPAREN'/>
+                                                    <NamespaceName start='30328' end='30342' isCurrent='false' isGlobal='false'>
+                                                        <Identifier start='30328' end='30342' name='TSQ_TOK_LPAREN'/>
+                                                    </NamespaceName>
+                                                    <NamespaceName start='30345' end='30359' isCurrent='false' isGlobal='false'>
+                                                        <Identifier start='30345' end='30359' name='TSQ_TOK_RPAREN'/>
+                                                    </NamespaceName>
                                                 </InfixExpression>
                                             </Assignment>
                                         </ExpressionStatement>
@@ -19641,7 +19667,9 @@
                                                             </Variable>
                                                         </FucntionName>
                                                         <Parameters>
-                                                            <Scalar start='30927' end='30940' type='STRING' value='TSQ_TOK_BINOP'/>
+                                                            <NamespaceName start='30927' end='30940' isCurrent='false' isGlobal='false'>
+                                                                <Identifier start='30927' end='30940' name='TSQ_TOK_BINOP'/>
+                                                            </NamespaceName>
                                                         </Parameters>
                                                     </FunctionInvocation>
                                                 </MethodInvocation>
@@ -19867,7 +19895,9 @@
                                                         </Variable>
                                                     </FucntionName>
                                                     <Parameters>
-                                                        <Scalar start='31493' end='31505' type='STRING' value='TSQ_ALLWORDS'/>
+                                                        <NamespaceName start='31493' end='31505' isCurrent='false' isGlobal='false'>
+                                                            <Identifier start='31493' end='31505' name='TSQ_ALLWORDS'/>
+                                                        </NamespaceName>
                                                     </Parameters>
                                                 </FunctionInvocation>
                                             </MethodInvocation>
@@ -19922,7 +19952,9 @@
                                                     </Variable>
                                                 </FucntionName>
                                                 <Parameters>
-                                                    <Scalar start='31608' end='31622' type='STRING' value='TSQ_TOK_LPAREN'/>
+                                                    <NamespaceName start='31608' end='31622' isCurrent='false' isGlobal='false'>
+                                                        <Identifier start='31608' end='31622' name='TSQ_TOK_LPAREN'/>
+                                                    </NamespaceName>
                                                 </Parameters>
                                             </FunctionInvocation>
                                         </MethodInvocation>
@@ -19969,7 +20001,9 @@
                                                                     </Variable>
                                                                 </FucntionName>
                                                                 <Parameters>
-                                                                    <Scalar start='31694' end='31708' type='STRING' value='TSQ_TOK_RPAREN'/>
+                                                                    <NamespaceName start='31694' end='31708' isCurrent='false' isGlobal='false'>
+                                                                        <Identifier start='31694' end='31708' name='TSQ_TOK_RPAREN'/>
+                                                                    </NamespaceName>
                                                                 </Parameters>
                                                             </FunctionInvocation>
                                                         </MethodInvocation>
@@ -20001,7 +20035,9 @@
                                                             </Variable>
                                                         </FucntionName>
                                                         <Parameters>
-                                                            <Scalar start='31787' end='31798' type='STRING' value='TSQ_TOK_NOT'/>
+                                                            <NamespaceName start='31787' end='31798' isCurrent='false' isGlobal='false'>
+                                                                <Identifier start='31787' end='31798' name='TSQ_TOK_NOT'/>
+                                                            </NamespaceName>
                                                         </Parameters>
                                                     </FunctionInvocation>
                                                 </MethodInvocation>
@@ -20084,7 +20120,9 @@
                                         </Variable>
                                     </ParametrName>
                                     <DefaultValue>
-                                        <Scalar start='32021' end='32033' type='STRING' value='TSQ_ALLWORDS'/>
+                                        <NamespaceName start='32021' end='32033' isCurrent='false' isGlobal='false'>
+                                            <Identifier start='32021' end='32033' name='TSQ_ALLWORDS'/>
+                                        </NamespaceName>
                                     </DefaultValue>
                                 </FormalParameter>
                             </FormalParameters>
@@ -20305,7 +20343,9 @@
                                         </Variable>
                                     </ParametrName>
                                     <DefaultValue>
-                                        <Scalar start='32579' end='32593' type='STRING' value='TSQ_REGEX_AUTO'/>
+                                        <NamespaceName start='32579' end='32593' isCurrent='false' isGlobal='false'>
+                                            <Identifier start='32579' end='32593' name='TSQ_REGEX_AUTO'/>
+                                        </NamespaceName>
                                     </DefaultValue>
                                 </FormalParameter>
                             </FormalParameters>
@@ -20450,7 +20490,9 @@
                                         </Variable>
                                     </ParametrName>
                                     <DefaultValue>
-                                        <Scalar start='33076' end='33090' type='STRING' value='TSQ_REGEX_AUTO'/>
+                                        <NamespaceName start='33076' end='33090' isCurrent='false' isGlobal='false'>
+                                            <Identifier start='33076' end='33090' name='TSQ_REGEX_AUTO'/>
+                                        </NamespaceName>
                                     </DefaultValue>
                                 </FormalParameter>
                             </FormalParameters>
@@ -20585,7 +20627,9 @@
                                                             <Variable start='33345' end='33350' isDollared='true'>
                                                                 <Identifier start='33346' end='33350' name='type'/>
                                                             </Variable>
-                                                            <Scalar start='33353' end='33366' type='STRING' value='TSQ_TOK_BINOP'/>
+                                                            <NamespaceName start='33353' end='33366' isCurrent='false' isGlobal='false'>
+                                                                <Identifier start='33353' end='33366' name='TSQ_TOK_BINOP'/>
+                                                            </NamespaceName>
                                                         </Assignment>
                                                     </ExpressionStatement>
                                                 </Block>
@@ -20645,7 +20689,9 @@
                                                                     <Variable start='33504' end='33509' isDollared='true'>
                                                                         <Identifier start='33505' end='33509' name='type'/>
                                                                     </Variable>
-                                                                    <Scalar start='33512' end='33523' type='STRING' value='TSQ_TOK_NOT'/>
+                                                                    <NamespaceName start='33512' end='33523' isCurrent='false' isGlobal='false'>
+                                                                        <Identifier start='33512' end='33523' name='TSQ_TOK_NOT'/>
+                                                                    </NamespaceName>
                                                                 </Assignment>
                                                             </ExpressionStatement>
                                                         </Block>
@@ -20715,10 +20761,14 @@
                                                                                     </InfixExpression>
                                                                                 </Condition>
                                                                                 <Then>
-                                                                                    <Scalar start='33668' end='33682' type='STRING' value='TSQ_TOK_LPAREN'/>
+                                                                                    <NamespaceName start='33668' end='33682' isCurrent='false' isGlobal='false'>
+                                                                                        <Identifier start='33668' end='33682' name='TSQ_TOK_LPAREN'/>
+                                                                                    </NamespaceName>
                                                                                 </Then>
                                                                                 <Else>
-                                                                                    <Scalar start='33685' end='33699' type='STRING' value='TSQ_TOK_RPAREN'/>
+                                                                                    <NamespaceName start='33685' end='33699' isCurrent='false' isGlobal='false'>
+                                                                                        <Identifier start='33685' end='33699' name='TSQ_TOK_RPAREN'/>
+                                                                                    </NamespaceName>
                                                                                 </Else>
                                                                             </ConditionalExpression>
                                                                         </Assignment>
@@ -20736,10 +20786,16 @@
                                                                                 <ParenthesisExpression start='33781' end='33828'>
                                                                                     <InfixExpression start='33782' end='33827' operator='OR'>
                                                                                         <InfixExpression start='33782' end='33812' operator='OR'>
-                                                                                            <Scalar start='33782' end='33796' type='STRING' value='TSQ_REGEX_AUTO'/>
-                                                                                            <Scalar start='33797' end='33812' type='STRING' value='TSQ_REGEX_POSIX'/>
+                                                                                            <NamespaceName start='33782' end='33796' isCurrent='false' isGlobal='false'>
+                                                                                                <Identifier start='33782' end='33796' name='TSQ_REGEX_AUTO'/>
+                                                                                            </NamespaceName>
+                                                                                            <NamespaceName start='33797' end='33812' isCurrent='false' isGlobal='false'>
+                                                                                                <Identifier start='33797' end='33812' name='TSQ_REGEX_POSIX'/>
+                                                                                            </NamespaceName>
                                                                                         </InfixExpression>
-                                                                                        <Scalar start='33813' end='33827' type='STRING' value='TSQ_REGEX_GLOB'/>
+                                                                                        <NamespaceName start='33813' end='33827' isCurrent='false' isGlobal='false'>
+                                                                                            <Identifier start='33813' end='33827' name='TSQ_REGEX_GLOB'/>
+                                                                                        </NamespaceName>
                                                                                     </InfixExpression>
                                                                                 </ParenthesisExpression>
                                                                             </InfixExpression>
@@ -20776,7 +20832,9 @@
                                                                                     <Variable start='33933' end='33938' isDollared='true'>
                                                                                         <Identifier start='33934' end='33938' name='type'/>
                                                                                     </Variable>
-                                                                                    <Scalar start='33941' end='33952' type='STRING' value='TSQ_TOK_ALL'/>
+                                                                                    <NamespaceName start='33941' end='33952' isCurrent='false' isGlobal='false'>
+                                                                                        <Identifier start='33941' end='33952' name='TSQ_TOK_ALL'/>
+                                                                                    </NamespaceName>
                                                                                 </Assignment>
                                                                             </ExpressionStatement>
                                                                         </Block>
@@ -20790,7 +20848,9 @@
                                                                                             <Identifier start='34014' end='34019' name='regex'/>
                                                                                         </Variable>
                                                                                         <ParenthesisExpression start='34022' end='34038'>
-                                                                                            <Scalar start='34023' end='34037' type='STRING' value='TSQ_REGEX_PCRE'/>
+                                                                                            <NamespaceName start='34023' end='34037' isCurrent='false' isGlobal='false'>
+                                                                                                <Identifier start='34023' end='34037' name='TSQ_REGEX_PCRE'/>
+                                                                                            </NamespaceName>
                                                                                         </ParenthesisExpression>
                                                                                     </InfixExpression>
                                                                                     <FunctionInvocation start='34063' end='34097'>
@@ -20826,7 +20886,9 @@
                                                                                             <Variable start='34146' end='34151' isDollared='true'>
                                                                                                 <Identifier start='34147' end='34151' name='type'/>
                                                                                             </Variable>
-                                                                                            <Scalar start='34154' end='34165' type='STRING' value='TSQ_TOK_ALL'/>
+                                                                                            <NamespaceName start='34154' end='34165' isCurrent='false' isGlobal='false'>
+                                                                                                <Identifier start='34154' end='34165' name='TSQ_TOK_ALL'/>
+                                                                                            </NamespaceName>
                                                                                         </Assignment>
                                                                                     </ExpressionStatement>
                                                                                 </Block>
@@ -20840,7 +20902,9 @@
                                                                                                     <Identifier start='34226' end='34231' name='regex'/>
                                                                                                 </Variable>
                                                                                                 <ParenthesisExpression start='34234' end='34249'>
-                                                                                                    <Scalar start='34235' end='34248' type='STRING' value='TSQ_REGEX_SQL'/>
+                                                                                                    <NamespaceName start='34235' end='34248' isCurrent='false' isGlobal='false'>
+                                                                                                        <Identifier start='34235' end='34248' name='TSQ_REGEX_SQL'/>
+                                                                                                    </NamespaceName>
                                                                                                 </ParenthesisExpression>
                                                                                             </InfixExpression>
                                                                                             <FunctionInvocation start='34274' end='34305'>
@@ -20876,7 +20940,9 @@
                                                                                                     <Variable start='34353' end='34358' isDollared='true'>
                                                                                                         <Identifier start='34354' end='34358' name='type'/>
                                                                                                     </Variable>
-                                                                                                    <Scalar start='34361' end='34372' type='STRING' value='TSQ_TOK_ALL'/>
+                                                                                                    <NamespaceName start='34361' end='34372' isCurrent='false' isGlobal='false'>
+                                                                                                        <Identifier start='34361' end='34372' name='TSQ_TOK_ALL'/>
+                                                                                                    </NamespaceName>
                                                                                                 </Assignment>
                                                                                             </ExpressionStatement>
                                                                                         </Block>
@@ -20892,10 +20958,16 @@
                                                                                                         <ParenthesisExpression start='34451' end='34498'>
                                                                                                             <InfixExpression start='34452' end='34497' operator='OR'>
                                                                                                                 <InfixExpression start='34452' end='34482' operator='OR'>
-                                                                                                                    <Scalar start='34452' end='34466' type='STRING' value='TSQ_REGEX_AUTO'/>
-                                                                                                                    <Scalar start='34467' end='34482' type='STRING' value='TSQ_REGEX_POSIX'/>
+                                                                                                                    <NamespaceName start='34452' end='34466' isCurrent='false' isGlobal='false'>
+                                                                                                                        <Identifier start='34452' end='34466' name='TSQ_REGEX_AUTO'/>
+                                                                                                                    </NamespaceName>
+                                                                                                                    <NamespaceName start='34467' end='34482' isCurrent='false' isGlobal='false'>
+                                                                                                                        <Identifier start='34467' end='34482' name='TSQ_REGEX_POSIX'/>
+                                                                                                                    </NamespaceName>
                                                                                                                 </InfixExpression>
-                                                                                                                <Scalar start='34483' end='34497' type='STRING' value='TSQ_REGEX_PCRE'/>
+                                                                                                                <NamespaceName start='34483' end='34497' isCurrent='false' isGlobal='false'>
+                                                                                                                    <Identifier start='34483' end='34497' name='TSQ_REGEX_PCRE'/>
+                                                                                                                </NamespaceName>
                                                                                                             </InfixExpression>
                                                                                                         </ParenthesisExpression>
                                                                                                     </InfixExpression>
@@ -20943,7 +21015,9 @@
                                                                                                             <Variable start='34621' end='34626' isDollared='true'>
                                                                                                                 <Identifier start='34622' end='34626' name='type'/>
                                                                                                             </Variable>
-                                                                                                            <Scalar start='34629' end='34648' type='STRING' value='TSQ_TOK_STARTS_WITH'/>
+                                                                                                            <NamespaceName start='34629' end='34648' isCurrent='false' isGlobal='false'>
+                                                                                                                <Identifier start='34629' end='34648' name='TSQ_TOK_STARTS_WITH'/>
+                                                                                                            </NamespaceName>
                                                                                                         </Assignment>
                                                                                                     </ExpressionStatement>
                                                                                                 </Block>
@@ -20959,10 +21033,16 @@
                                                                                                                 <ParenthesisExpression start='34714' end='34761'>
                                                                                                                     <InfixExpression start='34715' end='34760' operator='OR'>
                                                                                                                         <InfixExpression start='34715' end='34745' operator='OR'>
-                                                                                                                            <Scalar start='34715' end='34729' type='STRING' value='TSQ_REGEX_AUTO'/>
-                                                                                                                            <Scalar start='34730' end='34745' type='STRING' value='TSQ_REGEX_POSIX'/>
+                                                                                                                            <NamespaceName start='34715' end='34729' isCurrent='false' isGlobal='false'>
+                                                                                                                                <Identifier start='34715' end='34729' name='TSQ_REGEX_AUTO'/>
+                                                                                                                            </NamespaceName>
+                                                                                                                            <NamespaceName start='34730' end='34745' isCurrent='false' isGlobal='false'>
+                                                                                                                                <Identifier start='34730' end='34745' name='TSQ_REGEX_POSIX'/>
+                                                                                                                            </NamespaceName>
                                                                                                                         </InfixExpression>
-                                                                                                                        <Scalar start='34746' end='34760' type='STRING' value='TSQ_REGEX_GLOB'/>
+                                                                                                                        <NamespaceName start='34746' end='34760' isCurrent='false' isGlobal='false'>
+                                                                                                                            <Identifier start='34746' end='34760' name='TSQ_REGEX_GLOB'/>
+                                                                                                                        </NamespaceName>
                                                                                                                     </InfixExpression>
                                                                                                                 </ParenthesisExpression>
                                                                                                             </InfixExpression>
@@ -21010,7 +21090,9 @@
                                                                                                                     <Variable start='34884' end='34889' isDollared='true'>
                                                                                                                         <Identifier start='34885' end='34889' name='type'/>
                                                                                                                     </Variable>
-                                                                                                                    <Scalar start='34892' end='34911' type='STRING' value='TSQ_TOK_STARTS_WITH'/>
+                                                                                                                    <NamespaceName start='34892' end='34911' isCurrent='false' isGlobal='false'>
+                                                                                                                        <Identifier start='34892' end='34911' name='TSQ_TOK_STARTS_WITH'/>
+                                                                                                                    </NamespaceName>
                                                                                                                 </Assignment>
                                                                                                             </ExpressionStatement>
                                                                                                         </Block>
@@ -21026,10 +21108,16 @@
                                                                                                                         <ParenthesisExpression start='34977' end='35024'>
                                                                                                                             <InfixExpression start='34978' end='35023' operator='OR'>
                                                                                                                                 <InfixExpression start='34978' end='35008' operator='OR'>
-                                                                                                                                    <Scalar start='34978' end='34992' type='STRING' value='TSQ_REGEX_AUTO'/>
-                                                                                                                                    <Scalar start='34993' end='35008' type='STRING' value='TSQ_REGEX_POSIX'/>
+                                                                                                                                    <NamespaceName start='34978' end='34992' isCurrent='false' isGlobal='false'>
+                                                                                                                                        <Identifier start='34978' end='34992' name='TSQ_REGEX_AUTO'/>
+                                                                                                                                    </NamespaceName>
+                                                                                                                                    <NamespaceName start='34993' end='35008' isCurrent='false' isGlobal='false'>
+                                                                                                                                        <Identifier start='34993' end='35008' name='TSQ_REGEX_POSIX'/>
+                                                                                                                                    </NamespaceName>
                                                                                                                                 </InfixExpression>
-                                                                                                                                <Scalar start='35009' end='35023' type='STRING' value='TSQ_REGEX_GLOB'/>
+                                                                                                                                <NamespaceName start='35009' end='35023' isCurrent='false' isGlobal='false'>
+                                                                                                                                    <Identifier start='35009' end='35023' name='TSQ_REGEX_GLOB'/>
+                                                                                                                                </NamespaceName>
                                                                                                                             </InfixExpression>
                                                                                                                         </ParenthesisExpression>
                                                                                                                     </InfixExpression>
@@ -21077,7 +21165,9 @@
                                                                                                                             <Variable start='35147' end='35152' isDollared='true'>
                                                                                                                                 <Identifier start='35148' end='35152' name='type'/>
                                                                                                                             </Variable>
-                                                                                                                            <Scalar start='35155' end='35172' type='STRING' value='TSQ_TOK_ENDS_WITH'/>
+                                                                                                                            <NamespaceName start='35155' end='35172' isCurrent='false' isGlobal='false'>
+                                                                                                                                <Identifier start='35155' end='35172' name='TSQ_TOK_ENDS_WITH'/>
+                                                                                                                            </NamespaceName>
                                                                                                                         </Assignment>
                                                                                                                     </ExpressionStatement>
                                                                                                                 </Block>
@@ -21093,10 +21183,16 @@
                                                                                                                                 <ParenthesisExpression start='35238' end='35285'>
                                                                                                                                     <InfixExpression start='35239' end='35284' operator='OR'>
                                                                                                                                         <InfixExpression start='35239' end='35269' operator='OR'>
-                                                                                                                                            <Scalar start='35239' end='35253' type='STRING' value='TSQ_REGEX_AUTO'/>
-                                                                                                                                            <Scalar start='35254' end='35269' type='STRING' value='TSQ_REGEX_POSIX'/>
+                                                                                                                                            <NamespaceName start='35239' end='35253' isCurrent='false' isGlobal='false'>
+                                                                                                                                                <Identifier start='35239' end='35253' name='TSQ_REGEX_AUTO'/>
+                                                                                                                                            </NamespaceName>
+                                                                                                                                            <NamespaceName start='35254' end='35269' isCurrent='false' isGlobal='false'>
+                                                                                                                                                <Identifier start='35254' end='35269' name='TSQ_REGEX_POSIX'/>
+                                                                                                                                            </NamespaceName>
                                                                                                                                         </InfixExpression>
-                                                                                                                                        <Scalar start='35270' end='35284' type='STRING' value='TSQ_REGEX_PCRE'/>
+                                                                                                                                        <NamespaceName start='35270' end='35284' isCurrent='false' isGlobal='false'>
+                                                                                                                                            <Identifier start='35270' end='35284' name='TSQ_REGEX_PCRE'/>
+                                                                                                                                        </NamespaceName>
                                                                                                                                     </InfixExpression>
                                                                                                                                 </ParenthesisExpression>
                                                                                                                             </InfixExpression>
@@ -21144,7 +21240,9 @@
                                                                                                                                     <Variable start='35408' end='35413' isDollared='true'>
                                                                                                                                         <Identifier start='35409' end='35413' name='type'/>
                                                                                                                                     </Variable>
-                                                                                                                                    <Scalar start='35416' end='35433' type='STRING' value='TSQ_TOK_ENDS_WITH'/>
+                                                                                                                                    <NamespaceName start='35416' end='35433' isCurrent='false' isGlobal='false'>
+                                                                                                                                        <Identifier start='35416' end='35433' name='TSQ_TOK_ENDS_WITH'/>
+                                                                                                                                    </NamespaceName>
                                                                                                                                 </Assignment>
                                                                                                                             </ExpressionStatement>
                                                                                                                         </Block>
@@ -21160,10 +21258,16 @@
                                                                                                                                         <ParenthesisExpression start='35500' end='35547'>
                                                                                                                                             <InfixExpression start='35501' end='35546' operator='OR'>
                                                                                                                                                 <InfixExpression start='35501' end='35531' operator='OR'>
-                                                                                                                                                    <Scalar start='35501' end='35515' type='STRING' value='TSQ_REGEX_AUTO'/>
-                                                                                                                                                    <Scalar start='35516' end='35531' type='STRING' value='TSQ_REGEX_POSIX'/>
+                                                                                                                                                    <NamespaceName start='35501' end='35515' isCurrent='false' isGlobal='false'>
+                                                                                                                                                        <Identifier start='35501' end='35515' name='TSQ_REGEX_AUTO'/>
+                                                                                                                                                    </NamespaceName>
+                                                                                                                                                    <NamespaceName start='35516' end='35531' isCurrent='false' isGlobal='false'>
+                                                                                                                                                        <Identifier start='35516' end='35531' name='TSQ_REGEX_POSIX'/>
+                                                                                                                                                    </NamespaceName>
                                                                                                                                                 </InfixExpression>
-                                                                                                                                                <Scalar start='35532' end='35546' type='STRING' value='TSQ_REGEX_PCRE'/>
+                                                                                                                                                <NamespaceName start='35532' end='35546' isCurrent='false' isGlobal='false'>
+                                                                                                                                                    <Identifier start='35532' end='35546' name='TSQ_REGEX_PCRE'/>
+                                                                                                                                                </NamespaceName>
                                                                                                                                             </InfixExpression>
                                                                                                                                         </ParenthesisExpression>
                                                                                                                                     </InfixExpression>
@@ -21211,7 +21315,9 @@
                                                                                                                                             <Variable start='35672' end='35677' isDollared='true'>
                                                                                                                                                 <Identifier start='35673' end='35677' name='type'/>
                                                                                                                                             </Variable>
-                                                                                                                                            <Scalar start='35680' end='35693' type='STRING' value='TSQ_TOK_EXACT'/>
+                                                                                                                                            <NamespaceName start='35680' end='35693' isCurrent='false' isGlobal='false'>
+                                                                                                                                                <Identifier start='35680' end='35693' name='TSQ_TOK_EXACT'/>
+                                                                                                                                            </NamespaceName>
                                                                                                                                         </Assignment>
                                                                                                                                     </ExpressionStatement>
                                                                                                                                 </Block>
@@ -21273,7 +21379,9 @@
                                                                                                                                                     <Variable start='35898' end='35903' isDollared='true'>
                                                                                                                                                         <Identifier start='35899' end='35903' name='type'/>
                                                                                                                                                     </Variable>
-                                                                                                                                                    <Scalar start='35906' end='35918' type='STRING' value='TSQ_TOK_WORD'/>
+                                                                                                                                                    <NamespaceName start='35906' end='35918' isCurrent='false' isGlobal='false'>
+                                                                                                                                                        <Identifier start='35906' end='35918' name='TSQ_TOK_WORD'/>
+                                                                                                                                                    </NamespaceName>
                                                                                                                                                 </Assignment>
                                                                                                                                             </ExpressionStatement>
                                                                                                                                         </Block>
@@ -21335,7 +21443,9 @@
                                                                                                                                                             <Variable start='36106' end='36111' isDollared='true'>
                                                                                                                                                                 <Identifier start='36107' end='36111' name='type'/>
                                                                                                                                                             </Variable>
-                                                                                                                                                            <Scalar start='36114' end='36126' type='STRING' value='TSQ_TOK_WORD'/>
+                                                                                                                                                            <NamespaceName start='36114' end='36126' isCurrent='false' isGlobal='false'>
+                                                                                                                                                                <Identifier start='36114' end='36126' name='TSQ_TOK_WORD'/>
+                                                                                                                                                            </NamespaceName>
                                                                                                                                                         </Assignment>
                                                                                                                                                     </ExpressionStatement>
                                                                                                                                                 </Block>
@@ -21386,7 +21496,9 @@
                                                                                                                                                                     <Variable start='36278' end='36283' isDollared='true'>
                                                                                                                                                                         <Identifier start='36279' end='36283' name='type'/>
                                                                                                                                                                     </Variable>
-                                                                                                                                                                    <Scalar start='36286' end='36298' type='STRING' value='TSQ_TOK_WORD'/>
+                                                                                                                                                                    <NamespaceName start='36286' end='36298' isCurrent='false' isGlobal='false'>
+                                                                                                                                                                        <Identifier start='36286' end='36298' name='TSQ_TOK_WORD'/>
+                                                                                                                                                                    </NamespaceName>
                                                                                                                                                                 </Assignment>
                                                                                                                                                             </ExpressionStatement>
                                                                                                                                                         </Block>

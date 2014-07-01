@@ -435,6 +435,8 @@ public final class CodeUtils {
             Scalar scalar = (Scalar) expr;
             String returnValue = scalar.getStringValue();
             return Operator.MINUS.equals(operator) ? "-" + returnValue : returnValue; // NOI18N
+        } else if (expr instanceof NamespaceName) {
+            return extractQualifiedName((NamespaceName) expr);
         } else if (expr instanceof ArrayCreation) {
             return "array()"; //NOI18N
         } else if (expr instanceof StaticConstantAccess) {

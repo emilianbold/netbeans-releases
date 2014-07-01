@@ -54,27 +54,48 @@ import java.util.List;
  *use \MyProject\Sub\Level as MyAlias, MyNamespace as OtherAlias, MyOtherNamespace;
  */
 public class UseStatement extends Statement {
-
     private final List<UseStatementPart> parts;
+    private final Type type;
 
-    public UseStatement(int start, int end, List parts) {
+    public enum Type {
+        TYPE("TYPE"), //NOI18N
+        CONST("CONST"), //NOI18N
+        FUNCTION("FUNCTION"); //NOI18N
+
+        private final String type;
+
+        private Type(String type) {
+            this.type = type;
+        }
+
+        @Override
+        public String toString() {
+            return type;
+        }
+
+    };
+
+    public UseStatement(int start, int end, List parts, Type type) {
         super(start, end);
 
-        if (parts == null || parts.isEmpty()) {
+        if (parts == null || parts.isEmpty() || type == null) {
             throw new IllegalArgumentException();
         }
 
         this.parts = new ArrayList<>(parts);
+        this.type = type;
+    }
+
+    public UseStatement(int start, int end, List parts) {
+        this(start, end, parts, Type.TYPE);
+    }
+
+    public UseStatement(int start, int end, UseStatementPart[] parts, Type type) {
+        this(start, end, Arrays.asList(parts), type);
     }
 
     public UseStatement(int start, int end, UseStatementPart[] parts) {
-        super(start, end);
-
-        if (parts == null || parts.length == 0) {
-            throw new IllegalArgumentException();
-        }
-
-        this.parts = Arrays.asList(parts);
+        this(start, end, parts, Type.TYPE);
     }
 
     /**
@@ -84,6 +105,10 @@ public class UseStatement extends Statement {
      */
     public List<UseStatementPart> getParts() {
         return this.parts;
+    }
+
+    public Type getType() {
+        return type;
     }
 
     @Override
@@ -97,7 +122,7 @@ public class UseStatement extends Statement {
         for (UseStatementPart useStatementPart : parts) {
             sb.append(useStatementPart).append(","); //NOI18N
         }
-        return "use " + sb.toString(); //NOI18N
+        return "use " + type.toString() + " " + sb.toString(); //NOI18N
     }
 
 }

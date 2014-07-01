@@ -524,7 +524,7 @@ public class PrintASTVisitor implements Visitor {
 
     @Override
     public void visit(UseStatement statement) {
-        XMLPrintNode printNode = new XMLPrintNode(statement, "UseStatement");
+        XMLPrintNode printNode = new XMLPrintNode(statement, "UseStatement", new String[] {"type", statement.getType().toString()});
         printNode.addChildren(statement.getParts());
         printNode.print(this);
     }

@@ -117,7 +117,9 @@
                         </Reference>
                         <Block start='65' end='79' isCurly='true'>
                             <EchoStatement start='67' end='77'>
-                                <Scalar start='72' end='76' type='STRING' value='TEST'/>
+                                <NamespaceName start='72' end='76' isCurrent='false' isGlobal='false'>
+                                    <Identifier start='72' end='76' name='TEST'/>
+                                </NamespaceName>
                             </EchoStatement>
                         </Block>
                     </LambdaFunctionDeclaration>

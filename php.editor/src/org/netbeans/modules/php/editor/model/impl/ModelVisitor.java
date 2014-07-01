@@ -59,6 +59,7 @@ import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.Cache;
 import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.NavUtils;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
@@ -76,6 +77,7 @@ import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
@@ -84,8 +86,6 @@ import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
-import org.netbeans.modules.php.editor.NavUtils;
-import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -142,6 +142,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.TraitConflictResolutionDe
 import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TraitMethodAliasDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TryStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -418,19 +419,38 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(NamespaceName namespaceName) {
         super.visit(namespaceName);
-        occurencesBuilder.prepare(Kind.CONSTANT, namespaceName, fileScope);
+        ASTNode parent = getPath().get(0);
+        if (parent instanceof FunctionName) {
+            occurencesBuilder.prepare(Kind.FUNCTION, namespaceName, fileScope);
+        } else if (!(parent instanceof ClassDeclaration) && !(parent instanceof InterfaceDeclaration)
+                && !(parent instanceof FormalParameter) && !(parent instanceof InstanceOfExpression)
+                && !(parent instanceof UseTraitStatementPart) && !(parent instanceof TraitConflictResolutionDeclaration)
+                && !(parent instanceof TraitMethodAliasDeclaration)) {
+            occurencesBuilder.prepare(Kind.CONSTANT, namespaceName, fileScope);
+        }
+        occurencesBuilder.prepare(namespaceName, modelBuilder.getCurrentScope());
     }
-
 
     @Override
     public void visit(UseStatementPart statementPart) {
         ASTNodeInfo<UseStatementPart> astNodeInfo = ASTNodeInfo.create(statementPart);
         modelBuilder.getCurrentNameSpace().createUseStatementPart(astNodeInfo);
-        occurencesBuilder.prepare(Kind.CLASS, statementPart.getName(), modelBuilder.getCurrentScope());
-        if (statementPart.getAlias() != null) {
-            occurencesBuilder.prepare(Kind.USE_ALIAS, statementPart.getAlias(), modelBuilder.getCurrentScope());
+        ScopeImpl currentScope = modelBuilder.getCurrentScope();
+        UseStatement.Type type = ((UseStatement) getPath().get(0)).getType();
+        switch (type) {
+            case CONST:
+                occurencesBuilder.prepare(Kind.CONSTANT, statementPart.getName(), currentScope);
+                break;
+            case FUNCTION:
+                occurencesBuilder.prepare(Kind.FUNCTION, statementPart.getName(), currentScope);
+                break;
+            case TYPE:
+                occurencesBuilder.prepare(Kind.CLASS, statementPart.getName(), currentScope);
+                break;
         }
-        super.visit(statementPart);
+        if (statementPart.getAlias() != null) {
+            occurencesBuilder.prepare(Kind.USE_ALIAS, statementPart.getAlias(), currentScope);
+        }
     }
 
     @Override
@@ -1010,6 +1030,9 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             scan(variable);
         } else {
             occurencesBuilder.prepare(node, scope);
+            if (functionName instanceof NamespaceName) {
+                occurencesBuilder.prepare((NamespaceName) functionName, scope);
+            }
         }
         ASTNodeInfo<FunctionInvocation> nodeInfo = ASTNodeInfo.create(node);
         String name = nodeInfo.getName();

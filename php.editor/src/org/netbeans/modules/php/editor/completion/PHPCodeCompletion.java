@@ -344,7 +344,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 autoCompleteNamespaces(completionResult, request);
                 autoCompleteInterfaceNames(completionResult, request);
                 break;
-            case USE_KEYWORD:
+            case USE_KEYWORD: {
                 CodeStyle codeStyle = CodeStyle.get(request.result.getSnapshot().getSource().getDocument(caseSensitive));
                 autoCompleteAfterUses(
                         completionResult,
@@ -352,6 +352,23 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                         codeStyle.startUseWithNamespaceSeparator() ? QualifiedNameKind.FULLYQUALIFIED : QualifiedNameKind.QUALIFIED,
                         false);
                 break;
+            }
+            case USE_CONST_KEYWORD: {
+                CodeStyle codeStyle = CodeStyle.get(request.result.getSnapshot().getSource().getDocument(caseSensitive));
+                autoCompleteAfterUsesConst(
+                        completionResult,
+                        request,
+                        codeStyle.startUseWithNamespaceSeparator() ? QualifiedNameKind.FULLYQUALIFIED : QualifiedNameKind.QUALIFIED);
+                break;
+            }
+            case USE_FUNCTION_KEYWORD: {
+                CodeStyle codeStyle = CodeStyle.get(request.result.getSnapshot().getSource().getDocument(caseSensitive));
+                autoCompleteAfterUsesFunction(
+                        completionResult,
+                        request,
+                        codeStyle.startUseWithNamespaceSeparator() ? QualifiedNameKind.FULLYQUALIFIED : QualifiedNameKind.QUALIFIED);
+                break;
+            }
             case USE_TRAITS:
                 CodeStyle traitCodeStyle = CodeStyle.get(request.result.getSnapshot().getSource().getDocument(caseSensitive));
                 autoCompleteAfterUseTrait(
@@ -669,6 +686,38 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         }
         for (InterfaceElement iface : request.index.getInterfaces(nameQuery)) {
             completionResult.add(new PHPCompletionItem.InterfaceItem(iface, request, kind, false));
+        }
+    }
+
+    private void autoCompleteAfterUsesConst(
+            final PHPCompletionResult completionResult,
+            PHPCompletionItem.CompletionRequest request,
+            QualifiedNameKind kind) {
+        Set<NamespaceElement> namespaces = request.index.getNamespaces(
+                NameKind.caseInsensitivePrefix(QualifiedName.create(request.prefix).toNotFullyQualified()));
+        for (NamespaceElement namespace : namespaces) {
+            completionResult.add(new PHPCompletionItem.NamespaceItem(namespace, request, kind));
+        }
+        final NameKind nameQuery = NameKind.caseInsensitivePrefix(request.prefix);
+        for (ConstantElement constant : request.index.getConstants(nameQuery)) {
+            completionResult.add(new PHPCompletionItem.ConstantItem(constant, request));
+        }
+    }
+
+    private void autoCompleteAfterUsesFunction(
+            final PHPCompletionResult completionResult,
+            PHPCompletionItem.CompletionRequest request,
+            QualifiedNameKind kind) {
+        Set<NamespaceElement> namespaces = request.index.getNamespaces(NameKind.caseInsensitivePrefix(QualifiedName.create(request.prefix).toNotFullyQualified()));
+        for (NamespaceElement namespace : namespaces) {
+            completionResult.add(new PHPCompletionItem.NamespaceItem(namespace, request, kind));
+        }
+        final NameKind nameQuery = NameKind.caseInsensitivePrefix(request.prefix);
+        for (FunctionElement function : request.index.getFunctions(nameQuery)) {
+            List<PHPCompletionItem.FunctionElementItem> items = PHPCompletionItem.FunctionElementItem.getItems(function, request);
+            for (PHPCompletionItem.FunctionElementItem item : items) {
+                completionResult.add(item);
+            }
         }
     }
 

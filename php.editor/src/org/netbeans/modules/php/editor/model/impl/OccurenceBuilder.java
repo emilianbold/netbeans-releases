@@ -144,6 +144,7 @@ class OccurenceBuilder {
     private Map<ConstantDeclarationInfo, ConstantElement> constDeclarations53;
     private Map<ASTNodeInfo<Scalar>, Scope> constInvocations;
     private Map<ASTNodeInfo<Expression>, Scope> nsConstInvocations;
+    private Map<ASTNodeInfo<Expression>, Scope> nsFunctionInvocations;
     private Map<ASTNodeInfo<FunctionDeclaration>, FunctionScope> fncDeclarations;
     private Map<ASTNodeInfo<MethodDeclaration>, MethodScope> methodDeclarations;
     private Map<MagicMethodDeclarationInfo, MethodScope> magicMethodDeclarations;
@@ -179,6 +180,7 @@ class OccurenceBuilder {
     OccurenceBuilder(int offset) {
         this.constInvocations = this.<ASTNodeInfo<Scalar>, Scope>initMap();
         this.nsConstInvocations = this.<ASTNodeInfo<Expression>, Scope>initMap();
+        this.nsFunctionInvocations = this.<ASTNodeInfo<Expression>, Scope>initMap();
         this.constDeclarations = this.<ASTNodeInfo<Scalar>, ConstantElement>initMap();
         this.constDeclarations53 = this.<ConstantDeclarationInfo, ConstantElement>initMap();
         this.includes = this.<IncludeInfo, IncludeElement>initMap();
@@ -205,7 +207,6 @@ class OccurenceBuilder {
         this.docTags = this.<PhpDocTypeTagInfo, Scope>initMap();
         this.gotoStatement = this.<ASTNodeInfo<GotoStatement>, Scope>initMap();
         this.gotoLabel = this.<ASTNodeInfo<GotoLabel>, Scope>initMap();
-        this.useAliases = this.<ASTNodeInfo<Expression>, Scope>initMap();
         this.useAliases = this.<ASTNodeInfo<Expression>, Scope>initMap();
 
         this.cachedOccurences = new ArrayList<>();
@@ -369,6 +370,11 @@ class OccurenceBuilder {
                 case CONSTANT:
                     if (node instanceof NamespaceName) {
                         nsConstInvocations.put(nodeInfo, scope);
+                    }
+                    break;
+                case FUNCTION:
+                    if (node instanceof NamespaceName) {
+                        nsFunctionInvocations.put(nodeInfo, scope);
                     }
                     break;
                 case USE_ALIAS:
@@ -632,14 +638,16 @@ class OccurenceBuilder {
             setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
         }
 
-        for (Entry<ASTNodeInfo<Expression>, Scope> entry : useAliases.entrySet()) {
+        for (Entry<ASTNodeInfo<Expression>, Scope> entry : nsConstInvocations.entrySet()) {
             setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
         }
 
-        if (elementInfo == null) {
-            for (Entry<ASTNodeInfo<Expression>, Scope> entry : nsConstInvocations.entrySet()) {
-                setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
-            }
+        for (Entry<ASTNodeInfo<Expression>, Scope> entry : nsFunctionInvocations.entrySet()) {
+            setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
+        }
+
+        for (Entry<ASTNodeInfo<Expression>, Scope> entry : useAliases.entrySet()) {
+            setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
         }
         return elementInfo != null;
     }
@@ -1773,6 +1781,21 @@ class OccurenceBuilder {
                         occurences.add(new OccurenceImpl(ElementFilter.forFiles(fileScope.getFileObject()).prefer(elements), nodeInfo.getRange()));
                     } else {
                         occurences.add(new OccurenceImpl(phpElement, nodeInfo.getRange()));
+                    }
+                }
+            }
+            for (Entry<ASTNodeInfo<Expression>, Scope> entry : nsFunctionInvocations.entrySet()) {
+                ASTNodeInfo<Expression> nodeInfo = entry.getKey();
+                Expression originalNode = nodeInfo.getOriginalNode();
+                if (originalNode instanceof NamespaceName) {
+                    NamespaceName namespaceName = (NamespaceName) originalNode;
+                    final QualifiedName qualifiedName = QualifiedName.create(namespaceName);
+                    if (NameKind.exact(qualifiedName).matchesName(phpElement)) {
+                        if (qualifiedName.getKind().isUnqualified()) {
+                            occurences.add(new OccurenceImpl(ElementFilter.forFiles(fileScope.getFileObject()).prefer(elements), nodeInfo.getRange()));
+                        } else {
+                            occurences.add(new OccurenceImpl(phpElement, nodeInfo.getRange()));
+                        }
                     }
                 }
             }

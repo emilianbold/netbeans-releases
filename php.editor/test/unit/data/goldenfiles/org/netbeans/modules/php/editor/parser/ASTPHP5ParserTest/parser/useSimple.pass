@@ -23,7 +23,7 @@
         <Comments>
         </Comments>
         <Statements>
-            <UseStatement start='6' end='12'>
+            <UseStatement start='6' end='12' type='TYPE'>
                 <UseStatementPart start='10' end='11'>
                     <Name>
                         <NamespaceName start='10' end='11' isCurrent='false' isGlobal='false'>
