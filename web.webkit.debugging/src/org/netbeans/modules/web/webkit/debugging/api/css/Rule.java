@@ -175,7 +175,11 @@ public class Rule {
      * @return URL of the parent stylesheet.
      */
     public String getSourceURL() {
-        return sourceURL;
+        String url = sourceURL;
+        if (url == null && parentStyleSheet != null) {
+            url = parentStyleSheet.getHeader().getSourceURL();
+        }
+        return url;
     }
 
     /**
