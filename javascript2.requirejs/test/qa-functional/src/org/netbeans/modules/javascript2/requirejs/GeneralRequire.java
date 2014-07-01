@@ -54,11 +54,14 @@ import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.KeyStroke;
 import javax.swing.text.BadLocationException;
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.*;
@@ -131,6 +134,16 @@ public class GeneralRequire extends JellyTestCase {
             throw new IllegalStateException("YOU MUST OPEN PROJECT FIRST");
         }
         String requestedFileName = filePath.contains("|") ? filePath.substring(filePath.lastIndexOf("|") + 1) : filePath;
+
+        long defaultTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
+        try {
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+            EditorOperator ed = new EditorOperator(requestedFileName);
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", defaultTimeout);
+            return ed;
+        } catch (Exception e) {
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", defaultTimeout);
+        }
 
         Logger.getLogger(GeneralRequire.class.getName()).log(Level.INFO, "Opening file {0}", filePath);
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -406,7 +419,7 @@ public class GeneralRequire extends JellyTestCase {
         //[5] type and check cc to contain matching items and press Enter to select it from cc
         //[6] check line contains [6]
         //[7] check cc does not contain [7] in step 4
-        waitScanFinished();    
+        waitScanFinished();
         String rawLine = eo.getText(lineNumber);
         int start = rawLine.indexOf("//cc;");
         String rawConfig = rawLine.substring(start + 2);
