@@ -65,6 +65,16 @@ public final class RuleId {
     }
 
     /**
+     * Creates a new {@code RuleId} for the given style-sheet ID.
+     * 
+     * @param styleSheetId style-sheet ID.
+     */
+    RuleId(String styleSheetId) {
+        this.styleSheetId = styleSheetId;
+        this.ordinal = -1;
+    }
+
+    /**
      * Returns the identifier of the enclosing stylesheet.
      *
      * @return identifier of the enclosing stylesheet.
