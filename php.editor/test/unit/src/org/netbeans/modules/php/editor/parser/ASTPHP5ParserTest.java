@@ -516,6 +516,10 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("parser/argumentUnpacking_01");
     }
 
+    public void testUseFuncAndConst_01() throws Exception {
+        performTest("parser/useFuncAndConst_01");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");

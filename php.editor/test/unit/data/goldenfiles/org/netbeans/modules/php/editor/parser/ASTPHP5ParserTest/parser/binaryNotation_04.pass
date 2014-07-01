@@ -28,7 +28,9 @@
         <Statements>
             <ASTError start='7' end='15'/>
             <ExpressionStatement start='15' end='18'>
-                <Scalar start='15' end='17' type='STRING' value='b2'/>
+                <NamespaceName start='15' end='17' isCurrent='false' isGlobal='false'>
+                    <Identifier start='15' end='17' name='b2'/>
+                </NamespaceName>
             </ExpressionStatement>
             <EmptyStatement start='20' end='22'/>
         </Statements>

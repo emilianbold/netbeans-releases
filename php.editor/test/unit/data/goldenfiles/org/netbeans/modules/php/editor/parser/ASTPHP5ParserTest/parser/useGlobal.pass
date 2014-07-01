@@ -26,7 +26,7 @@
         <Comments>
         </Comments>
         <Statements>
-            <UseStatement start='6' end='13'>
+            <UseStatement start='6' end='13' type='TYPE'>
                 <UseStatementPart start='10' end='12'>
                     <Name>
                         <NamespaceName start='10' end='12' isCurrent='false' isGlobal='true'>
