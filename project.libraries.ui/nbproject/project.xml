@@ -128,7 +128,10 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <public-packages>
+                <package>org.netbeans.api.project.libraries</package>
+                <package>org.netbeans.spi.project.libraries</package>
+            </public-packages>
         </data>
     </configuration>
 </project>
