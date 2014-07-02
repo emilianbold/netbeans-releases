@@ -78,7 +78,8 @@ import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.CoverageProviderImpl;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
-import org.netbeans.modules.web.clientproject.grunt.NpmProblemProvider;
+import org.netbeans.modules.web.clientproject.bower.BowerProblemProvider;
+import org.netbeans.modules.web.clientproject.node.NpmProblemProvider;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserProvider;
@@ -441,6 +442,7 @@ public class ClientSideProject implements Project {
                ProjectPropertiesProblemProvider.createForProject(this),
                CssPreprocessors.getDefault().createProjectProblemsProvider(this),
                NpmProblemProvider.create(this),
+               BowerProblemProvider.create(this),
                UILookupMergerSupport.createProjectProblemsProviderMerger(),
                new TemplateAttributesProviderImpl(projectHelper, fileEncodingQuery),
                SharabilityQueryImpl.create(projectHelper, eval, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,

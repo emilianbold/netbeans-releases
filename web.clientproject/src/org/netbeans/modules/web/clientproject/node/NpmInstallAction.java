@@ -40,13 +40,15 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.grunt;
+package org.netbeans.modules.web.clientproject.node;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.web.clientproject.grunt.TargetLister;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -88,10 +90,17 @@ public class NpmInstallAction extends AbstractAction implements ContextAwareActi
             putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         }
         
+        @NbBundle.Messages({
+             "# {0} - project name",
+             "TTL_npm_install=npm install ({0})"
+         })
         public @Override
         void actionPerformed(ActionEvent e) {
             try {
-                new NpmExecutor(p.getProjectDirectory(), new String[]{"install"}).execute(); //NOI18N
+                new NodeExecutor(
+                        Bundle.TTL_npm_install(ProjectUtils.getInformation(p).getDisplayName()),
+                        "npm",
+                        p.getProjectDirectory(), new String[]{"install"}).execute(); //NOI18N
                 TargetLister.invalidateCache(p.getProjectDirectory().getFileObject("Gruntfile.js")); //NOI18N
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);

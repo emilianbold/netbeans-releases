@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.clientproject.grunt;
+package org.netbeans.modules.web.clientproject.node;
 
 import java.awt.Image;
 import java.util.HashSet;

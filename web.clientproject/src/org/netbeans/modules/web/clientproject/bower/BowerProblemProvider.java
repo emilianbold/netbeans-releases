@@ -39,10 +39,11 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.grunt;
+package org.netbeans.modules.web.clientproject.bower;
 
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.ExecutionException;
@@ -50,30 +51,36 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.web.clientproject.node.NodeExecutor;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * Problem: Project requires npm install
+ * Problem: Project requires bower install
  */
-public final class NpmProblemProvider implements ProjectProblemsProvider {
+public final class BowerProblemProvider implements ProjectProblemsProvider {
 
     final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
     final Project project;
 
 
-    private NpmProblemProvider(Project project) {
+    private BowerProblemProvider(Project project) {
         assert project != null;
         this.project = project;
     }
 
-    public static NpmProblemProvider create(Project project) {
-        NpmProblemProvider problemProvider = new NpmProblemProvider(project);
+    public static BowerProblemProvider create(Project project) {
+        BowerProblemProvider problemProvider = new BowerProblemProvider(project);
         return problemProvider;
     }
 
@@ -88,10 +95,10 @@ public final class NpmProblemProvider implements ProjectProblemsProvider {
     }
 
     @NbBundle.Messages({
-        "ERR_NpmInstall=Missing node modules",
-        "TXT_NpmInstallDescription=This project uses node modules, but they are not installed.",
-        "ERR_NpmInstallResolved=Node modules were succesfully installed.",
-        "ERR_NpmInstallUnresolved=Node modules were not succesfully installed."
+        "ERR_BowerInstall=Missing bower modules",
+        "TXT_BowerInstallDescription=This project uses bower modules, but they are not installed.",
+        "ERR_BowerInstallResolved=Bower modules were succesfully installed.",
+        "ERR_BowerInstallUnresolved=Bower modules were not succesfully installed."
     })
     @Override
     public Collection<? extends ProjectProblem> getProblems() {
@@ -101,10 +108,10 @@ public final class NpmProblemProvider implements ProjectProblemsProvider {
                 final FileObject root = project.getProjectDirectory();
                 root.refresh();
                 final Collection<ProjectProblemsProvider.ProjectProblem> currentProblems = new ArrayList<>();
-                FileObject package_json = root.getFileObject("package.json");//NOI18N
-                FileObject node_modules = root.getFileObject("node_modules");//NOI18N
-                if (package_json != null && node_modules == null) {
-                    ProjectProblem npmWarning = ProjectProblemsProvider.ProjectProblem.createWarning(Bundle.ERR_NpmInstall(), Bundle.TXT_NpmInstallDescription(), new ProjectProblemResolver() {
+                FileObject package_json = root.getFileObject("bower.json");//NOI18N
+                FileObject bower_modules = root.getFileObject(getBowerRcDir(root));//NOI18N
+                if (package_json != null && bower_modules == null) {
+                    ProjectProblem npmWarning = ProjectProblemsProvider.ProjectProblem.createWarning(Bundle.ERR_BowerInstall(), Bundle.TXT_BowerInstallDescription(), new ProjectProblemResolver() {
                         @Override
                         public Future<Result> resolve() {
                             return new FutureResult();
@@ -116,6 +123,31 @@ public final class NpmProblemProvider implements ProjectProblemsProvider {
                 return currentProblems;
             }
         });
+    }
+    
+    private static String getBowerRcDir(FileObject root) {
+        FileObject bowerrc = root.getFileObject(".bowerrc");
+        if (bowerrc==null) {
+            return "bower_components";
+        }
+        try {
+            JSONObject r;
+            if (bowerrc.getSize() > 0) {
+                JSONParser parser = new JSONParser();
+                try (InputStreamReader inputStreamReader = new InputStreamReader(bowerrc.getInputStream())) {
+                    r = (JSONObject) parser.parse(inputStreamReader);
+                    String directory = (String) r.get("directory");
+                    if (directory!=null) {
+                        return directory;
+                    }
+                }
+            } else {
+                r = new JSONObject();
+            }
+        } catch (ParseException | IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return "bower_components";
     }
 
     private class FutureResult implements Future<Result> {
@@ -129,7 +161,9 @@ public final class NpmProblemProvider implements ProjectProblemsProvider {
             try {
                 done = new AtomicBoolean(false);
                 cancelled = new AtomicBoolean(false);
-                execute = new NpmExecutor(project.getProjectDirectory(), new String[]{"install"}).execute();//NOI18N
+                execute = new NodeExecutor(Bundle.TTL_bower_install(ProjectUtils.getInformation(project).getDisplayName()),
+                        "bower",
+                        project.getProjectDirectory(), new String[]{"install"}).execute(); //NOI18N
             } catch (IOException ex) {
                 this.ex = ex;
             }
@@ -162,19 +196,18 @@ public final class NpmProblemProvider implements ProjectProblemsProvider {
             }
 
             int result = execute.result();
-            TargetLister.invalidateCache(project.getProjectDirectory().getFileObject("Gruntfile.js"));
 
             FileObject root = project.getProjectDirectory();
             root.refresh();
-            FileObject package_json = root.getFileObject("package.json");
-            FileObject node_modules = root.getFileObject("node_modules");
-            if (package_json != null && node_modules == null) {
+            FileObject package_json = root.getFileObject("bower.json");
+            FileObject bower_modules = root.getFileObject(getBowerRcDir(root));
+            if (package_json != null && bower_modules == null) {
                 done.set(true);
-                return ProjectProblemsProvider.Result.create(Status.UNRESOLVED, Bundle.ERR_NpmInstallUnresolved());
+                return ProjectProblemsProvider.Result.create(Status.UNRESOLVED, Bundle.ERR_BowerInstallUnresolved());
             } else {
                 problemsProviderSupport.fireProblemsChange();
                 done.set(true);
-                return ProjectProblemsProvider.Result.create(Status.RESOLVED, Bundle.ERR_NpmInstallResolved());
+                return ProjectProblemsProvider.Result.create(Status.RESOLVED, Bundle.ERR_BowerInstallResolved());
             }
         }
 

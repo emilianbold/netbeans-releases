@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.clientproject.grunt;
+package org.netbeans.modules.web.clientproject.node;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -60,29 +60,26 @@ import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
 /** 
- * Executes an npm install asynchronously in the IDE.
+ * Executes an node command asynchronously in the IDE.
  */
-public final class NpmExecutor implements Runnable {
+public final class NodeExecutor implements Runnable {
 
     private final List<String> arguments;
     private final String displayName;
     private final FileObject root;
+    private final String command;
 
-    @NbBundle.Messages({
-        "# {0} - project name",
-        "TTL_npm_install=npm install ({0})"
-    })
-    public NpmExecutor (FileObject root, String[] args) {
+    public NodeExecutor (String title, String command, FileObject root, String[] args) {
         arguments = ((args == null) ? null : Arrays.asList(args));
         this.root = root;
         Project owner = FileOwnerQuery.getOwner(root);
         String name = ProjectUtils.getInformation(owner).getDisplayName();
-        displayName = Bundle.TTL_npm_install(name);
+        displayName = title;
+        this.command = command;
     }
     
     /**
@@ -108,13 +105,13 @@ public final class NpmExecutor implements Runnable {
                 ExternalProcessBuilder pb;
                 if (Utilities.isWindows()) {
                     pb = new ExternalProcessBuilder("cmd");
-                    pb= pb.addArgument("/C npm " + arguments.get(0));
+                    pb= pb.addArgument("/C " + command + " " + arguments.get(0));
                 } else if (Utilities.isMac()) {
                     pb = new ExternalProcessBuilder("/bin/bash");
                     pb = pb.addArgument("-lc");
-                    pb = pb.addArgument("npm " + arguments.get(0));
+                    pb = pb.addArgument(command + " " + arguments.get(0));
                 } else {
-                    pb = new ExternalProcessBuilder("npm");
+                    pb = new ExternalProcessBuilder(command);
                     pb = pb.addArgument(arguments.get(0));
                 }
 
