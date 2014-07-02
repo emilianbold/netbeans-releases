@@ -56,7 +56,6 @@ import org.netbeans.modules.php.editor.model.UseScope;
 import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
@@ -158,11 +157,6 @@ public class UsedNamesComputer {
         @Override
         public void visit(NamespaceDeclaration node) {
             scan(node.getBody());
-        }
-
-        @Override
-        public void visit(FunctionInvocation node) {
-            scan(node.getParameters());
         }
 
         @Override

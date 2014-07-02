@@ -86,6 +86,7 @@ import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
+import org.netbeans.modules.php.editor.model.nodes.UseStatementPartInfo;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -433,10 +434,10 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(UseStatementPart statementPart) {
-        ASTNodeInfo<UseStatementPart> astNodeInfo = ASTNodeInfo.create(statementPart);
-        modelBuilder.getCurrentNameSpace().createUseStatementPart(astNodeInfo);
-        ScopeImpl currentScope = modelBuilder.getCurrentScope();
         UseStatement.Type type = ((UseStatement) getPath().get(0)).getType();
+        UseStatementPartInfo useStatementPartInfo = UseStatementPartInfo.create(statementPart, type);
+        modelBuilder.getCurrentNameSpace().createUseStatementPart(useStatementPartInfo);
+        ScopeImpl currentScope = modelBuilder.getCurrentScope();
         switch (type) {
             case CONST:
                 occurencesBuilder.prepare(Kind.CONSTANT, statementPart.getName(), currentScope);
