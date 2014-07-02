@@ -78,6 +78,16 @@ public final class GitMergeResult {
                 return "Fast-forward";
             }
         },
+        /**
+         * Fast forward merge cannot be executed, a commit is needed.
+         * @since 1.26
+         */
+        ABORTED {
+            @Override
+            public String toString() {
+                return "Aborted";
+            }
+        },
         ALREADY_UP_TO_DATE {
             @Override
             public String toString() {
@@ -178,8 +188,6 @@ public final class GitMergeResult {
             mergeStatus = MergeResult.MergeStatus.MERGED;
         } else if (mergeStatus == MergeResult.MergeStatus.MERGED_SQUASHED_NOT_COMMITTED) {
             mergeStatus = MergeResult.MergeStatus.MERGED;
-        } else if (mergeStatus == MergeResult.MergeStatus.ABORTED) {
-            mergeStatus = MergeResult.MergeStatus.FAILED;
         } else if (mergeStatus == MergeResult.MergeStatus.CHECKOUT_CONFLICT) {
             mergeStatus = MergeResult.MergeStatus.CONFLICTING;
         }
