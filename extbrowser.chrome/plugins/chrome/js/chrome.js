@@ -409,14 +409,15 @@ chrome.windows.getAll({populate: true}, function(windows) {
 });
 
 NetBeans.windowFocused = function(windowId) {
-    if (NetBeans.debuggedTab !== null) {
-        var active = (windowId === NetBeans.windowWithDebuggedTab);
-        var script = 'if (typeof(NetBeans) === "object") { NetBeans.setWindowActive('+active+'); }';
-        chrome.debugger.sendCommand(
-            {tabId : NetBeans.debuggedTab},
-            'Runtime.evaluate',
-            {expression: script});
-    }
+// Disabled because of issue 244689 (caused by bugs in chrome.windows.onFocusChanged)
+//    if (NetBeans.debuggedTab !== null) {
+//        var active = (windowId === NetBeans.windowWithDebuggedTab);
+//        var script = 'if (typeof(NetBeans) === "object") { NetBeans.setWindowActive('+active+'); }';
+//        chrome.debugger.sendCommand(
+//            {tabId : NetBeans.debuggedTab},
+//            'Runtime.evaluate',
+//            {expression: script});
+//    }
 };
 
 chrome.windows.onFocusChanged.addListener(NetBeans.windowFocused);
