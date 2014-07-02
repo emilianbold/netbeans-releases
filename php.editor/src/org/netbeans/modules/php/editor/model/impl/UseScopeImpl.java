@@ -51,26 +51,38 @@ import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.UseAliasElement;
 import org.netbeans.modules.php.editor.model.UseScope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
+import org.netbeans.modules.php.editor.model.nodes.UseStatementPartInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
 
 class UseScopeImpl extends ScopeImpl implements UseScope {
     private AliasedName aliasName;
+    private UseScope.Type type;
 
-    UseScopeImpl(NamespaceScopeImpl inScope, ASTNodeInfo<UseStatementPart> node) {
-        this(inScope, node.getName(), inScope.getFile(), node.getRange());
-        final Identifier alias = node.getOriginalNode().getAlias();
+    UseScopeImpl(NamespaceScopeImpl inScope, UseStatementPartInfo nodeInfo) {
+        this(inScope, nodeInfo.getName(), inScope.getFile(), nodeInfo.getRange());
+        final Identifier alias = nodeInfo.getOriginalNode().getAlias();
         this.aliasName = alias != null ? new AliasedName(alias.getName(), QualifiedName.create(getName())) : null;
         AliasedName aliasedName = null;
         if (alias != null) {
             aliasedName = new AliasedName(alias.getName(), QualifiedName.create(getName()));
-            ASTNodeInfo<Expression> nodeInfo = ASTNodeInfo.create(ASTNodeInfo.Kind.USE_ALIAS, alias);
-            new UseAliasElementImpl(this, nodeInfo);
+            ASTNodeInfo<Expression> aliasNodeInfo = ASTNodeInfo.create(ASTNodeInfo.Kind.USE_ALIAS, alias);
+            new UseAliasElementImpl(this, aliasNodeInfo);
         }
         this.aliasName = aliasedName;
+        switch (nodeInfo.getType()) {
+            case CONST:
+                type = Type.CONST;
+                break;
+            case FUNCTION:
+                type = Type.FUNCTION;
+                break;
+            case TYPE:
+                type = Type.TYPE;
+                break;
+        }
     }
 
     private UseScopeImpl(ScopeImpl inScope, String name,
@@ -81,6 +93,11 @@ class UseScopeImpl extends ScopeImpl implements UseScope {
     @Override
     public AliasedName getAliasedName() {
         return aliasName;
+    }
+
+    @Override
+    public UseScope.Type getType() {
+        return type;
     }
 
     @CheckForNull

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,36 +37,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.model;
+package org.netbeans.modules.php.editor.model.nodes;
 
-import org.netbeans.modules.php.editor.api.AliasedName;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 
 /**
- * @author Radek Matous
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public interface UseScope extends Scope {
-    public enum Type {
-        TYPE("TYPE"), //NOI18N
-        CONST("CONST"), //NOI18N
-        FUNCTION("FUNCTION"); //NOI18N
+public class UseStatementPartInfo extends ASTNodeInfo<UseStatementPart> {
+    private final UseStatement.Type type;
 
-        private final String type;
-
-        private Type(String type) {
-            this.type = type;
-        }
-
-        @Override
-        public String toString() {
-            return type;
-        }
-
+    public UseStatementPartInfo(UseStatementPart node, UseStatement.Type type) {
+        super(node);
+        this.type = type;
     }
-    AliasedName getAliasedName();
-    UseAliasElement getAliasElement();
-    Type getType();
+
+    public static UseStatementPartInfo create(UseStatementPart node, UseStatement.Type type) {
+        return new UseStatementPartInfo(node, type);
+    }
+
+    public UseStatement.Type getType() {
+        return type;
+    }
 
 }
