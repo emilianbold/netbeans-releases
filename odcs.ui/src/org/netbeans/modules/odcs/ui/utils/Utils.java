@@ -160,7 +160,7 @@ public class Utils {
             } else if (msg.contains("maximum number of projects in the system")) { //NOI18N
                 knownMessage = Bundle.MSG_MaxNumberOfProjects();
             } else if (msg.contains("unauthorized")) { //NOI18N
-                knownMessage = Bundle.MSG_Unauthorised();
+                knownMessage = Bundle.MSG_Unauthorized();
             }
         }
         return knownMessage;
