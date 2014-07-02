@@ -160,7 +160,9 @@ public final class Library {
         if (impl instanceof LibraryImplementation2) {
             return ((LibraryImplementation2)impl).getURIContent(volumeType);
         } else {
-            return LibrariesSupport.convertURLsToURIs(impl.getContent(volumeType));
+            return LibrariesSupport.convertURLsToURIs(
+                impl.getContent(volumeType),
+                LibrariesSupport.ConversionMode.WARN);
         }
     } // end getContent
 

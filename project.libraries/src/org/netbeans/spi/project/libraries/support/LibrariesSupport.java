@@ -91,6 +91,28 @@ public final class LibrariesSupport {
     }
 
     /**
+     * Policy for handling content items which cannot be converted into the desired format.
+     * @see #convertURIsToURLs(java.util.List)
+     * @see #convertURLsToURIs(java.util.List)
+     * @since 1.48
+     */
+    public enum ConversionMode {
+        /**
+         * Drop entry silently.
+         */
+        SKIP,
+        /**
+         * Entry is dropped but a warning is logged.
+         */
+        WARN,
+        /**
+         * {@link #toString(ClassPath.PathConversionMode)} will fail with an {@link IllegalArgumentException}.
+         * Useful for unit tests.
+         */
+        FAIL
+    }
+
+    /**
      * Creates default {@link LibraryImplementation3}
      * @param libraryType type of library
      * @param volumeTypes types of supported volumes
@@ -175,18 +197,37 @@ public final class LibrariesSupport {
 
     /**
      * Converts a list of {@link URI}s into a list of {@link URL}s.
-     * The unmappable URIs are omitted from result.
      * @param uris the list of {@link URI}s to be converted
+     * @param conversionMode the Policy for handling content items which
+     * cannot be converted into {@link URL}s.
      * @return the list of {@link URL}s
+     * @throws IllegalArgumentException for unconvertable entry in
+     * {@link ConversionMode#FAIL}
      * @since 1.48
      */
-    public static List<URL> convertURIsToURLs(List<? extends URI> uris) {
+    @NonNull
+    public static List<URL> convertURIsToURLs(
+            @NonNull final List<? extends URI> uris,
+            @NonNull final ConversionMode conversionMode) {
         List<URL> content = new ArrayList<>();
         for (URI uri : uris) {
             try {
                 content.add(uri.toURL());
             } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
+                switch (conversionMode) {
+                    case FAIL:
+                        throw new IllegalArgumentException(uri.toString());
+                    case WARN:
+                        LOG.log(
+                            Level.WARNING,
+                            "Cannot convert URI: {0} to URL.",  //NOI18N
+                            uri);
+                        break;
+                    case SKIP:
+                        break;
+                    default:
+                        throw new IllegalStateException(conversionMode.name());
+                }
             }
         }
         return content;
@@ -194,17 +235,38 @@ public final class LibrariesSupport {
 
     /**
      * Converts a list of {@link URL}s into a list of {@link URI}s.
-     * The unmappable URLs are omitted from result.
      * @param urls the list of {@link URL}s to be converted
+     * @param conversionMode the Policy for handling content items which
+     * cannot be converted into @{link URI}s
      * @return the list of {@link URI}s
+     * @throws IllegalArgumentException for unconvertable entry in
+     * {@link ConversionMode#FAIL}
      * @since 1.48
      */
-    public static List<URI> convertURLsToURIs(List<URL> urls) {
+    @NonNull
+    public static List<URI> convertURLsToURIs(
+            @NonNull final List<URL> urls,
+            @NonNull final ConversionMode conversionMode) {
         List<URI> content = new ArrayList<>();
         for (URL url : urls) {
-            final URI uri = URI.create(url.toExternalForm());
-            if (uri != null) {
+            try {
+                final URI uri = new URI (url.toExternalForm());
                 content.add(uri);
+            } catch (URISyntaxException e) {
+                switch (conversionMode) {
+                    case FAIL:
+                        throw new IllegalArgumentException(url.toString());
+                    case WARN:
+                        LOG.log(
+                            Level.WARNING,
+                            "Cannot convert URL: {0} to URI.",  //NOI18N
+                            url);
+                        break;
+                    case SKIP:
+                        break;
+                    default:
+                        throw new IllegalStateException(conversionMode.name());
+                }
             }
         }
         return content;
@@ -453,16 +515,23 @@ public final class LibrariesSupport {
      * Returns {@link LibraryImplementation} {@link URI} content.
      * @param impl the {@link LibraryImplementation} to return {@link URI} content for
      * @param volumeType the volumeType
+     * @param conversionMode conversion failure policy in case the library does not
+     * support {@link URI} content and the library {@link URL}s are converted to {@link URI}s
      * @return the library {@link URI} content
+     * @throws IllegalArgumentException when unsupported volumeType or for unconvertable entry in
+     * {@link ConversionMode#FAIL}
      * @since 1.48
      */
     @NonNull
     public static List<URI> getURIContent(
         @NonNull final LibraryImplementation impl,
-        @NonNull final String volumeType) throws IllegalArgumentException {
+        @NonNull final String volumeType,
+        @NonNull final ConversionMode conversionMode) {
         return supportsURIContent(impl) ?
             ((LibraryImplementation2)impl).getURIContent(volumeType) :
-            convertURLsToURIs(impl.getContent(volumeType));
+            convertURLsToURIs(
+                impl.getContent(volumeType),
+                conversionMode);
     }
 
     /**
@@ -470,13 +539,18 @@ public final class LibrariesSupport {
      * @param impl the {@link LibraryImplementation} to set the {@link URI} content to
      * @param volumeType the volumeType
      * @param path the {@link URI} content
+     * @param conversionMode conversion failure policy in case the library does not
+     * support {@link URI} content and the path {@link URI}s are converted to {@link URL}s
      * @return true if given {@link LibraryImplementation} support {@link URI} content
+     * @throws IllegalArgumentException when unsupported volumeType or for unconvertable entry in
+     * {@link ConversionMode#FAIL}
      * @since 1.48
      */
     public static boolean setURIContent(
         @NonNull final LibraryImplementation impl,
         @NonNull final String volumeType,
-        @NonNull final List<URI> path) {
+        @NonNull final List<URI> path,
+        @NonNull final ConversionMode conversionMode) {
         if (supportsURIContent(impl)) {
             final LibraryImplementation2 impl2 = (LibraryImplementation2)impl;
             if (!BaseUtilities.compareObjects(impl2.getURIContent(volumeType), path)) {
@@ -484,7 +558,11 @@ public final class LibrariesSupport {
                 return true;
             }
         } else {
-            impl.setContent(volumeType, convertURIsToURLs(path));
+            impl.setContent(
+                volumeType,
+                convertURIsToURLs(
+                    path,
+                    conversionMode));
             return true;
         }
         return false;

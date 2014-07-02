@@ -398,7 +398,9 @@ public class LibrariesModel implements PropertyChangeListener {
 
         @Override
         public List<URL> getContent(String volumeType) throws IllegalArgumentException {
-            return LibrariesSupport.convertURIsToURLs(getURIContent(volumeType));
+            return LibrariesSupport.convertURIsToURLs(
+                getURIContent(volumeType),
+                LibrariesSupport.ConversionMode.WARN);
         }
         
         @Override
@@ -443,7 +445,9 @@ public class LibrariesModel implements PropertyChangeListener {
 
         @Override
         public void setContent(String volumeType, List<URL> path) throws IllegalArgumentException {
-            setURIContent(volumeType, LibrariesSupport.convertURLsToURIs(path));
+            setURIContent(volumeType, LibrariesSupport.convertURLsToURIs(
+                    path,
+                    LibrariesSupport.ConversionMode.WARN));
         }
 
         @Override

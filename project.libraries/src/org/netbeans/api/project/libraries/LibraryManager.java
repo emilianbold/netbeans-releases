@@ -357,7 +357,9 @@ public final class LibraryManager {
         } else {
             Map<String,List<URI>> cont = new HashMap<String,List<URI>>();
             for (Map.Entry<String,List<URL>> entry : contents.entrySet()) {
-                cont.put(entry.getKey(), LibrariesSupport.convertURLsToURIs(entry.getValue()));
+                cont.put(entry.getKey(), LibrariesSupport.convertURLsToURIs(
+                    entry.getValue(),
+                    LibrariesSupport.ConversionMode.WARN));
             }
             impl = LibraryAccessor.createLibrary(alp, type, name, area, cont);
             impl.setDescription(description);
@@ -443,7 +445,9 @@ public final class LibraryManager {
             LibrariesSupport.setDisplayName(impl, displayName);
             LibrariesSupport.setProperties(impl, properties);
             for (Map.Entry<String,List<URI>> entry : contents.entrySet()) {
-                impl.setContent(entry.getKey(), LibrariesSupport.convertURIsToURLs(entry.getValue()));
+                impl.setContent(entry.getKey(), LibrariesSupport.convertURIsToURLs(
+                    entry.getValue(),
+                    LibrariesSupport.ConversionMode.FAIL));
             }
             Lookup.getDefault().lookup(WritableLibraryProvider.class).addLibrary(impl);
         } else {

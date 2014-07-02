@@ -375,7 +375,9 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
             @NonNull final LibraryImplementation library,
             @NonNull final LibraryTypeProvider libraryTypeProvider) {
         for (String vtype : libraryTypeProvider.getSupportedVolumeTypes()) {
-            LibrariesSupport.convertURLsToURIs(library.getContent(vtype));
+            LibrariesSupport.convertURLsToURIs(
+                library.getContent(vtype),
+                LibrariesSupport.ConversionMode.FAIL);
         }
     }
 

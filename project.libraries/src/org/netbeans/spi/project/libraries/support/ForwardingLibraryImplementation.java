@@ -192,7 +192,7 @@ public class ForwardingLibraryImplementation implements LibraryImplementation,
                 "Delegate: %s does not support URI content",       //NOI18N
                 delegate));
         }
-        return LibrariesSupport.getURIContent(delegate, volumeType);
+        return LibrariesSupport.getURIContent(delegate, volumeType, LibrariesSupport.ConversionMode.FAIL);
     }
 
     @Override
@@ -202,7 +202,7 @@ public class ForwardingLibraryImplementation implements LibraryImplementation,
                 "Delegate: %s does not support URI content",       //NOI18N
                 delegate));
         }
-        LibrariesSupport.setURIContent(delegate, volumeType, path);
+        LibrariesSupport.setURIContent(delegate, volumeType, path, LibrariesSupport.ConversionMode.FAIL);
     }
 
     @Override
