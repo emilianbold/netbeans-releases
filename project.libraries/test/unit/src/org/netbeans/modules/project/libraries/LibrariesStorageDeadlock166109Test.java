@@ -45,7 +45,6 @@ package org.netbeans.modules.project.libraries;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
@@ -53,15 +52,14 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.project.libraries.LibrariesStorageTest.TestEntityCatalog;
-import org.netbeans.modules.project.libraries.LibrariesStorageTest.TestLibraryTypeProvider;
+import org.netbeans.modules.project.libraries.TestEntityCatalog;
+import org.netbeans.modules.project.libraries.LibrariesTestUtil.TestLibraryTypeProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex.Action;
 import org.openide.util.test.MockLookup;
-
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
@@ -77,7 +75,10 @@ public class LibrariesStorageDeadlock166109Test extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        MockLookup.setInstances(new TestEntityCatalog());
+        MockLookup.setInstances(
+            new TestEntityCatalog(),
+            new LibrariesTestUtil.MockProjectManager(),
+            new LibraryTypeRegistryImpl());
         storageFolder = FileUtil.getConfigFile("org-netbeans-api-project-libraries/Libraries");
         assertNotNull("storageFolder found", storageFolder);
     }
@@ -87,7 +88,7 @@ public class LibrariesStorageDeadlock166109Test extends NbTestCase {
         Library[] arr = LibraryManager.getDefault().getLibraries();
         assertEquals("Empty", 0, arr.length);
 
-        LibrariesStorageTest.createLibraryDefinition(storageFolder,"Library1", null);
+        LibrariesTestUtil.createLibraryDefinition(storageFolder,"Library1", null);
 
         Library[] arr0 = LibraryManager.getDefault().getLibraries();
         assertEquals("Still Empty", 0, arr0.length);
@@ -100,7 +101,7 @@ public class LibrariesStorageDeadlock166109Test extends NbTestCase {
         };
         LibraryManager.getDefault().addPropertyChangeListener(l);
         try {
-            LibrariesStorageTest.registerLibraryTypeProvider(TestMutexLibraryTypeProvider.class);
+            LibrariesTestUtil.registerLibraryTypeProvider(TestMutexLibraryTypeProvider.class);
             assertTrue(event.await(TIMEOUT, TimeUnit.MILLISECONDS));
         } finally {
             LibraryManager.getDefault().removePropertyChangeListener(l);
@@ -126,7 +127,7 @@ public class LibrariesStorageDeadlock166109Test extends NbTestCase {
             assertFalse("No mutex", ProjectManager.mutex().isReadAccess());
             assertFalse("No mutex write", ProjectManager.mutex().isWriteAccess());
             try {
-                LibrariesStorageTest.registerLibraryTypeProvider();
+                LibrariesTestUtil.registerLibraryTypeProvider(TestLibraryTypeProvider.class);
                 Thread.sleep(500);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);

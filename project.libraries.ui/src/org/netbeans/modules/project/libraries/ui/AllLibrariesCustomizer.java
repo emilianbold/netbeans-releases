@@ -53,7 +53,6 @@ import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.project.libraries.LibraryAccessor;
 import static org.netbeans.modules.project.libraries.ui.Bundle.*;
 import org.netbeans.spi.project.libraries.ArealLibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
@@ -150,7 +149,7 @@ class AllLibrariesCustomizer extends JPanel implements HelpCtx.Provider {
         if (index == -1) {
             // do nothing
         } else if (index == 0) {
-            librariesCustomizer.setLibraryStorageArea(null);
+            librariesCustomizer.setLibraryStorageArea(LibraryStorageArea.GLOBAL);
         } else if (index > 0) {
             URL u = null;
             try {
@@ -166,7 +165,7 @@ class AllLibrariesCustomizer extends JPanel implements HelpCtx.Provider {
     
     private LibraryStorageArea findLibraryStorageArea(URL u) {
         for (ArealLibraryProvider<?,?> alp : Lookup.getDefault().lookupAll(ArealLibraryProvider.class)) {
-            for (LibraryStorageArea area : LibraryAccessor.getOpenAreas(alp)) {
+            for (LibraryStorageArea area : alp.getOpenAreas()) {
                 if (u.toString().equals(area.getLocation().toString())) {
                     return area;
                 }

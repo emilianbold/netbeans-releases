@@ -40,6 +40,7 @@
 package org.netbeans.spi.project.libraries;
 
 import java.net.URL;
+import org.openide.util.NbBundle;
 
 /**
  * Abstract location where zero or more libraries are defined.
@@ -49,6 +50,21 @@ import java.net.URL;
  * @since org.netbeans.modules.project.libraries/1 1.15
  */
 public interface LibraryStorageArea {
+
+    /**
+     * The {@link LibraryStorageArea} for global libraries.
+     * @since 1.48
+     */
+    public static final LibraryStorageArea GLOBAL = new LibraryStorageArea() {
+        @Override
+        public URL getLocation() {
+            return null;
+        }
+        @Override
+        public String getDisplayName() {
+            return NbBundle.getMessage(LibraryStorageArea.class, "LBL_global");
+        }
+    };
 
     /**
      * Gets an associated storage location.

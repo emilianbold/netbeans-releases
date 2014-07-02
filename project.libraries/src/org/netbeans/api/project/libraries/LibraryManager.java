@@ -61,9 +61,7 @@ import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.project.libraries.LibraryAccessor;
-import org.netbeans.modules.project.libraries.Util;
-import org.netbeans.modules.project.libraries.WritableLibraryProvider;
-import org.netbeans.modules.project.libraries.ui.LibrariesModel;
+import org.netbeans.spi.project.libraries.WritableLibraryProvider;
 import org.netbeans.spi.project.libraries.ArealLibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation2;
@@ -125,10 +123,14 @@ public final class LibraryManager {
 
     private LibraryManager () {
         alp = null;
-        area = null;
+        area = LibraryStorageArea.GLOBAL;
     }
 
-    private LibraryManager(ArealLibraryProvider alp, LibraryStorageArea area) {
+    private LibraryManager(
+            @NonNull final ArealLibraryProvider alp,
+            @NonNull final LibraryStorageArea area) {
+        Parameters.notNull("alp", alp); //NOI18N
+        Parameters.notNull("area", area);   //NOI18N
         this.alp = alp;
         this.area = area;
         LibraryProvider lp = LibraryAccessor.getLibraries(alp, area);
@@ -144,11 +146,7 @@ public final class LibraryManager {
      * @since org.netbeans.modules.project.libraries/1 1.15
      */
     public String getDisplayName() {
-        if (area == null) {
-            return LibrariesModel.GLOBAL_AREA.getDisplayName();
-        } else {
-            return area.getDisplayName();
-        }
+        return area.getDisplayName();
     }
 
     /**
@@ -159,7 +157,7 @@ public final class LibraryManager {
      * @since org.netbeans.modules.project.libraries/1 1.15
      */
     public URL getLocation() {
-        return area != null ? area.getLocation() : null;
+        return area.getLocation();
     }
 
     /**
@@ -191,7 +189,7 @@ public final class LibraryManager {
             if (cache != null) {
                 return cache.toArray(new Library[0]);
             }
-            if (area == null) {
+            if (area == LibraryStorageArea.GLOBAL) {
                 if (result == null) {
                     result = Lookup.getDefault().lookupResult(LibraryProvider.class);
                     lookupListener = new LookupListener() {
@@ -342,7 +340,7 @@ public final class LibraryManager {
             throw new IllegalArgumentException("Name already in use: " + name); // NOI18N
         }
         LibraryImplementation impl;
-        if (area == null) {
+        if (area == LibraryStorageArea.GLOBAL) {
             LibraryTypeProvider ltp = LibrariesSupport.getLibraryTypeProvider(type);
             if (ltp == null) {
                 throw new IllegalArgumentException("Trying to add a library of unknown type: " + type); // NOI18N
@@ -350,8 +348,8 @@ public final class LibraryManager {
             impl = ltp.createLibrary();
             impl.setName(name);
             impl.setDescription(description);
-            Util.setDisplayName(impl, displayName);
-            Util.setProperties(impl, properties);
+            LibrariesSupport.setDisplayName(impl, displayName);
+            LibrariesSupport.setProperties(impl, properties);
             for (Map.Entry<String,List<URL>> entry : contents.entrySet()) {
                 impl.setContent(entry.getKey(), entry.getValue());
             }
@@ -359,12 +357,14 @@ public final class LibraryManager {
         } else {
             Map<String,List<URI>> cont = new HashMap<String,List<URI>>();
             for (Map.Entry<String,List<URL>> entry : contents.entrySet()) {
-                cont.put(entry.getKey(), LibrariesModel.convertURLsToURIs(entry.getValue()));
+                cont.put(entry.getKey(), LibrariesSupport.convertURLsToURIs(
+                    entry.getValue(),
+                    LibrariesSupport.ConversionMode.WARN));
             }
             impl = LibraryAccessor.createLibrary(alp, type, name, area, cont);
             impl.setDescription(description);
-            Util.setDisplayName(impl, displayName);
-            Util.setProperties(impl, properties);
+            LibrariesSupport.setDisplayName(impl, displayName);
+            LibrariesSupport.setProperties(impl, properties);
         }
         return new Library(impl, this);
     }
@@ -435,24 +435,26 @@ public final class LibraryManager {
             throw new IllegalArgumentException("Name already in use: " + name); // NOI18N
         }
         LibraryImplementation impl;
-        if (area == null) {
+        if (area == LibraryStorageArea.GLOBAL) {
             LibraryTypeProvider ltp = LibrariesSupport.getLibraryTypeProvider(type);
             if (ltp == null) {
                 throw new IllegalArgumentException("Trying to add a library of unknown type: " + type); // NOI18N
             }
             impl = ltp.createLibrary();
             impl.setName(name);
-            Util.setDisplayName(impl, displayName);
-            Util.setProperties(impl, properties);
+            LibrariesSupport.setDisplayName(impl, displayName);
+            LibrariesSupport.setProperties(impl, properties);
             for (Map.Entry<String,List<URI>> entry : contents.entrySet()) {
-                impl.setContent(entry.getKey(), LibrariesModel.convertURIsToURLs(entry.getValue()));
+                impl.setContent(entry.getKey(), LibrariesSupport.convertURIsToURLs(
+                    entry.getValue(),
+                    LibrariesSupport.ConversionMode.FAIL));
             }
             Lookup.getDefault().lookup(WritableLibraryProvider.class).addLibrary(impl);
         } else {
             impl = LibraryAccessor.createLibrary(alp, type, name, area, contents);
-            Util.setDisplayName(impl, displayName);
-            Util.setProperties(impl, properties);
-        }        
+            LibrariesSupport.setDisplayName(impl, displayName);
+            LibrariesSupport.setProperties(impl, properties);
+        }
         return new Library(impl, this);
     }
 
@@ -466,7 +468,7 @@ public final class LibraryManager {
      */
     public void removeLibrary (final Library library) throws IOException, IllegalArgumentException {
         Parameters.notNull("library", library); //NOI18N
-        if (area == null) {
+        if (area == LibraryStorageArea.GLOBAL) {
             final Collection<? extends WritableLibraryProvider> providers = Lookup.getDefault().lookupAll(WritableLibraryProvider.class);
             assert providers.size() == 1;
             providers.iterator().next().removeLibrary(library.getLibraryImplementation());
@@ -558,15 +560,16 @@ public final class LibraryManager {
             }
         }
         for (ArealLibraryProvider alp : alps) {
-            for (URL location : LibrariesModel.createdAreas) {
-                LibraryStorageArea area = alp.loadArea(location);
-                if (area != null) {
-                    assert area.getLocation().equals(location) : "Bad location " + area.getLocation() + " does not match " + location + " from " + alp.getClass().getName();
-                    if (locations.add(location)) {
-                        managers.add(new LibraryManager(alp, area));
-                    }
-                }
-            }
+//TODO
+//            for (URL location : LibrariesModel.createdAreas) {
+//                LibraryStorageArea area = alp.loadArea(location);
+//                if (area != null) {
+//                    assert area.getLocation().equals(location) : "Bad location " + area.getLocation() + " does not match " + location + " from " + alp.getClass().getName();
+//                    if (locations.add(location)) {
+//                        managers.add(new LibraryManager(alp, area));
+//                    }
+//                }
+//            }
         }
         return managers;
     }
@@ -616,6 +619,7 @@ public final class LibraryManager {
         return "LibraryManager[" + (loc != null ? loc : "default") + "]"; // NOI18N
     }
 
+    @NonNull
     LibraryStorageArea getArea() {
         return area;
     }

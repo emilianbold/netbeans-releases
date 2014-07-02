@@ -58,4 +58,18 @@ made subject to such option by the copyright holder.
             </implies>
         </transformation>
     </transformationgroup>
+     <transformationgroup>
+        <description>Separation of UI from External Libraries</description>
+        <transformation>
+            <trigger-dependency type="older">
+                <module-dependency codenamebase="org.netbeans.modules.project.libraries" major="1" spec="1.48"/>
+            </trigger-dependency>
+            <implies>
+                <result>
+                    <module-dependency codenamebase="org.netbeans.modules.project.libraries.ui" major="1" spec="1.48"/>
+                </result>
+            </implies>
+        </transformation>
+    </transformationgroup>
+
 </transformations>

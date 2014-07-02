@@ -41,17 +41,44 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.project.libraries;
+package org.netbeans.spi.project.libraries;
 
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryProvider;
 import java.io.IOException;
 
+/**
+ * LibraryProvider supporting modifications.
+ * @param L the {@link LibraryImplementation} type
+ * @author Tomas Zezula
+ * @since 1.48
+ */
 public interface WritableLibraryProvider<L extends LibraryImplementation> extends LibraryProvider<L> {
 
-    void addLibrary(LibraryImplementation library) throws IOException;
+    /**
+     * Adds a new library.
+     * @param library the library to be added
+     * @return true when the {@link WritableLibraryProvider} supports given library
+     * @throws IOException in case of IO error
+     */
+    boolean addLibrary(L library) throws IOException;
 
-    void removeLibrary(LibraryImplementation library) throws IOException;
+    /**
+     * Removes a library.
+     * @param library the library to be removed
+     * @return true when the {@link WritableLibraryProvider} owned the library and
+     * the library was successfully removed
+     * @throws IOException in case of IO error
+     */
+    boolean removeLibrary(L library) throws IOException;
 
-    void updateLibrary(LibraryImplementation oldLibrary, LibraryImplementation newLibrary) throws IOException;
+    /**
+     * Updates a library.
+     * @param oldLibrary  the library to be updated
+     * @param newLibrary the updated library prototype
+     * @return true when the {@link WritableLibraryProvider} owned the library and
+     * the library was successfully updated
+     * @throws IOException in case of IO error
+     */
+    boolean updateLibrary(L oldLibrary, L newLibrary) throws IOException;
 }

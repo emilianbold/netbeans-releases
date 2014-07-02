@@ -49,8 +49,8 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.libraries.LibraryManagerTest;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.project.libraries.LibrariesStorageTest.TestEntityCatalog;
-import org.netbeans.modules.project.libraries.LibrariesStorageTest.TestLibraryTypeProvider;
+import org.netbeans.modules.project.libraries.TestEntityCatalog;
+import org.netbeans.modules.project.libraries.LibrariesTestUtil.TestLibraryTypeProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -73,7 +73,10 @@ public class LibrariesStorageDeadlock167218Test extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        MockLookup.setInstances(new TestEntityCatalog());
+        MockLookup.setInstances(
+            new TestEntityCatalog(),
+            new LibraryTypeRegistryImpl(),
+            new LibrariesTestUtil.MockProjectManager());
         storageFolder = FileUtil.getConfigFile("org-netbeans-api-project-libraries/Libraries");
         assertNotNull("storageFolder found", storageFolder);
     }
@@ -83,7 +86,7 @@ public class LibrariesStorageDeadlock167218Test extends NbTestCase {
         Library[] arr = LibraryManager.getDefault().getLibraries();
         assertEquals("Empty", 0, arr.length);
 
-        LibrariesStorageTest.createLibraryDefinition(storageFolder,"Library1", null);
+        LibrariesTestUtil.createLibraryDefinition(storageFolder,"Library1", null);
 
         Library[] arr0 = LibraryManager.getDefault().getLibraries();
         assertEquals("Still Empty", 0, arr0.length);
@@ -91,7 +94,7 @@ public class LibrariesStorageDeadlock167218Test extends NbTestCase {
         class Block implements Mutex.ExceptionAction<Void> {
 
             public Void run() throws Exception {
-                LibrariesStorageTest.registerLibraryTypeProvider(TestMutexLibraryTypeProvider.class);
+                LibrariesTestUtil.registerLibraryTypeProvider(TestMutexLibraryTypeProvider.class);
 
                 Thread.sleep(100);
 
@@ -120,7 +123,7 @@ public class LibrariesStorageDeadlock167218Test extends NbTestCase {
 //            assertFalse("No mutex", ProjectManager.mutex().isReadAccess());   Libraries refreshed synchronously by caller - makes no sence
 //            assertFalse("No mutex write", ProjectManager.mutex().isWriteAccess());  Libraries refreshed synchronously by caller - makes no sence
             try {
-                LibrariesStorageTest.registerLibraryTypeProvider();
+                LibrariesTestUtil.registerLibraryTypeProvider(TestLibraryTypeProvider.class);
                 Thread.sleep(500);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
