@@ -63,6 +63,7 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitMergeResult;
 import org.netbeans.libs.git.GitRebaseResult;
 import org.netbeans.libs.git.GitRemoteConfig;
+import org.netbeans.libs.git.GitRepository;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.modules.git.Git;
@@ -315,15 +316,16 @@ public class PullAction extends SingleRepositoryAction {
 
             @Override
             public ActionProgress call () throws GitException {
-                boolean cont;
                 GitClient client = getClient();
                 File repository = getRepositoryRoot();
                 setDisplayName(Bundle.MSG_PullAction_merging());
+                MergeRevisionAction.MergeContext ctx = new MergeRevisionAction.MergeContext(branchToMerge, null);
+                MergeRevisionAction.MergeResultProcessor mrp = new MergeRevisionAction.MergeResultProcessor(client, repository, ctx, getLogger(), getProgressMonitor());
                 do {
-                    MergeRevisionAction.MergeResultProcessor mrp = new MergeRevisionAction.MergeResultProcessor(client, repository, branchToMerge, getLogger(), getProgressMonitor());
-                    cont = false;
+                    ctx.setContinue(false);
+                    GitRepository.FastForwardOption ffOption = null;
                     try {
-                        GitMergeResult result = client.merge(branchToMerge, getProgressMonitor());
+                        GitMergeResult result = client.merge(branchToMerge, ffOption, getProgressMonitor());
                         mrp.processResult(result);
                         if (result.getMergeStatus() == GitMergeResult.MergeStatus.ALREADY_UP_TO_DATE
                                 || result.getMergeStatus() == GitMergeResult.MergeStatus.FAST_FORWARD
@@ -334,9 +336,9 @@ public class PullAction extends SingleRepositoryAction {
                         if (LOG.isLoggable(Level.FINE)) {
                             LOG.log(Level.FINE, "Local modifications in WT during merge: {0} - {1}", new Object[] { repository, Arrays.asList(ex.getConflicts()) }); //NOI18N
                         }
-                        cont = mrp.resolveLocalChanges(ex.getConflicts());
+                        ctx.setContinue(mrp.resolveLocalChanges(ex.getConflicts()));
                     }
-                } while (cont && !isCanceled());
+                } while (ctx.isContinue() && !isCanceled());
                 return new ActionProgress.ActionResult(isCanceled(), true);
             }
 
