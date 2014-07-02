@@ -501,6 +501,10 @@ public final class GitClient {
             }
         }, "getRemotes"); //NOI18N
     }
+
+    public File getRepositoryRoot () {
+        return repositoryRoot;
+    }
     
     public GitRepositoryState getRepositoryState (final ProgressMonitor monitor) throws GitException {
         return new CommandInvoker().runMethod(new Callable<GitRepositoryState>() {

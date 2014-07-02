@@ -178,7 +178,7 @@ public class ModelUtils {
         visited.add(jsObject.getFullyQualifiedName());
         JsObject result = null;
         JsObject tmpObject = null;
-        if (jsObject.getOffsetRange().containsInclusive(offset)) {
+        if (jsObject.containsOffset(offset)) {
             result = jsObject;
             for (JsObject property : jsObject.getProperties().values()) {
                 JsElement.Kind kind = property.getJSKind();
@@ -339,7 +339,7 @@ public class ModelUtils {
                     result.put(object.getName(), object);
                 }
             }
-            if (!result.containsKey(((JsObject)inScope).getName())) {
+            if (inScope.getParentScope() != null && !result.containsKey(((JsObject)inScope).getName())) {
                 result.put(((JsObject)inScope).getName(), (JsObject)inScope);
             }
             inScope = inScope.getParentScope();

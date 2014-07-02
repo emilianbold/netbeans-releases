@@ -45,6 +45,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
 import org.netbeans.modules.bugtracking.tasks.filter.OpenedCategorizedTaskFilter;
 import org.netbeans.modules.bugtracking.settings.DashboardSettings;
@@ -175,16 +176,26 @@ public class FilterPanel extends javax.swing.JPanel {
         return textFilter.getText();
     }
 
-    public void setHitsCount(int hits) {
-        if (!lblCount.isVisible()) {
-            lblCount.setVisible(true);
-        }
-        lblCount.setText("(" + hits + " " + NbBundle.getMessage(FilterPanel.class, "LBL_Matches") + ")"); //NOI18N
+    public void setHitsCount(final int hits) {
+        UIUtils.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                if (!lblCount.isVisible()) {
+                    lblCount.setVisible(true);
+                }
+                lblCount.setText("(" + hits + " " + NbBundle.getMessage(FilterPanel.class, "LBL_Matches") + ")"); //NOI18N
+            }
+        });
     }
 
     public void showTodayCategory() {
-        showTodayAction.menuItem.setSelected(true);
-        showTodayAction.actionPerformed(null);
+        UIUtils.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                showTodayAction.menuItem.setSelected(true);
+                showTodayAction.actionPerformed(null);
+            }
+        });
     }
 
     @Override
@@ -201,18 +212,33 @@ public class FilterPanel extends javax.swing.JPanel {
     }
 
     void clear() {
-        textFilter.setText("");
-        lblCount.setText("");
-        lblCount.setVisible(false);
+        UIUtils.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                textFilter.setText("");
+                lblCount.setText("");
+                lblCount.setVisible(false);
+            }
+        });
     }
 
     void handleFilterShortcut() {
-        textFilter.requestFocusInWindow();
+        UIUtils.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                textFilter.requestFocusInWindow();
+            }
+        });
     }
 
     private void focusChanged(boolean hasFocus) {
         if (hasFocus) {
-            textFilter.selectAll();
+            UIUtils.runInAWT(new Runnable() {
+                @Override
+                public void run() {
+                    textFilter.selectAll();
+                }
+            });
         }
     }
 

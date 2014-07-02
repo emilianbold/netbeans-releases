@@ -53,8 +53,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.BaseFolder;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolDescriptor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -373,8 +377,8 @@ public final class ToolUtils {
         return "PATH"; // NOI18N
     }
 
-    public static boolean isMyFolder(String path, ToolchainDescriptor d, int platform, boolean known) {
-        boolean res = isMyFolderImpl(path, d, platform, known);
+    public static boolean isMyFolder(String path, ToolchainDescriptor d, int platform, boolean known, ToolKind tool) {
+        boolean res = isMyFolderImpl(path, d, platform, known, tool);
         if (ToolchainManagerImpl.TRACE && res) {
             System.err.println("Path [" + path + "] belongs to tool chain " + d.getName()); // NOI18N
         }
@@ -389,29 +393,35 @@ public final class ToolUtils {
      * @param known if path known the methdod does not check path pattern
      * @return
      */
-    private static boolean isMyFolderImpl(String path, ToolchainDescriptor d, int platform, boolean known) {
-        CompilerDescriptor c = d.getC();
+    private static boolean isMyFolderImpl(String path, ToolchainDescriptor d, int platform, boolean known, ToolKind tool) {
+        ToolDescriptor c = d.getC();
+        if (tool == PredefinedToolKind.DebuggerTool) {
+            c = d.getDebugger();
+        }
         if (c == null || c.getNames().length == 0) {
             return false;
         }
         Pattern pattern = null;
         if (!known) {
-            if (c.getPathPattern() != null) {
-                if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-                    pattern = Pattern.compile(c.getPathPattern(), Pattern.CASE_INSENSITIVE);
-                } else {
-                    pattern = Pattern.compile(c.getPathPattern());
-                }
-            }
-            if (pattern != null) {
-                if (!pattern.matcher(path).find()) {
-                    String f = c.getExistFolder();
-                    if (f == null) {
-                        return false;
+            if (c instanceof CompilerDescriptor) {
+                CompilerDescriptor cd = (CompilerDescriptor) c;
+                if (cd.getPathPattern() != null) {
+                    if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+                        pattern = Pattern.compile(cd.getPathPattern(), Pattern.CASE_INSENSITIVE);
+                    } else {
+                        pattern = Pattern.compile(cd.getPathPattern());
                     }
-                    File folder = new File(path + "/" + f); // NOI18N
-                    if (!folder.exists() || !folder.isDirectory()) {
-                        return false;
+                }
+                if (pattern != null) {
+                    if (!pattern.matcher(path).find()) {
+                        String f = cd.getExistFolder();
+                        if (f == null) {
+                            return false;
+                        }
+                        File folder = new File(path + "/" + f); // NOI18N
+                        if (!folder.exists() || !folder.isDirectory()) {
+                            return false;
+                        }
                     }
                 }
             }

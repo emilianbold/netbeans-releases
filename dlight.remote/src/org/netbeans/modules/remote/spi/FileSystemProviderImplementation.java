@@ -99,4 +99,8 @@ public interface FileSystemProviderImplementation {
     void addFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem);
     void removeFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem);
     void warmup(WarmupMode mode, ExecutionEnvironment env, Collection<String> paths, Collection<String> extensions);
+    boolean isLink(FileSystem fileSystem, String path);
+    boolean isLink(ExecutionEnvironment env, String path);
+    boolean isLink(FileObject fo);
+    String resolveLink(FileObject fo) throws IOException;
 }

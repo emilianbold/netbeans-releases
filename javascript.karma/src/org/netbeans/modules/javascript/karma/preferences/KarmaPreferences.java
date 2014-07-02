@@ -61,12 +61,12 @@ import org.openide.filesystems.FileUtil;
  */
 public final class KarmaPreferences {
 
-    public static final String DEBUG = "debug"; // NOI18N
 
     private static final String ENABLED = "enabled"; // NOI18N
     private static final String KARMA = "karma"; // NOI18N
     private static final String CONFIG = "config"; // NOI18N
     private static final String AUTOWATCH = "autowatch"; // NOI18N
+    private static final String DEBUG = "debug"; // NOI18N
     private static final String DEBUG_BROWSER_ID = "debug.browser.id"; // NOI18N
 
     private static final ConcurrentMap<Project, Preferences> CACHE = new ConcurrentHashMap<>();

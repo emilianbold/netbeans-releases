@@ -424,7 +424,7 @@ public class PrintASTVisitor implements Visitor {
     @Override
     public void visit(FormalParameter node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "FormalParameter",
-                new String[]{"isMandatory", (node.isMandatory()?"true":"false")});
+                new String[]{"isMandatory", (node.isMandatory()?"true":"false"), "isVariadic", (node.isVariadic() ? "true" : "false")});
         printNode.addChild("ParametrType", node.getParameterType());
         printNode.addChild("ParametrName", node.getParameterName());
         printNode.addChild("DefaultValue", node.getDefaultValue());
@@ -770,6 +770,13 @@ public class PrintASTVisitor implements Visitor {
                 new String[]{"isDollared", (variable.isDollared()?"true":"false")});
 
         printNode.addChild(variable.getName());
+        printNode.print(this);
+    }
+
+    @Override
+    public void visit(Variadic variadic) {
+        XMLPrintNode printNode = new XMLPrintNode(variadic, "Variadic");
+        printNode.addChild(variadic.getExpression());
         printNode.print(this);
     }
 

@@ -217,11 +217,21 @@ public final class CompilerLineConvertor implements LineConvertor, ChangeListene
 	if (!isEquals(scanner1.getMakeAllInDirectoryPattern(), scanner2.getMakeAllInDirectoryPattern())) {
 	    return false;
 	}
-	if (!isEquals(scanner1.getStackHeaderPattern(), scanner2.getStackHeaderPattern())) {
-	    return false;
+        if (scanner1.getStackHeaderPattern().size() != scanner2.getStackHeaderPattern().size()) {
+            return false;
+        }
+	for(int i = 0; i < scanner1.getStackHeaderPattern().size(); i++){
+	    if (!scanner1.getStackHeaderPattern().get(i).equals(scanner2.getStackHeaderPattern().get(i))){
+		return false;
+	    }
 	}
-	if (!isEquals(scanner1.getStackNextPattern(), scanner2.getStackNextPattern())) {
-	    return false;
+        if (scanner1.getStackNextPattern().size() != scanner2.getStackNextPattern().size()) {
+            return false;
+        }
+	for(int i = 0; i < scanner1.getStackNextPattern().size(); i++){
+	    if (!scanner1.getStackNextPattern().get(i).equals(scanner2.getStackNextPattern().get(i))){
+		return false;
+	    }
 	}
 	if (scanner1.getFilterOutPatterns().size() != scanner2.getFilterOutPatterns().size()) {
 	    return false;

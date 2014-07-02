@@ -149,6 +149,10 @@ public class CommitCommand extends GitCommand {
                 if(commiter != null) {                    
                     commit.setCommitter(commiter.getName(), commiter.getEmailAddress());
                 }
+                if (amend) {
+                    RevCommit lastCommit = Utils.findCommit(repository, "HEAD^{commit}");
+                    transferTimestamp(commit, lastCommit);
+                }
                 
                 commit.setMessage(message);
                 commit.setAmend(amend);
@@ -178,6 +182,16 @@ public class CommitCommand extends GitCommand {
             throw new GitException(ex);
         } catch (IOException ex) {
             throw new GitException(ex);
+        }
+    }
+
+    private void transferTimestamp (org.eclipse.jgit.api.CommitCommand commit, RevCommit lastCommit) {
+        PersonIdent lastAuthor = lastCommit.getAuthorIdent();
+        if (lastAuthor != null) {
+            PersonIdent author = commit.getAuthor();
+            commit.setAuthor(lastAuthor.getTimeZone() == null
+                    ? new PersonIdent(author, lastAuthor.getWhen())
+                    : new PersonIdent(author, lastAuthor.getWhen(), lastAuthor.getTimeZone()));
         }
     }
 

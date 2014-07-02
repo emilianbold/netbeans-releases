@@ -107,6 +107,9 @@ public class TargetLister {
     }
     
     static void invalidateCache(final FileObject gruntFile) {
+        if (gruntFile == null) {
+            return;
+        }
         RP.post(new Runnable() {
             @Override
             public void run() {

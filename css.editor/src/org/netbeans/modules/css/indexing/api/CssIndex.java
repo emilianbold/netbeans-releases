@@ -47,7 +47,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -85,7 +84,6 @@ public class CssIndex {
 
     private static final String SCSS_EXT = "scss"; //NOI18N
     private static final String SASS_EXT = "sass"; //NOI18N
-    private static final String SN = "_sn";
     
     private static final Map<Project, CssIndex> INDEXES = new WeakHashMap<>();
     
@@ -183,17 +181,11 @@ public class CssIndex {
         if(factory == null) {
             throw new IllegalArgumentException(String.format("No %s class registered as a system service!", factoryClass.getName()));
         }
-        Collection<? extends IndexResult> results;
-        for (Iterator<? extends FileObject> it = sourceRoots.iterator(); it.hasNext();) {
-            FileObject root = it.next();
-            if (file.getPath().startsWith(root.getPath())) {
-                String partPath = file.getPath().substring(root.getPath().length() + 1);
-                results = querySupport.query(SN, partPath, QuerySupport.Kind.EXACT, factory.getIndexKeys().toArray(new String[0]));
-                if (results.size() > 0) {
-                    T loadFromIndex = factory.loadFromIndex(results.iterator().next());
-                    return loadFromIndex;
-                }    
-            }
+        final Collection<String> fieldsToLoad = factory.getIndexKeys();
+        final Collection<? extends IndexResult> results = querySupport.getQueryFactory().file(file).execute(
+            fieldsToLoad.toArray(new String[fieldsToLoad.size()]));
+        if (!results.isEmpty()) {
+            return factory.loadFromIndex(results.iterator().next());
         }
         return null;
     }

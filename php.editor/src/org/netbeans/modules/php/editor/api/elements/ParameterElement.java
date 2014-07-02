@@ -54,6 +54,7 @@ public interface ParameterElement {
     String asString(OutputType outputType);
     String asString(OutputType outputType, TypeNameResolver typeNameResolver);
     boolean isReference();
+    boolean isVariadic();
     Set<TypeResolver> getTypes();
     @CheckForNull
     String getDefaultValue();

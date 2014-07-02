@@ -201,6 +201,13 @@ public final class ActionsManager {
      */
     public final Task postAction(final Object action) {
         doiingDo = true;
+        boolean inited;
+        synchronized (actionProvidersLock) {
+            inited = (actionProviders != null);
+        }
+        if (!inited && SwingUtilities.isEventDispatchThread()) {
+            return postActionWithLazyInit(action);
+        }
         ArrayList<ActionsProvider> l = getActionProvidersForActionWithInit(action);
         boolean posted = false;
         int k;
@@ -251,6 +258,21 @@ public final class ActionsManager {
             }
             task.actionDone();
         }
+        return task;
+    }
+    
+    private Task postActionWithLazyInit(final Object action) {
+        final AsynchActionTask task = new AsynchActionTask(Collections.emptyList());
+        new RequestProcessor(ActionsManager.class).post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    doAction(action);
+                } finally {
+                    task.actionDone();
+                }
+            }
+        });
         return task;
     }
                                                                                 

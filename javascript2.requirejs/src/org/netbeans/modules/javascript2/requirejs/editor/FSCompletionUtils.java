@@ -333,4 +333,50 @@ public class FSCompletionUtils {
         }
         return result.toString();
     }
+
+    /**
+     *
+     * @param path
+     * @return true if the file path starts with a plugin
+     */
+    public static boolean containsPlugin(String path) {
+        int index1 = path.indexOf('!');
+        if (index1 == -1) {
+            return false;
+        }
+        int index2 = path.indexOf('/');
+        if (index2 == -1) {
+            index2 = path.indexOf('.');
+        }
+
+        return index2 == -1 || index1 < index2;
+    }
+
+    /**
+     *
+     * @param path
+     * @return the path without a plugin name
+     */
+    public static String removePlugin(final String path) {
+        return containsPlugin(path) ? path.substring(path.indexOf('!') + 1) : path;
+    }
+
+    public static String writeFilePathForDocWindow(final FileObject fo) {
+        String path = fo.getPath();
+        String[] parts = path.split("/");
+        StringBuilder sb = new StringBuilder();
+        sb.append("<pre>"); // NOI18N
+        int length = 0;
+        for (String part : parts) {
+            if ((length + part.length()) > 50) {
+                sb.append("\n    "); // NOI18N
+                length = 4;
+            }
+            sb.append(part).append('/');
+            length += part.length() + 1;
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append("</pre>"); // NOI18N
+        return sb.toString();
+    }
 }

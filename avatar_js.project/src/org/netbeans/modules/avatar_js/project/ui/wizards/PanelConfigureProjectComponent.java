@@ -102,6 +102,11 @@ class PanelConfigureProjectComponent extends javax.swing.JPanel {
         mainServerTextField.getDocument().addDocumentListener(dl);
         portTextField.getDocument().addDocumentListener(dl);
         fieldDocumentListener = dl;
+        // Remove Avatar.js libs configuration, libs are distributed withe the module.
+        libsLabel.setVisible(false);
+        libsFolderTextField.setVisible(false);
+        libsBrowseButton.setVisible(false);
+        libsDescrLabel.setVisible(false);
         
         platformsComboBox.setModel(new NashornPlatformComboBoxModel());
         platformsComboBox.addActionListener(new PlatformChangeListener());
@@ -210,6 +215,7 @@ class PanelConfigureProjectComponent extends javax.swing.JPanel {
         if (platform == null) {
             errorMsg = Bundle.MSG_ERR_NoNashornPlatform(NashornPlatform.getMinimumVersion());
         } else {
+            /*
             String libsFolderPath = libsFolderTextField.getText();
             File libsFolderFile = new File(libsFolderPath);
             String[] missingAvatarLibraries = NativeLibrarySearch.getMissingAvatarLibrariesIn(libsFolderFile);
@@ -227,6 +233,7 @@ class PanelConfigureProjectComponent extends javax.swing.JPanel {
                     errorMsg = Bundle.MSG_ERR_MissingAvatarJAR(AvatarJSProject.AVATAR_JS_JAR_NAME);
                 }
             }
+            */
         }
         return errorMsg;
     }
@@ -366,8 +373,8 @@ class PanelConfigureProjectComponent extends javax.swing.JPanel {
         if (libsDir != null && libsDir.equals(new File(libsFolder))) {
             libsFolder = null; // No need to specify path to libraries that can be directly loaded
         }
-        d.putProperty(WizardSettings.PROP_AVATAR_LIBS, libsFolder);
-        d.putProperty(WizardSettings.PROP_AVATAR_JAR, avatar_js_JAR);
+        //d.putProperty(WizardSettings.PROP_AVATAR_LIBS, libsFolder);
+        //d.putProperty(WizardSettings.PROP_AVATAR_JAR, avatar_js_JAR);
     }
     
     private void storeMainFile(WizardDescriptor d) {

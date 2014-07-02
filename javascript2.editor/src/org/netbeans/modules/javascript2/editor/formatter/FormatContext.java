@@ -99,6 +99,8 @@ public final class FormatContext {
 
     private boolean pendingContinuation;
 
+    private int tabCount;
+
     public FormatContext(Context context, Defaults.Provider provider,
             Snapshot snapshot, Language<JsTokenId> language) {
         this.context = context;
@@ -213,6 +215,18 @@ public final class FormatContext {
 
     public void setPendingContinuation(boolean pendingContinuation) {
         this.pendingContinuation = pendingContinuation;
+    }
+
+    public void incTabCount() {
+        this.tabCount++;
+    }
+
+    public void resetTabCount() {
+        this.tabCount = 0;
+    }
+
+    public int getTabCount() {
+        return tabCount;
     }
 
     public int getOffsetDiff() {

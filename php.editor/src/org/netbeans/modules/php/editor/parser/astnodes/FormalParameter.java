@@ -53,61 +53,51 @@ public class FormalParameter extends ASTNode {
     private Expression parameterType;
     private Expression parameterName;
     private Expression defaultValue;
-    private boolean isMandatory; // php4 "const" keyword
 
-    private FormalParameter(int start, int end, Expression type, final Expression parameterName, Expression defaultValue, boolean isMandatory) {
+    public FormalParameter(int start, int end, Expression type, final Expression parameterName, Expression defaultValue) {
         super(start, end);
 
         this.parameterName = parameterName;
         this.parameterType = type;
         this.defaultValue = defaultValue;
-        this.isMandatory = isMandatory;
-    }
-
-    public FormalParameter(int start, int end, Expression type, final Variable parameterName, Expression defaultValue) {
-        this(start, end, type, (Expression) parameterName, defaultValue, false);
     }
 
     public FormalParameter(int start, int end, Expression type, final Reference parameterName, Expression defaultValue) {
-        this(start, end, type, (Expression) parameterName, defaultValue, false);
+        this(start, end, type, (Expression) parameterName, defaultValue);
     }
 
-    public FormalParameter(int start, int end, Expression type, final Variable parameterName) {
-        this(start, end, type, (Expression) parameterName, null, false);
-    }
-
-    public FormalParameter(int start, int end, Expression type, final Variable parameterName, boolean isMandatory) {
-        this(start, end, type, (Expression) parameterName, null, isMandatory);
+    public FormalParameter(int start, int end, Expression type, final Expression parameterName) {
+        this(start, end, type, (Expression) parameterName, null);
     }
 
     public FormalParameter(int start, int end, Expression type, final Reference parameterName) {
-        this(start, end, type, (Expression) parameterName, null, false);
+        this(start, end, type, (Expression) parameterName, null);
     }
 
-    /**
-     * @return default value of this parameter
-     */
     public Expression getDefaultValue() {
         return defaultValue;
     }
 
-    /**
-     * indicates if this parameter is mandatory when invoking the function
-     */
     public boolean isMandatory() {
-        return isMandatory;
+        return getDefaultValue() == null && !isVariadic();
     }
 
-    /**
-     * @return the name of this parameter
-     */
+    public boolean isOptional() {
+        return !isMandatory();
+    }
+
+    public boolean isVariadic() {
+        return getParameterName() instanceof Variadic;
+    }
+
+    public boolean isReference() {
+        return getParameterName() instanceof Reference;
+    }
+
     public Expression getParameterName() {
         return parameterName;
     }
 
-    /**
-     * @return the type of this parameter
-     */
     public Expression getParameterType() {
         return parameterType;
     }

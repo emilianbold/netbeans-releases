@@ -47,29 +47,35 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
 import java.util.*;
+import javax.swing.JButton;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.modules.team.spi.TeamAccessor;
 import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.team.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.commons.TextUtils;
+import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
-import org.netbeans.modules.jira.client.spi.CurrentUserFilter;
 import org.netbeans.modules.jira.client.spi.FilterDefinition;
 import org.netbeans.modules.jira.client.spi.JiraConnectorProvider;
 import org.netbeans.modules.jira.client.spi.JiraConnectorProvider.JiraClient;
+import static org.netbeans.modules.jira.client.spi.JiraConnectorProvider.Type.REST;
 import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
 import org.netbeans.modules.jira.client.spi.JiraStatus;
 import org.netbeans.modules.jira.client.spi.Project;
 import org.netbeans.modules.jira.client.spi.ProjectFilter;
-import org.netbeans.modules.jira.client.spi.StatusFilter;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -86,6 +92,8 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
     private String host;
     private final TeamProject kenaiProject;
 
+    private static boolean connectorChecked = false;
+    
     public KenaiRepository(TeamProject kenaiProject, String repoName, String url, String host, String project) {
         // use name for id, can't be changed anyway
         super(createInfo(repoName, url, kenaiProject));
@@ -125,7 +133,11 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
     @Override
     public synchronized Collection<JiraQuery> getQueries() {
-        List<JiraQuery> ret = new LinkedList<JiraQuery>();
+        if(!checkCorrectConnector()) {
+            return Collections.emptyList();
+        }
+        
+        List<JiraQuery> ret = new LinkedList<>();
         ret.addAll(super.getQueries());
         ret.addAll(getDefinedQueries());
         return ret;
@@ -141,7 +153,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
     }
 
     private Collection<JiraQuery> getDefinedQueries() {
-        List<JiraQuery> queries = new ArrayList<JiraQuery>();
+        List<JiraQuery> queries = new ArrayList<>();
 
         JiraConfiguration configuration = getConfiguration();
         if(configuration == null) {
@@ -173,6 +185,56 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         return getMyIssuesQuery(configuration);
     }
 
+    @NbBundle.Messages({"CTL_Restart=Change JIRA Connector and restart",
+        
+                        "# {0} - the display name of a kenai server instance", 
+                        "# {1} - the selected connector display name", 
+                        "# {2} - the proposed connector display name",
+                        "MSG_ChangeConnector=You are trying to access the {0} JIRA repository which has a version higher than 5.0\n"
+                                           + "and is not supported by the {1} connector selected in your settings.\n\n"
+                                           + "Do you want to change the connector setting to {2} and to restart the IDE?"})    
+    private synchronized boolean checkCorrectConnector() {
+        if(JiraConnectorSupport.getActiveConnector() != JiraConnectorProvider.Type.REST) {
+            if(!connectorChecked) {
+                
+                connectorChecked = true;    
+                
+                JButton restart = new JButton(Bundle.CTL_Restart());
+                DialogDescriptor dd = new DialogDescriptor(
+                        Bundle.MSG_ChangeConnector(getDisplayName(), JiraConnectorProvider.Type.XMLRPC.getDisplayName(), JiraConnectorProvider.Type.REST.getDisplayName()), 
+                        Bundle.CTL_Restart(),
+                        true,
+                        new Object[]{DialogDescriptor.CANCEL_OPTION, restart},
+                        restart,
+                        DialogDescriptor.DEFAULT_ALIGN,
+                        null,
+                        null);
+
+                if(DialogDisplayer.getDefault().notify(dd) == restart) {
+                    JiraConfig.getInstance().setActiveConnector(REST);
+                    final IDEServices services = Lookup.getDefault().lookup(IDEServices.class);
+                    assert services != null && services.providesShutdown(true);
+                    if(services != null && services.providesShutdown(true)) {
+                        services.shutdown(true);
+                    } else {
+                        Jira.LOG.warning("No IDEServices impl was found, so it's not possible to restart the IDE."); // NOI18N
+                    }
+                } 
+            }
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public JiraConfiguration getConfiguration() {
+//        if(!checkCorrectConnector()) {
+//            return null;
+//        }
+        return super.getConfiguration();
+    }
+
+    
     synchronized private JiraQuery getMyIssuesQuery(JiraConfiguration configuration) throws MissingResourceException {
         if(myIssues == null) {
             Project p = configuration.getProjectByKey(projectName);
@@ -381,6 +443,5 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         i.putValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME, kenaiProject.getName());
         return i;
     }
-    
     
 }

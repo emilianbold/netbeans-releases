@@ -105,6 +105,8 @@ import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.fetch.PullAction;
 import org.netbeans.modules.git.ui.history.SearchHistoryAction;
+import org.netbeans.modules.git.ui.history.SearchIncomingAction;
+import org.netbeans.modules.git.ui.history.SearchOutgoingAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
 import org.netbeans.modules.git.ui.push.PushAction;
 import org.netbeans.modules.git.ui.push.PushMapping;
@@ -171,6 +173,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         DISPLAY_TOOLBAR,
         EXPAND_BRANCHES,
         EXPAND_TAGS,
+        SELECT_ACTIVE_BRANCH,
         ENABLE_POPUP
     }
 
@@ -179,6 +182,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             Option.DISPLAY_REVISIONS,
             Option.EXPAND_BRANCHES,
             Option.EXPAND_TAGS,
+            Option.SELECT_ACTIVE_BRANCH,
             Option.DISPLAY_TAGS);
 
     public RepositoryBrowserPanel () {
@@ -991,7 +995,19 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 node = node.getParentNode();
             }
             File repository = ((RepositoryNode) node).getRepository();
-            return new Node[] { new BranchNode(repository, key) };
+            final BranchNode n = new BranchNode(repository, key);
+            if (options.containsAll(EnumSet.of(Option.EXPAND_BRANCHES, Option.SELECT_ACTIVE_BRANCH)) && n.active) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        try {
+                            getExplorerManager().setSelectedNodes(new Node[] { n });
+                        } catch (PropertyVetoException ex) {
+                        }
+                    }
+                });
+            }
+            return new Node[] { n };
         }
 
         private void refreshKeys () {
@@ -1311,6 +1327,40 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                             });
                         }
                     });
+                }
+
+                if (trackedBranch != null && trackedBranch.isRemote() || remote) {
+                    actions.add(null);
+                    actions.add(new AbstractAction(NbBundle.getMessage(SearchIncomingAction.class, "LBL_SearchIncomingAction_PopupName")) { //NOI18N
+                        @Override
+                        public void actionPerformed (ActionEvent e) {
+                            Utils.post(new Runnable () {
+
+                                @Override
+                                public void run () {
+                                    SystemAction.get(SearchIncomingAction.class).openSearch(repo, new File[] { repo },
+                                            branch, getContextDisplayName(repo));
+                                }
+
+                            });
+                        }
+                    });
+                    if (trackedBranch != null && trackedBranch.isRemote() && !remote) {
+                        actions.add(new AbstractAction(NbBundle.getMessage(SearchOutgoingAction.class, "LBL_SearchOutgoingAction_PopupName")) { //NOI18N
+                            @Override
+                            public void actionPerformed (ActionEvent e) {
+                                Utils.post(new Runnable () {
+
+                                    @Override
+                                    public void run () {
+                                        SystemAction.get(SearchOutgoingAction.class).openSearch(repo, new File[] { repo },
+                                                branch, getContextDisplayName(repo));
+                                    }
+
+                                });
+                            }
+                        });
+                    }
                 }
             }
             return actions.toArray(new Action[actions.size()]);
@@ -1702,14 +1752,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                         EventQueue.invokeLater(new Runnable() {
                             @Override
                             public void run () {
-                                SearchHistoryAction.openSearch(repo, repo, Utils.getContextDisplayName(VCSContext.forNodes(new Node[] {
-                                    new AbstractNode(Children.LEAF, Lookups.fixed(repo)) {
-                                        @Override
-                                        public String getDisplayName () {
-                                            return repo.getName();
-                                        }
-                                    }
-                                })), null, tag);
+                                SearchHistoryAction.openSearch(repo, repo, getContextDisplayName(repo), null, tag);
                             }
                         });
                     }
@@ -2057,6 +2100,17 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             return null;
         }
         return trackedBranch;
+    }
+
+    private static String getContextDisplayName (final File repo) {
+        return Utils.getContextDisplayName(VCSContext.forNodes(new Node[] {
+            new AbstractNode(Children.LEAF, Lookups.fixed(repo)) {
+                @Override
+                public String getDisplayName () {
+                    return repo.getName();
+                }
+            }
+        }));
     }
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
