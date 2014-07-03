@@ -404,6 +404,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 PHPDOCCodeCompletion.complete(completionResult, request);
                 if (PHPDOCCodeCompletion.isTypeCtx(request)) {
                     autoCompleteTypeNames(completionResult, request);
+                    autoCompleteNamespaces(completionResult, request);
                 }
                 break;
             case CLASS_CONTEXT_KEYWORDS:
