@@ -403,4 +403,8 @@ public class PhpParserErrorTest extends PHPTestBase {
     public void testIssue245320() throws Exception {
         checkErrors("testfiles/parser/issue245320.php");
     }
+
+    public void testIssue243512() throws Exception {
+        checkErrors("testfiles/parser/issue243512.php");
+    }
 }
