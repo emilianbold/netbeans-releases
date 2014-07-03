@@ -71,11 +71,13 @@ import org.netbeans.spi.project.libraries.WritableLibraryProvider;
 import org.netbeans.spi.project.libraries.ArealLibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation2;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
+import org.netbeans.spi.project.libraries.LibraryStorageAreaCache;
 import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.util.Lookup;
 import org.openide.util.ChangeSupport;
 import org.openide.util.WeakListeners;
+import org.openide.util.lookup.ServiceProvider;
 
 public class LibrariesModel implements PropertyChangeListener {
 
@@ -86,7 +88,7 @@ public class LibrariesModel implements PropertyChangeListener {
      * Keep only URL, <em>not</em> LibraryStorageArea, to avoid memory leaks.
      * Could also be modified to persist a LRU in NbPreferences, etc.
      */
-    public static final Set<URL> createdAreas = Collections.synchronizedSet(new HashSet<URL>());
+    private static final Set<URL> createdAreas = Collections.synchronizedSet(new HashSet<URL>());
 
     private final Map<LibraryImplementation,LibraryStorageArea> library2Area = new HashMap<LibraryImplementation,LibraryStorageArea>();
     private final Map<LibraryStorageArea,ArealLibraryProvider> area2Storage = new HashMap<LibraryStorageArea,ArealLibraryProvider>();
@@ -461,6 +463,14 @@ public class LibrariesModel implements PropertyChangeListener {
             return "DummyArealLibrary[" + name + "]"; // NOI18N
         }
 
+    }
+
+    @ServiceProvider(service = LibraryStorageAreaCache.class)
+    public static final class LibrariesModelCache implements LibraryStorageAreaCache {
+        @Override
+        public Collection<? extends URL> getCachedAreas() {
+            return Collections.unmodifiableCollection(new ArrayList<URL>(createdAreas));
+        }
     }
 
 }

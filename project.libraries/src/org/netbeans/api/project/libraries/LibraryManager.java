@@ -67,6 +67,7 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation2;
 import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
+import org.netbeans.spi.project.libraries.LibraryStorageAreaCache;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.util.Lookup;
@@ -559,17 +560,18 @@ public final class LibraryManager {
                 }
             }
         }
-        for (ArealLibraryProvider alp : alps) {
-//TODO
-//            for (URL location : LibrariesModel.createdAreas) {
-//                LibraryStorageArea area = alp.loadArea(location);
-//                if (area != null) {
-//                    assert area.getLocation().equals(location) : "Bad location " + area.getLocation() + " does not match " + location + " from " + alp.getClass().getName();
-//                    if (locations.add(location)) {
-//                        managers.add(new LibraryManager(alp, area));
-//                    }
-//                }
-//            }
+        for (LibraryStorageAreaCache lsaCache : Lookup.getDefault().lookupAll(LibraryStorageAreaCache.class)) {
+            for (ArealLibraryProvider alp : alps) {
+                for (URL location : lsaCache.getCachedAreas()) {
+                    LibraryStorageArea area = alp.loadArea(location);
+                    if (area != null) {
+                        assert area.getLocation().equals(location) : "Bad location " + area.getLocation() + " does not match " + location + " from " + alp.getClass().getName();
+                        if (locations.add(location)) {
+                            managers.add(new LibraryManager(alp, area));
+                        }
+                    }
+                }
+            }
         }
         return managers;
     }

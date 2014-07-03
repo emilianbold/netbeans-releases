@@ -52,6 +52,7 @@ import java.net.URL;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
@@ -75,6 +76,7 @@ import org.netbeans.spi.project.libraries.LibraryImplementation2;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
 import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
+import org.netbeans.spi.project.libraries.LibraryStorageAreaCache;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileLock;
@@ -373,6 +375,29 @@ public class LibrariesTestUtil {
         }
     }
 
+    public static final class MockLibraryStorageAreaCache implements LibraryStorageAreaCache {
+
+        private final Set<URL> cache = Collections.synchronizedSet(new HashSet<URL>());
+
+        public void addToCache(@NonNull final URL url) {
+            cache.add(url);
+        }
+
+        public void removeFromCache(@NonNull final URL url) {
+            cache.remove(url);
+        }
+
+        public void clearCache() {
+            cache.clear();
+        }
+
+        @Override
+        @NonNull
+        public Collection<? extends URL> getCachedAreas() {
+            return Collections.unmodifiableList(new ArrayList<>(cache));
+        }
+    }
+
     public static URL mkJar(String name) throws MalformedURLException {
         return new URL("jar:http://nowhere.net/" + name + "!/");
     }
@@ -477,7 +502,7 @@ public class LibrariesTestUtil {
         private String name;
         private String locBundle;
         private String description;
-        private Map<String,List<URL>> contents;
+        private Map<String,List<URI>> contents;
         private PropertyChangeSupport support;
         private String dName;
         private Map<String,String> props;
@@ -486,7 +511,7 @@ public class LibrariesTestUtil {
             this.type = TestLibraryTypeProvider.TYPE;
             this.supportedTypes = new HashSet<>(Arrays.asList(TestLibraryTypeProvider.SUPPORTED_TYPES));
             this.support = new PropertyChangeSupport (this);
-            this.contents = new HashMap<String,List<URL>>(2);
+            this.contents = new HashMap<String,List<URI>>(2);
             this.props = new HashMap<String, String>();
         }
 
@@ -555,11 +580,11 @@ public class LibrariesTestUtil {
         public List<URL> getContent(String volumeType) throws IllegalArgumentException {
             for (String t : TestLibraryTypeProvider.SUPPORTED_TYPES) {
                 if (t.equals(volumeType)) {
-                    List<URL> l = this.contents.get(volumeType);
+                    List<URI> l = this.contents.get(volumeType);
                     if (l == null) {
                         l = Collections.emptyList();
                     }
-                    return l;
+                    return LibrariesSupport.convertURIsToURLs(l, LibrariesSupport.ConversionMode.FAIL);
                 }
             }
             throw new IllegalArgumentException ();
@@ -569,7 +594,7 @@ public class LibrariesTestUtil {
         public void setContent(String volumeType, List<URL> path) throws IllegalArgumentException {
             for (String t : TestLibraryTypeProvider.SUPPORTED_TYPES) {
                 if (t.equals(volumeType)) {
-                    List<URL> l = this.contents.put(volumeType, path);
+                    List<URI> l = this.contents.put(volumeType, LibrariesSupport.convertURLsToURIs(path, LibrariesSupport.ConversionMode.FAIL));
                     this.support.firePropertyChange(PROP_CONTENT,null,null);
                     return;
                 }
@@ -625,18 +650,34 @@ public class LibrariesTestUtil {
 
         @Override
         public List<URI> getURIContent(String volumeType) throws IllegalArgumentException {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            for (String t : TestLibraryTypeProvider.SUPPORTED_TYPES) {
+                if (t.equals(volumeType)) {
+                    List<URI> l = this.contents.get(volumeType);
+                    if (l == null) {
+                        l = Collections.emptyList();
+                    }
+                    return l;
+                }
+            }
+            throw new IllegalArgumentException ();
         }
 
         @Override
         public void setURIContent(String volumeType, List<URI> path) throws IllegalArgumentException {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            for (String t : TestLibraryTypeProvider.SUPPORTED_TYPES) {
+                if (t.equals(volumeType)) {
+                    List<URI> l = this.contents.put(volumeType, path);
+                    this.support.firePropertyChange(PROP_CONTENT,null,null);
+                    return;
+                }
+            }
+            throw new IllegalArgumentException ();
         }
     }
 
     public static class TestLibraryTypeProvider implements LibraryTypeProvider, java.io.Serializable {
-        static final String[] SUPPORTED_TYPES = new String[]{"bin", "src"};
-        static final String TYPE = "Test";
+        public static final String[] SUPPORTED_TYPES = new String[]{"bin", "src"};
+        public static final String TYPE = "Test";
         private boolean createdCalled;
         private boolean deletedCalled;
 
