@@ -543,6 +543,9 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
          *  JSR311 library on the server
          */
         WLServerLibrarySupport support = getLibrarySupport();
+        if (support == null) {
+            return false;
+        }
         Set<WLServerLibrary> libraries = support.getDeployedLibraries();
         for (WLServerLibrary library : libraries) {
             String title = library.getImplementationTitle();
@@ -594,6 +597,9 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
     }
 
     private WLServerLibrarySupport getLibrarySupport() {
+        if (platformImpl.getDeploymentManager().isRemote()) {
+            return null;
+        }
         return new WLServerLibrarySupport(platformImpl.getDeploymentManager());
     }
     
