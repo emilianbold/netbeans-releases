@@ -108,7 +108,7 @@ public class StatusTest extends AbstractGitTestCase {
                     f = GitVersioningTopComponent.class.getDeclaredField("controller");
                     f.setAccessible(true);
                     VersioningPanelController controller = (VersioningPanelController) f.get(tc);
-                    f = VersioningPanelController.class.getDeclaredField("syncTable");
+                    f = VersioningPanelController.class.getDeclaredField("fileListComponent");
                     f.setAccessible(true);
                     GitStatusTable table = (GitStatusTable) f.get(controller);
                     f = VCSStatusTable.class.getDeclaredField("table");
@@ -195,7 +195,7 @@ public class StatusTest extends AbstractGitTestCase {
         f = VersioningPanelController.class.getDeclaredField("changeTask");
         f.setAccessible(true);
         changeTask = (Task) f.get(controller);
-        f = VersioningPanelController.class.getDeclaredField("syncTable");
+        f = VersioningPanelController.class.getDeclaredField("fileListComponent");
         f.setAccessible(true);
         GitStatusTable statusTable = (GitStatusTable) f.get(controller);
         f = VCSStatusTable.class.getDeclaredField("tableModel");
