@@ -2,7 +2,6 @@ Code completion result for source line:
 formatter.print(ArgumentsContext.testFunction.|name);
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CLASS      i                               [PUBLIC]   <font color=#999999>arguments.js</font>
 CLASS      prototype                       [PUBLIC]   JS Platform
 METHOD     apply(thisArg: String, argArra  [PUBLIC]   JS Platform
 METHOD     bind(thisArg: Object): String   [PUBLIC]   JS Platform
