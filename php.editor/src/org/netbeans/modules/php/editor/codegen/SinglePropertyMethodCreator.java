@@ -70,11 +70,15 @@ public interface SinglePropertyMethodCreator {
             return CodegenUtils.getUnusedMethodName(new ArrayList<String>(), changedName);
         }
 
+        protected String getAccessModifier() {
+            return cgsInfo.isPublicModifier() ? "public " : ""; //NOI18N
+        }
+
     }
 
     public static final class SingleGetterCreator extends SinglePropertyMethodCreatorImpl {
         private static final String GETTER_TEMPLATE
-            = "public " + FUNCTION_MODIFIER + " function " + TEMPLATE_NAME + "() {"
+            = CGSGenerator.ACCESS_MODIFIER + FUNCTION_MODIFIER + " function " + TEMPLATE_NAME + "() {"
             + CGSGenerator.NEW_LINE + "return " + CGSGenerator.ACCESSOR + CGSGenerator.PROPERTY + ";" + CGSGenerator.NEW_LINE + "}" + CGSGenerator.NEW_LINE;    //NOI18N
 
         public SingleGetterCreator(CGSInfo cgsInfo) {
@@ -87,6 +91,7 @@ public interface SinglePropertyMethodCreator {
             String methodName = getMethodName(property);
             getter.append(
                     GETTER_TEMPLATE.replace(TEMPLATE_NAME, cgsInfo.getHowToGenerate().getGetterTemplate())
+                    .replace(CGSGenerator.ACCESS_MODIFIER, getAccessModifier())
                     .replace(FUNCTION_MODIFIER, property.getFunctionModifier())
                     .replace(CGSGenerator.UNDERSCORED_METHOD_NAME, property.getName())
                     .replace(CGSGenerator.ACCESSOR, property.getAccessor())
@@ -103,7 +108,7 @@ public interface SinglePropertyMethodCreator {
         private static final String PARAM_TYPE = "${PARAM_TYPE}"; //NOI18N
         private static final String FLUENT_SETTER = "${FluentSetter}"; //NOI18N
         private static final String SETTER_TEMPLATE
-            = "public " + FUNCTION_MODIFIER + " function " + TEMPLATE_NAME + "(" + PARAM_TYPE + "$$" + CGSGenerator.PARAM_NAME + ") {"
+            = CGSGenerator.ACCESS_MODIFIER + FUNCTION_MODIFIER + " function " + TEMPLATE_NAME + "(" + PARAM_TYPE + "$$" + CGSGenerator.PARAM_NAME + ") {"
             + CGSGenerator.ASSIGNMENT_TEMPLATE + CGSGenerator.NEW_LINE + FLUENT_SETTER + "}" + CGSGenerator.NEW_LINE; //NOI18N
 
         private final FluentSetterReturnPartCreator fluentSetterCreator;
@@ -122,6 +127,7 @@ public interface SinglePropertyMethodCreator {
             String methodName = getMethodName(property);
             setter.append(
                     SETTER_TEMPLATE.replace(TEMPLATE_NAME, cgsInfo.getHowToGenerate().getSetterTemplate())
+                    .replace(CGSGenerator.ACCESS_MODIFIER, getAccessModifier())
                     .replace(FUNCTION_MODIFIER, property.getFunctionModifier())
                     .replace(CGSGenerator.UNDERSCORED_METHOD_NAME, name)
                     .replace(CGSGenerator.ACCESSOR, property.getAccessor())
