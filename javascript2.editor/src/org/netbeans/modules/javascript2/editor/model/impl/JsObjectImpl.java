@@ -446,34 +446,21 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                     JsObject originalObject = ModelUtils.findJsObjectByName(global, originalType.getType());
                     if (originalObject != null) {
                         // move all properties to the original type.
+                        // create copy of the new object, but without the properties
+                        // the new object is needed for setting new assignment.
                         JsObject newObject = new JsObjectImpl(this.parent, this.declarationName,
                                 this.getOffsetRange(), this.isDeclared(), this.getModifiers(), this.getMimeType(), this.getSourceLabel());
+                        // replace the object with object without the properties 
                         parent.addProperty(this.getName(), newObject);
-                        for (JsObject property : this.properties.values()) {
-                            if (property.isDeclared()) {
-                                JsObject originalProperty = originalObject.getProperty(property.getName());
-                                if (originalProperty == null) {
-                                    ((JsObjectImpl) property).setParent(originalObject);
-                                    originalObject.addProperty(property.getName(), property);
-                                } else if (!originalProperty.isDeclared()) {
-                                    for (Occurrence occurrence : originalProperty.getOccurrences()) {
-                                        property.addOccurrence(occurrence.getOffsetRange());
-                                    }
-                                    ((JsObjectImpl) property).setParent(originalObject);
-                                    originalObject.addProperty(property.getName(), property);
-                                } else {
-                                    ((JsObjectImpl) property).setParent(newObject);
-                                    newObject.addProperty(property.getName(), property);
-                                }
-                            } else {
-                                ((JsObjectImpl) property).setParent(newObject);
-                                newObject.addProperty(property.getName(), property);
-                            }
+                        // copy all the properties to the original object that represents this
+                        List <JsObject> propertiesCopy = new ArrayList<JsObject>(this.properties.values());
+                        for (JsObject property : propertiesCopy) {
+                            ModelUtils.moveProperty(originalObject, property);
                         }
                         for (Occurrence occurrence : this.occurrences) {
                             newObject.addOccurrence(occurrence.getOffsetRange());
                         }
-                        newObject.addAssignment(originalType, assignments.keySet().iterator().next().intValue());
+                        newObject.addAssignment(new TypeUsageImpl(originalObject.getFullyQualifiedName(), originalObject.getOffset(), true), assignments.keySet().iterator().next().intValue());
                     }
                 }
                 resolved.addAll(resolvedHere);
