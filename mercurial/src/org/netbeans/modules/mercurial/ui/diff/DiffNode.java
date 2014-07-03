@@ -49,23 +49,23 @@ import java.awt.Rectangle;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.io.File;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.PropertySupport;
 import org.openide.ErrorManager;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.util.HgUtils;
-
-import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.util.Date;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.mercurial.ui.status.OpenInEditorAction;
 import org.netbeans.modules.versioning.diff.DiffLookup;
 import org.netbeans.modules.versioning.diff.DiffUtils;
+import org.netbeans.modules.versioning.util.status.VCSStatusNode;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -76,7 +76,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  * 
  * @author Maros Sandor
  */
-class DiffNode extends AbstractNode {
+class DiffNode extends VCSStatusNode<HgFileNode> {
     
     static final String COLUMN_NAME_NAME = "name";
     static final String COLUMN_NAME_STATUS = "status";
@@ -88,7 +88,7 @@ class DiffNode extends AbstractNode {
     private DataObject dobj;
 
     public DiffNode(Setup setup, HgFileNode node) {
-        super(Children.LEAF, getLookupFor(setup, node.getLookupObjects()));
+        super(node, getLookupFor(setup, node.getLookupObjects()));
         this.setup = setup;
         setName(setup.getBaseFile().getName());
         initProperties();
@@ -103,6 +103,11 @@ class DiffNode extends AbstractNode {
         }
     }
 
+    @Override
+    public void refresh () {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     String getLocation () {
         if (location == null) {
             location = HgUtils.getRelativePath(setup.getBaseFile());
@@ -110,7 +115,8 @@ class DiffNode extends AbstractNode {
         return location;
     }
 
-    File getFile () {
+    @Override
+    public File getFile () {
         return setup.getBaseFile();
     }
 
@@ -141,7 +147,7 @@ class DiffNode extends AbstractNode {
     }
 
     @Override
-    public Action getPreferredAction () {
+    public Action getNodeAction () {
         return new OpenInEditorAction();
     }
 

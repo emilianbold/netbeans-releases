@@ -49,44 +49,24 @@ import org.netbeans.modules.git.ui.status.VersioningPanelController.ModeKeeper;
 import org.netbeans.modules.versioning.util.status.VCSStatusTableModel;
 import org.netbeans.modules.versioning.util.status.VCSStatusTable;
 import java.awt.Component;
-import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
 import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.table.DefaultTableCellRenderer;
-import org.netbeans.modules.git.FileInformation;
-import org.netbeans.modules.git.FileInformation.Status;
-import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
-import org.netbeans.modules.git.ui.actions.AddAction;
-import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
-import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
-import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.commit.DeleteLocalAction;
-import org.netbeans.modules.git.ui.commit.ExcludeFromCommitAction;
-import org.netbeans.modules.git.ui.commit.IncludeInCommitAction;
-import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
-import org.netbeans.modules.git.ui.ignore.IgnoreAction;
 import org.netbeans.modules.git.ui.status.VersioningPanelController.GitStatusNodeImpl;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
-import org.netbeans.modules.versioning.util.OpenInEditorAction;
-import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.status.VCSStatusNode;
-import org.openide.awt.Mnemonics;
+import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
 
 /**
  * Controls the {@link #getComponent() tsble} that displays nodes
@@ -97,10 +77,12 @@ import org.openide.util.lookup.Lookups;
  */
 class GitStatusTable extends VCSStatusTable<GitStatusNodeImpl> {
     private final ModeKeeper modeKeeper;
-    private int popupViewIndex;
+    private final VersioningPanelController master;
 
-    public GitStatusTable (VCSStatusTableModel<GitStatusNodeImpl> model, VersioningPanelController.ModeKeeper modeKeeper) {
+    public GitStatusTable (VersioningPanelController master, VCSStatusTableModel<GitStatusNodeImpl> model,
+            VersioningPanelController.ModeKeeper modeKeeper) {
         super(model);
+        this.master = master;
         this.modeKeeper = modeKeeper;
         setDefaultRenderer(new SyncTableCellRenderer());
     }
@@ -108,9 +90,9 @@ class GitStatusTable extends VCSStatusTable<GitStatusNodeImpl> {
     @Override
     protected void setModelProperties () {
         Node.Property [] properties = new Node.Property[3];
-        properties[0] = new ColumnDescriptor<String>(GitStatusNode.NameProperty.NAME, String.class, GitStatusNode.NameProperty.DISPLAY_NAME, GitStatusNode.NameProperty.DESCRIPTION);
-        properties[1] = new ColumnDescriptor<String>(GitStatusNode.GitStatusProperty.NAME, String.class, GitStatusNode.GitStatusProperty.DISPLAY_NAME, GitStatusNode.GitStatusProperty.DESCRIPTION);
-        properties[2] = new ColumnDescriptor<String>(GitStatusNode.PathProperty.NAME, String.class, GitStatusNode.PathProperty.DISPLAY_NAME, GitStatusNode.PathProperty.DESCRIPTION);
+        properties[0] = new ColumnDescriptor<>(GitStatusNode.NameProperty.NAME, String.class, GitStatusNode.NameProperty.DISPLAY_NAME, GitStatusNode.NameProperty.DESCRIPTION);
+        properties[1] = new ColumnDescriptor<>(GitStatusNode.GitStatusProperty.NAME, String.class, GitStatusNode.GitStatusProperty.DISPLAY_NAME, GitStatusNode.GitStatusProperty.DESCRIPTION);
+        properties[2] = new ColumnDescriptor<>(GitStatusNode.PathProperty.NAME, String.class, GitStatusNode.PathProperty.DISPLAY_NAME, GitStatusNode.PathProperty.DESCRIPTION);
         tableModel.setProperties(properties);
         getTable().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "DeleteAction");
@@ -122,113 +104,28 @@ class GitStatusTable extends VCSStatusTable<GitStatusNodeImpl> {
         "CTL_GitStatusTable.popup.initializing=Initializing..."
     })
     protected JPopupMenu getPopup () {
-        final JPopupMenu menu = new JPopupMenu();
-        final int popupIndex = ++popupViewIndex;
-        JMenuItem item;
-        item = menu.add(new OpenInEditorAction(getSelectedFiles()));
-        Mnemonics.setLocalizedText(item, item.getText());
-
-        final GitStatusNodeImpl[] selectedNodes = getSelectedNodes();
-        menu.addSeparator();
-        final JMenuItem dummyItem = menu.add(Bundle.CTL_GitStatusTable_popup_initializing());
-        dummyItem.setEnabled(false);
-        Git.getInstance().getRequestProcessor().post(new Runnable() {
-            @Override
-            public void run () {
-                Lookup lkp = Lookups.fixed((Object[]) selectedNodes);
-                boolean displayAdd = false;
-                boolean allLocallyNew = true;
-                for (GitStatusNodeImpl node : selectedNodes) {
-                    FileInformation info = node.getFileNode().getInformation();
-                    // is there any change between index and WT?
-                    if (info.containsStatus(EnumSet.of(Status.NEW_INDEX_WORKING_TREE,
-                            Status.IN_CONFLICT,
-                            Status.MODIFIED_INDEX_WORKING_TREE))) {
-                        displayAdd = true;
-                    }
-                    if (!info.containsStatus(EnumSet.of(Status.NEW_HEAD_INDEX, Status.NEW_HEAD_WORKING_TREE))) {
-                        allLocallyNew = false;
-                    }
-                }
-                if (popupIndex != popupViewIndex) {
-                    return;
-                }
-                final List<Action> actions = new ArrayList<Action>();
-                actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), NbBundle.getMessage(CommitAction.class, "LBL_CommitAction.popupName"), lkp)); //NOI18N
-                if (popupIndex != popupViewIndex) {
-                    return;
-                }
-                actions.add(new SystemActionBridge(SystemAction.get(DiffAction.class).createContextAwareInstance(lkp), NbBundle.getMessage(DiffAction.class, "LBL_DiffAction_PopupName")) { //NOI18N
-                    @Override
-                    public void actionPerformed (ActionEvent e) {
-                        modeKeeper.storeMode();
-                        super.actionPerformed(e);
-                    }
-                });
-                if (displayAdd) {
-                    actions.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "LBL_AddAction.popupName"), lkp)); //NOI18N
-                }
-
-                if (allLocallyNew) {
-                    SystemAction systemAction = SystemAction.get(DeleteLocalAction.class);
-                    actions.add(SystemActionBridge.createAction(systemAction, NbBundle.getMessage(DeleteLocalAction.class, "CTL_PopupMenuItem_Delete"), lkp)); //NOI18N
-                }
-                SystemActionBridge efca = SystemActionBridge.createAction(SystemAction.get(ExcludeFromCommitAction.class), NbBundle.getMessage(ExcludeFromCommitAction.class, "LBL_ExcludeFromCommitAction_PopupName"), lkp);
-                SystemActionBridge iica = SystemActionBridge.createAction(SystemAction.get(IncludeInCommitAction.class), NbBundle.getMessage(IncludeInCommitAction.class, "LBL_IncludeInCommitAction_PopupName"), lkp);
-                if (efca.isEnabled() || iica.isEnabled()) {
-                    if (efca.isEnabled()) {
-                        actions.add(efca);
-                    } else if (iica.isEnabled()) {
-                        actions.add(iica);
-                    }
-                }
-                SystemActionBridge ia = SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class),
-                        NbBundle.getMessage(IgnoreAction.class, "LBL_IgnoreAction_PopupName"), lkp);
-                if (ia.isEnabled()) {
-                    actions.add(ia);
-                }
-                actions.add(SystemActionBridge.createAction(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_RevertChangesAction_PopupName"), lkp)); //NOI18N
-                actions.add(SystemActionBridge.createAction(SystemAction.get(CheckoutPathsAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_CheckoutPathsAction_PopupName"), lkp)); //NOI18N
-                
-                ResolveConflictsAction a = SystemAction.get(ResolveConflictsAction.class);
-                if (a.isEnabled()) {
-                    actions.add(null);
-                    actions.add(SystemActionBridge.createAction(a, NbBundle.getMessage(ResolveConflictsAction.class, "LBL_ResolveConflictsAction_PopupName"), lkp)); //NOI18N
-                }
-                if (popupIndex == popupViewIndex) {
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run () {
-                            if (popupIndex == popupViewIndex && menu.isShowing()) {
-                                menu.remove(dummyItem);
-                                for (Action a : actions) {
-                                    if (a == null) {
-                                        menu.addSeparator();
-                                    } else {
-                                        JMenuItem item = menu.add(a);
-                                        Mnemonics.setLocalizedText(item, item.getText());
-                                    }
-                                }
-                                menu.pack();
-                                menu.repaint();
-                            }
-                        }
-                    });
-                }
-            }
-        });
-        return menu;
+        return master.getPopupFor(getSelectedNodes());
     }
 
     @Override
     protected void mouseClicked (VCSStatusNode node) {
-        Action action = node.getPreferredAction();
+        Action action = node.getNodeAction();
         if (action != null && action.isEnabled()) {
             if (action instanceof DiffAction) {
                 modeKeeper.storeMode();
             }
             action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, node.getFile().getAbsolutePath()));
         }
+    }
+
+    @Override
+    public Object prepareModel (GitStatusNodeImpl[] nodes) {
+        return null;
+    }
+
+    @Override
+    public void setModel (GitStatusNodeImpl[] nodes, EditorCookie[] editorCookies, Object modelData) {
+        super.setNodes(nodes);
     }
 
     private class SyncTableCellRenderer extends DefaultTableCellRenderer {
