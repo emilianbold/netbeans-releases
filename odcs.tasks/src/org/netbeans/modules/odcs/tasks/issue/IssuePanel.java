@@ -1410,7 +1410,9 @@ public class IssuePanel extends javax.swing.JPanel {
             return ((com.tasktop.c2c.server.tasks.domain.Component) item).getName();
         } else if (item instanceof Milestone) {
             return ((Milestone) item).getValue();
-        } else {
+        } else if (item == null) {
+            return ""; // NOI18N
+        } else { 
             assert item instanceof String : "Wrong value type : " + item.getClass().getName(); // NOI18N
         }
         return item.toString();
