@@ -513,7 +513,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 long start = System.currentTimeMillis();
                 Collection<IndexedElement> fromUsages = JsIndex.get(request.result.getSnapshot().getSource().getFileObject()).getUsagesFromExpression(expChain);
                 for (IndexedElement indexedElement : fromUsages) {
-                    if (!fo.equals(indexedElement.getFileObject())) { // don't include usage from the edited file. It's covered by the model.
+                    if (!fo.equals(indexedElement.getFileObject()) || !indexedElement.getName().equals(request.prefix)) { 
                         addPropertyToMap(request, addedItems, indexedElement);
                     }
                 }

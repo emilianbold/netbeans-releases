@@ -200,7 +200,8 @@ public class JsIndexer extends EmbeddingIndexer {
     
     private boolean storeUsage(JsObject object) {
         boolean result = true;
-        if ("arguments".equals(object.getName()) || object.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
+        if ("arguments".equals(object.getName()) || object.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT
+                || object.getModifiers().contains(Modifier.PRIVATE)) {
             result = false;
         }
         return result;
