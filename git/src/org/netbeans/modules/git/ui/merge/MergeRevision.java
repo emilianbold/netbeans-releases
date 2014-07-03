@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import javax.swing.JButton;
+import org.netbeans.libs.git.GitRepository.FastForwardOption;
 import org.netbeans.modules.git.ui.repository.RevisionDialogController;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.DialogDescriptor;
@@ -59,16 +60,19 @@ import org.openide.util.NbBundle;
  * @author ondra
  */
 public class MergeRevision {
-    private MergeRevisionPanel panel;
-    private RevisionDialogController revisionPicker;
+    private final MergeRevisionPanel panel;
+    private final RevisionDialogController revisionPicker;
     private JButton okButton;
     private DialogDescriptor dd;
     private boolean valid = true;
+    private final FastForwardOption ffOption;
 
-    MergeRevision (File repository, File[] roots, String initialRevision) {
+    MergeRevision (File repository, File[] roots, String initialRevision, FastForwardOption defaultFFOption) {
+        ffOption = defaultFFOption;
         revisionPicker = new RevisionDialogController(repository, roots, initialRevision);
         revisionPicker.setMergingInto(GitUtils.HEAD);
         panel = new MergeRevisionPanel(revisionPicker.getPanel());
+        initFFOptions();
     }
 
     String getRevision() {
@@ -79,7 +83,8 @@ public class MergeRevision {
         okButton = new JButton(NbBundle.getMessage(MergeRevision.class, "LBL_MergeRevision.OKButton.text")); //NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(okButton, okButton.getText());
         dd = new DialogDescriptor(panel, NbBundle.getMessage(MergeRevision.class, "LBL_MergeRevision.title"), true,  //NOI18N
-                new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(MergeRevision.class), null);
+                new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN,
+                new HelpCtx("org.netbeans.modules.git.ui.merge.MergeRevision"), null); //NOI18N
         enableRevisionPanel();
         revisionPicker.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
@@ -94,6 +99,16 @@ public class MergeRevision {
         return okButton == dd.getValue();
     }
 
+    FastForwardOption getFFOption () {
+        if (panel.rbFFOptionOnly.isSelected()) {
+            return FastForwardOption.FAST_FORWARD_ONLY;
+        } else if (panel.rbFFOptionNever.isSelected()) {
+            return FastForwardOption.NO_FAST_FORWARD;
+        } else {
+            return FastForwardOption.FAST_FORWARD;
+        }
+    }
+    
     private void enableRevisionPanel () {
         setValid(valid);
     }
@@ -102,5 +117,19 @@ public class MergeRevision {
         this.valid = flag;
         okButton.setEnabled(flag);
         dd.setValid(flag);
+    }
+
+    private void initFFOptions () {
+        switch (ffOption) {
+            case FAST_FORWARD:
+                panel.rbFFOption.setSelected(true);
+                break;
+            case FAST_FORWARD_ONLY:
+                panel.rbFFOptionOnly.setSelected(true);
+                break;
+            case NO_FAST_FORWARD:
+                panel.rbFFOptionNever.setSelected(true);
+                break;
+        }
     }
 }

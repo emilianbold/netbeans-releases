@@ -42,11 +42,9 @@
 package org.netbeans.modules.testng.actions;
 
 import java.awt.EventQueue;
-import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -55,18 +53,15 @@ import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin;
 import org.netbeans.modules.java.testrunner.CommonTestUtil;
 import org.netbeans.modules.java.testrunner.GuiUtils;
 import org.netbeans.modules.testng.api.TestNGSupport;
+import org.netbeans.modules.testng.spi.TestNGSupportImplementation;
 import org.netbeans.modules.testng.ui.TestNGPlugin;
 import org.netbeans.modules.testng.ui.TestNGPluginTrampoline;
 import org.netbeans.modules.testng.ui.TestUtil;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
-import org.openide.text.Line;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -126,7 +121,21 @@ public class TestNGTestCreatorProvider extends TestCreatorProvider {
         }
         
         final FileObject targetFolder = context.getTargetFolder();
-        TestNGSupport.findTestNGSupport(FileOwnerQuery.getOwner(targetFolder)).configureProject(targetFolder);
+        if(targetFolder == null) {
+            LOGGER.log(Level.INFO, "Target folder was null while creating new TestNG file");
+            return;
+        }
+        Project project = FileOwnerQuery.getOwner(targetFolder);
+        if (project == null) {
+            LOGGER.log(Level.INFO, "No project found for target folder: {0}", targetFolder);
+            return;
+        }
+        TestNGSupportImplementation testNGSupport = TestNGSupport.findTestNGSupport(project);
+        if (testNGSupport == null) {
+            LOGGER.log(Level.INFO, "No TestNGSupportImplementation found for target folder: {0}", targetFolder);
+            return;
+        }
+        testNGSupport.configureProject(targetFolder);
         RequestProcessor.getDefault().post(new Runnable() {
 
             @Override

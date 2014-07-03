@@ -2,6 +2,7 @@ package org.netbeans.modules.odcs.client;
 
 import com.tasktop.c2c.server.common.service.EntityNotFoundException;
 import com.tasktop.c2c.server.common.service.ValidationException;
+import com.tasktop.c2c.server.common.service.WrappedCheckedException;
 import com.tasktop.c2c.server.common.service.domain.QueryResult;
 import com.tasktop.c2c.server.common.service.web.ApacheHttpRestClientDelegate;
 import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
@@ -109,7 +110,11 @@ public class ODCSClientImpl implements ODCSClient {
 
     @Override
     public Profile getCurrentProfile() throws ODCSException {
-        return getProfileClient().getCurrentProfile();
+        try {
+            return getProfileClient().getCurrentProfile();
+        } catch (WrappedCheckedException e) {
+            throw new ODCSException(e.getCause());
+        }
     }
 
     @Override
@@ -124,17 +129,27 @@ public class ODCSClientImpl implements ODCSClient {
             return getProfileClient().getProjectByIdentifier(projectId);
         } catch (EntityNotFoundException ex) {
             throw new ODCSException(ex);
+        } catch (WrappedCheckedException e) {
+            throw new ODCSException(e.getCause());
         }
     }
 
     @Override
     public List<ProjectActivity> getRecentActivities(String projectId) throws ODCSException {
-        return getActivityClient().getRecentActivity(projectId);
+        try {
+            return getActivityClient().getRecentActivity(projectId);
+        } catch (WrappedCheckedException e) {
+            throw new ODCSException(e.getCause());
+        }
     }
 
     @Override
     public List<ProjectActivity> getRecentShortActivities(String projectId) throws ODCSException {
-        return getActivityClient().getShortActivityList(projectId);
+        try {
+            return getActivityClient().getShortActivityList(projectId);
+        } catch (WrappedCheckedException e) {
+            throw new ODCSException(e.getCause());
+        }
     }
 
     @Override
@@ -143,6 +158,8 @@ public class ODCSClientImpl implements ODCSClient {
             return getScmClient(projectId).getScmRepositories();
         } catch (EntityNotFoundException ex) {
             throw new ODCSException(ex);
+        } catch (WrappedCheckedException e) {
+            throw new ODCSException(e.getCause());
         }
     }
 
@@ -152,13 +169,19 @@ public class ODCSClientImpl implements ODCSClient {
             return getProfileClient().isWatchingProject(projectId);
         } catch (EntityNotFoundException ex) {
             throw new ODCSException(ex);
+        } catch (WrappedCheckedException e) {
+            throw new ODCSException(e.getCause());
         }
     }
 
     @Override
     public List<Project> searchProjects(String pattern) throws ODCSException {
-        QueryResult<Project> r = getProfileClient().findProjects(new ProjectsQuery(pattern, null));
-        return r != null ? r.getResultPage() : null;
+        try {
+            QueryResult<Project> r = getProfileClient().findProjects(new ProjectsQuery(pattern, null));
+            return r != null ? r.getResultPage() : null;
+                } catch (WrappedCheckedException e) {
+            throw new ODCSException(e.getCause());
+        }
     }
 
     @Override
@@ -167,6 +190,8 @@ public class ODCSClientImpl implements ODCSClient {
             getProfileClient().unwatchProject(projectId);
         } catch (EntityNotFoundException ex) {
             throw new ODCSException(ex);
+        } catch (WrappedCheckedException e) {
+            throw new ODCSException(e.getCause());
         }
     }
 
@@ -176,13 +201,19 @@ public class ODCSClientImpl implements ODCSClient {
             getProfileClient().watchProject(projectId);
         } catch (EntityNotFoundException ex) {
             throw new ODCSException(ex);
+        } catch (WrappedCheckedException e) {
+            throw new ODCSException(e.getCause());
         }
     }
 
     @Override
     public List<Project> getWatchedProjects () throws ODCSException {
-        QueryResult<Project> r = getProfileClient().findProjects(new ProjectsQuery(ProjectRelationship.WATCHER, null));
-        return r != null ? r.getResultPage() : null;
+        try {
+            QueryResult<Project> r = getProfileClient().findProjects(new ProjectsQuery(ProjectRelationship.WATCHER, null));
+            return r != null ? r.getResultPage() : null;
+        } catch (WrappedCheckedException e) {
+            throw new ODCSException(e.getCause());
+        }
     }
 
     @Override
@@ -193,6 +224,8 @@ public class ODCSClientImpl implements ODCSClient {
             throw new ODCSException(ex);
         } catch (ValidationException ex) {
             throw new ODCSException(ex);
+        } catch (WrappedCheckedException e) {
+            throw new ODCSException(e.getCause());
         }
     }
     
@@ -202,6 +235,8 @@ public class ODCSClientImpl implements ODCSClient {
             return getTasksClient(projectId).createQuery(query);
         } catch (ValidationException ex) {
             throw new ODCSException(ex);
+        } catch (WrappedCheckedException e) {
+            throw new ODCSException(e.getCause());
         }
     }
 
@@ -213,6 +248,8 @@ public class ODCSClientImpl implements ODCSClient {
             throw new ODCSException(ex);
         } catch (EntityNotFoundException ex) {
             throw new ODCSException(ex);
+        } catch (WrappedCheckedException e) {
+            throw new ODCSException(e.getCause());
         }
     }
 
@@ -231,7 +268,11 @@ public class ODCSClientImpl implements ODCSClient {
 
     @Override
     public RepositoryConfiguration getRepositoryContext(String projectId) throws ODCSException {
-        return getTasksClient(projectId).getRepositoryContext();
+        try {
+            return getTasksClient(projectId).getRepositoryContext();
+        } catch (WrappedCheckedException e) {
+            throw new ODCSException(e.getCause());
+        }
     }
 
     private void handleInternalServerError(HttpMethodBase method, String service, int result) throws ODCSException, IOException {

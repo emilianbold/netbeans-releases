@@ -53,6 +53,7 @@ import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.RepositoryState;
+import org.netbeans.libs.git.GitRepository.FastForwardOption;
 import org.netbeans.libs.git.GitRevisionInfo.GitFileInfo;
 import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.JGitCredentialsProvider;
@@ -867,7 +868,10 @@ public final class GitClient {
     }
     
     /**
-     * Merges a given revision with the current head
+     * Merges a given revision with the current head.
+     *
+     * Fast-forward option will default to the one stated in .git/config.
+     *
      * @param revision id of a revision to merge.
      * @param monitor progress monitor
      * @return result of the merge
@@ -875,8 +879,22 @@ public final class GitClient {
      * @throws GitException an unexpected error occurs
      */
     public GitMergeResult merge (String revision, ProgressMonitor monitor) throws GitException.CheckoutConflictException, GitException {
+        return merge(revision, null, monitor);
+    }
+    
+    /**
+     * Merges a given revision with the current head.
+     * @param revision id of a revision to merge.
+     * @param fastForward option telling merge to enforce or disable fast forward merges.
+     * @param monitor progress monitor
+     * @return result of the merge
+     * @throws GitException.CheckoutConflictException there are local modifications in Working Tree, merge fails in such a case
+     * @throws GitException an unexpected error occurs
+     * @since 1.26
+     */
+    public GitMergeResult merge (String revision, FastForwardOption fastForward, ProgressMonitor monitor) throws GitException.CheckoutConflictException, GitException {
         Repository repository = gitRepository.getRepository();
-        MergeCommand cmd = new MergeCommand(repository, getClassFactory(), revision, monitor);
+        MergeCommand cmd = new MergeCommand(repository, getClassFactory(), revision, fastForward, monitor);
         cmd.execute();
         return cmd.getResult();
     }

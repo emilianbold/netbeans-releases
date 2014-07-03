@@ -45,6 +45,8 @@ package org.netbeans.libs.git;
 import java.io.File;
 import java.util.Map;
 import java.util.WeakHashMap;
+import org.eclipse.jgit.api.MergeCommand;
+import org.eclipse.jgit.merge.MergeConfig;
 import org.eclipse.jgit.transport.SshSessionFactory;
 import org.netbeans.libs.git.jgit.JGitRepository;
 import org.netbeans.libs.git.jgit.JGitSshSessionFactory;
@@ -77,6 +79,55 @@ public final class GitRepository {
     private static final Map<File, GitRepository> repositoryPool = new WeakHashMap<File, GitRepository>(5);
     private final File repositoryLocation;
     private JGitRepository gitRepository;
+    
+    /**
+     * Option specifying how to deal with merges and merge commits. Required by
+     * {@link GitClient#merge(java.lang.String, org.netbeans.libs.git.GitRepository.FastForwardOption, org.netbeans.libs.git.progress.ProgressMonitor)}.
+     * To get the repository's default value, get it with {@link #getDefaultFastForwardOption()}.
+     *
+     * @since 1.26
+     */
+    public enum FastForwardOption {
+
+        /**
+         * Merge will not create a new commit if possible and only update the
+         * branch reference to the merged commit. This will usually happen if
+         * the merged commit is a descendant of the branch's head commit.
+         */
+        FAST_FORWARD {
+
+            @Override
+            public String toString () {
+                return "--ff"; //NOI18N
+            }
+            
+        },
+        
+        /**
+         * Merge will fail if fast forward is impossible, no merge commit will
+         * be created under any circumstances.
+         */
+        FAST_FORWARD_ONLY {
+
+            @Override
+            public String toString () {
+                return "--ff-only"; //NOI18N
+            }
+            
+        },
+        
+        /**
+         * Will always create a merge commit even if fast forward were possible.
+         */
+        NO_FAST_FORWARD {
+
+            @Override
+            public String toString () {
+                return "--no-ff"; //NOI18N
+            }
+            
+        };
+    }
 
     /**
      * Returns the instance of {@link GitRepository} representing an existing or not yet existing repository
@@ -109,11 +160,43 @@ public final class GitRepository {
      * @throws GitException when an error occurs while loading repository data from disk.
      */
     public synchronized GitClient createClient () throws GitException {
+        getRepository();
+        return createClient(gitRepository);
+    }
+    
+    /**
+     * Parses the repository configuration file and returns the default fast-forward merge
+     * option set for the repository and its current branch.
+     * 
+     * @return the default fast-forward option for the current repository and the active branch.
+     * @throws GitException an error occurs
+     * @since 1.26
+     */
+    public FastForwardOption getDefaultFastForwardOption () throws GitException {
+        JGitRepository repository = getRepository();
+        repository.increaseClientUsage();
+        try {
+            MergeConfig cfg = MergeConfig.getConfigForCurrentBranch(repository.getRepository());
+            MergeCommand.FastForwardMode mode = cfg.getFastForwardMode();
+            switch (mode) {
+                case FF_ONLY:
+                    return FastForwardOption.FAST_FORWARD_ONLY;
+                case NO_FF:
+                    return FastForwardOption.NO_FAST_FORWARD;
+                default:
+                    return FastForwardOption.FAST_FORWARD;
+            }
+        } finally {
+            repository.decreaseClientUsage();
+        }
+    }
+
+    private synchronized JGitRepository getRepository () {
         if (gitRepository == null) {
             gitRepository = new JGitRepository(repositoryLocation);
             SshSessionFactory.setInstance(JGitSshSessionFactory.getDefault());
         }
-        return createClient(gitRepository);
+        return gitRepository;
     }
 
     /**
