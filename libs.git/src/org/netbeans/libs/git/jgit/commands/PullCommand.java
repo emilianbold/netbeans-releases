@@ -85,7 +85,7 @@ public class PullCommand extends TransportCommand {
         fetch.setCredentialsProvider(getCredentialsProvider());
         fetch.run();
         this.updates = fetch.getUpdates();
-        MergeCommand merge = new MergeCommand(getRepository(), getClassFactory(), branchToMerge, monitor);
+        MergeCommand merge = new MergeCommand(getRepository(), getClassFactory(), branchToMerge, null, monitor);
         merge.setCommitMessage("branch \'" + findRemoteBranchName() + "\' of " + fetch.getResult().getURI().setUser(null).setPass(null).toString());
         merge.run();
         this.mergeResult = merge.getResult();
