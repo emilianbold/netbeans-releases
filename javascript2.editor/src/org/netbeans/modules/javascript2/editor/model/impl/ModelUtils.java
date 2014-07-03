@@ -606,8 +606,12 @@ public class ModelUtils {
         if (parent != null && (parent.getJSKind() == JsElement.Kind.FUNCTION || parent.getJSKind() == JsElement.Kind.METHOD)) {
             if (parent.getParent().getJSKind() != JsElement.Kind.FILE) {
                 JsObject grandParent = parent.getParent();
-                if (grandParent != null && grandParent.getJSKind() == JsElement.Kind.OBJECT_LITERAL) {
+                if (grandParent != null 
+                        && (grandParent.getJSKind() == JsElement.Kind.OBJECT_LITERAL || PROTOTYPE.equals(grandParent.getName()))) {
                     parent = grandParent;
+                    if (PROTOTYPE.equals(parent.getName()) && parent.getParent() != null) {
+                        parent = parent.getParent();
+                    }
                 }
             }
         }
