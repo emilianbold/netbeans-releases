@@ -67,6 +67,7 @@ import org.netbeans.libs.git.GitPushResult;
 import org.netbeans.libs.git.GitRebaseResult;
 import org.netbeans.libs.git.GitRefUpdateResult;
 import org.netbeans.libs.git.GitRemoteConfig;
+import org.netbeans.libs.git.GitRepository.FastForwardOption;
 import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.GitRevertResult;
 import org.netbeans.libs.git.GitRevisionInfo;
@@ -608,12 +609,12 @@ public final class GitClient {
         }, "log"); //NOI18N
     }
     
-    public GitMergeResult merge (final String revision, final ProgressMonitor monitor) throws GitException.CheckoutConflictException, GitException {
+    public GitMergeResult merge (final String revision, final FastForwardOption ffOption, final ProgressMonitor monitor) throws GitException.CheckoutConflictException, GitException {
         return new CommandInvoker().runMethod(new Callable<GitMergeResult>() {
 
             @Override
             public GitMergeResult call () throws Exception {
-                return delegate.merge(revision, monitor);
+                return delegate.merge(revision, ffOption, monitor);
             }
         }, "merge"); //NOI18N
     }

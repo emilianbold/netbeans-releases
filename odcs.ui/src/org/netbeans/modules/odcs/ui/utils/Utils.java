@@ -143,7 +143,8 @@ public class Utils {
         "MSG_NoRouteToHost=No route to host",
         "MSG_UnreachableNetwork=Network is unreachable",
         "MSG_MaxNumberOfProjects=Maximum number of projects has been reached",
-        "MSG_BadCredentials=Wrong username or password"
+        "MSG_BadCredentials=Wrong username or password",
+        "MSG_Unauthorized=Not Authorized"
     })
     public static String parseKnownMessage (ODCSException ex) {
         String knownMessage = null;
@@ -158,6 +159,8 @@ public class Utils {
                 knownMessage = Bundle.MSG_UnreachableNetwork();
             } else if (msg.contains("maximum number of projects in the system")) { //NOI18N
                 knownMessage = Bundle.MSG_MaxNumberOfProjects();
+            } else if (msg.contains("unauthorized")) { //NOI18N
+                knownMessage = Bundle.MSG_Unauthorized();
             }
         }
         return knownMessage;

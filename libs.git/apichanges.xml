@@ -112,6 +112,28 @@ is the proper place.
         <change>
             <api name="gitlibrary_api"/>
             <summary>New method for updating a reference (branch) to a new commit id.</summary>
+            <version major="1" minor="26"/>
+            <date day="25" month="6" year="2014"/>
+            <author login="ovrabec"/>
+            <compatibility addition="yes"/>
+            <description>
+                <ul>
+                    <li>Git client accepts the parameter telling the merge command how
+                    to proceed with regard to fast-forward commits. Users may require
+                    either to enforce or to completely eliminate (and always create a merge commit)
+                    fast-forward merges.</li>
+                    <li>Git Repository instance allows users to query for the current default fast-forward
+                    option via a new getter method.</li>
+                </ul>
+            </description>
+            <class package="org.netbeans.libs.git" name="GitRepository"/>
+            <class package="org.netbeans.libs.git" name="GitClient"/>
+            <class package="org.netbeans.libs.git" name="GitMergeResult"/>
+            <issue number="245236"/>
+        </change>
+        <change>
+            <api name="gitlibrary_api"/>
+            <summary>New method for updating a reference (branch) to a new commit id.</summary>
             <version major="1" minor="24"/>
             <date day="23" month="6" year="2014"/>
             <author login="ovrabec"/>

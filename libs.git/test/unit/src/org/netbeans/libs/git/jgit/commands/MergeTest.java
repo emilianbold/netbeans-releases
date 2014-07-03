@@ -56,6 +56,7 @@ import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitMergeResult;
 import org.netbeans.libs.git.GitMergeResult.MergeStatus;
+import org.netbeans.libs.git.GitRepository;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.SearchCriteria;
@@ -380,5 +381,90 @@ public class MergeTest extends AbstractGitTestCase {
         
         client.checkoutRevision(Constants.MASTER, true, NULL_PROGRESS_MONITOR);
         client.merge(BRANCH_NAME, NULL_PROGRESS_MONITOR);
+    }
+    
+    public void testMergeNoFastForward () throws Exception {
+        File f = new File(workDir, "file");
+        write(f, "init");
+        add(f);
+        commit(f);
+        
+        GitClient client = getClient(workDir);
+        client.createBranch(BRANCH_NAME, Constants.MASTER, NULL_PROGRESS_MONITOR);
+        client.checkoutRevision(BRANCH_NAME, true, NULL_PROGRESS_MONITOR);
+        write(f, BRANCH_NAME);
+        add(f);
+        GitRevisionInfo info = client.commit(new File[] { f }, "change on branch", null, null, NULL_PROGRESS_MONITOR);
+        client.checkoutRevision(Constants.MASTER, true, NULL_PROGRESS_MONITOR);
+        
+        assertEquals("init", read(f));
+        
+        GitMergeResult result = client.merge(BRANCH_NAME, NULL_PROGRESS_MONITOR);
+        assertEquals(MergeStatus.FAST_FORWARD, result.getMergeStatus());
+        assertEquals(BRANCH_NAME, read(f));
+        
+        SearchCriteria crit = new SearchCriteria();
+        crit.setRevisionTo(Constants.MASTER);
+        GitRevisionInfo[] logs = client.log(crit, NULL_PROGRESS_MONITOR);
+        assertEquals(2, logs.length);
+        assertEquals(logs[0].getRevision(), info.getRevision());
+        
+        // continue working on branch
+        client.checkoutRevision(BRANCH_NAME, true, NULL_PROGRESS_MONITOR);
+        remove(false, f);
+        client.commit(new File[] { f }, "delete on branch", null, null, NULL_PROGRESS_MONITOR);
+        client.checkoutRevision(Constants.MASTER, true, NULL_PROGRESS_MONITOR);
+        
+        assertEquals(BRANCH_NAME, read(f));
+        
+        result = client.merge(BRANCH_NAME, GitRepository.FastForwardOption.NO_FAST_FORWARD, NULL_PROGRESS_MONITOR);
+        assertEquals(MergeStatus.MERGED, result.getMergeStatus());
+        assertFalse(f.exists());
+        
+        crit = new SearchCriteria();
+        crit.setRevisionTo(Constants.MASTER);
+        logs = client.log(crit, NULL_PROGRESS_MONITOR);
+        assertEquals(4, logs.length);
+        assertEquals(2, logs[0].getParents().length);
+    }
+    
+    public void testMergeFFOnly () throws Exception {
+        File f1 = new File(workDir, "file1");
+        File f2 = new File(workDir, "file2");
+        write(f1, "init");
+        write(f2, "init");
+        add(f1, f2);
+        commit(f1, f2);
+        
+        GitClient client = getClient(workDir);
+        client.createBranch(BRANCH_NAME, Constants.MASTER, NULL_PROGRESS_MONITOR);
+        client.checkoutRevision(BRANCH_NAME, true, NULL_PROGRESS_MONITOR);
+        write(f1, BRANCH_NAME);
+        add(f1);
+        client.commit(new File[] { f1 }, "change on branch", null, null, NULL_PROGRESS_MONITOR);
+        client.checkoutRevision(Constants.MASTER, true, NULL_PROGRESS_MONITOR);
+        write(f2, "another change");
+        add(f2);
+        client.commit(new File[] { f2 }, "change on master", null, null, NULL_PROGRESS_MONITOR);
+        
+        GitMergeResult result = client.merge(BRANCH_NAME, GitRepository.FastForwardOption.FAST_FORWARD_ONLY, NULL_PROGRESS_MONITOR);
+        // no merge commits allowed => FAIL
+        assertEquals(MergeStatus.ABORTED, result.getMergeStatus());
+        
+        // test also config files
+        assertEquals(GitRepository.FastForwardOption.FAST_FORWARD, GitRepository.getInstance(workDir).getDefaultFastForwardOption());
+        
+        StoredConfig cfg = repo.getConfig();
+        cfg.setEnum(ConfigConstants.CONFIG_KEY_MERGE, null,
+                    ConfigConstants.CONFIG_KEY_FF, org.eclipse.jgit.api.MergeCommand.FastForwardMode.Merge.ONLY);
+        cfg.save();
+        assertEquals(GitRepository.FastForwardOption.FAST_FORWARD_ONLY, GitRepository.getInstance(workDir).getDefaultFastForwardOption());
+        result = client.merge(BRANCH_NAME, NULL_PROGRESS_MONITOR);
+        // no merge commits allowed => FAIL
+        assertEquals(MergeStatus.ABORTED, result.getMergeStatus());
+        
+        result = client.merge(BRANCH_NAME, GitRepository.FastForwardOption.FAST_FORWARD, NULL_PROGRESS_MONITOR);
+        // merge commits allowed => OK
+        assertEquals(MergeStatus.MERGED, result.getMergeStatus());
     }
 }
