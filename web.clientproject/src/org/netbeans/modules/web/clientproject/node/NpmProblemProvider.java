@@ -130,10 +130,10 @@ public final class NpmProblemProvider implements ProjectProblemsProvider {
     
 
     @NbBundle.Messages({
-        "ERR_NpmInstall=Missing node modules",
-        "TXT_NpmInstallDescription=This project uses node modules, but they are not installed.",
-        "ERR_NpmInstallResolved=Node modules were succesfully installed.",
-        "ERR_NpmInstallUnresolved=Node modules were not succesfully installed."
+        "ERR_NpmInstall=Missing Node.JS modules",
+        "TXT_NpmInstallDescription=This project uses Node.JS modules, but they are not installed.",
+        "ERR_NpmInstallResolved=Node.JS modules were succesfully installed.",
+        "ERR_NpmInstallUnresolved=Node.JS modules were not succesfully installed."
     })
     @Override
     public Collection<? extends ProjectProblem> getProblems() {
