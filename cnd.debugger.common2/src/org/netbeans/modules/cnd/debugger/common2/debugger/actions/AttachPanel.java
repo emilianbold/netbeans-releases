@@ -232,7 +232,7 @@ public final class AttachPanel extends TopComponent {
                 });
             }
         } else {
-        }
+        } 
     }
 
     /**
@@ -953,7 +953,7 @@ public final class AttachPanel extends TopComponent {
                     if (index != -1) {
                         hostName = hostName.substring(0, index);
                     }
-                    action.attach(hostName, pid, engine.getType());
+                    action.attach(hostName, pid, engine.getType(), filterCombo.getSelectedItem() + "");
                     return true;
                 }
             }
