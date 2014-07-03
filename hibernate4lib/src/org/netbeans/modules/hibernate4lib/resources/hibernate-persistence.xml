@@ -53,6 +53,7 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst://org.netbeans.modules.hibernate4lib/modules/ext/hibernate4/antlr-2.7.7.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.hibernate4lib/modules/ext/hibernate4/c3p0-0.9.2.1.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.hibernate4lib/modules/ext/hibernate4/hibernate-c3p0-4.2.14.Final.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.hibernate4lib/modules/ext/hibernate4/mchange-commons-java-0.2.3.4.jar!/</resource>
         <!--resource>jar:nbinst://org.apache.commons.logging/modules/org-apache-commons-logging.jar!/</resource-->
         <resource>jar:nbinst://org.netbeans.modules.hibernate4lib/modules/ext/hibernate4/dom4j-1.6.1.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.hibernate4lib/modules/ext/hibernate4/ehcache-core-2.4.3.jar!/</resource>

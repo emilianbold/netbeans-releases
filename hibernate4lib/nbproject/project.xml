@@ -58,6 +58,9 @@
                 <runtime-relative-path>ext/hibernate4/c3p0-0.9.2.1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
+                <runtime-relative-path>ext/hibernate4/mchange-commons-java-0.2.3.4.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
                 <runtime-relative-path>ext/hibernate4/ehcache-core-2.4.3.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
