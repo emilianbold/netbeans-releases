@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,16 +37,59 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.debugger.common2.debugger.spi;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
+package org.netbeans.modules.php.editor.completion;
+
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Nikolay Koldunov
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public interface UserAttachAction {
-    void attach(String hostInfo, String pid, EngineType type, String filter);
+public class PHPDocCodeCompletionTest extends PHPCodeCompletionTestBase {
+
+    public PHPDocCodeCompletionTest(String testName) {
+        super(testName);
+    }
+
+    public void testIssue245356_01() throws Exception {
+        checkCompletion("testfiles/completion/phpdoc/testIssue245356/issue.php", "* @see ^Name\\Space\\Bar::", false);
+    }
+
+    public void testIssue245356_02() throws Exception {
+        checkCompletion("testfiles/completion/phpdoc/testIssue245356/issue.php", "* @see Name\\Space\\Bar::^", false);
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))
+            })
+        );
+    }
+
+    private String getTestFolderPath() {
+        return "testfiles/completion/phpdoc/" + transformTestMethodNameToDirectory();//NOI18N
+    }
+
+    private String transformTestMethodNameToDirectory() {
+        String result = getName();
+        int indexOf = result.indexOf("_");
+        if (indexOf != -1) {
+            result = result.substring(0, indexOf);
+        }
+        return result;
+    }
+
 }

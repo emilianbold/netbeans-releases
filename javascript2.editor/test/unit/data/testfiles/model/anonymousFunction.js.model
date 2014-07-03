@@ -19,6 +19,4 @@ anonymousFunction_L44 : FUNCTION anonymousFunction_L44 [ANONYMOUS: true, DECLARE
                                          # PROPERTIES
                                          arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                      root      : OBJECT root [ANONYMOUS: false, DECLARED: true - root, MODIFIERS: PRIVATE, OBJECT]
-                                # PROPERTIES
-                                Car : OBJECT Car [ANONYMOUS: false, DECLARED: true - Car, MODIFIERS: PUBLIC, PROPERTY]
+                      root      : OBJECT root [ANONYMOUS: false, DECLARED: true - root, MODIFIERS: PRIVATE, VARIABLE]
