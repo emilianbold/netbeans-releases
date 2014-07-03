@@ -95,8 +95,8 @@ public final class BowerProblemProvider implements ProjectProblemsProvider {
     }
 
     @NbBundle.Messages({
-        "ERR_BowerInstall=Missing bower modules",
-        "TXT_BowerInstallDescription=This project uses bower modules, but they are not installed.",
+        "ERR_BowerInstall=Missing Bower modules",
+        "TXT_BowerInstallDescription=This project uses Bower modules, but they are not installed.",
         "ERR_BowerInstallResolved=Bower modules were succesfully installed.",
         "ERR_BowerInstallUnresolved=Bower modules were not succesfully installed."
     })

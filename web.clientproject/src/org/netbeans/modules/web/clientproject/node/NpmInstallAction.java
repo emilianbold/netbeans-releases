@@ -46,14 +46,18 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.web.clientproject.grunt.TargetLister;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
+import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -63,9 +67,18 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
+@MIMEResolver.Registration(displayName = "package.json", resource = "npm-resolver.xml", position = 125)
 @ActionID(id = "org.netbeans.modules.web.clientproject.grunt.NpmInstallAction", category = "Build")
 @ActionRegistration(displayName = "#CTL_NpmInstallAction", lazy=false)
-@ActionReference(path="Projects/org-netbeans-modules-web-clientproject/Actions", position = 170)
+@ActionReferences(value = {
+    @ActionReference(position = 906, path = "Editors/text/package+x-json/Popup"),
+    @ActionReference(position = 156, path = "Loaders/text/package+x-json/Actions"),
+    @ActionReference(path="Projects/org-netbeans-modules-web-clientproject/Actions", position = 170),
+    @ActionReference(path="Projects/org-netbeans-modules-php-phpproject/Actions", position = 650),
+    @ActionReference(path="Projects/org-netbeans-modules-web-project/Actions", position = 650),
+    @ActionReference(path="Projects/org-netbeans-modules-maven/Actions", position = 750)
+})
+
 public class NpmInstallAction extends AbstractAction implements ContextAwareAction {
     
     public @Override void actionPerformed(ActionEvent e) {
@@ -80,12 +93,18 @@ public class NpmInstallAction extends AbstractAction implements ContextAwareActi
         "CTL_NpmInstall=Npm install"
     })
     private static final class ContextAction extends AbstractAction {
-        private final Project p;
 
+        private FileObject package_json;
+        
         public ContextAction(Lookup context) {
             super(Bundle.CTL_NpmInstall());
-            p = context.lookup(Project.class);
-            FileObject package_json = p.getProjectDirectory().getFileObject("package.json");//NOI18N
+            Project p = context.lookup(Project.class);
+            if (p!=null) {
+                package_json = p.getProjectDirectory().getFileObject("package.json");//NOI18N
+            } else {
+                DataObject dob = context.lookup(DataObject.class);
+                package_json = dob.getPrimaryFile();
+            }
             setEnabled(package_json!=null);
             putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         }
@@ -97,11 +116,13 @@ public class NpmInstallAction extends AbstractAction implements ContextAwareActi
         public @Override
         void actionPerformed(ActionEvent e) {
             try {
+                Project p = FileOwnerQuery.getOwner(package_json);
+                String display = p!=null?ProjectUtils.getInformation(p).getDisplayName():package_json.getParent().getName();
                 new NodeExecutor(
-                        Bundle.TTL_npm_install(ProjectUtils.getInformation(p).getDisplayName()),
+                        Bundle.TTL_npm_install(display),
                         "npm",
-                        p.getProjectDirectory(), new String[]{"install"}).execute(); //NOI18N
-                TargetLister.invalidateCache(p.getProjectDirectory().getFileObject("Gruntfile.js")); //NOI18N
+                        package_json.getParent(), new String[]{"install"}).execute(); //NOI18N
+                TargetLister.invalidateCache(package_json.getParent().getFileObject("Gruntfile.js")); //NOI18N
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
