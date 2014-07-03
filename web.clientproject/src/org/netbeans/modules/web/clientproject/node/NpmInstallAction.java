@@ -73,7 +73,10 @@ import org.openide.util.NbBundle;
 @ActionReferences(value = {
     @ActionReference(position = 906, path = "Editors/text/package+x-json/Popup"),
     @ActionReference(position = 156, path = "Loaders/text/package+x-json/Actions"),
-    @ActionReference(path="Projects/org-netbeans-modules-web-clientproject/Actions", position = 170)
+    @ActionReference(path="Projects/org-netbeans-modules-web-clientproject/Actions", position = 170),
+    @ActionReference(path="Projects/org-netbeans-modules-php-phpproject/Actions", position = 650),
+    @ActionReference(path="Projects/org-netbeans-modules-web-project/Actions", position = 650),
+    @ActionReference(path="Projects/org-netbeans-modules-maven/Actions", position = 750)
 })
 
 public class NpmInstallAction extends AbstractAction implements ContextAwareAction {

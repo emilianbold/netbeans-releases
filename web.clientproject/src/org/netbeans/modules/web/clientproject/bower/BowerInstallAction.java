@@ -73,7 +73,10 @@ import org.openide.util.NbBundle;
 @ActionReferences(value = {
     @ActionReference(position = 905, path = "Editors/text/bower+x-json/Popup"),
     @ActionReference(position = 155, path = "Loaders/text/bower+x-json/Actions"),
-    @ActionReference(path="Projects/org-netbeans-modules-web-clientproject/Actions", position = 175)
+    @ActionReference(path="Projects/org-netbeans-modules-web-clientproject/Actions", position = 175),
+    @ActionReference(path="Projects/org-netbeans-modules-php-phpproject/Actions", position = 660),
+    @ActionReference(path="Projects/org-netbeans-modules-web-project/Actions", position = 660),
+    @ActionReference(path="Projects/org-netbeans-modules-maven/Actions", position = 760)
 })
 
 public class BowerInstallAction extends AbstractAction implements ContextAwareAction {
