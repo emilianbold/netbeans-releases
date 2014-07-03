@@ -60,7 +60,7 @@ import org.openide.nodes.Node;
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.callgraph.api.ui.CallGraphModelFactory.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.callgraph.api.ui.CallGraphModelFactory.class, position = 100)
 public class CallGraphModelFactoryImpl extends CallGraphModelFactory {
 
     @Override

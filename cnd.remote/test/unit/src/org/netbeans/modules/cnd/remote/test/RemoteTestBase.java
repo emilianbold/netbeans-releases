@@ -71,7 +71,6 @@ import org.netbeans.modules.cnd.remote.sync.FtpSyncFactory;
 import org.netbeans.modules.cnd.remote.sync.RemoteSyncTestSupport;
 import org.netbeans.modules.cnd.remote.sync.RfsSyncFactory;
 import org.netbeans.modules.cnd.remote.sync.SharedSyncFactory;
-import org.netbeans.modules.cnd.remote.sync.ZipSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -96,7 +95,6 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
     public static enum Sync {
         FTP(FtpSyncFactory.ID),
         RFS(RfsSyncFactory.ID),
-        ZIP(ZipSyncFactory.ID),
         SHARED(SharedSyncFactory.ID);
         public final String ID;
         Sync(String id) {
