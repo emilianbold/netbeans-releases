@@ -933,7 +933,7 @@ T_CURLY_OPEN:token inner_statement_list:statementList T_CURLY_CLOSE:end
 	RESULT = forEachStatement;
 :}
 
-| T_FOREACH:token T_OPEN_PARENTHESE expr_without_variable:expr T_AS variable:var foreach_optional_arg:arg T_CLOSE_PARENTHESE foreach_statement:statement
+| T_FOREACH:token T_OPEN_PARENTHESE expr_without_variable:expr T_AS foreach_variable_or_list:var foreach_optional_arg:arg T_CLOSE_PARENTHESE foreach_statement:statement
 {:
 	ForEachStatement forEachStatement = null;
 	if (arg == null) {
@@ -3985,6 +3985,16 @@ T_ISSET:start T_OPEN_PARENTHESE isset_variables:varList T_CLOSE_PARENTHESE:end
 	LinkedList varList = new LinkedList();
 	varList.add(var);
 	FunctionInvocation result = new FunctionInvocation(startleft, endright, name, varList);
+	RESULT = result;
+:}
+
+| T_EMPTY:start T_OPEN_PARENTHESE expr_without_variable:expr T_CLOSE_PARENTHESE:end
+{:
+	Identifier id = new Identifier(startleft, startright, "empty");
+	FunctionName name = new FunctionName(startleft, startright, id);
+	LinkedList exprList = new LinkedList();
+	exprList.add(expr);
+	FunctionInvocation result = new FunctionInvocation(startleft, endright, name, exprList);
 	RESULT = result;
 :}
 
