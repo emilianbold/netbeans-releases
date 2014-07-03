@@ -51,6 +51,10 @@ public class EncodedActionTable8 {
     }
     protected EncodedActionTable8() {
         sb = new StringBuilder();
+        sb.append("\ufff2"); 
+        sb.append("\231"); 
+        sb.append("\ufff2"); 
+        sb.append("\001"); 
         sb.append("\002"); 
         sb.append("\000"); 
         sb.append("\006"); 

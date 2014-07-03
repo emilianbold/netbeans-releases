@@ -933,7 +933,7 @@ T_CURLY_OPEN:token inner_statement_list:statementList T_CURLY_CLOSE:end
 	RESULT = forEachStatement;
 :}
 
-| T_FOREACH:token T_OPEN_PARENTHESE expr_without_variable:expr T_AS variable:var foreach_optional_arg:arg T_CLOSE_PARENTHESE foreach_statement:statement
+| T_FOREACH:token T_OPEN_PARENTHESE expr_without_variable:expr T_AS foreach_variable_or_list:var foreach_optional_arg:arg T_CLOSE_PARENTHESE foreach_statement:statement
 {:
 	ForEachStatement forEachStatement = null;
 	if (arg == null) {

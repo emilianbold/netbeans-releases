@@ -52,6 +52,10 @@ public class EncodedActionTable5 {
     protected EncodedActionTable5() {
         sb = new StringBuilder();
         sb.append("\ufec8"); 
+        sb.append("\124"); 
+        sb.append("\ufec8"); 
+        sb.append("\142"); 
+        sb.append("\ufec8"); 
         sb.append("\143"); 
         sb.append("\ufec8"); 
         sb.append("\144"); 
@@ -4547,9 +4551,5 @@ public class EncodedActionTable5 {
         sb.append("\213"); 
         sb.append("\u029b"); 
         sb.append("\214"); 
-        sb.append("\u029e"); 
-        sb.append("\215"); 
-        sb.append("\u02a1"); 
-        sb.append("\216"); 
     }
 }
