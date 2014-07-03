@@ -138,26 +138,43 @@ public final class PHPDOCCodeCompletion {
                 Set<TypeElement> types = request.index.getTypes(NameKind.exact(type));
                 TypeElement typeElement = ModelUtils.getFirst(types);
                 if (typeElement != null) {
-                    Set<TypeMemberElement> accessibleTypeMembers = request.index.getAccessibleTypeMembers(typeElement, null);
-                    for (TypeMemberElement typeMemberElement : accessibleTypeMembers) {
-                        if (typeMemberElement instanceof MethodElement) {
-                            MethodElement method = (MethodElement) typeMemberElement;
-                            List<PHPCompletionItem.MethodElementItem> items = PHPCompletionItem.MethodElementItem.getItems(method, request);
-                            for (PHPCompletionItem.MethodElementItem methodItem : items) {
-                                completionResult.add(methodItem);
-                            }
-                        } else if (typeMemberElement instanceof FieldElement) {
-                            FieldElement field = (FieldElement) typeMemberElement;
-                            PHPCompletionItem.FieldItem fieldItem = PHPCompletionItem.FieldItem.getItem(field, request, true);
-                            completionResult.add(fieldItem);
-                        } else if (typeMemberElement instanceof TypeConstantElement) {
-                            TypeConstantElement constant = (TypeConstantElement) typeMemberElement;
-                            PHPCompletionItem.TypeConstantItem constantItem = PHPCompletionItem.TypeConstantItem.getItem(constant, request);
-                            completionResult.add(constantItem);
-                        }
-                    }
+                    completeTypeMembers(typeElement);
                 }
             }
+        }
+
+        private void completeTypeMembers(TypeElement typeElement) {
+            Set<TypeMemberElement> accessibleTypeMembers = request.index.getAccessibleTypeMembers(typeElement, null);
+            for (TypeMemberElement typeMemberElement : accessibleTypeMembers) {
+                completeTypeMember(typeMemberElement);
+            }
+        }
+
+        private void completeTypeMember(TypeMemberElement typeMemberElement) {
+            if (typeMemberElement instanceof MethodElement) {
+                completeMethods((MethodElement) typeMemberElement);
+            } else if (typeMemberElement instanceof FieldElement) {
+                completeFields((FieldElement) typeMemberElement);
+            } else if (typeMemberElement instanceof TypeConstantElement) {
+                completeConstants((TypeConstantElement) typeMemberElement);
+            }
+        }
+
+        private void completeMethods(MethodElement method) {
+            List<PHPCompletionItem.MethodElementItem> items = PHPCompletionItem.MethodElementItem.getItems(method, request);
+            for (PHPCompletionItem.MethodElementItem methodItem : items) {
+                completionResult.add(methodItem);
+            }
+        }
+
+        private void completeFields(FieldElement field) {
+            PHPCompletionItem.FieldItem fieldItem = PHPCompletionItem.FieldItem.getItem(field, request, true);
+            completionResult.add(fieldItem);
+        }
+
+        private void completeConstants(TypeConstantElement constant) {
+            PHPCompletionItem.TypeConstantItem constantItem = PHPCompletionItem.TypeConstantItem.getItem(constant, request);
+            completionResult.add(constantItem);
         }
 
     }
