@@ -86,16 +86,19 @@ public class QualifierVerifier implements TargetVerifier {
                     ElementType.FIELD) &&
                         targetTypes.contains(ElementType.PARAMETER);
             if ( !hasFieldParameterTarget){
-                hasRequiredTarget = false;
+                hasRequiredTarget = targetTypes.size() == 1 && targetTypes.contains( ElementType.TYPE);//allow TYPE only target
             }
             else {
                 if ( targetTypes.size() == 2 ){
                     hasRequiredTarget = true;
                 }
                 else {
-                    hasRequiredTarget = targetTypes.size() == 4 && 
-                        targetTypes.contains( ElementType.METHOD) &&
-                                targetTypes.contains( ElementType.TYPE);
+                    hasRequiredTarget = 
+                            (targetTypes.size() == 4 && 
+                                targetTypes.contains( ElementType.METHOD) &&
+                                targetTypes.contains( ElementType.TYPE)) || 
+                            (targetTypes.size() == 3 && 
+                                targetTypes.contains( ElementType.METHOD));
                 }
             }
         }
