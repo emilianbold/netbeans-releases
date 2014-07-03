@@ -289,7 +289,7 @@ public class Mercurial {
 
         HgFileNode[] nodes = new HgFileNode[files.length];
         for (int i = 0; i < files.length; i++) {
-            nodes[i] = new HgFileNode(files[i]);
+            nodes[i] = new HgFileNode(repository, files[i]);
         }
         CommitOptions[] commitOptions = HgUtils.createDefaultCommitOptions(nodes, HgModuleConfig.getDefault().getExludeNewFiles());
         final HashMap<HgFileNode, CommitOptions> commitFiles = new HashMap<HgFileNode, CommitOptions>(nodes.length);

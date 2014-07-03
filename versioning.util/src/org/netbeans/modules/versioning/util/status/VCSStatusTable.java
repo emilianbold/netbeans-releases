@@ -78,9 +78,11 @@ import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.modules.versioning.util.common.FileViewComponent;
 import org.netbeans.swing.etable.ETable;
 import org.netbeans.swing.etable.ETableColumn;
 import org.openide.awt.MouseUtils;
+import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport.ReadOnly;
 import org.openide.util.Mutex;
@@ -90,7 +92,7 @@ import org.openide.windows.TopComponent;
  *
  * @author ondra
  */
-public abstract class VCSStatusTable<T extends VCSStatusNode> implements MouseListener, ListSelectionListener {
+public abstract class VCSStatusTable<T extends VCSStatusNode> implements FileViewComponent<T>, MouseListener, ListSelectionListener {
 
     private final ETable          table;
     private final JScrollPane     component;
@@ -256,6 +258,110 @@ public abstract class VCSStatusTable<T extends VCSStatusNode> implements MouseLi
         support.removePropertyChangeListener(list);
     }
 
+    @Override
+    public T getSelectedNode () {
+        T[] selected = getSelectedNodes();
+        return selected.length == 1 ? selected[0] : null;
+    }
+
+    @Override
+    public void setSelectedNode (T toSelect) {
+        File selectedFile = toSelect.getFile();
+        setSelectedNodes(new File[] { selectedFile });
+    }
+
+    @Override
+    public T getNodeAtPosition (int position) {
+        return tableModel.getNode(getTable().convertRowIndexToModel(position));
+    }
+
+    @Override
+    public T[] getNeighbouringNodes (T node, int boundary) {
+        int index = Arrays.asList(tableModel.getNodes()).indexOf(node);
+        T[] nodes;
+        if (index < 0) {
+            nodes = (T[]) java.lang.reflect.Array.newInstance(tableModel.getItemClass(), 0);
+        } else {
+            JTable table = getTable();
+            index = table.convertRowIndexToView(index);
+            int min = Math.max(0, index - 2);
+            int max = Math.min(table.getRowCount() - 1, index + 2);
+            nodes = (T[]) java.lang.reflect.Array.newInstance(tableModel.getItemClass(), max - min + 1);
+            // adding tableIndex, tableIndex - 1, tableIndex + 1, tableIndex - 2, tableIndex + 2, etc.
+            for (int i = index, j = index + 1, k = 0; i >= min || j <= max; --i, ++j) {
+                if (i >= min) {
+                    nodes[k++] = getNodeAtPosition(i);
+                }
+                if (j <= max) {
+                    nodes[k++] = getNodeAtPosition(j);
+                }
+            }
+        }
+        return nodes;
+    }
+
+    @Override
+    public T getNextNode (T node) {
+        T next = null;
+        if (node != null) {
+            int index = Arrays.asList(tableModel.getNodes()).indexOf(node);
+            if (index >= 0) {
+                JTable table = getTable();
+                index = table.convertRowIndexToView(index);
+                if (++index < table.getRowCount()) {
+                    next = tableModel.getNodes()[table.convertRowIndexToModel(index)];
+                }
+            }
+        }
+        return next;
+    }
+
+    @Override
+    public T getPreviousNode (T node) {
+        T prev = null;
+        if (node != null) {
+            int index = Arrays.asList(tableModel.getNodes()).indexOf(node);
+            if (index >= 0) {
+                JTable table = getTable();
+                index = table.convertRowIndexToView(index);
+                if (--index >= 0) {
+                    prev = tableModel.getNodes()[table.convertRowIndexToModel(index)];
+                }
+            }
+        }
+        return prev;
+    }
+
+    @Override
+    public boolean hasNextNode (T node) {
+        return getNextNode(node) != null;
+    }
+
+    @Override
+    public boolean hasPreviousNode (T node) {
+        return getPreviousNode(node) != null;
+    }
+
+    @Override
+    public int getPreferredHeaderHeight () {
+        return getTable().getTableHeader().getPreferredSize().height;
+    }
+
+    @Override
+    public int getPreferredHeight () {
+        return getTable().getPreferredSize().height;
+    }
+
+    @Override
+    public Object prepareModel (T[] nodes) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void setModel (T[] nodes, EditorCookie[] editorCookies, Object modelData) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 // <editor-fold defaultstate="collapsed" desc="popup and selection">
     private void showPopup(final MouseEvent e) {
         int row = table.rowAtPoint(e.getPoint());
@@ -300,7 +406,7 @@ public abstract class VCSStatusTable<T extends VCSStatusNode> implements MouseLi
      * @param node 
      */
     protected void mouseClicked (VCSStatusNode node) {
-        Action action = node.getPreferredAction();
+        Action action = node.getNodeAction();
         if (action != null && action.isEnabled()) {
             action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, node.getFile().getAbsolutePath()));
         }

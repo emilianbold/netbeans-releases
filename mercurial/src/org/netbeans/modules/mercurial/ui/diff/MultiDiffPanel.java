@@ -275,7 +275,8 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
 
         // mimics refreshSetups()
         Setup[] localSetups = new Setup[] {new Setup(file, rev1, rev2, fi, forceNonEditable)};
-        localSetups[0].setNode(new DiffNode(localSetups[0], new HgFileNode(file)));
+        File root = Mercurial.getInstance().getRepositoryRoot(file);
+        localSetups[0].setNode(new DiffNode(localSetups[0], new HgFileNode(root, file)));
         setSetups(localSetups, DiffUtils.setupsToEditorCookies(localSetups));
         setDiffIndex(localSetups[0], 0, false);
         dpt = new DiffPrepareTask(setups);
@@ -1040,11 +1041,12 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
 
     private Setup[] computeSetups(File[] files) {
         List<Setup> newSetups = new ArrayList<Setup>(files.length);
+        Mercurial hg = Mercurial.getInstance();
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             if (!file.isDirectory()) {
                 Setup setup = new Setup(file, null, currentType);
-                setup.setNode(new DiffNode(setup, new HgFileNode(file)));
+                setup.setNode(new DiffNode(setup, new HgFileNode(hg.getRepositoryRoot(file), file)));
                 newSetups.add(setup);
             }
         }
@@ -1117,22 +1119,13 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 statuses.keySet().retainAll(Utils.flattenFiles(context.getRootFiles().toArray(
                         new File[context.getRootFiles().size()]), statuses.keySet()));
                 List<Setup> newSetups = new ArrayList<Setup>(statuses.size());
+                Mercurial hg = Mercurial.getInstance();
                 for (Map.Entry<File, FileInformation> e : statuses.entrySet()) {
                     File file = e.getKey();
                     FileInformation fi = e.getValue();
                     if (isVisible(file, fi)) {
                         Setup setup = new Setup(file, revisionLeft, revisionRight, fi, false);
-                        setup.setNode(new DiffNode(setup, new HgFileNode(file)) {
-                            @Override
-                            public Action getPreferredAction () {
-                                return new AbstractAction() {
-                                    @Override
-                                    public void actionPerformed (ActionEvent e) {
-                                        // nothing
-                                    }
-                                };
-                            }
-                        });
+                        setup.setNode(new DiffNode(setup, new HgFileNode(hg.getRepositoryRoot(file), file)));
                         newSetups.add(setup);
                     }
                 }
