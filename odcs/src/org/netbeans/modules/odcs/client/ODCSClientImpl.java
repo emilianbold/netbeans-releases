@@ -121,7 +121,12 @@ public class ODCSClientImpl implements ODCSClient {
     @Override
     public List<Project> searchProjects(String pattern) throws ODCSException {
         try {
-            QueryResult<Project> r = getProfileClient().findProjects(new ProjectsQuery(pattern, null));
+            if(pattern != null && "".equals(pattern.trim())) {
+                pattern = null;
+            }
+            ProjectsQuery q = new ProjectsQuery(pattern, null);
+            q.setProjectRelationship(ProjectRelationship.ALL);
+            QueryResult<Project> r = getProfileClient().findProjects(q);
             return r != null ? r.getResultPage() : null;
                 } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
