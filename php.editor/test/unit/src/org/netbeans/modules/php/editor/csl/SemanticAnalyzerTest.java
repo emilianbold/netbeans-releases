@@ -186,4 +186,8 @@ public class SemanticAnalyzerTest extends SemanticAnalysisTestBase {
     public void testIssue216840_02() throws Exception {
         checkSemantic("testfiles/semantic/issue216840_02.php");
     }
+
+    public void testIssue245230() throws Exception {
+        checkSemantic("testfiles/semantic/issue245230.php");
+    }
 }
