@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.web.clientproject.node;
 
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -62,36 +61,21 @@ import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
  * Problem: Project requires npm install
  */
-public final class NpmProblemProvider implements ProjectProblemsProvider {
-
-    final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
-    final Project project;
-
+public final class NpmProblemProvider extends NodeProblemProvider {
 
     private NpmProblemProvider(Project project) {
-        assert project != null;
-        this.project = project;
+        super(project);
     }
 
     public static NpmProblemProvider create(Project project) {
         NpmProblemProvider problemProvider = new NpmProblemProvider(project);
+        problemProvider.addFileChangesListeners("package.json", "node_modules");
         return problemProvider;
-    }
-
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        problemsProviderSupport.addPropertyChangeListener(listener);
-    }
-
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        problemsProviderSupport.removePropertyChangeListener(listener);
     }
     
     private boolean isNpmInstallRequired() {
@@ -132,8 +116,8 @@ public final class NpmProblemProvider implements ProjectProblemsProvider {
     @NbBundle.Messages({
         "ERR_NpmInstall=Missing Node.JS modules",
         "TXT_NpmInstallDescription=This project uses Node.JS modules, but they are not installed.",
-        "ERR_NpmInstallResolved=Node.JS modules were succesfully installed.",
-        "ERR_NpmInstallUnresolved=Node.JS modules were not succesfully installed."
+        "ERR_NpmInstallResolved=Node.JS modules were successfully installed.",
+        "ERR_NpmInstallUnresolved=Node.JS modules were not successfully installed."
     })
     @Override
     public Collection<? extends ProjectProblem> getProblems() {
