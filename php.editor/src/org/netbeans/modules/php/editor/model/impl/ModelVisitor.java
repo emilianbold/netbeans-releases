@@ -1347,7 +1347,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
     private void handleVarComments() {
         Set<String> varCommentNames = varTypeComments.keySet();
-        for (String name : varCommentNames) {
+        for (String name : new HashSet<>(varCommentNames)) {
             handleVarComment(name);
         }
     }
@@ -1356,7 +1356,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         Parameters.notNull("name", name); //NOI18N
         List<PhpDocTypeTagInfo> varComments = varTypeComments.get(name); //varComments.size() varTypeComments.size()
         if (varComments != null) {
-            for (PhpDocTypeTagInfo phpDocTypeTagInfo : varComments) {
+            for (PhpDocTypeTagInfo phpDocTypeTagInfo : new ArrayList<>(varComments)) {
                 VariableScope varScope = getVariableScope(phpDocTypeTagInfo.getRange().getStart());
                 if (varScope != null) {
                     handleVarAssignment(name, varScope, phpDocTypeTagInfo);
@@ -1388,7 +1388,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         Parameters.notNull("variableScope", variableScope); //NOI18N
         List<PhpDocTypeTagInfo> varComments = varTypeComments.get(variableName);
         if (varComments != null) {
-            for (PhpDocTypeTagInfo phpDocTypeTagInfo : varComments) {
+            for (PhpDocTypeTagInfo phpDocTypeTagInfo : new ArrayList<>(varComments)) {
                 VariableScope varScope = getVariableScope(phpDocTypeTagInfo.getRange().getStart());
                 if (variableScope.equals(varScope)) {
                     handleVarAssignment(variableName, varScope, phpDocTypeTagInfo);
