@@ -39,19 +39,20 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.git.ui.diff;
+package org.netbeans.modules.git.ui.status;
 
-import java.io.File;
+import java.awt.event.MouseEvent;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.GitStatusNode;
+import org.netbeans.modules.git.ui.status.VersioningPanelController.GitStatusNodeImpl;
 import org.netbeans.modules.versioning.util.common.FileTreeView;
 import org.netbeans.modules.versioning.util.status.VCSStatusNode;
 import org.netbeans.swing.outline.RenderDataProvider;
+import org.openide.awt.MouseUtils;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 
@@ -59,21 +60,33 @@ import org.openide.nodes.PropertySupport;
  *
  * @author Ondrej Vrabec
  */
-class DiffFileTreeImpl extends FileTreeView<DiffNode> {
+class FileTreeViewImpl extends FileTreeView<GitStatusNodeImpl> {
     
-    private final MultiDiffPanelController master;
+    private final VersioningPanelController.ModeKeeper modeKeeper;
+    private final VersioningPanelController master;
 
-    public DiffFileTreeImpl (MultiDiffPanelController master) {
+    public FileTreeViewImpl (VersioningPanelController master, VersioningPanelController.ModeKeeper modeKeeper) {
         super();
+        this.modeKeeper = modeKeeper;
         this.master = master;
         setupColumns();
+    }
+    
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        if (SwingUtilities.isLeftMouseButton(e) && MouseUtils.isDoubleClick(e)) {
+            if (!getSelectedNodes().isEmpty()) {
+                modeKeeper.storeMode();
+            }
+        }
+        super.mouseClicked(e);
     }
     
     @SuppressWarnings("unchecked")
     private void setupColumns() {
         Node.Property [] properties = new Node.Property[2];
-        properties[0] = new ColumnDescriptor<>(GitStatusNode.GitStatusProperty.NAME, String.class, GitStatusNode.GitStatusProperty.DISPLAY_NAME, GitStatusNode.GitStatusProperty.DESCRIPTION);
-        properties[1] = new ColumnDescriptor<>(VCSStatusNode.PathProperty.NAME, String.class, VCSStatusNode.PathProperty.DISPLAY_NAME, VCSStatusNode.PathProperty.DESCRIPTION);
+        properties[0] = new ColumnDescriptor<>(GitStatusNodeImpl.GitStatusProperty.NAME, String.class, GitStatusNode.GitStatusProperty.DISPLAY_NAME, GitStatusNode.GitStatusProperty.DESCRIPTION);
+        properties[1] = new ColumnDescriptor<>(GitStatusNodeImpl.PathProperty.NAME, String.class, VCSStatusNode.PathProperty.DISPLAY_NAME, VCSStatusNode.PathProperty.DESCRIPTION);
         view.setProperties(properties);
         view.getOutline().setRenderDataProvider(createRenderProvider());
     }
@@ -81,8 +94,8 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
     private RenderDataProvider createRenderProvider () {
         return new AbstractRenderDataProvider() {
             @Override
-            protected String annotateName (DiffNode node, String originalLabel) {
-                if (GitModuleConfig.getDefault().isExcludedFromCommit(node.getSetup().getBaseFile().getAbsolutePath())) {
+            protected String annotateName (GitStatusNodeImpl node, String originalLabel) {
+                if (GitModuleConfig.getDefault().isExcludedFromCommit(node.getFile().getAbsolutePath())) {
                     originalLabel = "<s>" + (originalLabel == null ? node.getName() : originalLabel) + "</s>"; //NOI18N
                 }
                 return originalLabel;
@@ -91,19 +104,13 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
     }
 
     @Override
-    protected void nodeSelected (DiffNode node) {
-        if (node == null) {
-            master.filesSelected();
-        } else {
-            master.filesSelected(node.getFile());
-        }
+    protected void nodeSelected (GitStatusNodeImpl node) {
     }
 
     @Override
     protected JPopupMenu getPopup () {
         List<Node> nodes = getSelectedNodes();
-        List<File> files = toFiles(nodes);
-        return master.getPopupFor(nodes.toArray(new Node[nodes.size()]), files.toArray(new File[files.size()]));
+        return master.getPopupFor(nodes.toArray(new Node[nodes.size()]));
     }
     
     @Override
@@ -117,17 +124,6 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
                 view.getOutline().getColumnModel().getColumn(2).setPreferredWidth(width * 40 / 100);
             }
         });
-    }
-
-    private List<File> toFiles (List<Node> nodes) {
-        List<File> files = new ArrayList<>(nodes.size());
-        for (Node n : nodes) {
-            File f = n.getLookup().lookup(File.class);
-            if (f != null) {
-                files.add(f);
-            }
-        }
-        return files;
     }
     
     private static class ColumnDescriptor<T> extends PropertySupport.ReadOnly<T> {

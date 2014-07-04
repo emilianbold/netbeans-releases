@@ -83,8 +83,9 @@ public abstract class VCSStatusNode<T extends VCSFileNode> extends AbstractNode 
         statusProperty = new StatusProperty(this);
     }
 
-    @Override
-    public abstract Action getPreferredAction ();
+    public Action getNodeAction () {
+        return getPreferredAction();
+    }
 
     @Override
     public String getHtmlDisplayName () {

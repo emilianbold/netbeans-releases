@@ -323,8 +323,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
 
         java.util.List<HgFileNode> fnodes = new LinkedList<HgFileNode>();
         for (File file : files) {
-            if(repositories.contains(mercurial.getRepositoryRoot(file))) {
-                fnodes.add(new HgFileNode(file));
+            File repository = mercurial.getRepositoryRoot(file);
+            if(repositories.contains(repository)) {
+                fnodes.add(new HgFileNode(repository, file));
             }
         }
         SyncFileNode [] nodes = new SyncFileNode[fnodes.size()];

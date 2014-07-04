@@ -399,7 +399,7 @@ public class CommitAction extends ContextAction {
 
                     for (Iterator<File> it = fileList.iterator(); it.hasNext();) {
                         File file = it.next();
-                        HgFileNode node = new HgFileNode(file);
+                        HgFileNode node = new HgFileNode(repository, file);
                         nodesList.add(node);
                     }
                     final HgFileNode[] nodes = nodesList.toArray(new HgFileNode[fileList.size()]);
