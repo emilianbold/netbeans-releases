@@ -1215,7 +1215,6 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     @Override
-
     public Node enter(VarNode varNode) {
          if (!(varNode.getInit() instanceof ObjectNode || varNode.getInit() instanceof ReferenceNode
                  || varNode.getInit() instanceof LiteralNode.ArrayLiteralNode)) {

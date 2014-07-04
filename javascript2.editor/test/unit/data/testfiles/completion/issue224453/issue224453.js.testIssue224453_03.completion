@@ -2,6 +2,7 @@ Code completion result for source line:
 $scope.specification.i|d + "/v/" + view);
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+CLASS      id                              [PUBLIC]   <font color=#999999>issue224453.js</font>
 METHOD     isExtensible(O: Object): Boole  [PUBLIC,   JS Platform
 METHOD     isFrozen(O: Object): Boolean    [PUBLIC,   JS Platform
 METHOD     isPrototypeOf(V: Object): Bool  [PUBLIC]   JS Platform

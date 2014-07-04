@@ -1,9 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
+<?xml version="1.0" encoding="UTF-8" ?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -30,7 +29,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -44,23 +43,11 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<library version="3.0" xmlns="http://www.netbeans.org/ns/library-declaration/3">
-    <name>jsf20ri</name>
-    <type>j2se</type>
-    <localizing-bundle>org/netbeans/modules/web/jsf20/Bundle</localizing-bundle>
-    <volume>
-        <type>classpath</type>
-	<resource>jar:nbinst://org.netbeans.modules.web.jsf20ri/modules/ext/jsf-2_2/javax.faces.jar!/</resource>
-    </volume>
-    <volume>
-        <type>javadoc</type>
-        <resource>jar:nbinst:///docs/javaee-doc-api.jar!/</resource>
-    </volume>
-    <properties>
-        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
-        <property>
-            <name>maven-dependencies</name>
-            <value>org.glassfish:javax.faces:2.2.7:jar</value>
-        </property>
-    </properties>    
-</library>
+<!DOCTYPE MIME-resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.1//EN" "http://www.netbeans.org/dtds/mime-resolver-1_1.dtd">
+
+<MIME-resolver>
+    <file>
+        <name name="bower.json"/>
+        <resolver mime="text/bower+x-json"/>
+    </file>
+</MIME-resolver>
