@@ -1115,6 +1115,22 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue244861.js", "this.my^Field = \"foo\"; // click on myField", true); 
     }
     
+    public void testIssue244344_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244344.js", "SeLiteMisc.isInstance= function isPrdca( ob^ject, classes, className, message ) {", true); 
+    }
+    
+    public void testIssue244344_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244344.js", "SeLiteMisc.isInstance= function isPrdca( object, cla^sses, className, message ) {", true); 
+    }
+    
+    public void testIssue244344_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244344.js", "SeLiteMisc.isInstance= function isPrdca( object, classes, class^Name, message ) {", true); 
+    }
+    
+    public void testIssue244344_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244344.js", "SeLiteMisc.isInstance= function isPrdca( object, classes, className, messa^ge ) {", true); 
+    }
+    
    private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

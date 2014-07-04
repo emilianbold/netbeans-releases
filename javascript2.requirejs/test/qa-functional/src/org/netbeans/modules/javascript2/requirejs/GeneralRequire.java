@@ -140,6 +140,7 @@ public class GeneralRequire extends JellyTestCase {
             JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
             EditorOperator ed = new EditorOperator(requestedFileName);
             JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", defaultTimeout);
+            GeneralRequire.currentFile = requestedFileName;
             return ed;
         } catch (Exception e) {
             JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", defaultTimeout);
