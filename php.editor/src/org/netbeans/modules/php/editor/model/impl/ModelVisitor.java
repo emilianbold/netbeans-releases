@@ -639,7 +639,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             Expression name = functionName.getName();
             if (name instanceof Variable) {
                 Variable variable = (Variable) name;
-                result = !variable.isDollared() && (name instanceof ReflectionVariable);
+                result = !variable.isDollared() && !(name instanceof ReflectionVariable);
             } else {
                 result = true;
             }
