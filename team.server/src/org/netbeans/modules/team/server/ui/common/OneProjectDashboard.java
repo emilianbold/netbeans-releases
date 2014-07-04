@@ -759,6 +759,18 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
 
     @Override
     public SelectionList getProjectsList(boolean forceRefresh) {
+            
+        synchronized( LOCK ) {
+            if(forceRefresh) {
+                projectChildren.clear();
+                OneProjectDashboardPicker picker = getProjectPicker();
+                if(picker.isSelectedServer(server)) {
+                    picker.setCurrentProject(null, null, null, false);
+                    switchProject(null, true);
+                }
+            }
+        }
+            
         if(forceRefresh || !otherProjectsLoaded || !memberProjectsLoaded) {
             startAllProjectsLoading(forceRefresh, true);
         } 
