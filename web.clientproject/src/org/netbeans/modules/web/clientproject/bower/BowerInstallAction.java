@@ -46,14 +46,18 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.web.clientproject.node.NodeExecutor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
+import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -63,9 +67,18 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
+@MIMEResolver.Registration(displayName = "bower", resource = "bower-resolver.xml", position = 124)
 @ActionID(id = "org.netbeans.modules.web.clientproject.grunt.BowerInstallAction", category = "Build")
 @ActionRegistration(displayName = "#CTL_BowerInstallAction", lazy=false)
-@ActionReference(path="Projects/org-netbeans-modules-web-clientproject/Actions", position = 175)
+@ActionReferences(value = {
+    @ActionReference(position = 905, path = "Editors/text/bower+x-json/Popup"),
+    @ActionReference(position = 155, path = "Loaders/text/bower+x-json/Actions"),
+    @ActionReference(path="Projects/org-netbeans-modules-web-clientproject/Actions", position = 175),
+    @ActionReference(path="Projects/org-netbeans-modules-php-phpproject/Actions", position = 660),
+    @ActionReference(path="Projects/org-netbeans-modules-web-project/Actions", position = 660),
+    @ActionReference(path="Projects/org-netbeans-modules-maven/Actions", position = 760)
+})
+
 public class BowerInstallAction extends AbstractAction implements ContextAwareAction {
     
     public @Override void actionPerformed(ActionEvent e) {
@@ -77,12 +90,17 @@ public class BowerInstallAction extends AbstractAction implements ContextAwareAc
     }
     
     private static final class ContextAction extends AbstractAction {
-        private final Project p;
+        private FileObject bower_json;
 
         public ContextAction(Lookup context) {
             super(NbBundle.getMessage(BowerInstallAction.class, "CTL_BowerInstallAction"));
-            p = context.lookup(Project.class);
-            FileObject bower_json = p.getProjectDirectory().getFileObject("bower.json");//NOI18N
+            Project p = context.lookup(Project.class);
+            if (p!=null) {
+                bower_json = p.getProjectDirectory().getFileObject("bower.json");//NOI18N
+            } else {
+                DataObject dob = context.lookup(DataObject.class);
+                bower_json = dob.getPrimaryFile();
+            }
             setEnabled(bower_json!=null);
             putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         }
@@ -94,9 +112,11 @@ public class BowerInstallAction extends AbstractAction implements ContextAwareAc
         public @Override
         void actionPerformed(ActionEvent e) {
             try {
-                new NodeExecutor(Bundle.TTL_bower_install(ProjectUtils.getInformation(p).getDisplayName()),
+                Project p = FileOwnerQuery.getOwner(bower_json);
+                String display = p!=null?ProjectUtils.getInformation(p).getDisplayName():bower_json.getParent().getName();
+                new NodeExecutor(Bundle.TTL_bower_install(display),
                         "bower",
-                        p.getProjectDirectory(), new String[]{"install"}).execute(); //NOI18N
+                        bower_json.getParent(), new String[]{"install"}).execute(); //NOI18N
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

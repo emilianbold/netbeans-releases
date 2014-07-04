@@ -57,6 +57,7 @@ import org.json.simple.parser.ParseException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.web.clientproject.node.NodeExecutor;
+import org.netbeans.modules.web.clientproject.node.NodeProblemProvider;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
@@ -68,37 +69,24 @@ import org.openide.util.NbBundle;
 /**
  * Problem: Project requires bower install
  */
-public final class BowerProblemProvider implements ProjectProblemsProvider {
-
-    final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
-    final Project project;
+public final class BowerProblemProvider extends NodeProblemProvider {
 
 
     private BowerProblemProvider(Project project) {
-        assert project != null;
-        this.project = project;
+        super(project);
     }
 
     public static BowerProblemProvider create(Project project) {
         BowerProblemProvider problemProvider = new BowerProblemProvider(project);
+        problemProvider.addFileChangesListeners("bower.json", getBowerRcDir(project.getProjectDirectory()));
         return problemProvider;
     }
 
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        problemsProviderSupport.addPropertyChangeListener(listener);
-    }
-
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        problemsProviderSupport.removePropertyChangeListener(listener);
-    }
-
     @NbBundle.Messages({
-        "ERR_BowerInstall=Missing bower modules",
-        "TXT_BowerInstallDescription=This project uses bower modules, but they are not installed.",
-        "ERR_BowerInstallResolved=Bower modules were succesfully installed.",
-        "ERR_BowerInstallUnresolved=Bower modules were not succesfully installed."
+        "ERR_BowerInstall=Missing Bower modules",
+        "TXT_BowerInstallDescription=This project uses Bower modules, but they are not installed.",
+        "ERR_BowerInstallResolved=Bower modules were successfully installed.",
+        "ERR_BowerInstallUnresolved=Bower modules were not successfully installed."
     })
     @Override
     public Collection<? extends ProjectProblem> getProblems() {

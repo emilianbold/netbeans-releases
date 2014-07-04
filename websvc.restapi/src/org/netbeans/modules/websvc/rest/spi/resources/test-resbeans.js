@@ -1932,9 +1932,11 @@ XHR.prototype = {
         }
         
         //For cache control on IE7
-        xmlHttpReq.setRequestHeader("Cache-Control", "no-cache");
-        xmlHttpReq.setRequestHeader("Pragma", "no-cache");
-        xmlHttpReq.setRequestHeader("Expires", "-1");
+        if (navigator.userAgent.toLowerCase().indexOf('msie') >= 0) {
+            xmlHttpReq.setRequestHeader("Cache-Control", "no-cache");
+            xmlHttpReq.setRequestHeader("Pragma", "no-cache");
+            xmlHttpReq.setRequestHeader("Expires", "-1");
+        }
         
         ts.currentValidUrl = url;
         return xmlHttpReq;
