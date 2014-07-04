@@ -1165,7 +1165,7 @@ public class ModelVisitor extends PathNodeVisitor {
             Node lastNode = getPreviousFromPath(1);
             if (!( lastNode instanceof VarNode && !reference.isAnonymous())) {
                 addToPath(referenceNode);
-                reference.accept(this);
+//                reference.accept(this);
                 removeFromPathTheLast();
             } 
             return null;
@@ -1215,7 +1215,6 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     @Override
-
     public Node enter(VarNode varNode) {
          if (!(varNode.getInit() instanceof ObjectNode || varNode.getInit() instanceof ReferenceNode
                  || varNode.getInit() instanceof LiteralNode.ArrayLiteralNode)) {
