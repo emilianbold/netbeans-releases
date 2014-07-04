@@ -174,7 +174,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     //@GuardedBy("lock")
     private boolean  askForEditorExtensions = true;
     private final Object lock = new Object();
-    private List<PhpBaseElement> baseElements;
+    private final List<PhpBaseElement> baseElements;
     private final Cache<Scope, Map<String, AssignmentImpl>> assignmentMapCache = new Cache<>();
 
     private boolean lazyScan = true;
@@ -318,7 +318,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
     }
 
-    private static Set<String> recursionDetection = new HashSet<>(); //#168868
+    private static final Set<String> recursionDetection = new HashSet<>(); //#168868
 
     private String resolveVariableType(String varName, FunctionScopeImpl varScope, ReturnStatement node) {
         try {
@@ -639,11 +639,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             Expression name = functionName.getName();
             if (name instanceof Variable) {
                 Variable variable = (Variable) name;
-                if (variable.isDollared() || (name instanceof ReflectionVariable)) {
-                    result = false;
-                } else {
-                    result = true;
-                }
+                result = !variable.isDollared() && (name instanceof ReflectionVariable);
             } else {
                 result = true;
             }
@@ -1186,17 +1182,18 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     private VariableNameImpl findVariable(Scope scope, String varName) {
         VariableNameImpl retval = null;
+        Scope scopeToInspect = scope;
         if (varName != null) {
-            Map<String, VariableNameImpl> varnames = vars.get(scope);
-            while (scope != null) {
+            Map<String, VariableNameImpl> varnames = vars.get(scopeToInspect);
+            while (scopeToInspect != null) {
                 if (varnames != null) {
                     retval = varnames.get(varName);
                     if (retval != null) {
                         break;
                     }
                 }
-                scope = scope.getInScope();
-                varnames = vars.get(scope);
+                scopeToInspect = scopeToInspect.getInScope();
+                varnames = vars.get(scopeToInspect);
             }
         }
         return retval;
@@ -1273,14 +1270,15 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
 
     private CodeMarker findStrictCodeMarker(FileScopeImpl scope, int offset, CodeMarker atOffset) {
+        CodeMarker result = atOffset;
         List<? extends CodeMarker> markers = scope.getMarkers();
         for (CodeMarker codeMarker : markers) {
             assert codeMarker != null;
             if (codeMarker.containsInclusive(offset)) {
-                atOffset = codeMarker;
+                result = codeMarker;
             }
         }
-        return atOffset;
+        return result;
     }
 
     @CheckForNull
@@ -1347,7 +1345,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
     private void handleVarComments() {
         Set<String> varCommentNames = varTypeComments.keySet();
-        for (String name : varCommentNames) {
+        for (String name : new HashSet<>(varCommentNames)) {
             handleVarComment(name);
         }
     }
@@ -1356,7 +1354,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         Parameters.notNull("name", name); //NOI18N
         List<PhpDocTypeTagInfo> varComments = varTypeComments.get(name); //varComments.size() varTypeComments.size()
         if (varComments != null) {
-            for (PhpDocTypeTagInfo phpDocTypeTagInfo : varComments) {
+            for (PhpDocTypeTagInfo phpDocTypeTagInfo : new ArrayList<>(varComments)) {
                 VariableScope varScope = getVariableScope(phpDocTypeTagInfo.getRange().getStart());
                 if (varScope != null) {
                     handleVarAssignment(name, varScope, phpDocTypeTagInfo);
@@ -1388,7 +1386,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         Parameters.notNull("variableScope", variableScope); //NOI18N
         List<PhpDocTypeTagInfo> varComments = varTypeComments.get(variableName);
         if (varComments != null) {
-            for (PhpDocTypeTagInfo phpDocTypeTagInfo : varComments) {
+            for (PhpDocTypeTagInfo phpDocTypeTagInfo : new ArrayList<>(varComments)) {
                 VariableScope varScope = getVariableScope(phpDocTypeTagInfo.getRange().getStart());
                 if (variableScope.equals(varScope)) {
                     handleVarAssignment(variableName, varScope, phpDocTypeTagInfo);
