@@ -65,8 +65,8 @@
     <property name="nb.display.version.short" value="Dev"/>
 
     <!-- Tomcat properties   -->    
-    <property name="tomcat.version" value="8.0.3"/>
-    <property name="tomcat.id" value="8.0.3"/>
+    <property name="tomcat.version" value="8.0.9"/>
+    <property name="tomcat.id" value="8.0.9"/>
     <property name="tomcat.install.dir" value="${install.dir}/apache-tomcat-${tomcat.version}"/>
     <property name="tomcat_location" value="${binary_cache_host}/tomcat/apache-tomcat-${tomcat.version}.zip"/> 
             
