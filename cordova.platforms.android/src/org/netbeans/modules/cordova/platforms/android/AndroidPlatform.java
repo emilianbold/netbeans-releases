@@ -192,8 +192,12 @@ public class AndroidPlatform implements MobilePlatform {
         Collection<org.netbeans.modules.cordova.platforms.spi.Device> devices = AndroidDevice.parse(avdString);
         if (devices.isEmpty()) {
             //maybe adb is just down. try to restart adb
-            ProcessUtilities.callProcess(getAdbCommand(), true, AndroidPlatform.DEFAULT_TIMEOUT, "kill-server"); //NOI18N
-            ProcessUtilities.callProcess(getAdbCommand(), true, AndroidPlatform.DEFAULT_TIMEOUT, "start-server"); //NOI18N
+            try {
+                ProcessUtilities.callProcess(getAdbCommand(), true, AndroidPlatform.DEFAULT_TIMEOUT, "kill-server"); //NOI18N
+                ProcessUtilities.callProcess(getAdbCommand(), true, AndroidPlatform.DEFAULT_TIMEOUT, "start-server"); //NOI18N
+            } catch (IOException ioe) {
+                //ignore
+            }
         }
         avdString = ProcessUtilities.callProcess(getAdbCommand(), true, AndroidPlatform.DEFAULT_TIMEOUT, "devices"); //NOI18N
         devices = AndroidDevice.parse(avdString);
