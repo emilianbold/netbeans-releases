@@ -46,7 +46,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -71,6 +73,7 @@ import org.netbeans.modules.team.server.ui.common.NbModuleOwnerSupport.OwnerInfo
 import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
@@ -285,6 +288,11 @@ public class TeamAccessorImpl extends TeamAccessor {
                 Support.LOG.log(Level.FINE, "getServer: url {0} matches server url {1}", new String[] {url, serverUrl}); //NOI18N
                 return server;
             }
+            String patchedUrl = patchUrl(url);
+            if (patchedUrl.startsWith(serverUrl)) {
+                Support.LOG.log(Level.FINE, "getServer: url {0} matches server url {1}", new String[] {url, serverUrl}); //NOI18N
+                return server;
+            }
         }
         return null;
     }
@@ -340,6 +348,32 @@ public class TeamAccessorImpl extends TeamAccessor {
         for (ODCSServer server : ODCSManager.getDefault().getServers()) {
             removePropertyChangeListener(listener, server);
         }
+    }
+
+    private String patchUrl(String url) {
+        try {
+            URL u = new URL(url);
+            StringBuilder sb = new StringBuilder();
+            sb.append(u.getProtocol());
+            sb.append("://");
+            String host = u.getHost();
+            sb.append(host);
+            int port = u.getPort();
+            if(port != -1) {
+                sb.append(":");
+                sb.append(port);
+            }
+            String path = u.getPath();
+            if(path.startsWith("/profile")) {
+                sb.append(path.substring(8, path.length()));
+            } else {
+                sb.append(path);
+            }
+            return sb.toString();
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return url;
     }
     
     private class OwnerInfoImpl extends org.netbeans.modules.team.spi.OwnerInfo {
