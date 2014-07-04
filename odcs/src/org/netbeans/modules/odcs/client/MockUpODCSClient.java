@@ -1,15 +1,22 @@
 package org.netbeans.modules.odcs.client;
 
+import com.tasktop.c2c.server.cloud.domain.ServiceType;
 import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
 import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
+import com.tasktop.c2c.server.profile.domain.project.ProjectService;
+import com.tasktop.c2c.server.scm.domain.ScmLocation;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
+import com.tasktop.c2c.server.scm.domain.ScmType;
 import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
@@ -19,9 +26,12 @@ import org.openide.util.Exceptions;
 public class MockUpODCSClient implements ODCSClient {
     
     private final Object PROJECT_LOCK = new Object();
+    private final Object SCM_LOCK = new Object();
     
     private final static Logger LOG = Logger.getLogger(ODCSClient.class.getName());
     private DummyProfile profile;
+    
+    private final Map<String, List<ScmRepository>> scmRepositories = new HashMap<>();
     
     public MockUpODCSClient() {
         createProjects();
@@ -78,7 +88,24 @@ public class MockUpODCSClient implements ODCSClient {
 
     @Override
     public List<ScmRepository> getScmRepositories(String projectId) throws ODCSException {
-        return Collections.EMPTY_LIST;
+        waitAMoment(800);
+        synchronized(SCM_LOCK) {
+            List<ScmRepository> repos = scmRepositories.get(projectId);
+            if(repos == null) {
+                repos = new LinkedList<>();
+                Project p = allProjects.get(projectId);
+                repos.add(new DummySCMRepository(p.getName() + ".git"));
+                try {
+                    long l = Long.parseLong(projectId);
+                    if(l < 4) {
+                        repos.add(new DummySCMRepository(p.getName() + ".brizolit"));
+                        repos.add(new DummySCMRepository(p.getName() + ".ekrazit"));
+                    }
+                    
+                } catch (NumberFormatException e) { }
+            }
+            return repos;
+        }
     }
 
     @Override
@@ -195,7 +222,12 @@ public class MockUpODCSClient implements ODCSClient {
             setName(name);
             setNumCommiters(0);
             setNumWatchers(0);
-            setProjectServices(Collections.EMPTY_LIST);
+            
+            
+            List<ProjectService> ps = new LinkedList<>();
+            ps.add(new DummyProjectService(1, ServiceType.SCM));
+            ps.add(new DummyProjectService(1, ServiceType.BUILD));
+            setProjectServices(ps);
         }
     }
 
@@ -206,5 +238,26 @@ public class MockUpODCSClient implements ODCSClient {
         Project remove(Project p) {
             return remove(p.getIdentifier());
         }
+    }
+    
+    private class DummySCMRepository extends ScmRepository {
+        public DummySCMRepository(String name) {
+            setName(name);
+            setType(ScmType.GIT);
+            setUrl("http://mockingbird/" + name);
+            setScmLocation(ScmLocation.CODE2CLOUD);
+        }
+    }
+    
+    private class DummyProjectService extends ProjectService {
+
+        public DummyProjectService(long id, ServiceType st) {
+            setId(id);
+            setServiceType(st);
+            setAvailable(true);
+            setUrl("http://mockingbird/" + st + "/");
+            setWebUrl("http://mockingbird/web/" + st + "/");
+        }
+        
     }
 }
