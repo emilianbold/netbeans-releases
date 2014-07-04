@@ -2,6 +2,7 @@ Code completion result for source line:
 formatter.print(ArgumentsContext.testFunction.|name);
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+CLASS      name                            [PUBLIC]   <font color=#999999>argumentsTestFile.js</font>
 CLASS      prototype                       [PUBLIC]   JS Platform
 METHOD     apply(thisArg: String, argArra  [PUBLIC]   JS Platform
 METHOD     bind(thisArg: Object): String   [PUBLIC]   JS Platform
@@ -27,4 +28,3 @@ METHOD     toString(): String              [PUBLIC]   JS Platform
 METHOD     valueOf(): Object               [PUBLIC]   JS Platform
 FIELD      constructor: Function           [PUBLIC]   JS Platform
 FIELD      length: Number                  [PUBLIC]   JS Platform
-FIELD      name                            [PUBLIC]   argumentsTestFile.js

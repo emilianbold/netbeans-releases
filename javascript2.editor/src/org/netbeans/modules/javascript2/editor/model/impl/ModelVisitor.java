@@ -582,6 +582,22 @@ public class ModelVisitor extends PathNodeVisitor {
                     // It can be only if it's in a function
                     isPrivate = functionStack.size() > 1;
                 }
+                if (name != null && !functionNode.isAnonymous()) {
+                    // we need to create just referenci to non anonymous function
+                    // example MyObject.method = function method(){}
+                    DeclarationScope currentScope = modelBuilder.getCurrentDeclarationScope();
+                    JsObject originalFunction = null;
+                    while (originalFunction == null && currentScope != null) {
+                        originalFunction = ((JsObject)currentScope).getProperty(functionNode.getName());
+                        currentScope = currentScope.getParentScope();
+                    }
+                    if (originalFunction != null) {
+                        JsObjectImpl jsObject = ModelUtils.getJsObject(modelBuilder, name, true);
+                        JsFunctionReference jsFunctionReference = new JsFunctionReference(jsObject.getParent(), jsObject.getDeclarationName(), (JsFunction)originalFunction, true, jsObject.getModifiers());
+                        jsObject.getParent().addProperty(jsObject.getName(), jsFunctionReference);
+                        return null;
+                    }
+                }
             }
         }
 
