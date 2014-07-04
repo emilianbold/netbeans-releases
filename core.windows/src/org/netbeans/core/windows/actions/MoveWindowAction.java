@@ -119,7 +119,7 @@ implements PropertyChangeListener {
         ModeImpl mode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( contextTc );
             
         if( null == mode 
-                || mode.getKind() == Constants.MODE_KIND_EDITOR
+//                || mode.getKind() == Constants.MODE_KIND_EDITOR
                 || WindowManagerImpl.getInstance().getCurrentMaximizedMode() != null ) {
             setEnabled( false );
             return;
