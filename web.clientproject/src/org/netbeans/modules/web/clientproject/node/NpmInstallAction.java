@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
-@MIMEResolver.Registration(displayName = "package.json", resource = "npm-resolver.xml", position = 125)
+@MIMEResolver.Registration(displayName = "package.json", resource = "npm-resolver.xml", position = 127)
 @ActionID(id = "org.netbeans.modules.web.clientproject.grunt.NpmInstallAction", category = "Build")
 @ActionRegistration(displayName = "#CTL_NpmInstallAction", lazy=false)
 @ActionReferences(value = {
