@@ -660,15 +660,22 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
         
         private void setRootContent(CallNode node){
+            //allow implementator to implement call as a node
             Collection<Node> list;
+            Node root;
             if (node == null) {
                 list = Collections.<Node>emptyList();
-            } else {
+                root  = new CallContextRoot(new ContextList(list));
+            } else {                
                 list = new ArrayList<Node>(1);
                 Call call = node.getCall();
-                list.add(new CallContext(call));
+                if (call instanceof Node) {
+                    root = (Node)call;
+                } else {
+                    list.add(new CallContext(call));
+                    root  = new CallContextRoot(new ContextList(list));
+                }
             }
-            CallContextRoot root = new CallContextRoot(new ContextList(list));
             getExplorerManager().setRootContext(root);
         }
         private static final class ContextList extends Children.Array {
@@ -685,7 +692,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
         public static class CallContext extends AbstractNode {
             private final Call call;
-            public CallContext(Call element) {
+            public CallContext(Call element) {                
                 super( Children.LEAF);
                 call = element;
             }
