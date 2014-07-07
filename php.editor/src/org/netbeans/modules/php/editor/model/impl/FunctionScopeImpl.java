@@ -107,10 +107,10 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         this.returnType = returnType;
     }
 
-    protected FunctionScopeImpl(Scope inScope, MagicMethodDeclarationInfo info, boolean isDeprecated) {
+    protected FunctionScopeImpl(Scope inScope, MagicMethodDeclarationInfo info, String returnType, boolean isDeprecated) {
         super(inScope, info, info.getAccessModifiers(), null, isDeprecated);
         this.paremeters = info.getParameters();
-        this.returnType = info.getReturnType();
+        this.returnType = returnType;
     }
 
     FunctionScopeImpl(Scope inScope, BaseFunctionElement indexedFunction) {

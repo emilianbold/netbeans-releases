@@ -152,7 +152,7 @@ class ModelBuilder {
     void buildMagicMethod(PHPDocMethodTag node,  OccurenceBuilder occurencesBuilder) {
         MagicMethodDeclarationInfo info = MagicMethodDeclarationInfo.create(node);
         if (info != null) {
-            MethodScopeImpl methodScope = new MethodScopeImpl(getCurrentScope(), info);
+            MethodScopeImpl methodScope = ModelElementFactory.create(info, this);
             occurencesBuilder.prepare(info, methodScope);
         }
     }
@@ -296,6 +296,13 @@ class ModelBuilder {
             boolean isDeprecated = VariousUtils.isDeprecatedFromPHPDoc(context.getProgram(), nodeInfo.getOriginalNode().getFunction());
             String qualifiedReturnType = VariousUtils.qualifyTypeNames(returnType, nodeInfo.getOriginalNode().getStartOffset(), context.getCurrentScope());
             MethodScopeImpl method = new MethodScopeImpl(context.getCurrentScope(), qualifiedReturnType, nodeInfo, visitor, isDeprecated);
+            return method;
+        }
+
+        static MethodScopeImpl create(MagicMethodDeclarationInfo nodeInfo, ModelBuilder context) {
+            String returnType = nodeInfo.getReturnType();
+            String qualifiedReturnType = VariousUtils.qualifyTypeNames(returnType, nodeInfo.getOriginalNode().getStartOffset(), context.getCurrentScope());
+            MethodScopeImpl method = new MethodScopeImpl(context.getCurrentScope(), qualifiedReturnType, nodeInfo);
             return method;
         }
 
