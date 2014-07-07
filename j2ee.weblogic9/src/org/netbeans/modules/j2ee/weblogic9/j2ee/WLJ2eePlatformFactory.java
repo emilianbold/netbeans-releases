@@ -501,10 +501,13 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
             // Allow J2EE 1.4 Projects
             profiles.add(Profile.J2EE_14);
-            
+
             // Check for WebLogic Server 10x to allow Java EE 5 Projects
             Version version = dm.getDomainVersion();
-            
+            if (version == null) {
+                version = dm.getServerVersion();
+            }
+
             if (version != null) {
                 if (version.isAboveOrEqual(WLDeploymentFactory.VERSION_10)) {
                     profiles.add(Profile.JAVA_EE_5);
@@ -625,6 +628,10 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
         @Override
         public File getDomainHome() {
+            if (dm.isRemote()) {
+                return null;
+            }
+
             File domain = new File(dm.getInstanceProperties().getProperty(
                     WLPluginProperties.DOMAIN_ROOT_ATTR));
             
@@ -659,10 +666,11 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         public LibraryImplementation[] getLibraries(Set<ServerLibraryDependency> libraries) {
             // FIXME cache & listen for file changes
             String domainDir = dm.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
-            assert domainDir != null;
+            assert domainDir != null || dm.isRemote();
             String serverDir = dm.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
             assert serverDir != null;
-            WLServerLibrarySupport support = new WLServerLibrarySupport(new File(serverDir), new File(domainDir));
+            WLServerLibrarySupport support = new WLServerLibrarySupport(new File(serverDir),
+                    domainDir == null ? null : new File(domainDir));
 
             Map<ServerLibrary, List<File>> serverLibraries =  null;
             try {
