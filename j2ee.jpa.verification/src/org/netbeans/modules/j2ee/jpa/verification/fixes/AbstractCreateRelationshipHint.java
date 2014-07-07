@@ -422,20 +422,24 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
         AnnotationTree targetAnn = genUtils.createAnnotation(complimentaryAnnotationClassName, targetAnnArgs);
         
         if (targetEntityAccessType == AccessType.FIELD){
-            for (AnnotationTree at : targetFieldAccesor.getModifiers().getAnnotations()) {
-                if (complimentaryAnnotationClassName.endsWith(at.getAnnotationType().toString())) {
-                    //more complex resolve in this case?
-                    return;
+            if(targetFieldAccesor!=null && targetFieldAccesor.getModifiers()!=null && targetFieldAccesor.getModifiers().getAnnotations()!=null) {
+                for (AnnotationTree at : targetFieldAccesor.getModifiers().getAnnotations()) {
+                    if (complimentaryAnnotationClassName.endsWith(at.getAnnotationType().toString())) {
+                        //more complex resolve in this case?
+                        return;
+                    }
                 }
             }
 
             VariableTree modifiedTree = genUtils.addAnnotation(targetField, targetAnn);
             workingCopy.rewrite(targetField, modifiedTree);
         } else { // accessType == AccessType.PROPERTY
-            for (AnnotationTree at : targetFieldAccesor.getModifiers().getAnnotations()) {
-                if (complimentaryAnnotationClassName.endsWith(at.getAnnotationType().toString())) {
-                    //more complex resolve in this case?
-                    return;
+            if(targetFieldAccesor!=null && targetFieldAccesor.getModifiers()!=null && targetFieldAccesor.getModifiers().getAnnotations()!=null) {
+                for (AnnotationTree at : targetFieldAccesor.getModifiers().getAnnotations()) {
+                    if (complimentaryAnnotationClassName.endsWith(at.getAnnotationType().toString())) {
+                        //more complex resolve in this case?
+                        return;
+                    }
                 }
             }
             MethodTree modifiedTree = genUtils.addAnnotation(targetFieldAccesor, targetAnn);
