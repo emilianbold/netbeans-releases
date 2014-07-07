@@ -45,6 +45,8 @@ package org.netbeans.modules.hibernate.cfg;
 import java.util.HashMap;
 import java.util.Map;
 import org.hibernate.cfg.Environment;
+import org.hibernate.hql.internal.ast.ASTQueryTranslatorFactory;
+import org.hibernate.hql.internal.classic.ClassicQueryTranslatorFactory;
 import org.openide.util.NbBundle;
 
 /**
@@ -175,8 +177,8 @@ public class HibernateCfgProperties {
     private final static String[] TRUE_FALSE = new String[] {"true", "false" }; // NOI18N
     private final static String[] RELEASE_MODES = new String[] {"auto", "on_close", "after_transaction", "after_statement"}; // NOI18N
     private final static String[] SESSION_CONTEXT = new String[] {"jta", "thread", "managed", NbBundle.getMessage(HibernateCfgProperties.class, "LBL_CustomClass")}; // NOI18N
-    private final static String[] QUERY_FACTORY_CLASS = new String[] {"org.hibernate.hql.ast.ASTQueryTranslatorFactory",
-    "org.hibernate.hql.classic.ClassicQueryTranslatorFactory"}; // NOI18N
+    private final static String[] QUERY_FACTORY_CLASS = new String[] {ASTQueryTranslatorFactory.class.getName(),
+        ClassicQueryTranslatorFactory.class.getName()}; // NOI18N
     private final static String[] HBM2DDL_AUTO = new String[] {"validate", "update", "create", "create-drop" }; // NOI18N
 
     private static Map<String, Object> possiblePropertyValues = new HashMap<String, Object>();
