@@ -485,7 +485,7 @@ NetBeans_Warnings.reset = function() {
             }
         }
     });
-}
+};
 NetBeans_Warnings._getKeyFor = function(ident, key) {
     var keyName = 'warning.';
     if (ident !== undefined) {
