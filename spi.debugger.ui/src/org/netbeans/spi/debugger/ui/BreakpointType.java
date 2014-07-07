@@ -133,7 +133,7 @@ public abstract class BreakpointType {
      * @since 2.16
      */
     @Retention(RetentionPolicy.SOURCE)
-    @Target({ElementType.TYPE})
+    @Target({ElementType.TYPE, ElementType.METHOD})
     public @interface Registration {
         /**
          * The display name, in the form of either a general string to take as is,
