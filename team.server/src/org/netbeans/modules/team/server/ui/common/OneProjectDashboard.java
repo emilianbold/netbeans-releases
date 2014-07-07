@@ -427,14 +427,16 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
 
     @Override
     public JComponent getComponent() {
-        synchronized( LOCK ) {
-            if (!opened) {
-                if (null != login) {
-                    startAllProjectsLoading(false, false);
-                }
-                opened = true;
-            }
-        }
+        // XXX seems that there is no real functional need for this ... 
+        // commented in to fix issue #245404 - feel free to remove entirely if no regression appears
+//        synchronized( LOCK ) {
+//            if (!opened) {
+//                if (null != login) {
+//                    startAllProjectsLoading(false, false);
+//                }
+//                opened = true;
+//            }
+//        }
         return dashboardPanel;
     }
 

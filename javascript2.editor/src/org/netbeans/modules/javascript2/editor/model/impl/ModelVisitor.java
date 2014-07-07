@@ -587,8 +587,9 @@ public class ModelVisitor extends PathNodeVisitor {
                     // example MyObject.method = function method(){}
                     DeclarationScope currentScope = modelBuilder.getCurrentDeclarationScope();
                     JsObject originalFunction = null;
+                    String functionName = functionNode.getIdent() != null ? functionNode.getIdent().getName() : functionNode.getName();
                     while (originalFunction == null && currentScope != null) {
-                        originalFunction = ((JsObject)currentScope).getProperty(functionNode.getName());
+                        originalFunction = ((JsObject)currentScope).getProperty(functionName);
                         currentScope = currentScope.getParentScope();
                     }
                     if (originalFunction != null) {

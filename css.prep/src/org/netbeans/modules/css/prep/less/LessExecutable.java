@@ -61,6 +61,7 @@ import org.netbeans.modules.css.prep.util.StringUtils;
 import org.netbeans.modules.css.prep.util.UiUtils;
 import org.netbeans.modules.css.prep.util.VersionOutputProcessorFactory;
 import org.netbeans.modules.web.common.api.Version;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -78,7 +79,9 @@ public class LessExecutable {
     public static final String EXECUTABLE_LONG_NAME = EXECUTABLE_NAME + FileUtils.getScriptExtension(true, true);
 
     private static final String DEBUG_PARAM = "--line-numbers=all"; // NOI18N
-    private static final String SOURCEMAP_PARAM = "--source-map"; // NOI18N
+    private static final String SOURCE_MAP_PARAM = "--source-map"; // NOI18N
+    private static final String SOURCE_MAP_ROOTPATH_PARAM = "--source-map-rootpath=%s"; // NOI18N
+    private static final String SOURCE_MAP_URL_PARAM = "--source-map-url=%s"; // NOI18N
     private static final String VERSION_PARAM = "--version"; // NOI18N
 
     private static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir")); // NOI18N
@@ -218,16 +221,17 @@ public class LessExecutable {
         // debug
         boolean debug = CssPrepOptions.getInstance().getLessDebug();
         if (debug) {
-            /* #241628
+            // #241628
             Version installedVersion = getVersion();
             if (installedVersion != null
                     && installedVersion.isAboveOrEqual(MINIMAL_VERSION_WITH_SOURCEMAP)) {
-                params.add(SOURCEMAP_PARAM);
+                params.add(SOURCE_MAP_PARAM);
+                params.add(String.format(SOURCE_MAP_ROOTPATH_PARAM, getRelativeRootPath(inputFile, outputFile)));
+                params.add(String.format(SOURCE_MAP_URL_PARAM, outputFile.getName()));
             } else {
                 // older versions
                 params.add(DEBUG_PARAM);
-            }*/
-            params.add(DEBUG_PARAM);
+            }
         }
         // compiler options
         params.addAll(compilerOptions);
@@ -240,6 +244,12 @@ public class LessExecutable {
 
     List<String> getVersionParameters() {
         return Collections.singletonList(VERSION_PARAM);
+    }
+
+    private String getRelativeRootPath(File inputFile, File outputFile) {
+        String relativePath = PropertyUtils.relativizeFile(outputFile.getParentFile(), inputFile.getParentFile());
+        assert relativePath != null : "input: " + inputFile + " ==> output: " + outputFile;
+        return relativePath;
     }
 
     //~ Inner classes

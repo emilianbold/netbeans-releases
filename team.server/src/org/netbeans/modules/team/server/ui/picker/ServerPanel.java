@@ -98,7 +98,6 @@ class ServerPanel extends JPanel {
     private final JPanel panelProjects;
     private SelectionList currentProjects;
 
-    private final Action openProjectAction;
     private JLabel title;
     
     private final PropertyChangeListener serverListener = new PropertyChangeListener() {
@@ -181,8 +180,6 @@ class ServerPanel extends JPanel {
         this.server = server;
         this.selModel = selModel;
 
-        openProjectAction = server.getOpenProjectAction();
-        
         panelProjects = new JPanel( new BorderLayout() );
         panelProjects.setOpaque( false );
 
@@ -296,6 +293,7 @@ class ServerPanel extends JPanel {
         }
         
         // open
+        Action openProjectAction = server.getOpenProjectAction();
         if( openProjectAction != null ) {
             newOrOpen = true;
             res.add( NbBundle.getMessage(ServerPanel.class, "Btn_OPENPROJECT") ).addActionListener(openProjectAction);
@@ -354,6 +352,8 @@ class ServerPanel extends JPanel {
                 
                 add(createHeader(), BorderLayout.NORTH);
                 
+                Action openProjectAction = server.getOpenProjectAction();
+                openProjectAction = server.getOpenProjectAction();
                 if (isOnline() || openProjectAction != null) {
                     add(createProjects(), BorderLayout.CENTER);
                 } else {
@@ -406,7 +406,7 @@ class ServerPanel extends JPanel {
             buttonPanel.add( btnLogin, gridBagConstraints );
         }
         
-        
+        final Action openProjectAction = server.getOpenProjectAction();
         if(openProjectAction != null) {
             JButton btnOpenProject = new LinkButton( NbBundle.getMessage(ServerPanel.class, "Btn_OPENPROJECT"), new AbstractAction() {
                 @Override
