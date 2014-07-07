@@ -153,7 +153,9 @@ public final class JavadocHint {
         if (docCommentTree == null ||
                 (docCommentTree.getFirstSentence().isEmpty() &&
                  docCommentTree.getBody().isEmpty() &&
-                 docCommentTree.getBlockTags().isEmpty())) {
+                 docCommentTree.getBlockTags().isEmpty() &&
+                 elm.getKind() != ElementKind.ENUM_CONSTANT &&
+                 elm.getKind() != ElementKind.FIELD)) {
             if (hasErrors(node) || JavadocUtilities.hasInheritedDoc(javac, elm)) {
                 return errors;
             }
