@@ -187,7 +187,7 @@ public class MockUpODCSClient implements ODCSClient {
         try {
             Thread.sleep(l);
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            LOG.log(Level.INFO, null, ex);
         }
     }
 
