@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.callgraph.impl;
 
 import org.netbeans.modules.cnd.callgraph.api.CallModel;
 import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphModelFactory;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -57,6 +58,10 @@ import org.openide.util.actions.CookieAction;
  * @author Alexander Simon
  */
 public final class CallGraphPopupAction extends CookieAction {
+    
+    public CallGraphPopupAction() {
+        putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, Boolean.TRUE);
+    }
 
     protected void performAction(Node[] activatedNodes) {
         CallModel model = CallGraphModelFactory.getDefault().getModel(activatedNodes);

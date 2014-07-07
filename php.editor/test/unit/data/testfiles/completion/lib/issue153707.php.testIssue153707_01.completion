@@ -24,6 +24,7 @@ PACKAGE    MySpace                         [PUBLIC]   null
 PACKAGE    MySpaceThrow                    [PUBLIC]   null
 PACKAGE    Name                            [PUBLIC]   null
 PACKAGE    Nette                           [PUBLIC]   null
+PACKAGE    One                             [PUBLIC]   null
 PACKAGE    Other                           [PUBLIC]   null
 PACKAGE    Package1                        [PUBLIC]   null
 PACKAGE    Package2                        [PUBLIC]   null
@@ -50,7 +51,9 @@ PACKAGE    Test204925_08_C                 [PUBLIC]   null
 PACKAGE    Test204925_08_P                 [PUBLIC]   null
 PACKAGE    Test_03                         [PUBLIC]   null
 PACKAGE    Testing                         [PUBLIC]   null
+PACKAGE    Third                           [PUBLIC]   null
 PACKAGE    Trest                           [PUBLIC]   null
+PACKAGE    Two                             [PUBLIC]   null
 PACKAGE    XUser                           [PUBLIC]   null
 PACKAGE    Yaaaaaa                         [PUBLIC]   null
 PACKAGE    Ywwwwww                         [PUBLIC]   null
@@ -175,6 +178,7 @@ CLASS      ChildTh                         [PUBLIC]   useCase1.php
 CLASS      ClassName                       [PUBLIC]   Fom\Bom
 CLASS      ClassName                       [PUBLIC]   issue194300.php
 CLASS      ClassName123                    [PUBLIC]   issue209608.php
+CLASS      Cls                             [PUBLIC]   Two
 CLASS      Cls1                            [PUBLIC]   First
 CLASS      Cls1                            [PUBLIC]   TestCase.php
 CLASS      Cls1                            [PUBLIC]   issue242351.php
@@ -225,6 +229,8 @@ CLASS      Exception                       [PUBLIC]   issue201310.php
 CLASS      Exception                       [PUBLIC]   issue243458.php
 CLASS      Exception1                      [PUBLIC]   issue204958.php
 CLASS      ExceptionClassName              [PUBLIC]   issue207594.php
+CLASS      Fac                             [PUBLIC]   Third
+CLASS      Fac2                            [PUBLIC]   Third
 CLASS      Foo                             [PUBLIC]   issue159970.php
 CLASS      Foo                             [PUBLIC]   issue191666.php
 CLASS      Foo                             [PUBLIC,   issue233756.php
@@ -292,6 +298,7 @@ CLASS      ObjectTracker                   [PUBLIC]   test204908.php
 CLASS      Omg                             [PUBLIC]   test204104_05.php
 CLASS      OmgCls                          [PUBLIC]   declarations.php
 CLASS      Ondrej                          [PUBLIC]   test211230.php
+CLASS      OneCls                          [PUBLIC]   One
 CLASS      OtherClass                      [PUBLIC]   issue240522.php
 CLASS      PagePresenter                   [PUBLIC]   AdminModule
 CLASS      Parent7                         [PUBLIC]   useCase2.php
@@ -464,6 +471,7 @@ METHOD     fn1(clsAVarAssignment $aParam)  [PUBLIC]   varAssignment.php
 METHOD     fn2(clsAVarAssignment $cParam)  [PUBLIC]   varAssignment.php
 METHOD     fn3(clsAVarAssignment &$aParam  [PUBLIC]   varAssignment.php
 METHOD     fn4(clsAVarAssignment &$cParam  [PUBLIC]   varAssignment.php
+METHOD     fnc()                           [PUBLIC]   Name\Space
 METHOD     fnc1()                          [PUBLIC]   First
 METHOD     fnc163432()                     [PUBLIC]   test.php
 METHOD     fncA()                          [PUBLIC]   typeinference.php
@@ -521,6 +529,7 @@ VARIABLE   $http_response_header                      PHP Platform
 VARIABLE   $php_errormsg                              PHP Platform
 CONSTANT   CNST1 1                         [PUBLIC]   First
 CONSTANT   CNST2 2                         [PUBLIC]   Second
+CONSTANT   FOO 42                          [PUBLIC]   Name\Space
 CONSTANT   SOME_CONSTANT "YES"             [PUBLIC]   Marwel\System
 CONSTANT   aaa 1                           [PUBLIC]   issue137033.php
 CONSTANT   myFirstVar "value"              [PUBLIC]   tests230052.php

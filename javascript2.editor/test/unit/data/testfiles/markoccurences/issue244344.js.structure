@@ -1,0 +1,3 @@
+SeLiteMisc:CLASS:[PUBLIC]:ESCAPED{SeLiteMisc}:
+  isInstance:METHOD:[PUBLIC]:ESCAPED{isInstance}ESCAPED{(}ESCAPED{object}ESCAPED{, }ESCAPED{classes}ESCAPED{, }ESCAPED{className}ESCAPED{, }ESCAPED{message}ESCAPED{)}<font color="#999999">ESCAPED{ : }Boolean</font>:
+isPrdca:METHOD:[PUBLIC]:ESCAPED{isPrdca}ESCAPED{(}ESCAPED{object}ESCAPED{, }ESCAPED{classes}ESCAPED{, }ESCAPED{className}ESCAPED{, }ESCAPED{message}ESCAPED{)}<font color="#999999">ESCAPED{ : }Boolean</font>:

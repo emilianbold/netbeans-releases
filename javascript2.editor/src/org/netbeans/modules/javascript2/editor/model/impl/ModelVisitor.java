@@ -582,6 +582,23 @@ public class ModelVisitor extends PathNodeVisitor {
                     // It can be only if it's in a function
                     isPrivate = functionStack.size() > 1;
                 }
+                if (name != null && !functionNode.isAnonymous()) {
+                    // we need to create just referenci to non anonymous function
+                    // example MyObject.method = function method(){}
+                    DeclarationScope currentScope = modelBuilder.getCurrentDeclarationScope();
+                    JsObject originalFunction = null;
+                    String functionName = functionNode.getIdent() != null ? functionNode.getIdent().getName() : functionNode.getName();
+                    while (originalFunction == null && currentScope != null) {
+                        originalFunction = ((JsObject)currentScope).getProperty(functionName);
+                        currentScope = currentScope.getParentScope();
+                    }
+                    if (originalFunction != null) {
+                        JsObjectImpl jsObject = ModelUtils.getJsObject(modelBuilder, name, true);
+                        JsFunctionReference jsFunctionReference = new JsFunctionReference(jsObject.getParent(), jsObject.getDeclarationName(), (JsFunction)originalFunction, true, jsObject.getModifiers());
+                        jsObject.getParent().addProperty(jsObject.getName(), jsFunctionReference);
+                        return null;
+                    }
+                }
             }
         }
 
@@ -1215,7 +1232,6 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     @Override
-
     public Node enter(VarNode varNode) {
          if (!(varNode.getInit() instanceof ObjectNode || varNode.getInit() instanceof ReferenceNode
                  || varNode.getInit() instanceof LiteralNode.ArrayLiteralNode)) {
@@ -1515,9 +1531,16 @@ public class ModelVisitor extends PathNodeVisitor {
             if (modelBuilder.getCurrentWith() == null) {
                 Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationFunction());
                 for(JsObject variable : variables) {
-                    if (variable.getName().equals(name.getName()) && (variable.getModifiers().contains(Modifier.PRIVATE) || variable instanceof ParameterObject)) {
-                        object = (JsObjectImpl)variable;
-                        break;
+                    if (variable.getName().equals(name.getName()) ) {
+                        if (variable instanceof ParameterObject || variable.getModifiers().contains(Modifier.PRIVATE)) {
+                            object = (JsObjectImpl)variable;
+                            break;
+                        }
+                        DeclarationScope variableDS = ModelUtils.getDeclarationScope(variable);
+                        if (!variableDS.equals(modelBuilder.getCurrentDeclarationScope())) {
+                            object = (JsObjectImpl)variable;
+                            break;
+                        }
                     }
                 }
                 if (object == null) {

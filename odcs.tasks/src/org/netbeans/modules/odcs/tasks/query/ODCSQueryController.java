@@ -801,7 +801,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         String displayName = getQueryProgressName(); 
         final String progressTitle = NbBundle.getMessage(ODCSQueryController.class, "MSG_InitializingQuery", new Object[] {displayName}); // NOI18N
         final String progressText = NbBundle.getMessage(ODCSQueryController.class, "MSG_Initializing");  // NOI18N
-        new QueryTask() {
+        QueryTask qt = new QueryTask() {
             @Override
             void notifyStart() {
                 if (delegatingIssueContainer != null) {
@@ -827,7 +827,8 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
             String getProgressText() {
                 return progressText;
             }
-        }.post().waitFinished();
+        };
+        qt.post().waitFinished();
     }
 
     private void refresh(final boolean auto, boolean synchronously) {
@@ -1216,12 +1217,14 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         }
         
         Task post(int s) {
-            if(task != null && !task.isFinished()) {
+            synchronized(REFRESH_LOCK) {
+                if(task != null && !task.isFinished()) {
+                    return task;
+                }
+                task = rp.create(this);
+                task.schedule(s);
                 return task;
             }
-            task = rp.create(this);
-            task.schedule(s);
-            return task;
         }
 
         @Override

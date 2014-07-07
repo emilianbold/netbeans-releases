@@ -524,7 +524,7 @@ public class PrintASTVisitor implements Visitor {
 
     @Override
     public void visit(UseStatement statement) {
-        XMLPrintNode printNode = new XMLPrintNode(statement, "UseStatement");
+        XMLPrintNode printNode = new XMLPrintNode(statement, "UseStatement", new String[] {"type", statement.getType().toString()});
         printNode.addChildren(statement.getParts());
         printNode.print(this);
     }
@@ -770,6 +770,13 @@ public class PrintASTVisitor implements Visitor {
                 new String[]{"isDollared", (variable.isDollared()?"true":"false")});
 
         printNode.addChild(variable.getName());
+        printNode.print(this);
+    }
+
+    @Override
+    public void visit(Variadic variadic) {
+        XMLPrintNode printNode = new XMLPrintNode(variadic, "Variadic");
+        printNode.addChild(variadic.getExpression());
         printNode.print(this);
     }
 

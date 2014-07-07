@@ -66,7 +66,8 @@ public class RemoteApi2Test extends RemoteTestSuiteBase {
            ListenersTestCase.class,
            ListenersParityTestCase.class,
            PlainFileWriteEventsTestCase.class,
-           FssDispatchedHangupTestCase.class           
+           FssDispatchedHangupTestCase.class,
+           FileSystemProviderTestCase.class
         };
     }
     

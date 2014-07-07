@@ -96,6 +96,10 @@ public abstract class VCSFileNode<I extends VCSFileInformation> {
         return file;
     }
 
+    public File getRoot () {
+        return root;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

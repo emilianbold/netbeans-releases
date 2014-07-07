@@ -81,7 +81,10 @@ public class DefaultFaceletLibrariesTest extends TestBaseForTestProject {
 
         //test if all default libraries have been found and are correct
         for(DefaultLibraryInfo dli : EnumSet.complementOf(EnumSet.of(
-                DefaultLibraryInfo.PRIMEFACES, DefaultLibraryInfo.JSF, DefaultLibraryInfo.PASSTHROUGH))) {
+                DefaultLibraryInfo.JSF,
+                DefaultLibraryInfo.PASSTHROUGH,
+                DefaultLibraryInfo.PRIMEFACES,
+                DefaultLibraryInfo.PRIMEFACES_MOBILE))) {
             FaceletsLibraryDescriptor descr = descriptors.get(dli.getNamespace());
             assertNotNull(descr);
 

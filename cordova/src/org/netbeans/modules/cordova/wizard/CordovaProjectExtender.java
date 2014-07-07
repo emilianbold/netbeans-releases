@@ -51,6 +51,7 @@ import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -94,6 +95,8 @@ public class CordovaProjectExtender implements ClientProjectExtender {
 
             ConfigUtils.createConfigFile(projectRoot, PlatformManager.IOS_TYPE, ios);//NOI18N
         }
+        FileObject fob = FileUtil.toFileObject(f);
+        assert fob!=null;
 
         f = new File(projectRoot.getPath() + "/nbproject/configs/ios_1.properties"); // NOI18N
         if (!f.exists()) {
@@ -108,6 +111,8 @@ public class CordovaProjectExtender implements ClientProjectExtender {
 
             ConfigUtils.createConfigFile(projectRoot, PlatformManager.IOS_TYPE, iosdev);//NOI18N
         }
+        fob = FileUtil.toFileObject(f);
+        assert fob!=null;
 
         f = new File(projectRoot.getPath() + "/nbproject/configs/android.properties"); // NOI18N
         if (!f.exists()) {
@@ -118,6 +123,8 @@ public class CordovaProjectExtender implements ClientProjectExtender {
             androide.put(Device.DEVICE_PROP, Device.EMULATOR);//NOI18N
             ConfigUtils.createConfigFile(projectRoot, PlatformManager.ANDROID_TYPE, androide);//NOI18N
         }
+        fob = FileUtil.toFileObject(f);
+        assert fob!=null;
 
         f = new File(projectRoot.getPath() + "/nbproject/configs/android_1.properties"); // NOI18N
         if (!f.exists()) {
@@ -128,6 +135,8 @@ public class CordovaProjectExtender implements ClientProjectExtender {
             androidd.put(Device.DEVICE_PROP, Device.DEVICE);//NOI18N
             ConfigUtils.createConfigFile(projectRoot, PlatformManager.ANDROID_TYPE, androidd);//NOI18N
         }
+        fob = FileUtil.toFileObject(f);
+        assert fob!=null;
     }
 
     @Override

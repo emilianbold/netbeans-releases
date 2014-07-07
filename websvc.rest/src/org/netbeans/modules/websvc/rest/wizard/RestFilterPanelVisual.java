@@ -62,6 +62,7 @@ public class RestFilterPanelVisual extends javax.swing.JPanel {
         initComponents();
         
         httpMethods = new ArrayList<HttpMethodsPanel.HttpMethods>(HttpMethods.values().length);
+        httpMethods.add(HttpMethods.OPTIONS);
         httpMethods.add(HttpMethods.GET);
         httpMethods.add(HttpMethods.POST);
         httpMethods.add(HttpMethods.PUT);
@@ -116,7 +117,7 @@ public class RestFilterPanelVisual extends javax.swing.JPanel {
         headersLbl.setLabelFor(headers);
         org.openide.awt.Mnemonics.setLocalizedText(headersLbl, org.openide.util.NbBundle.getMessage(RestFilterPanelVisual.class, "LBL_AllowHeaders")); // NOI18N
 
-        headers.setText("content-type"); // NOI18N
+        headers.setText("Content-Type"); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);

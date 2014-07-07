@@ -60,6 +60,7 @@ import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
@@ -432,14 +433,18 @@ public class GeneralAngular extends JellyTestCase {
          evt.waitNoEvent(1000);
          new org.netbeans.jellytools.actions.Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_B, 2)).performShortcut(eo);
          evt.waitNoEvent(500);
+         long defaultTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
          try {
+             JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
              EditorOperator ed = new EditorOperator(config[4]);
+             JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", defaultTimeout);
              int position = ed.txtEditorPane().getCaretPosition();
              ed.setCaretPosition(Integer.valueOf(config[5]), Integer.valueOf(config[6]));
              int expectedPosition = ed.txtEditorPane().getCaretPosition();
              assertTrue("Incorrect caret position. Expected position " + expectedPosition + " but was " + position, position == expectedPosition);
              ed.close(false);
          } catch (Exception e) {
+             JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", defaultTimeout);
              fail(e.getMessage());
          }
 

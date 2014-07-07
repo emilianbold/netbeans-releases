@@ -281,6 +281,8 @@ public interface Visitor {
     //public void endVisit(UnaryOperation unaryOperation);
     public void visit(Variable variable);
 
+    public void visit(Variadic variadic);
+
     ////public void endVisit(Variable variable);
     public void visit(WhileStatement whileStatement);
 

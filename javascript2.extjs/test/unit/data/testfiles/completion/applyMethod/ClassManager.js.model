@@ -442,25 +442,6 @@ ClassManager_L214  : FUNCTION ClassManager_L214 [ANONYMOUS: true, DECLARED: true
                                                                                              cls       : OBJECT cls [ANONYMOUS: false, DECLARED: true - cls, MODIFIERS: PRIVATE, VARIABLE]
                                                                                              temp      : OBJECT temp [ANONYMOUS: false, DECLARED: true - temp, MODIFIERS: PRIVATE, VARIABLE]
                                                                          me                  : OBJECT me [ANONYMOUS: false, DECLARED: true - me, MODIFIERS: PRIVATE, VARIABLE]
-                                                                                             # PROPERTIES
-                                                                                             existCache     : OBJECT existCache [ANONYMOUS: false, DECLARED: false - existCache, MODIFIERS: PUBLIC, PROPERTY]
-                                                                                             get            : FUNCTION get [ANONYMOUS: false, DECLARED: false - get, MODIFIERS: PUBLIC, METHOD]
-                                                                                                            # PARAMETERS
-                                                                                                            OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
-                                                                                                            # PROPERTIES
-                                                                                                            arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                                                                             onCreated      : FUNCTION onCreated [ANONYMOUS: false, DECLARED: false - onCreated, MODIFIERS: PUBLIC, METHOD]
-                                                                                                            # PARAMETERS
-                                                                                                            OBJECT param1 [ANONYMOUS: false, DECLARED: true - param1, MODIFIERS: PUBLIC, PARAMETER]
-                                                                                                            OBJECT param2 [ANONYMOUS: false, DECLARED: true - param2, MODIFIERS: PUBLIC, PARAMETER]
-                                                                                                            OBJECT param3 [ANONYMOUS: false, DECLARED: true - param3, MODIFIERS: PUBLIC, PARAMETER]
-                                                                                                            # PROPERTIES
-                                                                                                            arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                                                                             triggerCreated : FUNCTION triggerCreated [ANONYMOUS: false, DECLARED: false - triggerCreated, MODIFIERS: PUBLIC, METHOD]
-                                                                                                            # PARAMETERS
-                                                                                                            OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
-                                                                                                            # PROPERTIES
-                                                                                                            arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                                          overriddenClassName : OBJECT overriddenClassName [ANONYMOUS: false, DECLARED: true - overriddenClassName, MODIFIERS: PRIVATE, VARIABLE]
                                                                          requires            : OBJECT requires [ANONYMOUS: false, DECLARED: true - requires, MODIFIERS: PRIVATE, VARIABLE]
                                                                          uses                : OBJECT uses [ANONYMOUS: false, DECLARED: true - uses, MODIFIERS: PRIVATE, VARIABLE]
@@ -809,19 +790,6 @@ ClassManager_L214  : FUNCTION ClassManager_L214 [ANONYMOUS: true, DECLARED: true
                                                                                             # PROPERTIES
                                                                                             arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                                          me            : OBJECT me [ANONYMOUS: false, DECLARED: true - me, MODIFIERS: PRIVATE, VARIABLE]
-                                                                                       # PROPERTIES
-                                                                                       processCreate  : OBJECT processCreate [ANONYMOUS: false, DECLARED: false - processCreate, MODIFIERS: PUBLIC, PROPERTY]
-                                                                                       set            : FUNCTION set [ANONYMOUS: false, DECLARED: false - set, MODIFIERS: PUBLIC, METHOD]
-                                                                                                      # PARAMETERS
-                                                                                                      OBJECT param1 [ANONYMOUS: false, DECLARED: true - param1, MODIFIERS: PUBLIC, PARAMETER]
-                                                                                                      OBJECT param2 [ANONYMOUS: false, DECLARED: true - param2, MODIFIERS: PUBLIC, PARAMETER]
-                                                                                                      # PROPERTIES
-                                                                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                                                                       triggerCreated : FUNCTION triggerCreated [ANONYMOUS: false, DECLARED: false - triggerCreated, MODIFIERS: PUBLIC, METHOD]
-                                                                                                      # PARAMETERS
-                                                                                                      OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
-                                                                                                      # PROPERTIES
-                                                                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                                          postprocessor : OBJECT postprocessor [ANONYMOUS: false, DECLARED: true - postprocessor, MODIFIERS: PRIVATE, VARIABLE]
                                                                                        # PROPERTIES
                                                                                        call : FUNCTION call [ANONYMOUS: false, DECLARED: false - call, MODIFIERS: PUBLIC, METHOD]
@@ -871,20 +839,6 @@ ClassManager_L214  : FUNCTION ClassManager_L214 [ANONYMOUS: true, DECLARED: true
                                                                                               alternateToName  : OBJECT alternateToName [ANONYMOUS: false, DECLARED: false - alternateToName, MODIFIERS: PUBLIC, PROPERTY]
                                                                                               nameToAlternates : OBJECT nameToAlternates [ANONYMOUS: false, DECLARED: false - nameToAlternates, MODIFIERS: PUBLIC, PROPERTY]
                                                                          me                   : OBJECT me [ANONYMOUS: false, DECLARED: true - me, MODIFIERS: PRIVATE, VARIABLE]
-                                                                                              # PROPERTIES
-                                                                                              classes      : OBJECT classes [ANONYMOUS: false, DECLARED: false - classes, MODIFIERS: PUBLIC, PROPERTY]
-                                                                                              getName      : FUNCTION getName [ANONYMOUS: false, DECLARED: false - getName, MODIFIERS: PUBLIC, METHOD]
-                                                                                                           # PARAMETERS
-                                                                                                           OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
-                                                                                                           # PROPERTIES
-                                                                                                           arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                                                                              maps         : OBJECT maps [ANONYMOUS: false, DECLARED: false - maps, MODIFIERS: PUBLIC, PROPERTY]
-                                                                                              setNamespace : FUNCTION setNamespace [ANONYMOUS: false, DECLARED: false - setNamespace, MODIFIERS: PUBLIC, METHOD]
-                                                                                                           # PARAMETERS
-                                                                                                           OBJECT param1 [ANONYMOUS: false, DECLARED: true - param1, MODIFIERS: PUBLIC, PARAMETER]
-                                                                                                           OBJECT param2 [ANONYMOUS: false, DECLARED: true - param2, MODIFIERS: PUBLIC, PARAMETER]
-                                                                                                           # PROPERTIES
-                                                                                                           arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                                          nameToAlternates     : OBJECT nameToAlternates [ANONYMOUS: false, DECLARED: true - nameToAlternates, MODIFIERS: PRIVATE, VARIABLE]
                                                                          targetName           : OBJECT targetName [ANONYMOUS: false, DECLARED: true - targetName, MODIFIERS: PRIVATE, VARIABLE]
                                          setAlias                        : FUNCTION setAlias [ANONYMOUS: false, DECLARED: true - setAlias, MODIFIERS: PUBLIC, METHOD]

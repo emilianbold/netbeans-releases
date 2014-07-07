@@ -46,6 +46,7 @@ package org.netbeans.modules.versioning.util.common;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -58,12 +59,16 @@ import java.io.File;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -77,11 +82,14 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.tree.TreePath;
-import org.openide.util.NbBundle;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.versioning.diff.DiffUtils;
+import org.netbeans.modules.versioning.util.status.VCSStatusNode;
+import org.openide.util.NbBundle;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.RenderDataProvider;
 import org.openide.awt.MouseUtils;
@@ -89,8 +97,14 @@ import org.openide.cookies.EditorCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.OutlineView;
 import org.openide.explorer.view.Visualizer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 
 /**
@@ -98,7 +112,7 @@ import org.openide.windows.TopComponent;
  * 
  * @author Ondra Vrabec
  */
-public abstract class FileTreeView<T extends Node> implements FileViewComponent<T>, AncestorListener, PropertyChangeListener, MouseListener {
+public abstract class FileTreeView<T extends VCSStatusNode> implements FileViewComponent<T>, AncestorListener, PropertyChangeListener, MouseListener {
 
     protected final OutlineView view;
     private final ExplorerManager em;
@@ -108,6 +122,12 @@ public abstract class FileTreeView<T extends Node> implements FileViewComponent<
     private T[] nodes;
     private final Map<T, TreeFilterNode> nodeMapping = Collections.synchronizedMap(new WeakHashMap<T, TreeFilterNode>());
     private boolean internalTraverse;
+    
+    private static final String ICON_KEY_UIMANAGER = "Tree.closedIcon"; //NOI18N
+    private static final String ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.icon"; //NOI18N
+    private final static String PATH_SEPARATOR_REGEXP = File.separator.replace("\\", "\\\\"); //NOI18N
+    
+    private static Image FOLDER_ICON;
     
     private static class ViewContainer extends JPanel implements ExplorerManager.Provider {
 
@@ -208,19 +228,19 @@ public abstract class FileTreeView<T extends Node> implements FileViewComponent<
     public void propertyChange (PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()) && !internalTraverse) {
             Node[] selectedNodes = em.getSelectedNodes();
+            final TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, view);
+            if (tc != null) {
+                tc.setActivatedNodes(selectedNodes);
+            }
             if (selectedNodes.length == 1) {
                 // single selection
-                T node = convertNode(em.getSelectedNodes()[0]);
+                T node = convertNode(selectedNodes[0]);
                 if (node != null) {
                     nodeSelected(node);
                     return;
                 }
             }
             nodeSelected(null);
-            final TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, view);
-            if (tc != null) {
-                tc.setActivatedNodes(em.getSelectedNodes());
-            }
         }
     }
     
@@ -288,15 +308,47 @@ public abstract class FileTreeView<T extends Node> implements FileViewComponent<
             if (row == -1) return;
             T n = convertNode(getNodeAt(view.getOutline().convertRowIndexToModel(row)));
             if (n != null) {
-                Action action = n.getPreferredAction();
+                Action action = n.getNodeAction();
                 if (action != null && action.isEnabled()) {
-                    action.actionPerformed(new ActionEvent(this, 0, "")); // NOI18N
+                    action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+                    e.consume();
                 }
             }
         }
     }
+    
+    @Override
+    public Object prepareModel (T[] nodes) {
+        Map<File, Collection<T>> sortedNodes = new HashMap<File, Collection<T>>();
+        for (T n : nodes) {
+            File root = n.getFileNode().getRoot();
+            if (root == null) {
+                continue;
+            }
+            Collection<T> repositorySetups = sortedNodes.get(root);
+            if (repositorySetups == null) {
+                repositorySetups = new TreeSet<>(new PathComparator());
+                sortedNodes.put(root, repositorySetups);
+            }
+            repositorySetups.add(n);
+        }
+        Node rootNode;
+        Class<?> type = nodes.getClass().getComponentType();
+        if (sortedNodes.size() == 1) {
+            Map.Entry<File, Collection<T>> e = sortedNodes.entrySet().iterator().next();
+            rootNode = new RepositoryRootNode(e.getKey(), toArray(e.getValue(), type));
+            ((TreeViewChildren) rootNode.getChildren()).buildSubNodes(type);
+        } else {
+            rootNode = new RootNode(sortedNodes);
+            ((TreeViewChildren) rootNode.getChildren()).buildSubNodes(type);
+        }
+        return rootNode;
+    }
 
-    protected abstract T convertToAcceptedNode (Node node);
+    protected T convertToAcceptedNode (Node node) {
+        Class c = nodes.getClass().getComponentType();
+        return c.isInstance(node) ? (T) node : null;
+    }
     
     private T convertNode (Node node) {
         if (node instanceof TreeFilterNode) {
@@ -580,6 +632,23 @@ public abstract class FileTreeView<T extends Node> implements FileViewComponent<
         return false;
     }
 
+    private static Image getFolderIcon () {
+        if (FOLDER_ICON == null) {
+            Icon baseIcon = UIManager.getIcon(ICON_KEY_UIMANAGER);
+            Image base;
+            if (baseIcon != null) {
+                base = ImageUtilities.icon2Image(baseIcon);
+            } else {
+                base = (Image) UIManager.get(ICON_KEY_UIMANAGER_NB);
+                if (base == null) { // fallback to our owns
+                    base = ImageUtilities.loadImage("org/openide/loaders/defaultFolder.gif"); //NOI18N
+                }
+            }
+            FOLDER_ICON = base;
+        }
+        return FOLDER_ICON;
+    }
+
     protected abstract class AbstractRenderDataProvider implements RenderDataProvider {
         
         @Override
@@ -627,11 +696,15 @@ public abstract class FileTreeView<T extends Node> implements FileViewComponent<
 
         private boolean isModified (T node) {
             int index = Arrays.asList(nodes).indexOf(node);
-            EditorCookie editorCookie = index >= 0 ? editorCookies[index] : null;
+            EditorCookie editorCookie = index >= 0 && index < editorCookies.length ? editorCookies[index] : null;
             return (editorCookie != null) ? editorCookie.isModified() : false;
         }
 
         protected abstract String annotateName (T leafNode, String htmlDisplayName);
+    }
+    
+    private static <T> T[] toArray (Collection<T> list, Class<?> type) {
+        return list.toArray((T[]) java.lang.reflect.Array.newInstance(type, list.size()));
     }
     
     private static class TreeFilterNode<T extends Node> extends FilterNode {
@@ -644,5 +717,229 @@ public abstract class FileTreeView<T extends Node> implements FileViewComponent<
         public T getOriginal () {
             return (T) super.getOriginal();
         }
+    }
+    
+    private class RootNode extends AbstractNode {
+
+        private RootNode (Map<File, Collection<T>> nodes) {
+            super(new RootNodeChildren(nodes));
+        }
+    }
+    
+    private static abstract class TreeViewChildren extends Children.Array {
+        abstract void buildSubNodes (Class<?> type);
+    }
+
+    private class RootNodeChildren extends TreeViewChildren {
+        private final java.util.Map<File, Collection<T>> nestedNodes;
+        
+        public RootNodeChildren (java.util.Map<File, Collection<T>> setups) {
+            this.nestedNodes = setups;
+        }
+
+        @Override
+        void buildSubNodes (Class<?> type) {
+            add(createNodes(type));
+        }
+        
+        private Node[] createNodes (Class<?> type) {
+            List<Node> nodes = new ArrayList<>(nestedNodes.size());
+            for (java.util.Map.Entry<File, Collection<T>> e : nestedNodes.entrySet()) {
+                RepositoryRootNode root = new RepositoryRootNode(e.getKey(), toArray(e.getValue(), type));
+                ((TreeViewChildren) root.getChildren()).buildSubNodes(type);
+                nodes.add(root);
+            }
+            return nodes.toArray(new Node[nodes.size()]);
+        }
+    }
+    
+    private class RepositoryRootNode extends AbstractNode {
+        private final File repo;
+        private RepositoryRootNode (File repository, T[] nestedNodes) {
+            super(new NodeChildren(new NodeData(new File(repository, getCommonPrefix(nestedNodes)), getCommonPrefix(nestedNodes), nestedNodes), true), Lookups.fixed(repository));
+            this.repo = repository;
+        }
+        
+        @Override
+        public String getName () {
+            return repo.getName();
+        }
+
+        @Override
+        public Image getIcon (int type) {
+            return getFolderIcon();
+        }
+    }
+
+    private String getCommonPrefix (T[] nodes) {
+        String prefix = "";
+        if (nodes.length > 0) {
+            prefix = nodes[0].getFileNode().getRelativePath();
+            int index = prefix.lastIndexOf(File.separator);
+            if (index == -1) {
+                prefix = "";
+            } else {
+                prefix = prefix.substring(0, index);
+            }
+        }
+        boolean slashNeeded = !prefix.isEmpty();
+        for (T n : nodes) {
+            String location = n.getFileNode().getRelativePath();
+            while (!location.startsWith(prefix)) {
+                slashNeeded = false;
+                int index = prefix.lastIndexOf(File.separator);
+                if (index == -1) {
+                    prefix = "";
+                } else {
+                    prefix = prefix.substring(0, index);
+                }
+            }
+        }
+        return slashNeeded ? prefix + File.separator : prefix;
+    }
+    
+    private class NodeChildren extends TreeViewChildren {
+        private final T[] nestedNodes;
+        private final String path;
+        private final boolean top;
+        private final File file;
+    
+        public NodeChildren (NodeData<T> data, boolean top) {
+            this.nestedNodes = data.nestedNodes;
+            this.path = data.path;
+            this.file = data.file;
+            this.top = top;
+        }
+    
+        @Override
+        void buildSubNodes (Class<?> type) {
+            List<NodeData<T>> data = new ArrayList<>(nestedNodes.length);
+            String prefix = null;
+            List<T> subNodes = new ArrayList<>();
+            for (T n : nestedNodes) {
+                String location = n.getFileNode().getRelativePath();
+                if (prefix == null) {
+                    prefix = path + location.substring(path.length()).split(PATH_SEPARATOR_REGEXP, 0)[0];
+                }
+                if (location.equals(prefix)) {
+                    if (!subNodes.isEmpty()) {
+                        data.add(new NodeData(getFile(prefix), prefix, toArray(subNodes, type)));
+                        subNodes.clear();
+                    }
+                    data.add(new NodeData(getFile(prefix), prefix, toArray(Arrays.asList(n), type)));
+                    prefix = null;
+                } else if (location.startsWith(prefix)) {
+                    subNodes.add(n);
+                } else {
+                    data.add(new NodeData(getFile(prefix), prefix, toArray(subNodes, type)));
+                    subNodes.clear();
+                    prefix = path + location.substring(path.length()).split(PATH_SEPARATOR_REGEXP, 0)[0];
+                    subNodes.add(n);
+                }
+            }
+            if (!subNodes.isEmpty()) {
+                data.add(new NodeData(getFile(prefix), prefix, toArray(subNodes, type)));
+            }
+            
+            add(createNodes(data, type));
+        }
+    
+        private Node[] createNodes (List<NodeData<T>> keys, Class<?> type) {
+            List<Node> toCreate = new ArrayList<>(keys.size());
+            for (NodeData<T> key : keys) {
+                final Node node;
+                if (key.nestedNodes.length == 0) {
+                    continue;
+                } else if (key.nestedNodes.length == 1 && key.path.equals(key.nestedNodes[0].getFileNode().getRelativePath())) {
+                    node = FileTreeView.this.createFilterNode(key.nestedNodes[0]);
+                } else {
+                    final String name;
+                    if (top) {
+                        name = key.path;
+                    } else {
+                        String[] segments = key.path.split(PATH_SEPARATOR_REGEXP);
+                        name = segments[segments.length - 1];
+                    }
+                    final Image icon = getFolderIcon(key.file);
+                    NodeChildren ch = new NodeChildren(new NodeData<T>(key.file, key.path + File.separator, key.nestedNodes), false);
+                    node = new AbstractNode(ch, Lookups.fixed(key.file)) {
+                        @Override
+                        public String getName () {
+                            return name;
+                        }
+
+                        @Override
+                        public Image getIcon (int type) {
+                            return icon;
+                        }
+                    };
+                    ch.buildSubNodes(type);
+                }
+                toCreate.add(node);
+            }
+            return toCreate.toArray(new Node[toCreate.size()]);
+        }
+
+        private Image getFolderIcon (File file) {
+            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+            Icon icon = null;
+            if (fo != null) {
+                try {
+                    ProjectManager.Result res = ProjectManager.getDefault().isProject2(fo);
+                    if (res != null) {
+                        icon = res.getIcon();
+                    }
+                } catch (IllegalArgumentException ex) {
+                    Logger.getLogger(FileTreeView.class.getName()).log(Level.INFO, null, ex);
+                }
+            }
+            return icon == null ? FileTreeView.getFolderIcon() : ImageUtilities.icon2Image(icon);
+        }
+
+        private File getFile (String prefix) {
+            String p = prefix;
+            if (prefix.startsWith(path)) {
+                p = prefix.substring(path.length());
+            }
+            return new File(file, p);
+        }
+    }
+    
+    private static class NodeData<T extends VCSStatusNode> {
+        private final File file;
+        private final String path;
+        private final T[] nestedNodes;
+
+        public NodeData (File file, String path, T[] nested) {
+            this.file = file;
+            this.path = path;
+            this.nestedNodes = nested;
+        }
+    }
+
+    private static class PathComparator<T extends VCSStatusNode> implements Comparator<T> {
+
+        @Override
+        public int compare (T o1, T o2) {
+            String[] segments1 = o1.getFileNode().getRelativePath().split(PATH_SEPARATOR_REGEXP);
+            String[] segments2 = o2.getFileNode().getRelativePath().split(PATH_SEPARATOR_REGEXP);
+            for (int i = 0; i < Math.min(segments1.length, segments2.length); ++i) {
+                String segment1 = segments1[i];
+                String segment2 = segments2[i];
+                int comp = segment1.compareTo(segment2);
+                if (comp != 0) {
+                    if (segment1.startsWith(segment2)) {
+                        // xml.xdm must precede xml node
+                        return segment2.length() - segment1.length();
+                    } else if (segment2.startsWith(segment1)) {
+                        // xml must follow xml.xdm node
+                        return segment2.length() - segment1.length();
+                    }
+                    return comp;
+                }
+            }
+            return segments2.length - segments1.length;
+        }
+
     }
 }

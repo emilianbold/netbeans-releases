@@ -44,7 +44,6 @@ package org.netbeans.modules.web.webkit.debugging.api.css;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -144,15 +143,37 @@ public class CSS {
         Response response = transport.sendBlockingCommand(new Command("CSS.getStyleSheet", params)); // NOI18N
         if (response != null) {
             JSONObject result = response.getResult();
-            if (result != null) {
+            StyleSheetHeader header = getStyleSheetHeader(styleSheetId);
+            if (result == null) {
+                // CSS.getStyleSheet has been removed from the CSS domain
+                String styleSheetText = getStyleSheetText(styleSheetId);
+                body = new StyleSheetBody(header, styleSheetText);
+            } else {
                 JSONObject sheetInfo = (JSONObject)result.get("styleSheet"); // NOI18N
-                body = new StyleSheetBody(sheetInfo);
-                synchronized (this) {
-                    styleSheets.put(styleSheetId, body);
-                }
+                body = new StyleSheetBody(header, sheetInfo);
+            }
+            synchronized (this) {
+                styleSheets.put(styleSheetId, body);
             }
         }
         return body;
+    }
+
+    /**
+     * Returns header of the style-sheet with the specified ID.
+     * 
+     * @param styleSheetId style-sheet ID.
+     * @return header of the style-sheet with the specified ID
+     * or {@code null} if there is no such style-sheet.
+     */
+    private StyleSheetHeader getStyleSheetHeader(String styleSheetId) {
+        for (StyleSheetHeader header : styleSheetHeaders) {
+            String id = header.getStyleSheetId();
+            if (id.equals(styleSheetId)) {
+                return header;
+            }
+        }
+        return null;
     }
 
     /**

@@ -174,16 +174,20 @@
                             </Variable>
                         </ParametrName>
                         <DefaultValue>
-                            <Scalar start='30' end='34' type='STRING' value='null'/>
+                            <NamespaceName start='30' end='34' isCurrent='false' isGlobal='false'>
+                                <Identifier start='30' end='34' name='null'/>
+                            </NamespaceName>
                         </DefaultValue>
                     </FormalParameter>
                     <FormalParameter start='36' end='46' isMandatory='false' isVariadic='true'>
                         <ParametrType>
                         </ParametrType>
                         <ParametrName>
-                            <Variable start='39' end='46' isDollared='true'>
-                                <Identifier start='40' end='46' name='params'/>
-                            </Variable>
+                            <Variadic start='36' end='46'>
+                                <Variable start='39' end='46' isDollared='true'>
+                                    <Identifier start='40' end='46' name='params'/>
+                                </Variable>
+                            </Variadic>
                         </ParametrName>
                         <DefaultValue>
                         </DefaultValue>

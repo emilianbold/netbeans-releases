@@ -227,6 +227,10 @@ public class ModelTest extends ModelTestBase {
         checkModel("testfiles/model/issue242454.js");
     }
     
+    public void testIssue244861() throws Exception {
+        checkModel("testfiles/markoccurences/issue244861.js");
+    }
+    
     public void testPersonRevert() throws Exception {
         FileObject fo = getTestFile("testfiles/model/person.js.model");
         BufferedReader reader = new BufferedReader(new InputStreamReader(fo.getInputStream()));

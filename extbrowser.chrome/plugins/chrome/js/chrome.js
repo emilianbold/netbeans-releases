@@ -409,14 +409,15 @@ chrome.windows.getAll({populate: true}, function(windows) {
 });
 
 NetBeans.windowFocused = function(windowId) {
-    if (NetBeans.debuggedTab !== null) {
-        var active = (windowId === NetBeans.windowWithDebuggedTab);
-        var script = 'if (typeof(NetBeans) === "object") { NetBeans.setWindowActive('+active+'); }';
-        chrome.debugger.sendCommand(
-            {tabId : NetBeans.debuggedTab},
-            'Runtime.evaluate',
-            {expression: script});
-    }
+// Disabled because of issue 244689 (caused by bugs in chrome.windows.onFocusChanged)
+//    if (NetBeans.debuggedTab !== null) {
+//        var active = (windowId === NetBeans.windowWithDebuggedTab);
+//        var script = 'if (typeof(NetBeans) === "object") { NetBeans.setWindowActive('+active+'); }';
+//        chrome.debugger.sendCommand(
+//            {tabId : NetBeans.debuggedTab},
+//            'Runtime.evaluate',
+//            {expression: script});
+//    }
 };
 
 chrome.windows.onFocusChanged.addListener(NetBeans.windowFocused);
@@ -443,7 +444,7 @@ NetBeans_Warnings = {};
 NetBeans_Warnings.runIfEnabled = function(ident, task) {
     var key = NetBeans_Warnings._getKeyFor(ident, 'enabled');
     chrome.storage.sync.get(key, function(items) {
-        NetBeans_Warnings._logError('get', key);
+        NetBeans_Storage._logError('get', key);
         if (items[key] !== undefined && items[key] === 'false') {
             // warning disabled
             return;
@@ -466,7 +467,7 @@ NetBeans_Warnings.enable = function(ident, enabled) {
         var data = {};
         data[key] = 'false';
         chrome.storage.sync.set(data, function() {
-            NetBeans_Warnings._logError('set', key);
+            NetBeans_Storage._logError('set', key);
         });
     }
 };
@@ -476,7 +477,7 @@ NetBeans_Warnings.enable = function(ident, enabled) {
  */
 NetBeans_Warnings.reset = function() {
     chrome.storage.sync.get(function(items) {
-        NetBeans_Warnings._logError('reset', 'none');
+        NetBeans_Storage._logError('reset', 'none');
         var warningPrefix = NetBeans_Warnings._getKeyFor();
         for (var key in items) {
             if (key.indexOf(warningPrefix) === 0) {
@@ -484,7 +485,7 @@ NetBeans_Warnings.reset = function() {
             }
         }
     });
-}
+};
 NetBeans_Warnings._getKeyFor = function(ident, key) {
     var keyName = 'warning.';
     if (ident !== undefined) {
@@ -495,14 +496,75 @@ NetBeans_Warnings._getKeyFor = function(ident, key) {
     }
     return keyName;
 };
-NetBeans_Warnings._logError = function(operation, key) {
-    if (chrome.runtime && chrome.runtime.lastError) {
-        console.error('Local storage error ("' + operation + '" operation for "' + key + '"): ' + chrome.runtime.lastError.message);
-    }
-};
 NetBeans_Warnings._remove = function(key) {
     // remove from local storage
     chrome.storage.sync.remove(key, function() {
-        NetBeans_Warnings._logError('remove', key);
+        NetBeans_Storage._logError('remove', key);
     });
+};
+
+/**
+ * DevTools manager.
+ */
+NetBeans_DevTools = {};
+NetBeans_DevTools.PROPAGATE_CHANGES_KEY = 'devtools.changes.propagate';
+NetBeans_DevTools.areChangesPropagated = function(task) {
+    chrome.storage.sync.get(NetBeans_DevTools.PROPAGATE_CHANGES_KEY, function(items) {
+        NetBeans_Storage._logError('get', NetBeans_DevTools.PROPAGATE_CHANGES_KEY);
+        var enabled = true;
+        if (items[NetBeans_DevTools.PROPAGATE_CHANGES_KEY] !== undefined) {
+            enabled = items[NetBeans_DevTools.PROPAGATE_CHANGES_KEY];
+        }
+        task(enabled);
+    });
+};
+NetBeans_DevTools.setChangesPropagated = function(enabled) {
+    var data = {};
+    data[NetBeans_DevTools.PROPAGATE_CHANGES_KEY] = enabled;
+    chrome.storage.sync.set(data, function() {
+        NetBeans_Storage._logError('set', NetBeans_DevTools.PROPAGATE_CHANGES_KEY);
+    });
+};
+/**
+ * Connect dev tools page.
+ */
+chrome.runtime.onConnect.addListener(function(devToolsConnection) {
+    var devToolsListener = function(message) {
+        var event = message.event;
+        if (event === 'onResourceContentCommitted') {
+            NetBeans_DevTools.areChangesPropagated(function(enabled) {
+                if (enabled) {
+                    // propagate change to NB
+                    chrome.extension.sendMessage({
+                        event: "onResourceContentCommitted",
+                        resource : message.resource,
+                        content: message.content
+                    });
+                }
+            });
+        } else if (event === 'areChangesPropagated') {
+            NetBeans_DevTools.areChangesPropagated(function(enabled) {
+                devToolsConnection.postMessage({
+                    enabled: enabled
+                });
+            });
+        } else if (event === 'setChangesPropagated') {
+            NetBeans_DevTools.setChangesPropagated(message.enabled);
+        }
+    };
+    devToolsConnection.onMessage.addListener(devToolsListener);
+    devToolsConnection.onDisconnect.addListener(function() {
+        devToolsConnection.onMessage.removeListener(devToolsListener);
+    });
+});
+
+/**
+ * Storage logging
+ */
+NetBeans_Storage = {};
+NetBeans_Storage._logError = function(operation, key) {
+    if (chrome.runtime
+            && chrome.runtime.lastError) {
+        console.error('Local storage error ("' + operation + '" operation for "' + key + '"): ' + chrome.runtime.lastError.message);
+    }
 };

@@ -55,6 +55,7 @@ import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.remote.api.ui.FileObjectBasedFile;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
@@ -462,4 +463,33 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         }
         RemoteFileSystemManager.getInstance().getFileSystem(env).warmup(paths, mode, extensions);
     }    
+
+    @Override
+    public boolean isLink(FileSystem fileSystem, String path) {        
+        return isLink(fileSystem.findResource(path));
+    }
+
+    @Override
+    public boolean isLink(ExecutionEnvironment env, String path) {
+        return isLink(getFileSystem(env, "/").findResource(path));
+    }
+
+    @Override
+    public boolean isLink(FileObject fo) {
+        if (fo instanceof RemoteFileObject) {
+            return ((RemoteFileObject) fo).getImplementor().getType() == FileInfoProvider.StatInfo.FileType.SymbolicLink;
+        }
+        return false;
+    }
+
+    @Override
+    public String resolveLink(FileObject fo) throws IOException {
+        if (fo instanceof RemoteFileObject) {
+            RemoteFileObjectBase impl = ((RemoteFileObject) fo).getImplementor();
+            if (impl instanceof RemoteLink) {
+                return ((RemoteLink) impl).getDelegateNormalizedPath();
+            }
+        }
+        return null;
+    }
 }

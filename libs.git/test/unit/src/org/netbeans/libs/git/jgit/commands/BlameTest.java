@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.blame.BlameResult;
-import org.eclipse.jgit.diff.RawTextComparator;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
@@ -228,17 +227,9 @@ public class BlameTest extends AbstractGitTestCase {
         write(f, content);
 
         // it should be up to date again
-        // JGit does not work either:
         org.eclipse.jgit.api.BlameCommand cmd = new Git(repository).blame();
         cmd.setFilePath("f");
         BlameResult blameResult = cmd.call();
-        assertNull(blameResult.getSourceCommit(1));
-        
-        // stupid workaround for JGit
-        cmd = new Git(repository).blame();
-        cmd.setFilePath("f");
-        cmd.setTextComparator(RawTextComparator.WS_IGNORE_TRAILING);
-        blameResult = cmd.call();
         assertEquals(info.getRevision(), blameResult.getSourceCommit(1).getName());
         
         GitBlameResult res = client.blame(f, null, NULL_PROGRESS_MONITOR);
