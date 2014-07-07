@@ -45,6 +45,8 @@ package org.netbeans.modules.php.project.ui.customizer;
 import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -55,6 +57,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -72,6 +75,8 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public final class CustomizerIncludePath extends JPanel implements HelpCtx.Provider {
+
+    private static final Logger LOGGER = Logger.getLogger(CustomizerIncludePath.class.getName());
 
     private static final long serialVersionUID = 1564768521234L;
 
@@ -199,6 +204,8 @@ public final class CustomizerIncludePath extends JPanel implements HelpCtx.Provi
         "# {0} - file path",
         "# {1} - project name",
         "CustomizerPhpIncludePath.error.anotherProjectSubFile=Path {0} belongs to project {1}. Remove it and add Source Files of that project?",
+        "# {0} - project name",
+        "CustomizerPhpIncludePath.error.brokenProject=Project {0} is broken, open and repair it manually.",
     })
     private void askUserToFixPath(DefaultListModel<BasePathSupport.Item> includePathListModel, BasePathSupport.Item item) {
         PhpProject currentProject = uiProps.getProject();
@@ -206,15 +213,23 @@ public final class CustomizerIncludePath extends JPanel implements HelpCtx.Provi
         assert fileObject != null;
         PhpProject owningProject = PhpProjectUtils.getPhpProject(fileObject);
         assert owningProject != null;
+        String owningProjectDisplayName = ProjectUtils.getInformation(owningProject).getDisplayName();
         NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
-                Bundle.CustomizerPhpIncludePath_error_anotherProjectSubFile(item.getAbsoluteFilePath(currentProject.getProjectDirectory()), owningProject.getName()),
+                Bundle.CustomizerPhpIncludePath_error_anotherProjectSubFile(item.getAbsoluteFilePath(currentProject.getProjectDirectory()), owningProjectDisplayName),
                 NotifyDescriptor.YES_NO_OPTION);
         if (DialogDisplayer.getDefault().notify(descriptor) != NotifyDescriptor.YES_OPTION) {
             return;
         }
         // fix path
         FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(owningProject);
-        assert sourcesDirectory != null;
+        if (sourcesDirectory == null) {
+            // #245388
+            LOGGER.log(Level.INFO, "Source files of project {0} not found, Include Path cannot be fixed", owningProject.getName());
+            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
+                    Bundle.CustomizerPhpIncludePath_error_brokenProject(owningProjectDisplayName),
+                    NotifyDescriptor.WARNING_MESSAGE));
+            return;
+        }
         int index = includePathListModel.indexOf(item);
         assert index != -1;
         includePathListModel.set(index, BasePathSupport.Item.create(FileUtil.toFile(sourcesDirectory).getAbsolutePath(), null));

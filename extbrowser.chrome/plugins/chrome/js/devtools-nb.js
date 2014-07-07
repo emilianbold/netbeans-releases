@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,51 +37,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-// references from bg page
-var NetBeans_Warnings = chrome.extension.getBackgroundPage().NetBeans_Warnings;
+var NetBeans_Panel = {};
 
-/**
- * Warning - the content is set by the URL ident (accessible via <code>window.location.hash</code>).
- */
-var NetBeans_Warning = {};
+NetBeans_Panel._backgroundPageConnection = null;
+NetBeans_Panel._propagateChangesCheckbox = null;
 
-NetBeans_Warning._ident = null;
-NetBeans_Warning._okButton = null;
-NetBeans_Warning._doNotShowAgainButton = null;
-
-NetBeans_Warning.init = function() {
-    if (NetBeans_Warning._ident !== null) {
+NetBeans_Panel.init = function() {
+    if (NetBeans_Panel._backgroundPageConnection !== null) {
         return;
     }
-    this._ident = window.location.hash.substring(1);
-    this._okButton = document.getElementById('okButton');
-    this._doNotShowAgainButton = document.getElementById('doNotShowAgainCheck');
-    this._showContent();
+    this._backgroundPageConnection = chrome.runtime.connect();
+    this._propagateChangesCheckbox = document.getElementById('propagateChangesCheckbox');
     this._registerEvents();
-};
-// show proper content of the page
-NetBeans_Warning._showContent = function() {
-    document.getElementById(this._ident).style.display = 'block';
+    this._load();
 };
 // register events
-NetBeans_Warning._registerEvents = function() {
+NetBeans_Panel._registerEvents = function() {
     var that = this;
-    this._okButton.addEventListener('click', function() {
-        that._close();
+    this._backgroundPageConnection.onMessage.addListener(function(message) {
+        if (message.enabled !== undefined) {
+            that._propagateChangesCheckbox.checked = message.enabled;
+        }
+    });
+    this._propagateChangesCheckbox.addEventListener('change', function() {
+        that._backgroundPageConnection.postMessage({
+            event: 'setChangesPropagated',
+            enabled: that._propagateChangesCheckbox.checked
+        });
     }, false);
 };
-NetBeans_Warning._close = function() {
-    this._doNotShowAgain();
-    window.close();
-};
-NetBeans_Warning._doNotShowAgain = function() {
-    NetBeans_Warnings.enable(this._ident, !this._doNotShowAgainButton.checked);
+// load initial state
+NetBeans_Panel._load = function() {
+    this._backgroundPageConnection.postMessage({
+        event: 'areChangesPropagated'
+    });
 };
 
 // run!
 window.addEventListener('load', function() {
-    NetBeans_Warning.init();
+    NetBeans_Panel.init();
 }, false);
