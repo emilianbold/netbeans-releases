@@ -48,15 +48,18 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.team.server.ui.spi.QueryHandle;
+import static org.netbeans.modules.team.server.ui.spi.QueryHandle.PROP_QUERY_RESULT;
 import org.netbeans.modules.team.server.ui.spi.QueryResultHandle;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -67,10 +70,11 @@ public class QueryHandleImpl extends QueryHandle implements QueryDescriptor, Act
     private final Query query;
     private final PropertyChangeSupport changeSupport;
     protected final boolean predefined;
-    private Collection<Issue> issues = Collections.emptyList();
     private String stringValue;
     protected boolean needsRefresh;
 
+    private StatusChangedListener statusChangedListener;
+    
     QueryHandleImpl(Query query, boolean needsRefresh) {
         this.query = query;
         this.needsRefresh = needsRefresh;
@@ -112,6 +116,7 @@ public class QueryHandleImpl extends QueryHandle implements QueryDescriptor, Act
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(Query.EVENT_QUERY_REFRESHED)) {
+            registerStatusCL();
             changeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_QUERY_RESULT, null, getQueryResults())); // XXX add result handles
         } else if(evt.getPropertyName().equals(IssueStatusProvider.EVENT_STATUS_CHANGED)) {
             changeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_QUERY_RESULT, null, getQueryResults())); // XXX add result handles
@@ -201,4 +206,40 @@ public class QueryHandleImpl extends QueryHandle implements QueryDescriptor, Act
         return displayName.equals(TeamAccessorUtils.ALL_ISSUES_QUERY_DISPLAY_NAME); 
     }
 
+    private Set<String> statusListeners;
+    private void registerStatusCL() {
+        synchronized(query) {
+            if(statusListeners == null) {
+                statusListeners = new HashSet<>();
+            }
+            if(statusChangedListener == null) {
+                statusChangedListener = new StatusChangedListener();
+            }
+        }
+        Collection<Issue> issues = query.getIssues();
+        
+        Set<String> ids = new HashSet<>();
+        for (Issue issue : issues) {
+            if(!statusListeners.contains(issue.getID())) {
+                statusListeners.add(issue.getID());
+                ids.add(issue.getID());
+                issue.addPropertyChangeListener(WeakListeners.propertyChange(statusChangedListener, issue));
+            }
+        }
+        statusListeners.retainAll(ids);
+    }
+
+    private class StatusChangedListener implements PropertyChangeListener {
+        private RequestProcessor.Task statusChangeTask;
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            statusChangeTask = new RequestProcessor("ODCSQueryHandle - issue status change" + (query != null ? query.getDisplayName() : ""), 1).create(new Runnable() {
+               @Override
+               public void run() {
+                   changeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_QUERY_RESULT, null, getQueryResults())); // XXX add result handles
+               }
+            });
+            statusChangeTask.schedule(1000);
+        }
+    }
 }
