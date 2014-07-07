@@ -201,8 +201,8 @@ NetBeans.sendPendingMessages = function() {
 
 chrome.extension.onMessage.addListener(
   function(request, sender, sendResponse) {
-    console.log('Sending changes from CDT back to NetBeans');
     if (request.event == "onResourceContentCommitted") {
+      console.log('Sending changes from CDT back to NetBeans');
       NetBeans.sendResourceChangedInCDT(request.resource, request.content);
     }
   });
