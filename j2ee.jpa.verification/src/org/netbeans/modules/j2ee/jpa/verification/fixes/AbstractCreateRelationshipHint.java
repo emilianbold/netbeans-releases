@@ -422,7 +422,7 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
         AnnotationTree targetAnn = genUtils.createAnnotation(complimentaryAnnotationClassName, targetAnnArgs);
         
         if (targetEntityAccessType == AccessType.FIELD){
-            if(targetFieldAccesor!=null && targetFieldAccesor.getModifiers()!=null) {
+            if(targetFieldAccesor!=null && targetFieldAccesor.getModifiers()!=null && targetFieldAccesor.getModifiers().getAnnotations()!=null) {
                 for (AnnotationTree at : targetFieldAccesor.getModifiers().getAnnotations()) {
                     if (complimentaryAnnotationClassName.endsWith(at.getAnnotationType().toString())) {
                         //more complex resolve in this case?
@@ -434,7 +434,7 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
             VariableTree modifiedTree = genUtils.addAnnotation(targetField, targetAnn);
             workingCopy.rewrite(targetField, modifiedTree);
         } else { // accessType == AccessType.PROPERTY
-            if(targetFieldAccesor!=null && targetFieldAccesor.getModifiers()!=null) {
+            if(targetFieldAccesor!=null && targetFieldAccesor.getModifiers()!=null && targetFieldAccesor.getModifiers().getAnnotations()!=null) {
                 for (AnnotationTree at : targetFieldAccesor.getModifiers().getAnnotations()) {
                     if (complimentaryAnnotationClassName.endsWith(at.getAnnotationType().toString())) {
                         //more complex resolve in this case?
