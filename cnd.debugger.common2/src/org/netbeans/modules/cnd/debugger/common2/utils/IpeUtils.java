@@ -148,6 +148,10 @@ public class IpeUtils {
     }
     
     public static String unquoteIfNecessary(String s) {
+        if (s == null) {
+            return null;
+        }
+        
         if (s.charAt(0) == '"') {
             s = s.substring(1);
         }
