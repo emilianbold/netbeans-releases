@@ -144,7 +144,7 @@ public class HibernateCfgProperties {
     };
 
     public final static String[] optionalCacheProps = new String[] {
-        Environment.CACHE_PROVIDER,
+//        Environment.CACHE_PROVIDER,
         Environment.USE_MINIMAL_PUTS,
         Environment.USE_QUERY_CACHE,
         Environment.USE_SECOND_LEVEL_CACHE,
@@ -155,8 +155,8 @@ public class HibernateCfgProperties {
 
     public final static String[] optionalTransactionProps = new String[] {
         Environment.TRANSACTION_STRATEGY,
-        Environment.USER_TRANSACTION,
-        Environment.TRANSACTION_MANAGER_STRATEGY,
+//        Environment.USER_TRANSACTION,
+//        Environment.TRANSACTION_MANAGER_STRATEGY,
         Environment.FLUSH_BEFORE_COMPLETION,
         Environment.AUTO_CLOSE_SESSION
     };
@@ -219,7 +219,7 @@ public class HibernateCfgProperties {
         possiblePropertyValues.put(Environment.AUTOCOMMIT, TRUE_FALSE);
         possiblePropertyValues.put(Environment.RELEASE_CONNECTIONS, RELEASE_MODES );
 
-        possiblePropertyValues.put(Environment.CACHE_PROVIDER, null);
+//        possiblePropertyValues.put(Environment.CACHE_PROVIDER, null);
         possiblePropertyValues.put(Environment.USE_MINIMAL_PUTS, TRUE_FALSE);
         possiblePropertyValues.put(Environment.USE_QUERY_CACHE, TRUE_FALSE);
         possiblePropertyValues.put(Environment.USE_SECOND_LEVEL_CACHE, TRUE_FALSE);
@@ -228,8 +228,8 @@ public class HibernateCfgProperties {
         possiblePropertyValues.put(Environment.USE_STRUCTURED_CACHE, TRUE_FALSE);
 
         possiblePropertyValues.put(Environment.TRANSACTION_STRATEGY, null);
-        possiblePropertyValues.put(Environment.USER_TRANSACTION, null);
-        possiblePropertyValues.put(Environment.TRANSACTION_MANAGER_STRATEGY, null);
+//        possiblePropertyValues.put(Environment.USER_TRANSACTION, null);
+//        possiblePropertyValues.put(Environment.TRANSACTION_MANAGER_STRATEGY, null);
         possiblePropertyValues.put(Environment.FLUSH_BEFORE_COMPLETION, TRUE_FALSE);
         possiblePropertyValues.put(Environment.AUTO_CLOSE_SESSION, TRUE_FALSE);
 
