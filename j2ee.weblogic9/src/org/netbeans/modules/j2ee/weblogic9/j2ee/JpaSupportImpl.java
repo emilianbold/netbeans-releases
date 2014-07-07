@@ -61,19 +61,19 @@ class JpaSupportImpl implements JpaSupportImplementation {
     @Override
     public JpaProvider getDefaultProvider() {
         String defaultProvider = platformImpl.getDefaultJpaProvider();
-        boolean jpa2 = platformImpl.isJpa2Available();
-        return JpaProviderFactory.createJpaProvider(defaultProvider, true, true, jpa2, false);
+        return JpaProviderFactory.createJpaProvider(defaultProvider, true, true,
+                platformImpl.isJpa2Available(), platformImpl.isJpa21Available());
     }
 
     @Override
     public Set<JpaProvider> getProviders() {
         String defaultProvider = platformImpl.getDefaultJpaProvider();
-        boolean jpa2 = platformImpl.isJpa2Available();
         Set<JpaProvider> providers = new HashSet<JpaProvider>();
         providers.add(JpaProviderFactory.createJpaProvider(WLJ2eePlatformFactory.OPENJPA_JPA_PROVIDER,
                 WLJ2eePlatformFactory.OPENJPA_JPA_PROVIDER.equals(defaultProvider), true, false, false));
         providers.add(JpaProviderFactory.createJpaProvider(WLJ2eePlatformFactory.ECLIPSELINK_JPA_PROVIDER,
-                WLJ2eePlatformFactory.ECLIPSELINK_JPA_PROVIDER.equals(defaultProvider), true, jpa2, false));
+                WLJ2eePlatformFactory.ECLIPSELINK_JPA_PROVIDER.equals(defaultProvider), true,
+                platformImpl.isJpa2Available(), platformImpl.isJpa21Available()));
         return providers;
     }
 

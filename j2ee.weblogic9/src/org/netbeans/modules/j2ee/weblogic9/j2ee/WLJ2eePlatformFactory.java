@@ -334,6 +334,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         if (j2eePlatform != null) {
             synchronized (j2eePlatform) {
                 j2eePlatform.jpa2Available = foundJpa2 || foundJpa21;
+                j2eePlatform.jpa21Available = foundJpa21;
             }
         }
 
@@ -388,6 +389,13 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     if (persistenceCandidates.length > 0) {
                         for (File candidate : persistenceCandidates) {
                             addFileToList(list, candidate);
+                            // mark we have jpa21 available
+                            if (j2eePlatform != null
+                                    && JAVAX_PERSISTENCE_21_PATTERN.matcher(candidate.getName()).matches()) {
+                                synchronized (j2eePlatform) {
+                                    j2eePlatform.jpa21Available = true;
+                                }
+                            }
                         }
                         if (persistenceCandidates.length > 1) {
                             LOGGER.log(Level.INFO, "Multiple javax.persistence JAR candidates");
@@ -491,6 +499,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         
         /** <i>GuardedBy("this")</i> */
         private boolean jpa2Available;
+        
+        /** <i>GuardedBy("this")</i> */
+        private boolean jpa21Available;
         
         public J2eePlatformImplImpl(WLDeploymentManager dm) {
             this.dm = dm;
@@ -749,6 +760,16 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             // initialize and return value
             getLibraries();
             return jpa2Available;
+        }
+        
+        public synchronized boolean isJpa21Available() {
+            if (libraries != null) {
+                return jpa21Available;
+            }
+            
+            // initialize and return value
+            getLibraries();
+            return jpa21Available;
         }
 
         WLDeploymentManager getDeploymentManager() {

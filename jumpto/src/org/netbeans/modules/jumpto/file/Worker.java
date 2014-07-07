@@ -51,6 +51,8 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -245,6 +247,8 @@ final class Worker implements Runnable {
         private final Set<FileObject> excludes;
         //@GuardedBy("this")
         private Collection<? extends FileObject> sgRoots;
+        //@GuardedBy("this")
+        private Collection<? extends Project> projects;
 
         private Request(
             @NonNull final String text,
@@ -290,22 +294,31 @@ final class Worker implements Runnable {
                 lineNr);
         }
 
-        private synchronized Collection<? extends FileObject> getSourceRoots() {
-            if (sgRoots == null) {
-                final Project[] openedProjects = OpenProjects.getDefault().getOpenProjects();
-                final List<Project> projects;
-                if (currentProject == null) {
-                    projects = Arrays.asList(openedProjects);
-                } else {
-                    projects = new ArrayList<>();
-                    projects.add(currentProject);
-                    for (Project openedProject : openedProjects) {
-                        if (currentProject.equals(openedProject)){
-                            continue;
-                        }
-                        projects.add(openedProject);
+        @NonNull
+        private synchronized Collection<? extends Project> getOpenProjects() {
+            if (projects == null) {
+                final Project[] opa = OpenProjects.getDefault().getOpenProjects();
+                final List<Project> pl = new ArrayList<>(opa.length);
+                if (currentProject != null) {
+                    pl.add(currentProject);
+                }
+                for (Project p : opa) {
+                    Project getRidOfFod = p.getLookup().lookup(Project.class);
+                    if (getRidOfFod != null) {
+                        p = getRidOfFod;
+                    }
+                    if (!Objects.equals(p, currentProject)) {
+                        pl.add(p);
                     }
                 }
+                projects = Collections.unmodifiableCollection(pl);
+            }
+            return projects;
+        }
+
+        private synchronized Collection<? extends FileObject> getSourceRoots() {
+            if (sgRoots == null) {
+                final Collection<? extends Project> projects = getOpenProjects();
                 final List<FileObject> newSgRoots = new ArrayList<>();
                 for (Project p : projects) {
                     for (SourceGroup group : ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
@@ -530,47 +543,38 @@ final class Worker implements Runnable {
                 return;
             }
             final Pair<String,String> query = createQuery(request);
+            final Map<Project,Collection<FileObject>> rbp = collectRoots(request);
             try {
-                final Project currentProject = request.getCurrentProject();
-                if (currentProject != null) {
-                    doQuery(
-                        query,
-                        request,
-                        worker,
-                        collectRoots(request, currentProject));
+                for (Project p : request.getOpenProjects()) {
+                    final Collection<FileObject> roots = rbp.get(p);
+                    if (roots != null) {
+                        doQuery(
+                            query,
+                            request,
+                            worker,
+                            filterExcluded(roots, request));
+                    }
                 }
-                doQuery(
-                    query,
-                    request,
-                    worker,
-                    collectRoots(request, null));
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }
         }
 
         @NonNull
-        private Collection<? extends FileObject> collectRoots(
-            @NonNull final Request request,
-            @NullAllowed final Project project) {
-            final Set<FileObject> roots = new LinkedHashSet<>();
-            for (FileObject fo : QuerySupport.findRoots(
-                project,
+        private Map<Project,Collection<FileObject>> collectRoots(
+            @NonNull final Request request) {
+            return QuerySupport.findRoots(
+                request.getOpenProjects(),
                 null,
                 Collections.<String>emptyList(),
-                Collections.<String>emptyList())) {
-                if (!request.isExcluded(fo)) {
-                    roots.add(fo);
-                }
-            }
-            return roots;
+                Collections.<String>emptyList());
         }
 
         private boolean doQuery(
             @NonNull final Pair<String,String> query,
             @NonNull final Request request,
             @NonNull final Worker worker,
-            @NonNull final Collection<? extends FileObject> roots) throws IOException {
+            @NonNull Collection<? extends FileObject> roots) throws IOException {
             if (isCancelled()) {
                 return false;
             }
@@ -645,6 +649,19 @@ final class Worker implements Runnable {
                     break;
             }
             return Pair.<String,String>of(searchField, indexQueryText);
+        }
+
+        @NonNull
+        private static Collection<FileObject> filterExcluded(
+            @NonNull final Collection<? extends FileObject> roots,
+            @NonNull final Request request) {
+            final List<FileObject> result = new ArrayList<>(roots.size());
+            for (FileObject root : roots) {
+                if (!request.isExcluded(root)) {
+                    result.add(root);
+                }
+            }
+            return result;
         }
     }
 
