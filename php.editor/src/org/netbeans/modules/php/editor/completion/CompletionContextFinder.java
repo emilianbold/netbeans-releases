@@ -106,6 +106,18 @@ final class CompletionContextFinder {
             new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
             new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN},
             new Object[]{PHPTokenId.PHP_USE, COMBINED_USE_STATEMENT_TOKENS});
+    private static final List<Object[]> USE_CONST_KEYWORD_TOKENS = Arrays.asList(
+            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CONST},
+            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CONST, PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CONST, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CONST, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN},
+            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CONST, COMBINED_USE_STATEMENT_TOKENS});
+    private static final List<Object[]> USE_FUNCTION_KEYWORD_TOKENS = Arrays.asList(
+            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_FUNCTION},
+            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN},
+            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_FUNCTION, COMBINED_USE_STATEMENT_TOKENS});
     private static final List<Object[]> USE_TRAIT_KEYWORD_TOKENS = Arrays.asList(
             new Object[]{TYPE_KEYWORD, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE},
             new Object[]{TYPE_KEYWORD, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE},
@@ -206,7 +218,7 @@ final class CompletionContextFinder {
         EXPRESSION, HTML, CLASS_NAME, INTERFACE_NAME, TYPE_NAME, STRING,
         CLASS_MEMBER, STATIC_CLASS_MEMBER, PHPDOC, INHERITANCE, EXTENDS, IMPLEMENTS, METHOD_NAME,
         CLASS_CONTEXT_KEYWORDS, SERVER_ENTRY_CONSTANTS, NONE, NEW_CLASS, GLOBAL, NAMESPACE_KEYWORD,
-        USE_KEYWORD, DEFAULT_PARAMETER_VALUE, OPEN_TAG, THROW, CATCH, CLASS_MEMBER_IN_STRING,
+        USE_KEYWORD, USE_CONST_KEYWORD, USE_FUNCTION_KEYWORD, DEFAULT_PARAMETER_VALUE, OPEN_TAG, THROW, CATCH, CLASS_MEMBER_IN_STRING,
         INTERFACE_CONTEXT_KEYWORDS, USE_TRAITS
     };
 
@@ -276,6 +288,10 @@ final class CompletionContextFinder {
             return CompletionContext.USE_TRAITS;
         } else if (acceptTokenChains(tokenSequence, USE_KEYWORD_TOKENS, moveNextSucces)) {
             return CompletionContext.USE_KEYWORD;
+        } else if (acceptTokenChains(tokenSequence, USE_CONST_KEYWORD_TOKENS, moveNextSucces)) {
+            return CompletionContext.USE_CONST_KEYWORD;
+        } else if (acceptTokenChains(tokenSequence, USE_FUNCTION_KEYWORD_TOKENS, moveNextSucces)) {
+            return CompletionContext.USE_FUNCTION_KEYWORD;
         } else if (acceptTokenChains(tokenSequence, NAMESPACE_KEYWORD_TOKENS, moveNextSucces)) {
             return CompletionContext.NAMESPACE_KEYWORD;
         } else if (acceptTokenChains(tokenSequence, INSTANCEOF_TOKENCHAINS, moveNextSucces)) {

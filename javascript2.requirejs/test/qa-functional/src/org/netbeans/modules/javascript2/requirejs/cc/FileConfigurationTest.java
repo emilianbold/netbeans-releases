@@ -78,20 +78,20 @@ public class FileConfigurationTest extends GeneralRequire {
         FileConfigurationTest.currentProject = "SimpleRequire";
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
         openDataProjects("SimpleRequire");
-        openFile("js|_main.js", "SimpleRequire");
-        FileConfigurationTest.originalContent = openFile("js|_main.js", "SimpleRequire").getText();
+        openFile("js|main2.js", "SimpleRequire");
+        FileConfigurationTest.originalContent = openFile("js|main2.js", "SimpleRequire").getText();
         endTest();
     }
 
     public void testBaseUrl() throws Exception {
         startTest();
-        testCompletion(openFile("js|_main.js", "SimpleRequire"), 8);
+        testCompletion(openFile("js|main2.js", "SimpleRequire"), 8);
         endTest();
     }
 
     public void testBaseUrlNested() throws Exception {
         startTest();
-        testCompletion(openFile("js|_main.js", "SimpleRequire"), 11);
+        testCompletion(openFile("js|main2.js", "SimpleRequire"), 11);
         endTest();
     }
 
@@ -103,7 +103,7 @@ public class FileConfigurationTest extends GeneralRequire {
         if (FileConfigurationTest.numberOfTests > 0 && FileConfigurationTest.uncommentedContent == null) {
             return;
         }
-        EditorOperator eo = openFile("js|_main.js", "SimpleRequire");
+        EditorOperator eo = openFile("js|main2.js", "SimpleRequire");
         eo.typeKey('a', InputEvent.CTRL_MASK);
         eo.pressKey(KeyEvent.VK_DELETE);
 
@@ -121,7 +121,7 @@ public class FileConfigurationTest extends GeneralRequire {
     @Override
     public void setUp() {
         if (FileConfigurationTest.originalContent != null && !FileConfigurationTest.setup) {
-            EditorOperator eo = openFile("js|_main.js", "SimpleRequire");
+            EditorOperator eo = openFile("js|main2.js", "SimpleRequire");
             eo.typeKey('a', InputEvent.CTRL_MASK);
             eo.typeKey('/', InputEvent.CTRL_MASK);
             eo.clickMouse();

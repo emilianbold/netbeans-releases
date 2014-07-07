@@ -97,8 +97,11 @@ public class ExternalFileNavTest extends GeneralRequire {
         evt.waitNoEvent(200);
         new org.netbeans.jellytools.actions.Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_B, 2)).performShortcut(eo);
         evt.waitNoEvent(500);
+        long defaultTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
         try {
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
             EditorOperator ed = new EditorOperator(toFile);
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", defaultTimeout);
             int position = ed.txtEditorPane().getCaretPosition();
             ed.setCaretPosition(toLine, toColumn);
             int expectedPosition = ed.txtEditorPane().getCaretPosition();
@@ -107,6 +110,7 @@ public class ExternalFileNavTest extends GeneralRequire {
                 ed.close(false);
             }
         } catch (Exception e) {
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", defaultTimeout);
             fail(e.getMessage());
         }
 

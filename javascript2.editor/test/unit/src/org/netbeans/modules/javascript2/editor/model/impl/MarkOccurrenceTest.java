@@ -1095,6 +1095,42 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/issue244989.js", "return fo^o().length;", true); 
     }
     
+    public void testIssue244861_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244861.js", "var sel^f = this; // in MyClass", true); 
+    }
+    
+    public void testIssue244861_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244861.js", "this.myFi^eld = \"something else\";", true); 
+    }
+    
+    public void testIssue244861_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244861.js", "sel^f.myField.doSomething(); // click on myField", true); 
+    }
+    
+    public void testIssue244861_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244861.js", "self.myField.do^Again(); // in myMethod", true); 
+    }
+    
+    public void testIssue244861_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244861.js", "this.my^Field = \"foo\"; // click on myField", true); 
+    }
+    
+    public void testIssue244344_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244344.js", "SeLiteMisc.isInstance= function isPrdca( ob^ject, classes, className, message ) {", true); 
+    }
+    
+    public void testIssue244344_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244344.js", "SeLiteMisc.isInstance= function isPrdca( object, cla^sses, className, message ) {", true); 
+    }
+    
+    public void testIssue244344_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244344.js", "SeLiteMisc.isInstance= function isPrdca( object, classes, class^Name, message ) {", true); 
+    }
+    
+    public void testIssue244344_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244344.js", "SeLiteMisc.isInstance= function isPrdca( object, classes, className, messa^ge ) {", true); 
+    }
+    
    private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

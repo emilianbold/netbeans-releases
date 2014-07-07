@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.grunt;
+package org.netbeans.modules.web.clientproject.node;
 
 import java.awt.Image;
 import java.util.ArrayList;
@@ -270,7 +270,9 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         @NbBundle.Messages({
             "LBL_gruntfile.js=Gruntfile",
             "LBL_package.json=package.json",
-            "LBL_plugins.properties=Cordova Plugins"
+            "LBL_plugins.properties=Cordova Plugins",
+            "LBL_bower.json=bower.json",
+            "LBL_bowerrc=.bowerrc"
         })
         private static final java.util.Map<String, String> FILES = new LinkedHashMap<>();
 
@@ -279,6 +281,8 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             FILES.put("package.json", Bundle.LBL_package_json());
             FILES.put("Gruntfile.js", Bundle.LBL_gruntfile_js());
             FILES.put("Package.json", Bundle.LBL_package_json());
+            FILES.put("bower.json", Bundle.LBL_bower_json());
+            FILES.put(".bowerrc", Bundle.LBL_bowerrc());
             FILES.put("nbproject/plugins.properties", Bundle.LBL_plugins_properties());
         }
 

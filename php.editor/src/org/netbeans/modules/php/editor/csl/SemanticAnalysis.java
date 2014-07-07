@@ -456,11 +456,11 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             scan(md.getFunction().getFormalParameters());
             boolean isPrivate = Modifier.isPrivate(md.getModifier());
             Identifier identifier = md.getFunction().getFunctionName();
-            String name = identifier.getName();
+            String name = identifier.getName().toLowerCase();
             Set<ColoringAttributes> coloring = createMethodDeclarationColoring(md);
             // don't color private magic private method. methods which start __
             if (isPrivate && name != null && !name.startsWith("__")) {
-                privateUnusedMethods.put(new UnusedIdentifier(identifier.getName(), typeDeclaration), new ASTNodeColoring(identifier, coloring));
+                privateUnusedMethods.put(new UnusedIdentifier(name, typeDeclaration), new ASTNodeColoring(identifier, coloring));
             } else {
                 // color now only non private method
                 addColoringForNode(identifier, coloring);
@@ -530,7 +530,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 identifier = (Identifier) node.getMethod().getFunctionName().getName();
             }
             if (identifier != null) {
-                ASTNodeColoring item = privateUnusedMethods.remove(new UnusedIdentifier(identifier.getName(), typeDeclaration));
+                ASTNodeColoring item = privateUnusedMethods.remove(new UnusedIdentifier(identifier.getName().toLowerCase(), typeDeclaration));
                 if (item != null) {
                     addColoringForNode(item.identifier, item.coloring);
                 }
@@ -642,7 +642,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             FunctionName fnName = node.getMethod().getFunctionName();
             if (fnName.getName() instanceof Identifier) {
                 Identifier identifier = (Identifier) fnName.getName();
-                String name = identifier.getName();
+                String name = identifier.getName().toLowerCase();
                 ASTNodeColoring item = privateUnusedMethods.remove(new UnusedIdentifier(name, typeDeclaration));
                 if (item != null) {
                     addColoringForNode(item.identifier, item.coloring);

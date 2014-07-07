@@ -23,7 +23,7 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="myScrollPane" alignment="1" pref="549" max="32767" attributes="0"/>
+                  <Component id="myScrollPane" alignment="1" max="32767" attributes="0"/>
                   <Component id="myLocal" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="myRemote" min="-2" max="-2" attributes="0"/>
@@ -33,7 +33,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="myTargetLbl" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="myTarget" pref="476" max="32767" attributes="0"/>
+                      <Component id="myTarget" pref="544" max="32767" attributes="0"/>
                   </Group>
                   <Component id="myNoticeLbl" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
@@ -59,7 +59,7 @@
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="myNoticeLbl" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="myScrollPane" pref="140" max="32767" attributes="0"/>
+              <Component id="myScrollPane" pref="225" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -178,8 +178,8 @@
       <SubComponents>
         <Component class="javax.swing.JEditorPane" name="myNotice">
           <Properties>
-            <Property name="contentType" type="java.lang.String" value="text/html"/>
             <Property name="editable" type="boolean" value="false"/>
+            <Property name="contentType" type="java.lang.String" value="text/html" noResource="true"/>
           </Properties>
           <AccessibilityProperties>
             <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">

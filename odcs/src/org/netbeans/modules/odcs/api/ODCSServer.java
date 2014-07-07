@@ -180,6 +180,7 @@ public final class ODCSServer {
             auth = null;
             currentProfile = null;
             projectsCache.clear();
+            myProjectCache.clear();
         }
         PropertyChangeEvent propertyChangeEvent = new PropertyChangeEvent(this, PROP_LOGIN, old, auth);
         firePropertyChange(propertyChangeEvent);

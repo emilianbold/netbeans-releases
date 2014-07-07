@@ -48,8 +48,25 @@ import org.netbeans.modules.php.editor.api.AliasedName;
  * @author Radek Matous
  */
 public interface UseScope extends Scope {
+    public enum Type {
+        TYPE("TYPE"), //NOI18N
+        CONST("CONST"), //NOI18N
+        FUNCTION("FUNCTION"); //NOI18N
 
+        private final String type;
+
+        private Type(String type) {
+            this.type = type;
+        }
+
+        @Override
+        public String toString() {
+            return type;
+        }
+
+    }
     AliasedName getAliasedName();
     UseAliasElement getAliasElement();
+    Type getType();
 
 }

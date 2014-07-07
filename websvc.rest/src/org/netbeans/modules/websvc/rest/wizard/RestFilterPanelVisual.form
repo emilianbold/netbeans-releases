@@ -173,7 +173,7 @@
     </Component>
     <Component class="javax.swing.JTextField" name="headers">
       <Properties>
-        <Property name="text" type="java.lang.String" value="content-type" noResource="true"/>
+        <Property name="text" type="java.lang.String" value="Content-Type" noResource="true"/>
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">

@@ -425,6 +425,8 @@ public class ODCSRepository implements PropertyChangeListener {
             if (remoteSavedQueries == null) {
                 // this can still be null, when user logins
                 remoteSavedQueries = new HashSet<>();
+            } else {
+                remoteSavedQueries.clear();
             }
             remoteSavedQueries.addAll(queries);
         }

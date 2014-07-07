@@ -40,62 +40,47 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.grunt;
+package org.netbeans.modules.javascript2.editor;
 
-import java.awt.event.ActionEvent;
-import java.io.IOException;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import org.netbeans.api.project.Project;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
-import org.openide.awt.DynamicMenuContent;
+import java.io.File;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
+import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.util.ContextAwareAction;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Jan Becicka
+ * @author Petr Pisl
  */
-@ActionID(id = "org.netbeans.modules.web.clientproject.grunt.NpmInstallAction", category = "Build")
-@ActionRegistration(displayName = "#CTL_NpmInstallAction", lazy=false)
-@ActionReference(path="Projects/org-netbeans-modules-web-clientproject/Actions", position = 170)
-public class NpmInstallAction extends AbstractAction implements ContextAwareAction {
+public class JsCodeCompletionIssue245252Test  extends JsCodeCompletionBase {
     
-    public @Override void actionPerformed(ActionEvent e) {
-        assert false;
+    public JsCodeCompletionIssue245252Test(String testName) {
+        super(testName);
     }
     
-    public @Override Action createContextAwareInstance(Lookup context) {
-        return new ContextAction(context);
+    public void testIssue245252_01() throws Exception {
+        checkCompletion("testfiles/completion/issue245252/issue245252.js", "p.d^", false);
     }
     
-    @NbBundle.Messages({
-        "CTL_NpmInstall=Npm install"
-    })
-    private static final class ContextAction extends AbstractAction {
-        private final Project p;
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/issue245252")));
+        return Collections.singletonMap(
+            JS_SOURCE_ID,
+            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+        );
+    }
 
-        public ContextAction(Lookup context) {
-            super(Bundle.CTL_NpmInstall());
-            p = context.lookup(Project.class);
-            FileObject package_json = p.getProjectDirectory().getFileObject("package.json");//NOI18N
-            setEnabled(package_json!=null);
-            putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
-        }
-        
-        public @Override
-        void actionPerformed(ActionEvent e) {
-            try {
-                new NpmExecutor(p.getProjectDirectory(), new String[]{"install"}).execute(); //NOI18N
-                TargetLister.invalidateCache(p.getProjectDirectory().getFileObject("Gruntfile.js")); //NOI18N
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
+    @Override
+    protected boolean classPathContainsBinaries() {
+        return true;
     }
+    
 }

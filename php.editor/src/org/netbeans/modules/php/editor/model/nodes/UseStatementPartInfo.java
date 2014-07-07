@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.sync;
+package org.netbeans.modules.php.editor.model.nodes;
 
-import java.io.File;
-import java.io.PrintWriter;
-import java.util.Collections;
-import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
-import org.netbeans.modules.cnd.utils.FSPath;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 
 /**
- * Test for ScpSyncWorker
- * @author Vladimir Kvashin
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class ZipSyncWorkerTestCase extends AbstractSyncWorkerTestCase {
+public class UseStatementPartInfo extends ASTNodeInfo<UseStatementPart> {
+    private final UseStatement.Type type;
 
-    public ZipSyncWorkerTestCase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);
+    public UseStatementPartInfo(UseStatementPart node, UseStatement.Type type) {
+        super(node);
+        this.type = type;
     }
 
-    @Override
-    BaseSyncWorker createWorker(File src, ExecutionEnvironment execEnv, 
-            PrintWriter out, PrintWriter err, FileObject privProjectStorageDir) {
-        return new ZipSyncWorker(execEnv, out, err, privProjectStorageDir,
-                Collections.singletonList(FSPath.toFSPath(FileUtil.toFileObject(FileUtil.normalizeFile(src)))),
-                Collections.<FSPath>emptyList());
+    public static UseStatementPartInfo create(UseStatementPart node, UseStatement.Type type) {
+        return new UseStatementPartInfo(node, type);
     }
 
-    @Override
-    protected String getTestNamePostfix() {
-        return "zip";
+    public UseStatement.Type getType() {
+        return type;
     }
 
-
-    public static Test suite() {
-        return new RemoteDevelopmentTest(ZipSyncWorkerTestCase.class);
-    }
 }

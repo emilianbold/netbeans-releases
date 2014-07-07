@@ -102,7 +102,8 @@ public class UpdateAction extends ContextAction {
 
     @Override
     protected int getFileEnabledStatus() {
-        return FileInformation.STATUS_VERSIONED | FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY; // updating locally new file is permitted, it either does nothing or exchanges the local file with the one in repository
+        return FileInformation.STATUS_VERSIONED | FileInformation.STATUS_IN_REPOSITORY
+                | FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY; // updating locally new file is permitted, it either does nothing or exchanges the local file with the one in repository
     }
 
     @Override

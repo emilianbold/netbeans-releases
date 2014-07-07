@@ -58,6 +58,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression.OperatorType;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variadic;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
@@ -144,6 +145,13 @@ public class PHP56UnhandledError extends UnhandledErrorRule {
         @Override
         public void visit(Variadic node) {
             createError(node);
+        }
+
+        @Override
+        public void visit(UseStatement node) {
+            if (UseStatement.Type.CONST.equals(node.getType()) || UseStatement.Type.FUNCTION.equals(node.getType())) {
+                createError(node);
+            }
         }
 
         private  void createError(int startOffset, int endOffset) {

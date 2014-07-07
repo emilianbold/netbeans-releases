@@ -153,6 +153,10 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
             }
             // #244047
             File[] prefs = defaultProfile.listFiles(new FileFinder("protected preferences"));
+            if (prefs == null || prefs.length == 0) {
+                // #245342
+                prefs = defaultProfile.listFiles(new FileFinder("secure preferences"));
+            }
             if (prefs == null || prefs.length == 0){
                 prefs = defaultProfile.listFiles(new FileFinder("preferences"));
             }

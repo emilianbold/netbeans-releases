@@ -791,13 +791,19 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     static class FieldItem extends BasicFieldItem {
+        private final boolean forceDollared;
 
         public static FieldItem getItem(FieldElement field, CompletionRequest request) {
-            return new FieldItem(field, request);
+            return getItem(field, request, false);
         }
 
-        private FieldItem(FieldElement field, CompletionRequest request) {
+        public static FieldItem getItem(FieldElement field, CompletionRequest request, boolean forceDollared) {
+            return new FieldItem(field, request, forceDollared);
+        }
+
+        private FieldItem(FieldElement field, CompletionRequest request, boolean forceDollared) {
             super(field, null, request);
+            this.forceDollared = forceDollared;
         }
 
         FieldElement getField() {
@@ -807,7 +813,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         @Override
         public String getName() {
             final FieldElement field = getField();
-            return field.getName(field.isStatic());
+            return field.getName(forceDollared || field.isStatic());
         }
 
         @Override

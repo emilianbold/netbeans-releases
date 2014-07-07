@@ -39,10 +39,10 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.grunt;
+package org.netbeans.modules.web.clientproject.node;
 
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.ExecutionException;
@@ -50,7 +50,12 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.web.clientproject.grunt.TargetLister;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
@@ -61,49 +66,66 @@ import org.openide.util.NbBundle;
 /**
  * Problem: Project requires npm install
  */
-public final class NpmProblemProvider implements ProjectProblemsProvider {
-
-    final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
-    final Project project;
-
+public final class NpmProblemProvider extends NodeProblemProvider {
 
     private NpmProblemProvider(Project project) {
-        assert project != null;
-        this.project = project;
+        super(project);
     }
 
     public static NpmProblemProvider create(Project project) {
         NpmProblemProvider problemProvider = new NpmProblemProvider(project);
+        problemProvider.addFileChangesListeners("package.json", "node_modules");
         return problemProvider;
     }
-
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        problemsProviderSupport.addPropertyChangeListener(listener);
+    
+    private boolean isNpmInstallRequired() {
+        final FileObject root = project.getProjectDirectory();
+        root.refresh();
+        FileObject package_json = root.getFileObject("package.json");//NOI18N
+        FileObject node_modules = root.getFileObject("node_modules");//NOI18N
+        try {
+            if (package_json != null && node_modules == null && hasDeps(package_json)) {
+                return true;
+            }
+        } catch (IOException | ParseException ex) {
+            //ignore;
+        }
+        return false;
     }
-
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        problemsProviderSupport.removePropertyChangeListener(listener);
+    
+    private static boolean hasDeps(FileObject package_json) throws IOException, ParseException {
+        JSONObject r;
+        if (package_json.getSize() > 0) {
+            JSONParser parser = new JSONParser();
+            try (InputStreamReader inputStreamReader = new InputStreamReader(package_json.getInputStream())) {
+                r = (JSONObject) parser.parse(inputStreamReader);
+                Object deps = r.get("dependencies");
+                if (deps != null) {
+                    return true;
+                }
+                deps = r.get("devDependencies");
+                if (deps != null) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
+    
 
     @NbBundle.Messages({
-        "ERR_NpmInstall=Missing node modules",
-        "TXT_NpmInstallDescription=This project uses node modules, but they are not installed.",
-        "ERR_NpmInstallResolved=Node modules were succesfully installed.",
-        "ERR_NpmInstallUnresolved=Node modules were not succesfully installed."
+        "ERR_NpmInstall=Missing Node.JS modules",
+        "TXT_NpmInstallDescription=This project uses Node.JS modules, but they are not installed.",
+        "ERR_NpmInstallResolved=Node.JS modules were successfully installed.",
+        "ERR_NpmInstallUnresolved=Node.JS modules were not successfully installed."
     })
     @Override
     public Collection<? extends ProjectProblem> getProblems() {
         return problemsProviderSupport.getProblems(new ProjectProblemsProviderSupport.ProblemsCollector() {
             @Override
             public Collection<ProjectProblemsProvider.ProjectProblem> collectProblems() {
-                final FileObject root = project.getProjectDirectory();
-                root.refresh();
                 final Collection<ProjectProblemsProvider.ProjectProblem> currentProblems = new ArrayList<>();
-                FileObject package_json = root.getFileObject("package.json");//NOI18N
-                FileObject node_modules = root.getFileObject("node_modules");//NOI18N
-                if (package_json != null && node_modules == null) {
+                if (isNpmInstallRequired()) {
                     ProjectProblem npmWarning = ProjectProblemsProvider.ProjectProblem.createWarning(Bundle.ERR_NpmInstall(), Bundle.TXT_NpmInstallDescription(), new ProjectProblemResolver() {
                         @Override
                         public Future<Result> resolve() {
@@ -129,7 +151,11 @@ public final class NpmProblemProvider implements ProjectProblemsProvider {
             try {
                 done = new AtomicBoolean(false);
                 cancelled = new AtomicBoolean(false);
-                execute = new NpmExecutor(project.getProjectDirectory(), new String[]{"install"}).execute();//NOI18N
+                execute = 
+                new NodeExecutor(
+                        org.netbeans.modules.web.clientproject.node.Bundle.TTL_npm_install(ProjectUtils.getInformation(project).getDisplayName()),
+                        "npm",
+                        project.getProjectDirectory(), new String[]{"install"}).execute(); //NOI18N
             } catch (IOException ex) {
                 this.ex = ex;
             }
@@ -164,11 +190,7 @@ public final class NpmProblemProvider implements ProjectProblemsProvider {
             int result = execute.result();
             TargetLister.invalidateCache(project.getProjectDirectory().getFileObject("Gruntfile.js"));
 
-            FileObject root = project.getProjectDirectory();
-            root.refresh();
-            FileObject package_json = root.getFileObject("package.json");
-            FileObject node_modules = root.getFileObject("node_modules");
-            if (package_json != null && node_modules == null) {
+            if (isNpmInstallRequired()) {
                 done.set(true);
                 return ProjectProblemsProvider.Result.create(Status.UNRESOLVED, Bundle.ERR_NpmInstallUnresolved());
             } else {

@@ -93,104 +93,104 @@ public class ConfigurationTest extends GeneralRequire {
         ConfigurationTest.currentProject = "SimpleRequire";
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
         openDataProjects("SimpleRequire");
-        openFile("js|_main.js", "SimpleRequire");
-        ConfigurationTest.originalContent = openFile("js|_main.js", "SimpleRequire").getText();
+        openFile("js|main2.js", "SimpleRequire");
+        ConfigurationTest.originalContent = openFile("js|main2.js", "SimpleRequire").getText();
         endTest();
     }
 
     public void testConfOptions() throws Exception {
         startTest();
-        testCompletion(openFile("js|_main.js", "SimpleRequire"), 3);
+        testCompletion(openFile("js|main2.js", "SimpleRequire"), 3);
         endTest();
     }
 
     public void testBaseUrl() throws Exception {
         startTest();
-        testString(openFile("js|_main.js", "SimpleRequire"), "baseUrl");
+        testString(openFile("js|main2.js", "SimpleRequire"), "baseUrl");
         endTest();
     }
 
     public void testContext() throws Exception {
         startTest();
-        testString(openFile("js|_main.js", "SimpleRequire"), "context");
+        testString(openFile("js|main2.js", "SimpleRequire"), "context");
         endTest();
     }
 
     public void testScriptType() throws Exception {
         startTest();
-        testString(openFile("js|_main.js", "SimpleRequire"), "scriptType");
+        testString(openFile("js|main2.js", "SimpleRequire"), "scriptType");
         endTest();
     }
 
     public void testUrlArgs() throws Exception {
         startTest();
-        testString(openFile("js|_main.js", "SimpleRequire"), "urlArgs");
+        testString(openFile("js|main2.js", "SimpleRequire"), "urlArgs");
         endTest();
     }
 
     public void testEnforceDefine() throws Exception {
         startTest();
-        testBoolean(openFile("js|_main.js", "SimpleRequire"), "enforceDefine");
+        testBoolean(openFile("js|main2.js", "SimpleRequire"), "enforceDefine");
         endTest();
     }
 
     public void testNodeIdCompat() throws Exception {
         startTest();
-        testBoolean(openFile("js|_main.js", "SimpleRequire"), "nodeIdCompat");
+        testBoolean(openFile("js|main2.js", "SimpleRequire"), "nodeIdCompat");
         endTest();
     }
 
     public void testSkipDataMain() throws Exception {
         startTest();
-        testBoolean(openFile("js|_main.js", "SimpleRequire"), "skipDataMain");
+        testBoolean(openFile("js|main2.js", "SimpleRequire"), "skipDataMain");
         endTest();
     }
 
     public void testXhtml() throws Exception {
         startTest();
-        testBoolean(openFile("js|_main.js", "SimpleRequire"), "xhtml");
+        testBoolean(openFile("js|main2.js", "SimpleRequire"), "xhtml");
         endTest();
     }
 
     public void testBundles() throws Exception {
         startTest();
-        testObject(openFile("js|_main.js", "SimpleRequire"), "bundles");
+        testObject(openFile("js|main2.js", "SimpleRequire"), "bundles");
         endTest();
     }
 
     public void testPaths() throws Exception {
         startTest();
-        testObject(openFile("js|_main.js", "SimpleRequire"), "paths");
+        testObject(openFile("js|main2.js", "SimpleRequire"), "paths");
         endTest();
     }
 
     public void testConfig() throws Exception {
         startTest();
-        testObject(openFile("js|_main.js", "SimpleRequire"), "config");
+        testObject(openFile("js|main2.js", "SimpleRequire"), "config");
         endTest();
     }
 
     public void testMap() throws Exception {
         startTest();
-        testObject(openFile("js|_main.js", "SimpleRequire"), "map");
+        testObject(openFile("js|main2.js", "SimpleRequire"), "map");
         endTest();
     }
 
     public void testShim() throws Exception {
         startTest();
-        testObject(openFile("js|_main.js", "SimpleRequire"), "shim");
+        testObject(openFile("js|main2.js", "SimpleRequire"), "shim");
         endTest();
     }
 
     public void testDeps() throws Exception {
         startTest();
-        testArray(openFile("js|_main.js", "SimpleRequire"), "deps");
+        testArray(openFile("js|main2.js", "SimpleRequire"), "deps");
         endTest();
     }
 
     public void testPackages() throws Exception {
         startTest();
-        testArray(openFile("js|_main.js", "SimpleRequire"), "packages");
+        testArray(openFile("js|main2.js", "SimpleRequire"), "packages");
         endTest();
     }
 
@@ -235,7 +235,7 @@ public class ConfigurationTest extends GeneralRequire {
         if (ConfigurationTest.numberOfTests > 0 && ConfigurationTest.uncommentedContent == null) {
             return;
         }
-        EditorOperator eo = openFile("js|_main.js", "SimpleRequire");
+        EditorOperator eo = openFile("js|main2.js", "SimpleRequire");
         eo.typeKey('a', InputEvent.CTRL_MASK);
         eo.pressKey(KeyEvent.VK_DELETE);
 
@@ -253,7 +253,7 @@ public class ConfigurationTest extends GeneralRequire {
     @Override
     public void setUp() {
         if (ConfigurationTest.originalContent != null && !ConfigurationTest.setup) {
-            EditorOperator eo = openFile("js|_main.js", "SimpleRequire");
+            EditorOperator eo = openFile("js|main2.js", "SimpleRequire");
             eo.typeKey('a', InputEvent.CTRL_MASK);
             eo.typeKey('/', InputEvent.CTRL_MASK);
             eo.clickMouse();

@@ -72,6 +72,8 @@ public class Style {
     Style(JSONObject style) {
         if (style.containsKey("styleId")) { // NOI18N
             id = new StyleId((JSONObject)style.get("styleId")); // NOI18N
+        } else if (style.containsKey("styleSheetId")) { // NOI18N
+            id = new StyleId((String)style.get("styleSheetId")); // NOI18N
         }
         JSONArray cssProperties = (JSONArray)style.get("cssProperties"); // NOI18N
         properties = new ArrayList<Property>(cssProperties.size());

@@ -118,6 +118,8 @@ public class ConstructorPanel extends JPanel {
         cbGenerateDoc.setVisible(false);
         fluentSetterCheckBox.setVisible(genType.isFluentSetterVisible());
         fluentSetterCheckBox.setSelected(cgsInfo.isFluentSetter());
+        publicModifierCheckBox.setVisible(genType.isPublicModifierVisible());
+        publicModifierCheckBox.setSelected(cgsInfo.isPublicModifier());
     }
 
     private void initTree() {
@@ -165,6 +167,7 @@ public class ConstructorPanel extends JPanel {
         cbMethodGeneration = new javax.swing.JComboBox();
         cbGenerateDoc = new javax.swing.JCheckBox();
         fluentSetterCheckBox = new javax.swing.JCheckBox();
+        publicModifierCheckBox = new javax.swing.JCheckBox();
 
         label.setDisplayedMnemonic('G');
         label.setLabelFor(scrollPane);
@@ -222,6 +225,14 @@ public class ConstructorPanel extends JPanel {
             }
         });
 
+        publicModifierCheckBox.setMnemonic('p');
+        publicModifierCheckBox.setText(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.publicModifierCheckBox.text")); // NOI18N
+        publicModifierCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                publicModifierCheckBoxActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -234,6 +245,7 @@ public class ConstructorPanel extends JPanel {
                     .addComponent(pGSCustomize, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(publicModifierCheckBox)
                             .addComponent(label)
                             .addComponent(fluentSetterCheckBox))
                         .addGap(0, 0, Short.MAX_VALUE)))
@@ -245,13 +257,15 @@ public class ConstructorPanel extends JPanel {
                 .addContainerGap()
                 .addComponent(label)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE)
+                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 183, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(pGSCustomize, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbGenerateDoc)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(fluentSetterCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(publicModifierCheckBox)
                 .addContainerGap())
         );
 
@@ -282,6 +296,10 @@ public class ConstructorPanel extends JPanel {
         cgsInfo.setFluentSetter(fluentSetterCheckBox.isSelected());
     }//GEN-LAST:event_fluentSetterCheckBoxActionPerformed
 
+    private void publicModifierCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_publicModifierCheckBoxActionPerformed
+        cgsInfo.setPublicModifier(publicModifierCheckBox.isSelected());
+    }//GEN-LAST:event_publicModifierCheckBoxActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cbGenerateDoc;
@@ -290,6 +308,7 @@ public class ConstructorPanel extends JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel label;
     private javax.swing.JPanel pGSCustomize;
+    private javax.swing.JCheckBox publicModifierCheckBox;
     private javax.swing.JScrollPane scrollPane;
     // End of variables declaration//GEN-END:variables
 

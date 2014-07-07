@@ -459,6 +459,7 @@ METHOD     fn1(clsAVarAssignment $aParam)  [PUBLIC]   varAssignment.php
 METHOD     fn2(clsAVarAssignment $cParam)  [PUBLIC]   varAssignment.php
 METHOD     fn3(clsAVarAssignment &$aParam  [PUBLIC]   varAssignment.php
 METHOD     fn4(clsAVarAssignment &$cParam  [PUBLIC]   varAssignment.php
+METHOD     fnc()                           [PUBLIC]   Name\Space
 METHOD     fnc1()                          [PUBLIC]   First
 METHOD     fnc163432()                     [PUBLIC]   test.php
 METHOD     fncA()                          [PUBLIC]   typeinference.php
@@ -516,6 +517,7 @@ VARIABLE   $http_response_header                      PHP Platform
 VARIABLE   $php_errormsg                              PHP Platform
 CONSTANT   CNST1 1                         [PUBLIC]   First
 CONSTANT   CNST2 2                         [PUBLIC]   Second
+CONSTANT   FOO 42                          [PUBLIC]   Name\Space
 CONSTANT   SOME_CONSTANT "YES"             [PUBLIC]   Marwel\System
 CONSTANT   aaa 1                           [PUBLIC]   issue137033.php
 CONSTANT   myFirstVar "value"              [PUBLIC]   tests230052.php

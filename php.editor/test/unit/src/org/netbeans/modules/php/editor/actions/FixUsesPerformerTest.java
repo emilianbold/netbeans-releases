@@ -82,81 +82,135 @@ public class FixUsesPerformerTest extends PHPTestBase {
     public void testIssue210093_01() throws Exception {
         String[] selections = new String[] {"\\Issue\\Martin\\Pondeli"};
         Options options = new Options(false, false, true, false);
-        performTest("function testFail(\\Issue\\Martin\\Pond^eli $param) {}", selections, true, options);
+        performTest("function testFail(\\Issue\\Martin\\Pond^eli $param) {}", createSelections(selections, ItemVariant.Type.CLASS), true, options);
     }
 
     public void testIssue210093_02() throws Exception {
         String[] selections = new String[] {"\\Issue\\Martin\\Pondeli"};
         Options options = new Options(false, false, false, false);
-        performTest("function testFail(\\Issue\\Martin\\Pond^eli $param) {}", selections, true, options);
+        performTest("function testFail(\\Issue\\Martin\\Pond^eli $param) {}", createSelections(selections, ItemVariant.Type.CLASS), true, options);
     }
 
     public void testIssue211566_01() throws Exception {
         String[] selections = new String[] {"\\Foo\\Bar\\Baz"};
         Options options = new Options(false, false, false, false);
-        performTest("new \\Foo\\Bar\\B^az(); //HERE", selections, true, options);
+        performTest("new \\Foo\\Bar\\B^az(); //HERE", createSelections(selections, ItemVariant.Type.CLASS), true, options);
     }
 
     public void testIssue211566_02() throws Exception {
         String[] selections = new String[] {"\\Foo\\Bar\\Baz"};
         Options options = new Options(false, false, true, false);
-        performTest("new \\Foo\\Bar\\B^az(); //HERE", selections, true, options);
+        performTest("new \\Foo\\Bar\\B^az(); //HERE", createSelections(selections, ItemVariant.Type.CLASS), true, options);
     }
 
     public void testIssue214699() throws Exception {
         String[] selections = new String[] {"\\Foo\\Bar\\ClassName", "\\Baz\\Bat\\ClassName", "\\Fom\\Bom\\ClassName"};
-        performTest("$a = new ClassName();^//HERE", selections);
+        performTest("$a = new ClassName();^//HERE", createSelections(selections, ItemVariant.Type.CLASS));
     }
 
     public void testIssue211585_01() throws Exception {
         String[] selections = new String[] {"\\Foo\\Bar\\ClassName", "\\Baz\\Bat\\ClassName", "\\Fom\\Bom\\ClassName"};
         Options options = new Options(false, false, true, true);
-        performTest("$a = new ClassName();^//HERE", selections, false, options);
+        performTest("$a = new ClassName();^//HERE", createSelections(selections, ItemVariant.Type.CLASS), false, options);
     }
 
     public void testIssue211585_02() throws Exception {
         String[] selections = new String[] {"\\Fom\\Bom\\ClassName", "\\Foo\\Bar\\ClassName", "\\Baz\\Bat\\ClassName"};
         Options options = new Options(false, false, true, true);
-        performTest("$a = new ClassName();^//HERE", selections, false, options);
+        performTest("$a = new ClassName();^//HERE", createSelections(selections, ItemVariant.Type.CLASS), false, options);
     }
 
     public void testIssue233527() throws Exception {
         String[] selections = new String[] {"\\NS1\\NS2\\SomeClass", "\\NS1\\NS2\\SomeClass"};
         Options options = new Options(false, false, true, true);
-        performTest("public function test(SomeClass $a) {^", selections, false, options);
+        performTest("public function test(SomeClass $a) {^", createSelections(selections, ItemVariant.Type.CLASS), false, options);
     }
 
     public void testIssue222595_01() throws Exception {
         String[] selections = new String[] {"\\pl\\dagguh\\people\\Person"};
         Options options = new Options(false, false, false, true);
-        performTest("function assignRoom(Room $room, Person $roomOwner);^", selections, false, options);
+        performTest("function assignRoom(Room $room, Person $roomOwner);^", createSelections(selections, ItemVariant.Type.INTERFACE), false, options);
     }
 
     public void testIssue222595_02() throws Exception {
         String[] selections = new String[] {"\\pl\\dagguh\\people\\Person"};
         Options options = new Options(true, false, true, true);
-        performTest("function assignRoom(Room $room, Person $roomOwner);^", selections, false, options);
+        performTest("function assignRoom(Room $room, Person $roomOwner);^", createSelections(selections, ItemVariant.Type.INTERFACE), false, options);
     }
 
     public void testIssue222595_03() throws Exception {
         String[] selections = new String[] {};
         Options options = new Options(false, false, true, true);
-        performTest("function addRoom(\\pl\\dagguh\\buildings\\Room $room);^", selections, false, options);
+        performTest("function addRoom(\\pl\\dagguh\\buildings\\Room $room);^", createSelections(selections, ItemVariant.Type.NONE), false, options);
     }
 
     public void testIssue222595_04() throws Exception {
         String[] selections = new String[] {};
         Options options = new Options(true, false, true, true);
-        performTest("function addRoom(\\pl\\dagguh\\buildings\\Room $room);^", selections, false, options);
+        performTest("function addRoom(\\pl\\dagguh\\buildings\\Room $room);^", createSelections(selections, ItemVariant.Type.NONE), false, options);
     }
 
     public void testIssue238828() throws Exception {
         String[] selections = new String[] {"\\First\\Second\\Util", CAN_NOT_BE_RESOLVED, CAN_NOT_BE_RESOLVED, CAN_NOT_BE_RESOLVED};
         Options options = new Options(true, false, true, true);
-        performTest("function functionName3($param) {}^", selections, false, options);
+        performTest("function functionName3($param) {}^", createSelections(selections, ItemVariant.Type.CLASS), false, options);
     }
 
-    private String getTestResult(final String fileName, final String caretLine, final String[] selections, final boolean removeUnusedUses, final Options options) throws Exception {
+    public void testUseFuncAndConst_01() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        selections.add(new Selection("Name\\Space\\Bar2", ItemVariant.Type.CLASS));
+        selections.add(new Selection("Name\\Space\\FOO", ItemVariant.Type.CONST));
+        selections.add(new Selection("Name\\Space\\Bar", ItemVariant.Type.CLASS));
+        selections.add(new Selection("Name\\Space\\FOO2", ItemVariant.Type.CONST));
+        selections.add(new Selection("Name\\Space\\fnc2", ItemVariant.Type.FUNCTION));
+        selections.add(new Selection("Name\\Space\\fnc", ItemVariant.Type.FUNCTION));
+        Options options = new Options(false, false, false, false);
+        performTest("Name\\Space\\fnc2();^", selections, false, options);
+    }
+
+    public void testUseFuncAndConst_02() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        selections.add(new Selection("Name\\Space\\Bar2", ItemVariant.Type.CLASS));
+        selections.add(new Selection("Name\\Space\\FOO", ItemVariant.Type.CONST));
+        selections.add(new Selection("Name\\Space\\Bar", ItemVariant.Type.CLASS));
+        selections.add(new Selection("Name\\Space\\FOO2", ItemVariant.Type.CONST));
+        selections.add(new Selection("Name\\Space\\fnc2", ItemVariant.Type.FUNCTION));
+        selections.add(new Selection("Name\\Space\\fnc", ItemVariant.Type.FUNCTION));
+        Options options = new Options(false, true, false, false);
+        performTest("Name\\Space\\fnc2();^", selections, false, options);
+    }
+
+    public void testUseFuncAndConst_03() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        selections.add(new Selection("Name\\Space\\Bar2", ItemVariant.Type.CLASS));
+        selections.add(new Selection("Name\\Space\\Bar", ItemVariant.Type.CLASS));
+        selections.add(new Selection("Name\\Space\\fnc2", ItemVariant.Type.FUNCTION));
+        selections.add(new Selection("Name\\Space\\fnc", ItemVariant.Type.FUNCTION));
+        Options options = new Options(false, true, false, false);
+        performTest("function __construct() {^", selections, false, options);
+    }
+
+    public void testUseFuncAndConst_04() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        selections.add(new Selection("Name\\Space\\Bar2", ItemVariant.Type.CLASS));
+        selections.add(new Selection("Name\\Space\\FOO", ItemVariant.Type.CONST));
+        selections.add(new Selection("Name\\Space\\Bar", ItemVariant.Type.CLASS));
+        selections.add(new Selection("Name\\Space\\FOO2", ItemVariant.Type.CONST));
+        Options options = new Options(false, true, false, false);
+        performTest("function __construct() {^", selections, false, options);
+    }
+
+    public void testUseFuncAndConst_05() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        selections.add(new Selection("Name\\Space\\FOO", ItemVariant.Type.CONST));
+        selections.add(new Selection("Name\\Space\\FOO2", ItemVariant.Type.CONST));
+        selections.add(new Selection("Name\\Space\\fnc2", ItemVariant.Type.FUNCTION));
+        selections.add(new Selection("Name\\Space\\fnc", ItemVariant.Type.FUNCTION));
+        Options options = new Options(false, true, false, false);
+        performTest("function __construct() {^", selections, false, options);
+    }
+
+    private String getTestResult(final String fileName, final String caretLine, final List<Selection> selections, final boolean removeUnusedUses, final Options options) throws Exception {
         FileObject testFile = getTestFile(fileName);
 
         Source testSource = getTestSource(testFile);
@@ -191,10 +245,11 @@ public class FixUsesPerformerTest extends PHPTestBase {
                             namespaceScope.getNamespaceName(),
                             currentOptions).create();
                     final List<ItemVariant> properSelections = new ArrayList<>();
-                    for (String selection : selections) {
-                        properSelections.add(new ItemVariant(selection, CAN_NOT_BE_RESOLVED.equals(selection)
-                                ? ItemVariant.UsagePolicy.CAN_NOT_BE_USED
-                                : ItemVariant.UsagePolicy.CAN_BE_USED));
+                    for (Selection selection : selections) {
+                        properSelections.add(new ItemVariant(
+                                selection.getSelection(),
+                                CAN_NOT_BE_RESOLVED.equals(selection.getSelection()) ? ItemVariant.UsagePolicy.CAN_NOT_BE_USED : ItemVariant.UsagePolicy.CAN_BE_USED,
+                                selection.getType()));
                     }
                     importData.caretPosition = caretOffset;
                     FixUsesPerformer fixUsesPerformer = new FixUsesPerformer(phpResult, importData, properSelections, removeUnusedUses, currentOptions);
@@ -206,15 +261,15 @@ public class FixUsesPerformerTest extends PHPTestBase {
         return result[0];
     }
 
-    private void performTest(final String caretLine, final String[] selections) throws Exception {
+    private void performTest(final String caretLine, final List<Selection> selections) throws Exception {
         performTest(caretLine, selections, true, null);
     }
 
-    private void performTest(final String caretLine, final String[] selections, final boolean removeUnusedUses) throws Exception {
+    private void performTest(final String caretLine, final List<Selection> selections, final boolean removeUnusedUses) throws Exception {
         performTest(caretLine, selections, removeUnusedUses, null);
     }
 
-    private void performTest(final String caretLine, final String[] selections, final boolean removeUnusedUses, final Options options) throws Exception {
+    private void performTest(final String caretLine, final List<Selection> selections, final boolean removeUnusedUses, final Options options) throws Exception {
         String exactFileName = getTestPath();
         String result = getTestResult(exactFileName, caretLine, selections, removeUnusedUses, options);
         assertDescriptionMatches(exactFileName, result, false, ".fixUses");
@@ -245,6 +300,33 @@ public class FixUsesPerformerTest extends PHPTestBase {
 
     private String transformTestMethodNameToDirectory() {
         return getName().replace('_', '/');
+    }
+
+    private static final class Selection {
+        private final String selection;
+        private final ItemVariant.Type type;
+
+        public Selection(String selection, ItemVariant.Type type) {
+            this.selection = selection;
+            this.type = type;
+        }
+
+        public String getSelection() {
+            return selection;
+        }
+
+        public ItemVariant.Type getType() {
+            return type;
+        }
+
+    }
+
+    private static List<Selection> createSelections(String[] selections, ItemVariant.Type type) {
+        List<Selection> result = new ArrayList<>();
+        for (String selection : selections) {
+            result.add(new Selection(selection, type));
+        }
+        return result;
     }
 
 }

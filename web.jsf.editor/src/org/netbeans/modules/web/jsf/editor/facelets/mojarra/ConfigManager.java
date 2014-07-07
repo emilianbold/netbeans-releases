@@ -51,59 +51,45 @@ import com.sun.faces.config.WebConfiguration;
 import static com.sun.faces.config.WebConfiguration.BooleanWebContextInitParameter.DisableFaceletJSFViewHandler;
 import static com.sun.faces.config.WebConfiguration.BooleanWebContextInitParameter.EnableThreading;
 import static com.sun.faces.config.WebConfiguration.BooleanWebContextInitParameter.ValidateFacesConfigFiles;
-import com.sun.faces.spi.ConfigurationResourceProvider;
-import com.sun.faces.spi.ConfigurationResourceProviderFactory;
-import com.sun.faces.spi.AnnotationProvider;
-import com.sun.faces.spi.AnnotationProviderFactory;
-import com.sun.faces.spi.HighAvailabilityEnabler;
-import static com.sun.faces.spi.ConfigurationResourceProviderFactory.ProviderType.*;
+import com.sun.faces.config.configprovider.MetaInfFaceletTaglibraryConfigProvider;
 import com.sun.faces.config.configprovider.MetaInfFacesConfigResourceProvider;
 import com.sun.faces.config.configprovider.MojarraFacesConfigResourceProvider;
-import com.sun.faces.config.configprovider.WebFacesConfigResourceProvider;
-import com.sun.faces.config.configprovider.MetaInfFaceletTaglibraryConfigProvider;
 import com.sun.faces.config.configprovider.WebAppFlowConfigResourceProvider;
 import com.sun.faces.config.configprovider.WebFaceletTaglibResourceProvider;
+import com.sun.faces.config.configprovider.WebFacesConfigResourceProvider;
 import com.sun.faces.config.processor.ApplicationConfigProcessor;
 import com.sun.faces.config.processor.BehaviorConfigProcessor;
 import com.sun.faces.config.processor.ComponentConfigProcessor;
 import com.sun.faces.config.processor.ConfigProcessor;
 import com.sun.faces.config.processor.ConverterConfigProcessor;
+import com.sun.faces.config.processor.FaceletTaglibConfigProcessor;
+import com.sun.faces.config.processor.FacesConfigExtensionProcessor;
+import com.sun.faces.config.processor.FacesFlowDefinitionConfigProcessor;
 import com.sun.faces.config.processor.FactoryConfigProcessor;
 import com.sun.faces.config.processor.LifecycleConfigProcessor;
 import com.sun.faces.config.processor.ManagedBeanConfigProcessor;
 import com.sun.faces.config.processor.NavigationConfigProcessor;
-import com.sun.faces.config.processor.RenderKitConfigProcessor;
-import com.sun.faces.config.processor.ValidatorConfigProcessor;
-import com.sun.faces.config.processor.FaceletTaglibConfigProcessor;
-import com.sun.faces.config.processor.FacesConfigExtensionProcessor;
-import com.sun.faces.config.processor.FacesFlowDefinitionConfigProcessor;
 import com.sun.faces.config.processor.ProtectedViewsConfigProcessor;
+import com.sun.faces.config.processor.RenderKitConfigProcessor;
 import com.sun.faces.config.processor.ResourceLibraryContractsConfigProcessor;
+import com.sun.faces.config.processor.ValidatorConfigProcessor;
 import com.sun.faces.el.ELContextImpl;
+import com.sun.faces.spi.AnnotationProvider;
+import com.sun.faces.spi.AnnotationProviderFactory;
+import com.sun.faces.spi.ConfigurationResourceProvider;
+import com.sun.faces.spi.ConfigurationResourceProviderFactory;
+import static com.sun.faces.spi.ConfigurationResourceProviderFactory.ProviderType.*;
+import com.sun.faces.spi.HighAvailabilityEnabler;
 import com.sun.faces.spi.InjectionProvider;
 import com.sun.faces.spi.InjectionProviderFactory;
 import com.sun.faces.util.FacesLogger;
 import com.sun.faces.util.Timer;
 import com.sun.faces.util.Util;
-import org.xml.sax.InputSource;
-
-import javax.faces.FacesException;
-import javax.faces.FactoryFinder;
-import javax.faces.event.PostConstructApplicationEvent;
-import javax.faces.application.Application;
-import javax.faces.context.FacesContext;
-import javax.servlet.ServletContext;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMResult;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamSource;
-
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.MessageFormat;
@@ -112,31 +98,43 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.lang.annotation.Annotation;
-import java.net.URI;
-import java.util.Iterator;
-
-import java.util.ServiceLoader;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.el.ELContext;
 import javax.el.ELContextEvent;
 import javax.el.ELContextListener;
+import javax.faces.FacesException;
+import javax.faces.FactoryFinder;
+import javax.faces.application.Application;
 import javax.faces.application.ApplicationConfigurationPopulator;
 import javax.faces.component.UIViewRoot;
+import javax.faces.context.FacesContext;
+import javax.faces.event.PostConstructApplicationEvent;
+import javax.servlet.ServletContext;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
 import org.w3c.dom.*;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXParseException;
 
 /**
@@ -738,7 +736,7 @@ public class ConfigManager {
                 Collection<URI> l = t.get();
                 for (URI u : l) {
                     FutureTask<DocumentInfo> d =
-                         new FutureTask<DocumentInfo>(new ConfigManager.ParseTask(validating, u));
+                         new FutureTask<DocumentInfo>(new ParseTask(sc, validating, u));
                     docTasks.add(d);
                     if (executor != null) {
                         executor.execute(d);
@@ -965,6 +963,7 @@ public class ConfigManager {
             "http://xmlns.jcp.org/xml/ns/javaee";
         private static final String EMPTY_FACES_CONFIG =
                 "com/sun/faces/empty-faces-config.xml";
+        private ServletContext servletContext;
         private URI documentURI;
         private DocumentBuilderFactory factory;
         private boolean validating;
@@ -977,13 +976,14 @@ public class ConfigManager {
          *   Constructs a new ParseTask instance
          * </p>
          *
+         * @param servletContext the servlet context.
          * @param validating whether or not we're validating
          * @param documentURI a URL to the configuration resource to be parsed
          * @throws Exception general error
          */
-        public ParseTask(boolean validating, URI documentURI)
+        public ParseTask(ServletContext servletContext, boolean validating, URI documentURI)
         throws Exception {
-
+            this.servletContext = servletContext;
             this.documentURI = documentURI;
             this.validating = validating;
 
@@ -1083,14 +1083,14 @@ public class ConfigManager {
                 if (JAVAEE_SCHEMA_DEFAULT_NS.equals(documentNS)) {
                     Attr version = (Attr)
                             documentElement.getAttributes().getNamedItem("version");
-                    DbfFactory.FacesSchema schema;
+                    Schema schema;
                     if (version != null) {
                         String versionStr = version.getValue();
                         if ("2.2".equals(versionStr)) {
                             if ("facelet-taglib".equals(documentElement.getLocalName())) {
-                                schema = DbfFactory.FacesSchema.FACELET_TAGLIB_22;
+                                schema = DbfFactory.getSchema(servletContext, DbfFactory.FacesSchema.FACELET_TAGLIB_22);
                             } else {
-                                schema = DbfFactory.FacesSchema.FACES_22;
+                                schema = DbfFactory.getSchema(servletContext, DbfFactory.FacesSchema.FACES_22);
                             }
                         } else {
                             throw new ConfigurationException("Unknown Schema version: " + versionStr);
@@ -1109,23 +1109,23 @@ public class ConfigManager {
                 } else if (JAVAEE_SCHEMA_LEGACY_DEFAULT_NS.equals(documentNS)) {
                     Attr version = (Attr)
                             documentElement.getAttributes().getNamedItem("version");
-                    DbfFactory.FacesSchema schema;
+                    Schema schema;
                     if (version != null) {
                         String versionStr = version.getValue();
                         if ("2.0".equals(versionStr)) {
                             if ("facelet-taglib".equals(documentElement.getLocalName())) {
-                                schema = DbfFactory.FacesSchema.FACELET_TAGLIB_20;
+                                schema = DbfFactory.getSchema(servletContext, DbfFactory.FacesSchema.FACELET_TAGLIB_20);
                             } else {
-                                schema = DbfFactory.FacesSchema.FACES_20;
+                                schema = DbfFactory.getSchema(servletContext, DbfFactory.FacesSchema.FACES_20);
                             }
                         } else if ("2.1".equals(versionStr)) {
                             if ("facelet-taglib".equals(documentElement.getLocalName())) {
-                                schema = DbfFactory.FacesSchema.FACELET_TAGLIB_20;
+                                schema = DbfFactory.getSchema(servletContext, DbfFactory.FacesSchema.FACELET_TAGLIB_20);
                             } else {
-                                schema = DbfFactory.FacesSchema.FACES_21;
+                                schema = DbfFactory.getSchema(servletContext, DbfFactory.FacesSchema.FACES_21);
                             }
                         } else if ("1.2".equals(versionStr)) {
-                            schema = DbfFactory.FacesSchema.FACES_12;
+                            schema = DbfFactory.getSchema(servletContext, DbfFactory.FacesSchema.FACES_12);
                         } else {
                             throw new ConfigurationException("Unknown Schema version: " + versionStr);
                         }
@@ -1150,11 +1150,11 @@ public class ConfigManager {
                     ((Document) domResult.getNode())
                           .setDocumentURI(((Document) domSource
                                 .getNode()).getDocumentURI());
-                    DbfFactory.FacesSchema schemaToApply;
+                    Schema schemaToApply;
                     if (FACES_CONFIG_1_X_DEFAULT_NS.equals(documentNS)) {
-                        schemaToApply = DbfFactory.FacesSchema.FACES_11;
+                        schemaToApply = DbfFactory.getSchema(servletContext, DbfFactory.FacesSchema.FACES_11);
                     } else if (FACELETS_1_0_DEFAULT_NS.equals(documentNS)) {
-                        schemaToApply = DbfFactory.FacesSchema.FACELET_TAGLIB_20;
+                        schemaToApply = DbfFactory.getSchema(servletContext, DbfFactory.FacesSchema.FACELET_TAGLIB_20);
                     } else {
                         throw new IllegalStateException();
                     }
@@ -1254,13 +1254,12 @@ public class ConfigManager {
 
         }
 
-        private DocumentBuilder getBuilderForSchema(DbfFactory.FacesSchema schema)
+        private DocumentBuilder getBuilderForSchema(Schema schema)
         throws Exception {
-            schema.initSchema();
             this.factory = DbfFactory.getFactory();
 
             try {
-                factory.setSchema(schema.getSchema());
+                factory.setSchema(schema);
             } catch (UnsupportedOperationException upe) {
                 return getNonValidatingBuilder();
             }
@@ -1269,6 +1268,7 @@ public class ConfigManager {
             builder.setErrorHandler(DbfFactory.FACES_ERROR_HANDLER);
             return builder;
         }
+
 
     } // END ParseTask
 

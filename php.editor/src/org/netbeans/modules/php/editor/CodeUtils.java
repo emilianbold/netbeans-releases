@@ -231,7 +231,6 @@ public final class CodeUtils {
 
     public static String extractQualifiedName(NamespaceName namespaceName) {
         Parameters.notNull("namespaceName", namespaceName);
-        String retval;
         StringBuilder sb = new StringBuilder();
         final List<Identifier> segments = namespaceName.getSegments();
         if (namespaceName.isGlobal()) {
@@ -240,10 +239,11 @@ public final class CodeUtils {
         for (Iterator<Identifier> it = segments.iterator(); it.hasNext();) {
             Identifier identifier = it.next();
             sb.append(identifier.getName());
-            sb.append(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR);
+            if (it.hasNext()) {
+                sb.append(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR);
+            }
         }
-        retval = sb.toString();
-        return retval.substring(0, retval.length() - NamespaceDeclarationInfo.NAMESPACE_SEPARATOR.length());
+        return sb.toString();
     }
 
     public static Identifier extractUnqualifiedIdentifier(NamespaceName namespaceName) {
@@ -435,6 +435,8 @@ public final class CodeUtils {
             Scalar scalar = (Scalar) expr;
             String returnValue = scalar.getStringValue();
             return Operator.MINUS.equals(operator) ? "-" + returnValue : returnValue; // NOI18N
+        } else if (expr instanceof NamespaceName) {
+            return extractQualifiedName((NamespaceName) expr);
         } else if (expr instanceof ArrayCreation) {
             return "array()"; //NOI18N
         } else if (expr instanceof StaticConstantAccess) {
@@ -447,23 +449,8 @@ public final class CodeUtils {
                 return i.getName() + "::" + staticConstantAccess.getConstant().getName(); // NOI18N
             } else if (className instanceof NamespaceName) {
                 NamespaceName namespace = (NamespaceName) className;
-                List<Identifier> segments = namespace.getSegments();
-                StringBuilder sb = new StringBuilder();
-
-                if (namespace.isGlobal()) {
-                    sb.append(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR);
-                }
-
-                for (Iterator<Identifier> iter = segments.iterator(); iter.hasNext();) {
-                    Identifier namespaceSegment = iter.next();
-                    sb.append(namespaceSegment.getName());
-
-                    if (iter.hasNext()) {
-                        sb.append(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR);
-                    }
-                }
-
-                return sb.toString() + "::" + staticConstantAccess.getConstant().getName(); // NOI18N
+                StringBuilder sb = new StringBuilder(extractQualifiedName(namespace));
+                return sb.append("::").append(staticConstantAccess.getConstant().getName()).toString(); // NOI18N
             }
         }
         return expr == null ? null : " "; //NOI18N
