@@ -40,15 +40,7 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-// references from bg page
-var backgroundPageConnection = chrome.runtime.connect();
-
-chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(function(resource, content) {
-    backgroundPageConnection.postMessage({
-        event: 'onResourceContentCommitted',
-        resource: resource,
-        content: content
-    });
-});
-
-chrome.devtools.panels.create('NetBeans', '../img/presets/netbeans16.png', '../html/devtools-nb.html');
+window.addEventListener('load', function() {
+    // texts
+    I18n.className('i18n');
+}, false);

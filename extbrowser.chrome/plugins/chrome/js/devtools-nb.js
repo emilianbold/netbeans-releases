@@ -40,15 +40,43 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-// references from bg page
-var backgroundPageConnection = chrome.runtime.connect();
+var NetBeans_Panel = {};
 
-chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(function(resource, content) {
-    backgroundPageConnection.postMessage({
-        event: 'onResourceContentCommitted',
-        resource: resource,
-        content: content
+NetBeans_Panel._backgroundPageConnection = null;
+NetBeans_Panel._propagateChangesCheckbox = null;
+
+NetBeans_Panel.init = function() {
+    if (NetBeans_Panel._backgroundPageConnection !== null) {
+        return;
+    }
+    this._backgroundPageConnection = chrome.runtime.connect();
+    this._propagateChangesCheckbox = document.getElementById('propagateChangesCheckbox');
+    this._registerEvents();
+    this._load();
+};
+// register events
+NetBeans_Panel._registerEvents = function() {
+    var that = this;
+    this._backgroundPageConnection.onMessage.addListener(function(message) {
+        if (message.enabled !== undefined) {
+            that._propagateChangesCheckbox.checked = message.enabled;
+        }
     });
-});
+    this._propagateChangesCheckbox.addEventListener('change', function() {
+        that._backgroundPageConnection.postMessage({
+            event: 'setChangesPropagated',
+            enabled: that._propagateChangesCheckbox.checked
+        });
+    }, false);
+};
+// load initial state
+NetBeans_Panel._load = function() {
+    this._backgroundPageConnection.postMessage({
+        event: 'areChangesPropagated'
+    });
+};
 
-chrome.devtools.panels.create('NetBeans', '../img/presets/netbeans16.png', '../html/devtools-nb.html');
+// run!
+window.addEventListener('load', function() {
+    NetBeans_Panel.init();
+}, false);
