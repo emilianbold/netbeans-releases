@@ -167,7 +167,7 @@ public final class WLStartServer extends StartServer {
 
         WebLogicRuntime runtime = WebLogicRuntime.getInstance(CommonBridge.getConfiguration(dm));
         runtime.start(new DefaultInputProcessorFactory(uri, false), new DefaultInputProcessorFactory(uri, true),
-                new StartListener(uri, serverName, serverProgress), getStartDebugVariables(dm), null);
+                new StartListener(dm, serverName, serverProgress), getStartDebugVariables(dm), null);
 
         addServerInDebug(uri);
         return serverProgress;
@@ -184,7 +184,7 @@ public final class WLStartServer extends StartServer {
 
         WebLogicRuntime runtime = WebLogicRuntime.getInstance(CommonBridge.getConfiguration(dm));
         runtime.start(new DefaultInputProcessorFactory(uri, false), new DefaultInputProcessorFactory(uri, true),
-                new StartListener(uri, serverName, serverProgress), getStartVariables(dm), null);
+                new StartListener(dm, serverName, serverProgress), getStartVariables(dm), null);
 
         removeServerInDebug(uri);
         return serverProgress;
@@ -204,7 +204,8 @@ public final class WLStartServer extends StartServer {
         String uri = dm.getUri();
 
         final WebLogicRuntime runtime = WebLogicRuntime.getInstance(CommonBridge.getConfiguration(dm));
-        runtime.start(new DefaultInputProcessorFactory(uri, false), new DefaultInputProcessorFactory(uri, true), new StartListener(uri, serverName, serverProgress) {
+        runtime.start(new DefaultInputProcessorFactory(uri, false), new DefaultInputProcessorFactory(uri, true),
+                new StartListener(dm, serverName, serverProgress) {
 
             @Override
             public void onExit() {
@@ -413,14 +414,14 @@ public final class WLStartServer extends StartServer {
 
     private static class StartListener implements RuntimeListener {
 
-        private final String uri;
+        private final WLDeploymentManager dm;
 
         private final String serverName;
 
         private final WLServerProgress serverProgress;
 
-        public StartListener(String uri, String serverName, WLServerProgress serverProgress) {
-            this.uri = uri;
+        public StartListener(WLDeploymentManager dm, String serverName, WLServerProgress serverProgress) {
+            this.dm = dm;
             this.serverName = serverName;
             this.serverProgress = serverProgress;
         }
@@ -444,7 +445,7 @@ public final class WLStartServer extends StartServer {
 
         @Override
         public void onProcessStart() {
-            InputOutput io = UISupport.getServerIO(uri);
+            InputOutput io = UISupport.getServerIO(dm.getUri());
             if (io == null) {
                 return;
             }
@@ -461,7 +462,7 @@ public final class WLStartServer extends StartServer {
 
         @Override
         public void onProcessFinish() {
-            InputOutput io = UISupport.getServerIO(uri);
+            InputOutput io = UISupport.getServerIO(dm.getUri());
             if (io != null) {
                 io.getOut().close();
                 io.getErr().close();
@@ -470,6 +471,7 @@ public final class WLStartServer extends StartServer {
 
         @Override
         public void onRunning() {
+            dm.setRestartNeeded(false);
             serverProgress.notifyStart(StateType.COMPLETED,
                     NbBundle.getMessage(WLStartServer.class, "MSG_SERVER_STARTED", serverName));
         }
