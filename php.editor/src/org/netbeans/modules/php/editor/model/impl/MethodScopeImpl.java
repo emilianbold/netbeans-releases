@@ -71,7 +71,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
  * @author Radek Matous
  */
 final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, VariableNameFactory, LazyBuild {
-    private String classNormName;
+    private final String classNormName;
     private boolean scanned;
     private MethodDeclaration originalNode;
     private ModelVisitor visitor;
