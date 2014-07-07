@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,51 +37,10 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-// references from bg page
-var NetBeans_Warnings = chrome.extension.getBackgroundPage().NetBeans_Warnings;
-
-/**
- * Warning - the content is set by the URL ident (accessible via <code>window.location.hash</code>).
- */
-var NetBeans_Warning = {};
-
-NetBeans_Warning._ident = null;
-NetBeans_Warning._okButton = null;
-NetBeans_Warning._doNotShowAgainButton = null;
-
-NetBeans_Warning.init = function() {
-    if (NetBeans_Warning._ident !== null) {
-        return;
-    }
-    this._ident = window.location.hash.substring(1);
-    this._okButton = document.getElementById('okButton');
-    this._doNotShowAgainButton = document.getElementById('doNotShowAgainCheck');
-    this._showContent();
-    this._registerEvents();
-};
-// show proper content of the page
-NetBeans_Warning._showContent = function() {
-    document.getElementById(this._ident).style.display = 'block';
-};
-// register events
-NetBeans_Warning._registerEvents = function() {
-    var that = this;
-    this._okButton.addEventListener('click', function() {
-        that._close();
-    }, false);
-};
-NetBeans_Warning._close = function() {
-    this._doNotShowAgain();
-    window.close();
-};
-NetBeans_Warning._doNotShowAgain = function() {
-    NetBeans_Warnings.enable(this._ident, !this._doNotShowAgainButton.checked);
-};
-
-// run!
 window.addEventListener('load', function() {
-    NetBeans_Warning.init();
+    // texts
+    I18n.className('i18n');
 }, false);

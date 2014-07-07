@@ -66,6 +66,10 @@ public class MagicMethod68Test extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/lib/netbeans68version/magicmethods/magicmethods.php", "$clsB->method1()->method2()->^", false);
     }
 
+    public void testIssue242396() throws Exception {
+        checkCompletion("testfiles/completion/lib/netbeans68version/magicmethods/issue242396.php", "$foo->^", false);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(
