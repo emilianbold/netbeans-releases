@@ -42,6 +42,7 @@ package org.netbeans.api.project.libraries;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Image;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -54,9 +55,12 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -79,6 +83,7 @@ class LibraryChooserGUI extends JPanel implements ExplorerManager.Provider, Help
     private final LibraryChooser.Filter filter;
     private final ExplorerManager explorer;
     private LibraryChooser.LibraryImportHandler importHandler;
+    private DialogDescriptor dialogDescriptor;
 
     private LibraryChooserGUI(LibraryManager manager, LibraryChooser.Filter filter, 
             LibraryChooser.LibraryImportHandler importHandler) {
@@ -90,7 +95,7 @@ class LibraryChooserGUI extends JPanel implements ExplorerManager.Provider, Help
         this.importHandler = importHandler;
         explorer = new ExplorerManager();
         initComponents();
-        tree.setDefaultActionAllowed(false);
+        tree.setDefaultActionAllowed(true);
     }
     
     public static LibraryChooser.Panel createPanel(LibraryManager manager, 
@@ -132,8 +137,8 @@ class LibraryChooserGUI extends JPanel implements ExplorerManager.Provider, Help
         }
         inset.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.AccessibleContext.accessibleName")); // NOI18N
         inset.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.accessibleDescription")); // NOI18N
-        DialogDescriptor dd = new DialogDescriptor(inset, title);
-        dd.setModal(true);
+        dialogDescriptor = new DialogDescriptor(inset, title);
+        dialogDescriptor.setModal(true);
         final JButton add = new JButton(buttonLabel);
         add.setEnabled(false);
         add.setDefaultCapable(true);
@@ -144,9 +149,9 @@ class LibraryChooserGUI extends JPanel implements ExplorerManager.Provider, Help
                add.setEnabled(!getSelectedLibraries().isEmpty());
            }
         });
-        dd.setOptions(new Object[] {add, NotifyDescriptor.CANCEL_OPTION});
-        dd.setClosingOptions(new Object[] {add, NotifyDescriptor.CANCEL_OPTION});
-        if (DialogDisplayer.getDefault().notify(dd) == add) {
+        dialogDescriptor.setOptions(new Object[] {add, NotifyDescriptor.CANCEL_OPTION});
+        dialogDescriptor.setClosingOptions(new Object[] {add, NotifyDescriptor.CANCEL_OPTION});
+        if (DialogDisplayer.getDefault().notify(dialogDescriptor) == add) {
             Set<Library> selection = getSelectedLibraries();
             assert !selection.isEmpty();
             return selection;
@@ -262,15 +267,44 @@ class LibraryChooserGUI extends JPanel implements ExplorerManager.Provider, Help
             setKeys(libs);
         }
 
+        @Override
         protected Node[] createNodes(Library lib) {
-            AbstractNode n = new AbstractNode(Children.LEAF, Lookups.singleton(lib));
-            n.setName(lib.getName());
-            n.setDisplayName(lib.getDisplayName());
-            n.setShortDescription(lib.getDescription());
-            n.setIconBaseWithExtension("org/netbeans/modules/project/libraries/resources/libraries.gif"); // NOI18N
-            return new Node[] {n};
+            return new Node[] {
+                new LibraryNode(lib)
+            };
         }
 
+    }
+
+    private class LibraryNode extends AbstractNode {
+
+        private final Action[] actions = new Action[0];
+        private final Action addAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ((JButton)dialogDescriptor.getOptions()[0]).doClick();
+            }
+        };
+
+        LibraryNode (@NonNull final Library lib) {
+            super(Children.LEAF, Lookups.singleton(lib));
+            setName(lib.getName());
+            setDisplayName(lib.getDisplayName());
+            setShortDescription(lib.getDescription());
+            setIconBaseWithExtension("org/netbeans/modules/project/libraries/resources/libraries.gif"); // NOI18N
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return actions;
+        }
+
+        @Override
+        public Action getPreferredAction() {
+            return dialogDescriptor == null ?
+                null :
+                addAction;
+        }
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
