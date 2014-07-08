@@ -274,7 +274,7 @@ public class Rule {
             return false;
         }
         RuleId ruleId = getId();
-        if (ruleId == null) {
+        if (ruleId == null || ruleId.getOrdinal() == -1) {
             return (this == object);
         } else {
             Rule other = (Rule)object;
@@ -285,7 +285,7 @@ public class Rule {
     @Override
     public int hashCode() {
         RuleId ruleId = getId();
-        return (ruleId == null) ? super.hashCode() : ruleId.hashCode();
+        return (ruleId == null || ruleId.getOrdinal() == -1) ? super.hashCode() : ruleId.hashCode();
     }
 
 }

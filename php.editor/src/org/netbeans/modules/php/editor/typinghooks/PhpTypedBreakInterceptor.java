@@ -526,17 +526,20 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
     private static boolean isPartOfHereOrNowDoc(TokenSequence<? extends PHPTokenId> ts) {
         boolean result = false;
         int originalOffset = ts.offset();
-        while (ts.movePrevious()) {
-            Token<? extends PHPTokenId> token = ts.token();
-            if (token != null) {
-                if (TypingHooksUtils.isStringToken(token)) {
-                    continue;
-                } else {
-                    PHPTokenId tokenId = token.id();
-                    if (tokenId == PHPTokenId.PHP_HEREDOC_TAG || tokenId == PHPTokenId.PHP_NOWDOC_TAG) {
-                        result = true;
+        Token<? extends PHPTokenId> token = ts.token();
+        if (token != null && TypingHooksUtils.isStringToken(token)) {
+            while (ts.movePrevious()) {
+                token = ts.token();
+                if (token != null) {
+                    if (!TypingHooksUtils.isStringToken(token)) {
+                        PHPTokenId tokenId = token.id();
+                        if (tokenId == PHPTokenId.PHP_HEREDOC_TAG_START || tokenId == PHPTokenId.PHP_NOWDOC_TAG_START) {
+                            result = true;
+                            break;
+                        } else if (tokenId == PHPTokenId.PHP_HEREDOC_TAG_END || tokenId == PHPTokenId.PHP_NOWDOC_TAG_END) {
+                            break;
+                        }
                     }
-                    break;
                 }
             }
         }

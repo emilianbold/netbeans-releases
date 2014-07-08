@@ -229,8 +229,10 @@ final class PHPSQLStatement {
                         addCodeBlock(seq, text, buf);
                     }
                     break;
-                case PHP_HEREDOC_TAG:
-                case PHP_NOWDOC_TAG:
+                case PHP_HEREDOC_TAG_START:
+                case PHP_HEREDOC_TAG_END:
+                case PHP_NOWDOC_TAG_START:
+                case PHP_NOWDOC_TAG_END:
                     concatenating = false;
                     // fall through intentional
                 case PHP_CLOSETAG:
@@ -396,7 +398,7 @@ final class PHPSQLStatement {
             }
 
             String text = seq.token().text().toString();
-            if (text.equals("\"") || text.equals("\'") || seq.token().id() == PHPTokenId.PHP_HEREDOC_TAG) {
+            if (text.equals("\"") || text.equals("\'") || seq.token().id() == PHPTokenId.PHP_HEREDOC_TAG_START) {
                 seq.moveNext();
             }
 
@@ -411,7 +413,7 @@ final class PHPSQLStatement {
             seq.move(endOffset);
             seq.movePrevious();
             String text = seq.token().text().toString();
-            if (text.equals("\"") || text.equals("\'") || seq.token().id() == PHPTokenId.PHP_HEREDOC_TAG) {
+            if (text.equals("\"") || text.equals("\'") || seq.token().id() == PHPTokenId.PHP_HEREDOC_TAG_END) {
                 seq.movePrevious();
             }
             return seq.offset() + seq.token().length();
@@ -503,8 +505,10 @@ final class PHPSQLStatement {
                                 break outer;
                         }
                         break;
-                    case PHP_HEREDOC_TAG:
-                    case PHP_NOWDOC_TAG:
+                    case PHP_HEREDOC_TAG_START:
+                    case PHP_HEREDOC_TAG_END:
+                    case PHP_NOWDOC_TAG_START:
+                    case PHP_NOWDOC_TAG_END:
                         switch (state) {
                             case STARTING:
                                 // Not inside a string, but possible concatination xDOCs with outer common strings

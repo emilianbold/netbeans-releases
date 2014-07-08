@@ -114,7 +114,6 @@ import org.netbeans.modules.web.webkit.debugging.api.css.Media;
 import org.netbeans.modules.web.webkit.debugging.api.css.Property;
 import org.netbeans.modules.web.webkit.debugging.api.css.PropertyInfo;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
-import org.netbeans.modules.web.webkit.debugging.api.css.RuleId;
 import org.openide.awt.HtmlRenderer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -478,19 +477,15 @@ public class CSSStylesSelectionPanel extends JPanel {
              * returns {@code false} otherwise.
              */
             private boolean selectRule(Rule rule, Node root) {
-                RuleId id = rule.getId();
                 Lookup lookup = root.getLookup();
                 Rule otherRule = lookup.lookup(Rule.class);
-                if (otherRule != null) {
-                    RuleId otherId = otherRule.getId();
-                    if (otherId != null && otherId.equals(id)) {
-                        try {
-                            rulePaneManager.setSelectedNodes(new Node[] { root });
-                        } catch (PropertyVetoException ex) {
-                            Logger.getLogger(CSSStylesSelectionPanel.class.getName()).log(Level.FINEST, null, ex);
-                        }
-                        return true;
+                if (rule == otherRule) {
+                    try {
+                        rulePaneManager.setSelectedNodes(new Node[] { root });
+                    } catch (PropertyVetoException ex) {
+                        Logger.getLogger(CSSStylesSelectionPanel.class.getName()).log(Level.FINEST, null, ex);
                     }
+                    return true;
                 }
                 for (Node subNode : root.getChildren().getNodes()) {
                     if (selectRule(rule, subNode)) {
