@@ -51,6 +51,22 @@ import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfigProperty;
 
 public class ActivationConfigPropertyImpl implements ActivationConfigProperty {
 
+    private String name;
+    private String value;
+
+    public ActivationConfigPropertyImpl(String name, String value) {
+        this.name = name;
+        this.value = value;
+    }
+
+    public String getActivationConfigPropertyName() {
+        return name;
+    }
+
+    public String getActivationConfigPropertyValue() {
+        return value;
+    }
+
     public Object clone() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -59,15 +75,7 @@ public class ActivationConfigPropertyImpl implements ActivationConfigProperty {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public String getActivationConfigPropertyName() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     public void setActivationConfigPropertyValue(String value) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public String getActivationConfigPropertyValue() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
