@@ -94,8 +94,48 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                         case ';':
                         case '*':
                         case '!':
+                        case '%':
+                        case '&':
+                        case '~':
+                        case '^':
+                        case '|':
+                        case ':':
                             state = State.INIT;
-                            return factory.createToken(SQLTokenId.OPERATOR);
+                            
+                            int lookAhead = input.read();
+                            if(lookAhead == '=') {
+                                switch (actChar) {
+                                    case '|':
+                                    case '^':
+                                    case '&':
+                                    case '%':
+                                    case '/':
+                                    case '*':
+                                    case '-':
+                                    case '+':
+                                    case ':':
+                                    case '!':
+                                    case '<':
+                                    case '>':
+                                        return factory.createToken(SQLTokenId.OPERATOR);
+                                }
+                            }
+                            if(actChar == '|' && lookAhead == '|') {
+                                return factory.createToken(SQLTokenId.OPERATOR);
+                            }
+                            if(actChar == '!' && (lookAhead == '=' || lookAhead == '>' || lookAhead == '<')) {
+                                return factory.createToken(SQLTokenId.OPERATOR);
+                            }
+                            if(actChar == '<' && lookAhead == '>') {
+                                return factory.createToken(SQLTokenId.OPERATOR);
+                            }
+                            input.backup(1);
+                            if(actChar != ':') {
+                                return factory.createToken(SQLTokenId.OPERATOR);
+                            } else {
+                                state = State.ISI_IDENTIFIER;
+                            }
+                            break;
                         case '(':
                             state = State.INIT;
                             return factory.createToken(SQLTokenId.LPAREN);
@@ -163,10 +203,6 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                 // If we are currently in a string literal.
                 case ISI_STRING:
                     switch (actChar) {
-                        case '\\': // NOI18N
-                            // escape possible single quote #152325
-                            state = State.ISA_BACK_SLASH_IN_STRING;
-                            break;
                         case '\'': // NOI18N
                             state = State.ISA_QUOTE_IN_STRING;
                             break;
@@ -183,11 +219,6 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                             input.backup(1);
                             return factory.createToken(SQLTokenId.STRING);
                     }
-                    break;
-
-                // If we are after a back slash (\) in string.
-                case ISA_BACK_SLASH_IN_STRING:
-                    state = State.ISI_STRING;
                     break;
 
                 // If we are currently in an identifier (e.g. a variable name),
@@ -228,6 +259,9 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                         case '*':
                             state = State.ISI_BLOCK_COMMENT;
                             break;
+                        case '=':
+                            state = State.INIT;
+                            return factory.createToken(SQLTokenId.OPERATOR);
                         default:
                             state = State.INIT;
                             input.backup(1);
@@ -241,6 +275,9 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                         case '-':
                             state = State.ISI_LINE_COMMENT;
                             break;
+                        case '=':
+                            state = State.INIT;
+                            return factory.createToken(SQLTokenId.OPERATOR);
                         default:
                             state = State.INIT;
                             input.backup(1);
@@ -369,7 +406,6 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                 break;
 
             case ISI_STRING:
-            case ISA_BACK_SLASH_IN_STRING:
                 id = SQLTokenId.INCOMPLETE_STRING; // XXX or string?
                 part = PartType.START;
                 break;
@@ -469,7 +505,6 @@ public class SQLLexer implements Lexer<SQLTokenId> {
         ISI_INT, // integer number
         ISI_DOUBLE, // double number
         ISA_DOT, // after '.'
-        ISA_BACK_SLASH_IN_STRING, // after \ in string
         ISA_QUOTE_IN_STRING,        // encountered quote in string - could be sql99 escape
         ISA_QUOTE_IN_IDENTIFIER     // encountered quote in identifier - could be sql99 escape
     }
