@@ -42,10 +42,12 @@
 package org.netbeans.modules.cordova;
 
 import java.io.*;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.api.ProcessUtilities;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -87,9 +89,10 @@ public class CordovaPlatform {
                     v = ProcessUtilities.callProcess("cordova", true, 60*1000, "-v");
                 }
                 if (versionPattern.matcher(v.trim()).matches()) {
-                    version = new Version(v);
+                    version = new Version(v.trim());
                 }
             } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
         return version;
@@ -149,8 +152,10 @@ public class CordovaPlatform {
         
         private SubVersion api;
         private SubVersion cli;
+        private static Logger LOG = Logger.getLogger(Version.class.getName());
 
         public Version(String version) {
+            LOG.fine("Cordova version " + version);
             assert version.contains("-");
             api = new SubVersion(version.substring(0, version.indexOf("-")));
             cli = new SubVersion(version.substring(version.indexOf("-")+1));
