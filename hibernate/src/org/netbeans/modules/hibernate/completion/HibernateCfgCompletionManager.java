@@ -87,7 +87,7 @@ public final class HibernateCfgCompletionManager {
             Environment.C3P0_MAX_STATEMENTS, NbBundle.getMessage(HibernateCfgCompletionManager.class, "C3P0_MAX_STATEMENTS_DESC"), // NOI18N
             Environment.C3P0_MIN_SIZE, NbBundle.getMessage(HibernateCfgCompletionManager.class, "C3P0_MIN_SIZE_DESC"), // NOI18N
             Environment.C3P0_TIMEOUT, NbBundle.getMessage(HibernateCfgCompletionManager.class, "C3P0_TIMEOUT_DESC"), // NOI18N
-            Environment.CACHE_PROVIDER, NbBundle.getMessage(HibernateCfgCompletionManager.class, "CACHE_PROVIDER_DESC"), // NOI18N
+//            Environment.CACHE_PROVIDER, NbBundle.getMessage(HibernateCfgCompletionManager.class, "CACHE_PROVIDER_DESC"), // NOI18N
             Environment.CACHE_REGION_PREFIX, NbBundle.getMessage(HibernateCfgCompletionManager.class, "CACHE_REGION_PREFIX_DESC"), // NOI18N
             Environment.CACHE_PROVIDER_CONFIG, NbBundle.getMessage(HibernateCfgCompletionManager.class, "CACHE_PROVIDER_CONFIG_DESC"), // NOI18N
             Environment.CACHE_NAMESPACE, NbBundle.getMessage(HibernateCfgCompletionManager.class, "CACHE_NAMESPACE_DESC"), // NOI18N
@@ -106,7 +106,7 @@ public final class HibernateCfgCompletionManager {
             Environment.GENERATE_STATISTICS, NbBundle.getMessage(HibernateCfgCompletionManager.class, "GENERATE_STATISTICS_DESC"), // NOI18N
             Environment.HBM2DDL_AUTO, NbBundle.getMessage(HibernateCfgCompletionManager.class, "HBM2DDL_AUTO_DESC"), // NOI18N
             Environment.ISOLATION, NbBundle.getMessage(HibernateCfgCompletionManager.class, "ISOLATION_DESC"), // NOI18N
-            Environment.JACC_CONTEXTID, NbBundle.getMessage(HibernateCfgCompletionManager.class, "JACC_CONTEXTID_DESC"), // NOI18N
+//            Environment.JACC_CONTEXTID, NbBundle.getMessage(HibernateCfgCompletionManager.class, "JACC_CONTEXTID_DESC"), // NOI18N
             Environment.JNDI_CLASS, NbBundle.getMessage(HibernateCfgCompletionManager.class, "JNDI_CLASS_DESC"), // NOI18N
             Environment.JNDI_URL, NbBundle.getMessage(HibernateCfgCompletionManager.class, "JNDI_URL_DESC"), // NOI18N
             Environment.JPAQL_STRICT_COMPLIANCE, NbBundle.getMessage(HibernateCfgCompletionManager.class, "JPAQL_STRICT_COMPLIANCE_DESC"), // NOI18N
@@ -131,7 +131,7 @@ public final class HibernateCfgCompletionManager {
             Environment.STATEMENT_BATCH_SIZE, NbBundle.getMessage(HibernateCfgCompletionManager.class, "STATEMENT_BATCH_SIZE_DESC"), // NOI18N
             Environment.STATEMENT_FETCH_SIZE, NbBundle.getMessage(HibernateCfgCompletionManager.class, "STATEMENT_FETCH_SIZE_DESC"), // NOI18N
             Environment.TRANSACTION_STRATEGY, NbBundle.getMessage(HibernateCfgCompletionManager.class, "TRANSACTION_STRATEGY_DESC"), // NOI18N
-            Environment.TRANSACTION_MANAGER_STRATEGY, NbBundle.getMessage(HibernateCfgCompletionManager.class, "TRANSACTION_MANAGER_STRATEGY_DESC"), // NOI18N
+//            Environment.TRANSACTION_MANAGER_STRATEGY, NbBundle.getMessage(HibernateCfgCompletionManager.class, "TRANSACTION_MANAGER_STRATEGY_DESC"), // NOI18N
             Environment.URL, NbBundle.getMessage(HibernateCfgCompletionManager.class, "URL_DESC"), // NOI18N
             Environment.USER, NbBundle.getMessage(HibernateCfgCompletionManager.class, "USER_DESC"), // NOI18N
             Environment.USE_GET_GENERATED_KEYS, NbBundle.getMessage(HibernateCfgCompletionManager.class, "USE_GET_GENERATED_KEYS_DESC"), // NOI18N
@@ -143,7 +143,7 @@ public final class HibernateCfgCompletionManager {
             Environment.USE_QUERY_CACHE, NbBundle.getMessage(HibernateCfgCompletionManager.class, "USE_QUERY_CACHE_DESC"), // NOI18N
             Environment.USE_SECOND_LEVEL_CACHE, NbBundle.getMessage(HibernateCfgCompletionManager.class, "USE_SECOND_LEVEL_CACHE_DESC"), // NOI18N
             Environment.USE_STRUCTURED_CACHE, NbBundle.getMessage(HibernateCfgCompletionManager.class, "USE_STRUCTURED_CACHE_DESC"), // NOI18N
-            Environment.USER_TRANSACTION, NbBundle.getMessage(HibernateCfgCompletionManager.class, "USER_TRANSACTION_DESC"), // NOI18N
+//            Environment.USER_TRANSACTION, NbBundle.getMessage(HibernateCfgCompletionManager.class, "USER_TRANSACTION_DESC"), // NOI18N
             Environment.USE_REFLECTION_OPTIMIZER, NbBundle.getMessage(HibernateCfgCompletionManager.class, "USE_REFLECTION_OPTIMIZER_DESC"), // NOI18N
             Environment.WRAP_RESULT_SETS, NbBundle.getMessage(HibernateCfgCompletionManager.class, "WRAP_RESULT_SETS_DESC") // NOI18N
         };

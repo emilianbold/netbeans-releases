@@ -193,7 +193,12 @@ import org.openide.util.RequestProcessor;
         time2 = System.currentTimeMillis();
         
         if (CndUtils.getBoolean("cnd.remote.zip", true)) {
-            uploadPlainFilesInZip(remoteRoot);
+            try {
+                uploadPlainFilesInZip(remoteRoot);
+            } catch (ZipIOException ex) {
+                err.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Msg_TryingToRecoverViaPlainFiles"));
+                uploadPlainFiles();
+            }
         } else {
             uploadPlainFiles();
         }
@@ -366,8 +371,28 @@ import org.openide.util.RequestProcessor;
     }
 
     private void uploadPlainFiles() throws InterruptedException, ExecutionException, IOException {
-        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_UploadFilesPlain"));        
+
+        List<FileCollector.FileInfo> toCopy = new ArrayList<>();
+
         for (FileCollector.FileInfo fileInfo : fileCollector.getFiles()) {
+            if (cancelled) {
+                throw new InterruptedException();
+            }
+            if (!fileInfo.isLink() && !fileInfo.file.isDirectory()) {
+                File srcFile = fileInfo.file;
+                if (srcFile.exists() && needsCopying(srcFile)) {
+                    toCopy.add(fileInfo);
+                }
+            }
+        }
+
+        if (toCopy.isEmpty()) {
+            out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_NoFilesToUpload"));
+            return;
+        }
+
+        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_UploadFilesPlain", toCopy.size()));
+        for (FileCollector.FileInfo fileInfo : toCopy) {
             if (cancelled) {
                 return;
             }
@@ -397,6 +422,12 @@ import org.openide.util.RequestProcessor;
         }
     }
 
+    private static final class ZipIOException extends IOException {
+        private ZipIOException(String message) {
+            super(message);
+        }
+    }
+
     private void uploadPlainFilesInZip(String remoteRoot) throws InterruptedException, ExecutionException, IOException {
     
         out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_UploadFilesInZip"));
@@ -422,6 +453,7 @@ import org.openide.util.RequestProcessor;
         out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_Zipping", toCopy.size()));  
         progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_Zipping"));            
         File zipFile = null;
+        String remoteFile = null;
         try  {
             String localFileName = files[0].getName();
             if (localFileName.length() < 3) {
@@ -465,7 +497,7 @@ import org.openide.util.RequestProcessor;
  
             out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_UploadingZip", executionEnvironment));
             progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_UploadingZip"));
-            String remoteFile = remoteRoot + '/' + zipFile.getName(); //NOI18N
+            remoteFile = remoteRoot + '/' + zipFile.getName(); //NOI18N
             {
                 long uploadStart = System.currentTimeMillis();
                 Future<UploadStatus> upload = CommonTasksSupport.uploadFile(zipFile.getAbsolutePath(), executionEnvironment, remoteFile, 0600);
@@ -488,23 +520,30 @@ import org.openide.util.RequestProcessor;
             {
                 long unzipTime = System.currentTimeMillis();
                 NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
-                pb.setExecutable("sh"); // NOI18N
-                pb.setArguments("-c" , "unzip -oqq " + remoteFile + " < /dev/null; rm " + remoteFile); // NOI18N
+                pb.setExecutable("unzip"); // NOI18N
+                pb.setArguments("-oqq", remoteFile); // NOI18N
                 pb.setWorkingDirectory(remoteRoot);
-                pb.redirectError(); // TODO: read it instead!
                 Process proc = pb.call();
-
                 String line;
-                BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-                // we now redirect instead of reading stderr // in = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+
+                BufferedReader inReader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
                 try {
-                    while ((line = in.readLine()) != null) {
+                    while ((line = inReader.readLine()) != null) {
                         if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
-                            System.err.printf("\t%s\n", line);
+                            System.out.printf("\tunzip: %s\n", line); // NOI18N
                         } //NOI18N
                     }
                 } finally {
-                    in.close();
+                    inReader.close();
+                }
+
+                BufferedReader errReader = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+                try {
+                    while ((line = errReader.readLine()) != null) {
+                        err.printf("unzip: %s\n", line); //NOI18N
+                    }
+                } finally {
+                    errReader.close();
                 }
 
                 int rc = proc.waitFor();
@@ -513,7 +552,7 @@ import org.openide.util.RequestProcessor;
                         executionEnvironment , remoteFile, System.currentTimeMillis()-unzipTime, rc); 
             
                 if (rc != 0) {
-                    throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Err_Unzip", 
+                    throw new ZipIOException(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Err_Unzip",
                             remoteFile, executionEnvironment, rc)); // NOI18N
                 }
                 for (FileCollector.FileInfo fileInfo : toCopy) {
@@ -525,6 +564,9 @@ import org.openide.util.RequestProcessor;
                 if (!zipFile.delete()) {
                     RemoteUtil.LOGGER.log(Level.INFO, "Can not delete temporary file {0}", zipFile.getAbsolutePath()); //NOI18N
                 }
+            }
+            if (remoteFile != null) {
+                CommonTasksSupport.rmFile(executionEnvironment, remoteFile, null);
             }
         }
         progressHandle.progress(uploadCount += (toCopy.size()/3));

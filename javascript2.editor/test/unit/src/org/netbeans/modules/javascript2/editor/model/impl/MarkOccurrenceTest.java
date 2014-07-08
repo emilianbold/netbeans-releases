@@ -1091,6 +1091,74 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue244973B.js", "throw Pages^Manager.NO_IMPLEMENTATION_ERROR;", true); 
     }
     
+    public void testIssue244989_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue244989.js", "return fo^o().length;", true); 
+    }
+    
+    public void testIssue244861_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244861.js", "var sel^f = this; // in MyClass", true); 
+    }
+    
+    public void testIssue244861_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244861.js", "this.myFi^eld = \"something else\";", true); 
+    }
+    
+    public void testIssue244861_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244861.js", "sel^f.myField.doSomething(); // click on myField", true); 
+    }
+    
+    public void testIssue244861_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244861.js", "self.myField.do^Again(); // in myMethod", true); 
+    }
+    
+    public void testIssue244861_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244861.js", "this.my^Field = \"foo\"; // click on myField", true); 
+    }
+    
+    public void testIssue244344_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244344.js", "SeLiteMisc.isInstance= function isPrdca( ob^ject, classes, className, message ) {", true); 
+    }
+    
+    public void testIssue244344_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244344.js", "SeLiteMisc.isInstance= function isPrdca( object, cla^sses, className, message ) {", true); 
+    }
+    
+    public void testIssue244344_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244344.js", "SeLiteMisc.isInstance= function isPrdca( object, classes, class^Name, message ) {", true); 
+    }
+    
+    public void testIssue244344_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue244344.js", "SeLiteMisc.isInstance= function isPrdca( object, classes, className, messa^ge ) {", true); 
+    }
+    
+    public void testIssue245445_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue245445.js", "r = r^ + array[i];", true); 
+    }
+    
+    public void testIssue245445_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue245445.js", "r = r + ar^ray[i];", true); 
+    }
+    
+    public void testIssue245445_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue245445.js", "r = r + array[i^];", true); 
+    }
+    
+    public void testIssue245445_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue245445.js", "this.myMeth^od = function MyLib_myMethod(array) {", true); 
+    }
+    
+    public void testIssue245445_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue245445.js", "this.myMethod = function MyLib_myMet^hod(array) {", true); 
+    }
+    
+    public void testIssue245445_06() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue245445.js", "var myLib = new My^Lib();", true); 
+    }
+    
+    public void testIssue245445_07() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue245445.js", "var myL^ib = new MyLib();", true); 
+    }
+    
    private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

@@ -70,6 +70,10 @@ public final class IconsUtils {
                 break;
             case TRAIT: imageIcon = ImageUtilities.loadImageIcon(ICON_BASE + "trait" + PNG_EXTENSION, false); //NOI18N
                 break;
+            case CONSTANT: imageIcon = ImageUtilities.loadImageIcon(ICON_BASE + "constant" + PNG_EXTENSION, false); //NOI18N
+                break;
+            case FUNCTION: imageIcon = ImageUtilities.loadImageIcon(ICON_BASE + "function" + PNG_EXTENSION, false); //NOI18N
+                break;
             default: imageIcon = ImageUtilities.loadImageIcon(EMPTY_FILE_ICON_BASE + PNG_EXTENSION, false);
         }
         return imageIcon;

@@ -250,7 +250,9 @@
                 </Names>
                 <Initializers>
                     <InfixExpression start='33' end='40' operator='MUL'>
-                        <Scalar start='33' end='36' type='STRING' value='ONE'/>
+                        <NamespaceName start='33' end='36' isCurrent='false' isGlobal='false'>
+                            <Identifier start='33' end='36' name='ONE'/>
+                        </NamespaceName>
                         <Scalar start='39' end='40' type='INT' value='2'/>
                     </InfixExpression>
                 </Initializers>
@@ -270,7 +272,9 @@
                         </Names>
                         <Initializers>
                             <InfixExpression start='71' end='78' operator='PLUS'>
-                                <Scalar start='71' end='74' type='STRING' value='TWO'/>
+                                <NamespaceName start='71' end='74' isCurrent='false' isGlobal='false'>
+                                    <Identifier start='71' end='74' name='TWO'/>
+                                </NamespaceName>
                                 <Scalar start='77' end='78' type='INT' value='1'/>
                             </InfixExpression>
                         </Initializers>
@@ -281,7 +285,9 @@
                         </Names>
                         <Initializers>
                             <InfixExpression start='102' end='119' operator='DIV'>
-                                <Scalar start='102' end='105' type='STRING' value='ONE'/>
+                                <NamespaceName start='102' end='105' isCurrent='false' isGlobal='false'>
+                                    <Identifier start='102' end='105' name='ONE'/>
+                                </NamespaceName>
                                 <StaticConstantAccess start='108' end='119'>
                                     <ClassName>
                                         <NamespaceName start='108' end='112' isCurrent='false' isGlobal='false'>
@@ -335,7 +341,9 @@
                                     </ParametrName>
                                     <DefaultValue>
                                         <InfixExpression start='208' end='225' operator='PLUS'>
-                                            <Scalar start='208' end='211' type='STRING' value='ONE'/>
+                                            <NamespaceName start='208' end='211' isCurrent='false' isGlobal='false'>
+                                                <Identifier start='208' end='211' name='ONE'/>
+                                            </NamespaceName>
                                             <StaticConstantAccess start='214' end='225'>
                                                 <ClassName>
                                                     <NamespaceName start='214' end='218' isCurrent='false' isGlobal='false'>

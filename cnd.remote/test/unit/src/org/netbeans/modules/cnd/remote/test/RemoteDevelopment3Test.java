@@ -46,7 +46,6 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.modules.cnd.remote.sync.FtpSyncWorkerTestCase;
 import org.netbeans.modules.cnd.remote.sync.RfsRemoteControllerDeathTestCase;
-import org.netbeans.modules.cnd.remote.sync.ZipSyncWorkerTestCase;
 import org.netbeans.modules.cnd.remote.sync.download.RemoteBuildUpdatesDownloadTestCase;
 import org.netbeans.modules.cnd.remote.ui.wizard.HostSetupTestCase;
 import org.netbeans.modules.cnd.test.CndBaseTestSuite;
@@ -61,7 +60,6 @@ public class RemoteDevelopment3Test extends CndBaseTestSuite {
        this("Remote Development", // NOI18N
            HostSetupTestCase.class,
            RemoteBuildUpdatesDownloadTestCase.class,
-           ZipSyncWorkerTestCase.class,
            FtpSyncWorkerTestCase.class,
            RfsRemoteControllerDeathTestCase.class           
        );

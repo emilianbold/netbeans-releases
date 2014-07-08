@@ -51,6 +51,7 @@ import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin;
 import org.netbeans.modules.java.testrunner.GuiUtils;
 import org.netbeans.modules.testng.api.TestNGSupport;
+import org.netbeans.modules.testng.spi.TestNGSupportImplementation;
 import org.netbeans.modules.testng.ui.TestNGPlugin;
 import org.netbeans.modules.testng.ui.TestNGPluginTrampoline;
 import org.netbeans.modules.testng.ui.TestNGSettings;
@@ -135,7 +136,17 @@ public final class NewTestWizardIterator implements WizardDescriptor.Instantiati
             Logger.getLogger(NewTestWizardIterator.class.getName()).log(Level.INFO, "Target folder was null while creating new TestNG file");
             return null;
         }
-        TestNGSupport.findTestNGSupport(FileOwnerQuery.getOwner(targetFolder)).configureProject(targetFolder);
+        Project project = FileOwnerQuery.getOwner(targetFolder);
+        if (project == null) {
+            Logger.getLogger(NewTestWizardIterator.class.getName()).log(Level.INFO, "No project found for target folder: {0}", targetFolder);
+            return null;
+        }
+        TestNGSupportImplementation testNGSupport = TestNGSupport.findTestNGSupport(project);
+        if (testNGSupport == null) {
+            Logger.getLogger(NewTestWizardIterator.class.getName()).log(Level.INFO, "No TestNGSupportImplementation found for target folder: {0}", targetFolder);
+            return null;
+        }
+        testNGSupport.configureProject(targetFolder);
         
         Map<CommonPlugin.CreateTestParam, Object> params
                 = TestUtil.getSettingsMap(false);

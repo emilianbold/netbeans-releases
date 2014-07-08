@@ -139,6 +139,7 @@ public final class GitUtils {
     public static final String MASTER = "master"; //NOI18N
     private static final Set<File> loggedRepositories = new HashSet<File>();
     public static final String REMOTE_ORIGIN = "origin"; //NOI18N
+    public static final String ORIGIN = "origin"; //NOI18N
 
     /**
      * Checks file location to see if it is part of git metadata
@@ -258,6 +259,13 @@ public final class GitUtils {
         return false;
     }
     
+    /**
+     * Returns the remote tracked branch for the current branch.
+     * 
+     * @param info
+     * @param errorLabel if not null a warning dialog will also be displayed.
+     * @return 
+     */
     @NbBundle.Messages({
         "# {0} - branch name", "MSG_Err.noTrackedBranch=No tracked remote branch specified for local {0}",
         "# {0} - branch name", "MSG_Err.trackedBranchLocal=Tracked branch {0} is not a remote branch"
@@ -269,11 +277,15 @@ public final class GitUtils {
         }
         GitBranch trackedBranch = activeBranch.getTrackedBranch();
         if (trackedBranch == null) {
-            notifyError(errorLabel, Bundle.MSG_Err_noTrackedBranch(activeBranch.getName()));
+            if (errorLabel != null) {
+                notifyError(errorLabel, Bundle.MSG_Err_noTrackedBranch(activeBranch.getName()));
+            }
             return null;
         }
         if (!trackedBranch.isRemote()) {
-            notifyError(errorLabel, Bundle.MSG_Err_trackedBranchLocal(trackedBranch.getName()));
+            if (errorLabel != null) {
+                notifyError(errorLabel, Bundle.MSG_Err_trackedBranchLocal(trackedBranch.getName()));
+            }
             return null;
         }
         return trackedBranch;

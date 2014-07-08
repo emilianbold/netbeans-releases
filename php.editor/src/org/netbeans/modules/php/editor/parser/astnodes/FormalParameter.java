@@ -53,31 +53,25 @@ public class FormalParameter extends ASTNode {
     private Expression parameterType;
     private Expression parameterName;
     private Expression defaultValue;
-    private final boolean isVariadic;
 
-    private FormalParameter(int start, int end, Expression type, final Expression parameterName, Expression defaultValue, boolean isVariadic) {
+    public FormalParameter(int start, int end, Expression type, final Expression parameterName, Expression defaultValue) {
         super(start, end);
 
         this.parameterName = parameterName;
         this.parameterType = type;
         this.defaultValue = defaultValue;
-        this.isVariadic = isVariadic;
-    }
-
-    public FormalParameter(int start, int end, Expression type, final Variable parameterName, Expression defaultValue, boolean isVariadic) {
-        this(start, end, type, (Expression) parameterName, defaultValue, isVariadic);
     }
 
     public FormalParameter(int start, int end, Expression type, final Reference parameterName, Expression defaultValue) {
-        this(start, end, type, (Expression) parameterName, defaultValue, false);
+        this(start, end, type, (Expression) parameterName, defaultValue);
     }
 
-    public FormalParameter(int start, int end, Expression type, final Variable parameterName, boolean isVariadic) {
-        this(start, end, type, (Expression) parameterName, null, isVariadic);
+    public FormalParameter(int start, int end, Expression type, final Expression parameterName) {
+        this(start, end, type, (Expression) parameterName, null);
     }
 
     public FormalParameter(int start, int end, Expression type, final Reference parameterName) {
-        this(start, end, type, (Expression) parameterName, null, false);
+        this(start, end, type, (Expression) parameterName, null);
     }
 
     public Expression getDefaultValue() {
@@ -93,7 +87,7 @@ public class FormalParameter extends ASTNode {
     }
 
     public boolean isVariadic() {
-        return isVariadic;
+        return getParameterName() instanceof Variadic;
     }
 
     public boolean isReference() {

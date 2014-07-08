@@ -117,6 +117,7 @@ public final class CGSInfo {
     private CGSGenerator.GenWay howToGenerate;
     private boolean generateDoc;
     private boolean fluentSetter;
+    private boolean isPublicModifier;
 
     private CGSInfo(JTextComponent textComp) {
         properties = new ArrayList<>();
@@ -130,6 +131,7 @@ public final class CGSInfo {
         hasConstructor = false;
         this.generateDoc = true;
         fluentSetter = false;
+        isPublicModifier = false;
         this.howToGenerate = CGSGenerator.GenWay.AS_JAVA;
     }
 
@@ -193,6 +195,14 @@ public final class CGSInfo {
 
     public void setFluentSetter(final boolean fluentSetter) {
         this.fluentSetter = fluentSetter;
+    }
+
+    public boolean isPublicModifier() {
+        return isPublicModifier;
+    }
+
+    public void setPublicModifier(boolean isPublicModifier) {
+        this.isPublicModifier = isPublicModifier;
     }
 
     public JTextComponent getComponent() {

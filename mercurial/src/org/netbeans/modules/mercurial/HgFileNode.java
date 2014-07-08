@@ -50,32 +50,37 @@ import org.openide.filesystems.FileUtil;
 import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
+import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
+import org.netbeans.modules.versioning.util.common.VCSFileNode;
 
 /**
  * Represents real or virtual (non-local) file.
  *
  * @author Padraig O'Briain
  */
-public final class HgFileNode {
+public final class HgFileNode extends VCSFileNode<FileInformation> {
 
     private final File file;
     private final File normalizedFile;
     private FileObject fileObject;
 
-    public HgFileNode(File file) {
+    public HgFileNode(File root, File file) {
+        super(root, file);
         this.file = file;
         normalizedFile = FileUtil.normalizeFile(file);
     }
 
+    @Override
     public String getName() {
         return file.getName();
     }
 
-
+    @Override
     public FileInformation getInformation() {
         return Mercurial.getInstance().getFileStatusCache().getStatus(file); 
     }
 
+    @Override
     public File getFile() {
         return file;
     }
@@ -91,6 +96,7 @@ public final class HgFileNode {
         return file.hashCode();
     }
 
+    @Override
     public FileObject getFileObject() {
         if (fileObject == null) {
             fileObject = FileUtil.toFileObject(normalizedFile);
@@ -98,6 +104,7 @@ public final class HgFileNode {
         return fileObject;
     }
 
+    @Override
     public Object[] getLookupObjects() {
         List<Object> list = new ArrayList<Object>(2);
         list.add(file);
@@ -106,5 +113,10 @@ public final class HgFileNode {
             list.add(fo);
         }
         return list.toArray(new Object[list.size()]);
+    }
+
+    @Override
+    public VCSCommitOptions getDefaultCommitOption (boolean withExclusions) {
+        return VCSCommitOptions.COMMIT;
     }
 }

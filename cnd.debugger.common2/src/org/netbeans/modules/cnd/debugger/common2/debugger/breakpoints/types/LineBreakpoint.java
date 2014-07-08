@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types;
 
 import java.io.IOException;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.debugger.common2.utils.props.IntegerProperty;
@@ -251,21 +252,12 @@ public final class LineBreakpoint extends NativeBreakpoint {
 
         @Override
         public Project[] getProjects() {
-            FileObject f = fo;
-            while (f != null) {
-                f = f.getParent();
-                if (f != null && ProjectManager.getDefault().isProject(f)) {
-                    break;
-                }
+            Project p = FileOwnerQuery.getOwner(fo);
+            if (p != null) {
+                return new Project[]{p};
+            } else {
+                return null;
             }
-            if (f != null) {
-                try {
-                    return new Project[] { ProjectManager.getDefault().findProject(f) };
-                } catch (IOException ex) {
-                } catch (IllegalArgumentException ex) {
-                }
-            }
-            return null;
         }
     }
 }

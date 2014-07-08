@@ -231,14 +231,17 @@ public class NavigateTest extends GeneralRequire {
         endTest();
     }
 
-    private void navigate(String fromFile, String toFile, int fromLine, int fromColumn, int toLine, int toColumn) {
+  private void navigate(String fromFile, String toFile, int fromLine, int fromColumn, int toLine, int toColumn) {
         EditorOperator eo = new EditorOperator(fromFile);
         eo.setCaretPosition(fromLine, fromColumn);
         evt.waitNoEvent(200);
         new org.netbeans.jellytools.actions.Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_B, 2)).performShortcut(eo);
         evt.waitNoEvent(500);
+        long defaultTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
         try {
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
             EditorOperator ed = new EditorOperator(toFile);
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", defaultTimeout);
             int position = ed.txtEditorPane().getCaretPosition();
             ed.setCaretPosition(toLine, toColumn);
             int expectedPosition = ed.txtEditorPane().getCaretPosition();
@@ -247,6 +250,7 @@ public class NavigateTest extends GeneralRequire {
                 ed.close(false);
             }
         } catch (Exception e) {
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", defaultTimeout);
             fail(e.getMessage());
         }
 

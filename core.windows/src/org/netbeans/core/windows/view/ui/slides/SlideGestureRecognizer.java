@@ -175,6 +175,9 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
     @Override
     public void mouseClicked(MouseEvent e) {
         // no operation
+        if( e.getButton() == MouseEvent.BUTTON2 ) {
+            slideBar.userMiddleClickedSlidingButton(e.getComponent());
+        }
     }
     
     /** Sends message to show popup menu on button if conditions are met */

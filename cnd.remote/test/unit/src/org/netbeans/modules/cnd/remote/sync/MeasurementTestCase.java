@@ -109,7 +109,7 @@ public class MeasurementTestCase extends RemoteTestBase {
             FileObject privProjectStorageDir = FileUtil.createFolder(tmp, srcDir.getName() + "-nbproject-private");
             //removeDirectoryContent(privProjectStorageDir);
 
-            ZipSyncWorker worker = new ZipSyncWorker(execEnv, out, err, privProjectStorageDir,
+            FtpSyncWorker worker = new FtpSyncWorker(execEnv, out, err, privProjectStorageDir,
                     Collections.singletonList(FSPath.toFSPath(FileUtil.toFileObject(FileUtil.normalizeFile(srcDir)))),
                     Collections.<FSPath>emptyList());
             long time = System.currentTimeMillis();

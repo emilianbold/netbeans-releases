@@ -186,6 +186,7 @@ public class CustomizerKarma extends JPanel {
         configBrowseButton = new JButton();
         configSearchButton = new JButton();
         autowatchCheckBox = new JCheckBox();
+        debugLabel = new JLabel();
         debugCheckBox = new JCheckBox();
         debugBrowserIdLabel = new JLabel();
         debugBrowserIdComboBox = new JComboBox<WebBrowser>();
@@ -235,6 +236,8 @@ public class CustomizerKarma extends JPanel {
         });
 
         Mnemonics.setLocalizedText(autowatchCheckBox, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.autowatchCheckBox.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(debugLabel, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.debugLabel.text")); // NOI18N
 
         Mnemonics.setLocalizedText(debugCheckBox, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.debugCheckBox.text")); // NOI18N
 
@@ -286,23 +289,26 @@ public class CustomizerKarma extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addComponent(autowatchCheckBox)
-                    .addComponent(debugCheckBox)
-                    .addComponent(coverageLabel))
+                    .addComponent(coverageLabel)
+                    .addComponent(debugLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(debugCheckBox)))
                 .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(debugBrowserIdLabel)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(debugBrowserIdComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(coverageInfoLabel)
                         .addGap(18, 18, 18)
                         .addComponent(coverageLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     .addComponent(coverageIstanbulInfoLabel)
                     .addComponent(coverageConfigLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(coverageDebugLabel))
+                    .addComponent(coverageDebugLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(debugBrowserIdLabel)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(debugBrowserIdComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -327,6 +333,8 @@ public class CustomizerKarma extends JPanel {
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(autowatchCheckBox)
                 .addGap(18, 18, 18)
+                .addComponent(debugLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(debugCheckBox)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
@@ -424,6 +432,7 @@ public class CustomizerKarma extends JPanel {
     private JComboBox<WebBrowser> debugBrowserIdComboBox;
     private JLabel debugBrowserIdLabel;
     private JCheckBox debugCheckBox;
+    private JLabel debugLabel;
     private JButton karmaBrowseButton;
     private JLabel karmaLabel;
     private JButton karmaSearchButton;

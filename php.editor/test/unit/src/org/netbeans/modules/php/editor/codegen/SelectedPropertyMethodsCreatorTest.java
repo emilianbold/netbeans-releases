@@ -105,33 +105,51 @@ public class SelectedPropertyMethodsCreatorTest extends PHPTestBase {
 
     public void testInstancePropertyGetter() throws Exception {
         CGSInfo cgsInfo = getCgsInfo("^}");
+        cgsInfo.setPublicModifier(true);
         checkResult(new SelectedPropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleGetters())).create(new SinglePropertyMethodCreator.SingleGetterCreator(cgsInfo)));
     }
 
     public void testInstancePropertySetter() throws Exception {
         CGSInfo cgsInfo = getCgsInfo("^}");
+        cgsInfo.setPublicModifier(true);
         checkResult(new SelectedPropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleSetters())).create(new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
     }
 
     public void testInstancePropertySetterWithFluentInterface() throws Exception {
         CGSInfo cgsInfo = getCgsInfo("^}");
         cgsInfo.setFluentSetter(true);
+        cgsInfo.setPublicModifier(true);
         checkResult(new SelectedPropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleSetters())).create(new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
     }
 
     public void testClassPropertyGetter() throws Exception {
         CGSInfo cgsInfo = getCgsInfo("^}");
+        cgsInfo.setPublicModifier(true);
         checkResult(new SelectedPropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleGetters())).create(new SinglePropertyMethodCreator.SingleGetterCreator(cgsInfo)));
     }
 
     public void testClassPropertySetter() throws Exception {
         CGSInfo cgsInfo = getCgsInfo("^}");
+        cgsInfo.setPublicModifier(true);
         checkResult(new SelectedPropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleSetters())).create(new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
     }
 
     public void testClassPropertySetterWithFluentInterface() throws Exception {
         CGSInfo cgsInfo = getCgsInfo("^}");
         cgsInfo.setFluentSetter(true);
+        cgsInfo.setPublicModifier(true);
+        checkResult(new SelectedPropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleSetters())).create(new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
+    }
+
+    public void testClassPropertyGetterWithoutPublic() throws Exception {
+        CGSInfo cgsInfo = getCgsInfo("^}");
+        cgsInfo.setPublicModifier(false);
+        checkResult(new SelectedPropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleGetters())).create(new SinglePropertyMethodCreator.SingleGetterCreator(cgsInfo)));
+    }
+
+    public void testClassPropertySetterWithoutPublic() throws Exception {
+        CGSInfo cgsInfo = getCgsInfo("^}");
+        cgsInfo.setPublicModifier(false);
         checkResult(new SelectedPropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleSetters())).create(new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
     }
 

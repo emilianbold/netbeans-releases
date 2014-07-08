@@ -52,11 +52,18 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.elements.FieldElement;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
 import org.netbeans.modules.php.editor.completion.PHPCompletionItem.CompletionRequest;
 import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPDocCommentTokenId;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
@@ -79,48 +86,132 @@ public final class PHPDOCCodeCompletion {
     private PHPDOCCodeCompletion() {
     }
 
-    static boolean isTypeCtx(PHPCompletionItem.CompletionRequest request) {
+    private interface FetchedTextCallback {
+        void call(String fetchedText);
+    }
+
+    private static final class TypeContextChecker implements FetchedTextCallback {
+        private boolean isTypeContext = true;
+
+        @Override
+        public void call(String fetchedText) {
+            String trimmedText = fetchedText.trim();
+            if (!trimmedText.isEmpty() && fetchedText.charAt(fetchedText.length() - 1) == '|') { //NOI18N
+                // expect that user wants to complete mixed type
+                boolean textPartHasWhitespace = false;
+                for (int i = 0; i < trimmedText.length(); i++) {
+                    if (Character.isWhitespace(trimmedText.charAt(i))) {
+                        textPartHasWhitespace = true;
+                        break;
+                    }
+                }
+                isTypeContext = !textPartHasWhitespace;
+            } else {
+                for (int i = 0; i < fetchedText.length(); i++) {
+                    if (!Character.isWhitespace(fetchedText.charAt(i))) {
+                        isTypeContext = false;
+                        break;
+                    }
+                }
+            }
+        }
+
+        public boolean isTypeContext() {
+            return isTypeContext;
+        }
+
+    }
+
+    private static final class MemberCompletion implements FetchedTextCallback {
+        private final PHPCompletionResult completionResult;
+        private final CompletionRequest request;
+
+        public MemberCompletion(PHPCompletionResult completionResult, CompletionRequest request) {
+            this.completionResult = completionResult;
+            this.request = request;
+        }
+
+        @Override
+        public void call(String possibleType) {
+            if (!possibleType.trim().isEmpty() && possibleType.endsWith("::")) { //NOI18N
+                String type = possibleType.substring(0, possibleType.length() - 2);
+                Set<TypeElement> types = request.index.getTypes(NameKind.exact(type));
+                TypeElement typeElement = ModelUtils.getFirst(types);
+                if (typeElement != null) {
+                    completeTypeMembers(typeElement);
+                }
+            }
+        }
+
+        private void completeTypeMembers(TypeElement typeElement) {
+            Set<TypeMemberElement> accessibleTypeMembers = request.index.getAccessibleTypeMembers(typeElement, null);
+            for (TypeMemberElement typeMemberElement : accessibleTypeMembers) {
+                completeTypeMember(typeMemberElement);
+            }
+        }
+
+        private void completeTypeMember(TypeMemberElement typeMemberElement) {
+            if (typeMemberElement instanceof MethodElement) {
+                completeMethods((MethodElement) typeMemberElement);
+            } else if (typeMemberElement instanceof FieldElement) {
+                completeFields((FieldElement) typeMemberElement);
+            } else if (typeMemberElement instanceof TypeConstantElement) {
+                completeConstants((TypeConstantElement) typeMemberElement);
+            }
+        }
+
+        private void completeMethods(MethodElement method) {
+            List<PHPCompletionItem.MethodElementItem> items = PHPCompletionItem.MethodElementItem.getItems(method, request);
+            for (PHPCompletionItem.MethodElementItem methodItem : items) {
+                completionResult.add(methodItem);
+            }
+        }
+
+        private void completeFields(FieldElement field) {
+            PHPCompletionItem.FieldItem fieldItem = PHPCompletionItem.FieldItem.getItem(field, request, true);
+            completionResult.add(fieldItem);
+        }
+
+        private void completeConstants(TypeConstantElement constant) {
+            PHPCompletionItem.TypeConstantItem constantItem = PHPCompletionItem.TypeConstantItem.getItem(constant, request);
+            completionResult.add(constantItem);
+        }
+
+    }
+
+    private static void fetchDocText(CompletionRequest request, FetchedTextCallback callback) {
         TokenHierarchy<?> th = request.info.getSnapshot().getTokenHierarchy();
         TokenSequence<PHPTokenId> phpTS = (th != null) ? LexUtilities.getPHPTokenSequence(th, request.anchor) : null;
         if (phpTS != null) {
             phpTS.move(request.anchor);
-            TokenSequence<PHPDocCommentTokenId> tokenSequence = phpTS.moveNext() ? phpTS.embedded(PHPDocCommentTokenId.language()) : null;
-            if (tokenSequence == null) {
-                return false;
-            }
-            tokenSequence.move(request.anchor);
-            if (tokenSequence.movePrevious()) {
-                int offset = tokenSequence.offset() + tokenSequence.token().length();
-                if (tokenSequence.moveNext()) {
-                    CharSequence text = tokenSequence.token().text();
-                    String txt = text.subSequence(0, request.anchor - offset).toString();
-                    if (!txt.trim().isEmpty() && txt.charAt(txt.length() - 1) == '|') { //NOI18N
-                        // expect that user wants to complete mixed type
-                        txt = txt.trim();
-                        for (int i = 0; i < txt.length(); i++) {
-                            if (Character.isWhitespace(txt.charAt(i))) {
-                                return false;
-                            }
-                        }
-                        return true;
-                    }
-                    for (int i = 0; i < txt.length(); i++) {
-                        if (!Character.isWhitespace(txt.charAt(i))) {
-                            return false;
+            if (phpTS.moveNext()) {
+                TokenSequence<PHPDocCommentTokenId> tokenSequence = phpTS.embedded(PHPDocCommentTokenId.language());
+                if (tokenSequence != null) {
+                    tokenSequence.move(request.anchor);
+                    if (tokenSequence.movePrevious()) {
+                        int offset = tokenSequence.offset() + tokenSequence.token().length();
+                        if (tokenSequence.moveNext()) {
+                            CharSequence tokenText = tokenSequence.token().text();
+                            String text = tokenText.subSequence(0, request.anchor - offset).toString().trim();
+                            callback.call(text);
                         }
                     }
                 }
-                // text between PHPDoc directive and begining of the prefix, should only contain white spaces
-                return true;
             }
         }
-        return false;
+    }
+
+    static boolean isTypeCtx(PHPCompletionItem.CompletionRequest request) {
+        TypeContextChecker typeContextChecker = new TypeContextChecker();
+        fetchDocText(request, typeContextChecker);
+        return typeContextChecker.isTypeContext();
     }
 
     public static void complete(final PHPCompletionResult completionResult, final CompletionRequest request) {
         if (request.prefix.startsWith(TAG_PREFIX)) {
             completeAnnotation(completionResult, request);
         }
+        fetchDocText(request, new MemberCompletion(completionResult, request));
     }
 
     private static void completeAnnotation(final PHPCompletionResult completionResult, final CompletionRequest request) {

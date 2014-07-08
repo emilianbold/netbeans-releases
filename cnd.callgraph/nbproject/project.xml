@@ -79,6 +79,8 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>com.oracle.tools.ide.binary.dependencies</friend>
+                <friend>com.oracle.tools.ide.binary.dependencies.ui</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>org.netbeans.modules.cnd.navigation</friend>
                 <package>org.netbeans.modules.cnd.callgraph.api</package>

@@ -87,7 +87,11 @@ public class FetchFromUpstreamAction extends MultipleRepositoryAction {
         return fetch(repository);
     }
     
-    @Messages({"LBL_Fetch.fetchFromUpstreamFailed=Fetch from Upstream Failed", "LBL_FetchFromUpstreamAction.preparing=Preparing Fetch..."})
+    @Messages({
+        "LBL_Fetch.fetchFromUpstreamFailed=Fetch from Upstream Failed",
+        "LBL_FetchFromUpstreamAction.preparing=Preparing Fetch...",
+        "# {0} - repository name", "MSG_FetchFromUpstreamAction.error.noRemote=No remote configuration found for repository \"{0}\"."
+    })
     private Task fetch (final File repository) {
         final Task[] t = new Task[1];
         GitProgressSupport supp = new GitProgressSupport.NoOutputLogging() {
@@ -99,12 +103,18 @@ public class FetchFromUpstreamAction extends MultipleRepositoryAction {
                 } catch (GitException ex) {
                     Logger.getLogger(FetchFromUpstreamAction.class.getName()).log(Level.INFO, null, ex);
                 }
+                GitBranch trackedBranch = GitUtils.getTrackedBranch(info, null);
+                GitRemoteConfig cfg;
                 String errorLabel = Bundle.LBL_Fetch_fetchFromUpstreamFailed();
-                GitBranch trackedBranch = GitUtils.getTrackedBranch(info, errorLabel);
                 if (trackedBranch == null) {
-                    return;
+                    // is there a default?
+                    cfg = info.getRemotes().get(GitUtils.ORIGIN);
+                    if (cfg == null) {
+                        GitUtils.notifyError(errorLabel, Bundle.MSG_FetchFromUpstreamAction_error_noRemote(repository.getName()));
+                    }
+                } else {
+                    cfg = FetchUtils.getRemoteConfigForActiveBranch(trackedBranch, info, errorLabel);
                 }
-                GitRemoteConfig cfg = FetchUtils.getRemoteConfigForActiveBranch(trackedBranch, info, errorLabel);                        
                 if (cfg == null) {
                     return;
                 }

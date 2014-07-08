@@ -142,13 +142,12 @@ class MsgTooltipWindow implements AWTEventListener, MouseMotionListener, MouseLi
         contentWindow.pack();
         Dimension dim = contentWindow.getSize();
 
-        if(screenBounds.width - location.x < cp.longestLine) {
-            int left = screenBounds.width - cp.longestLine;
-            if(parent.getLocationOnScreen().x < left) {
-                location.x = left;
-            } else {
-                location.x = parent.getLocationOnScreen().x - left;
-            }
+        if (screenBounds.width + screenBounds.x - location.x < cp.longestLine) {
+            // the whole window does fully not fit to the right
+            // the x position where the window has to start to fully fit to the right
+            int left = screenBounds.width + screenBounds.x - cp.longestLine;
+            // the window should have x pos minimally at the screen's start
+            location.x = Math.max(screenBounds.x, left);
         }
         
         if (location.y + dim.height + SCREEN_BORDER > screenBounds.y + screenBounds.height) {
@@ -160,7 +159,7 @@ class MsgTooltipWindow implements AWTEventListener, MouseMotionListener, MouseLi
 
         contentWindow.setSize(dim);
 
-        contentWindow.setLocation(location.x, location.y - 1);  // slight visual adjustment
+        contentWindow.setLocation(location.x, location.y + 1);  // slight visual adjustment
         
         contentWindow.setVisible(true);
         SwingUtilities.invokeLater(new Runnable() {

@@ -131,7 +131,6 @@ import org.netbeans.modules.versioning.util.PlaceholderPanel;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.common.FileViewComponent;
-import org.netbeans.modules.versioning.util.common.VCSFileNode;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
@@ -1010,7 +1009,8 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 }
             }
             refreshComponents();
-        } else if (VCSStatusTable.PROP_SELECTED_FILES.equals(evt.getPropertyName())) {
+        } else if (VCSStatusTable.PROP_SELECTED_FILES.equals(evt.getPropertyName())
+                && evt.getSource() == getActiveFileComponent()) {
             filesSelected((File[]) evt.getNewValue());
         }
     }

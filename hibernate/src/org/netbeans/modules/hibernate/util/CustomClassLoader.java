@@ -65,6 +65,7 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
+import org.hibernate.cfg.Environment;
 import org.openide.ErrorManager;
 
 /**
@@ -106,7 +107,7 @@ public class CustomClassLoader extends URLClassLoader {
         if (lastDotIndex != -1) {
             packageName = name.substring(0, lastDotIndex);
         }
-        if (packageName != null && (packageName.startsWith("java") ||
+        if (packageName != null && (packageName.startsWith("java\\.") ||
                 packageName.startsWith("javax") ||
                 packageName.startsWith("com.sun") ||
                 packageName.startsWith("org.hibernate") ||
@@ -119,6 +120,9 @@ public class CustomClassLoader extends URLClassLoader {
                 packageName.startsWith("net.sf.ehcache") ||
                 packageName.startsWith("org.netbeans"))) {
             clazz = super.loadClass(name, b);
+        }
+        if (packageName != null && (packageName.startsWith("javassist"))) {//see #243018
+            Class<?> forName = Class.forName(name);
         }
         if (clazz != null) {
             return clazz;
@@ -261,7 +265,7 @@ public class CustomClassLoader extends URLClassLoader {
     // Construct our own hibernate.properties and register ConnectionProvider.
     // Ofcourse this will override the user's version of the properties file.
     private InputStream getHibernateProperties() {
-        ByteArrayInputStream bIn = new ByteArrayInputStream("hibernate.connection.provider_class=org.netbeans.modules.hibernate.util.CustomJDBCConnectionProvider".getBytes());
+        ByteArrayInputStream bIn = new ByteArrayInputStream((Environment.CONNECTION_PROVIDER + "="+org.netbeans.modules.hibernate.util.CustomJDBCConnectionProvider.class.getName()).getBytes());
         return bIn;
     }
     @Override

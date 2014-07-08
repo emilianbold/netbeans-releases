@@ -72,20 +72,61 @@ public class MergeRevisionPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        rbFFOptions = new javax.swing.ButtonGroup();
         org.netbeans.modules.git.ui.repository.RevisionDialog revisionPickerDialog1 = this.revisionPanel;
         jLabel1 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(MergeRevisionPanel.class, "MergeRevisionPanel.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(MergeRevisionPanel.class, "MergeRevisionPanel.jLabel1.text")); // NOI18N
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(MergeRevisionPanel.class, "MergeRevisionPanel.ffModePanel.text"))); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(rbFFOption, org.openide.util.NbBundle.getMessage(MergeRevisionPanel.class, "MergeRevision.ffoption.ff")); // NOI18N
+        rbFFOption.setToolTipText(org.openide.util.NbBundle.getMessage(MergeRevisionPanel.class, "MergeRevision.ffoption.ff.tt")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(rbFFOptionNever, org.openide.util.NbBundle.getMessage(MergeRevisionPanel.class, "MergeRevision.ffoption.noff")); // NOI18N
+        rbFFOptionNever.setToolTipText(org.openide.util.NbBundle.getMessage(MergeRevisionPanel.class, "MergeRevision.ffoption.noff.tt")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(rbFFOptionOnly, org.openide.util.NbBundle.getMessage(MergeRevisionPanel.class, "MergeRevision.ffoption.ffonly")); // NOI18N
+        rbFFOptionOnly.setToolTipText(org.openide.util.NbBundle.getMessage(MergeRevisionPanel.class, "MergeRevision.ffoption.ffonly.tt")); // NOI18N
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(rbFFOptionNever)
+                    .addComponent(rbFFOptionOnly)
+                    .addComponent(rbFFOption))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(rbFFOption)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(rbFFOptionOnly)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(rbFFOptionNever)
+                .addContainerGap())
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(revisionPickerDialog1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
-                .addContainerGap(106, Short.MAX_VALUE))
-            .addComponent(revisionPickerDialog1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -93,13 +134,21 @@ public class MergeRevisionPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(revisionPickerDialog1, javax.swing.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE))
+                .addComponent(revisionPickerDialog1, javax.swing.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JPanel jPanel1;
+    final javax.swing.JRadioButton rbFFOption = new javax.swing.JRadioButton();
+    final javax.swing.JRadioButton rbFFOptionNever = new javax.swing.JRadioButton();
+    final javax.swing.JRadioButton rbFFOptionOnly = new javax.swing.JRadioButton();
+    private javax.swing.ButtonGroup rbFFOptions;
     // End of variables declaration//GEN-END:variables
 
 }

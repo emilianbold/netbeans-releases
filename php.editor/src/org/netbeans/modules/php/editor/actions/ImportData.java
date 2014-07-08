@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import javax.swing.Icon;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
 
 /**
  *
@@ -180,27 +181,120 @@ public class ImportData {
             abstract boolean canBeUsed();
         }
 
-        private final String name;
-        private final UsagePolicy usagePolicy;
-        private final Icon icon;
+        public enum Type {
+            CONST {
 
-        public ItemVariant(String name, UsagePolicy usagePolicy) {
-            this(name, usagePolicy, null);
+                @Override
+                public Icon getIcon() {
+                    return IconsUtils.getElementIcon(PhpElementKind.CONSTANT);
+                }
+
+            },
+            FUNCTION {
+
+                @Override
+                public Icon getIcon() {
+                    return IconsUtils.getElementIcon(PhpElementKind.FUNCTION);
+                }
+
+            },
+            INTERFACE {
+
+                @Override
+                public Icon getIcon() {
+                    return IconsUtils.getElementIcon(PhpElementKind.IFACE);
+                }
+
+            },
+            CLASS {
+
+                @Override
+                public Icon getIcon() {
+                    return IconsUtils.getElementIcon(PhpElementKind.CLASS);
+                }
+
+            },
+            TRAIT {
+
+                @Override
+                public Icon getIcon() {
+                    return IconsUtils.getElementIcon(PhpElementKind.TRAIT);
+                }
+
+            },
+            ERROR {
+
+                @Override
+                public Icon getIcon() {
+                    return IconsUtils.getErrorGlyphIcon();
+                }
+
+            },
+            NONE {
+
+                @Override
+                public Icon getIcon() {
+                    return null;
+                }
+
+            };
+
+            public abstract Icon getIcon();
+
+            public static Type create(PhpElementKind phpElementKind) {
+                Type result;
+                switch (phpElementKind) {
+                    case CONSTANT:
+                        result = CONST;
+                        break;
+                    case FUNCTION:
+                        result = FUNCTION;
+                        break;
+                    case IFACE:
+                        result = INTERFACE;
+                        break;
+                    case CLASS:
+                        result = CLASS;
+                        break;
+                    case TRAIT:
+                        result = TRAIT;
+                        break;
+                    default:
+                        result = ERROR;
+                }
+                return result;
+            }
         }
 
-        public ItemVariant(String name, UsagePolicy usagePolicy, Icon icon) {
+        private final String name;
+        private final UsagePolicy usagePolicy;
+        private final Type type;
+
+        public ItemVariant(String name, UsagePolicy usagePolicy) {
+            this(name, usagePolicy, Type.NONE);
+        }
+
+        public ItemVariant(String name, UsagePolicy usagePolicy, Type type) {
             assert name != null;
             this.name = name;
             this.usagePolicy = usagePolicy;
-            this.icon = icon;
+            this.type = type;
+        }
+
+        public ItemVariant(String name, UsagePolicy usagePolicy, PhpElementKind phpElementKind) {
+            this(name, usagePolicy, Type.create(phpElementKind));
         }
 
         public String getName() {
             return name;
         }
 
+        public Type getType() {
+            return type;
+        }
+
         public Icon getIcon() {
-            return icon;
+            return type.getIcon();
         }
 
         public boolean canBeUsed() {

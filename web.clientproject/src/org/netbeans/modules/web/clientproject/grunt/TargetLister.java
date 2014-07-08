@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.web.clientproject.grunt;
 
+import org.netbeans.modules.web.clientproject.node.ProcessUtilities;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
@@ -106,7 +107,7 @@ public class TargetLister {
         });
     }
     
-    static void invalidateCache(final FileObject gruntFile) {
+    public static void invalidateCache(final FileObject gruntFile) {
         if (gruntFile == null) {
             return;
         }

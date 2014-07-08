@@ -53,6 +53,7 @@ import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.RepositoryState;
+import org.netbeans.libs.git.GitRepository.FastForwardOption;
 import org.netbeans.libs.git.GitRevisionInfo.GitFileInfo;
 import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.JGitCredentialsProvider;
@@ -62,6 +63,7 @@ import org.netbeans.libs.git.jgit.commands.BlameCommand;
 import org.netbeans.libs.git.jgit.commands.CatCommand;
 import org.netbeans.libs.git.jgit.commands.CheckoutIndexCommand;
 import org.netbeans.libs.git.jgit.commands.CheckoutRevisionCommand;
+import org.netbeans.libs.git.jgit.commands.CherryPickCommand;
 import org.netbeans.libs.git.jgit.commands.CleanCommand;
 import org.netbeans.libs.git.jgit.commands.CommitCommand;
 import org.netbeans.libs.git.jgit.commands.CompareCommand;
@@ -253,6 +255,52 @@ public final class GitClient {
         };
     }
     
+    /**
+     * Used as a parameter of {@link #cherryPick(org.netbeans.libs.git.GitClient.CherryPickOperation, java.lang.String[], org.netbeans.libs.git.progress.ProgressMonitor) to set the behavior of the command.
+     * @since 1.27
+     */
+    public enum CherryPickOperation {
+
+        /**
+         * A fresh cherry-pick command will be started.
+         */
+        BEGIN,
+        /**
+         * Continues an interrupted cherry-pick command after conflicts are resolved.
+         */
+        CONTINUE {
+
+            @Override
+            public String toString () {
+                return "--continue"; //NOI18N
+            }
+            
+        },
+        /**
+         * Tries to finish cherry-picking the current commit but stops in
+         * cherry-picking other scheduled commits.
+         */
+        QUIT {
+
+            @Override
+            public String toString () {
+                return "--quit"; //NOI18N
+            }
+            
+        },
+        /**
+         * Aborts and resets an interrupted cherry-pick command.
+         */
+        ABORT {
+
+            @Override
+            public String toString () {
+                return "--abort"; //NOI18N
+            }
+            
+        };
+    }
+    
     private final JGitRepository gitRepository;
     private final Set<NotificationListener> listeners;
     private JGitCredentialsProvider credentialsProvider;
@@ -369,6 +417,26 @@ public final class GitClient {
         Repository repository = gitRepository.getRepository();
         CheckoutRevisionCommand cmd = new CheckoutRevisionCommand(repository, getClassFactory(), revision, failOnConflict, monitor, delegateListener);
         cmd.execute();
+    }
+    
+    /**
+     * Cherry-picks (transplants) selected revisions (commits) onto the current
+     * HEAD.
+     *
+     * @param operation kind of cherry-pick operation you want to perform
+     * @param revisions commits you want to cherry-pick. Makes sense only when
+     * <code>operation</code> is set to <code>CherryPickOperation.BEGIN</code>
+     * otherwise it's meaningless.
+     * @param monitor progress monitor
+     * @return result of the command
+     * @throws GitException an unexpected error occurs
+     * @since 1.27
+     */
+    public GitCherryPickResult cherryPick (CherryPickOperation operation, String[] revisions, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        CherryPickCommand cmd = new CherryPickCommand(repository, getClassFactory(), revisions, operation, monitor, delegateListener);
+        cmd.execute();
+        return cmd.getResult();
     }
 
     /**
@@ -867,7 +935,10 @@ public final class GitClient {
     }
     
     /**
-     * Merges a given revision with the current head
+     * Merges a given revision with the current head.
+     *
+     * Fast-forward option will default to the one stated in .git/config.
+     *
      * @param revision id of a revision to merge.
      * @param monitor progress monitor
      * @return result of the merge
@@ -875,8 +946,22 @@ public final class GitClient {
      * @throws GitException an unexpected error occurs
      */
     public GitMergeResult merge (String revision, ProgressMonitor monitor) throws GitException.CheckoutConflictException, GitException {
+        return merge(revision, null, monitor);
+    }
+    
+    /**
+     * Merges a given revision with the current head.
+     * @param revision id of a revision to merge.
+     * @param fastForward option telling merge to enforce or disable fast forward merges.
+     * @param monitor progress monitor
+     * @return result of the merge
+     * @throws GitException.CheckoutConflictException there are local modifications in Working Tree, merge fails in such a case
+     * @throws GitException an unexpected error occurs
+     * @since 1.26
+     */
+    public GitMergeResult merge (String revision, FastForwardOption fastForward, ProgressMonitor monitor) throws GitException.CheckoutConflictException, GitException {
         Repository repository = gitRepository.getRepository();
-        MergeCommand cmd = new MergeCommand(repository, getClassFactory(), revision, monitor);
+        MergeCommand cmd = new MergeCommand(repository, getClassFactory(), revision, fastForward, monitor);
         cmd.execute();
         return cmd.getResult();
     }

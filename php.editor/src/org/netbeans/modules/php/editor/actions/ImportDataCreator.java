@@ -57,8 +57,10 @@ import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
+import org.netbeans.modules.php.editor.api.elements.ConstantElement;
+import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
+import org.netbeans.modules.php.editor.api.elements.FunctionElement;
 import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
-import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.openide.util.NbBundle;
 
@@ -76,10 +78,10 @@ public class ImportDataCreator {
     private final Options options;
     private final List<PossibleItem> possibleItems = new ArrayList<>();
 
-    private static Collection<TypeElement> sortTypeElements(final Collection<TypeElement> filteredTypeElements) {
-        final List<TypeElement> sortedTypeElements = new ArrayList<>(filteredTypeElements);
-        Collections.sort(sortedTypeElements, new TypeElementsComparator());
-        return sortedTypeElements;
+    private static Collection<FullyQualifiedElement> sortFQElements(final Collection<FullyQualifiedElement> filteredFQElements) {
+        final List<FullyQualifiedElement> sortedFQElements = new ArrayList<>(filteredFQElements);
+        Collections.sort(sortedFQElements, new FQElementsComparator());
+        return sortedFQElements;
     }
 
     public ImportDataCreator(final Map<String, List<UsedNamespaceName>> usedNames, final Index phpIndex, final QualifiedName currentNamespace, final Options options) {
@@ -90,8 +92,8 @@ public class ImportDataCreator {
     }
 
     public ImportData create() {
-        for (String typeName : usedNames.keySet()) {
-            processTypeName(typeName);
+        for (String fqElementName : usedNames.keySet()) {
+            processFQElementName(fqElementName);
         }
         ImportData data = new ImportData();
         for (PossibleItem possibleItem : possibleItems) {
@@ -101,82 +103,77 @@ public class ImportDataCreator {
         return data;
     }
 
-    private void processTypeName(final String typeName) {
-        Collection<TypeElement> possibleTypes = fetchPossibleTypes(typeName);
-        Collection<TypeElement> filteredDuplicates = filterDuplicates(possibleTypes);
-        Collection<TypeElement> filteredExactUnqualifiedNames = filterExactUnqualifiedName(filteredDuplicates, typeName);
+    private void processFQElementName(final String fqElementName) {
+        Collection<FullyQualifiedElement> possibleFQElements = fetchPossibleFQElements(fqElementName);
+        Collection<FullyQualifiedElement> filteredDuplicates = filterDuplicates(possibleFQElements);
+        Collection<FullyQualifiedElement> filteredExactUnqualifiedNames = filterExactUnqualifiedName(filteredDuplicates, fqElementName);
         if (filteredExactUnqualifiedNames.isEmpty()) {
-            possibleItems.add(new EmptyItem(typeName));
+            possibleItems.add(new EmptyItem(fqElementName));
         } else {
-            Collection<TypeElement> filteredTypeElements = filterTypesFromCurrentNamespace(filteredExactUnqualifiedNames);
-            if (filteredTypeElements.isEmpty()) {
-                possibleItems.add(new ReplaceItem(typeName, filteredExactUnqualifiedNames));
+            Collection<FullyQualifiedElement> filteredFQElements = filterFQElementsFromCurrentNamespace(filteredExactUnqualifiedNames);
+            if (filteredFQElements.isEmpty()) {
+                possibleItems.add(new ReplaceItem(fqElementName, filteredExactUnqualifiedNames));
             } else {
                 possibleItems.add(new ValidItem(
-                        typeName,
-                        filteredTypeElements,
-                        filteredTypeElements.size() != filteredExactUnqualifiedNames.size()));
+                        fqElementName,
+                        filteredFQElements,
+                        filteredFQElements.size() != filteredExactUnqualifiedNames.size()));
             }
         }
     }
 
-    private Collection<TypeElement> fetchPossibleTypes(final String typeName) {
+    private Collection<FullyQualifiedElement> fetchPossibleFQElements(final String typeName) {
+        Collection<FullyQualifiedElement> possibleTypes = new HashSet<>();
         Collection<ClassElement> possibleClasses = phpIndex.getClasses(NameKind.prefix(typeName));
         Collection<InterfaceElement> possibleIfaces = phpIndex.getInterfaces(NameKind.prefix(typeName));
-        Collection<TypeElement> possibleTypes = new HashSet<>();
         possibleTypes.addAll(possibleClasses);
         possibleTypes.addAll(possibleIfaces);
+        if (options.isPhp56OrGreater()) {
+            Collection<FunctionElement> possibleFunctions = phpIndex.getFunctions(NameKind.prefix(typeName));
+            Collection<ConstantElement> possibleConstants = phpIndex.getConstants(NameKind.prefix(typeName));
+            possibleTypes.addAll(possibleFunctions);
+            possibleTypes.addAll(possibleConstants);
+        }
         return possibleTypes;
     }
 
-    private Collection<TypeElement> filterDuplicates(final Collection<TypeElement> possibleTypes) {
-        Collection<TypeElement> result = new HashSet<>();
-        Collection<String> filteredTypeElements = new HashSet<>();
-        for (TypeElement typeElement : possibleTypes) {
-            String typeElementName = typeElement.toString();
-            if (!filteredTypeElements.contains(typeElementName)) {
-                filteredTypeElements.add(typeElementName);
-                result.add(typeElement);
+    private Collection<FullyQualifiedElement> filterDuplicates(final Collection<FullyQualifiedElement> possibleFQElements) {
+        Collection<FullyQualifiedElement> result = new HashSet<>();
+        Collection<String> filteredFQElements = new HashSet<>();
+        for (FullyQualifiedElement fqElement : possibleFQElements) {
+            String typeElementName = fqElement.toString();
+            if (!filteredFQElements.contains(typeElementName)) {
+                filteredFQElements.add(typeElementName);
+                result.add(fqElement);
             }
         }
         return result;
     }
 
-    private Collection<TypeElement> filterExactUnqualifiedName(final Collection<TypeElement> possibleTypes, final String typeName) {
-        Collection<TypeElement> result = new HashSet<>();
-        for (TypeElement typeElement : possibleTypes) {
-            if (typeElement.getFullyQualifiedName().toString().endsWith(typeName)) {
-                result.add(typeElement);
+    private Collection<FullyQualifiedElement> filterExactUnqualifiedName(final Collection<FullyQualifiedElement> possibleFQElements, final String typeName) {
+        Collection<FullyQualifiedElement> result = new HashSet<>();
+        for (FullyQualifiedElement fqElement : possibleFQElements) {
+            if (fqElement.getFullyQualifiedName().toString().endsWith(typeName)) {
+                result.add(fqElement);
             }
         }
         return result;
     }
 
-    private Collection<TypeElement> filterTypesFromCurrentNamespace(final Collection<TypeElement> possibleTypes) {
-        Collection<TypeElement> result = new HashSet<>();
-        for (TypeElement typeElement : possibleTypes) {
-            if (!typeElement.getNamespaceName().equals(currentNamespace)) {
-                result.add(typeElement);
+    private Collection<FullyQualifiedElement> filterFQElementsFromCurrentNamespace(final Collection<FullyQualifiedElement> possibleFQElements) {
+        Collection<FullyQualifiedElement> result = new HashSet<>();
+        for (FullyQualifiedElement fqElement : possibleFQElements) {
+            if (!fqElement.getNamespaceName().equals(currentNamespace)) {
+                result.add(fqElement);
             }
         }
         return result;
     }
 
-    private boolean hasDefaultNamespaceName(final Collection<TypeElement> possibleTypes) {
+    private boolean hasDefaultNamespaceName(final Collection<FullyQualifiedElement> possibleFQElements) {
         boolean result = false;
-        for (TypeElement typeElement : possibleTypes) {
-            if (typeElement.getNamespaceName().isDefaultNamespace()) {
-                result = true;
-                break;
-            }
-        }
-        return result;
-    }
-
-    private boolean hasExactName(final Collection<TypeElement> typeElements, final QualifiedName exactName) {
-        boolean result = false;
-        for (TypeElement typeElement : typeElements) {
-            if (typeElement.getFullyQualifiedName().equals(exactName)) {
+        for (FullyQualifiedElement fqElement : possibleFQElements) {
+            if (fqElement.getNamespaceName().isDefaultNamespace()) {
                 result = true;
                 break;
             }
@@ -200,55 +197,55 @@ public class ImportDataCreator {
         @Override
         @NbBundle.Messages("CanNotBeResolved=<html><font color='#FF0000'>&lt;cannot be resolved&gt;")
         public void insertData(ImportData data) {
-            ItemVariant itemVariant = new ItemVariant(Bundle.CanNotBeResolved(), ItemVariant.UsagePolicy.CAN_NOT_BE_USED, IconsUtils.getErrorGlyphIcon());
+            ItemVariant itemVariant = new ItemVariant(Bundle.CanNotBeResolved(), ItemVariant.UsagePolicy.CAN_NOT_BE_USED, ItemVariant.Type.ERROR);
             data.add(new DataItem(typeName, Arrays.asList(new ItemVariant[] {itemVariant}), itemVariant));
         }
 
     }
 
     private final class ReplaceItem implements PossibleItem {
-        private final String typeName;
-        private final Collection<TypeElement> filteredExactUnqualifiedNames;
+        private final String fqName;
+        private final Collection<FullyQualifiedElement> filteredExactUnqualifiedNames;
 
-        public ReplaceItem(String typeName, Collection<TypeElement> filteredExactUnqualifiedNames) {
-            this.typeName = typeName;
+        public ReplaceItem(String fqName, Collection<FullyQualifiedElement> filteredExactUnqualifiedNames) {
+            this.fqName = fqName;
             this.filteredExactUnqualifiedNames = filteredExactUnqualifiedNames;
         }
 
         @Override
         public void insertData(ImportData data) {
-            TypeElement typeElement = ModelUtils.getFirst(filteredExactUnqualifiedNames);
-            assert typeElement != null;
+            FullyQualifiedElement fqElement = ModelUtils.getFirst(filteredExactUnqualifiedNames);
+            assert fqElement != null;
             String itemVariantReplaceName = options.preferFullyQualifiedNames()
-                    ? typeElement.getFullyQualifiedName().toString()
-                    : typeElement.getName();
+                    ? fqElement.getFullyQualifiedName().toString()
+                    : fqElement.getName();
             ItemVariant replaceItemVariant = new ItemVariant(itemVariantReplaceName, ItemVariant.UsagePolicy.CAN_BE_USED);
-            data.addJustToReplace(new DataItem(typeName, Collections.singletonList(replaceItemVariant), replaceItemVariant, usedNames.get(typeName)));
+            data.addJustToReplace(new DataItem(fqName, Collections.singletonList(replaceItemVariant), replaceItemVariant, usedNames.get(fqName)));
         }
     }
 
     private final class ValidItem implements PossibleItem {
-        private final Collection<TypeElement> filteredTypeElements;
+        private final Collection<FullyQualifiedElement> filteredFQElements;
         private final String typeName;
-        private final boolean existsTypeFromCurrentNamespace;
+        private final boolean existsFQElementFromCurrentNamespace;
 
-        private ValidItem(String typeName, Collection<TypeElement> filteredTypeElements, boolean existsTypeFromCurrentNamespace) {
+        private ValidItem(String typeName, Collection<FullyQualifiedElement> filteredFQElements, boolean existsFQELEMENTFromCurrentNamespace) {
             this.typeName = typeName;
-            this.filteredTypeElements = filteredTypeElements;
-            this.existsTypeFromCurrentNamespace = existsTypeFromCurrentNamespace;
+            this.filteredFQElements = filteredFQElements;
+            this.existsFQElementFromCurrentNamespace = existsFQELEMENTFromCurrentNamespace;
         }
 
         @Override
         public void insertData(ImportData data) {
-            Collection<TypeElement> sortedTypeElements = sortTypeElements(filteredTypeElements);
+            Collection<FullyQualifiedElement> sortedFQElements = sortFQElements(filteredFQElements);
             List<ItemVariant> variants = new ArrayList<>();
             ItemVariant defaultValue = null;
             boolean isFirst = true;
-            for (TypeElement typeElement : sortedTypeElements) {
+            for (FullyQualifiedElement fqElement : sortedFQElements) {
                 ItemVariant itemVariant = new ItemVariant(
-                        typeElement.getFullyQualifiedName().toString(),
+                        fqElement.getFullyQualifiedName().toString(),
                         ItemVariant.UsagePolicy.CAN_BE_USED,
-                        IconsUtils.getElementIcon(typeElement.getPhpElementKind()));
+                        fqElement.getPhpElementKind());
                 variants.add(itemVariant);
                 if (isFirst) {
                     defaultValue = itemVariant;
@@ -264,8 +261,8 @@ public class ImportDataCreator {
                     defaultValue = dontUseItemVariant;
                 }
             } else {
-                if ((currentNamespace.isDefaultNamespace() && hasDefaultNamespaceName(sortedTypeElements))
-                        || existsTypeFromCurrentNamespace) {
+                if ((currentNamespace.isDefaultNamespace() && hasDefaultNamespaceName(sortedFQElements))
+                        || existsFQElementFromCurrentNamespace) {
                     defaultValue = dontUseItemVariant;
                 }
             }
@@ -283,10 +280,10 @@ public class ImportDataCreator {
         }
     }
 
-    private static class TypeElementsComparator implements Comparator<TypeElement>, Serializable {
+    private static class FQElementsComparator implements Comparator<FullyQualifiedElement>, Serializable {
 
         @Override
-        public int compare(TypeElement o1, TypeElement o2) {
+        public int compare(FullyQualifiedElement o1, FullyQualifiedElement o2) {
             return o1.getFullyQualifiedName().toString().compareToIgnoreCase(o2.getFullyQualifiedName().toString()) * -1;
         }
 

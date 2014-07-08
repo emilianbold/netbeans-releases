@@ -49,6 +49,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -4396,6 +4397,14 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 if (MemoryWindow.getDefault().isShowing()) {
                     
                     MemoryWindow.getDefault().updateData(parseMem(record));
+                }
+                finish();
+            }
+
+            @Override
+            protected void onError(MIRecord record) {
+                if (MemoryWindow.getDefault().isShowing()) {
+                    MemoryWindow.getDefault().updateData(Collections.EMPTY_LIST);
                 }
                 finish();
             }

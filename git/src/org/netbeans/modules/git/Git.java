@@ -59,6 +59,7 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRepository;
 import org.netbeans.modules.git.client.CredentialsCallback;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.ui.shelve.ShelveChangesAction;
@@ -212,14 +213,13 @@ public final class Git {
     }
     
     public GitClient getClient (File repository, GitProgressSupport progressSupport, boolean handleAuthenticationIssues) throws GitException {
-        // get the only instance for the repository folder, so we can synchronize on it
-        File repositoryFolder = getRepositoryRoot(repository);
-        if (repositoryFolder != null && repository.equals(repositoryFolder)) {
-            repository = repositoryFolder;
-        }
-        GitClient client = new GitClient(repository, progressSupport, handleAuthenticationIssues);
+        GitClient client = new GitClient(singleInstanceRepositoryRoot(repository), progressSupport, handleAuthenticationIssues);
         client.setCallback(new CredentialsCallback());
         return client;
+    }
+    
+    public GitRepository getRepository (File repository) throws GitException {
+        return GitRepository.getInstance(singleInstanceRepositoryRoot(repository));
     }
 
     public RequestProcessor getRequestProcessor() {
@@ -360,6 +360,15 @@ public final class Git {
         }
 
         return topmost;
+    }
+
+    private File singleInstanceRepositoryRoot (File repository) {
+        // get the only instance for the repository folder, so we can synchronize on it
+        File repositoryFolder = getRepositoryRoot(repository);
+        if (repositoryFolder != null && repository.equals(repositoryFolder)) {
+            repository = repositoryFolder;
+        }
+        return repository;
     }
     
     private File getKnownParent(File file) {

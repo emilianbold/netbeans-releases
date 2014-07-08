@@ -153,6 +153,10 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
             }
             // #244047
             File[] prefs = defaultProfile.listFiles(new FileFinder("protected preferences"));
+            if (prefs == null || prefs.length == 0) {
+                // #245342
+                prefs = defaultProfile.listFiles(new FileFinder("secure preferences"));
+            }
             if (prefs == null || prefs.length == 0){
                 prefs = defaultProfile.listFiles(new FileFinder("preferences"));
             }
@@ -176,8 +180,8 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                 JSONObject extension = (JSONObject)e.getValue();
                 if (extension != null) {
                     String path = (String)extension.get("path");
-                    if (path != null && (path.indexOf("/extbrowser/plugins/chrome") != -1
-                            || path.indexOf("\\extbrowser\\plugins\\chrome") != -1))
+                    if (path != null && (path.indexOf("/extbrowser.chrome/plugins/chrome") != -1
+                            || path.indexOf("\\extbrowser.chrome\\plugins\\chrome") != -1))
                     {
                         return ExtensionManager.ExtensitionStatus.INSTALLED;
                     }

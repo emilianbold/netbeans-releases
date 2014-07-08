@@ -79,6 +79,7 @@ import org.netbeans.modules.git.ui.menu.DiffMenu;
 import org.netbeans.modules.git.ui.menu.PatchesMenu;
 import org.netbeans.modules.git.ui.menu.IgnoreMenu;
 import org.netbeans.modules.git.ui.menu.RemoteMenu;
+import org.netbeans.modules.git.ui.menu.RepositoryMenu;
 import org.netbeans.modules.git.ui.menu.RevertMenu;
 import org.netbeans.modules.git.ui.repository.RepositoryBrowserAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
@@ -167,7 +168,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(new RevertMenu(ActionDestination.MainMenu, null));
                 actions.add(null);
 
-                actions.add(SystemAction.get(RepositoryBrowserAction.class));
+                actions.add(new RepositoryMenu(ActionDestination.MainMenu, null));
             }
             Utils.setAcceleratorBindings(ACTIONS_PATH_PREFIX, actions.toArray(new Action[actions.size()]));
         } else {
@@ -198,8 +199,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(new RevertMenu(ActionDestination.PopupMenu, lkp));
                 actions.add(null);
                 
-                actions.add(SystemActionBridge.createAction(SystemAction.get(RepositoryBrowserAction.class),
-                        NbBundle.getMessage(RepositoryBrowserAction.class, "LBL_RepositoryBrowserAction_PopupName"), lkp)); //NOI18N
+                actions.add(new RepositoryMenu(ActionDestination.PopupMenu, lkp));
             }
         }
 
