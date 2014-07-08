@@ -156,8 +156,10 @@ public enum PHPTokenId implements TokenId {
     PHPDOC_COMMENT_END(null, "comment"), //NOI18N
     PHPDOC_COMMENT(null, "comment"), //NOI18N
     UNKNOWN_TOKEN(null, "error"), //NOI18N
-    PHP_HEREDOC_TAG(null, "heredocdelimiter"), //NOI18N
-    PHP_NOWDOC_TAG(null, "heredocdelimiter"), //NOI18N
+    PHP_HEREDOC_TAG_START(null, "heredocdelimiter"), //NOI18N
+    PHP_HEREDOC_TAG_END(null, "heredocdelimiter"), //NOI18N
+    PHP_NOWDOC_TAG_START(null, "heredocdelimiter"), //NOI18N
+    PHP_NOWDOC_TAG_END(null, "heredocdelimiter"), //NOI18N
     PHP_TOKEN(null, "php"), //NOI18N
     PHP__FUNCTION__(null, "constant"), //NOI18N
     PHP_CASTING(null, "keyword"), //NOI18N

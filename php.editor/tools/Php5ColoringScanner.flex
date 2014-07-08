@@ -959,7 +959,7 @@ PHP_TEXTUAL_OPERATOR="OR"|"AND"|"XOR"
         startString++;
         heredoc = yytext().substring(startString, hereocLength+startString);
         yybegin(ST_PHP_START_NOWDOC);
-        return PHPTokenId.PHP_NOWDOC_TAG;
+        return PHPTokenId.PHP_NOWDOC_TAG_START;
 }
 
 <ST_PHP_START_NOWDOC>{ANY_CHAR} {
@@ -978,7 +978,7 @@ PHP_TEXTUAL_OPERATOR="OR"|"AND"|"XOR"
         heredoc=null;
         hereocLength=0;
         yybegin(ST_PHP_IN_SCRIPTING);
-        return PHPTokenId.PHP_NOWDOC_TAG;
+        return PHPTokenId.PHP_NOWDOC_TAG_END;
     } else {
         return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
     }
@@ -1013,7 +1013,7 @@ PHP_TEXTUAL_OPERATOR="OR"|"AND"|"XOR"
         back++;
     }
     yypushback(back);
-    return PHPTokenId.PHP_NOWDOC_TAG;
+    return PHPTokenId.PHP_NOWDOC_TAG_END;
 }
 
 <ST_PHP_IN_SCRIPTING>b?"<<<"{TABS_AND_SPACES}({LABEL}|"\""{LABEL}"\""){NEWLINE} {
@@ -1031,7 +1031,7 @@ PHP_TEXTUAL_OPERATOR="OR"|"AND"|"XOR"
     }
     heredoc = yytext().substring(startString,hereocLength+startString);
     yybegin(ST_PHP_START_HEREDOC);
-    return PHPTokenId.PHP_HEREDOC_TAG;
+    return PHPTokenId.PHP_HEREDOC_TAG_START;
 }
 
 <ST_PHP_START_HEREDOC> {
@@ -1115,7 +1115,7 @@ PHP_TEXTUAL_OPERATOR="OR"|"AND"|"XOR"
         back++;
     }
     yypushback(back);
-    return PHPTokenId.PHP_HEREDOC_TAG;
+    return PHPTokenId.PHP_HEREDOC_TAG_END;
 }
 
 <ST_PHP_DOUBLE_QUOTES,ST_PHP_BACKQUOTE,ST_PHP_HEREDOC,ST_PHP_QUOTES_AFTER_VARIABLE>"{$" {

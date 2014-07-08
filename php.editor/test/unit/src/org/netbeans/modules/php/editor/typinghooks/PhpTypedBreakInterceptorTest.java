@@ -498,4 +498,77 @@ public class PhpTypedBreakInterceptorTest extends PhpTypinghooksTestBase {
                "*/", null);
     }
 
+    public void testIssue244259_01() throws Exception {
+        String original = "<?php\n$here = <<<HERE\n" +
+"<script type='text/javascript' language=\"JavaScript\" src=\"{$CMS_JS_URL}jquery/ui/i18n/ui.datepicker-$lang.js\"></script>\n" +
+"<script type='text/javascript' language=\"JavaScript\" src=\"{$CMS_JS_URL}jquery/ui/i18n/ui.timepicker-$lang.js\"></script>\n" +
+"^<script type='text/javascript' language=\"JavaScript\" src=\"{$CMS_JS_URL}jquery/jquery.spectrum.js\"></script>\n" +
+"<script type='text/javascript' language=\"JavaScript\" src=\"{$CMS_JS_URL}jquery/jquery.spectrum.js\"></script>\n" +
+"HERE;";
+        String expected = "<?php\n$here = <<<HERE\n" +
+"<script type='text/javascript' language=\"JavaScript\" src=\"{$CMS_JS_URL}jquery/ui/i18n/ui.datepicker-$lang.js\"></script>\n" +
+"<script type='text/javascript' language=\"JavaScript\" src=\"{$CMS_JS_URL}jquery/ui/i18n/ui.timepicker-$lang.js\"></script>\n" +
+"\n" +
+"   ^<script type='text/javascript' language=\"JavaScript\" src=\"{$CMS_JS_URL}jquery/jquery.spectrum.js\"></script>\n" +
+"<script type='text/javascript' language=\"JavaScript\" src=\"{$CMS_JS_URL}jquery/jquery.spectrum.js\"></script>\n" +
+"HERE;";
+        insertBreak(original, expected);
+    }
+
+    public void testIssue244259_02() throws Exception {
+        String original = "<?php\n$here = <<<HERE\n" +
+"<script type='text/javascript' language=\"JavaScript\" src=\"{$CMS_JS_URL}jquery/ui/i18n/ui.datepicker-$lang.js\"></script>\n" +
+"<script type='text/javascript' language=\"JavaScript\" src=\"{$CMS_JS_URL}jquery/ui/i18n/ui.timepicker-$lang.js\"></script>^\n" +
+"<script type='text/javascript' language=\"JavaScript\" src=\"{$CMS_JS_URL}jquery/jquery.spectrum.js\"></script>\n" +
+"<script type='text/javascript' language=\"JavaScript\" src=\"{$CMS_JS_URL}jquery/jquery.spectrum.js\"></script>\n" +
+"HERE;";
+        String expected = "<?php\n$here = <<<HERE\n" +
+"<script type='text/javascript' language=\"JavaScript\" src=\"{$CMS_JS_URL}jquery/ui/i18n/ui.datepicker-$lang.js\"></script>\n" +
+"<script type='text/javascript' language=\"JavaScript\" src=\"{$CMS_JS_URL}jquery/ui/i18n/ui.timepicker-$lang.js\"></script>\n" +
+"        ^\n" +
+"<script type='text/javascript' language=\"JavaScript\" src=\"{$CMS_JS_URL}jquery/jquery.spectrum.js\"></script>\n" +
+"<script type='text/javascript' language=\"JavaScript\" src=\"{$CMS_JS_URL}jquery/jquery.spectrum.js\"></script>\n" +
+"HERE;";
+        insertBreak(original, expected);
+    }
+
+    public void testIssue244259_03() throws Exception {
+        String original = "<?php\n$here = <<<HERE\n" +
+"foo {$CMS_JS_URL} bar\n" +
+"HERE;\n" +
+"$foo =  \"b $baz^ ar\";";
+        String expected = "<?php\n$here = <<<HERE\n" +
+"foo {$CMS_JS_URL} bar\n" +
+"HERE;\n" +
+"$foo =  \"b $baz\"\n" +
+"        . \"^ ar\";";
+        insertBreak(original, expected);
+    }
+
+    public void testIssue244259_04() throws Exception {
+        String original = "<?php\n$here = <<<HERE\n" +
+"foo {$CMS_JS_URL} bar\n" +
+"HERE;\n" +
+"$foo =  \"b $baz ^ar\";";
+        String expected = "<?php\n$here = <<<HERE\n" +
+"foo {$CMS_JS_URL} bar\n" +
+"HERE;\n" +
+"$foo =  \"b $baz \"\n" +
+"        . \"^ar\";";
+        insertBreak(original, expected);
+    }
+
+    public void testIssue244259_05() throws Exception {
+        String original = "<?php\n$here = <<<HERE\n" +
+"foo {$CMS_JS_URL} bar\n" +
+"HERE;\n" +
+"$foo = \"fdsf aks^dhzf lkasjdh\";";
+        String expected = "<?php\n$here = <<<HERE\n" +
+"foo {$CMS_JS_URL} bar\n" +
+"HERE;\n" +
+"$foo = \"fdsf aks\"\n" +
+"        . \"^dhzf lkasjdh\";";
+        insertBreak(original, expected);
+    }
+
 }
