@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.eclipse.persistence.config.PersistenceUnitProperties;
+import org.eclipse.persistence.jpa.PersistenceProvider;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.openide.util.NbBundle;
 
@@ -59,7 +60,7 @@ import org.openide.util.NbBundle;
 class EclipseLinkProvider extends Provider {
 
     public EclipseLinkProvider(String version){
-        super("org.eclipse.persistence.jpa.PersistenceProvider", version); //NOI18N
+        super(PersistenceProvider.class.getName(), version); //NOI18N
     }
 
     public EclipseLinkProvider(){
@@ -98,7 +99,7 @@ class EclipseLinkProvider extends Provider {
 
     @Override
     public String getAnnotationSubPackageProperty() {
-        return "eclipselink.canonicalmodel.subpackage";//NOI18N
+        return PersistenceUnitProperties.CANONICAL_MODEL_SUB_PACKAGE;//NOI18N
     }
     
     @Override
@@ -126,5 +127,5 @@ class EclipseLinkProvider extends Provider {
         return Collections.EMPTY_MAP;
     }
     
-    private final HashMap<String,String[]> properties = new HashMap<String,String[]>();
+    private final HashMap<String,String[]> properties = new HashMap<>();
 }
