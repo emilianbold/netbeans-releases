@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.cnd.callgraph.api.ui;
 
+import javax.swing.JPanel;
+import org.netbeans.modules.cnd.callgraph.api.Call;
+
 /**
  *
  * @author Alexander Simon
@@ -55,4 +58,6 @@ public interface CallGraphUI {
     boolean showGraph();
     
     Catalog getCatalog();
+    
+    JPanel getContextPanel(Call call);    
 }

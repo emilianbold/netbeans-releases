@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.navigation.callgraph;
 
+import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -49,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
+import org.netbeans.modules.cnd.callgraph.api.Call;
 import org.netbeans.modules.cnd.callgraph.api.CallModel;
 import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphModelFactory;
 import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphUI;
@@ -111,6 +113,12 @@ public class CallGraphModelFactoryImpl extends CallGraphModelFactory {
                 public Catalog getCatalog() {
                     return null;
                 }
+
+                @Override
+                public JPanel getContextPanel(Call call) {
+                    return null;
+                }
+                                
                 
                 
             };
