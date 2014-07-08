@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.j2me.project.ui.customizer;
 
+import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -51,15 +52,26 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JTable;
+import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.plaf.UIResource;
 import javax.swing.table.AbstractTableModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -77,6 +89,7 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
     
     private final JTable table;
     private final StorableTableModel tableModel;
+    private final Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> configs;
 
     private final J2MEProjectProperties uiProperties;
     private final ListSelectionListener listSelectionListener;
@@ -122,6 +135,11 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
             }
         };
         jCheckBoxOverride.addActionListener(actionListener);
+
+        configs = uiProperties.RUN_CONFIGS;
+        configChanged(uiProperties.activeConfig);
+        configCombo.setRenderer(new ConfigListCellRenderer());
+        configCombo.setModel(uiProperties.CONFIGS_MODEL);
         postInitComponents();
     }
     
@@ -133,19 +151,37 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         jRadioButtonSuite.setSelected(liblet == null || (liblet != null && liblet.equals(jRadioButtonSuite.getActionCommand())));
         jRadioButtonLIBlet.setSelected(liblet != null && liblet.equals(jRadioButtonLIBlet.getActionCommand()));        
         tableModel.initManifestModel(jRadioButtonLIBlet.isSelected());
-        
-        String[] propertyNames = uiProperties.ATTRIBUTES_PROPERTY_NAMES;
-        String values[] = new String[propertyNames.length];
-        for (int i = 0; i < values.length; i++) {
-            values[i] = uiProperties.getEvaluator().getProperty(propertyNames[i]);
-        }
-        tableModel.setDataDelegates(values);
+        tableModel.setDataDelegates(loadPropertyValues());
         table.setBackground(javax.swing.UIManager.getDefaults().getColor("Table.background")); //NOI18N
         tableModel.switchManifestModel(jRadioButtonLIBlet.isSelected());
         listSelectionListener.valueChanged(null);
         actionListener.actionPerformed(null);
     }
-    
+
+    private HashMap<String, String[]> loadPropertyValues() {
+        String[] propertyNames = uiProperties.ATTRIBUTES_PROPERTY_NAMES;
+
+        HashMap<String, String[]> values2configs = new HashMap<>();
+        for (Map.Entry<String, Map<String, String>> entry : uiProperties.RUN_CONFIGS.entrySet()) {
+            String configName = entry.getKey();
+            Map<String, String> configValues = entry.getValue();
+            if (configValues == null) {
+                continue;
+            }
+            String values[] = new String[propertyNames.length];
+            values2configs.put(configName, values);
+            for (int i = 0; i < values.length; i++) {
+                values[i] = configValues.get(propertyNames[i]);
+                if (i == 0 && configName != null && (values[i] == null || values[i].isEmpty())) {
+                    // same in this config as in default config
+                    // default values only for properties that are both in manifest and JAD, therefore i == 0
+                    values[i] = values2configs.get(null)[i];
+                }
+            }
+        }
+        return values2configs;
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -170,6 +206,13 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         jLabelExpl = new javax.swing.JLabel();
         jTextFieldURL = new javax.swing.JTextField();
         jCheckBoxOverride = new javax.swing.JCheckBox();
+        configPanel = new javax.swing.JPanel();
+        configLabel = new javax.swing.JLabel();
+        configCombo = new javax.swing.JComboBox();
+        configNew = new javax.swing.JButton();
+        configDel = new javax.swing.JButton();
+        jSeparator1 = new javax.swing.JSeparator();
+        jSeparator2 = new javax.swing.JSeparator();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -221,7 +264,7 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         add(jPanel1, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridheight = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
@@ -238,7 +281,7 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
@@ -253,7 +296,7 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
@@ -263,7 +306,7 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lTable, org.openide.util.NbBundle.getMessage(J2MEAttributesPanel.class, "J2MEAttributesPanel.lTable.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 8, 0, 4);
@@ -277,7 +320,7 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
@@ -316,13 +359,80 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 2.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 8, 8);
         add(jPanel2, gridBagConstraints);
+
+        configPanel.setLayout(new java.awt.GridBagLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(configLabel, org.openide.util.NbBundle.getMessage(J2MEAttributesPanel.class, "J2MEAttributesPanel.configLabel.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
+        configPanel.add(configLabel, gridBagConstraints);
+
+        configCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "<default>" }));
+        configCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configComboActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 6, 2, 0);
+        configPanel.add(configCombo, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(configNew, org.openide.util.NbBundle.getMessage(J2MEAttributesPanel.class, "J2MEAttributesPanel.configNew.text")); // NOI18N
+        configNew.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configNewActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 6, 2, 0);
+        configPanel.add(configNew, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(configDel, org.openide.util.NbBundle.getMessage(J2MEAttributesPanel.class, "J2MEAttributesPanel.configDel.text")); // NOI18N
+        configDel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configDelActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 6, 2, 0);
+        configPanel.add(configDel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.ipadx = 120;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 8, 0, 8);
+        add(configPanel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        add(jSeparator1, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        add(jSeparator2, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void bRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bRemoveActionPerformed
@@ -403,12 +513,106 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         dialog.setVisible(true);
     }//GEN-LAST:event_bAddActionPerformed
 
+    private void configComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configComboActionPerformed
+        String config = (String) configCombo.getSelectedItem();
+        if (config.length() == 0) {
+            config = null;
+        }
+        configChanged(config);
+        uiProperties.activeConfig = config;
+    }//GEN-LAST:event_configComboActionPerformed
+
+    private void configNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configNewActionPerformed
+        createNewConfiguration();
+    }//GEN-LAST:event_configNewActionPerformed
+
+    private void configDelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configDelActionPerformed
+        String config = (String) configCombo.getSelectedItem();
+        assert config != null;
+        configs.put(config, null);
+        configChanged(null);
+        uiProperties.activeConfig = null;
+    }//GEN-LAST:event_configDelActionPerformed
+
+    private void createNewConfiguration() {
+        NotifyDescriptor.InputLine d = new NotifyDescriptor.InputLine(
+                NbBundle.getMessage(J2MEAttributesPanel.class, "J2MERunPanel.input.prompt"), // NOI18N
+                NbBundle.getMessage(J2MEAttributesPanel.class, "J2MERunPanel.input.title")); // NOI18N
+        if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
+            return;
+        }
+        String name = d.getInputText();
+        String config = name.replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
+        if (config.trim().length() == 0) {
+            //#143764
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(J2MEAttributesPanel.class, "J2MERunPanel.input.empty", config), // NOI18N
+                    NotifyDescriptor.WARNING_MESSAGE));
+            return;
+
+        }
+        if (configs.get(config) != null) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(J2MEAttributesPanel.class, "J2MERunPanel.input.duplicate", config), // NOI18N
+                    NotifyDescriptor.WARNING_MESSAGE));
+            return;
+        }
+        Map<String, String> m = new HashMap<>();
+        if (!name.equals(config)) {
+            m.put("$label", name); // NOI18N
+        }
+        configs.put(config, m);
+        configChanged(config);
+        uiProperties.activeConfig = config;
+    }
+
+    private void configChanged(String activeConfig) {
+        uiProperties.CONFIGS_MODEL = new DefaultComboBoxModel();
+        uiProperties.CONFIGS_MODEL.addElement("");
+        SortedSet<String> alphaConfigs = new TreeSet<>(new Comparator<String>() {
+            Collator coll = Collator.getInstance();
+
+            @Override
+            public int compare(String s1, String s2) {
+                return coll.compare(label(s1), label(s2));
+            }
+
+            private String label(String c) {
+                Map<String, String> m = configs.get(c);
+                String label = m.get("$label"); // NOI18N
+                return label != null ? label : c;
+            }
+        });
+        for (Map.Entry<String, Map<String, String>> entry : configs.entrySet()) {
+            String config = entry.getKey();
+            if (config != null && entry.getValue() != null) {
+                alphaConfigs.add(config);
+            }
+        }
+        for (String c : alphaConfigs) {
+            uiProperties.CONFIGS_MODEL.addElement(c);
+        }
+        configCombo.setModel(uiProperties.CONFIGS_MODEL);
+        configCombo.setSelectedItem(activeConfig != null ? activeConfig : "");
+        Map<String, String> m = configs.get(activeConfig);
+        if (m != null) {
+            uiProperties.storeAttributesToRunConfigs();
+            tableModel.CONFIG = activeConfig;
+            tableModel.setDataDelegates(loadPropertyValues());
+        }
+        configDel.setEnabled(activeConfig != null);
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bAdd;
     private javax.swing.JButton bEdit;
     private javax.swing.JButton bRemove;
     private javax.swing.ButtonGroup buttonGroupModel;
+    private javax.swing.JComboBox configCombo;
+    private javax.swing.JButton configDel;
+    private javax.swing.JLabel configLabel;
+    private javax.swing.JButton configNew;
+    private javax.swing.JPanel configPanel;
     private javax.swing.JCheckBox jCheckBoxOverride;
     private javax.swing.JLabel jLabelExpl;
     private javax.swing.JLabel jLabelModel;
@@ -416,13 +620,16 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JRadioButton jRadioButtonLIBlet;
     private javax.swing.JRadioButton jRadioButtonSuite;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTextField jTextFieldURL;
     private javax.swing.JLabel lTable;
     private javax.swing.JScrollPane scrollPane;
     // End of variables declaration//GEN-END:variables
 
     static class StorableTableModel extends AbstractTableModel {
-        private HashMap<String,String> othersMap, jadMap, manifestMap;
+        public String CONFIG;
+        private final HashMap<String, HashMap<String,String>> othersMap, jadMap, manifestMap;
         final private ArrayList<String> items = new ArrayList<>();
         private boolean isLIBlet;
 
@@ -510,6 +717,7 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
             this.othersMap = new HashMap<>();
             this.jadMap = new HashMap<>();
             this.manifestMap = new HashMap<>();
+            CONFIG = uiProperties.activeConfig;
         }
 
         public void initManifestModel(boolean isLIBlet) {
@@ -556,19 +764,37 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
             uiProperties.LIBLET_PACKAGING = isLIBlet;
             final String FROM = toLIBlet ? "MIDlet-" : "LIBlet-"; //NOI18N
             final String TO = toLIBlet ? "LIBlet-" : "MIDlet-"; //NOI18N
-            for (int i = 0; i< items.size(); i++) {
+            for (int i = 0; i < items.size(); i++) {
                 String key = items.get(i);
                 if (key.startsWith(FROM)) {
                     String newKey = TO + key.substring(FROM.length());
                     if (contains(getMandatory(), newKey) || contains(getNonMandatory(), newKey)) {
                         items.set(i, newKey);
-                        String v = othersMap.remove(key);
-                        if (v != null) othersMap.put(newKey, v);
-                        v = jadMap.remove(key);
-                        if (v != null) jadMap.put(newKey, v);
-                        v = manifestMap.remove(key);
-                        if (v != null) manifestMap.put(newKey, v);
                         fireTableRowsUpdated(i, i);
+                    }
+                }
+            }
+            for (String configName : manifestMap.keySet()) {
+                Set<String> allKeys = new HashSet<>(manifestMap.get(configName).keySet());
+                allKeys.addAll(othersMap.get(configName).keySet());
+                allKeys.addAll(jadMap.get(configName).keySet());
+                for (String key : allKeys) {
+                    if (key.startsWith(FROM)) {
+                        String newKey = TO + key.substring(FROM.length());
+                        if (contains(getMandatory(), newKey) || contains(getNonMandatory(), newKey)) {
+                            String v = othersMap.get(configName).remove(key);
+                            if (v != null) {
+                                othersMap.get(configName).put(newKey, v);
+                            }
+                            v = jadMap.get(configName).remove(key);
+                            if (v != null) {
+                                jadMap.get(configName).put(newKey, v);
+                            }
+                            v = manifestMap.get(configName).remove(key);
+                            if (v != null) {
+                                manifestMap.get(configName).put(newKey, v);
+                            }
+                        }
                     }
                 }
             }
@@ -588,19 +814,29 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
             }
         }
         
-        public synchronized Object[] getDataDelegates() {
+        public synchronized HashMap[] getDataDelegates() {
             if (!dataDelegatesWereSet) {
                 String[] propertyNames = uiProperties.ATTRIBUTES_PROPERTY_NAMES;
-                String values[] = new String[propertyNames.length];
-                for (int i = 0; i < values.length; i++) {
-                    values[i] = uiProperties.getEvaluator().getProperty(propertyNames[i]);
+                HashMap<String, String[]> values2configs = new HashMap<>();
+                for (Map.Entry<String, Map<String, String>> entry : uiProperties.RUN_CONFIGS.entrySet()) {
+                    String configName = entry.getKey();
+                    Map<String, String> configValues = entry.getValue();
+                    String values[] = new String[propertyNames.length];
+                    values2configs.put(configName, values);
+                    for (int i = 0; i < values.length; i++) {
+                        values[i] = configValues.get(propertyNames[i]);
+                        if (configName != null && (values[i] == null || values[i].isEmpty())) {
+                            // same in this config as in default config
+                            values[i] = values2configs.get(null)[i];
+                        }
+                    }
                 }
-                setDataDelegates(values);
+                setDataDelegates(values2configs);
             }
             updateMapsFromItems();
-            return new Object[] {othersMap, jadMap, manifestMap};
+            return new HashMap[]{othersMap, jadMap, manifestMap};
         }
-        
+
         @Override
         public Object getValueAt(final int rowIndex, final int columnIndex) {
             assert rowIndex < items.size();
@@ -623,13 +859,16 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
                 case 1:
                     return items.get(rowIndex);
                 case 2: {
-                    String value = othersMap.get(items.get(rowIndex));
-                    if (value == null)
-                        value = jadMap.get(items.get(rowIndex));
-                    if (value == null)
-                        value = manifestMap.get(items.get(rowIndex));
-                    if (value == null)
+                    String value = othersMap.get(CONFIG).get(items.get(rowIndex));
+                    if (value == null) {
+                        value = jadMap.get(CONFIG).get(items.get(rowIndex));
+                    }
+                    if (value == null) {
+                        value = manifestMap.get(CONFIG).get(items.get(rowIndex));
+                    }
+                    if (value == null) {
                         value = ""; //NOI18N
+                    }
                     return value;
                 }
                 default:
@@ -637,11 +876,16 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
             }
         }
         
-        public synchronized void setDataDelegates(final String data[]) {
-            assert data != null;
-            othersMap = data[0] == null ? new HashMap<String,String>() : (HashMap<String,String>) uiProperties.decode(data[0]);
-            jadMap = data[1] == null ? new HashMap<String,String>() : (HashMap<String,String>) uiProperties.decode(data[1]);
-            manifestMap = data[2] == null ? new HashMap<String,String>() : (HashMap<String,String>) uiProperties.decode(data[2]);
+        public synchronized void setDataDelegates(final HashMap<String, String[]> values2configs) {
+            assert values2configs != null;
+            for (Map.Entry<String, String[]> entry : values2configs.entrySet()) {
+                String configName = entry.getKey();
+                String[] data = entry.getValue();
+                othersMap.put(configName, data[0] == null ? new HashMap<String, String>() : (HashMap<String, String>) uiProperties.decode(data[0]));
+                jadMap.put(configName, data[1] == null ? new HashMap<String, String>() : (HashMap<String, String>) uiProperties.decode(data[1]));
+                manifestMap.put(configName, data[2] == null ? new HashMap<String, String>() : (HashMap<String, String>) uiProperties.decode(data[2]));
+            }
+
             updateItemsFromMaps();
             fireTableDataChanged();
             dataDelegatesWereSet = true;
@@ -653,9 +897,9 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
                 switchManifestModel(true);
             }
             items.clear();
-            final ArrayList<String> keys = new ArrayList<>(othersMap.keySet());
-            keys.addAll(jadMap.keySet());
-            keys.addAll(manifestMap.keySet());
+            final ArrayList<String> keys = new ArrayList<>(othersMap.get(CONFIG).keySet());
+            keys.addAll(jadMap.get(CONFIG).keySet());
+            keys.addAll(manifestMap.get(CONFIG).keySet());
             for (String mandatory : getMandatory()) {
                 items.add(mandatory);
                 keys.remove(mandatory);
@@ -671,22 +915,22 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
             		res3 = new HashMap<>();
             for (int a = 0; a < items.size(); a ++) {
                 final String key = items.get(a);
-                String value = manifestMap.get(key);
+                String value = manifestMap.get(CONFIG).get(key);
                 if (value != null) {
                     res3.put(key, value);
                 } else {
-                    value = jadMap.get(key);
+                    value = jadMap.get(CONFIG).get(key);
                     if (value != null) {
                         res2.put(key, value);
                     } else {
-                        value = othersMap.get(key);
+                        value = othersMap.get(CONFIG).get(key);
                         res1.put(key, value == null ? "" : value); //NOI18N
                     }
                 }
             }
-            othersMap = res1;
-            jadMap = res2;
-            manifestMap = res3;
+            othersMap.put(CONFIG, res1);
+            jadMap.put(CONFIG, res2);
+            manifestMap.put(CONFIG, res3);
         }
         
         private static boolean contains(final String[] array, final String item) {
@@ -740,15 +984,20 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         }
         
         public int addRow(final String key, final String value, final Boolean placement) {
-            if (key == null || items.contains(key))
+            if (key == null || items.contains(key)) {
                 return -1;
+            }
             final int row = items.size();
-            othersMap.remove(key);
-            jadMap.remove(key);
-            manifestMap.remove(key);
-            if (placement == null) othersMap.put(key, value);
-            else if (placement.booleanValue()) jadMap.put(key, value);
-            else manifestMap.put(key, value);
+            othersMap.get(CONFIG).remove(key);
+            jadMap.get(CONFIG).remove(key);
+            manifestMap.get(CONFIG).remove(key);
+            if (placement == null) {
+                othersMap.get(CONFIG).put(key, value);
+            } else if (placement) {
+                jadMap.get(CONFIG).put(key, value);
+            } else {
+                manifestMap.get(CONFIG).put(key, value);
+            }
             items.add(key);
             fireTableRowsInserted(row, row);
             return row;
@@ -756,14 +1005,19 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         
         public void editRow(final String key, final String value, final Boolean placement) {
             final int row = items.indexOf(key);
-            if (row < 0)
+            if (row < 0) {
                 return;
-            othersMap.remove(key);
-            jadMap.remove(key);
-            manifestMap.remove(key);
-            if (placement == null) othersMap.put(key, value);
-            else if (placement.booleanValue()) jadMap.put(key, value);
-            else manifestMap.put(key, value);
+            }
+            othersMap.get(CONFIG).remove(key);
+            jadMap.get(CONFIG).remove(key);
+            manifestMap.get(CONFIG).remove(key);
+            if (placement == null) {
+                othersMap.get(CONFIG).put(key, value);
+            } else if (placement) {
+                jadMap.get(CONFIG).put(key, value);
+            } else {
+                manifestMap.get(CONFIG).put(key, value);
+            }
             fireTableRowsUpdated(row, row);
         }
         
@@ -828,4 +1082,49 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         }
     }
 
+    private final class ConfigListCellRenderer extends JLabel implements ListCellRenderer, UIResource {
+
+        public ConfigListCellRenderer() {
+            setOpaque(true);
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            // #93658: GTK needs name to render cell renderer "natively"
+            setName("ComboBox.listRenderer"); // NOI18N
+
+            String config = (String) value;
+            String label;
+            if (config == null) {
+                // uninitialized?
+                label = null;
+            } else if (config.length() > 0) {
+                Map<String, String> m = configs.get(config);
+                label = m != null ? m.get("$label") : /* temporary? */ null; // NOI18N
+                if (label == null) {
+                    label = config;
+                }
+            } else {
+                label = NbBundle.getBundle("org.netbeans.modules.java.j2seproject.Bundle").getString("J2SEConfigurationProvider.default.label"); // NOI18N
+            }
+            setText(label);
+
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+
+            return this;
+        }
+
+        // #93658: GTK needs name to render cell renderer "natively"
+        @Override
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name;  // NOI18N
+        }
+    }
 }
