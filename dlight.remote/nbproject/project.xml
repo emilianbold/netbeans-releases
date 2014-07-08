@@ -97,6 +97,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>com.oracle.tools.ide.binary.dependencies</friend>
+                <friend>com.oracle.tools.ide.binary.dependencies.cm</friend>
                 <friend>com.oracle.tools.ide.projectless.debug.impl</friend>
                 <friend>com.oracle.tools.ide.projectless.debug.impl.dbx</friend>
                 <friend>com.oracle.tools.ide.projectless.debug.impl.gdb</friend>
