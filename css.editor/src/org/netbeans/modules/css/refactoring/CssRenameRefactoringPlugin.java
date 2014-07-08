@@ -258,7 +258,8 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
             refactorFolder(modificationResult, folderContext, index);
             //add folder rename element implementation, there doesn't seem to a default one
             //like for file rename
-            refactoringElements.add(refactoring, new RenameFolder(folderContext.getFileObject()));
+            // Disabled RenameFolder as it collides with FileRenamePlugin see #187635
+//            refactoringElements.add(refactoring, new RenameFolder(folderContext.getFileObject()));
         }
 
         //commit the transaction and add the differences to the result
