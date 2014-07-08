@@ -58,14 +58,14 @@ import org.netbeans.spi.debugger.ui.Controller;
  * @author Vladimir Voskresensky
  */
 public final class GdbAttachType extends AttachType {
-    private static final boolean isOssTooolchainOnly = Boolean.valueOf(System.getProperty("oss.toolchain.only", "false"));
-    private static final boolean forceGDB = Boolean.valueOf(System.getProperty("oss.force.gdb", "false"));
+    private static final boolean isOssTooolchainOnly = Boolean.valueOf(System.getProperty("oss.toolchain.only", "false")); // NOI18N
+    private static final boolean forceGDB = Boolean.valueOf(System.getProperty("oss.force.gdb", "false")); // NOI18N
     
     private static GdbAttachType INSTANCE = null;
     
     private Reference<AttachPanel> customizerRef = new WeakReference<AttachPanel>(null);
     
-    @AttachType.Registration(displayName = "")
+    @AttachType.Registration(displayName = "") // NOI18N
     public static AttachType get() {
         if (INSTANCE == null)  {
             INSTANCE = new GdbAttachType();
@@ -97,7 +97,7 @@ public final class GdbAttachType extends AttachType {
     @Override
     public String getTypeDisplayName() {
         if (isEnabled()) {
-            return Catalog.get("GdbDebuggerEngine");
+            return Catalog.get("GdbDebuggerEngine"); // NOI18N
         }
         
         return null;
