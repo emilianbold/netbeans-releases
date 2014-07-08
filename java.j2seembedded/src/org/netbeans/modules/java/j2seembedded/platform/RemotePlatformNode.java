@@ -263,6 +263,27 @@ final class RemotePlatformNode extends AbstractNode {
         };
         setPlatform.put(property);
 
+        property = new PropertySupport.ReadWrite<String>(NbBundle.getMessage(RemotePlatformNode.class, "LBL_ExecDecorator"), //NOI18N
+                String.class,
+                NbBundle.getMessage(RemotePlatformNode.class, "LBL_ExecDecorator"), //NOI18N
+                NbBundle.getMessage(RemotePlatformNode.class, "LBL_ExecDecoratorDesc")) { //NOI18N
+            @Override
+            public String getValue() throws IllegalAccessException, InvocationTargetException {
+                final String execDecorator = getPlatform().getExecDecorator();
+                return execDecorator != null ?
+                    execDecorator :
+                    ""; //NOI18N
+            }
+            @Override
+            public void setValue(String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                if (val.isEmpty()) {
+                    val = null;
+                }
+                getPlatform().setExecDecorator(val);
+            }
+        };
+        setPlatform.put(property);
+
         property = new PropertySupport.ReadWrite<String>(NbBundle.getMessage(RemotePlatformNode.class, "LBL_Workdir"), //NOI18N
                 String.class,
                 NbBundle.getMessage(RemotePlatformNode.class, "LBL_Workdir"), //NOI18N
@@ -568,6 +589,7 @@ final class RemotePlatformNode extends AbstractNode {
                                 final RemotePlatform rp = getPlatform();
                                 RemotePlatformProbe.verifyPlatform(
                                     rp.getInstallFolder().toString(),
+                                    rp.getExecDecorator(),
                                     rp.getWorkFolder().toString(),
                                     rp.getConnectionMethod(),
                                     null);
