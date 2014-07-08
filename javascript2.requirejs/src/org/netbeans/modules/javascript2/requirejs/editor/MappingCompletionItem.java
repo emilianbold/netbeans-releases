@@ -175,16 +175,20 @@ public class MappingCompletionItem implements CompletionProposal {
         
         @Override
         @NbBundle.Messages({"mappingTo=Mapped to", 
-            "mappedFile=file", "mappedFolder=folder"})
+            "mappedFile=file", "mappedFolder=folder", "mappedToVirtual=Mapped to non existing folder / file."})
         public String getDocumentation() {
             StringBuilder sb = new StringBuilder();
             sb.append(Bundle.mappingTo()).append(" "); //NOI18N
-            if (toFile.isFolder()) {
-                sb.append(Bundle.mappedFolder());
+            if (toFile != null) {
+                if (toFile.isFolder()) {
+                    sb.append(Bundle.mappedFolder());
+                } else {
+                    sb.append(Bundle.mappedFile());
+                }
+                sb.append(FSCompletionUtils.writeFilePathForDocWindow(toFile));
             } else {
-                sb.append(Bundle.mappedFile());
+                return Bundle.mappedToVirtual();
             }
-            sb.append(FSCompletionUtils.writeFilePathForDocWindow(toFile));
             return sb.toString();
         }
     }
