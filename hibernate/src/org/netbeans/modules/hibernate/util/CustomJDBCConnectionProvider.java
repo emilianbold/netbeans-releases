@@ -43,11 +43,15 @@ package org.netbeans.modules.hibernate.util;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.hibernate.HibernateException;
-import org.hibernate.connection.ConnectionProvider;
+import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
+import org.hibernate.service.UnknownUnwrapTypeException;
+import org.hibernate.service.spi.Stoppable;
+//import org.hibernate.connection.ConnectionProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
@@ -57,23 +61,30 @@ import org.openide.util.Exceptions;
  * 
  * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
-public class CustomJDBCConnectionProvider implements ConnectionProvider {
+public class CustomJDBCConnectionProvider implements ConnectionProvider, org.hibernate.service.spi.Configurable, Stoppable {
 
     private Connection connection = null;
     private Properties connectionProperties = null;
     
-    private Logger logger = Logger.getLogger(CustomJDBCConnectionProvider.class.getName());
+    private static final Logger logger = Logger.getLogger(CustomJDBCConnectionProvider.class.getName());
+    
+    public CustomJDBCConnectionProvider() {
+        
+    }
+    
 
-    public void configure(Properties properties) throws HibernateException {
-        this.connectionProperties = properties;
+    @Override
+    public void configure(Map map) {
+        this.connectionProperties = new Properties();
+        connectionProperties.putAll(map);
     }
 
+    @Override
     public Connection getConnection() throws SQLException {
         if (connection != null && (!connection.isClosed())) {
             logger.info("Connection already established.. returing");
             return connection;
         } else {
-
             try {
                 String driverClassName = connectionProperties.getProperty("hibernate.connection.driver_class"); //NOI18N
 
@@ -147,6 +158,7 @@ public class CustomJDBCConnectionProvider implements ConnectionProvider {
         return connection;
     }
 
+    @Override
     public void closeConnection(Connection arg0) throws SQLException {
         if (connection != null) {
             connection.close();
@@ -165,7 +177,36 @@ public class CustomJDBCConnectionProvider implements ConnectionProvider {
         }
     }
 
+    @Override
     public boolean supportsAggressiveRelease() {
         return true;
+    }
+
+    @Override
+    public boolean isUnwrappableAs(Class unwrapType) {
+        return ConnectionProvider.class.equals(unwrapType) ||
+                CustomJDBCConnectionProvider.class.isAssignableFrom(unwrapType);
+   }
+
+    @Override
+    public <T> T unwrap(Class<T> unwrapType) {
+        if (ConnectionProvider.class.equals(unwrapType) ||
+                CustomJDBCConnectionProvider.class.isAssignableFrom(unwrapType)) {
+            return (T) this;
+        } else {
+            throw new UnknownUnwrapTypeException( unwrapType );
+        }
+  }
+
+    @Override
+    public void stop() {
+        if(connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException ex) {
+                
+            }
+            connection = null;
+        }
     }
 }

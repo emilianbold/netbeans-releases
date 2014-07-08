@@ -93,7 +93,6 @@ import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Pair;
@@ -125,47 +124,38 @@ public final class QuerySupport {
      * 
      * @since 1.6
      */
+    @NonNull
     public static Collection<FileObject> findRoots(
             FileObject f,
             Collection<String> sourcePathIds,
             Collection<String> libraryPathIds,
             Collection<String> binaryLibraryPathIds)
     {
-        Collection<FileObject> roots = new HashSet<FileObject>();
-
-        if (sourcePathIds == null) {
-            sourcePathIds = PathRecognizerRegistry.getDefault().getSourceIds();
-        }
-
-        if (libraryPathIds == null) {
-            libraryPathIds = PathRecognizerRegistry.getDefault().getLibraryIds();
-        }
-
-        if (binaryLibraryPathIds == null) {
-            binaryLibraryPathIds = PathRecognizerRegistry.getDefault().getBinaryLibraryIds();
-        }
-
-        collectClasspathRoots(f, sourcePathIds, false, roots);
-        collectClasspathRoots(f, libraryPathIds, false, roots);
-        collectClasspathRoots(f, binaryLibraryPathIds, true, roots);
-
+        final Set<FileObject> roots = collectClasspathRoots(
+            null,
+            sourcePathIds,
+            libraryPathIds,
+            binaryLibraryPathIds);
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Roots for file " + f //NOI18N
-                    + ", sourcePathIds=" + sourcePathIds //NOI18N
-                    + ", libraryPathIds=" + libraryPathIds //NOI18N
-                    + ", binaryPathIds=" + binaryLibraryPathIds //NOI18N
-                    + ": "); //NOI18N
+            LOG.log(
+                Level.FINE,
+                "Roots for file {0}, sourcePathIds={1}, libraryPathIds={2}, binaryPathIds={3}: ",    //NOI18N
+                new Object[]{
+                    f,
+                    sourcePathIds,
+                    libraryPathIds,
+                    binaryLibraryPathIds
+                });
             for(FileObject root : roots) {
-                try {
-                    LOG.fine("  " + root.getURL()); //NOI18N
-                } catch (FileStateInvalidException ex) {
-                    //ignore
-                }
+                LOG.log(
+                    Level.FINE,
+                    "  {0}",    //NOI18N
+                    root.toURL());
             }
             LOG.fine("----"); //NOI18N
         }
 
-        return roots != null ? roots : Collections.<FileObject>emptySet();
+        return roots;
     }
 
     /**
@@ -249,57 +239,105 @@ public final class QuerySupport {
      * 
      * @since 1.6
      */
+    @NonNull
     public static Collection<FileObject> findRoots(
-            Project project,
-            Collection<String> sourcePathIds,
-            Collection<String> libraryPathIds,
-            Collection<String> binaryLibraryPathIds)
+            @NullAllowed final Project project,
+            @NullAllowed Collection<String> sourcePathIds,
+            @NullAllowed Collection<String> libraryPathIds,
+            @NullAllowed Collection<String> binaryLibraryPathIds)
     {
-        Set<FileObject> roots = new HashSet<FileObject>();
-
-        if (sourcePathIds == null) {
-            sourcePathIds = PathRecognizerRegistry.getDefault().getSourceIds();
-        }
-
-        if (libraryPathIds == null) {
-            libraryPathIds = PathRecognizerRegistry.getDefault().getLibraryIds();
-        }
-
-        if (binaryLibraryPathIds == null) {
-            binaryLibraryPathIds = PathRecognizerRegistry.getDefault().getBinaryLibraryIds();
-        }
-
-        collectClasspathRoots(null, sourcePathIds, false, roots);
-        collectClasspathRoots(null, libraryPathIds, false, roots);
-        collectClasspathRoots(null, binaryLibraryPathIds, true, roots);
+        Collection<FileObject> roots = collectClasspathRoots(
+            null,
+            sourcePathIds,
+            libraryPathIds,
+            binaryLibraryPathIds);
 
         if (project != null) {
-            Set<FileObject> rootsInProject = new HashSet<FileObject>();
-            for(FileObject root : roots) {
-                if (FileOwnerQuery.getOwner(root) == project) {
-                    rootsInProject.add(root);
-                }
+            roots = reduceRootsByProjects(roots, Collections.singleton(project)).get(project);
+            if (roots == null) {
+                roots = Collections.emptySet();
             }
-            roots = rootsInProject;
         }
 
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Roots for project " + project //NOI18N
-                    + ", sourcePathIds=" + sourcePathIds //NOI18N
-                    + ", libraryPathIds=" + libraryPathIds //NOI18N
-                    + ", binaryPathIds=" + binaryLibraryPathIds //NOI18N
-                    + ": "); //NOI18N
+            LOG.log(
+                Level.FINE,
+                "Roots for project {0}, sourcePathIds={1}, libraryPathIds={2}, binaryPathIds={3}: ",    //NOI18N
+                new Object[]{
+                    project,
+                    sourcePathIds,
+                    libraryPathIds,
+                    binaryLibraryPathIds
+                });
             for(FileObject root : roots) {
-                try {
-                    LOG.fine("  " + root.getURL()); //NOI18N
-                } catch (FileStateInvalidException ex) {
-                    //ignore
-                }
+                LOG.log(
+                    Level.FINE,
+                    "  {0}",    //NOI18N
+                    root.toURL());
             }
             LOG.fine("----"); //NOI18N
         }
 
         return roots;
+    }
+
+    /**
+     * Gets classpath roots relevant for a projects.
+     * This method tries to find classpaths with <code>sourcePathIds</code>, <code>libraryPathIds</code> and
+     * <code>binaryPathIds</code> supplied by the <code>projects</code>.
+     *
+     * <p>The roots collected from <code>binaryLibraryPathIds</code> will be translated
+     * by the <code>SourceForBinaryQuery</code> in order to find relevant sources root.
+     * The roots collected from <code>libraryPathIds</code> are expected to be
+     * libraries in their sources form (ie. no translation).
+     *
+     * @param projects The projects to find the roots for.
+     * @param sourcePathIds The IDs of source classpath to look at.
+     * @param libraryPathIds The IDs of library classpath to look at.
+     * @param binaryLibraryPathIds The IDs of binary library classpath to look at.
+     * @return The roots for a given projects. It may be empty, but never <code>null</code>.
+     *
+     * @since 1.76
+     */
+    @NonNull
+    public static Map<Project,Collection<FileObject>> findRoots(
+        @NonNull final Collection<? extends Project> projects,
+        @NullAllowed Collection<String> sourcePathIds,
+        @NullAllowed Collection<String> libraryPathIds,
+        @NullAllowed Collection<String> binaryLibraryPathIds) {
+        Parameters.notNull("projects", projects);   //NOI18N
+        final Set<FileObject> roots = collectClasspathRoots(
+            null,
+            sourcePathIds,
+            libraryPathIds,
+            binaryLibraryPathIds);
+        final Map<Project,Collection<FileObject>> rbp = reduceRootsByProjects(roots, projects);
+
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(
+                Level.FINE,
+                "Roots for projects {0}, sourcePathIds={1}, libraryPathIds={2}, binaryPathIds={3}: ",   //NOI18N
+                new Object[]{
+                    projects,
+                    sourcePathIds,
+                    libraryPathIds,
+                    binaryLibraryPathIds
+                });
+            for (Map.Entry<Project,Collection<FileObject>> e : rbp.entrySet()) {
+                LOG.log(
+                    Level.FINE,
+                    "\tProject: {0}:",   //NOI18N
+                    e.getKey());
+                for(FileObject root : e.getValue()) {
+                    LOG.log(
+                        Level.FINE,
+                        "\t\t{0}",   //NOI18N
+                        root.toURL());
+                }
+            }
+            LOG.fine("----"); //NOI18N
+        }
+        return rbp;
     }
 
     public static QuerySupport forRoots (final String indexerName, final int indexerVersion, final URL... roots) throws IOException {
@@ -651,6 +689,30 @@ public final class QuerySupport {
         }
     }
 
+    @NonNull
+    private static Set<FileObject> collectClasspathRoots(
+        @NullAllowed final FileObject file,
+        @NullAllowed Collection<String> sourcePathIds,
+        @NullAllowed Collection<String> libraryPathIds,
+        @NullAllowed Collection<String> binaryLibraryPathIds) {
+        final Set<FileObject> roots = new HashSet<FileObject>();
+        if (sourcePathIds == null) {
+            sourcePathIds = PathRecognizerRegistry.getDefault().getSourceIds();
+        }
+
+        if (libraryPathIds == null) {
+            libraryPathIds = PathRecognizerRegistry.getDefault().getLibraryIds();
+        }
+
+        if (binaryLibraryPathIds == null) {
+            binaryLibraryPathIds = PathRecognizerRegistry.getDefault().getBinaryLibraryIds();
+        }
+        collectClasspathRoots(file, sourcePathIds, false, roots);
+        collectClasspathRoots(file, libraryPathIds, false, roots);
+        collectClasspathRoots(file, binaryLibraryPathIds, true, roots);
+        return roots;
+    }
+
     private static void collectClasspathRoots(FileObject file, Collection<String> pathIds, boolean binaryPaths, Collection<FileObject> roots) {
         for(String id : pathIds) {
             Collection<FileObject> classpathRoots = getClasspathRoots(file, id);
@@ -785,6 +847,25 @@ public final class QuerySupport {
             }
         }
         return result;
+    }
+
+    @NonNull
+    private static Map<Project,Collection<FileObject>> reduceRootsByProjects(
+        @NonNull Collection<? extends FileObject> roots,
+        @NonNull Collection<? extends Project> projects) {
+         final Map<Project,Collection<FileObject>> rbp = new HashMap<>();
+         for (FileObject root : roots) {
+             final Project p = FileOwnerQuery.getOwner(root);
+             if (p != null && projects.contains(p)) {
+                 Collection<FileObject> pr = rbp.get(p);
+                 if (pr == null) {
+                     pr = new ArrayList<>();
+                     rbp.put(p, pr);
+                 }
+                 pr.add(root);
+             }
+         }
+         return rbp;
     }
 
     /* test */ static final class IndexerQuery {

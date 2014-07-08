@@ -42,9 +42,12 @@
 
 package org.netbeans.modules.php.editor.parser;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.php.editor.model.Model;
@@ -75,7 +78,7 @@ public class PHPParseResult extends ParserResult {
 
     @Override
     public List<? extends Error> getDiagnostics() {
-        return errors;
+        return new ArrayList<>(errors);
     }
 
     /**
@@ -111,6 +114,17 @@ public class PHPParseResult extends ParserResult {
 
     public void setErrors(List<Error> errors) {
         this.errors = errors;
+    }
+
+    public OffsetRange getErrorRange() {
+        OffsetRange result = OffsetRange.NONE;
+        for (org.netbeans.modules.csl.api.Error error : getDiagnostics()) {
+            if (error.getSeverity() == Severity.ERROR) {
+                result = new OffsetRange(error.getStartPosition(), error.getEndPosition());
+                break;
+            }
+        }
+        return result;
     }
 
 }

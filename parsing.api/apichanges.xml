@@ -110,6 +110,18 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="QuerySupport.per-project-roots">
+          <api name="ParsingAPI"/>
+          <summary>Added <code>QuerySupport.findRoots</code> mapping class paths roots by projects.</summary>
+          <version major="1" minor="76"/>
+          <date day="7" month="7" year="2014"/>
+          <author login="tzezula"/>
+          <compatibility source="compatible" binary="compatible" semantic="compatible" addition="yes"/>
+          <description>
+              Added <code>QuerySupport.findRoots</code> mapping class paths roots by projects.
+          </description>
+          <class package="org.netbeans.modules.parsing.spi.indexing.support" name="QuerySupport"/>
+      </change>
       <change id="QuerySupport.Query.file">
           <api name="ParsingAPI"/>
           <summary>Added <code>QuerySupport.Query.file</code> factory for query searching index documents created for given file.</summary>
