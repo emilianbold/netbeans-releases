@@ -679,4 +679,43 @@ public class CommitTest extends AbstractGitTestCase {
         assertEquals(info.getRevision(), lastCommit.getParents()[0]);
         assertEquals(lastCommit.getRevision(), client.getBranches(false, NULL_PROGRESS_MONITOR).get("master").getId());
     }
+    
+    public void testCherryPickCommit () throws Exception {
+        repository.getConfig().setString("user", null, "name", "John");
+        repository.getConfig().setString("user", null, "email", "john@git.com");
+        repository.getConfig().save();
+        
+        File f = new File(workDir, "f");
+        write(f, "init");
+        File[] files = new File[] { f };
+        
+        add(f);
+        commit(f);
+        
+        GitClient client = getClient(workDir);
+        write(f, "change");
+        add(f);
+        GitRevisionInfo info = client.commit(files, "change to CherryPick", null, null, NULL_PROGRESS_MONITOR);
+        
+        Thread.sleep(1100);
+        
+        client.reset("HEAD~1", GitClient.ResetType.MIXED, NULL_PROGRESS_MONITOR);
+        repository.writeCherryPickHead(repository.resolve(info.getRevision()));
+        
+        // now we are cherry-picking
+        // amend is not allowed
+        try {
+            client.commit(new File[0], info.getFullMessage(), null, null, true, NULL_PROGRESS_MONITOR);
+            fail("Amend not allowed");
+        } catch (GitException ex) {
+            assertEquals(Utils.getBundle(CommitCommand.class).getString("MSG_Error_Commit_CannotAmend"), ex.getMessage());
+        }
+        
+        // doing commit should preserve authorship of the original commit (info)
+        GitRevisionInfo commit = client.commit(new File[0], info.getFullMessage(), null, null, NULL_PROGRESS_MONITOR);
+        assertEquals(info.getAuthor(), commit.getAuthor());
+        assertEquals(info.getCommitTime(), commit.getCommitTime());
+        assertEquals(Utils.findCommit(repository, info.getRevision()).getAuthorIdent().getWhen(),
+                Utils.findCommit(repository, commit.getRevision()).getAuthorIdent().getWhen());
+    }
 }

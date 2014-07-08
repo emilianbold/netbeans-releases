@@ -63,6 +63,7 @@ import org.netbeans.libs.git.jgit.commands.BlameCommand;
 import org.netbeans.libs.git.jgit.commands.CatCommand;
 import org.netbeans.libs.git.jgit.commands.CheckoutIndexCommand;
 import org.netbeans.libs.git.jgit.commands.CheckoutRevisionCommand;
+import org.netbeans.libs.git.jgit.commands.CherryPickCommand;
 import org.netbeans.libs.git.jgit.commands.CleanCommand;
 import org.netbeans.libs.git.jgit.commands.CommitCommand;
 import org.netbeans.libs.git.jgit.commands.CompareCommand;
@@ -254,6 +255,52 @@ public final class GitClient {
         };
     }
     
+    /**
+     * Used as a parameter of {@link #cherryPick(org.netbeans.libs.git.GitClient.CherryPickOperation, java.lang.String[], org.netbeans.libs.git.progress.ProgressMonitor) to set the behavior of the command.
+     * @since 1.27
+     */
+    public enum CherryPickOperation {
+
+        /**
+         * A fresh cherry-pick command will be started.
+         */
+        BEGIN,
+        /**
+         * Continues an interrupted cherry-pick command after conflicts are resolved.
+         */
+        CONTINUE {
+
+            @Override
+            public String toString () {
+                return "--continue"; //NOI18N
+            }
+            
+        },
+        /**
+         * Tries to finish cherry-picking the current commit but stops in
+         * cherry-picking other scheduled commits.
+         */
+        QUIT {
+
+            @Override
+            public String toString () {
+                return "--quit"; //NOI18N
+            }
+            
+        },
+        /**
+         * Aborts and resets an interrupted cherry-pick command.
+         */
+        ABORT {
+
+            @Override
+            public String toString () {
+                return "--abort"; //NOI18N
+            }
+            
+        };
+    }
+    
     private final JGitRepository gitRepository;
     private final Set<NotificationListener> listeners;
     private JGitCredentialsProvider credentialsProvider;
@@ -370,6 +417,26 @@ public final class GitClient {
         Repository repository = gitRepository.getRepository();
         CheckoutRevisionCommand cmd = new CheckoutRevisionCommand(repository, getClassFactory(), revision, failOnConflict, monitor, delegateListener);
         cmd.execute();
+    }
+    
+    /**
+     * Cherry-picks (transplants) selected revisions (commits) onto the current
+     * HEAD.
+     *
+     * @param operation kind of cherry-pick operation you want to perform
+     * @param revisions commits you want to cherry-pick. Makes sense only when
+     * <code>operation</code> is set to <code>CherryPickOperation.BEGIN</code>
+     * otherwise it's meaningless.
+     * @param monitor progress monitor
+     * @return result of the command
+     * @throws GitException an unexpected error occurs
+     * @since 1.27
+     */
+    public GitCherryPickResult cherryPick (CherryPickOperation operation, String[] revisions, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        CherryPickCommand cmd = new CherryPickCommand(repository, getClassFactory(), revisions, operation, monitor, delegateListener);
+        cmd.execute();
+        return cmd.getResult();
     }
 
     /**

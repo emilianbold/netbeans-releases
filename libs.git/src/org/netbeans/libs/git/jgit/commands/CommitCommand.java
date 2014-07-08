@@ -57,7 +57,6 @@ import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.dircache.DirCacheIterator;
 import org.eclipse.jgit.errors.CorruptObjectException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
-import org.eclipse.jgit.errors.UnmergedPathException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.FileMode;
 import org.eclipse.jgit.lib.ObjectId;
@@ -105,11 +104,17 @@ public class CommitCommand extends GitCommand {
         boolean retval = super.prepareCommand();
         if (retval) {
             RepositoryState state = getRepository().getRepositoryState();
-            if (RepositoryState.MERGING.equals(state)) {
+            if (amend && !state.canAmend()) {
+                String errorMessage = Utils.getBundle(CommitCommand.class).getString("MSG_Error_Commit_CannotAmend"); //NOI18N
+                monitor.preparationsFailed(errorMessage);
+                throw new GitException(errorMessage);
+            }
+            if (RepositoryState.MERGING.equals(state) || RepositoryState.CHERRY_PICKING.equals(state)) {
                 String errorMessage = Utils.getBundle(CommitCommand.class).getString("MSG_Error_Commit_ConflictsInIndex"); //NOI18N
                 monitor.preparationsFailed(errorMessage);
                 throw new GitException(errorMessage);
-            } else if (RepositoryState.MERGING_RESOLVED.equals(state) && roots.length > 0) {
+            } else if ((RepositoryState.MERGING_RESOLVED.equals(state)
+                    || RepositoryState.CHERRY_PICKING_RESOLVED.equals(state)) && roots.length > 0) {
                 boolean fullWorkingTree = false;
                 File repositoryRoot = getRepository().getWorkTree();
                 for (File root : roots) {
@@ -149,10 +154,7 @@ public class CommitCommand extends GitCommand {
                 if(commiter != null) {                    
                     commit.setCommitter(commiter.getName(), commiter.getEmailAddress());
                 }
-                if (amend) {
-                    RevCommit lastCommit = Utils.findCommit(repository, "HEAD^{commit}");
-                    transferTimestamp(commit, lastCommit);
-                }
+                setAuthorshipIfNeeded(repository, commit);
                 
                 commit.setMessage(message);
                 commit.setAmend(amend);
@@ -170,18 +172,20 @@ public class CommitCommand extends GitCommand {
                     }
                 }
             }
-        } catch (GitAPIException ex) {
+        } catch (GitAPIException | JGitInternalException | NoWorkTreeException | IOException ex) {
             throw new GitException(ex);
-        } catch (UnmergedPathException ex) {
-            throw new GitException(ex);
-        } catch (JGitInternalException ex) {
-            throw new GitException(ex);
-        } catch (NoWorkTreeException ex) {
-            throw new GitException(ex);
-        } catch (CorruptObjectException ex) {
-            throw new GitException(ex);
-        } catch (IOException ex) {
-            throw new GitException(ex);
+        }
+    }
+
+    private void setAuthorshipIfNeeded (Repository repository, org.eclipse.jgit.api.CommitCommand cmd)
+            throws GitException, NoWorkTreeException, IOException {
+        if (amend) {
+            RevCommit lastCommit = Utils.findCommit(repository, "HEAD^{commit}");
+            transferTimestamp(cmd, lastCommit);
+        }
+        if (repository.getRepositoryState() == RepositoryState.CHERRY_PICKING_RESOLVED) {
+            RevCommit lastCommit = Utils.findCommit(repository, repository.readCherryPickHead(), null);
+            transferTimestamp(cmd, lastCommit);
         }
     }
 

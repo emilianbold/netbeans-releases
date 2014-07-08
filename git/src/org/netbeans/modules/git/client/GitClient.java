@@ -55,6 +55,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitBlameResult;
 import org.netbeans.libs.git.GitBranch;
+import org.netbeans.libs.git.GitCherryPickResult;
+import org.netbeans.libs.git.GitClient.CherryPickOperation;
 import org.netbeans.libs.git.GitClient.DiffMode;
 import org.netbeans.libs.git.GitClient.RebaseOperationType;
 import org.netbeans.libs.git.GitClient.ResetType;
@@ -172,6 +174,7 @@ public final class GitClient {
     private static final HashSet<String> NEED_REPOSITORY_REFRESH_COMMANDS = new HashSet<String>(Arrays.asList("add",//NOI18N // may change state, e.g. MERGING->MERGED
             "checkout", //NOI18N
             "checkoutRevision", //NOI18N // current head changes
+            "cherryPick", //NOI18N
             "commit", //NOI18N
             "createBranch", //NOI18N // should refresh set of known branches
             "createTag", //NOI18N - should refresh set of available tags
@@ -277,6 +280,16 @@ public final class GitClient {
                 return null;
             }
         }, "checkoutRevision", new File[] { repositoryRoot }); //NOI18N
+    }
+
+    public GitCherryPickResult cherryPick (final CherryPickOperation op, final String[] revisions, final ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
+        return new CommandInvoker().runMethod(new Callable<GitCherryPickResult>() {
+
+            @Override
+            public GitCherryPickResult call () throws Exception {
+                return delegate.cherryPick(op, revisions, monitor);
+            }
+        }, "cherryPick", new File[] { repositoryRoot }); //NOI18N
     }
 
     public void clean(final File[] roots, final ProgressMonitor monitor) throws GitException {

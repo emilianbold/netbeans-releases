@@ -77,5 +77,26 @@ public class TestBreakpointType extends BreakpointType {
     public boolean isDefault() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+    
+    @BreakpointType.Registration(displayName="Test2")
+    public static BreakpointType getTest2BreakpointType() {
+        return new BreakpointType() {
+
+            @Override
+            public String getCategoryDisplayName() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
+            public JComponent getCustomizer() {
+                return new JPanel();
+            }
+
+            @Override
+            public boolean isDefault() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+    }
 
 }
