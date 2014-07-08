@@ -82,6 +82,7 @@ public final class RemotePlatform extends JavaPlatform {
     private static final String PROP_VM_TYPE = "platform.jvm.type";                     //NOI18N
     private static final String PROP_VM_TARGET = "platform.jvm.target";                 //NOI18N
     private static final String PROP_VM_DEBUG = "platform.jvm.debug";                   //NOI18N
+    private static final String PROP_EXEC_DECORATOR = "platform.exec.decorator";        //NOI18N
     
     private static final Logger LOG = Logger.getLogger(RemotePlatform.class.getName());
 
@@ -286,6 +287,7 @@ public final class RemotePlatform extends JavaPlatform {
         result.add(PLAT_PROP_INSTALL_FOLDER);
         result.add(PLAT_PROP_WORK_FOLDER);
         result.add(PROP_VM_DEBUG);
+        result.add(PROP_EXEC_DECORATOR);
         result.addAll(getConnectionMethod().getGlobalPropertyNames());
         return Collections.unmodifiableSet(result);
     }    
@@ -312,6 +314,19 @@ public final class RemotePlatform extends JavaPlatform {
             Boolean.parseBoolean(prop);
     }
 
+    @CheckForNull
+    String getExecDecorator() {
+        return props.get(PROP_EXEC_DECORATOR);
+    }
+
+    void setExecDecorator(@NullAllowed final String command) {
+        if (command == null) {
+            props.remove(PROP_EXEC_DECORATOR);
+        } else {
+            props.put(PROP_EXEC_DECORATOR, command);
+        }
+        firePropertyChange(PROP_PROPERTIES, null, null);
+    }
 
     //Utility methods
     @NonNull
