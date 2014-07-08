@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.callgraph.api.ui;
 import org.netbeans.modules.cnd.callgraph.api.CallModel;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -109,5 +110,5 @@ public abstract class CallGraphModelFactory {
             return false;
         }
 
-    }    
+    }         
 }
