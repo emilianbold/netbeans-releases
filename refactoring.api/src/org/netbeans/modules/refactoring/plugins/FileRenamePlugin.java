@@ -58,6 +58,7 @@ import org.openide.text.PositionBounds;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import static org.netbeans.modules.refactoring.plugins.Bundle.*;
 
 /**
  *
@@ -102,9 +103,13 @@ public class FileRenamePlugin implements RefactoringPlugin {
         public RenameFile(FileObject fo, RefactoringElementsBag bag) {
             this.fo = fo;
         }
+        
         @Override
+        @NbBundle.Messages({"TXT_RenameFile=Rename file {0}",
+                            "TXT_RenameFolder=Rename folder {0}"})
         public String getText() {
-            return NbBundle.getMessage(FileRenamePlugin.class, "TXT_RenameFile", fo.getNameExt());
+            return fo.isFolder()? TXT_RenameFolder(fo.getNameExt()) :
+                                  TXT_RenameFile(fo.getNameExt());
         }
 
         @Override
