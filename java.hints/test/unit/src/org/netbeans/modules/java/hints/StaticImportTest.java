@@ -23,6 +23,10 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+
+ * Portions Copyrighted 2014 markiewb
  */
 package org.netbeans.modules.java.hints;
 
@@ -47,6 +51,58 @@ public class StaticImportTest extends NbTestCase {
         super(name);
     }
 
+    public void testStaticImportHint_ForEnumFields() throws Exception {
+        String test = "package test; import java.util.concurrent.TimeUnit; public class Test { public Test() { System.out.println(TimeUnit.D|AYS); } }";
+        String golden = "package test; import java.util.concurrent.TimeUnit; import static java.util.concurrent.TimeUnit.DAYS; public class Test { public Test() { System.out.println(DAYS); } }";
+        HintTest.create()
+                .setCaretMarker('|')
+                .input(test)
+                .run(StaticImport.class)
+                .findWarning("0:107-0:120:hint:" + NbBundle.getMessage(StaticImport.class, "ERR_StaticImport"))
+                .applyFix()
+                .assertCompilable()
+                .assertOutput(golden);
+    }
+    
+    public void testStaticImportHint_ForEnumFields_InAssignment() throws Exception {
+        String test = "package test; import java.util.concurrent.TimeUnit; public class Test { public Test() { TimeUnit foo = TimeUnit.D|AYS; } }";
+        String golden = "package test; import java.util.concurrent.TimeUnit; import static java.util.concurrent.TimeUnit.DAYS; public class Test { public Test() { TimeUnit foo = DAYS; } }";
+        HintTest.create()
+                .setCaretMarker('|')
+                .input(test)
+                .run(StaticImport.class)
+                .findWarning("0:103-0:116:hint:" + NbBundle.getMessage(StaticImport.class, "ERR_StaticImport"))
+                .applyFix()
+                .assertCompilable()
+                .assertOutput(golden);
+    }
+
+    public void testStaticImportHint_ForFields() throws Exception {
+        String test = "package test; import java.util.Calendar; public class Test { public Test() { System.out.println(Calendar.JAN|UARY); } }";
+        String golden = "package test; import java.util.Calendar; import static java.util.Calendar.JANUARY; public class Test { public Test() { System.out.println(JANUARY); } }";
+        HintTest.create()
+                .setCaretMarker('|')
+                .input(test)
+                .run(StaticImport.class)
+                .findWarning("0:96-0:112:hint:" + NbBundle.getMessage(StaticImport.class, "ERR_StaticImport"))
+                .applyFix()
+                .assertCompilable()
+                .assertOutput(golden);
+    }
+    
+    public void testStaticImportHint_ForFields_InAssignment() throws Exception {
+        String test = "package test; import java.util.Calendar; public class Test { public Test() { int foo = Calendar.JAN|UARY; } }";
+        String golden = "package test; import java.util.Calendar; import static java.util.Calendar.JANUARY; public class Test { public Test() { int foo = JANUARY; } }";
+        HintTest.create()
+                .setCaretMarker('|')
+                .input(test)
+                .run(StaticImport.class)
+                .findWarning("0:87-0:103:hint:" + NbBundle.getMessage(StaticImport.class, "ERR_StaticImport"))
+                .applyFix()
+                .assertCompilable()
+                .assertOutput(golden);
+    }
+    
     public void testStaticImportHint1() throws Exception {
         String test = "package test; public class Test { public Test() { Math.|abs(1); } }";
         String golden = "package test; import static java.lang.Math.abs; public class Test { public Test() { abs(1); } }";
