@@ -43,6 +43,7 @@
 package org.netbeans.libs.git;
 
 import java.io.IOException;
+import org.eclipse.jgit.api.CherryPickResult;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.RebaseResult;
 import org.eclipse.jgit.lib.RefUpdate;
@@ -94,6 +95,12 @@ public class GitEnumsStateTest extends AbstractGitTestCase {
     public void testSubmoduleStatus () {
         for (SubmoduleStatusType status : SubmoduleStatusType.values()) {
             assertNotNull(GitSubmoduleStatus.parseStatus(status));
+        }
+    }
+    
+    public void testCherryPickStatus () {
+        for (CherryPickResult.CherryPickStatus status : CherryPickResult.CherryPickStatus.values()) {
+            assertNotNull(GitCherryPickResult.CherryPickStatus.valueOf(status.name()));
         }
     }
 }

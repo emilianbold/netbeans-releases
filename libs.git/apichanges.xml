@@ -112,6 +112,29 @@ is the proper place.
         <change>
             <api name="gitlibrary_api"/>
             <summary>New method for updating a reference (branch) to a new commit id.</summary>
+            <version major="1" minor="27"/>
+            <date day="1" month="7" year="2014"/>
+            <author login="ovrabec"/>
+            <compatibility addition="yes"/>
+            <description>
+                <ul>
+                    <li>New method GitClient.cherryPick used to cherry-pick commits and apply them in the
+                    current branch. The command may interrupt its progress and require some user actions
+                    (such as resolve conflicts or commit) and may be continued with different kinds
+                    of operation types passed as its arguments.</li>
+                    <li>Introduciong new repository state: CHERRY_PICKING and CHERRY_PICKING_RESOLVED
+                    marking the states of the repository when a cherry-picking is not finished or
+                    it requires resolving conflicts.</li>
+                </ul>
+            </description>
+            <class package="org.netbeans.libs.git" name="GitClient"/>
+            <class package="org.netbeans.libs.git" name="GitCherryPickResult"/>
+            <class package="org.netbeans.libs.git" name="GitRepositoryState"/>
+            <issue number="235267"/>
+        </change>
+        <change>
+            <api name="gitlibrary_api"/>
+            <summary>New method for updating a reference (branch) to a new commit id.</summary>
             <version major="1" minor="26"/>
             <date day="25" month="6" year="2014"/>
             <author login="ovrabec"/>

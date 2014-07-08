@@ -52,6 +52,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.Annotator;
+import org.netbeans.modules.git.ui.branch.CherryPickAction;
 import org.netbeans.modules.git.ui.branch.CreateBranchAction;
 import org.netbeans.modules.git.ui.branch.SetTrackingAction;
 import org.netbeans.modules.git.ui.checkout.AbstractCheckoutAction;
@@ -140,6 +141,12 @@ public final class BranchMenu extends DynamicMenu {
             Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
             Actions.connect(item, action, false);
             menu.add(item);
+            
+            item = new JMenuItem();
+            action = (Action) SystemAction.get(CherryPickAction.class);
+            Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
         } else {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(CreateBranchAction.class), NbBundle.getMessage(CreateBranchAction.class, "LBL_CreateBranchAction_PopupName"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
@@ -180,6 +187,8 @@ public final class BranchMenu extends DynamicMenu {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(MergeRevisionAction.class), NbBundle.getMessage(MergeRevisionAction.class, "LBL_MergeRevisionAction_PopupName"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(RebaseAction.class), NbBundle.getMessage(RebaseAction.class, "LBL_RebaseAction_PopupName"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(CherryPickAction.class), NbBundle.getMessage(CherryPickAction.class, "LBL_CherryPickAction_PopupName"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         }        
         return menu;
