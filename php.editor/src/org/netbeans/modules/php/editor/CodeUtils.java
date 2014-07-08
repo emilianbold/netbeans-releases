@@ -158,6 +158,17 @@ public final class CodeUtils {
         return result;
     }
 
+    public static boolean isPhp56OrGreater(FileObject file) {
+        Parameters.notNull("file", file);
+        boolean result = false;
+        PhpLanguageProperties forFileObject = PhpLanguageProperties.forFileObject(file);
+        PhpVersion phpVersion = forFileObject.getPhpVersion();
+        if (phpVersion != PhpVersion.PHP_5 && phpVersion != PhpVersion.PHP_53 && phpVersion != PhpVersion.PHP_54 && phpVersion != PhpVersion.PHP_55) {
+            result = true;
+        }
+        return result;
+    }
+
     @CheckForNull
     public static Identifier extractUnqualifiedIdentifier(Expression typeName) {
         Parameters.notNull("typeName", typeName);

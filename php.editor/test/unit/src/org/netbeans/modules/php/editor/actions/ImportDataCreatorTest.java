@@ -59,6 +59,7 @@ import org.netbeans.modules.php.editor.actions.ImportData.ItemVariant;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.indent.CodeStyle;
+import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -95,11 +96,11 @@ public class ImportDataCreatorTest extends PHPTestBase {
     }
 
     public void testImportData_05() throws Exception {
-        performTest("Homepage^Presenter", new Options(true, false, false, false));
+        performTest("Homepage^Presenter", new Options(true, false, false, false, false));
     }
 
     public void testImportData_06() throws Exception {
-        performTest("Homepage^Presenter", new Options(false, false, false, false));
+        performTest("Homepage^Presenter", new Options(false, false, false, false, false));
     }
 
     public void testImportData_07() throws Exception {
@@ -151,12 +152,13 @@ public class ImportDataCreatorTest extends PHPTestBase {
                     assertTrue(r instanceof ParserResult);
                     PHPParseResult phpResult = (PHPParseResult)r;
                     Map<String, List<UsedNamespaceName>> usedNames = new UsedNamesComputer(phpResult, caretOffset).computeNames();
-                    NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(phpResult.getModel().getFileScope(), caretOffset);
+                    FileScope fileScope = phpResult.getModel().getFileScope();
+                    NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, caretOffset);
                     Options currentOptions = options;
                     if (currentOptions == null) {
                         Document document = phpResult.getSnapshot().getSource().getDocument(false);
                         CodeStyle codeStyle = CodeStyle.get(document);
-                        currentOptions = new Options(codeStyle);
+                        currentOptions = new Options(codeStyle, fileScope.getFileObject());
                     }
                     ImportData importData = new ImportDataCreator(
                             usedNames,
