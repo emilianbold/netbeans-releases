@@ -321,6 +321,8 @@ public final class RemotePlatformProvider implements Lookup.Provider, InstanceCo
                             ep.setProperty(
                                 createPropertyName(antPlatformName, key),
                                 value);
+                        } else {
+                            ep.remove(createPropertyName(antPlatformName, key));
                         }
                     }
                     PropertyUtils.putGlobalProperties(ep);
