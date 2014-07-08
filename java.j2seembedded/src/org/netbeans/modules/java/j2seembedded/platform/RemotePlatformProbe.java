@@ -99,6 +99,7 @@ public final class RemotePlatformProbe {
     @NonNull
     public static Properties verifyPlatform(
         @NonNull final String jreLocation,
+        @NullAllowed final String execDecorator,
         @NonNull final String workingDir,
         @NonNull final ConnectionMethod connectionMethod,
         @NullAllowed File buildScript) throws WizardValidationException {
@@ -108,6 +109,9 @@ public final class RemotePlatformProbe {
             prop.setProperty("remote.port", String.valueOf(connectionMethod.getPort())); //NOI18N
             prop.setProperty("remote.username", connectionMethod.getAuthentification().getUserName()); //NOI18N
             prop.setProperty("remote.platform.home", jreLocation); //NOI18N
+            if (execDecorator != null) {
+                prop.setProperty("remote.exec.decorator", execDecorator);   //NOI18N
+            }
             prop.setProperty("remote.working.dir", workingDir.length() > 0 ? workingDir : "/home/" + connectionMethod.getAuthentification().getUserName() + "/NetBeansProjects/"); //NOI18N
             final File probe = InstalledFileLocator.getDefault().locate("modules/ext/org-netbeans-modules-java-j2seembedded-probe.jar", "org.netbeans.modules.java.j2seembedded", false);   //NOI18N
             if (probe == null) {
