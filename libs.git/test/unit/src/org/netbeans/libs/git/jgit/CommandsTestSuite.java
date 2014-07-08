@@ -51,6 +51,7 @@ import org.netbeans.libs.git.jgit.commands.BlameTest;
 import org.netbeans.libs.git.jgit.commands.BranchTest;
 import org.netbeans.libs.git.jgit.commands.CatTest;
 import org.netbeans.libs.git.jgit.commands.CheckoutTest;
+import org.netbeans.libs.git.jgit.commands.CherryPickTest;
 import org.netbeans.libs.git.jgit.commands.CleanTest;
 import org.netbeans.libs.git.jgit.commands.CommitTest;
 import org.netbeans.libs.git.jgit.commands.CompareCommitTest;
@@ -100,6 +101,7 @@ public class CommandsTestSuite extends NbTestSuite {
         suite.addTestSuite(BranchTest.class);
         suite.addTestSuite(CatTest.class);
         suite.addTestSuite(CheckoutTest.class);
+        suite.addTestSuite(CherryPickTest.class);
         suite.addTestSuite(CleanTest.class);
         suite.addTestSuite(CommitTest.class);
         suite.addTestSuite(CompareCommitTest.class);

@@ -67,9 +67,11 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.branch.CherryPickAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
 import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.diff.ExportCommitAction;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.revert.RevertCommitAction;
 import org.netbeans.modules.git.ui.tag.CreateTagAction;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -232,6 +234,21 @@ public class RepositoryRevision {
             }
         });
         if (getLog().getParents().length < 2) {
+            if (!isInCurrentBranch()) {
+                actions.add(new AbstractAction(NbBundle.getMessage(CherryPickAction.class, "LBL_CherryPickAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        final String revision = getLog().getRevision();
+                        Utils.post(new Runnable() {
+
+                            @Override
+                            public void run () {
+                                SystemAction.get(CherryPickAction.class).cherryPick(repositoryRoot, revision);
+                            }
+                        });
+                    }
+                });
+            }
             actions.add(new AbstractAction(NbBundle.getMessage(ExportCommitAction.class, "LBL_ExportCommitAction_PopupName")) { //NOI18N
                 @Override
                 public void actionPerformed (ActionEvent e) {
@@ -276,6 +293,16 @@ public class RepositoryRevision {
             preferredRevision = preferredRevision.length() > 7 ? preferredRevision.substring(0, 7) : preferredRevision;
         }
         return preferredRevision;
+    }
+    
+    private boolean isInCurrentBranch () {
+        GitBranch activeBranch = RepositoryInfo.getInstance(repositoryRoot).getActiveBranch();
+        for (GitBranch b : getLog().getBranches().values()) {
+            if (activeBranch.getName().equals(b.getName()) || activeBranch.getId().equals(b.getId())) {
+                return true;
+            }
+        }
+        return false;
     }
     
     public class Event implements Comparable<Event> {

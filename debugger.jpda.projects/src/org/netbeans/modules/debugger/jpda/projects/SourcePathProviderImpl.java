@@ -639,6 +639,22 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         } else {
             fo = GlobalPathRegistry.getDefault().findResource(relativePath);
         }
+        if (fo == null && global) {
+            Set<ClassPath> cpaths = GlobalPathRegistry.getDefault().getPaths(ClassPath.COMPILE);
+            for (ClassPath cp : cpaths) {
+                fo = cp.findResource(relativePath);
+                if (fo != null) {
+                    FileObject[] roots = cp.getRoots();
+                    for (FileObject r : roots) {
+                        if (FileUtil.isParentOf(r, fo)) {
+                            addToSourcePath(r, false);
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
         
         if (verbose) System.out.println ("SPPI:   fo " + fo);
 
@@ -662,6 +678,35 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             }
         }
         return url;
+    }
+    
+    private void addToSourcePath(FileObject sourceRoot, boolean clearURLCaches) {
+        URL newURL = sourceRoot.toURL();
+        synchronized (SourcePathProviderImpl.this) {
+            if (originalSourcePath == null) {
+                return ;
+            }
+            List<URL> sourcePaths = getURLRoots(originalSourcePath);
+            sourcePaths.add(newURL);
+            originalSourcePath =
+                    SourcePathProviderImpl.createClassPath(
+                        sourcePaths.toArray(new URL[0]));
+
+            sourcePaths = getURLRoots(smartSteppingSourcePath);
+            sourcePaths.add(newURL);
+            smartSteppingSourcePath =
+                    SourcePathProviderImpl.createClassPath(
+                        sourcePaths.toArray(new URL[0]));
+        }
+        if (clearURLCaches) {
+            synchronized (urlCache) {
+                urlCache.clear();
+            }
+            synchronized (urlCacheGlobal) {
+                urlCacheGlobal.clear();
+            }
+        }
+        pcs.firePropertyChange (PROP_SOURCE_ROOTS, null, null);
     }
     
     /**
@@ -1387,6 +1432,15 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         return l;
     }
 
+    private static List<URL> getURLRoots(ClassPath cp) {
+        List<URL> urls = new ArrayList<URL>();
+        for (Entry entry : cp.entries()) {
+            URL url = entry.getURL();
+            urls.add(url);
+        }
+        return urls;
+    }
+
     private static boolean CAN_FIX_CLASSES_AUTOMATICALLY = Boolean.getBoolean("debugger.apply-code-changes.on-save"); // NOI18N
 
     private static class ArtifactsUpdatedImpl implements ArtifactsUpdated {
@@ -1527,15 +1581,6 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                     URL url = entry.getURL();
                     urls.add(url);
                 }
-            }
-            return urls;
-        }
-        
-        private List<URL> getURLRoots(ClassPath cp) {
-            List<URL> urls = new ArrayList<URL>();
-            for (Entry entry : cp.entries()) {
-                URL url = entry.getURL();
-                urls.add(url);
             }
             return urls;
         }

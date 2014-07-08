@@ -336,7 +336,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             for (ReferenceType referenceType : referenceTypes) {
                 String[] reason = new String[] { null };
                 boolean[] isNoLocReason = new boolean[1];
-                List locations = getLocations (
+                List<Location> locations = getLocations (
                     referenceType,
                     breakpoint.getStratum (),
                     breakpoint.getSourceName (),
@@ -355,24 +355,29 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                     }
                     continue;
                 }
-                for (Iterator it = locations.iterator(); it.hasNext();) {
-                    Location location = (Location)it.next();
-                    try {
-                        BreakpointRequest br = EventRequestManagerWrapper.
-                            createBreakpointRequest (getEventRequestManager (), location);
-                        setFilters(br);
-                        addEventRequest (br);
-                        submitted = true;
-                        //System.out.println("Breakpoint " + br + location + "created");
-                    } catch (VMDisconnectedExceptionWrapper e) {
-                    } catch (InternalExceptionWrapper e) {
-                    } catch (ObjectCollectedExceptionWrapper e) {
-                    } catch (InvalidRequestStateExceptionWrapper irse) {
-                        Exceptions.printStackTrace(irse);
-                    } catch (RequestNotSupportedException rnsex) {
-                        setValidity(Breakpoint.VALIDITY.INVALID, NbBundle.getMessage(ClassBasedBreakpoint.class, "MSG_RequestNotSupported"));
-                        return ;
+                // Submit the breakpoint for the lowest location on the line only:
+                Location location = locations.get(0);
+                for (int li = 1; li < locations.size(); li++) {
+                    Location l = locations.get(li);
+                    if (l.codeIndex() < location.codeIndex()) {
+                        location = l;
                     }
+                }
+                try {
+                    BreakpointRequest br = EventRequestManagerWrapper.
+                        createBreakpointRequest (getEventRequestManager (), location);
+                    setFilters(br);
+                    addEventRequest (br);
+                    submitted = true;
+                    //System.out.println("Breakpoint " + br + location + "created");
+                } catch (VMDisconnectedExceptionWrapper e) {
+                } catch (InternalExceptionWrapper e) {
+                } catch (ObjectCollectedExceptionWrapper e) {
+                } catch (InvalidRequestStateExceptionWrapper irse) {
+                    Exceptions.printStackTrace(irse);
+                } catch (RequestNotSupportedException rnsex) {
+                    setValidity(Breakpoint.VALIDITY.INVALID, NbBundle.getMessage(ClassBasedBreakpoint.class, "MSG_RequestNotSupported"));
+                    return ;
                 }
             } // for
             if (counter == 0) {
@@ -543,7 +548,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     }
     
     
-    private static List getLocations (
+    private static List<Location> getLocations (
         ReferenceType referenceType,
         String stratum,
         String sourceName,
@@ -555,7 +560,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         try {
             reason[0] = null;
             noLocationReason[0] = false;
-            List locations = locationsOfLineInClass(referenceType, stratum,
+            List<Location> locations = locationsOfLineInClass(referenceType, stratum,
                                                     sourceName, bpSourcePath,
                                                     lineNumber, reason);
             /* Obsolete, no special handling of inner classes, referenceType is
