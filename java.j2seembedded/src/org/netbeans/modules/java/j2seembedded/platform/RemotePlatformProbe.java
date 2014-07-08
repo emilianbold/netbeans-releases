@@ -123,6 +123,7 @@ public final class RemotePlatformProbe {
             prop.setProperty("probe.file", probe.getAbsolutePath());
             File platformProperties = null;            
             ExecutorTask executorTask = null;
+            int antResult = -1;
             try {
                 platformProperties = File.createTempFile("platform", ".properties");   //NOI18N
                 prop.setProperty("platform.properties.file", platformProperties.getAbsolutePath()); //NOI18N
@@ -140,7 +141,7 @@ public final class RemotePlatformProbe {
 
                 final FileObject antScript = FileUtil.toFileObject(buildScript != null && buildScript.exists() ? buildScript : createBuildScript());
                 executorTask = ActionUtils.runTarget(antScript, antTargets, prop, concealedProps);
-                final int antResult = executorTask.result();
+                antResult = executorTask.result();
                 if (antResult != 0) {
                     throw new WizardValidationException(
                         null,
@@ -159,7 +160,7 @@ public final class RemotePlatformProbe {
                     ex.getMessage(),
                     ex.getLocalizedMessage());
             } finally {
-                if (executorTask != null) {
+                if (antResult == 0 && executorTask != null) {
                     executorTask.getInputOutput().closeInputOutput();
                 }
                 if (buildScript != null) {
