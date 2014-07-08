@@ -80,6 +80,7 @@ import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.commit.GitCommitPanel.GitCommitPanelMerged;
 import org.netbeans.modules.git.GitFileNode.GitLocalFileNode;
 import org.netbeans.modules.git.ui.actions.GitAction;
+import org.netbeans.modules.git.ui.branch.CherryPickAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.hooks.GitHook;
@@ -141,7 +142,7 @@ public class CommitAction extends SingleRepositoryAction {
             @Override
             public void run() {
                 
-                GitCommitPanel panel = state == GitRepositoryState.MERGING_RESOLVED
+                GitCommitPanel panel = state == GitRepositoryState.MERGING_RESOLVED || state == GitRepositoryState.CHERRY_PICKING_RESOLVED
                         ? GitCommitPanelMerged.create(roots, repository, user, mergeCommitMessage)
                         : GitCommitPanel.create(roots, repository, user, isFromGitView(context));
                 VCSCommitTable<GitLocalFileNode> table = panel.getCommitTable();
@@ -182,7 +183,8 @@ public class CommitAction extends SingleRepositoryAction {
 
     private String getMergeCommitMessage (File repository, GitRepositoryState state) {
         String message = null;
-        if (EnumSet.of(GitRepositoryState.MERGING, GitRepositoryState.MERGING_RESOLVED).contains(state)) {
+        if (EnumSet.of(GitRepositoryState.MERGING, GitRepositoryState.MERGING_RESOLVED,
+                GitRepositoryState.CHERRY_PICKING, GitRepositoryState.CHERRY_PICKING_RESOLVED).contains(state)) {
             File f = new File(GitUtils.getGitFolderForRoot(repository), "MERGE_MSG"); //NOI18N
             try {
                 message = new String(FileUtils.getFileContentsAsByteArray(f), "UTF-8"); //NOI18N
@@ -245,6 +247,7 @@ public class CommitAction extends SingleRepositoryAction {
                     String origMessage = message;
                     message = beforeCommitHook(commitCandidates, hooks, message);
 
+                    GitRepositoryState prevState = RepositoryInfo.getInstance(getRepositoryRoot()).getRepositoryState();
                     GitRevisionInfo info = commit(commitCandidates, message, author, commiter, amend);
 
                     GitModuleConfig.getDefault().putRecentCommitAuthors(GitCommitParameters.getUserString(author));
@@ -256,6 +259,10 @@ public class CommitAction extends SingleRepositoryAction {
                         LOG.log(Level.INFO, null, ex);
                     }
                     afterCommitHook(commitCandidates, hooks, info, origMessage);
+                    if (prevState == GitRepositoryState.CHERRY_PICKING_RESOLVED) {
+                        // should continue with cherry-picking
+                        SystemAction.get(CherryPickAction.class).finish(getRepositoryRoot());
+                    }
 
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);
@@ -348,7 +355,8 @@ public class CommitAction extends SingleRepositoryAction {
         private GitRevisionInfo commit (Collection<File> commitCandidates, String message, GitUser author, GitUser commiter, boolean amend) throws GitException {
             try {
                 GitRevisionInfo info = getClient().commit(
-                        state == GitRepositoryState.MERGING_RESOLVED ? new File[0] : commitCandidates.toArray(new File[commitCandidates.size()]),
+                        state == GitRepositoryState.MERGING_RESOLVED || state == GitRepositoryState.CHERRY_PICKING_RESOLVED
+                                ? new File[0] : commitCandidates.toArray(new File[commitCandidates.size()]),
                         message, author, commiter, amend, getProgressMonitor());
                 printInfo(info);
                 return info;
@@ -388,7 +396,7 @@ public class CommitAction extends SingleRepositoryAction {
         if (!state.canCommit()) {
             commitPermitted = false;
             Map<File, GitStatus> conflicts = Collections.emptyMap();
-            if (state.equals(GitRepositoryState.MERGING)) {
+            if (state.equals(GitRepositoryState.MERGING) || state.equals(GitRepositoryState.CHERRY_PICKING)) {
                 GitClient client = null;
                 try {
                     client = Git.getInstance().getClient(repository);
