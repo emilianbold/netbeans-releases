@@ -282,8 +282,7 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
     }
     
     private void setupProjectDestinationsOption() {
-        if (J2eeModule.Type.EJB.equals(provider.getJ2eeModule().getType())
-                || (ejbJar != null && ejbJar.getJ2eeProfile() != null && ejbJar.getJ2eeProfile().isAtLeast(Profile.JAVA_EE_6_WEB))) {
+        if (isEjbOrEjbCapable()) {
             projectDestinationsRadio.setEnabled(true);
             setupAddButton();
             projectDestinationsRadio.setSelected(true);
@@ -295,7 +294,14 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
     }
     
     private void setupMessageDrivenOption() {
-        mdbRadio.setEnabled(J2eeModule.Type.EJB.equals(provider.getJ2eeModule().getType()) || Utils.isPartOfJ2eeApp(provider));
+        mdbRadio.setEnabled(isEjbOrEjbCapable() || Utils.isPartOfJ2eeApp(provider));
+    }
+
+    private boolean isEjbOrEjbCapable() {
+        return J2eeModule.Type.EJB.equals(provider.getJ2eeModule().getType())
+                || (ejbJar != null
+                    && ejbJar.getJ2eeProfile() != null
+                    && ejbJar.getJ2eeProfile().isAtLeast(Profile.JAVA_EE_6_WEB));
     }
     
     private void setupAddButton() {
