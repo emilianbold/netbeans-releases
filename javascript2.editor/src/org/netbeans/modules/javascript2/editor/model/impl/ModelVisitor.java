@@ -582,7 +582,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     // It can be only if it's in a function
                     isPrivate = functionStack.size() > 1;
                 }
-                if (name != null && !functionNode.isAnonymous()) {
+                if (name != null && !name.isEmpty() && !functionNode.isAnonymous()) {
                     // we need to create just referenci to non anonymous function
                     // example MyObject.method = function method(){}
                     DeclarationScope currentScope = modelBuilder.getCurrentDeclarationScope();
