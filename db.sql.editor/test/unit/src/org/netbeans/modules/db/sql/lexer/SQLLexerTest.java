@@ -42,7 +42,6 @@
 package org.netbeans.modules.db.sql.lexer;
 
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
@@ -145,25 +144,79 @@ public class SQLLexerTest extends NbTestCase {
         TokenSequence<SQLTokenId> seq = getTokenSequence("'incomplete");
         assertTokens(seq, SQLTokenId.INCOMPLETE_STRING);
     }
-
-    public void testEscapeSingleQuote() throws Exception {
-        TokenSequence<SQLTokenId> seq = getTokenSequence("'Frank\\'s Book'");
-        assertTrue(seq.moveNext());
-        assertEquals(SQLTokenId.STRING, seq.token().id());
-        assertEquals("'Frank\\'s Book'", seq.token().text().toString());
-
-        seq = getTokenSequence("'Frank\\s Book'");
-        assertTrue(seq.moveNext());
-        assertEquals(SQLTokenId.STRING, seq.token().id());
-        assertEquals("'Frank\\s Book'", seq.token().text().toString());
-
-        seq = getTokenSequence("'Frank\\");
-        assertTokens(seq, SQLTokenId.INCOMPLETE_STRING);
-
-        seq = getTokenSequence("'Frank\\'");
-        assertTokens(seq, SQLTokenId.INCOMPLETE_STRING);
+    
+    public void testSingleQuote() throws Exception {
+        // See bug #200479 - the fix introduced with this text reverts a "fix"
+        // for bug #152325 - the latter bug can't be fixed, as it is clear violation
+        // to SQL Standard - as this is a SQL lexer, not a MySQL lexer, this should
+        // should follow the standard
+        TokenSequence<SQLTokenId> seq = getTokenSequence("'\\'");
+        assertTokens(seq, SQLTokenId.STRING, SQLTokenId.WHITESPACE);
     }
-
+    
+    public void testPlaceHolder() throws Exception {
+        assertTokens(getTokenSequence("SELECT a FROM b WHERE c = :var"),
+                SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE,
+                SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE,
+                SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE,
+                SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE,
+                SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE,
+                SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE,
+                SQLTokenId.OPERATOR, SQLTokenId.WHITESPACE,
+                SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        assertTokens(getTokenSequence("SELECT a FROM b WHERE c = :var"),
+                SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE,
+                SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE,
+                SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE,
+                SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE,
+                SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE,
+                SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE,
+                SQLTokenId.OPERATOR, SQLTokenId.WHITESPACE,
+                SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+    }
+    
+    public void testVariableDeclaration() throws Exception {
+        assertTokens(getTokenSequence("@a:='test'"), SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.STRING, SQLTokenId.WHITESPACE);
+    }
+    
+    public void testOperators() throws Exception {
+        // Basic Arithmetic
+        assertTokens(getTokenSequence("a+b"), SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER,  SQLTokenId.WHITESPACE);
+        assertTokens(getTokenSequence("a-b"), SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        assertTokens(getTokenSequence("a* b"), SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.WHITESPACE, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        assertTokens(getTokenSequence("a /b"), SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        assertTokens(getTokenSequence("a % b"), SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE, SQLTokenId.OPERATOR, SQLTokenId.WHITESPACE, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        // Bitwise operators (MSSQL)
+        assertTokens(getTokenSequence("a&b"), SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        assertTokens(getTokenSequence("a|b"), SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        assertTokens(getTokenSequence("a^b"), SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        // UnÃ¤res bitwise not (ones complement)
+        assertTokens(getTokenSequence("~b"), SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        // Comparison operators
+        assertTokens(getTokenSequence("a=b"), SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        assertTokens(getTokenSequence("a>b"), SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        assertTokens(getTokenSequence("a<b"), SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        assertTokens(getTokenSequence("a<>b"), SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        assertTokens(getTokenSequence("a>=b"), SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        assertTokens(getTokenSequence("a<=b"), SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        assertTokens(getTokenSequence("a !=b"), SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        assertTokens(getTokenSequence("a!< b"), SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.WHITESPACE, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        assertTokens(getTokenSequence("a !> b"), SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE, SQLTokenId.OPERATOR, SQLTokenId.WHITESPACE, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        // Concatenation (Informix)
+        assertTokens(getTokenSequence("a||b"), SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        // Assignement Operator (SPL)
+        assertTokens(getTokenSequence("a:=b"), SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        // Compound Operators (Transact-SQL)
+        assertTokens(getTokenSequence("a+=b"), SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        assertTokens(getTokenSequence("a-=b"), SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        assertTokens(getTokenSequence("a*=b"), SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        assertTokens(getTokenSequence("a/=b"), SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        assertTokens(getTokenSequence("a%=b"), SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        assertTokens(getTokenSequence("a&=b"), SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        assertTokens(getTokenSequence("a^=b"), SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+        assertTokens(getTokenSequence("a|=b"), SQLTokenId.IDENTIFIER, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
+    }
+    
     /**
      * Check correct handling of multiline comments (bug #)
      *
