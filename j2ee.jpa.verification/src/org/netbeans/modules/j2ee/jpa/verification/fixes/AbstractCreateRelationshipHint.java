@@ -422,8 +422,8 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
         AnnotationTree targetAnn = genUtils.createAnnotation(complimentaryAnnotationClassName, targetAnnArgs);
         
         if (targetEntityAccessType == AccessType.FIELD){
-            if(targetFieldAccesor!=null && targetFieldAccesor.getModifiers()!=null && targetFieldAccesor.getModifiers().getAnnotations()!=null) {
-                for (AnnotationTree at : targetFieldAccesor.getModifiers().getAnnotations()) {
+            if(targetField!=null && targetField.getModifiers()!=null && targetField.getModifiers().getAnnotations()!=null) {
+                for (AnnotationTree at : targetField.getModifiers().getAnnotations()) {
                     if (complimentaryAnnotationClassName.endsWith(at.getAnnotationType().toString())) {
                         //more complex resolve in this case?
                         return;
