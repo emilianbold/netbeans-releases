@@ -42,7 +42,11 @@
 
 package org.netbeans.modules.php.atoum.coverage;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.LineNumberReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,9 +54,12 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.spi.testing.coverage.Coverage;
 import org.netbeans.modules.php.spi.testing.coverage.FileMetrics;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -145,7 +152,8 @@ public final class CloverLogParser extends DefaultHandler {
             // ignore
             return;
         }
-        fileMetrics = new FileMetricsImpl(getLineCount(attributes), getStatements(attributes), getCoveredStatements(attributes));
+        assert filePath != null;
+        fileMetrics = new FileMetricsImpl(getLineCount(filePath), getStatements(attributes), getCoveredStatements(attributes));
     }
 
     private void processFileEnd() {
@@ -186,8 +194,21 @@ public final class CloverLogParser extends DefaultHandler {
         return attributes.getValue("path"); // NOI18N
     }
 
-    private int getLineCount(Attributes attributes) {
-        return getInt(attributes, "loc"); // NOI18N
+    private int getLineCount(String filePath) {
+        File file = new File(filePath);
+        assert file.isFile() : file;
+        FileObject fo = FileUtil.toFileObject(file);
+        assert fo != null : file;
+        try (LineNumberReader lineNumberReader = new LineNumberReader(
+                new InputStreamReader(new FileInputStream(file), FileEncodingQuery.getEncoding(fo)))) {
+            while (lineNumberReader.readLine() != null) {
+                // noop
+            }
+            return lineNumberReader.getLineNumber();
+        } catch (IOException exc) {
+            LOGGER.log(Level.WARNING, null, exc);
+        }
+        return -1;
     }
 
     private int getStatements(Attributes attributes) {

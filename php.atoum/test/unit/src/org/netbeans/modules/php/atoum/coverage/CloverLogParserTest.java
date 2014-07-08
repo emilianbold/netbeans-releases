@@ -46,6 +46,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.Reader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.spi.testing.coverage.Coverage;
@@ -71,10 +75,10 @@ public class CloverLogParserTest extends NbTestCase {
         assertEquals(2, files.size());
 
         Coverage.File file = files.get(0);
-        assertEquals("/home/gapon/NetBeansProjects/Calculator-atoum/src/Calculator.php", file.getPath());
+        assertEquals(new File(getDataDir(), "testdata/Calculator.php").getAbsolutePath(), file.getPath());
         FileMetrics metrics = file.getMetrics();
         assertNotNull(metrics);
-        assertEquals(6, metrics.getLineCount());
+        assertEquals(68, metrics.getLineCount());
         assertEquals(6, metrics.getStatements());
         assertEquals(6, metrics.getCoveredStatements());
         assertNotNull(file.getLines());
@@ -90,10 +94,10 @@ public class CloverLogParserTest extends NbTestCase {
         assertEquals(0, line.getHitCount());
 
         file = files.get(1);
-        assertEquals("/home/gapon/NetBeansProjects/Calculator-atoum/src/Calculator2.php", file.getPath());
+        assertEquals(new File(getDataDir(), "testdata/Calculator2.php").getAbsolutePath(), file.getPath());
         metrics = file.getMetrics();
         assertNotNull(metrics);
-        assertEquals(6, metrics.getLineCount());
+        assertEquals(65, metrics.getLineCount());
         assertEquals(6, metrics.getStatements());
         assertEquals(4, metrics.getCoveredStatements());
         assertNotNull(file.getLines());
@@ -112,7 +116,16 @@ public class CloverLogParserTest extends NbTestCase {
     private File getCoverageLog(String filename) throws Exception {
         File coverageLog = new File(getDataDir(), filename);
         assertTrue(coverageLog.isFile());
+        fixContent(coverageLog);
         return coverageLog;
+    }
+
+    private void fixContent(File file) throws Exception {
+        Path path = file.toPath();
+        Charset charset = StandardCharsets.UTF_8;
+        String content = new String(Files.readAllBytes(path), charset);
+        content = content.replaceAll("%WORKDIR%", getDataDir().getAbsolutePath());
+        Files.write(path, content.getBytes(charset));
     }
 
 }
