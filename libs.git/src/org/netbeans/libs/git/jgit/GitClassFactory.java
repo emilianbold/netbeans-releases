@@ -62,6 +62,7 @@ import org.eclipse.jgit.transport.TrackingRefUpdate;
 import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.GitBlameResult;
 import org.netbeans.libs.git.GitBranch;
+import org.netbeans.libs.git.GitCherryPickResult;
 import org.netbeans.libs.git.GitConflictDescriptor;
 import org.netbeans.libs.git.GitConflictDescriptor.Type;
 import org.netbeans.libs.git.GitMergeResult;
@@ -88,6 +89,10 @@ public abstract class GitClassFactory {
     public abstract GitBlameResult createBlameResult (BlameResult result, Repository repository);
     
     public abstract GitBranch createBranch (String name, boolean remote, boolean active, ObjectId id);
+
+    public abstract GitCherryPickResult createCherryPickResult (
+            GitCherryPickResult.CherryPickStatus status, List<File> conflicts,
+            List<File> failures, GitRevisionInfo head, List<GitRevisionInfo> cherryPickedCommits);
 
     public abstract GitConflictDescriptor createConflictDescriptor (Type type);
 
