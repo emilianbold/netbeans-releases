@@ -52,6 +52,10 @@ made subject to such option by the copyright holder.
         <type>classpath</type>
         <resource>jar:nbinst://org.netbeans.modules.hibernate4lib/modules/ext/hibernate4/hibernate-jpa-2.1-api-1.0.0.Final.jar!/</resource>
     </volume>
+    <volume>
+        <type>javadoc</type>
+        <resource>jar:nbinst://org.netbeans.modules.j2ee.eclipselink/modules/ext/docs/JPAjavadocs04032013.zip!/</resource>
+    </volume>
     <properties>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <property>
