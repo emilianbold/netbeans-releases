@@ -39,72 +39,19 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+@Schema2Beans(
+        schema = "../../../resources/datasources_1_1.xsd",
+        schemaType = SchemaType.XML_SCHEMA,
+        outputType = OutputType.TRADITIONAL_BASEBEAN,
+        validate = true,
+        attrProp = true,
+        removeUnreferencedNodes = true,
+        docRoot = "datasources",
+        java5 = true
+)
 
-@Multiple({
-    @Schema2Beans(
-        schema="../../resources/jboss-client_4_0.dtd",
-        schemaType=SchemaType.DTD,
-        outputType=OutputType.TRADITIONAL_BASEBEAN,
-        validate=true,
-        attrProp=true,
-        removeUnreferencedNodes=true,
-        docRoot="jboss-client",
-        java5=true
-    ),
-    @Schema2Beans(
-        schema="../../resources/jboss-service_4_0.dtd",
-        schemaType=SchemaType.DTD,
-        outputType=OutputType.TRADITIONAL_BASEBEAN,
-        validate=true,
-        attrProp=true,
-        removeUnreferencedNodes=true,
-        docRoot="server",
-        java5=true
-    ),
-    @Schema2Beans(
-        schema="../../resources/jboss_4_0.dtd",
-        schemaType=SchemaType.DTD,
-        outputType=OutputType.TRADITIONAL_BASEBEAN,
-        validate=true,
-        attrProp=true,
-        removeUnreferencedNodes=true,
-        docRoot="jboss",
-        java5=true
-    ),
-    @Schema2Beans(
-        schema="../../resources/jboss-app_4_0.dtd",
-        schemaType=SchemaType.DTD,
-        outputType=OutputType.TRADITIONAL_BASEBEAN,
-        validate=true,
-        attrProp=true,
-        removeUnreferencedNodes=true,
-        docRoot="jboss-app",
-        java5=true
-    ),
-    @Schema2Beans(
-        schema="../../resources/jboss-web_7_2.xsd",
-        schemaType=SchemaType.XML_SCHEMA,
-        outputType=OutputType.TRADITIONAL_BASEBEAN,
-        validate=true,
-        attrProp=true,
-        removeUnreferencedNodes=true,
-        docRoot="jboss-web",
-        java5=true
-    ),
-    @Schema2Beans(
-        schema="../../resources/jboss-as-messaging-deployment_1_0.xsd",
-        schemaType=SchemaType.XML_SCHEMA,
-        outputType=OutputType.TRADITIONAL_BASEBEAN,
-        validate=true,
-        attrProp=true,
-        removeUnreferencedNodes=true,
-        docRoot="messaging-deployment",
-        java5=true
-    )
-})
-package org.netbeans.modules.javaee.wildfly.config.gen;
+package org.netbeans.modules.javaee.wildfly.config.ds.gen;
 
 import org.netbeans.modules.schema2beans.Schema2Beans;
-import org.netbeans.modules.schema2beans.Schema2Beans.Multiple;
 import org.netbeans.modules.schema2beans.Schema2Beans.OutputType;
 import org.netbeans.modules.schema2beans.Schema2Beans.SchemaType;
