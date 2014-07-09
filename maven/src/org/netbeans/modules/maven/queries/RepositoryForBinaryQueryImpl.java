@@ -209,7 +209,9 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         if (binRoot.getPath().endsWith("/javax/javaee-api/7.0/javaee-api-7.0.jar")
          || binRoot.getPath().endsWith("/javax/javaee-api/6.0/javaee-api-6.0.jar")
          || binRoot.getPath().endsWith("/javax/javaee-web-api/7.0/javaee-web-api-7.0.jar")
-         || binRoot.getPath().endsWith("/javax/javaee-web-api/6.0/javaee-web-api-6.0.jar")) { //NOI18N
+         || binRoot.getPath().endsWith("/javax/javaee-web-api/6.0/javaee-web-api-6.0.jar")
+         || binRoot.getPath().endsWith("javax.persistence-2.1.0.jar")
+         || binRoot.getPath().endsWith("javax.persistence-2.0.0.jar")) { //NOI18N
             return new JavaEEJavadocResult();
         }
 
