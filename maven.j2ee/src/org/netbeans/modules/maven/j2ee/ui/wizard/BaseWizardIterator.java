@@ -55,6 +55,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
 import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
+import org.netbeans.modules.javaee.project.api.ui.UserProjectSettings;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import static org.netbeans.modules.maven.j2ee.ui.wizard.Bundle.*;
@@ -96,6 +97,11 @@ public abstract class BaseWizardIterator implements WizardDescriptor.BackgroundI
         // Saving server information for project
         if (j2eeProfile != null) {
             JavaEEProjectSettings.setProfile(project, j2eeProfile);
+        }
+
+        // Store last used server for later usage --> #244534
+        if (instanceID != null) {
+            UserProjectSettings.getDefault().setLastUsedServer(instanceID);
         }
 
         MavenProjectSupport.setServerID(project, serverID);

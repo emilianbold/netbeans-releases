@@ -60,6 +60,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
+import org.netbeans.modules.javaee.project.api.ui.UserProjectSettings;
 import org.netbeans.modules.maven.j2ee.execution.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.utils.Server;
@@ -135,6 +136,12 @@ public class ServerSelectionHelper {
                     serverToSelect = server;
                 }
             }
+        }
+
+        // Use last selected server if it's available
+        String lastUsedServer = UserProjectSettings.getDefault().getLastUsedServer();
+        if (lastUsedServer != null) {
+            serverToSelect = new Server(lastUsedServer);
         }
 
         // Sort the server list
