@@ -59,10 +59,15 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.UseScope;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.model.impl.Type;
@@ -186,12 +191,17 @@ public final class PhpCommentGenerator {
         private String returnType;
         private final FunctionDeclaration decl;
         private final FunctionScope fnc;
+        private Collection<? extends UseScope> declaredUses;
 
         public ScannerImpl(ParserResult info, FunctionDeclaration decl) {
             if (info instanceof PHPParseResult) {
                 PHPParseResult parseResult = (PHPParseResult) info;
                 Model model = parseResult.getModel();
                 final VariableScope variableScope = model.getVariableScope(decl.getEndOffset() - 1);
+                NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), decl.getEndOffset() - 1);
+                if (namespaceScope != null) {
+                    declaredUses = namespaceScope.getDeclaredUses();
+                }
                 if (variableScope instanceof FunctionScope) {
                     fnc = (FunctionScope) variableScope;
                     declaredVariables.addAll(fnc.getDeclaredVariables());
@@ -235,10 +245,30 @@ public final class PhpCommentGenerator {
                     if (VariousUtils.isSemiType(type)) {
                         type = null;
                     }
-                    params.add(new Pair<>(variable.getName(), type));
+                    params.add(new Pair<>(variable.getName(), resolveProperType(type)));
                 }
             }
             super.visit(p);
+        }
+
+        private String resolveProperType(String type) {
+            String result = type;
+            if (declaredUses != null && type != null) {
+                QualifiedName qualifiedType = QualifiedName.create(type);
+                for (UseScope useScope : declaredUses) {
+                    QualifiedName qualifiedUseScope = QualifiedName.create(useScope.getName());
+                    if (QualifiedName.create(true, qualifiedUseScope.getSegments()).equals(qualifiedType)) {
+                        AliasedName aliasedName = useScope.getAliasedName();
+                        if (aliasedName != null) {
+                            result = aliasedName.getAliasName();
+                        } else {
+                            result = qualifiedUseScope.getName();
+                        }
+                        break;
+                    }
+                }
+            }
+            return result;
         }
 
         @Override
@@ -252,7 +282,7 @@ public final class PhpCommentGenerator {
                         if (VariousUtils.isSemiType(type)) {
                             type = null;
                         }
-                        globals.add(new Pair<>(variable.getName(), type));
+                        globals.add(new Pair<>(variable.getName(), resolveProperType(type)));
                     }
                 }
             }
@@ -271,12 +301,14 @@ public final class PhpCommentGenerator {
             Collection<? extends String> typeNames = fnc.getReturnTypeNames();
             StringBuilder type = new StringBuilder();
             String item;
+            String resolvedItem;
             for (Iterator<String> i = (Iterator<String>) typeNames.iterator(); i.hasNext();) {
                 item = i.next();
                 if (VariousUtils.isSemiType(item)) {
                     break;
                 }
-                type = type.toString().isEmpty() ? type.append(item) : type.append("|").append(item); //NOI18N
+                resolvedItem = resolveProperType(item);
+                type = type.toString().isEmpty() ? type.append(resolvedItem) : type.append("|").append(resolvedItem); //NOI18N
             }
             returnType = type.toString();
         }
@@ -292,7 +324,7 @@ public final class PhpCommentGenerator {
                         if (VariousUtils.isSemiType(type)) {
                             type = null;
                         }
-                        staticvars.add(new Pair<>(variable.getName(), type));
+                        staticvars.add(new Pair<>(variable.getName(), resolveProperType(type)));
                     }
                 }
             }
@@ -305,7 +337,7 @@ public final class PhpCommentGenerator {
             String type = getTypeFromThrowStatement(node);
             if (!usedThrows.contains(type)) {
                 usedThrows.add(type);
-                throwsExceptions.add(new Pair<String, String>(null, type));
+                throwsExceptions.add(new Pair<String, String>(null, resolveProperType(type)));
             }
             super.visit(node);
         }
@@ -328,7 +360,7 @@ public final class PhpCommentGenerator {
                     type = typeNames.isEmpty() ? null : typeNames.iterator().next();
                 }
             }
-            return type;
+            return resolveProperType(type);
         }
 
         private String getTypeFromNamespaceName(NamespaceName namespaceName) {

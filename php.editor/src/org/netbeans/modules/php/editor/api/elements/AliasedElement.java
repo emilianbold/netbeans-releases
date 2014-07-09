@@ -217,6 +217,10 @@ public class AliasedElement implements FullyQualifiedElement {
         return element.getOffsetRange(result);
     }
 
+    public AliasedName getAliasedName() {
+        return aliasedName;
+    }
+
     /**
      * @return the trait
      */

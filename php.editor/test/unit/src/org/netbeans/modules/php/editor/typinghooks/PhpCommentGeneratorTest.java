@@ -265,6 +265,48 @@ public class PhpCommentGeneratorTest extends PHPNavTestBase {
                 "?>");
     }
 
+    public void testResolveProperType_01() throws Exception {
+        String original = "<?php\n" +
+                "namespace foo\\bar;\n" +
+                "use baz\\SomeClass;\n" +
+                "class Test {\n" +
+                "    /**^\n" +
+                "    public function getSomething(SomeClass $someClass) {}\n" +
+                "}";
+        String expected = "<?php\n" +
+                "namespace foo\\bar;\n" +
+                "use baz\\SomeClass;\n" +
+                "class Test {\n" +
+                "    /**\n" +
+                "     * \n" +
+                "     * @param SomeClass $someClass^\n" +
+                "     */\n" +
+                "    public function getSomething(SomeClass $someClass) {}\n" +
+                "}";
+        insertBreak(original, expected);
+    }
+
+    public void testResolveProperType_02() throws Exception {
+        String original = "<?php\n" +
+                "namespace foo\\bar;\n" +
+                "use baz\\SomeClass as SomeClassAlias;\n" +
+                "class Test {\n" +
+                "    /**^\n" +
+                "    public function getSomething(SomeClassAlias $someClass) {}\n" +
+                "}";
+        String expected = "<?php\n" +
+                "namespace foo\\bar;\n" +
+                "use baz\\SomeClass as SomeClassAlias;\n" +
+                "class Test {\n" +
+                "    /**\n" +
+                "     * \n" +
+                "     * @param SomeClassAlias $someClass^\n" +
+                "     */\n" +
+                "    public function getSomething(SomeClassAlias $someClass) {}\n" +
+                "}";
+        insertBreak(original, expected);
+    }
+
     @Override
     public void insertNewline(String source, String reformatted, IndentPrefs preferences) throws Exception {
         int sourcePos = source.indexOf('^');
