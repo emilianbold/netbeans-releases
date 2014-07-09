@@ -73,6 +73,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.openide.explorer.PropertyPanelBridge;
 
 import org.netbeans.modules.openide.explorer.TTVEnvBridge;
+import org.openide.util.Utilities;
 
 
 /** <p>PropertyPanel is a generic GUI component for displaying and editing a JavaBeans&trade;
@@ -1200,7 +1201,7 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
             if (wrapped != null) {
                 wrapped.actionPerformed(e);
             } else {
-                Toolkit.getDefaultToolkit().beep();
+                Utilities.disabledActionBeep();
             }
         }
 
