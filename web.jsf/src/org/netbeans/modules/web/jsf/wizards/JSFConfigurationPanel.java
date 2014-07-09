@@ -61,6 +61,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
+import org.netbeans.modules.web.jsf.JsfPreferences;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentImplementation;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.util.ChangeSupport;
@@ -79,7 +80,7 @@ public class JSFConfigurationPanel extends WebModuleExtender implements WebModul
 
     private static final String PREFERRED_LANGUAGE="jsf.language"; //NOI18N
 
-    private Preferences preferences;
+    private JsfPreferences preferences;
     private WebModule webModule;
 
     private LibraryType libraryType;
@@ -128,7 +129,7 @@ public class JSFConfigurationPanel extends WebModuleExtender implements WebModul
         this(framework, controller, isFrameworkAddition, null, null);
     }
 
-    public JSFConfigurationPanel(JSFFrameworkProvider framework, ExtenderController controller, boolean isFrameworkAddition, Preferences preferences, WebModule webModule) {
+    public JSFConfigurationPanel(JSFFrameworkProvider framework, ExtenderController controller, boolean isFrameworkAddition, JsfPreferences preferences, WebModule webModule) {
         this.framework = framework;
         this.controller = controller;
         this.isFrameworkAddition = isFrameworkAddition;
@@ -142,11 +143,7 @@ public class JSFConfigurationPanel extends WebModuleExtender implements WebModul
         validateXml = true;
         verifyObjects = false;
         facesMapping = "/faces/*"; //NOI18N
-        if (preferences != null) {
-            enableFacelets = preferences.get(PREFERRED_LANGUAGE, "JSP").equals(PreferredLanguage.Facelets.getName());
-        } else {
-            enableFacelets = false;
-        }
+        enableFacelets = preferences == null ? false : preferences.getPreferredLanguage().equals(PreferredLanguage.Facelets);
 
         getComponent();
     }
@@ -194,11 +191,11 @@ public class JSFConfigurationPanel extends WebModuleExtender implements WebModul
     @Override
     public Set extend(WebModule webModule) {
         Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
-        preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
-        
+        preferences = JsfPreferences.forProject(project);
+
         PreferredLanguage preferredLang = component.getPreferredLanguage();
         if ((preferredLang == PreferredLanguage.JSP) || (preferredLang == PreferredLanguage.Facelets)) {
-            preferences.put(PREFERRED_LANGUAGE, preferredLang.getName());
+            preferences.setPreferredLanguage(preferredLang);
         }
         return framework.extendImpl(webModule, component.getJsfComponentCustomizers());
     }
@@ -325,7 +322,7 @@ public class JSFConfigurationPanel extends WebModuleExtender implements WebModul
             }
             PreferredLanguage preferredLanguage = component.getPreferredLanguage();
             if (preferences != null && preferredLanguage != null) {
-                preferences.put(PREFERRED_LANGUAGE, preferredLanguage.getName());
+                preferences.setPreferredLanguage(preferredLanguage);
             }
         }
     }
