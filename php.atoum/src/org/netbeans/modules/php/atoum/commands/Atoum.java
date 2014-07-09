@@ -221,12 +221,42 @@ public final class Atoum {
     }
 
     @CheckForNull
+    public File getCoverageLog() {
+        if (COVERAGE_LOG.isFile()) {
+            return COVERAGE_LOG;
+        }
+        return null;
+    }
+
+    @CheckForNull
     public Integer runTests(PhpModule phpModule, TestRunInfo runInfo, final TestSession testSession) throws TestRunException {
-        PhpExecutable atoum = getExecutable(phpModule, getOutputTitle(runInfo));
+        boolean coverageEnabled = runInfo.isCoverageEnabled();
+        // executable
+        String command = atoumPath;
+        boolean phar = atoumPath.toLowerCase().contains(".phar"); // NOI18N
+        if (coverageEnabled) {
+            if (!phar) {
+                File atoumDir = new File(atoumPath)
+                        .getParentFile() // bin/
+                        .getParentFile(); // atoum dir
+                command = new File(atoumDir, COVERAGE_SCRIPT_RELATIVE_PATH).getAbsolutePath();
+                assert new File(command).isFile() : "Coverage script should exist: " + command;
+            }
+        }
+        PhpExecutable atoum = getExecutable(command, phpModule, getOutputTitle(runInfo));
+        // params
         List<String> params = new ArrayList<>();
         addBootstrap(phpModule, params);
         addConfiguration(phpModule, params);
         params.add(TAP_FORMAT_PARAM);
+        if (coverageEnabled) {
+            if (phar) {
+                params.add(USE_PARAM);
+                params.add(COVERAGE_PARAM);
+            }
+            params.add(OUTPUT_PARAM);
+            params.add(COVERAGE_LOG.getAbsolutePath());
+        }
         // custom tests
         List<TestRunInfo.TestInfo> customTests = runInfo.getCustomTests();
         if (!customTests.isEmpty()) {
@@ -250,6 +280,13 @@ public final class Atoum {
         }
         addStartFile(runInfo, params);
         atoum.additionalParameters(params);
+        // run
+        if (coverageEnabled) {
+            // delete the old file
+            if (COVERAGE_LOG.isFile()) {
+                COVERAGE_LOG.delete();
+            }
+        }
         try {
             if (runInfo.getSessionType() == TestRunInfo.SessionType.TEST) {
                 return atoum.runAndWait(getDescriptor(), new ParsingFactory(testSession), "Running atoum tests..."); // NOI18N
@@ -269,52 +306,6 @@ public final class Atoum {
                 UiUtils.processExecutionException(ex, AtoumOptionsPanelController.OPTIONS_SUB_PATH);
             }
             throw new TestRunException(ex);
-        }
-        return null;
-    }
-
-    @NbBundle.Messages("Atoum.run.coverage=atoum (coverage)")
-    @CheckForNull
-    public File runCoverage(PhpModule phpModule, TestRunInfo runInfo) {
-        assert runInfo.isCoverageEnabled();
-        String command;
-        boolean phar = atoumPath.toLowerCase().endsWith(".phar"); // NOI18N
-        if (phar) {
-            command = atoumPath;
-        } else {
-            File atoumDir = new File(atoumPath)
-                    .getParentFile() // bin/
-                    .getParentFile(); // atoum dir
-            command = new File(atoumDir, COVERAGE_SCRIPT_RELATIVE_PATH).getAbsolutePath();
-            assert new File(command).isFile() : "Coverage script should exist: " + command;
-        }
-        PhpExecutable atoum = getExecutable(command, phpModule, Bundle.Atoum_run_coverage());
-        List<String> params = new ArrayList<>();
-        addBootstrap(phpModule, params);
-        addConfiguration(phpModule, params);
-        if (phar) {
-            params.add(USE_PARAM);
-            params.add(COVERAGE_PARAM);
-        }
-        params.add(OUTPUT_PARAM);
-        params.add(COVERAGE_LOG.getAbsolutePath());
-        addStartFile(runInfo, params);
-        atoum.additionalParameters(params);
-        // delete the old file
-        if (COVERAGE_LOG.isFile()) {
-            COVERAGE_LOG.delete();
-        }
-        try {
-            atoum.runAndWait(getDescriptor(), "Running atoum coverage..."); // NOI18N
-            if (COVERAGE_LOG.isFile()) {
-                return COVERAGE_LOG;
-            }
-        } catch (CancellationException ex) {
-            // canceled
-            LOGGER.log(Level.FINE, "Test creating cancelled", ex);
-        } catch (ExecutionException ex) {
-            // should already be processed by runTests()
-            LOGGER.log(Level.INFO, null, ex);
         }
         return null;
     }
