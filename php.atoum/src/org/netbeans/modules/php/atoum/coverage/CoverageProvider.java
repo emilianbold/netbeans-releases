@@ -48,6 +48,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -70,16 +71,17 @@ public final class CoverageProvider {
 
     @CheckForNull
     public Coverage getCoverage(TestRunInfo runInfo) {
+        assert runInfo.isCoverageEnabled();
         Atoum atoum = Atoum.getForPhpModule(phpModule, false);
         if (atoum == null) {
             return null;
         }
-        File coverageLog = atoum.runCoverage(phpModule, runInfo);
+        File coverageLog = atoum.getCoverageLog();
         if (coverageLog == null) {
             // likely some error
             return null;
         }
-        try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(coverageLog), "UTF-8"))) { // NOI18N
+        try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(coverageLog), StandardCharsets.UTF_8))) {
             return new CoverageImpl(CloverLogParser.parse(reader));
         } catch (IOException exc) {
             LOGGER.log(Level.WARNING, null, exc);
