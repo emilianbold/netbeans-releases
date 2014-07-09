@@ -173,8 +173,9 @@ public class J2eeMavenSourcesImpl implements Sources, OtherSourcesExclude {
 
     @NbBundle.Messages("LBL_WebPages=Web Pages")
     private String getDisplayName(FileObject webRoot) {
+        String projectDirPath = project.getProjectDirectory().getPath() + "/src/main/webapp"; // NOI18N
         // To preserve current behavior, don't show web root name in the node name for default "webapp"
-        if ("webapp".equals(webRoot.getName())) { // NOI18N
+        if (webRoot.getPath().equals(projectDirPath)) {
             return LBL_WebPages();
         } else {
             return LBL_WebPages() + " (" + webRoot.getName() + ")"; // NOI18N

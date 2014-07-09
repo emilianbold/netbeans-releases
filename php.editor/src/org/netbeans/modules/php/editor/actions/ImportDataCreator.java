@@ -106,10 +106,17 @@ public class ImportDataCreator {
 
     private void processFQElementName(final String fqElementName) {
         Collection<FullyQualifiedElement> possibleFQElements = fetchPossibleFQElements(fqElementName);
-        Collection<FullyQualifiedElement> filteredDuplicates = filterDuplicates(possibleFQElements);
+        Collection<FullyQualifiedElement> filteredPlatformConstsAndFunctions = filterPlatformConstsAndFunctions(possibleFQElements);
+        Collection<FullyQualifiedElement> filteredDuplicates = filterDuplicates(filteredPlatformConstsAndFunctions);
         Collection<FullyQualifiedElement> filteredExactUnqualifiedNames = filterExactUnqualifiedName(filteredDuplicates, fqElementName);
         if (filteredExactUnqualifiedNames.isEmpty()) {
-            possibleItems.add(new EmptyItem(fqElementName));
+            if (options.isPhp56OrGreater()) {
+                possibleItems.add(new EmptyItem(fqElementName));
+            } else {
+                if (!isConstOrFunction(fqElementName)) {
+                    possibleItems.add(new EmptyItem(fqElementName));
+                }
+            }
         } else {
             Collection<FullyQualifiedElement> filteredFQElements = filterFQElementsFromCurrentNamespace(filteredExactUnqualifiedNames);
             if (filteredFQElements.isEmpty()) {
@@ -121,6 +128,20 @@ public class ImportDataCreator {
                         filteredFQElements.size() != filteredExactUnqualifiedNames.size()));
             }
         }
+    }
+
+    private boolean isConstOrFunction(String typeName) {
+        boolean result = false;
+        Collection<FunctionElement> possibleFunctions = phpIndex.getFunctions(NameKind.prefix(typeName));
+        if (possibleFunctions != null && !possibleFunctions.isEmpty()) {
+            result = true;
+        } else {
+            Collection<ConstantElement> possibleConstants = phpIndex.getConstants(NameKind.prefix(typeName));
+            if (possibleConstants != null && !possibleConstants.isEmpty()) {
+                result = true;
+            }
+        }
+        return result;
     }
 
     private Collection<FullyQualifiedElement> fetchPossibleFQElements(final String typeName) {
@@ -145,6 +166,18 @@ public class ImportDataCreator {
             String typeElementName = fqElement.toString();
             if (!filteredFQElements.contains(typeElementName)) {
                 filteredFQElements.add(typeElementName);
+                result.add(fqElement);
+            }
+        }
+        return result;
+    }
+
+    private Collection<FullyQualifiedElement> filterPlatformConstsAndFunctions(final Collection<FullyQualifiedElement> possibleFQElements) {
+        Collection<FullyQualifiedElement> result = new HashSet<>();
+        for (FullyQualifiedElement fqElement : possibleFQElements) {
+            if (fqElement instanceof ClassElement || fqElement instanceof InterfaceElement) {
+                result.add(fqElement);
+            } else if (!fqElement.isPlatform()) {
                 result.add(fqElement);
             }
         }

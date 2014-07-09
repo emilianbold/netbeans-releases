@@ -83,11 +83,11 @@ class WebPagesNode extends FilterNode {
     @Override
     public String getDisplayName() {
         if (isTopLevelNode) {
-            String webRootName = file.getName();
+            String webRootPath = file.getPath();
             String displayName;
 
             // To preserve current behavior, don't show web root name in the node name for default "webapp"
-            if ("webapp".equals(webRootName)) { // NOI18N
+            if (webRootPath.endsWith("src/main/webapp")) { // NOI18N
                 displayName = LBL_Web_Pages();
             } else {
                 displayName = LBL_Web_Pages() + " (" + file.getName() + ")"; // NOI18N
