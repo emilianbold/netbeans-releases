@@ -59,9 +59,9 @@ import org.openide.filesystems.FileObject;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class UsedNamesComputerTest extends PHPTestBase {
+public class UsedNamesCollectorTest extends PHPTestBase {
 
-    public UsedNamesComputerTest(String testName) {
+    public UsedNamesCollectorTest(String testName) {
         super(testName);
     }
 
@@ -128,7 +128,7 @@ public class UsedNamesComputerTest extends PHPTestBase {
                 if (r != null) {
                     assertTrue(r instanceof ParserResult);
                     PHPParseResult phpResult = (PHPParseResult) r;
-                    result.putAll(new UsedNamesComputer(phpResult, caretOffset).computeNames());
+                    result.putAll(new UsedNamesCollector(phpResult, caretOffset).collectNames());
                 }
             }
         });

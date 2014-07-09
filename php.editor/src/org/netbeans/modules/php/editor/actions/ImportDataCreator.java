@@ -56,6 +56,7 @@ import org.netbeans.modules.php.editor.actions.ImportData.ItemVariant;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.AliasedElement;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.ConstantElement;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
@@ -197,7 +198,7 @@ public class ImportDataCreator {
         @Override
         @NbBundle.Messages("CanNotBeResolved=<html><font color='#FF0000'>&lt;cannot be resolved&gt;")
         public void insertData(ImportData data) {
-            ItemVariant itemVariant = new ItemVariant(Bundle.CanNotBeResolved(), ItemVariant.UsagePolicy.CAN_NOT_BE_USED, ItemVariant.Type.ERROR);
+            ItemVariant itemVariant = new ItemVariant(Bundle.CanNotBeResolved(), ItemVariant.UsagePolicy.CAN_NOT_BE_USED, ItemVariant.Type.ERROR, false);
             data.add(new DataItem(typeName, Arrays.asList(new ItemVariant[] {itemVariant}), itemVariant));
         }
 
@@ -242,10 +243,18 @@ public class ImportDataCreator {
             ItemVariant defaultValue = null;
             boolean isFirst = true;
             for (FullyQualifiedElement fqElement : sortedFQElements) {
+                String variantName = fqElement.getFullyQualifiedName().toString();
+                boolean isFromAliasedElement = false;
+                if (fqElement instanceof AliasedElement) {
+                    AliasedElement aliasedElement = (AliasedElement) fqElement;
+                    variantName = aliasedElement.getAliasedName().getAliasName();
+                    isFromAliasedElement = true;
+                }
                 ItemVariant itemVariant = new ItemVariant(
-                        fqElement.getFullyQualifiedName().toString(),
+                        variantName,
                         ItemVariant.UsagePolicy.CAN_BE_USED,
-                        fqElement.getPhpElementKind());
+                        fqElement.getPhpElementKind(),
+                        isFromAliasedElement);
                 variants.add(itemVariant);
                 if (isFirst) {
                     defaultValue = itemVariant;
@@ -266,18 +275,10 @@ public class ImportDataCreator {
                     defaultValue = dontUseItemVariant;
                 }
             }
-            Collections.sort(variants, new VariantsComparator());
+            Collections.sort(variants);
             data.add(new DataItem(typeName, variants, defaultValue, usedNames.get(typeName)));
         }
 
-    }
-
-    private static class VariantsComparator implements Comparator<ItemVariant>, Serializable {
-
-        @Override
-        public int compare(ItemVariant o1, ItemVariant o2) {
-            return o1.getName().compareToIgnoreCase(o2.getName());
-        }
     }
 
     private static class FQElementsComparator implements Comparator<FullyQualifiedElement>, Serializable {

@@ -157,7 +157,7 @@ public class ImportData {
 
     }
 
-    public static class ItemVariant {
+    public static class ItemVariant implements Comparable<ItemVariant> {
 
         public static enum UsagePolicy {
             CAN_BE_USED() {
@@ -269,20 +269,22 @@ public class ImportData {
         private final String name;
         private final UsagePolicy usagePolicy;
         private final Type type;
+        private final boolean isFromAliasedElement;
 
         public ItemVariant(String name, UsagePolicy usagePolicy) {
-            this(name, usagePolicy, Type.NONE);
+            this(name, usagePolicy, Type.NONE, false);
         }
 
-        public ItemVariant(String name, UsagePolicy usagePolicy, Type type) {
+        public ItemVariant(String name, UsagePolicy usagePolicy, Type type, boolean isFromAliasedElement) {
             assert name != null;
             this.name = name;
             this.usagePolicy = usagePolicy;
             this.type = type;
+            this.isFromAliasedElement = isFromAliasedElement;
         }
 
-        public ItemVariant(String name, UsagePolicy usagePolicy, PhpElementKind phpElementKind) {
-            this(name, usagePolicy, Type.create(phpElementKind));
+        public ItemVariant(String name, UsagePolicy usagePolicy, PhpElementKind phpElementKind, boolean isFromAliasedElement) {
+            this(name, usagePolicy, Type.create(phpElementKind), isFromAliasedElement);
         }
 
         public String getName() {
@@ -299,6 +301,15 @@ public class ImportData {
 
         public boolean canBeUsed() {
             return usagePolicy.canBeUsed();
+        }
+
+        public boolean isFromAliasedElement() {
+            return isFromAliasedElement;
+        }
+
+        @Override
+        public int compareTo(ItemVariant other) {
+            return getName().compareToIgnoreCase(other.getName());
         }
 
         @Override
