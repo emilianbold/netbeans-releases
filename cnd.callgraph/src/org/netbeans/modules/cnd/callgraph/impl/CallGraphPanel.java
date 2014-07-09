@@ -144,6 +144,10 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
             actions.add(exportAction);
             scene.setExportAction(exportAction);
         }
+        //add all actions from the provider
+        if (graphUI != null) {
+            actions.addAll(graphUI.getActions());
+        }
         root = new AbstractNode(children){
             @Override
             public Action[] getActions(boolean context) {
