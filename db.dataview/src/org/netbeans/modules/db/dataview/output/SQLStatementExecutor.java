@@ -66,15 +66,24 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
     protected volatile Throwable ex;
     protected String errorMsg = ""; // NOI18N
     protected boolean lastCommitState;
-    private String title;
-    private String titleMsg;
+    private final String title;
+    private final String titleMsg;
+    private final boolean runInTransaction;
     private volatile RequestProcessor.Task task;
     private long startTime;
 
-    public SQLStatementExecutor(DataView parent, String title, String msg) {
+
+    /**
+     * @param parent
+     * @param title
+     * @param msg
+     * @param runInTransaction 
+     */
+    public SQLStatementExecutor(DataView parent, String title, String msg, boolean runInTransaction) {
         this.title = title;
         this.titleMsg = msg;
         this.dataView = parent;
+        this.runInTransaction = runInTransaction;
     }
 
     public void setTask(RequestProcessor.Task task) {
@@ -108,7 +117,11 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
                     DialogDisplayer.getDefault().notify(nd);
                     return;
                 }
+                if(runInTransaction) {
                 lastCommitState = setAutocommit(conn, false);
+                } else {
+                    lastCommitState = setAutocommit(conn, true);
+                }
                 execute(); // delegate 
             } finally {
                 handle.finish();
@@ -121,7 +134,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
                 error = true;
             }
             finished(); // delegate 
-            resetAutocommitState(conn, lastCommitState);
+            setAutocommit(conn, lastCommitState);
         }
     }
 
@@ -130,12 +143,11 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
         return task.cancel();
     }
 
-    public abstract void finished();
+    protected abstract void finished();
 
-    public abstract void execute() throws SQLException, DBException;
+    protected abstract void execute() throws SQLException, DBException;
 
-    protected void executeOnSucess() {
-    }
+    protected void executeOnSucess() {}
 
     protected void reinstateToolbar() {
         // reinstate the toolbar
@@ -182,16 +194,10 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
         return newState;
     }
 
-    private void resetAutocommitState(Connection conn, boolean lastState) {
-        if (conn != null) {
-            try {
-                conn.setAutoCommit(lastState);
-            } catch (SQLException e) {
-            }
-        }
-    }
-
     private boolean commit(Connection conn) {
+        if(! runInTransaction) {
+            return true;
+        }
         try {
             if (conn != null && !conn.getAutoCommit()) {
                 conn.commit();
@@ -206,6 +212,10 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
     }
 
     private void rollback(Connection conn) {
+        if(! runInTransaction) {
+            String msg = NbBundle.getMessage(SQLStatementExecutor.class, "MSG_failure_rollback");
+            dataView.setErrorStatusText(msg, null);
+        }
         try {
             if (conn != null && !conn.getAutoCommit()) {
                 conn.rollback();
