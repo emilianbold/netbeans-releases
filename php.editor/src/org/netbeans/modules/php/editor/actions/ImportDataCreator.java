@@ -275,18 +275,10 @@ public class ImportDataCreator {
                     defaultValue = dontUseItemVariant;
                 }
             }
-            Collections.sort(variants, new VariantsComparator());
+            Collections.sort(variants);
             data.add(new DataItem(typeName, variants, defaultValue, usedNames.get(typeName)));
         }
 
-    }
-
-    private static class VariantsComparator implements Comparator<ItemVariant>, Serializable {
-
-        @Override
-        public int compare(ItemVariant o1, ItemVariant o2) {
-            return o1.getName().compareToIgnoreCase(o2.getName());
-        }
     }
 
     private static class FQElementsComparator implements Comparator<FullyQualifiedElement>, Serializable {

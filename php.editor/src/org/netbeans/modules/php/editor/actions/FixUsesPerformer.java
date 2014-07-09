@@ -205,9 +205,13 @@ public class FixUsesPerformer {
         if (isUsed(useElement) || !removeUnusedUses) {
             AliasedName aliasedName = useElement.getAliasedName();
             if (aliasedName != null) {
-                useParts.add(new UsePart(modifyUseName(aliasedName.getRealName().toString()) + AS_CONCAT + aliasedName.getAliasName(), UsePart.Type.create(useElement.getType())));
+                useParts.add(new UsePart(
+                        modifyUseName(aliasedName.getRealName().toString()) + AS_CONCAT + aliasedName.getAliasName(),
+                        UsePart.Type.create(useElement.getType())));
             } else {
-                useParts.add(new UsePart(modifyUseName(useElement.getName()), UsePart.Type.create(useElement.getType())));
+                useParts.add(new UsePart(
+                        modifyUseName(useElement.getName()),
+                        UsePart.Type.create(useElement.getType())));
             }
         }
     }
@@ -437,14 +441,14 @@ public class FixUsesPerformer {
 
     private static class SanitizedUse {
 
-        private final UsePart use;
+        private final UsePart usePartToSanitization;
         private String alias;
         private final boolean shouldBeUsed;
 
-        public SanitizedUse(final UsePart use, final List<UsePart> existingUseParts, final AliasStrategy createAliasStrategy) {
-            this.use = use;
-            QualifiedName qualifiedName = QualifiedName.create(use.getTextPart());
-            if (!existingUseParts.contains(use) && !use.isFromAliasedElement()) {
+        public SanitizedUse(final UsePart usePartToSanitization, final List<UsePart> existingUseParts, final AliasStrategy createAliasStrategy) {
+            this.usePartToSanitization = usePartToSanitization;
+            QualifiedName qualifiedName = QualifiedName.create(usePartToSanitization.getTextPart());
+            if (!existingUseParts.contains(usePartToSanitization) && !usePartToSanitization.isFromAliasedElement()) {
                 alias = createAliasStrategy.createAlias(qualifiedName);
                 shouldBeUsed = true;
             } else {
@@ -453,7 +457,7 @@ public class FixUsesPerformer {
         }
 
         public UsePart getSanitizedUsePart() {
-            return new UsePart(hasAlias() ? use.getTextPart() + AS_CONCAT + alias : use.getTextPart(), use.getType(), use.isFromAliasedElement());
+            return new UsePart(hasAlias() ? usePartToSanitization.getTextPart() + AS_CONCAT + alias : usePartToSanitization.getTextPart(), usePartToSanitization.getType(), usePartToSanitization.isFromAliasedElement());
         }
 
         private boolean hasAlias() {
@@ -465,8 +469,8 @@ public class FixUsesPerformer {
             if (hasAlias()) {
                 result = alias;
             } else {
-                if (use.isFromAliasedElement()) {
-                    result = use.getTextPart();
+                if (usePartToSanitization.isFromAliasedElement()) {
+                    result = usePartToSanitization.getTextPart();
                 } else {
                     result = usedNamespaceName.getReplaceName();
                 }

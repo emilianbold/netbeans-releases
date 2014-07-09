@@ -67,7 +67,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class UsedNamesComputer {
+public class UsedNamesCollector {
     private final PHPParseResult parserResult;
     private final int caretPosition;
     private Map<String, List<UsedNamespaceName>> possibleNames;
@@ -79,12 +79,12 @@ public class UsedNamesComputer {
         SPECIAL_NAMES.add("static"); //NOI18N
     }
 
-    public UsedNamesComputer(final PHPParseResult parserResult, final int caretPosition) {
+    public UsedNamesCollector(final PHPParseResult parserResult, final int caretPosition) {
         this.parserResult = parserResult;
         this.caretPosition = caretPosition;
     }
 
-    public Map<String, List<UsedNamespaceName>> computeNames() {
+    public Map<String, List<UsedNamespaceName>> collectNames() {
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(parserResult.getModel().getFileScope(), caretPosition);
         assert namespaceScope != null;
         OffsetRange offsetRange = namespaceScope.getBlockRange();

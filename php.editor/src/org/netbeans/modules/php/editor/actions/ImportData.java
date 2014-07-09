@@ -157,7 +157,7 @@ public class ImportData {
 
     }
 
-    public static class ItemVariant {
+    public static class ItemVariant implements Comparable<ItemVariant> {
 
         public static enum UsagePolicy {
             CAN_BE_USED() {
@@ -305,6 +305,11 @@ public class ImportData {
 
         public boolean isFromAliasedElement() {
             return isFromAliasedElement;
+        }
+
+        @Override
+        public int compareTo(ItemVariant other) {
+            return getName().compareToIgnoreCase(other.getName());
         }
 
         @Override

@@ -245,7 +245,7 @@ public class FixUsesPerformerTest extends PHPTestBase {
                 if (r != null) {
                     assertTrue(r instanceof ParserResult);
                     PHPParseResult phpResult = (PHPParseResult)r;
-                    Map<String, List<UsedNamespaceName>> usedNames = new UsedNamesComputer(phpResult, caretOffset).computeNames();
+                    Map<String, List<UsedNamespaceName>> usedNames = new UsedNamesCollector(phpResult, caretOffset).collectNames();
                     FileScope fileScope = phpResult.getModel().getFileScope();
                     NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, caretOffset);
                     Options currentOptions = options;
