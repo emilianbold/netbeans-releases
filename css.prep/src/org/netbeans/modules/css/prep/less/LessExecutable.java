@@ -227,7 +227,7 @@ public class LessExecutable {
                     && installedVersion.isAboveOrEqual(MINIMAL_VERSION_WITH_SOURCEMAP)) {
                 params.add(SOURCE_MAP_PARAM);
                 params.add(String.format(SOURCE_MAP_ROOTPATH_PARAM, getRelativeRootPath(inputFile, outputFile)));
-                params.add(String.format(SOURCE_MAP_URL_PARAM, outputFile.getName()));
+                params.add(String.format(SOURCE_MAP_URL_PARAM, outputFile.getName() + ".map")); // NOI18N
             } else {
                 // older versions
                 params.add(DEBUG_PARAM);
