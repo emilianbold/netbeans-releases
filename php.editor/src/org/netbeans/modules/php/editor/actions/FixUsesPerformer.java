@@ -137,7 +137,10 @@ public class FixUsesPerformer {
         for (int i = 0; i < selections.size(); i++) {
             ItemVariant itemVariant = selections.get(i);
             if (itemVariant.canBeUsed()) {
-                SanitizedUse sanitizedUse = new SanitizedUse(new UsePart(modifyUseName(itemVariant.getName()), UsePart.Type.create(itemVariant.getType())), useParts, createAliasStrategy(i, useParts, selections));
+                SanitizedUse sanitizedUse = new SanitizedUse(
+                        new UsePart(modifyUseName(itemVariant.getName()), UsePart.Type.create(itemVariant.getType()), itemVariant.isFromAliasedElement()),
+                        useParts,
+                        createAliasStrategy(i, useParts, selections));
                 if (sanitizedUse.shouldBeUsed()) {
                     useParts.add(sanitizedUse.getSanitizedUsePart());
                 }
@@ -441,7 +444,7 @@ public class FixUsesPerformer {
         public SanitizedUse(final UsePart use, final List<UsePart> existingUseParts, final AliasStrategy createAliasStrategy) {
             this.use = use;
             QualifiedName qualifiedName = QualifiedName.create(use.getTextPart());
-            if (!existingUseParts.contains(use)) {
+            if (!existingUseParts.contains(use) && !use.isFromAliasedElement()) {
                 alias = createAliasStrategy.createAlias(qualifiedName);
                 shouldBeUsed = true;
             } else {
@@ -450,7 +453,7 @@ public class FixUsesPerformer {
         }
 
         public UsePart getSanitizedUsePart() {
-            return new UsePart(hasAlias() ? use.getTextPart() + AS_CONCAT + alias : use.getTextPart(), use.getType());
+            return new UsePart(hasAlias() ? use.getTextPart() + AS_CONCAT + alias : use.getTextPart(), use.getType(), use.isFromAliasedElement());
         }
 
         private boolean hasAlias() {
@@ -458,7 +461,17 @@ public class FixUsesPerformer {
         }
 
         public String getReplaceName(final UsedNamespaceName usedNamespaceName) {
-            return hasAlias() ? alias : usedNamespaceName.getReplaceName();
+            String result;
+            if (hasAlias()) {
+                result = alias;
+            } else {
+                if (use.isFromAliasedElement()) {
+                    result = use.getTextPart();
+                } else {
+                    result = usedNamespaceName.getReplaceName();
+                }
+            }
+            return result;
         }
 
         public boolean shouldBeUsed() {
@@ -545,10 +558,16 @@ public class FixUsesPerformer {
 
         private final String textPart;
         private final Type type;
+        private final boolean isFromAliasedElement;
 
-        private UsePart(String textPart, Type type) {
+        private UsePart(String textPart, Type type, boolean isFromAliasedElement) {
             this.textPart = textPart;
             this.type = type;
+            this.isFromAliasedElement = isFromAliasedElement;
+        }
+
+        private UsePart(String textPart, Type type) {
+            this(textPart, type, false);
         }
 
         public String getTextPart() {
@@ -561,6 +580,10 @@ public class FixUsesPerformer {
 
         public String getUsePrefix() {
             return type.getUsePrefix();
+        }
+
+        public boolean isFromAliasedElement() {
+            return isFromAliasedElement;
         }
 
         @Override
@@ -590,9 +613,10 @@ public class FixUsesPerformer {
 
         @Override
         public int hashCode() {
-            int hash = 7;
-            hash = 83 * hash + Objects.hashCode(this.textPart);
-            hash = 83 * hash + Objects.hashCode(this.type);
+            int hash = 5;
+            hash = 71 * hash + Objects.hashCode(this.textPart);
+            hash = 71 * hash + Objects.hashCode(this.type);
+            hash = 71 * hash + (this.isFromAliasedElement ? 1 : 0);
             return hash;
         }
 
@@ -608,7 +632,10 @@ public class FixUsesPerformer {
             if (!Objects.equals(this.textPart, other.textPart)) {
                 return false;
             }
-            return this.type == other.type;
+            if (this.type != other.type) {
+                return false;
+            }
+            return this.isFromAliasedElement == other.isFromAliasedElement;
         }
 
     }
