@@ -613,7 +613,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 end = parserResult.getSnapshot().getText().length();
             }
             previousUsage = (modelBuilder.getCurrentDeclarationScope()).getProperty(functionNode.getIdent().getName());
-            if ( previousUsage != null && previousUsage.isDeclared()) {
+            if ( previousUsage != null && previousUsage.isDeclared() && previousUsage instanceof JsFunction) {
                 // the function is alredy there
                 return null;
             }
@@ -1233,8 +1233,23 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node enter(VarNode varNode) {
-         if (!(varNode.getInit() instanceof ObjectNode || varNode.getInit() instanceof ReferenceNode
-                 || varNode.getInit() instanceof LiteralNode.ArrayLiteralNode)) {
+        Node init = varNode.getInit();
+        ReferenceNode rNode = null;
+        if (init instanceof ReferenceNode) {
+            rNode = (ReferenceNode)init;
+        } else if (init instanceof BinaryNode) {
+            // this should handle cases like 
+            // var prom  = another.prom = function prom() {}
+            BinaryNode bNode = (BinaryNode)init;
+            while (bNode.rhs() instanceof BinaryNode ) {
+                bNode = (BinaryNode)bNode.rhs();
+            }
+            if (bNode.rhs() instanceof ReferenceNode) {
+                 rNode = (ReferenceNode) bNode.rhs();
+            }
+        }
+         if (!(init instanceof ObjectNode || rNode != null
+                 || init instanceof LiteralNode.ArrayLiteralNode)) {
             JsObject parent = modelBuilder.getCurrentObject();
             parent = canBeSingletonPattern(1) ? resolveThis(parent) : parent;
             if (parent instanceof CatchBlockImpl) {
@@ -1287,11 +1302,11 @@ public class ModelVisitor extends PathNodeVisitor {
                 JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
                 variable.setDeprecated(docHolder.isDeprecated(varNode));
                 variable.setDocumentation(docHolder.getDocumentation(varNode));
-                if (varNode.getInit() instanceof IdentNode) {
-                    addOccurrence((IdentNode)varNode.getInit(), variable.getName());
+                if (init instanceof IdentNode) {
+                    addOccurrence((IdentNode)init, variable.getName());
                 }
                 modelBuilder.setCurrentObject(variable);
-                Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(modelBuilder, varNode.getInit());
+                Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(modelBuilder, init);
                 if (modelBuilder.getCurrentWith() != null) {
                     ((JsWithObjectImpl)modelBuilder.getCurrentWith()).addObjectWithAssignment(variable);
                 }
@@ -1305,7 +1320,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 }
             }
-        } else if(varNode.getInit() instanceof ObjectNode) {
+        } else if(init instanceof ObjectNode) {
             JsObjectImpl function = modelBuilder.getCurrentDeclarationFunction();
             Identifier name = ModelElementFactory.create(parserResult, varNode.getName());
             if (name != null) {
@@ -1321,10 +1336,9 @@ public class ModelVisitor extends PathNodeVisitor {
                     modelBuilder.setCurrentObject(variable);
                 }
             }
-        } else if (varNode.getInit() instanceof ReferenceNode) {
-            ReferenceNode rnode = (ReferenceNode)varNode.getInit();
-            if (rnode.getReference() != null && rnode.getReference() instanceof FunctionNode) {
-                FunctionNode fnode = (FunctionNode)rnode.getReference();
+        } else if (rNode != null) {
+            if (rNode.getReference() != null && rNode.getReference() instanceof FunctionNode) {
+                FunctionNode fnode = (FunctionNode)rNode.getReference();
                 if (!fnode.isAnonymous()) {
                     // we expect case like: var prom = function name () {}
                     JsObjectImpl function = modelBuilder.getCurrentDeclarationFunction();
