@@ -1881,7 +1881,8 @@ WS
 
 NL
     :
-    ('\r' '\n'? | '\n')
+//    ('\r' '\n'? | '\n')
+    ('\r' | '\n')+
     ;
 
 // Comments.    Comments may not be nested, may be multilined and are delimited
