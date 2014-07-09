@@ -44,25 +44,46 @@
 
 package org.netbeans.modules.java;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.util.TreeScanner;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URL;
+import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.Modifier;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.queries.FileBuiltQuery;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
+import org.netbeans.modules.classfile.Access;
+import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
 import org.netbeans.spi.java.loaders.RenameHandler;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -74,58 +95,67 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
-
 import static org.openide.util.ImageUtilities.assignToolTipToImage;
 import static org.openide.util.ImageUtilities.loadImage;
+import org.openide.util.Lookup;
 import static org.openide.util.NbBundle.getMessage;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
 /**
  * The node representation of Java source files.
  */
 public final class JavaNode extends DataNode implements ChangeListener {
 
-    private static final String EXECUTABLE_BADGE_URL = "org/netbeans/modules/java/resources/executable-badge.png";
-    private static final String NEEDS_COMPILE_BADGE_URL = "org/netbeans/modules/java/resources/needs-compile.png";
 
     /** generated Serialized Version UID */
     private static final long serialVersionUID = -7396485743899766258L;
 
     private static final String JAVA_ICON_BASE = "org/netbeans/modules/java/resources/class.png"; // NOI18N
     private static final String CLASS_ICON_BASE = "org/netbeans/modules/java/resources/clazz.gif"; // NOI18N
+    private static final String ABSTRACT_CLASS_ICON_BASE = "org/netbeans/modules/java/resources/abstract_class_file.png"; //NOI18N
+    private static final String INTERFACE_ICON_BASE = "org/netbeans/modules/java/resources/interface_file.png"; //NOI18N
+    private static final String ENUM_ICON_BASE = "org/netbeans/modules/java/resources/enum_file.png";   //NOI18N
+    private static final String ANNOTATION_ICON_BASE = "org/netbeans/modules/java/resources/annotation_file.png";   //NOI18N
+    private static final String EXECUTABLE_BADGE_URL = "org/netbeans/modules/java/resources/executable-badge.png";  //NOI18N
+    private static final String NEEDS_COMPILE_BADGE_URL = "org/netbeans/modules/java/resources/needs-compile.png";  //NOI18N
 
-    private static final AtomicReference<Image> NEEDS_COMPILE = new AtomicReference<>();
-    private static final AtomicReference<Image> IS_EXECUTABLE_CLASS = new AtomicReference<>();
+    private static final Map<String,Image> IMAGE_CACHE = new ConcurrentHashMap<>();
 
     private static final Logger LOG = Logger.getLogger(JavaNode.class.getName());
     
     private Status status;
+    private final boolean isJavaSource;
     private final AtomicReference<Image> isCompiled;
-    private ChangeListener executableListener;
     private final AtomicReference<Image> isExecutable;
+    private final AtomicReference<Image> computedIcon;
+    private final AtomicReference<FileChangeListener> computedIconListener;
+    private ChangeListener executableListener;
 
     /** Create a node for the Java data object using the default children.
     * @param jdo the data object to represent
     */
     public JavaNode (final DataObject jdo, boolean isJavaSource) {
         super (jdo, Children.LEAF);
+        this.isJavaSource = isJavaSource;
+        this.isCompiled = new AtomicReference<>();
+        this.isExecutable = new AtomicReference<>();
+        this.computedIcon = new AtomicReference<>();
+        this.computedIconListener = new AtomicReference<>();
         this.setIconBaseWithExtension(isJavaSource ? JAVA_ICON_BASE : CLASS_ICON_BASE);
         Logger.getLogger("TIMER").log(Level.FINE, "JavaNode", new Object[] {jdo.getPrimaryFile(), this});
+        WORKER.post(IconTask.create(this));
         if (isJavaSource) {
-            this.isCompiled = new AtomicReference<Image>(null);                                        
             WORKER.post(new BuildStatusTask(this));
-            this.isExecutable = new AtomicReference<Image>(null);
             WORKER.post(new ExecutableTask(this));
-            
             jdo.addPropertyChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
                         Logger.getLogger("TIMER").log(Level.FINE, "JavaNode", new Object[]{jdo.getPrimaryFile(), this});
                         WORKER.post(new Runnable() {
                             public void run() {
+                                computedIconListener.set(null);
                                 synchronized (JavaNode.this) {
                                     status = null;
                                     executableListener = null;
@@ -137,9 +167,6 @@ public final class JavaNode extends DataNode implements ChangeListener {
                     }
                 }
             });
-        } else {
-            this.isCompiled = null;
-            this.isExecutable = null;
         }
     }
 
@@ -299,8 +326,10 @@ public final class JavaNode extends DataNode implements ChangeListener {
     }
     
     public Image getIcon(int type) {
-        Image i = super.getIcon(type);
-        
+        Image i = computedIcon.get();
+        if (i == null) {
+            i = super.getIcon(type);
+        }
         return enhanceIcon(i);
     }
     
@@ -311,13 +340,13 @@ public final class JavaNode extends DataNode implements ChangeListener {
     }
     
     private Image enhanceIcon(Image i) {
-        Image needsCompile = isCompiled != null ? isCompiled.get() : null;
+        Image needsCompile = isCompiled.get();
         
         if (needsCompile != null) {
             i = ImageUtilities.mergeImages(i, needsCompile, 16, 0);
         }
         
-        Image executable = isExecutable != null ? isExecutable.get() : null;
+        Image executable = isExecutable.get();
         
         if (executable != null) {
             i = ImageUtilities.mergeImages(i, executable, 10, 6);
@@ -328,18 +357,176 @@ public final class JavaNode extends DataNode implements ChangeListener {
     
     private static final RequestProcessor WORKER = new RequestProcessor("Java Node Badge Processor", 1, false, false);
     
-    private static Image notCompiledBadge() {
-        Image result = NEEDS_COMPILE.get();
-        
+    private static Image getImage(
+            @NonNull final String resourceId,
+            @NullAllowed final String annotationTemplate) {
+        Image result = IMAGE_CACHE.get(resourceId);
         if (result == null) {
-            URL needsCompileIconURL = JavaNode.class.getClassLoader().getResource(NEEDS_COMPILE_BADGE_URL);
-            String needsCompileTP = "<img src=\"" + needsCompileIconURL + "\">&nbsp;" + getMessage(JavaNode.class, "TP_NeedsCompileBadge");
-            NEEDS_COMPILE.set(result = assignToolTipToImage(loadImage(NEEDS_COMPILE_BADGE_URL), needsCompileTP)); // NOI18N
+            result = loadImage(resourceId);
+            if (annotationTemplate != null) {
+                URL resourceURL = JavaNode.class.getClassLoader().getResource(resourceId);
+                final String annotation = MessageFormat.format(
+                    annotationTemplate,
+                    resourceURL);
+                result = assignToolTipToImage(result, annotation);
+            }
+            IMAGE_CACHE.put(resourceId, result);
         }
-        
         return result;
     }
-    
+
+    private static abstract class IconTask implements Runnable {
+        protected final JavaNode node;
+
+        IconTask(@NonNull final JavaNode node) {
+            this.node = node;
+        }
+
+        @CheckForNull
+        abstract String computeIcon(@NonNull final FileObject file);
+
+        @Override
+        public final void run() {
+            String res = null;
+            final FileObject file = node.getDataObject().getPrimaryFile();
+            if (file != null) {
+                if (node.computedIconListener.get() == null) {
+                    final FileChangeListener l = new FCL(node);
+                    if (node.computedIconListener.compareAndSet(null, l)) {
+                        file.addFileChangeListener(FileUtil.weakFileChangeListener(l, file));
+                    }
+                }
+                res = computeIcon(file);
+            }
+            if (res == null) {
+                res = node.isJavaSource ?
+                    JAVA_ICON_BASE :
+                    CLASS_ICON_BASE;
+            }
+            node.computedIcon.set(getImage(res, null));
+            node.fireIconChange();
+            node.fireOpenedIconChange();
+        }
+
+        private static final class FCL extends FileChangeAdapter {
+
+            private final JavaNode node;
+
+            FCL(@NonNull final JavaNode node) {
+                this.node = node;
+            }
+
+            @Override
+            public void fileChanged(FileEvent fe) {
+                WORKER.post(IconTask.create(node));
+            }
+        }
+
+        private static final class SourceIcon extends IconTask {
+
+            private SourceIcon(@NonNull final JavaNode node) {
+                super(node);
+            }
+
+            @Override
+            String computeIcon(@NonNull final FileObject file) {
+                final String[] res = new String[1];
+                final JavaSource src = JavaSource.forFileObject(file);
+                if (src != null) {
+                    try {
+                        src.runUserActionTask(new Task<CompilationController>() {
+                            @Override
+                            public void run(CompilationController cc) throws Exception {
+                                cc.toPhase(JavaSource.Phase.PARSED);
+                                final CompilationUnitTree cu = cc.getCompilationUnit();
+                                final Collection<ClassTree> topTypes = cu.accept(
+                                    new ClasssFinder(),
+                                    new ArrayList<ClassTree>());
+                                for (ClassTree ct : topTypes) {
+                                    switch(ct.getKind()) {
+                                        case CLASS:
+                                            res[0] = ct.getModifiers().getFlags().contains(Modifier.ABSTRACT) ?
+                                             ABSTRACT_CLASS_ICON_BASE :
+                                             JAVA_ICON_BASE;
+                                            break;
+                                        case INTERFACE:
+                                            res[0] = INTERFACE_ICON_BASE;
+                                            break;
+                                        case ENUM:
+                                            res[0] = ENUM_ICON_BASE;
+                                            break;
+                                        case ANNOTATION_TYPE:
+                                            res[0] = ANNOTATION_ICON_BASE;
+                                            break;
+                                    }
+                                    if (file.getName().contentEquals(ct.getSimpleName())) {
+                                        break;
+                                    }
+                                }
+                            }
+                        }, true);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                return res[0];
+            }
+
+            private static final class ClasssFinder extends TreeScanner<Collection<ClassTree>, Collection<ClassTree>> {
+
+                @Override
+                public Collection<ClassTree> visitCompilationUnit(CompilationUnitTree node, Collection<ClassTree> p) {
+                    super.visitCompilationUnit(node, p);
+                    return p;
+                }
+
+                @Override
+                public Collection<ClassTree> visitClass(ClassTree node, Collection<ClassTree> p) {
+                    p.add(node);
+                    return p;
+                }
+            }
+        }
+
+        private static final class ClassIcon extends IconTask {
+
+            private ClassIcon(@NonNull final JavaNode node) {
+                super(node);
+            }
+
+            @Override
+            @CheckForNull
+            String computeIcon(@NonNull final FileObject file) {
+                String res = null;
+                try {
+                    try (InputStream in = file.getInputStream()) {
+                        final ClassFile cf = new ClassFile(in, false);
+                        if (cf.isEnum()) {
+                            res = ENUM_ICON_BASE;
+                        } else if (cf.isAnnotation()) {
+                            res = ANNOTATION_ICON_BASE;
+                        } else if ((cf.getAccess() & Access.INTERFACE) == Access.INTERFACE) {
+                            res = INTERFACE_ICON_BASE;
+                        } else {
+                            res = (cf.getAccess() & Access.ABSTRACT) == Access.ABSTRACT ?
+                                ABSTRACT_CLASS_ICON_BASE :
+                                CLASS_ICON_BASE;
+                        }
+                    }
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
+                }
+                return res;
+            }
+        }
+
+        static IconTask create(@NonNull final JavaNode node) {
+            return node.isJavaSource ?
+                new SourceIcon(node) :
+                new ClassIcon(node);
+        }
+    }
+
     private static class BuildStatusTask implements Runnable {
         private JavaNode node;
         
@@ -365,7 +552,13 @@ public final class JavaNode extends DataNode implements ChangeListener {
 
             boolean isPackageInfo = "package-info.java".equals(node.getDataObject().getPrimaryFile().getNameExt());
             boolean newIsCompiled = _status != null && !isPackageInfo ?  _status.isBuilt() : true;
-            boolean oldIsCompiled = node.isCompiled.getAndSet(newIsCompiled ? null : notCompiledBadge()) == null;
+            boolean oldIsCompiled = node.isCompiled.getAndSet(
+                    newIsCompiled ?
+                        null :
+                        getImage(
+                            NEEDS_COMPILE_BADGE_URL,
+                            "<img src=\"{0}\">&nbsp;" + getMessage(JavaNode.class, "TP_NeedsCompileBadge")  //NOI18N
+                            )) == null;
 
             if (newIsCompiled != oldIsCompiled) {
                 node.fireIconChange();
@@ -373,19 +566,7 @@ public final class JavaNode extends DataNode implements ChangeListener {
             }
         }
     }
-    
-    private static Image executableBadge() {
-        Image result = IS_EXECUTABLE_CLASS.get();
-        
-        if (result == null) {
-            URL executableIconURL = JavaNode.class.getClassLoader().getResource(EXECUTABLE_BADGE_URL);
-            String executableTP = "<img src=\"" + executableIconURL + "\">&nbsp;" + getMessage(JavaNode.class, "TP_ExecutableBadge");
-            IS_EXECUTABLE_CLASS.set(result = assignToolTipToImage(loadImage(EXECUTABLE_BADGE_URL), executableTP)); // NOI18N
-        }
-        
-        return result;
-    }
-    
+
     private static class ExecutableTask implements Runnable {
         private final JavaNode node;
         
@@ -426,16 +607,17 @@ public final class JavaNode extends DataNode implements ChangeListener {
             FileObject root = cp != null ? cp.findOwnerRoot(file) : null;
             
             if (root != null) {
-                try {
-                    boolean newIsExecutable = ExecutableFilesIndex.DEFAULT.isMainClass(root.getURL(), file.getURL());
-                    boolean oldIsExecutable = node.isExecutable.getAndSet(newIsExecutable ? executableBadge() : null) != null;
+                boolean newIsExecutable = ExecutableFilesIndex.DEFAULT.isMainClass(root.toURL(), file.toURL());
+                boolean oldIsExecutable = node.isExecutable.getAndSet(
+                    newIsExecutable ?
+                        getImage(
+                            EXECUTABLE_BADGE_URL,
+                            "<img src=\"{0}\">&nbsp;" + getMessage(JavaNode.class, "TP_ExecutableBadge")):
+                        null) != null;
 
-                    if (newIsExecutable != oldIsExecutable) {
-                        node.fireIconChange();
-                        node.fireOpenedIconChange();
-                    }
-                } catch (FileStateInvalidException ex) {
-                    Exceptions.printStackTrace(ex);
+                if (newIsExecutable != oldIsExecutable) {
+                    node.fireIconChange();
+                    node.fireOpenedIconChange();
                 }
             }
         }
