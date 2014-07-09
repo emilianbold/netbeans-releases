@@ -43,13 +43,14 @@ package org.netbeans.modules.css.lib;
 
 import org.antlr.runtime.Lexer;
 import org.antlr.runtime.Token;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author mfukala@netbeans.org
  */
-public class Css3LexerTest extends NbTestCase {
+public class Css3LexerTest extends CslTestBase {
 
     public Css3LexerTest(String name) {
         super(name);
@@ -325,6 +326,17 @@ public class Css3LexerTest extends NbTestCase {
         assertANTLRToken(")", Css3Lexer.RPAREN, lexer.nextToken());
         assertANTLRToken(" ", Css3Lexer.WS, lexer.nextToken());
         assertANTLRToken("\"theme\"", Css3Lexer.STRING, lexer.nextToken());
+        assertANTLRToken(null, Css3Lexer.EOF, lexer.nextToken());
+    }
+    
+    //https://netbeans.org/bugzilla/show_bug.cgi?id=238864
+    public void testIssue238864() throws Exception {
+        FileObject testFile = getTestFile("testfiles/scss/large_empty.scss.txt");
+        String source = testFile.asText();
+         
+        ExtCss3Lexer lexer = createLexer(source);
+        
+        assertANTLRToken(null, Css3Lexer.NL, lexer.nextToken());
         assertANTLRToken(null, Css3Lexer.EOF, lexer.nextToken());
     }
 
