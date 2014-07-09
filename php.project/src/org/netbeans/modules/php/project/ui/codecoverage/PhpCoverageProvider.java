@@ -263,8 +263,6 @@ public final class PhpCoverageProvider implements CoverageProvider {
             this.files = new ArrayList<>(original.getFiles());
         }
 
-
-
         @Override
         public List<File> getFiles() {
             return files;

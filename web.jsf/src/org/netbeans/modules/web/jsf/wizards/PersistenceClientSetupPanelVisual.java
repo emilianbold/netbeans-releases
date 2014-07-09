@@ -47,7 +47,6 @@ package org.netbeans.modules.web.jsf.wizards;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,11 +70,13 @@ import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.SourceGroupUISupport;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
+import org.netbeans.modules.web.jsf.JsfPreferences;
 import org.netbeans.modules.web.jsf.JsfTemplateUtils;
 import org.netbeans.modules.web.jsf.JsfTemplateUtils.OpenTemplateAction;
 import org.netbeans.modules.web.jsf.JsfTemplateUtils.TemplateType;
 import org.netbeans.modules.web.jsf.dialogs.BrowseFolders;
 import org.netbeans.modules.web.jsf.palette.items.CancellableDialog;
+import org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanel.PreferredLanguage;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -99,13 +100,9 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
     /** Creates new form CrudSetupPanel */
     public PersistenceClientSetupPanelVisual(WizardDescriptor wizard) {
         this.wizard = wizard;
+        this.project = Templates.getProject(wizard);
         initComponents();
-
-        // templates comboBox
-        for (JsfTemplateUtils.Template template : JsfTemplateUtils.getTemplates(TemplateType.PAGES)) {
-            templatesComboBox.addItem(template);
-        }
-        templatesComboBox.setRenderer(new JsfTemplateUtils.TemplateCellRenderer());
+        initTemplateComboBox();
 
         // listeners
         jpaPackageComboBoxEditor = (JTextComponent)jpaPackageComboBox.getEditor().getEditorComponent();
@@ -114,6 +111,25 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
         jsfPackageComboBoxEditor.getDocument().addDocumentListener(this);
         jsfFolder.getDocument().addDocumentListener(this);
         localizationBundleTextField.getDocument().addDocumentListener(this);
+    }
+
+    private void initTemplateComboBox() {
+        for (JsfTemplateUtils.Template template : JsfTemplateUtils.getTemplates(TemplateType.PAGES)) {
+            templatesComboBox.addItem(template);
+        }
+
+        // in case of preferred JSP remove other Facelet templates
+        JsfPreferences jsfPreferences = JsfPreferences.forProject(project);
+        if (!jsfPreferences.isJsfPresent() && !jsfPreferences.getPreferredLanguage().equals(PreferredLanguage.Facelets)) {
+            for (int i = templatesComboBox.getItemCount() - 1; i >= 0; i--) {
+                JsfTemplateUtils.Template template = (JsfTemplateUtils.Template) templatesComboBox.getItemAt(i);
+                if (!JsfTemplateUtils.STANDARD_TPL.equals(template.getName())) {
+                    templatesComboBox.removeItemAt(i);
+                }
+            }
+        }
+
+        templatesComboBox.setRenderer(new JsfTemplateUtils.TemplateCellRenderer());
     }
     
     /** This method is called from within the constructor to

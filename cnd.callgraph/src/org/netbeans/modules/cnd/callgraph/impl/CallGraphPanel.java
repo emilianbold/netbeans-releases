@@ -49,6 +49,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.FocusTraversalPolicy;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -142,6 +143,10 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
             ExportAction exportAction = new ExportAction(scene, this);
             actions.add(exportAction);
             scene.setExportAction(exportAction);
+        }
+        //add all actions from the provider
+        if (graphUI != null) {
+            actions.addAll(graphUI.getActions());
         }
         root = new AbstractNode(children){
             @Override
@@ -706,8 +711,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                     Collection<Node> list;
                     Node root;
                     if (node == null) {
-                        list = new ArrayList<Node>(1);
-                        list.add(new LoadingNode());
+                        list = Collections.<Node>emptyList();
                         root  = new CallContextRoot(new ContextList(list));
                     } else {                
                         list = new ArrayList<Node>(1);
@@ -794,6 +798,14 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             @Override
             public Action[] getActions(boolean context) {
                 return new Action[0];
+            }
+
+            @Override
+            public Image getIcon(int type) {
+                if (call instanceof Node) {
+                    return ((Node)call).getIcon(type);
+                }
+                return super.getIcon(type);
             }
         }
     }

@@ -107,7 +107,7 @@ public class WebPagesNodeFactory implements NodeFactory {
         @Override
         public Node node(String key) {
             for (FileObject webRoot : getWebRoots()) {
-                if (key.endsWith(webRoot.getName())) {
+                if (key.equals(webRoot.getPath())) {
                     DataFolder fold = DataFolder.findFolder(webRoot);
                     File webAppFolder = FileUtil.toFile(webRoot);
                     if (fold != null) {

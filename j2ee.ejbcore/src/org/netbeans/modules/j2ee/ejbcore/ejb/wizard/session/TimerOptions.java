@@ -44,6 +44,7 @@ package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -60,12 +61,12 @@ import org.openide.util.NbBundle;
  */
 public final class TimerOptions {
 
-    private Map<String, String> timerOptions = new HashMap<String, String>();
-    private static Set<String> scheduleAttributes = new HashSet<String>(
+    private static final Set<String> SCHEDULE_ATTRIBUTES = new HashSet<>(
             Arrays.asList("second", "minute", "hour", "dayOfMonth", "month", //NOI18N
-            "dayOfWeek", "year", "info", "persistent", "timezone") //NOI18N
-        );
+                    "dayOfWeek", "year", "info", "persistent", "timezone") //NOI18N
+    );
 
+    private final Map<String, String> timerOptions = new HashMap<>();
     /**
      * Gets {@code Map} with entries of {@code @Schedule} annotation.
      *
@@ -105,7 +106,10 @@ public final class TimerOptions {
         if (actualSchedule.isEmpty()) {
             return NbBundle.getMessage(TimerOptions.class, "ERR_TO_NotEnoughAttributes"); //NOI18N
         } else if (actualSchedule.size() > 10) {
-            return NbBundle.getMessage(TimerOptions.class, "ERR_TO_ToMuchAttributes"); //NOI18N
+            return NbBundle.getMessage(TimerOptions.class, "ERR_TO_ToMuchAttributes");    //NOI18N
+        } else if (actualSchedule.containsKey("persistent")) {                            //NOI18N
+            return NbBundle.getMessage(TimerOptions.class, "ERR_TO_PersistentParameter",  //NOI18N
+                    new Object[]{NbBundle.getMessage(TimerOptions.class, "LBL_NonPersistentTimer").replace("&", "")}); //NOI18N
         } else {
             String invalidAttributesString = invalidAttributes(actualSchedule.keySet());
             if (invalidAttributesString != null) {
@@ -162,7 +166,7 @@ public final class TimerOptions {
 
     private static String invalidAttributes(Set<String> actualAttributes) {
         Set<String> copy = new HashSet<String>(actualAttributes);
-        copy.removeAll(scheduleAttributes);
+        copy.removeAll(SCHEDULE_ATTRIBUTES);
 
         if (copy.isEmpty()) {
             return null;

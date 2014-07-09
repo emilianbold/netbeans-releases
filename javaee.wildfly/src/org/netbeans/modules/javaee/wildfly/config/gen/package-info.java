@@ -62,16 +62,6 @@
         java5=true
     ),
     @Schema2Beans(
-        schema="../../resources/datasources_1_1.xsd",
-        schemaType=SchemaType.XML_SCHEMA,
-        outputType=OutputType.TRADITIONAL_BASEBEAN,
-        validate=true,
-        attrProp=true,
-        removeUnreferencedNodes=true,
-        docRoot="datasources",
-        java5=true
-    ),
-    @Schema2Beans(
         schema="../../resources/jboss_4_0.dtd",
         schemaType=SchemaType.DTD,
         outputType=OutputType.TRADITIONAL_BASEBEAN,

@@ -211,6 +211,19 @@ public class FixUsesPerformerTest extends PHPTestBase {
         performTest("function __construct() {^", selections, false, options);
     }
 
+    public void testIssue243271_01() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        selections.add(new Selection("SomeClassAlias", ItemVariant.Type.CLASS, true));
+        Options options = new Options(false, false, false, false, false);
+        performTest("public function getSomething(SomeClassAlias $someClass) {}^", selections, false, options);
+    }
+
+    public void testIssue243271_02() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(false, false, false, false, false);
+        performTest("public function getSomething(SomeClassAlias $someClass) {}^", selections, false, options);
+    }
+
     private String getTestResult(final String fileName, final String caretLine, final List<Selection> selections, final boolean removeUnusedUses, final Options options) throws Exception {
         FileObject testFile = getTestFile(fileName);
 
@@ -232,7 +245,7 @@ public class FixUsesPerformerTest extends PHPTestBase {
                 if (r != null) {
                     assertTrue(r instanceof ParserResult);
                     PHPParseResult phpResult = (PHPParseResult)r;
-                    Map<String, List<UsedNamespaceName>> usedNames = new UsedNamesComputer(phpResult, caretOffset).computeNames();
+                    Map<String, List<UsedNamespaceName>> usedNames = new UsedNamesCollector(phpResult, caretOffset).collectNames();
                     FileScope fileScope = phpResult.getModel().getFileScope();
                     NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, caretOffset);
                     Options currentOptions = options;
@@ -251,7 +264,8 @@ public class FixUsesPerformerTest extends PHPTestBase {
                         properSelections.add(new ItemVariant(
                                 selection.getSelection(),
                                 CAN_NOT_BE_RESOLVED.equals(selection.getSelection()) ? ItemVariant.UsagePolicy.CAN_NOT_BE_USED : ItemVariant.UsagePolicy.CAN_BE_USED,
-                                selection.getType()));
+                                selection.getType(),
+                                selection.isAlias()));
                     }
                     importData.caretPosition = caretOffset;
                     FixUsesPerformer fixUsesPerformer = new FixUsesPerformer(phpResult, importData, properSelections, removeUnusedUses, currentOptions);
@@ -307,10 +321,16 @@ public class FixUsesPerformerTest extends PHPTestBase {
     private static final class Selection {
         private final String selection;
         private final ItemVariant.Type type;
+        private final boolean isAlias;
 
         public Selection(String selection, ItemVariant.Type type) {
+            this(selection, type, false);
+        }
+
+        public Selection(String selection, ItemVariant.Type type, boolean isAlias) {
             this.selection = selection;
             this.type = type;
+            this.isAlias = isAlias;
         }
 
         public String getSelection() {
@@ -319,6 +339,10 @@ public class FixUsesPerformerTest extends PHPTestBase {
 
         public ItemVariant.Type getType() {
             return type;
+        }
+
+        public boolean isAlias() {
+            return isAlias;
         }
 
     }

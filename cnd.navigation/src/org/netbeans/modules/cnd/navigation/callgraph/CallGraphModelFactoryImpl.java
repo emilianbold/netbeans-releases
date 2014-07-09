@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.cnd.navigation.callgraph;
 
+import java.util.Collection;
+import java.util.Collections;
+import javax.swing.Action;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -118,9 +121,11 @@ public class CallGraphModelFactoryImpl extends CallGraphModelFactory {
                 public JPanel getContextPanel(Call call) {
                     return null;
                 }
-                                
-                
-                
+
+                @Override
+                public Collection<Action> getActions() {
+                    return Collections.EMPTY_LIST;
+                }
             };
         }
         return null;
