@@ -266,10 +266,16 @@ public class ODCSUiServer implements TeamServer {
         if(getPasswordAuthentication() == null) {
             return null;
         }
-        return new Action[] {
-            new NewProjectAction(getServer()),
-            new OpenProjectAction(this),
-            VCSAccessor.getDefault().getOpenSourcesAction(this)
-        };
+        VCSAccessor vcsa = VCSAccessor.getDefault();
+        return vcsa != null ? 
+                new Action[] {
+                    new NewProjectAction(getServer()),
+                    new OpenProjectAction(this),
+                    vcsa.getOpenSourcesAction(this)
+                } :
+                new Action[] {
+                    new NewProjectAction(getServer()),
+                    new OpenProjectAction(this)
+                };
     }
 }
