@@ -216,10 +216,14 @@ public class RemoteStyleSheetCache {
                 } else {
                     Rule rule = rules.get(0);
                     name = rule.getSourceURL();
-                    int index = name.lastIndexOf('/'); // NOI18N
-                    name = name.substring(index+1);
-                    if (name.endsWith(".css")) { // NOI18N
-                        name = name.substring(0, name.length()-4);
+                    if (name == null) {
+                        name = body.getStyleSheetId();
+                    } else {
+                        int index = name.lastIndexOf('/'); // NOI18N
+                        name = name.substring(index+1);
+                        if (name.endsWith(".css")) { // NOI18N
+                            name = name.substring(0, name.length()-4);
+                        }
                     }
                 }
             }
