@@ -123,7 +123,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 
     private static String HANDLER = "com.sun.facelets.FaceletViewHandler";                          //NOI18N
 
-    private static final String PREFERRED_LANGUAGE = "jsf.language"; //NOI18N
+    public static final String PREFERRED_LANGUAGE = "jsf.language"; //NOI18N
     private static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance";  //NOI18N
     private static String WELCOME_JSF = "welcomeJSF.jsp";   //NOI18N
     private static String WELCOME_XHTML = "index.xhtml"; //NOI18N

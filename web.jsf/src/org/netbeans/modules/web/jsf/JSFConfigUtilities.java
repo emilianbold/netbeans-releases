@@ -101,7 +101,7 @@ public class JSFConfigUtilities {
     private static String CONFIG_FILES_PARAM_NAME = "javax.faces.CONFIG_FILES"; //NOI18N
     private static String FACES_PARAM = "javax.faces";  //NOI18N
     private static String DEFAULT_FACES_CONFIG_PATH = "WEB-INF/faces-config.xml"; //NOI18N
-    private static final String JSF_PRESENT_PROPERTY= "jsf.present";    //NOI18N
+    public static final String JSF_PRESENT_PROPERTY= "jsf.present";    //NOI18N
     private static final Class[] types = new Class[] {
         FacesManagedBean.class,
         Component.class,
