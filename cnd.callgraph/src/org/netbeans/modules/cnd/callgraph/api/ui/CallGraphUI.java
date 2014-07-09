@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.cnd.callgraph.api.ui;
 
+import java.util.Collection;
+import javax.swing.Action;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.callgraph.api.Call;
 
@@ -60,4 +62,6 @@ public interface CallGraphUI {
     Catalog getCatalog();
     
     JPanel getContextPanel(Call call);    
+    
+    Collection<Action> getActions();
 }

@@ -71,6 +71,11 @@ public class LoadingNode extends AbstractNode implements Call {
     }
 
     @Override
+    public String getHtmlDisplayName() {
+        return getDescription();
+    }
+
+    @Override
     public Function getCallee() {
         return null;
     }
@@ -94,8 +99,13 @@ public class LoadingNode extends AbstractNode implements Call {
     }
 
     @Override
+    public String getDisplayName() {
+        return NbBundle.getMessage(getClass(), "Loading");
+    }
+
+    @Override
     public String getDescription() {
-        return getName();
+        return  getDisplayName();
     }
 
     @Override
