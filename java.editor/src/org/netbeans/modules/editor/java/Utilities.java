@@ -888,16 +888,23 @@ public final class Utilities {
     private static String varNameForPath(TreePath path) {
         if (path == null)
             return null;
-        String name = varNameForTree(path.getLeaf());
-        if (name == null && path.getLeaf().getKind() == Kind.VARIABLE
-                && path.getParentPath().getLeaf().getKind() == Kind.ENHANCED_FOR_LOOP
-                && ((EnhancedForLoopTree)path.getParentPath().getLeaf()).getVariable() == path.getLeaf()) {
-            name = varNameForPath(new TreePath(path.getParentPath(), ((EnhancedForLoopTree)path.getParentPath().getLeaf()).getExpression()));
-            if (name != null) {
-                return getSingular(name);
+        Tree tree = path.getLeaf();
+        if (tree.getKind() == Kind.VARIABLE) {
+            if (((VariableTree)tree).getInitializer() != null) {
+                String name = varNameForTree(((VariableTree)tree).getInitializer());
+                if (name != null) {
+                    return name;
+                }
+            }
+            if (path.getParentPath().getLeaf().getKind() == Kind.ENHANCED_FOR_LOOP
+                    && ((EnhancedForLoopTree)path.getParentPath().getLeaf()).getVariable() == tree) {
+                String name = varNameForTree(((EnhancedForLoopTree)path.getParentPath().getLeaf()).getExpression());
+                if (name != null) {
+                    return getSingular(name);
+                }
             }
         }
-        return name;
+        return varNameForTree(path.getLeaf());
     }
 
     private static String varNameForTree(Tree et) {
@@ -922,12 +929,7 @@ public final class Utilities {
                     return firstToLower(name);
                 }
             case VARIABLE:
-                if (((VariableTree)et).getInitializer() != null) {
-                    name = varNameForTree(((VariableTree)et).getInitializer());
-                    if (name != null)
-                        return name;
-                }
-                return null;
+                return ((VariableTree) et).getName().toString();
             case ARRAY_ACCESS:
                 name = varNameForTree(((ArrayAccessTree)et).getExpression());
                 if (name != null) {

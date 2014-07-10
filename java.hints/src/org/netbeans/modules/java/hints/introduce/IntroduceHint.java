@@ -263,7 +263,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
         Scope scope = info.getTrees().getScope(resolved);
         boolean statik = scope != null ? info.getTreeUtilities().isStaticContext(scope) : false;
-        String guessedName = org.netbeans.modules.editor.java.Utilities.varNameSuggestion(resolved);
+        String guessedName = org.netbeans.modules.editor.java.Utilities.varNameSuggestion(resolved.getLeaf());
         if (guessedName == null) guessedName = "name"; // NOI18N
         Scope s = info.getTrees().getScope(resolved);
         CodeStyle cs = CodeStyle.getDefault(info.getFileObject());
