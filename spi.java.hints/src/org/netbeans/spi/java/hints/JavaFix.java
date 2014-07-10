@@ -62,6 +62,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -184,12 +185,12 @@ public abstract class JavaFix {
             @Override
             public ChangeInfo process(JavaFix jf, WorkingCopy wc, boolean canShowUI, Map<FileObject, byte[]> resourceContent, Collection<? super RefactoringElementImplementation> fileChanges) throws Exception {
                 TreePath tp = jf.handle.resolve(wc);
-
                 if (tp == null) {
                     Logger.getLogger(JavaFix.class.getName()).log(Level.SEVERE, "Cannot resolve handle={0}", jf.handle);
                     return null;
                 }
 
+                GeneratorUtilities.get(wc).importComments(tp.getLeaf(), wc.getCompilationUnit());
                 jf.performRewrite(new TransformationContext(wc, tp, canShowUI, resourceContent, fileChanges));
 
                 return null;

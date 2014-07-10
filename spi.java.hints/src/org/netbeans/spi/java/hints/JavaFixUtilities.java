@@ -560,8 +560,8 @@ public class JavaFixUtilities {
             }
             for (Tree from : order) {
                 Tree to = rewriteFromTo.get(from);
-                gen.copyComments(from, to, true);
-                gen.copyComments(from, to, false);
+//                gen.copyComments(from, to, true);
+//                gen.copyComments(from, to, false);
                 wc.rewrite(from, to);
             }
         }

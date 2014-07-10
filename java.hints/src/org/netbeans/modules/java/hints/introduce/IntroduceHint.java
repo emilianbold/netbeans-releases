@@ -681,6 +681,16 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         parameter.rewrite(parentTree, newParent);
     }
     
+    public static TreePath getStatementOrBlock(TreePath firstLeaf) {
+        switch (firstLeaf.getParentPath().getLeaf().getKind()) {
+            case BLOCK:
+            case CASE:
+                return firstLeaf.getParentPath();
+            default:
+                return firstLeaf;
+        }
+    }
+    
     //XXX: duplicate from CopyFinder:
     public static List<? extends StatementTree> getStatements(TreePath firstLeaf) {
         switch (firstLeaf.getParentPath().getLeaf().getKind()) {
