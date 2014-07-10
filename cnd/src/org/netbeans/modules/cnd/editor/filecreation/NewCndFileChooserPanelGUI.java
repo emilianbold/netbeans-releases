@@ -61,6 +61,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -301,8 +302,9 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
             cbExtension.setSelectedItem(docExt);
             expectedExtension = docExt;
         }
-            
-        createdFileName = createdFileName.replace( '/', File.separatorChar );
+
+        char fileSeparatorChar = FileSystemProvider.getFileSeparatorChar(getProject().getProjectDirectory());
+        createdFileName = createdFileName.replace( '/', fileSeparatorChar );
         if (!createdFileName.equals(fileTextField.getText())) {
             fileTextField.setText( createdFileName );
             changeSupport.fireChange();
