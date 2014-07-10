@@ -329,6 +329,10 @@ public class DriverListUtil {
         add("SQLite",
             "org.sqlite.JDBC",
             "jdbc:sqlite:<FILE>");
+        
+        add("H2 Database Engine",
+            "org.h2.Driver",
+            "jdbc:h2:<FILE>");
     }
     
     public static Set<String> getDrivers() {
