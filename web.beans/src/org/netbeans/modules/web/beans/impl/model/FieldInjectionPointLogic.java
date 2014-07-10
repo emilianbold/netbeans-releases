@@ -70,6 +70,7 @@ import org.openide.util.NbBundle;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.api.model.BeanArchiveType;
 
 /**
@@ -134,6 +135,15 @@ abstract class FieldInjectionPointLogic {
         }
         
         TypeMirror elementType = strategy.getType(getModel(), parent , element );
+        
+        if(elementType instanceof DeclaredType && AnnotationUtil.PROVIDER.equals(""+((DeclaredType)elementType).asElement())) {
+            List<? extends TypeMirror> typeArguments = ((DeclaredType)elementType).getTypeArguments();
+            if(typeArguments!=null && typeArguments.size()>0) {
+                //in case of Provider we need to inspects type argument instead of Provider type, see #245546
+                elementType = typeArguments.get(0);
+            }
+        }
+        
         DependencyInjectionResult result  = doFindVariableInjectable(element, elementType, true);
         return strategy.getResult( getModel() , result );
     }

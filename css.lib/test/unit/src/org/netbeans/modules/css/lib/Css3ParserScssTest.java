@@ -1532,4 +1532,18 @@ public class Css3ParserScssTest extends CssTestBase {
     public void testIssue236706() {
         assertParses("@mixin web-font($fonts, $variants: (), $subsets: (), $text: '', $effects: (), $secure: false) {}");
     }
+    
+    //new SASS 3.3 stuff
+    //http://thesassway.com/news/sass-3-3-released
+    public void testSassMap() {
+        assertParses("$colors: (\n"
+                + "  header: #b06,\n"
+                + "  footer: $another_var,\n"
+                + ")");
+
+        assertParses("$susy: (\n"
+                + "    columns: 8,\n"
+                + "    gutters: 1/10\n"
+                + ");");
+    }
 }
