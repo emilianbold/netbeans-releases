@@ -326,7 +326,7 @@ class PropertiesStorage implements NbPreferences.FileStorage {
 	    retval = toPropertiesFile();
 	    if (retval == null) {
                 // let's see if the file exists on disk and a FileObject can be obtained for it
-                retval = FileUtil.toFileObject(new File(FileUtil.toFile(SFS_ROOT), filePath()));
+                retval = FileUtil.toFileObject(FileUtil.normalizeFile(new File(FileUtil.toFile(SFS_ROOT), filePath())));
             }
 	    if (retval == null) {
 		// we really need to create the file
