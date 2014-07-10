@@ -166,41 +166,43 @@ public final class ParserProviderImpl extends CsmParserProvider {
         @Override
         public CsmParserProvider.CsmParserResult parse(ConstructionKind kind) {
             long start = System.currentTimeMillis();
-            try {
-                this.kind = kind;
-                switch (kind) {
-                    case TRANSLATION_UNIT_WITH_COMPOUND:
-                        parser.setLazyCompound(false);
-                        parser.translation_unit();
-                        break;
-                    case TRANSLATION_UNIT:
-                        parser.translation_unit();
-                        break;
-                    case TRY_BLOCK:
-                        parser.setLazyCompound(false);
-                        parser.function_try_block(CsmKindUtilities.isConstructor((((CsmScopeElement)parserContainer).getScope())));
-                        break;
-                    case COMPOUND_STATEMENT:
-                        parser.setLazyCompound(false);
-                        parser.compound_statement();
-                        break;
-                    case NAMESPACE_DEFINITION_BODY:
-                        parser.translation_unit();
-                        break;
-                    case ENUM_BODY:
-                        parser.fix_fake_enum_members();
-                        break;
-                    case CLASS_BODY:
-                        parser.fix_fake_class_members();
-                        break;
-                    default:
-                        assert false: "unexpected parse kind " + kind;
+            if (TraceFlags.PARSE_ENABLED) {
+                try {
+                    this.kind = kind;
+                    switch (kind) {
+                        case TRANSLATION_UNIT_WITH_COMPOUND:
+                            parser.setLazyCompound(false);
+                            parser.translation_unit();
+                            break;
+                        case TRANSLATION_UNIT:
+                            parser.translation_unit();
+                            break;
+                        case TRY_BLOCK:
+                            parser.setLazyCompound(false);
+                            parser.function_try_block(CsmKindUtilities.isConstructor((((CsmScopeElement)parserContainer).getScope())));
+                            break;
+                        case COMPOUND_STATEMENT:
+                            parser.setLazyCompound(false);
+                            parser.compound_statement();
+                            break;
+                        case NAMESPACE_DEFINITION_BODY:
+                            parser.translation_unit();
+                            break;
+                        case ENUM_BODY:
+                            parser.fix_fake_enum_members();
+                            break;
+                        case CLASS_BODY:
+                            parser.fix_fake_class_members();
+                            break;
+                        default:
+                            assert false: "unexpected parse kind " + kind;
+                    }
+                } catch (Throwable ex) {
+                    System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
+                    ex.printStackTrace(System.err);
                 }
-            } catch (Throwable ex) {
-                System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
-                ex.printStackTrace(System.err);
+                ast = parser.getAST();
             }
-            ast = parser.getAST();
             parseTime = System.currentTimeMillis() - start;
             return this;
         }
