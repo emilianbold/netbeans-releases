@@ -258,4 +258,20 @@ public class HtmlDataObjectTest extends CslTestBase {
                 "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=\"/>"));
 
     }
+    
+    //https://netbeans.org/bugzilla/show_bug.cgi?id=243643
+     public void testIssue243643() {
+        //test whether we get the value of the charset attribute just from the meta tag but not from the others.
+        assertNull(HtmlDataObject.findEncoding(
+                "<script type=\"text/javascript\" src=\"//yandex.st/share/share.js\" charset=\"utf-1234\"></script>"));
+        
+        assertEquals("UTF-8", HtmlDataObject.findEncoding(
+                "<meta charset=\"UTF-8\"/>\n" + 
+                "<script type=\"text/javascript\" src=\"//yandex.st/share/share.js\" charset=\"utf-1234\"></script>"));
+        
+        assertEquals("UTF-16", HtmlDataObject.findEncoding(
+                "<meta http-equiv=\"Content-Type\" content='charset=UTF-16'/>\n" + 
+                "<script type=\"text/javascript\" src=\"//yandex.st/share/share.js\" charset=\"utf-8\"></script>"));
+        
+     }
 }
