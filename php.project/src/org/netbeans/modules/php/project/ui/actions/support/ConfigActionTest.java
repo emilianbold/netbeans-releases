@@ -60,6 +60,7 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.testrunner.ControllableRerunHandler;
 import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
+import org.netbeans.modules.php.project.util.UsageLogging;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
@@ -173,6 +174,7 @@ class ConfigActionTest extends ConfigAction {
     protected void runJsTests() {
         final JsTestingProvider jsTestingProvider = JsTestingProviders.getDefault().getJsTestingProvider(project, false);
         if (jsTestingProvider != null) {
+            UsageLogging.logJsTestRun(project, jsTestingProvider);
             RP.post(new Runnable() {
                 @Override
                 public void run() {
