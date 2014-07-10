@@ -1203,7 +1203,7 @@ made subject to such option by the copyright holder.
 
     <target name="-javadoc-init" depends="init">
         <!-- #71884: default Javadoc title and header -->
-        <loadproperties file="${manifest.mf}" prefix="mf.">
+        <loadproperties srcFile="${manifest.mf}" prefix="mf.">
             <filterchain>
                 <replaceregex pattern="[\n\r]+ ([^ ][^\n\r]*)"
                             replace="\1"
