@@ -209,6 +209,9 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
         @Override
         public void render(Object... context) {
+            if (!TraceFlags.PARSE_ENABLED) {
+                return;
+            }
             try {
                 CsmCacheManager.enter();
                 long start = System.currentTimeMillis();
