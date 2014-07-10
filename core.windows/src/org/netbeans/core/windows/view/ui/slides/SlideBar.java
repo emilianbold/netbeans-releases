@@ -332,6 +332,18 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
             selModel.setSelectedIndex(-1);
         }
     }
+    
+    @Override
+    public void userMiddleClickedSlidingButton(Component clickedButton) {
+        int index = getButtonIndex(clickedButton);
+        SlidingButton button = (SlidingButton) buttons.get(index);
+        button.setBlinking(false);
+        
+        if (index >= 0 && index < dataModel.size() ) {
+            TopComponent tc = (TopComponent)dataModel.getTab(index).getComponent();
+            tc.close();
+        }
+    }
 
     /** Request for automatic slide in from gesture recognizer */
     @Override

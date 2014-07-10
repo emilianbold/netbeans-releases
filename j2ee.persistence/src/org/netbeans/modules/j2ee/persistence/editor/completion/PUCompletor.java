@@ -400,8 +400,11 @@ public abstract class PUCompletor {
             if (provider == null || (ver!=null && !Persistence.VERSION_1_0.equals(ver))) {
                 values = allKeyAndValues.get(null).get(propertyName);
             }
-            if (values == null && provider != null && allKeyAndValues.get(provider) != null) {
-                values = allKeyAndValues.get(provider).get(propertyName);
+            if (provider != null && allKeyAndValues.get(provider) != null) {
+                String [] tmp2 = allKeyAndValues.get(provider).get(propertyName);
+                if(tmp2 != null) {
+                    values = tmp2;
+                }
                 if (values == null && propertyName.equals(provider.getJdbcUrl())) {
 
                     //always allow this property completion, even for container managed(it's in jta-data-source  tag, not in properties)

@@ -167,6 +167,7 @@ public class MetadataModelReadHelper<T, R> {
 
     // needs to have a throughput of 1 to ensure events are queued
     private final RequestProcessor eventRP = new RequestProcessor("MetadataModelReadHelper", 1); // NOI18N
+    private final RequestProcessor executorRP = new RequestProcessor("MetadataModelReadHelperExecutor", 3); // NOI18N
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     private final MetadataModel<T> model;
@@ -225,7 +226,7 @@ public class MetadataModelReadHelper<T, R> {
         changeSupport.fireChange();
         // ensure the model is not accessed in the calling thread in case
         // the calling thread is the AWT thread
-        RequestProcessor.getDefault().post(new Runnable() {
+        executorRP.post(new Runnable() {
             public void run() {
                 reader.run();
             }

@@ -171,6 +171,11 @@ public class NamedQueryHyperlinkProvider implements HyperlinkProviderExt {
         }
         final FileObject ent = (FileObject) entInfo[1];
         final String entClasst = (String) entInfo[0];
+        
+        if(ent == null) {
+            return;
+        }
+        
         JavaSource js = JavaSource.forFileObject(ent);
 
         if (ent != null) {
@@ -251,6 +256,12 @@ public class NamedQueryHyperlinkProvider implements HyperlinkProviderExt {
         }
     }
 
+    /**
+     * TODO: find entities in other projects
+     * @param javaFile
+     * @param nqName
+     * @return 
+     */
     private Object[] findEntity(FileObject javaFile, String nqName) {
         Project prj = FileOwnerQuery.getOwner(javaFile);
         if (prj == null) {

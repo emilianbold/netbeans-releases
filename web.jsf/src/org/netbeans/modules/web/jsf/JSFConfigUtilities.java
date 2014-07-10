@@ -101,7 +101,6 @@ public class JSFConfigUtilities {
     private static String CONFIG_FILES_PARAM_NAME = "javax.faces.CONFIG_FILES"; //NOI18N
     private static String FACES_PARAM = "javax.faces";  //NOI18N
     private static String DEFAULT_FACES_CONFIG_PATH = "WEB-INF/faces-config.xml"; //NOI18N
-    private static final String JSF_PRESENT_PROPERTY= "jsf.present";    //NOI18N
     private static final Class[] types = new Class[] {
         FacesManagedBean.class,
         Component.class,
@@ -163,8 +162,8 @@ public class JSFConfigUtilities {
             }
 
             final Project project = FileOwnerQuery.getOwner(fileObject);
-            Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
-            if (!preferences.get(JSF_PRESENT_PROPERTY, "").equals("true")) {
+            JsfPreferences projectPreferences = JsfPreferences.forProject(project);
+            if (!projectPreferences.isJsfPresent()) {
                 long time = System.currentTimeMillis();
                 try {
                     MetadataModel<JsfModel> model = JSFUtils.getModel(project);
@@ -186,7 +185,7 @@ public class JSFConfigUtilities {
                     if (future.isDone() && future.get()) {
                         // if anything suspicious found, search finely (just in source root)
                         if (jsfArtifactsInSourceRoot(webModule)) {
-                            ProjectUtils.getPreferences(project, ProjectUtils.class, true).put(JSF_PRESENT_PROPERTY, "true");
+                            projectPreferences.setJsfPresent(true);
                             return true;
                         }
                     }

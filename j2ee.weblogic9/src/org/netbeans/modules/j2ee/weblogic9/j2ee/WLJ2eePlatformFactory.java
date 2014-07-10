@@ -128,6 +128,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
     private static final Pattern JAVAX_PERSISTENCE_2_PATTERN = Pattern.compile(
             "^.*javax\\.persistence.*(_2-\\d+(-\\d+)?)\\.jar$");
+    
+    private static final Pattern JAVAX_PERSISTENCE_21_PATTERN = Pattern.compile(
+            "^.*javax\\.persistence_2\\.1\\.jar$");
 
     private static final Pattern JERSEY_PATTERN = Pattern.compile(
             "^.*com\\.sun\\.jersey.*\\.jar$");
@@ -150,6 +153,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
     private static final Version JDK7_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.1"); // NOI18N
 
     private static final Version JPA2_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.1"); // NOI18N
+    
+    private static final Version JPA21_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.3"); // NOI18N
 
     private static final Version JAX_RS_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.1"); // NOI18N
 
@@ -306,12 +311,17 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
     private static void addPersistenceLibrary(List<URL> list, @NonNull File serverRoot,
             @NullAllowed File middleware, @NullAllowed J2eePlatformImplImpl j2eePlatform) throws MalformedURLException {
 
+        boolean foundJpa21 = false;
         boolean foundJpa2 = false;
         boolean foundJpa1 = false;
+        
         for (Iterator<URL> it = list.iterator(); it.hasNext(); ) {
             URL archiveUrl = FileUtil.getArchiveFile(it.next());
             if (archiveUrl != null) {
-                if (JAVAX_PERSISTENCE_2_PATTERN.matcher(archiveUrl.getPath()).matches()) {
+                if (JAVAX_PERSISTENCE_21_PATTERN.matcher(archiveUrl.getPath()).matches()) {
+                    foundJpa21 = true;
+                    break;
+                } else if (JAVAX_PERSISTENCE_2_PATTERN.matcher(archiveUrl.getPath()).matches()) {
                     foundJpa2 = true;
                     break;
                 } else if (JAVAX_PERSISTENCE_PATTERN.matcher(archiveUrl.getPath()).matches()) {
@@ -319,49 +329,78 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     // we still may found jpa2
                 }
             }
-        }  
+        }
 
         if (j2eePlatform != null) {
             synchronized (j2eePlatform) {
-                j2eePlatform.jpa2Available = foundJpa2;
+                j2eePlatform.jpa2Available = foundJpa2 || foundJpa21;
+                j2eePlatform.jpa21Available = foundJpa21;
             }
         }
-        if (foundJpa2 || foundJpa1) {
+
+        if (foundJpa21 || foundJpa1) {
             return;
         }
 
         if (middleware != null) {
             File modules = getMiddlewareModules(middleware);
             if (modules.exists() && modules.isDirectory()) {
-                FilenameFilter filter = null;
-                Version serverVersion = null;
+                List<FilenameFilter> filters = new ArrayList<FilenameFilter>(2);
+                Version serverVersion;
                 if (j2eePlatform != null) {
                     serverVersion = j2eePlatform.dm.getServerVersion();
                 } else {
                     serverVersion = WLPluginProperties.getServerVersion(serverRoot);
                 }
+                
+                // we have to remove jpa2 jar otherwise we would have both jpa2 and jpa21 on classpath
+                if (serverVersion != null && JPA21_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion) && foundJpa2) {    
+                    for (Iterator<URL> it = list.iterator(); it.hasNext();) {
+                        URL archiveUrl = FileUtil.getArchiveFile(it.next());
+                        if (archiveUrl != null && JAVAX_PERSISTENCE_2_PATTERN.matcher(archiveUrl.getPath()).matches()) {
+                            it.remove();
+                        }
+                    }
+                }
+                
                 if (serverVersion != null && JPA2_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion)) {
-                    filter = new FilenameFilter() {
+                    filters.add(new FilenameFilter() {
+                        @Override
+                        public boolean accept(File dir, String name) {
+                            return JAVAX_PERSISTENCE_21_PATTERN.matcher(name).matches();
+                        }
+                    });
+                    filters.add(new FilenameFilter() {
                         @Override
                         public boolean accept(File dir, String name) {
                             return JAVAX_PERSISTENCE_2_PATTERN.matcher(name).matches();
                         }
-                    };
+                    });
                 } else {
-                    filter = new FilenameFilter() {
+                    filters.add(new FilenameFilter() {
                         @Override
                         public boolean accept(File dir, String name) {
                             return JAVAX_PERSISTENCE_PATTERN.matcher(name).matches();
                         }
-                    };
+                    });
                 }
-                File[] persistenceCandidates = modules.listFiles(filter);
-                if (persistenceCandidates.length > 0) {
-                    for (File candidate : persistenceCandidates) {
-                        addFileToList(list, candidate);
-                    }
-                    if (persistenceCandidates.length > 1) {
-                        LOGGER.log(Level.INFO, "Multiple javax.persistence JAR candidates");
+                for (FilenameFilter filter : filters) {
+                    File[] persistenceCandidates = modules.listFiles(filter);
+                    if (persistenceCandidates.length > 0) {
+                        for (File candidate : persistenceCandidates) {
+                            addFileToList(list, candidate);
+                            // mark we have jpa21 available
+                            if (j2eePlatform != null
+                                    && JAVAX_PERSISTENCE_21_PATTERN.matcher(candidate.getName()).matches()) {
+                                synchronized (j2eePlatform) {
+                                    j2eePlatform.jpa21Available = true;
+                                }
+                            }
+                        }
+                        if (persistenceCandidates.length > 1) {
+                            LOGGER.log(Level.INFO, "Multiple javax.persistence JAR candidates");
+                        }
+                        break;
                     }
                 }
             }
@@ -395,6 +434,14 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 for (File missingFile : modules.listFiles(filter)) {
                     addFileToList(list, missingFile);
                 }
+            }
+        }
+
+        // only add it if not already present
+        for (Iterator<URL> it = list.iterator(); it.hasNext();) {
+            URL archiveUrl = FileUtil.getArchiveFile(it.next());
+            if (archiveUrl != null && GLASSFISH_JSF2_PATTERN.matcher(archiveUrl.getPath()).matches()) {
+                return;
             }
         }
 
@@ -452,6 +499,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         
         /** <i>GuardedBy("this")</i> */
         private boolean jpa2Available;
+        
+        /** <i>GuardedBy("this")</i> */
+        private boolean jpa21Available;
         
         public J2eePlatformImplImpl(WLDeploymentManager dm) {
             this.dm = dm;
@@ -710,6 +760,16 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             // initialize and return value
             getLibraries();
             return jpa2Available;
+        }
+        
+        public synchronized boolean isJpa21Available() {
+            if (libraries != null) {
+                return jpa21Available;
+            }
+            
+            // initialize and return value
+            getLibraries();
+            return jpa21Available;
         }
 
         WLDeploymentManager getDeploymentManager() {

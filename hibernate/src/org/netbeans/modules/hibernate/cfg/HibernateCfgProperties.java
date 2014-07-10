@@ -45,6 +45,8 @@ package org.netbeans.modules.hibernate.cfg;
 import java.util.HashMap;
 import java.util.Map;
 import org.hibernate.cfg.Environment;
+import org.hibernate.hql.internal.ast.ASTQueryTranslatorFactory;
+import org.hibernate.hql.internal.classic.ClassicQueryTranslatorFactory;
 import org.openide.util.NbBundle;
 
 /**
@@ -144,7 +146,7 @@ public class HibernateCfgProperties {
     };
 
     public final static String[] optionalCacheProps = new String[] {
-        Environment.CACHE_PROVIDER,
+//        Environment.CACHE_PROVIDER,
         Environment.USE_MINIMAL_PUTS,
         Environment.USE_QUERY_CACHE,
         Environment.USE_SECOND_LEVEL_CACHE,
@@ -155,8 +157,8 @@ public class HibernateCfgProperties {
 
     public final static String[] optionalTransactionProps = new String[] {
         Environment.TRANSACTION_STRATEGY,
-        Environment.USER_TRANSACTION,
-        Environment.TRANSACTION_MANAGER_STRATEGY,
+//        Environment.USER_TRANSACTION,
+//        Environment.TRANSACTION_MANAGER_STRATEGY,
         Environment.FLUSH_BEFORE_COMPLETION,
         Environment.AUTO_CLOSE_SESSION
     };
@@ -175,8 +177,8 @@ public class HibernateCfgProperties {
     private final static String[] TRUE_FALSE = new String[] {"true", "false" }; // NOI18N
     private final static String[] RELEASE_MODES = new String[] {"auto", "on_close", "after_transaction", "after_statement"}; // NOI18N
     private final static String[] SESSION_CONTEXT = new String[] {"jta", "thread", "managed", NbBundle.getMessage(HibernateCfgProperties.class, "LBL_CustomClass")}; // NOI18N
-    private final static String[] QUERY_FACTORY_CLASS = new String[] {"org.hibernate.hql.ast.ASTQueryTranslatorFactory",
-    "org.hibernate.hql.classic.ClassicQueryTranslatorFactory"}; // NOI18N
+    private final static String[] QUERY_FACTORY_CLASS = new String[] {ASTQueryTranslatorFactory.class.getName(),
+        ClassicQueryTranslatorFactory.class.getName()}; // NOI18N
     private final static String[] HBM2DDL_AUTO = new String[] {"validate", "update", "create", "create-drop" }; // NOI18N
 
     private static Map<String, Object> possiblePropertyValues = new HashMap<String, Object>();
@@ -219,7 +221,7 @@ public class HibernateCfgProperties {
         possiblePropertyValues.put(Environment.AUTOCOMMIT, TRUE_FALSE);
         possiblePropertyValues.put(Environment.RELEASE_CONNECTIONS, RELEASE_MODES );
 
-        possiblePropertyValues.put(Environment.CACHE_PROVIDER, null);
+//        possiblePropertyValues.put(Environment.CACHE_PROVIDER, null);
         possiblePropertyValues.put(Environment.USE_MINIMAL_PUTS, TRUE_FALSE);
         possiblePropertyValues.put(Environment.USE_QUERY_CACHE, TRUE_FALSE);
         possiblePropertyValues.put(Environment.USE_SECOND_LEVEL_CACHE, TRUE_FALSE);
@@ -228,8 +230,8 @@ public class HibernateCfgProperties {
         possiblePropertyValues.put(Environment.USE_STRUCTURED_CACHE, TRUE_FALSE);
 
         possiblePropertyValues.put(Environment.TRANSACTION_STRATEGY, null);
-        possiblePropertyValues.put(Environment.USER_TRANSACTION, null);
-        possiblePropertyValues.put(Environment.TRANSACTION_MANAGER_STRATEGY, null);
+//        possiblePropertyValues.put(Environment.USER_TRANSACTION, null);
+//        possiblePropertyValues.put(Environment.TRANSACTION_MANAGER_STRATEGY, null);
         possiblePropertyValues.put(Environment.FLUSH_BEFORE_COMPLETION, TRUE_FALSE);
         possiblePropertyValues.put(Environment.AUTO_CLOSE_SESSION, TRUE_FALSE);
 

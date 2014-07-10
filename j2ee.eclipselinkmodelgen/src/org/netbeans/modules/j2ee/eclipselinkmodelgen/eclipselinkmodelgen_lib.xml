@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org.netbeans.modules.j2ee.eclipselinkmodelgen.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.modules.j2ee.eclipselinkmodelgen/modules/ext/eclipselink/org.eclipse.persistence.jpa.modelgen_2.5.1.v20130918-f2b9fc5.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.j2ee.eclipselinkmodelgen/modules/ext/eclipselink/org.eclipse.persistence.jpa.modelgen_2.5.2.v20140319-9ad6abd.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
@@ -61,7 +61,7 @@ made subject to such option by the copyright holder.
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <property>
             <name>maven-dependencies</name>
-            <value>org.eclipse.persistence:org.eclipse.persistence.jpa.modelgen.processor:2.5.1:jar</value>
+            <value>org.eclipse.persistence:org.eclipse.persistence.jpa.modelgen.processor:2.5.2:jar</value>
         </property>
     </properties> 
 </library>

@@ -51,7 +51,6 @@ import org.netbeans.modules.refactoring.spi.BackupFacility;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -59,6 +58,7 @@ import org.openide.text.PositionBounds;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -66,8 +66,10 @@ import org.openide.util.NbBundle;
  */
 public class DeleteFile extends SimpleRefactoringElementImplementation {
     private final URL res;
-    private String filename;
-    private RefactoringElementsBag session;
+    private final String filename;
+    private final RefactoringElementsBag session;
+
+    private BackupFacility.Handle id;
 
     /**
      * 
@@ -75,11 +77,7 @@ public class DeleteFile extends SimpleRefactoringElementImplementation {
      * @param session
      */
     public DeleteFile(FileObject fo, RefactoringElementsBag session) {
-        try {
-            this.res = fo.getURL();
-        } catch (FileStateInvalidException ex) {
-            throw new IllegalStateException(ex);
-        }
+        this.res = fo.toURL();
         this.filename = fo.getNameExt();
         this.session = session;
     }
@@ -93,7 +91,6 @@ public class DeleteFile extends SimpleRefactoringElementImplementation {
     public String getDisplayText() {
         return getText();
     }
-    BackupFacility.Handle id;
 
     @Override
     public void performChange() {
@@ -115,7 +112,7 @@ public class DeleteFile extends SimpleRefactoringElementImplementation {
     public void undoChange() {
         try {
             try {
-                File f = new File(res.toURI());
+                File f = Utilities.toFile(res.toURI());
                 if (f.exists()) {
                     throw new CannotUndoRefactoring(Collections.singleton(f.getPath()));
                 }

@@ -1297,10 +1297,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
 //            }
 //        }
 
+        ThreadsCache tc;
         synchronized (threadsCollectorLock) {
-            if (threadsCache != null) {
-                threadsCache.setVirtualMachine(vm);
-            }
+            tc = threadsCache;
+        }
+        if (tc != null) {
+            tc.setVirtualMachine(vm);
         }
 
         setState (STATE_RUNNING);

@@ -41,13 +41,20 @@
  */
 package org.netbeans.modules.web.webkit.debugging.api.css;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -144,16 +151,20 @@ public class CSS {
         if (response != null) {
             JSONObject result = response.getResult();
             StyleSheetHeader header = getStyleSheetHeader(styleSheetId);
-            if (result == null) {
-                // CSS.getStyleSheet has been removed from the CSS domain
-                String styleSheetText = getStyleSheetText(styleSheetId);
-                body = new StyleSheetBody(header, styleSheetText);
+            if (header == null) {
+                body = null;
             } else {
-                JSONObject sheetInfo = (JSONObject)result.get("styleSheet"); // NOI18N
-                body = new StyleSheetBody(header, sheetInfo);
-            }
-            synchronized (this) {
-                styleSheets.put(styleSheetId, body);
+                if (result == null) {
+                    // CSS.getStyleSheet has been removed from the CSS domain
+                    String styleSheetText = getStyleSheetText(styleSheetId);
+                    body = new StyleSheetBody(header, styleSheetText);
+                } else {
+                    JSONObject sheetInfo = (JSONObject)result.get("styleSheet"); // NOI18N
+                    body = new StyleSheetBody(header, sheetInfo);
+                }
+                synchronized (this) {
+                    styleSheets.put(styleSheetId, body);
+                }
             }
         }
         return body;
@@ -233,11 +244,13 @@ public class CSS {
      */
     public Map<String,PropertyInfo> getSupportedCSSProperties() {
         if (supportedProperties == null) {
-            Map<String,PropertyInfo> map = new HashMap<String,PropertyInfo>();
             Response response = transport.sendBlockingCommand(new Command("CSS.getSupportedCSSProperties")); // NOI18N
             if (response != null) {
                 JSONObject result = response.getResult();
-                if (result != null) {
+                if (result == null) {
+                    supportedProperties = loadSupportedProperties();
+                } else {
+                    Map<String,PropertyInfo> map = new HashMap<String,PropertyInfo>();
                     JSONArray properties = (JSONArray)result.get("cssProperties"); // NOI18N
                     for (Object o : properties) {
                         PropertyInfo info;
@@ -253,6 +266,38 @@ public class CSS {
             }
         }
         return supportedProperties;
+    }
+
+    // Chrome 35 replaces CSS.getSupportedCSSProperties by a hardcoded list,
+    // see https://chromium.googlesource.com/chromium/blink/+/master/Source/core/css/CSSShorthands.in
+    private Map<String,PropertyInfo> loadSupportedProperties() {
+        Map<String,PropertyInfo> map = new HashMap<String,PropertyInfo>();
+        InputStream stream = getClass().getResourceAsStream("Longhands.txt"); // NOI18N
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+        try {
+            String s;
+            while ((s = reader.readLine()) != null) {
+                int index = s.indexOf('=');
+                String name = s.substring(0,index);
+                StringTokenizer tokenizer = new StringTokenizer(s.substring(index+1), ","); // NOI18N
+                JSONArray longhands = new JSONArray();
+                while (tokenizer.hasMoreTokens()) {
+                    String longhand = tokenizer.nextToken();
+                    longhands.add(longhand);
+                }
+                JSONObject json = new JSONObject();
+                json.put("name", name); // NOI18N
+                json.put("longhands", longhands); // NOI18N
+                map.put(name, new PropertyInfo(json));
+            }
+        } catch (IOException ioex) {
+            Logger.getLogger(CSS.class.getName()).log(Level.INFO, null, ioex);
+        } finally {
+            try {
+                reader.close();
+            } catch (IOException ex) {}
+        }
+        return map;
     }
 
     /**

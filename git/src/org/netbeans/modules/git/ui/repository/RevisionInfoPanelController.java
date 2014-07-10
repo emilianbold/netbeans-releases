@@ -120,8 +120,12 @@ public class RevisionInfoPanelController {
         if (!panel.tbAuthor.getText().isEmpty()) {
             panel.tbAuthor.setCaretPosition(0);
         }
+        String id = info.getRevision();
+        if (id.length() > 10) {
+            id = id.substring(0, 10);
+        }
         if (revision.equals(info.getRevision())) {
-            panel.tbRevisionId.setText(new StringBuilder(info.getRevision()).append(getMergedStatus(revisionMerged)).toString());
+            panel.tbRevisionId.setText(new StringBuilder(id).append(getMergedStatus(revisionMerged)).toString());
             this.info = new Revision(revision, revision, info.getShortMessage(), info.getFullMessage());
         } else {
             this.info = new Revision(info.getRevision(), revision, info.getShortMessage(), info.getFullMessage());

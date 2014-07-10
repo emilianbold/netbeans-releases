@@ -71,7 +71,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
  * @author Radek Matous
  */
 final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, VariableNameFactory, LazyBuild {
-    private String classNormName;
+    private final String classNormName;
     private boolean scanned;
     private MethodDeclaration originalNode;
     private ModelVisitor visitor;
@@ -86,8 +86,8 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         this.visitor = visitor;
     }
 
-    MethodScopeImpl(Scope inScope, MagicMethodDeclarationInfo nodeInfo) {
-        super(inScope, nodeInfo, inScope.isDeprecated());
+    MethodScopeImpl(Scope inScope, String returnType, MagicMethodDeclarationInfo nodeInfo) {
+        super(inScope, nodeInfo, returnType, inScope.isDeprecated());
         assert inScope instanceof TypeScope : inScope.getClass().toString();
         classNormName = inScope.getNormalizedName();
         scanned = true;
@@ -103,7 +103,8 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     public static MethodScopeImpl createElement(Scope scope, PHPDocMethodTag node) {
         MagicMethodDeclarationInfo nodeInfo = MagicMethodDeclarationInfo.create(node);
         assert nodeInfo != null;
-        return new MethodScopeImpl(scope, nodeInfo);
+        String qualifiedReturnType = VariousUtils.qualifyTypeNames(nodeInfo.getReturnType(), nodeInfo.getOriginalNode().getStartOffset(), scope);
+        return new MethodScopeImpl(scope, qualifiedReturnType, nodeInfo);
     }
 
     @Override

@@ -51,20 +51,18 @@ made subject to such option by the copyright holder.
         <type>classpath</type>
         <resource>jar:nbinst://org.netbeans.modules.j2ee.eclipselink/modules/ext/eclipselink/eclipselink.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.j2ee.eclipselink/modules/ext/eclipselink/javax.persistence_2.1.0.v201304241213.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.j2ee.eclipselink/modules/ext/eclipselink/org.eclipse.persistence.jpa.jpql_2.5.1.v20130918-f2b9fc5.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.j2ee.eclipselink/modules/ext/eclipselink/org.eclipse.persistence.jpa.jpql_2.5.2.v20140319-9ad6abd.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
-        <!-- Illegal to refer to Javadoc in the enterprise cluster from the java cluster; consider moving docs here, or overriding library definition in j2ee.platform:
-        <resource>jar:nbinst://org.netbeans.modules.j2ee.platform/docs/javaee-doc-api.jar!/</resource>
-        -->
+        <resource>jar:nbinst://org.netbeans.modules.j2ee.eclipselink/modules/ext/docs/javax.persistence-2.1.0-doc.zip!/</resource>
     </volume>
     <properties>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <property>
             <name>maven-dependencies</name>
             <value>
-                org.eclipse.persistence:eclipselink:2.5.1:jar
+                org.eclipse.persistence:eclipselink:2.5.2:jar
             </value>
         </property>
     </properties>

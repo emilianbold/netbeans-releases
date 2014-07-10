@@ -48,13 +48,21 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
         <basename property="probe.name" file="${probe.file}"/>
         <property name="remote.java.executable" value="${remote.platform.home}/bin/java"/>
         <property name="remote.platform.properties.file" value="platform.properties"/>
+        <condition property="remote.exec.prefix" value="'${remote.exec.decorator}' " else="">
+            <and>
+                <isset property="remote.exec.decorator"/>
+                <not>
+                    <equals arg1="${remote.exec.decorator}" arg2="" trim="true"/>
+                </not>
+            </and>
+        </condition>
     </target>
 
     <target name="connect-ssh-password" depends="-init">
         <sshexec host="${remote.host}" port="${remote.port}" username="${remote.username}" password="${remote.password}" trust="true" command="mkdir -p '${remote.working.dir}'" />
         <scp file="${probe.file}" todir="${remote.username}@${remote.host}:${remote.working.dir}" port="${remote.port}" password="${remote.password}" trust="true"/>
         <sshexec host="${remote.host}" port="${remote.port}" username="${remote.username}" password="${remote.password}" trust="true"
-                 command="cd '${remote.working.dir}'; '${remote.java.executable}' -jar ${probe.name} ${remote.platform.properties.file}"/>
+                 command="cd '${remote.working.dir}'; ${remote.exec.prefix}'${remote.java.executable}' -jar ${probe.name} ${remote.platform.properties.file}"/>
         <scp file="${remote.username}@${remote.host}:${remote.working.dir}/${remote.platform.properties.file}" localtofile="${platform.properties.file}" port="${remote.port}" password="${remote.password}" trust="true"/>
         <sshexec host="${remote.host}" port="${remote.port}" username="${remote.username}" password="${remote.password}" trust="true"
                  command="cd '${remote.working.dir}'; rm ${probe.name}; rm ${remote.platform.properties.file}"/>
@@ -64,7 +72,7 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
         <sshexec host="${remote.host}" port="${remote.port}" username="${remote.username}" keyfile="${keystore.file}" passphrase="${keystore.passphrase}" trust="true" command="mkdir -p '${remote.working.dir}'" />
         <scp file="${probe.file}" todir="${remote.username}@${remote.host}:${remote.working.dir}" port="${remote.port}" keyfile="${keystore.file}" passphrase="${keystore.passphrase}" trust="true"/>
         <sshexec host="${remote.host}" port="${remote.port}" username="${remote.username}" keyfile="${keystore.file}" passphrase="${keystore.passphrase}" trust="true"
-                 command="cd '${remote.working.dir}'; '${remote.java.executable}' -jar ${probe.name} ${remote.platform.properties.file}"/>
+                 command="cd '${remote.working.dir}'; ${remote.exec.prefix}'${remote.java.executable}' -jar ${probe.name} ${remote.platform.properties.file}"/>
         <scp file="${remote.username}@${remote.host}:${remote.working.dir}/${remote.platform.properties.file}" localtofile="${platform.properties.file}" port="${remote.port}" keyfile="${keystore.file}" passphrase="${keystore.passphrase}" trust="true"/>
         <sshexec host="${remote.host}" port="${remote.port}" username="${remote.username}" keyfile="${keystore.file}" passphrase="${keystore.passphrase}" trust="true"
                  command="cd '${remote.working.dir}'; rm ${probe.name}; rm ${remote.platform.properties.file}"/>

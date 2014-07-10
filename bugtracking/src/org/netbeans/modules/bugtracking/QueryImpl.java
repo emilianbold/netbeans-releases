@@ -173,6 +173,7 @@ public final class QueryImpl<Q, I>  {
         public void refreshingFinished() {
             isRunning = false;
             support.firePropertyChange(EVENT_QUERY_REFRESH_FINISHED, null, null);
+            support.firePropertyChange(Query.EVENT_QUERY_REFRESHED, null, null);
         }
 
         @Override
@@ -185,6 +186,7 @@ public final class QueryImpl<Q, I>  {
         public void restoreFinished() {
             isRunning = false;
             support.firePropertyChange(EVENT_QUERY_RESTORE_FINISHED, null, null);
+            support.firePropertyChange(Query.EVENT_QUERY_REFRESHED, null, null);
         }
 
         @Override

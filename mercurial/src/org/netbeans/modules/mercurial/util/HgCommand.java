@@ -2142,8 +2142,7 @@ public abstract class HgCommand<T> implements Callable<T> {
             if (revision == null) {
                 // maybe the file is copied?
                 FileInformation fi = getStatus(repository, Collections.singletonList(file), null, null, true).get(file);
-                if (fi != null && (fi.getStatus() & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) != 0
-                        && fi.getStatus(null) != null && fi.getStatus(null).getOriginalFile() != null) {
+                if (fi != null && fi.getStatus(null) != null && fi.getStatus(null).getOriginalFile() != null) {
                     doCat(repository, fi.getStatus(null).getOriginalFile(), outFile, revision, false, logger);
                 }
             } else {
@@ -4912,12 +4911,12 @@ public abstract class HgCommand<T> implements Callable<T> {
             if (statusLine.length() > 0) {
                 if (statusLine.charAt(0) == ' ') {
                     // Locally Added but Copied
-                    if (file != null && (prev_info.getStatus() & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) != 0) {
+                    if (file != null) {
                         File original = getFileFromStatusLine(statusLine, repository);
-                        prev_info =  new FileInformation(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY,
+                        prev_info =  new FileInformation(prev_info.getStatus(),
                                 new FileStatus(file, original), false);
                         Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): prev_info {0}  filePath {1}", new Object[]{prev_info, file}); // NOI18N
-                    } else if (file == null) {
+                    } else {
                         Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): repository path: {0} status flags: {1} status line {2} filepath == nullfor prev_info ", new Object[]{repository.getAbsolutePath(), statusFlags, statusLine}); // NOI18N
                     }
                     continue;

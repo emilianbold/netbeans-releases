@@ -91,7 +91,7 @@ Contributor(s): Andrei Badea
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.26</specification-version>
+                        <specification-version>1.76</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

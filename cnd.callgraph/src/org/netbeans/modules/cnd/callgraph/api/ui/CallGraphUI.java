@@ -42,6 +42,11 @@
 
 package org.netbeans.modules.cnd.callgraph.api.ui;
 
+import java.util.Collection;
+import javax.swing.Action;
+import javax.swing.JPanel;
+import org.netbeans.modules.cnd.callgraph.api.Call;
+
 /**
  *
  * @author Alexander Simon
@@ -50,6 +55,13 @@ public interface CallGraphUI {
     /**
      * if method returns true the call graph shows tree and graph views.
      * if method returns false the call graph shows only tree view.
+     * @return 
      */
     boolean showGraph();
+    
+    Catalog getCatalog();
+    
+    JPanel getContextPanel(Call call);    
+    
+    Collection<Action> getActions();
 }
