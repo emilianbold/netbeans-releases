@@ -533,9 +533,20 @@ public final class Stamps {
     }
 
     private static File findFallbackCache(String cache) {
+        String fallbackCacheLocation = System.getProperty("netbeans.fallback.cache"); // NOI18N
+        if ("none".equals(fallbackCacheLocation)) { // NOI18N
+            return null;
+        }
+
         if (fallbackCache == null) {
             fallbackCache = new File[0];
-            if (Clusters.dirs().length >= 1) {
+            if (fallbackCacheLocation != null) {
+                File fallbackFile = new File(fallbackCacheLocation);
+                if (fallbackFile.isDirectory()) {
+                    fallbackCache = new File[]{fallbackFile};
+                }
+            }
+            if (fallbackCache.length == 0 && Clusters.dirs().length >= 1) {
                 File fallback = new File(new File(new File(Clusters.dirs()[0]), "var"), "cache"); // NOI18N
                 if (fallback.isDirectory()) {
                     fallbackCache = new File[]{ fallback };
@@ -547,7 +558,7 @@ public final class Stamps {
         }
         return new File(fallbackCache[0], cache);
     }
-    
+
     static void checkPopulateCache() {
         if (populated) {
             return;
