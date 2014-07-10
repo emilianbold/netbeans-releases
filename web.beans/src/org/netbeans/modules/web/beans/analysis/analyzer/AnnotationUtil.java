@@ -115,6 +115,7 @@ public final class AnnotationUtil {
     public static final String STATEFUL = "javax.ejb.Stateful";                     // NOI18N 
     
     public static final String  SINGLETON   = "javax.ejb.Singleton";                // NOI18N
+    public static final String  CDISINGLETON   = "javax.inject.Singleton";                // NOI18N
     
     public static final String APPLICATION_SCOPED 
                     = "javax.enterprise.context.ApplicationScoped";                 // NOI18N
