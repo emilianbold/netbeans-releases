@@ -104,6 +104,7 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.logicalview.PhpLogicalViewProvider;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.netbeans.modules.php.project.util.UsageLogging;
 import org.netbeans.modules.php.spi.executable.DebugStarter;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
@@ -764,6 +765,7 @@ public final class PhpProject implements Project {
                 ClientSideDevelopmentSupport.create(this),
                 ProjectBrowserProviderImpl.create(this),
                 new PhpVisibilityQuery.PhpVisibilityQueryImpl(this),
+                new UsageLogging(),
                 // ?? getRefHelper()
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-php-project/Lookup"); // NOI18N

@@ -83,15 +83,16 @@ public class ArchiveTypeBindingTypeFilter<T extends Element> extends Filter<T> {
                             .hasNext();) {
                         Element element = iterator.next();
                         //TODO: reqwrite with ScopeChecker, avoid duplicates
-                        boolean isNormalScopeOrScope = AnnotationUtil.getAnnotationMirror(element, compInfo,
+                        boolean isNormalScopeOrScopeOrSingleton = AnnotationUtil.getAnnotationMirror(element, compInfo,
                                 AnnotationUtil.NORMAL_SCOPE_FQN, 
                                 AnnotationUtil.SCOPE_FQN, 
                                 AnnotationUtil.REQUEST_SCOPE_FQN, 
                                 AnnotationUtil.SESSION_SCOPE_FQN,
                                 AnnotationUtil.APPLICATION_SCOPE_FQN, 
                                 AnnotationUtil.CONVERSATION_SCOPE_FQN, 
-                                AnnotationUtil.DEPENDENT_SCOPE_FQN ) != null;
-                        if (isNormalScopeOrScope) {
+                                AnnotationUtil.DEPENDENT_SCOPE_FQN,
+                                AnnotationUtil.CDISINGLETON) != null;
+                        if (isNormalScopeOrScopeOrSingleton) {
                             continue;
                         } 
                         if (AnnotationUtil.isSessionBean(element, compInfo)) {
