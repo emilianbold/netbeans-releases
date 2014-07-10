@@ -1624,7 +1624,7 @@ public abstract class TreeView extends JScrollPane {
                         if (a.isEnabled()) {
                             a.actionPerformed(new ActionEvent(node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
                         } else {
-                            Toolkit.getDefaultToolkit().beep();
+                            Utilities.disabledActionBeep();
                         }
 
                         e.consume();
@@ -1669,7 +1669,7 @@ public abstract class TreeView extends JScrollPane {
                         nodes.length == 1 ? nodes[0] : nodes,
                         ActionEvent.ACTION_PERFORMED, "")); // NOI18N
             } else {
-                Toolkit.getDefaultToolkit().beep();
+                Utilities.disabledActionBeep();
             }
         }
     }

@@ -60,15 +60,20 @@ public class RowPerProjectTabDisplayer extends MultiRowTabDisplayer implements C
 
     @Override
     void initRows() {
-        int rowCount = ProjectSupport.getDefault().getOpenProjects().length+1;
-
+        int rowCount = ProjectSupport.getDefault().getOpenProjects().length;
+        if( rowCount > 1 ) {
+            rowCount++; //add an extra row for non-project tabs
+        }
         for( int i=0; i<rowCount; i++ ) {
             addRowTable();
         }
     }
 
     private void adjustRows( int projectCount ) {
-        int rowCount = projectCount+1;
+        int rowCount = projectCount;
+        if( rowCount > 1 ) {
+            rowCount++; //add an extra row for non-project tabs
+        }
         while( rowCount < rowTables.size() && rowTables.size() > 1 ) {
             removeTable();
         }
