@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.clientproject.node;
 
 import java.awt.Image;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -70,6 +71,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -109,24 +111,65 @@ public class ImportantFilesNodeFactory implements NodeFactory {
 
     private static class ImpFilesNL implements NodeList<String> {
 
-        private Project project;
-
+        private final Project project;
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
+        private final Listener listener;
+        
         public ImpFilesNL(Project p) {
             project = p;
+            listener = new Listener();
+            Set<File> temp = new HashSet();
+            for (String name: ImportantFilesChildren.FILES.keySet()) {
+                File f = FileUtil.normalizeFile(new File(project.getProjectDirectory().getPath() + "/" + name));
+                if (temp.add(f)) {
+                    FileUtil.addFileChangeListener(listener, f);
+                }
+            }
         }
+        
+        private class Listener extends FileChangeAdapter {
+
+            public Listener() {
+            }
+
+            @Override
+            public void fileDataCreated(FileEvent fe) {
+                changeSupport.fireChange();            
+            }
+
+
+            @Override
+            public void fileDeleted(FileEvent fe) {
+                changeSupport.fireChange();
+            }
+
+            @Override
+            public void fileRenamed(FileRenameEvent fe) {
+                changeSupport.fireChange();
+            }
+
+            @Override
+            public void fileFolderCreated(FileEvent fe) {
+                changeSupport.fireChange();
+            }
+        }        
 
         public List<String> keys() {
-            return Collections.singletonList(IMPORTANT_FILES_NAME);
+            if (hasImportantFiles()) {
+                return Collections.singletonList(IMPORTANT_FILES_NAME);
+            } else {
+                return Collections.emptyList();
+            }
         }
 
         @Override
         public void addChangeListener(ChangeListener l) {
-            //ignore, doesn't change
+            changeSupport.addChangeListener(l);
         }
 
         @Override
         public void removeChangeListener(ChangeListener l) {
-            //ignore, doesn't change
+            changeSupport.removeChangeListener(l);
         }
 
         @Override
@@ -144,6 +187,15 @@ public class ImportantFilesNodeFactory implements NodeFactory {
 
         @Override
         public void removeNotify() {
+        }
+
+        private boolean hasImportantFiles() {
+            for (String name: ImportantFilesChildren.FILES.keySet()) {
+                if (project.getProjectDirectory().getFileObject(name) != null) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
@@ -383,7 +435,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                     continue;
                 }
                 FileObject file = project.getProjectHelper().resolveFileObject(locEval);
-                if (file != null && file.getNameExt().equals(loc)) {
+                if (file != null && FileUtil.getRelativePath(project.getProjectDirectory(), file).equals(loc)) {
                     newVisibleFiles.add(loc);
                     files.add(file);
                 }
