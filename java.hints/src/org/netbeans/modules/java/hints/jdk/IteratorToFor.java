@@ -415,7 +415,7 @@ public class IteratorToFor {
                 BlockTree block = (BlockTree) statement;
                 newLoop = make.EnhancedForLoop(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), variableName, make.Type(variableType), null), (ExpressionTree) arr.getLeaf(), make.Block(block.getStatements().subList(1, block.getStatements().size()), false));
             } else {
-                String treeName = Utilities.getName(arr.getLeaf());
+                String treeName = org.netbeans.modules.editor.java.Utilities.varNameSuggestion(arr);
                 variableName = treeName;
 
                 if (variableName != null && variableName.endsWith("s")) variableName = variableName.substring(0, variableName.length() - 1);

@@ -44,16 +44,20 @@
 
 package org.netbeans.modules.editor.java;
 
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ErroneousTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -73,6 +77,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.*;
@@ -97,7 +102,6 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.options.CodeCompletionPanel;
@@ -569,7 +573,14 @@ public final class Utilities {
         List<String> result = new ArrayList<String>();
         if (type == null && suggestedName == null)
             return result;
-        List<String> vnct = suggestedName != null ? Collections.singletonList(suggestedName) : varNamesForType(type, types, elements, prefix);
+        Collection<String> vnct;
+        if (suggestedName != null) {
+            vnct = new LinkedHashSet<>();
+            vnct.add(suggestedName);
+            vnct.addAll(varNamesForType(type, types, elements, prefix));
+        } else {
+            vnct = varNamesForType(type, types, elements, prefix);
+        }
         boolean isConst = false;
         String namePrefix = null;
         String nameSuffix = null;
@@ -653,6 +664,14 @@ public final class Utilities {
             result.add(name);
         }
         return result;
+    }
+
+    public static String varNameSuggestion(TreePath path) {
+        return adjustName(varNameForPath(path));   
+    }
+
+    public static String varNameSuggestion(Tree tree) {
+        return adjustName(varNameForTree(tree));   
     }
 
     public static boolean inAnonymousOrLocalClass(TreePath path) {
@@ -854,7 +873,7 @@ public final class Utilities {
     }
     
     private static boolean isClashing(String varName, TypeMirror type, Iterable<? extends Element> locals) {
-        if (JavaTokenContext.getKeyword(varName) != null)
+        if (SourceVersion.isKeyword(varName))
             return true;
         if (type != null && type.getKind() == TypeKind.DECLARED && ((DeclaredType)type).asElement().getSimpleName().contentEquals(varName))
             return true;
@@ -864,6 +883,149 @@ public final class Utilities {
                 return true;
         }
         return false;
+    }
+    
+    private static String varNameForPath(TreePath path) {
+        if (path == null)
+            return null;
+        String name = varNameForTree(path.getLeaf());
+        if (name == null && path.getLeaf().getKind() == Kind.VARIABLE
+                && path.getParentPath().getLeaf().getKind() == Kind.ENHANCED_FOR_LOOP
+                && ((EnhancedForLoopTree)path.getParentPath().getLeaf()).getVariable() == path.getLeaf()) {
+            name = varNameForPath(new TreePath(path.getParentPath(), ((EnhancedForLoopTree)path.getParentPath().getLeaf()).getExpression()));
+            if (name != null) {
+                return getSingular(name);
+            }
+        }
+        return name;
+    }
+
+    private static String varNameForTree(Tree et) {
+        if (et == null)
+            return null;
+        switch (et.getKind()) {
+            case IDENTIFIER:
+                return ((IdentifierTree) et).getName().toString();
+            case MEMBER_SELECT:
+                return ((MemberSelectTree) et).getIdentifier().toString();
+            case METHOD_INVOCATION:
+                return varNameForTree(((MethodInvocationTree) et).getMethodSelect());
+            case NEW_CLASS:
+                return firstToLower(varNameForTree(((NewClassTree) et).getIdentifier()));
+            case PARAMETERIZED_TYPE:
+                return firstToLower(varNameForTree(((ParameterizedTypeTree) et).getType()));
+            case STRING_LITERAL:
+                String name = guessLiteralName((String) ((LiteralTree) et).getValue());
+                if (name == null) {
+                    return firstToLower(String.class.getSimpleName());
+                } else {
+                    return firstToLower(name);
+                }
+            case VARIABLE:
+                if (((VariableTree)et).getInitializer() != null) {
+                    name = varNameForTree(((VariableTree)et).getInitializer());
+                    if (name != null)
+                        return name;
+                }
+                return null;
+            case ARRAY_ACCESS:
+                name = varNameForTree(((ArrayAccessTree)et).getExpression());
+                if (name != null) {
+                    return getSingular(name);
+                }
+                return null;
+            case ASSIGNMENT:
+                if (((AssignmentTree)et).getExpression() != null) {
+                    return varNameForTree(((AssignmentTree)et).getExpression());
+                }
+                return null;
+            default:
+                return null;
+        }
+    }
+    
+    private static String getSingular(String name) {
+        if (name.endsWith("ies") && name.length() > 3) { //NOI18N
+            return name.substring(0, name.length() - 3) + 'y';
+        }
+        if (name.endsWith("s") && name.length() > 1) { //NOI18N
+            return name.substring(0, name.length() - 1);
+        }
+        return name;
+    }
+    
+    static String adjustName(String name) {
+        if (name == null || ERROR.contentEquals(name))
+            return null;
+        
+        String shortName = null;
+        
+        if (name.startsWith("get") && name.length() > 3) {
+            shortName = name.substring(3);
+        }
+        
+        if (name.startsWith("is") && name.length() > 2) {
+            shortName = name.substring(2);
+        }
+        
+        if (shortName != null) {
+            return firstToLower(shortName);
+        }
+        
+        if (SourceVersion.isKeyword(name)) {
+            return "a" + Character.toUpperCase(name.charAt(0)) + name.substring(1);
+        } else {
+            return name;
+        }
+    }
+    
+    private static String firstToLower(String name) {
+        if (name.length() == 0)
+            return null;
+
+        StringBuilder result = new StringBuilder();
+        boolean toLower = true;
+        char last = Character.toLowerCase(name.charAt(0));
+
+        for (int i = 1; i < name.length(); i++) {
+            if (toLower && (Character.isUpperCase(name.charAt(i)) || name.charAt(i) == '_')) {
+                result.append(Character.toLowerCase(last));
+            } else {
+                result.append(last);
+                toLower = false;
+            }
+            last = name.charAt(i);
+
+        }
+
+        result.append(toLower ? Character.toLowerCase(last) : last);
+        
+        if (SourceVersion.isKeyword(result)) {
+            return "a" + name;
+        } else {
+            return result.toString();
+        }
+    }
+
+    private static String guessLiteralName(String str) {
+        if(str.isEmpty())
+            return null;
+        
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < str.length(); i++) {
+            char ch = str.charAt(i);
+            if(ch == ' ') {
+                sb.append('_');
+            } else if (sb.length() == 0 ? Character.isJavaIdentifierStart(ch) : Character.isJavaIdentifierPart(ch))
+                sb.append(ch);
+            if (sb.length() > 40)
+                break;
+        }
+        if (sb.length() == 0)
+            return null;
+        else
+            return sb.toString();
     }
     
     private static class ElementNameVisitor extends SimpleElementVisitor8<StringBuilder,Boolean> {
