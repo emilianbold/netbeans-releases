@@ -48,13 +48,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -64,7 +62,6 @@ import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.Element;
 import org.netbeans.spi.editor.fold.FoldManager;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
@@ -72,7 +69,6 @@ import org.netbeans.spi.editor.fold.FoldInfo;
 import org.netbeans.api.editor.fold.FoldStateChange;
 import org.netbeans.spi.editor.fold.FoldOperation;
 import org.netbeans.api.editor.fold.FoldType;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.openide.util.Exceptions;
 
@@ -956,13 +952,21 @@ public final class FoldOperationImpl {
                     }
                 }
             }
+            /*
+            Object ei = info.getExtraInfo();
+            if (ei != null && !ei.equals(acc.foldGetExtraInfo(f))) {
+                acc.foldSetExtraInfo(f, ei);
+                // this is a fake, but causes fold visualization to be refreshed
+                acc.foldStateChangeDescriptionChanged(getFSCH(f));
+            }
+            */
             if (!f.getDescription().equals(desc)) {
                 acc.foldSetDescription(f, desc);
                 acc.foldStateChangeDescriptionChanged(getFSCH(f));
             }
             if (info.getCollapsed() != null && f.isCollapsed() != info.getCollapsed()) {
-                getAccessor().foldSetCollapsed(f, info.getCollapsed());
-                getAccessor().foldStateChangeCollapsedChanged(getFSCH(f));
+                acc.foldSetCollapsed(f, info.getCollapsed());
+                acc.foldStateChangeCollapsedChanged(getFSCH(f));
             }
             return f;
         }
