@@ -381,7 +381,10 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
 
             if (value instanceof MdbHolder) {
                 MdbHolder mdbHolder = (MdbHolder) value;
-                setText(mdbHolder.getMdbEjbName());
+
+                // "ejbName (projectName)"
+                setText(mdbHolder.getMdbEjbName() + " (" + mdbHolder.getProjectName() + ")"); //NOI18N
+
                 // tooltip
                 MessageDestination messageDestination = mdbHolder.getMessageDestination();
                 if (messageDestination == null) {
