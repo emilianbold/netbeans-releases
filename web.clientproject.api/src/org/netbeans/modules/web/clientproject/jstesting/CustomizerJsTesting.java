@@ -45,8 +45,6 @@ package org.netbeans.modules.web.clientproject.jstesting;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.util.Objects;
 import javax.swing.GroupLayout;
 import javax.swing.JComboBox;
@@ -56,6 +54,8 @@ import javax.swing.LayoutStyle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
+import org.netbeans.modules.web.clientproject.util.WebCommonUtils;
+import org.netbeans.modules.web.common.api.UsageLogger;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -65,6 +65,9 @@ class CustomizerJsTesting extends JPanel {
     private final ProjectCustomizer.Category category;
     private final Project project;
     private final JsTestingProvider originalProvider;
+    private final UsageLogger usageLogger = new UsageLogger.Builder(WebCommonUtils.USAGE_LOGGER_NAME)
+            .message(UsageLogger.class, "USG_TEST_CONFIG_JS") // NOI18N
+            .create();
 
     volatile JsTestingProvider selectedProvider;
 
@@ -91,7 +94,7 @@ class CustomizerJsTesting extends JPanel {
         providerComboBox.setSelectedItem(originalProvider);
         providerComboBox.setRenderer(new JsTestingProviderRenderer());
         // listeners
-        providerComboBox.addItemListener(new ProviderItemListener());
+        providerComboBox.addActionListener(new ProviderActionListener());
         category.setStoreListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -118,6 +121,7 @@ class CustomizerJsTesting extends JPanel {
             // no change
             return;
         }
+        usageLogger.log(project.getClass().getName(), selectedProvider == null ? "" : selectedProvider.getIdentifier());
         if (originalProvider != null) {
             JsTestingProviderAccessor.getDefault().notifyEnabled(originalProvider, project, false);
         }
@@ -165,13 +169,11 @@ class CustomizerJsTesting extends JPanel {
 
     //~ Inner classes
 
-    private final class ProviderItemListener implements ItemListener {
+    private final class ProviderActionListener implements ActionListener {
 
         @Override
-        public void itemStateChanged(ItemEvent e) {
-            if (e.getStateChange() == ItemEvent.SELECTED) {
-                selectedProvider = (JsTestingProvider) providerComboBox.getSelectedItem();
-            }
+        public void actionPerformed(ActionEvent e) {
+            selectedProvider = (JsTestingProvider) providerComboBox.getSelectedItem();
             validateData();
         }
 
