@@ -659,6 +659,8 @@ public class JavaFixUtilities {
             return super.visitTypeParameter(node, p);
         }
         
+        private static final EnumSet<Kind>  COMPLEX_OPS = EnumSet.of(Kind.CONDITIONAL_AND, Kind.CONDITIONAL_OR);
+        
         private Tree handleIdentifier(String name, Tree node) {
             TreePath tp = parameters.get(name);
 
@@ -685,9 +687,15 @@ public class JavaFixUtilities {
                             rewriteNegated = true;
                         } else {
                             Tree parent = tp.getParentPath().getLeaf();
-                            // rather disable DeMorgan rules when negating a parenthesized expression, users will be
-                            // less surprised to see just the whole parenthesis negated than whole expression changed.
-                            rewriteNegated = (parent.getKind() != Kind.LOGICAL_COMPLEMENT && parent.getKind() != Kind.PARENTHESIZED);
+                            TreePath aboveNewComplement = getCurrentPath().getParentPath().getParentPath();
+                            // Do not try to optimize too complex expressions, following the principle of the least surprise.
+                            // 1/ optimization is OK if the target is without parenthesis - extra level of parens can be avoided
+                            // 2/ if both target and original are parenthesized, then optimization should be done to avoid one extra paren level
+                            // 3/ do not optimize complex expressions - least surprise
+                            rewriteNegated = (parent.getKind() != Kind.LOGICAL_COMPLEMENT) && 
+                                             (!COMPLEX_OPS.contains(target.getKind()) || 
+                                                parent.getKind() != Kind.PARENTHESIZED || 
+                                                (aboveNewComplement != null && aboveNewComplement.getLeaf().getKind() == Kind.PARENTHESIZED));
                         }
                         
                         if (rewriteNegated) {
@@ -1241,7 +1249,6 @@ public class JavaFixUtilities {
             switch (original.getKind()) {
                 case PARENTHESIZED:
                     ExpressionTree expr = ((ParenthesizedTree) original).getExpression();
-                    /*
                     ExpressionTree negatedOrNull = negate(expr, original, nullOnPlainNeg);
                     if (negatedOrNull != null) {
                         if (negatedOrNull.getKind() != Kind.PARENTHESIZED) {
@@ -1249,12 +1256,13 @@ public class JavaFixUtilities {
                         }
                     }
                     return negatedOrNull;
-                    */
+                    /**
                     if (nullOnPlainNeg) {
                         return null;
                     } else {
                         return make.Unary(Kind.LOGICAL_COMPLEMENT, original);
                     }
+                    */
                     
                 case INSTANCE_OF:
                     return make.Unary(Kind.LOGICAL_COMPLEMENT, make.Parenthesized(original));
