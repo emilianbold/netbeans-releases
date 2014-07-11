@@ -373,7 +373,7 @@ public class CustomizerKarma extends JPanel {
         File file = new FileChooserBuilder(CustomizerKarma.class)
                 .setTitle(Bundle.CustomizerKarma_chooser_config())
                 .setFilesOnly(true)
-                .setDefaultWorkingDirectory(KarmaUtils.getConfigDir(project))
+                .setDefaultWorkingDirectory(KarmaUtils.getKarmaConfigDir(project))
                 .forceUseOfDefaultWorkingDirectory(true)
                 .showOpenDialog();
         if (file != null) {
@@ -394,7 +394,7 @@ public class CustomizerKarma extends JPanel {
 
     @NbBundle.Messages("CustomizerKarma.config.none=No Karma configuration was found.")
     private void configSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_configSearchButtonActionPerformed
-        File karmaConfig = KarmaUtils.findKarmaConfig(KarmaUtils.getConfigDir(project));
+        File karmaConfig = KarmaUtils.findKarmaConfig(KarmaUtils.getKarmaConfigDir(project));
         if (karmaConfig != null) {
             configTextField.setText(karmaConfig.getAbsolutePath());
             return;

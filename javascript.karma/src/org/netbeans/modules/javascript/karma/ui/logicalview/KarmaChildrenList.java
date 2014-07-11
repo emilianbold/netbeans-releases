@@ -422,7 +422,7 @@ public class KarmaChildrenList implements NodeList<Node>, PreferenceChangeListen
         public JComponent[] getMenuPresenters() {
             removeAll();
             // #238803
-            File configDir = KarmaUtils.getConfigDir(project);
+            File configDir = KarmaUtils.getKarmaConfigDir(project);
             List<File> configs = KarmaUtils.findKarmaConfigs(configDir);
             if (configs.isEmpty()) {
                 configs = KarmaUtils.findJsFiles(configDir);
