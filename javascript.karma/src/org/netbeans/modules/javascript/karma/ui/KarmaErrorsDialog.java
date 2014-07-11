@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,36 +37,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript.karma.ui.customizer;
+package org.netbeans.modules.javascript.karma.ui;
 
-import javax.swing.JComponent;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.util.Lookup;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
-public final class KarmaCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
+public final class KarmaErrorsDialog {
 
-    public static final String IDENTIFIER = "Karma"; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(KarmaErrorsDialog.class);
+    private static final KarmaErrorsDialog INSTANCE = new KarmaErrorsDialog();
+
+    private volatile boolean dialogShown = false;
 
 
-    @NbBundle.Messages("KarmaCustomizer.name=Karma")
-    @Override
-    public ProjectCustomizer.Category createCategory(Lookup context) {
-        return ProjectCustomizer.Category.create(
-                IDENTIFIER,
-                Bundle.KarmaCustomizer_name(),
-                null);
+    private KarmaErrorsDialog() {
     }
 
-    @Override
-    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-        Project project = context.lookup(Project.class);
-        assert project != null : "Cannot find project in lookup: " + context;
-        return new CustomizerKarma(category, project);
+    public static KarmaErrorsDialog getInstance() {
+        return INSTANCE;
+    }
+
+    @NbBundle.Messages("KarmaErrorsDialog.message=Review Output window for Karma warnings/errors")
+    public void show() {
+        if (dialogShown) {
+            return;
+        }
+        dialogShown = true;
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.KarmaErrorsDialog_message()));
+                } finally {
+                    dialogShown = false;
+                }
+            }
+        });
     }
 
 }

@@ -165,6 +165,8 @@ public final class AnnotationUtil {
     
     public static final String PASSIVATING = "passivating";                         // NOI18N
     
+    public static final String PROVIDER = "javax.inject.Provider";// NOI18N
+    
     private AnnotationUtil(){
     }
     
