@@ -72,6 +72,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CodeStyle;
@@ -310,7 +311,11 @@ public class IteratorToFor {
         TypeMirror collectionType = ctx.getInfo().getTrees().getTypeMirror(collection);
         TypeElement iterable = ctx.getInfo().getElements().getTypeElement("java.lang.Iterable");
         if (collectionType == null || iterable == null) return false;
-        TypeMirror iterableType = ctx.getInfo().getTypes().getDeclaredType(iterable, ctx.getInfo().getTypes().getWildcardType(ctx.getInfo().getTrees().getTypeMirror(type), null));
+        TypeMirror typeMirror = ctx.getInfo().getTrees().getTypeMirror(type);
+        if (typeMirror != null && typeMirror.getKind().isPrimitive()) {
+            typeMirror = ctx.getInfo().getTypes().boxedClass((PrimitiveType)typeMirror).asType();
+        }
+        TypeMirror iterableType = ctx.getInfo().getTypes().getDeclaredType(iterable, ctx.getInfo().getTypes().getWildcardType(typeMirror, null));
         TypeMirror bogusIterableType = ctx.getInfo().getTypes().getDeclaredType(iterable, ctx.getInfo().getTypes().getNullType());
         return ctx.getInfo().getTypes().isAssignable(collectionType, iterableType) && !ctx.getInfo().getTypes().isAssignable(collectionType, bogusIterableType);
     }
