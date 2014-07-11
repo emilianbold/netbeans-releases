@@ -807,7 +807,14 @@ public final class ELTypeUtilities {
                 srcPath);
     }
 
-    private static boolean isSubtypeOf(CompilationContext info, TypeMirror tm, CharSequence typeName) {
+    /**
+     * Gets information whether given type is inherits particular type specified by FQN.
+     * @param info compilation context
+     * @param tm type to be check for inheritance from typeName
+     * @param typeName parent class to be inherited from
+     * @return {@code true} if tm inherits the given typeName, {@code false} otherwise
+     */
+    public static boolean isSubtypeOf(CompilationContext info, TypeMirror tm, CharSequence typeName) {
         Element element = info.info().getElements().getTypeElement(typeName);
         if (element == null) {
             return false;
