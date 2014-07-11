@@ -657,6 +657,9 @@ public final class OptionsExportModel {
         }
 
         public boolean isApplicable() {
+            if(items == null) {
+                return false;
+            }
             synchronized (items) {
                 Iterator<Item> iterator = items.iterator();
                 while (iterator.hasNext()) {
