@@ -216,7 +216,8 @@ public class InjectionPointAnalyzer extends AbstractDecoratorAnalyzer<Void> impl
             String scope = model.getScope( parent );
             if ( scope != null && !AnnotationUtil.DEPENDENT.equals( scope )){
                 result.addError(element , model,  
-                        "ERR_WrongQualifierInjectionPointMeta");            // NOI18N
+                        NbBundle.getMessage(
+                        InjectionPointAnalyzer.class, "ERR_WrongQualifierInjectionPointMeta"));            // NOI18N
             }
         }
         catch (CdiException e) {
