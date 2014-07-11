@@ -903,6 +903,7 @@ public final class Utilities {
                     return getSingular(name);
                 }
             }
+            return null;
         }
         return varNameForTree(path.getLeaf());
     }

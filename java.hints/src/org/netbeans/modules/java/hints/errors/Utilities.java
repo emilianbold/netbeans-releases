@@ -174,7 +174,7 @@ public class Utilities {
     }
     
     public static String guessName(CompilationInfo info, TreePath tp, TreePath scope, String prefix, String suffix) {
-        return guessName(info, org.netbeans.modules.editor.java.Utilities.varNameSuggestion(tp), scope, prefix, suffix, false);
+        return guessName(info, org.netbeans.modules.editor.java.Utilities.varNameSuggestion(tp.getLeaf()), scope, prefix, suffix, false);
     }
     
     public static String guessName(CompilationInfo info, String name, TreePath scope, String prefix, String suffix, boolean acceptExistingPrefixes) {
